@@ -3,7 +3,7 @@
 // that motivates the Elias-delta default.
 //
 // CODEWORD PROVENANCE: the dEnc pins below are the kernel-checked
-// `example`s of Sal/MRDTs/RGA_Embed/Embed_Code_EliasDelta.lean
+// examples in Sal/MRDTs/Instances/RGAKernel/BinaryCode.lean
 // (eliasDeltaCode), with List Bool mapped false->'0', true->'1', MSB
 // first. If the port disagrees with a pin, the port is wrong.
 

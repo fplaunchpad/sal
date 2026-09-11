@@ -1,0 +1,121 @@
+import Sal.MRDTs.Instances.Common
+import Sal.MRDTs.Metatheory.Correctness
+
+/-! # Boolean grow-only stores
+
+The production grow-only set and grow-only map share one pointwise-Boolean
+MRDT proof.  The map instance treats key/value pairs as immutable entries.
+-/
+
+namespace Sal.MRDTs.Instances.FlatGrowOnly
+
+open Sal.MRDTs.Foundation
+open Sal.MRDTs.Instances
+open Classical
+
+variable (A : Type) [DecidableEq A]
+
+noncomputable def D : MRDTSig where
+  State := A → Bool
+  dec_state := fun _ _ => Classical.propDecidable _
+  init := fun _ => false
+  AppOp := A
+  dec_op := inferInstance
+  Query := Unit
+  Value := A → Bool
+  update s e x := s x || decide (x = e.2.2)
+  query s _ := s
+  merge l a b x := l x || (a x || b x)
+
+variable {A}
+
+theorem all_comm (a b : Op (D A).AppOp) :
+    (D A).toUpdateSig.commutes a b := by
+  intro s
+  funext x
+  exact bor_rc (s x) (decide (x = a.2.2)) (decide (x = b.2.2))
+
+theorem replayLaws : ReplayLaws (D A).toUpdateSig := by
+  apply ReplayLaws.of_all_comm all_comm
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
+
+theorem mergeLaws : MergeLaws (D A) := by
+  refine ⟨replayLaws, ?_, ?_⟩
+  · intro l a b; funext x; exact bor_comm (l x) (a x) (b x)
+  · intro s; funext x; exact bor_init (s x)
+
+theorem commutingPeelLaw : CommutingPeelLaw (D A) := by
+  constructor
+  · intro a e π₀ π₂ _ _; funext x
+    exact bor_peel
+      (applySeq (D A).toUpdateSig (D A).init π₀ x) (a x)
+      (applySeq (D A).toUpdateSig (D A).init π₂ x)
+      (decide (x = e.2.2))
+
+theorem deltaLaws : DeltaLaws (D A) := by
+  constructor
+  · intro m x₀ x₁ x₂ c; funext x
+    exact bor_redis (m x) (x₀ x) (x₁ x) (x₂ x) (c x)
+  · intro l m x c y; funext p
+    exact bor_lredis (l p) (m p) (x p) (c p) (y p)
+
+theorem join : Join (D A) :=
+  JoinProof.ofArbitraryStateLaws mergeLaws deltaLaws
+    (causalDeltaLaw_of_all_comm mergeLaws commutingPeelLaw all_comm)
+
+def generation : Issuance (D A) where
+  CanIssue := fun _ _ => True
+
+def replayAdequacy : ReplayAdequacyCertificate (D A) generation :=
+  ReplayAdequacyCertificate.ofJoin generation join
+
+def spec : SequentialSpec (D A) where
+  State := A → Bool
+  init := fun _ => false
+  step s e x := s x || decide (x = e.2.2)
+  Legal := fun _ => True
+  query := fun s _ => s
+
+def sequential : SequentialRefinement (D A) spec.toSequentialMachine where
+  Honest := fun _ => True
+  Rel := (· = ·)
+  init := rfl
+  sound := fun _ _ => rfl
+
+noncomputable def replayAdequate : ReplayAdequateMRDT (D A) where
+  issuance := generation
+  rc := ReplayPolicy.unconstrained (D A).toUpdateSig
+  replayAdequacy := replayAdequacy
+  Machine := spec.toSequentialMachine
+  sequential := sequential
+  sequential_of_mint := fun _ _ => trivial
+
+/-- Positive migration canary: a total datatype obtains the strengthened
+ordinary and virtual-merge-base result from the replay theorem without adding a
+datatype-specific legality argument. -/
+noncomputable def verified : VerifiedMRDT (D A) where
+  issuance := generation
+  rc := ReplayPolicy.unconstrained (D A).toUpdateSig
+  replayAdequacy := replayAdequacy
+  Spec := spec
+  Rel := (fun s q => s = q)
+  sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
+    (fun C _ => join C.replayContext)
+    all_comm
+    (fun _ _ => rfl)
+    (fun _ => True.intro)
+    (fun ops => sequential.sound ops True.intro)
+    (fun _ _ => rfl)
+
+noncomputable abbrev GOSet := D Nat
+noncomputable abbrev GOMap := D (Nat × Nat)
+noncomputable def gosetVerified : VerifiedMRDT GOSet := verified
+noncomputable def gomapVerified : VerifiedMRDT GOMap := verified
+
+#print axioms join
+#print axioms gosetVerified
+#print axioms gomapVerified
+
+end Sal.MRDTs.Instances.FlatGrowOnly

@@ -1,10 +1,8 @@
 // Embedded-chain RGA litmus fixtures.
 //
-// FIXTURE PROVENANCE: every expected read below was extracted by RUNNING
-// the Python model, NOT derived from this port:
-//
-//   cd whiteboard/litmus && python3 - <<'EOF'
-//   from embed_tree import EmbedTree, EmbedTreeCode
+// FIXTURE PROVENANCE: every expected read below is a reviewed literal, not
+// derived from this port. The archived independent model generated the initial
+// corpus:
 //   for D in (EmbedTree(), EmbedTreeCode()):
 //       s = D.init()
 //       for it in (('ins',1,0),('ins',2,0),('ins',3,1)): s = D.apply(s, it)

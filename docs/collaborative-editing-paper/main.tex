@@ -1,0 +1,1164 @@
+\input{../paper-preamble.tex}
+
+\title{Verified Collaborative Editing with Mergeable Replicated Data Types}
+\author{Anonymous Authors}
+\date{}
+\hypersetup{pdftitle={Verified Collaborative Editing with Mergeable Replicated Data Types},
+  pdfauthor={Anonymous Authors},bookmarksopen=true,bookmarksnumbered=true}
+
+\newcommand{\ins}{\mathsf{ins}}
+\newcommand{\del}{\mathsf{del}}
+\newcommand{\render}{\mathsf{render}}
+\newcommand{\seq}{\mathsf{seq}}
+\newcommand{\ids}{\mathsf{ids}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Collaborative rich-text editors need three guarantees at once: replicas must
+converge, their states must implement an ordinary sequential editor, and their
+metadata must remain collectable. We develop a Lean~4 verification of Peritext
+over mergeable replicated data types (MRDTs). The proof includes three
+sequence kernels: an RGA baseline, an immutable-coordinate EmbedRGA,
+and a sided EmbedRGA with machine-checked Fugue and FugueMax ordering-policy
+theorems. It proves replication convergence, local minted-history refinement
+to independent sequential editor machines, and full merged-history theorems
+for all three kernels. Two collectors address
+different sources of growth. An asynchronous distributed collector removes
+commit history; a Peritext-specific collector removes dead text records,
+deletion evidence, and closed mark pairs while preserving future edits. Their
+composition refines the uncollected virtual-merge-base semantics. Elementary
+arguments show that the retained metadata is necessary: a design that forgets
+deleted elements reorders survivors, admits no correct merge, and violates the
+strong list specification. A JavaScript
+implementation exercises the same designs. Repeated measurements show why
+both collectors and all three sequence baselines matter: on one long trace,
+EmbedRGA snapshots are 8.9 times smaller than RGA, while the sided
+variant pays additional metadata for a stronger non-interleaving policy.
+\end{abstract}
+
+\tableofcontents
+
+\section{The result}
+
+The main result is an end-to-end semantic verification of a collaborative
+rich-text datatype. It is not one monolithic theorem. Figure~\ref{fig:result}
+shows the evidence chain.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm]
+  \node[certnode,text width=.26\textwidth] (mint)
+    {issuer generation\\anchor, freshness, side};
+  \node[theoremnode,text width=.26\textwidth,right=10mm of mint] (rga)
+    {sequence correctness\\RGA, Embed, Sided};
+  \node[theoremnode,text width=.26\textwidth,right=10mm of rga] (peri)
+    {Peritext correctness\\text $\times$ deletes $\times$ marks};
+  \draw[flow] (mint)--(rga); \draw[flow] (rga)--(peri);
+
+  \node[certnode,text width=.26\textwidth,below=11mm of mint] (hgc)
+    {distributed history GC\\removes commits};
+  \node[certnode,text width=.26\textwidth,right=10mm of hgc] (sgc)
+    {datatype state GC\\removes internal metadata};
+  \node[theoremnode,text width=.26\textwidth,right=10mm of sgc] (query)
+    {uncollected semantics\\sequential rich view};
+  \draw[flow] (hgc)--(sgc); \draw[flow] (sgc)--(query);
+  \draw[flow] (peri)--(query);
+\end{tikzpicture}
+\caption{Two evidence paths meet at the user-visible result. The upper path
+proves the datatype; the lower path erases both collectors to that verified
+semantics. Blue boxes are correctness results and orange boxes are supplied
+protocol certificates.}
+\label{fig:result}
+\end{figure}
+
+The artifact establishes the following claims.
+
+\begin{enumerate}
+\item Every generation-certified ordinary or virtual-merge-base execution of each
+sequence kernel is replication-aware linearizable.
+\item Every replicated version in those executions admits a legal witness in
+an independent sequential specification. All three sequence kernels use an
+ordinary list as their public sequential state; Peritext uses a list-based
+rich editor and proves exact rendering.
+\item Fugue has the stated forward non-interleaving property but not maximal
+backward non-interleaving. The FugueMax variant satisfies both directions and
+is replication-aware linearizable.
+\item Sided Peritext has a physical state-GC transition system whose visible
+trace refines the uncollected semantic system. This protocol composes with the
+generic asynchronous commit-history collector.
+\item The JavaScript runtime is a live, hand-written implementation validated
+by directed, randomized, snapshot, GC, and differential tests. It is not code
+extracted from Lean; an evidence manifest records the Lean package and
+correspondence status of each released datatype.
+\item The memory that all three kernels keep about deleted elements is
+necessary. Self-contained arguments over finite executions show that a design
+whose state forgets a deleted element reorders survivors on one replica,
+admits no merge implementing the RGA order, violates the strong list
+specification, and must retain a logarithmic number of bits per lone
+survivor.
+\end{enumerate}
+
+We use three evidence words consistently. A Lean declaration is
+\emph{machine-checked}; a JavaScript test is \emph{validated}; a benchmark
+number is \emph{measured}.
+
+\section{Why plain RGA is the motivating example}
+\label{sec:motivation}
+
+An insert operation names an anchor and a globally fresh identifier:
+\[
+  \ins(x,a) \qquad\text{``insert identifier $x$ after identifier $a$''}.
+\]
+Here $x$ is the insertion timestamp itself; the RGA model does not carry a
+second copy of that identifier. A delete names the identifier to hide,
+$\del(x)$. Identifier $0$ is the
+permanent logical start anchor. A legal issuer may insert after $a$ only when
+it has already observed $a$ and $a$ is still live, and may delete only a known
+live identifier.
+
+These premises are not cosmetic. The raw MRDT update is total and can store an
+insert record with an absent anchor. The user-facing theorem concerns traces
+minted by the editor protocol. The RGA generation contract records precisely
+that boundary:
+\[
+\begin{array}{ll}
+\mathsf{applicable}(\ins(x,a),S) &\Longrightarrow
+  (a=0\lor a\in\mathsf{live}(S))\land
+  x\text{ fresh},\\
+\mathsf{applicable}(\del(x),S) &\Longrightarrow
+  x\in\mathsf{live}(S).
+\end{array}
+\]
+The checked bridge turns these issuer-head checks into the history facts used
+by the public ordinary-list proof. RGA's all-context Join theorem does not use
+this premise. EmbedRGA and SidedEmbedRGA additionally use their corresponding
+issuance facts to establish the replay-context condition of their Join
+theorems.
+
+\subsection{RGA}
+\label{sec:baseline}
+
+The paper-level state of RGA~\cite{roh2011rga} is a pair $S=(A,G)$:
+\[
+ A\subseteq \mathbb N^2,\quad (x,a)\in A
+ \text{ records the birth of $x$ after $a$};
+ \qquad G\subseteq\mathbb N
+ \text{ records deleted identifiers}.
+\]
+Both components grow monotonically.
+
+\[
+\begin{array}{rcl}
+\mathsf{do}((A,G),\ins(x,a)) &=& (A\cup\{(x,a)\},G),\\
+\mathsf{do}((A,G),\del(x)) &=& (A,G\cup\{x\}),\\[2pt]
+\merge((A_0,G_0),(A_1,G_1),(A_2,G_2))
+  &=& (A_0\cup A_1\cup A_2,\;G_0\cup G_1\cup G_2).
+\end{array}
+\]
+To read the state, sort births by timestamp, splice each identifier after its
+anchor, and filter identifiers in $G$:
+\[
+  \seq(A,G)=\mathsf{filter}_{x\notin G}
+    (\mathsf{foldl}\;\mathsf{insertAfter}\;[]\;\mathsf{sort}(A)).
+\]
+These equations are the paper-level form of \lean{Instances.RGA.RGAM} and
+\lean{Instances.RGA.sequence}. The auxiliary machine
+\lean{Instances.RGA.birthGraveMachine} stores finite birth and grave sets and
+bridges the functional implementation state to a finite proof model. It is not
+the client specification. The public \lean{Instances.RGA.listSpec} has an
+ordinary-list state, an abstract legality predicate, and the list-valued query
+used by \lean{Instances.RGA.verified}.
+
+The state is simple enough to explain both collectors. Deleting the entire
+document leaves all birth records and graves in the datatype state. Separately,
+the version DAG still contains every apply and merge commit. Commit-history GC
+cannot delete RGA tombstones because they live inside a retained state.
+Datatype-state GC cannot delete old versions because it sees only one
+materialization. Both are necessary.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \node[data,text width=.27\textwidth] (before) at (0,0)
+    {before collection\\history: $v_0\ldots v_n$\\state: births $+$ graves};
+  \node[data,text width=.27\textwidth] (history) at (5.1,0)
+    {after history GC\\history: retained frontier\\state: births $+$ graves};
+  \node[data,text width=.27\textwidth] (both) at (10.2,0)
+    {after both collectors\\history: retained frontier\\state: live $+$ summaries};
+  \draw[flow] (before)--(history);
+  \draw[flow] (history)--(both);
+\end{tikzpicture}
+\caption{The collectors remove different metadata. Neither subsumes the
+other: the first changes the commit carrier; the second changes a retained
+version's materialization. The left arrow is commit-history GC; the right
+arrow is datatype-state GC.}
+\label{fig:two-kinds-gc}
+\end{figure}
+
+\section{Why sequence state must remember deleted elements}
+\label{sec:retention}
+
+The baseline of Section~\ref{sec:baseline} keeps a grave for every deleted
+identifier. EmbedRGA and SidedEmbedRGA keep no graves, but the coordinate of a
+live character begins with the codes of its dead ancestors, and the Peritext
+product keeps a deleted-identifier set. Section~\ref{sec:eval} measures what
+this memory costs. This section shows that some such memory is forced. A
+sequence design whose state forgets a deleted element reorders survivors on a
+single replica, admits no correct merge, and violates the strong list
+specification of Attiya et al.~\cite{attiya2016list}. A lone survivor must
+carry a logarithmic number of bits about the elements deleted around it.
+
+The arguments are elementary. Each is a finite execution that the reader can
+replay by hand from the definitions below, and none depends on the Lean
+development or on any representation beyond the properties stated. The
+section closes by explaining why convergence proofs cannot detect these
+failures.
+
+\subsection{Designs, diamonds, and specifications}
+
+\begin{definition}[sequence design]
+A sequence design is a tuple
+$D=(\Sigma,\init,\mathsf{do},\mathsf{read},\merge)$ with
+\[
+ \mathsf{do}:\Sigma\times\mathit{Op}\to\Sigma,\qquad
+ \mathsf{read}:\Sigma\to\mathit{Id}^{*},\qquad
+ \merge:\Sigma\times\Sigma\times\Sigma\to\Sigma,
+\]
+where an operation is $\ins(x,a)$ or $\del(x)$ as in
+Section~\ref{sec:motivation}. A history $h$ is a list of operations and
+$\mathsf{fold}(\sigma,h)$ applies it left to right. A history is
+\emph{legal} from $\sigma$ when each insert uses a fresh identifier and an
+anchor that is $0$ or live in the state it is applied to, and each delete
+names a live identifier. Legality is the issuer discipline of
+Section~\ref{sec:motivation}; every history below is legal.
+\end{definition}
+
+\begin{definition}[diamond]
+A diamond is a triple of histories $(h_L,h_A,h_B)$ with
+\[
+ L=\mathsf{fold}(\init,h_L),\qquad
+ S_A=\mathsf{fold}(L,h_A),\qquad
+ S_B=\mathsf{fold}(L,h_B),\qquad
+ M=\merge(L,S_A,S_B).
+\]
+Its \emph{observed reads} are $\mathsf{read}$ of every state along the three
+folds, including $L$, $S_A$, $S_B$, and of $M$. A diamond is one merge step
+of the version-DAG semantics with $L$ the greatest common ancestor.
+\end{definition}
+
+\begin{definition}[sequential specification]
+The naive list semantics $\mathsf{naive}(h)$ inserts $x$ immediately after
+$a$ (at the front when $a=0$) and removes the deleted element. A design is
+\emph{sequentially sound} when $\mathsf{read}(\mathsf{fold}(\init,h))
+=\mathsf{naive}(h)$ for every legal history. It is
+\emph{delete-order preserving} when, for every reachable $\sigma$ and live
+$x$, $\mathsf{read}(\mathsf{do}(\sigma,\del(x)))$ is
+$\mathsf{read}(\sigma)$ with $x$ removed. Sequential soundness implies
+delete-order preservation.
+\end{definition}
+
+\begin{definition}[strong list specification]
+A diamond satisfies the strong list specification when every observed read
+contains exactly the identifiers inserted in that observation's causal past
+and not deleted there, and there is a strict total order $<$ on every
+identifier inserted in the diamond such that every observed read is sorted
+by $<$. Thus an order in which two elements have been displayed anywhere is
+never reversed anywhere, even transitively through elements that have since
+been deleted.
+\end{definition}
+
+This is the membership-and-global-order fragment of Attiya et
+al.'s specification; sequential soundness below supplies the insertion-position
+condition for the local histories. It mentions no implementation, anchor, or
+timestamp. The RGA order $\seq(A,G)$ of Section~\ref{sec:baseline} is a
+particular stronger intent: it fixes the merged order completely from births
+and graves.
+
+\subsection{A forgetful delete reorders survivors on one replica}
+
+Consider the most direct tombstone-free variant of RGA, the \emph{splice}
+design. Its state is a forest of live records $(t,x,a)$ whose anchor $a$ is
+$0$ or a live identifier. Insert adds a record. Delete removes the target's
+record and re-anchors the target's children to the target's own anchor. The
+read is the RGA traversal of the live forest: children of each node in
+decreasing identifier order, depth first. No deleted identifier survives in
+the state.
+
+\begin{proposition}[delete-order violation]
+\label{prop:reorder}
+The splice design is not delete-order preserving, and hence not
+sequentially sound.
+\end{proposition}
+
+\begin{proof}
+Take $h=[\ins(1,0,a),\ \ins(2,0,b),\ \ins(3,1,c)]$. The naive semantics
+gives $[a]$, then $[b,a]$, then $[b,a,c]$. The splice forest has root
+children $2$ and $1$ and child $3$ under $1$; its read is $[b,a,c]$ as well.
+Now apply $\del(1)$. The naive result is $[b,c]$. The splice removes record
+$1$ and re-anchors $3$ to the root, so the root children are $3$ and $2$,
+read in decreasing identifier order as $[c,b]$. The surviving pair $b,c$ has
+been reversed by a delete that named neither of them.
+\end{proof}
+
+\begin{proposition}[the baseline preserves survivor order]
+\label{prop:baseline-order}
+The RGA baseline of Section~\ref{sec:baseline} is delete-order preserving.
+\end{proposition}
+
+\begin{proof}
+$\del(x)$ changes only $G$. By definition
+$\seq(A,G\cup\{x\})=\mathsf{filter}_{y\notin G\cup\{x\}}(\ldots)$ is
+$\seq(A,G)$ with $x$ removed, because the splice fold that precedes the
+filter reads $A$ alone.
+\end{proof}
+
+The grave is exactly the memory that Proposition~\ref{prop:reorder} lacks:
+the dead anchor $1$ keeps holding $c$'s place. One might hope to recover
+this without graves by a smarter re-anchoring rule. The next proposition
+shows that no local rule makes insert and delete commute, which is the
+property the baseline's convergence proof rests on (all its operation pairs
+commute; see Section~\ref{sec:proved-all}).
+
+\begin{proposition}[no local re-anchoring rule commutes]
+\label{prop:no-commute}
+Let $D$ be any design over live forests in which
+$\ins(x,a)$ stores the record $(x,f(\sigma,a))$ with $f(\sigma,a)=a$
+whenever $a$ is live, and $\del(x)$ removes $x$ and re-anchors its children
+to $g(\sigma,x)$ with $g(\sigma,x)$ equal to $x$'s anchor whenever $x$ and
+that anchor are live, where $f$ and $g$ read only live records. Then there
+is a reachable state on which an insert after $x$ and the deletion of $x$
+do not commute.
+\end{proposition}
+
+\begin{proof}
+Let $\sigma_1$ contain live records $(1,\cdot,0)$, $(4,\cdot,0)$, and
+$(5,\cdot,1)$, and let $\sigma_2$ be the same with $(5,\cdot,4)$ instead.
+Element $5$ is a leaf in both. Deleting $5$ re-anchors nothing, so
+$\mathsf{do}(\sigma_1,\del(5))=\mathsf{do}(\sigma_2,\del(5))=\rho$, the
+forest with records $1$ and $4$ only. Applying $\ins(7,5,y)$ to $\rho$
+stores anchor $v=f(\rho,5)$, the same value in both cases because $\rho$ is
+the same state. In the other order, $\ins(7,5,y)$ finds $5$ live and stores
+$(7,y,5)$; the subsequent $\del(5)$ re-anchors $7$ to $5$'s anchor, which is
+$1$ from $\sigma_1$ and $4$ from $\sigma_2$. Commutation on $\sigma_1$
+forces $v=1$ and commutation on $\sigma_2$ forces $v=4$.
+\end{proof}
+
+The proof uses three facts only: erasing a leaf leaves no trace, so the two
+post-delete states coincide; a prefix-free insert must recompute its anchor
+from that erased state; and commutation is demanded on all states. Carrying
+the anchor's ancestor path inside the operation removes the second fact,
+which is what EmbedRGA's coordinates do.
+
+\subsection{No merge on forgetful states implements the RGA order}
+
+The single-replica failure above could be blamed on the newest-first tie
+rule. The next result blames nothing but forgetting. It exhibits two
+diamonds whose greatest common ancestor and second branch are identical and
+whose first branches reach the same state, yet whose intended merged reads
+differ. Every merge function then fails on one of them.
+
+\begin{theorem}[fooling pair for the RGA order]
+\label{thm:fooling-rga}
+Let $h_L=[\ins(1,0,a)]$ and $h_B=[\ins(2,0,c)]$, and let
+\[
+ h^1_A=[\ins(5,1,b),\ \del(1)],\qquad
+ h^2_A=[\del(1),\ \ins(5,0,b)].
+\]
+Both diamonds are legal. Their RGA orders are $[c,b]$ and $[b,c]$
+respectively. Hence any design $D$ with
+$\mathsf{fold}(L,h^1_A)=\mathsf{fold}(L,h^2_A)$ produces a merged read that
+differs from the RGA order on at least one of the two diamonds. The splice
+design is such a $D$.
+\end{theorem}
+
+\begin{proof}
+Legality: $a$ is live when $b$ is anchored at it, $5$ and $2$ are fresh, and
+every delete names a live element. For the RGA orders, apply
+$\seq(A,G)$ of Section~\ref{sec:baseline} to the union of births and graves.
+In the first diamond $A=\{(1,0,a),(2,0,c),(5,1,b)\}$ and $G=\{1\}$. Sorting
+births by timestamp and splicing gives $[a]$, then $[c,a]$, then $[c,a,b]$;
+filtering $G$ gives $[c,b]$. In the second diamond
+$A=\{(1,0,a),(2,0,c),(5,0,b)\}$ and $G=\{1\}$: $[a]$, then $[c,a]$, then
+$[b,c,a]$; filtering gives $[b,c]$. In both diamonds $L$ and $S_B$ are
+literally the same states, so if $S_A$ also coincides then
+$\merge(L,S_A,S_B)$ is one state with one read, which cannot equal both
+$[c,b]$ and $[b,c]$. For the splice design, $h^1_A$ stores $(5,b,1)$ and
+then re-anchors it to $0$ on deleting $1$, while $h^2_A$ stores $(5,b,0)$
+directly; both yield the single record $(5,b,0)$.
+\end{proof}
+
+The information the splice destroys is precise: whether $b$ occupies the
+slot of the dead $a$ or a slot of its own. The baseline keeps it as the
+birth record $(5,1,b)$ together with grave $1$. EmbedRGA keeps it because
+$b$'s coordinate in the first diamond begins with $a$'s code and in the
+second is a root code. In both cases the two branch states differ, and the
+theorem does not apply.
+
+\subsection{The strong list specification forces the same memory}
+
+Theorem~\ref{thm:fooling-rga} is relative to RGA's intended order. One could
+object that a different intent would rescue forgetting. The strong list
+specification refutes this objection: it is implementation independent and
+still separates two diamonds with coinciding forgetful states. The witness
+needs five elements because the constraint must pass transitively through
+elements that have been deleted.
+
+The sequential-soundness premise in the next two theorems is load-bearing:
+it fixes the observed orders before the merge. The global-order condition by
+itself would not determine those local reads.
+
+\begin{theorem}[fooling pair for the strong list specification]
+\label{thm:fooling-strong}
+Let $h_L=[\ins(1,0,m),\ \ins(2,0,g)]$, so $L$ reads $[g,m]$, and let
+$h_B=[\ins(9,2,y)]$, so $S_B$ reads $[g,y,m]$. Let
+\[
+ h^1_A=[\ins(5,0,x),\ \del(2),\ \del(1)],\qquad
+ h^2_A=[\ins(5,1,x),\ \del(1),\ \del(2)].
+\]
+Both diamonds are legal, and in both the final read of the first branch is
+$[x]$. For a sequentially sound design, the strong list specification
+requires the merged read $[x,y]$ in the first diamond and $[y,x]$ in the
+second. Hence any sequentially sound design with
+$\mathsf{fold}(L,h^1_A)=\mathsf{fold}(L,h^2_A)$ violates the strong list
+specification on one of them.
+\end{theorem}
+
+\begin{proof}
+Sequential soundness fixes the observed reads of the three folds to their
+naive values. The first branch reads $[x,g,m]$, $[x,m]$, $[x]$ in the first diamond and
+$[g,m,x]$, $[g,x]$, $[x]$ in the second. In the first diamond $x<g$ was
+displayed on the first branch and $g<y$ on the second, so any total order
+consistent with all reads has $x<y$; the merged read, a sequence over
+$\{x,y\}$, must be $[x,y]$. In the second diamond $y<m$ was displayed on the
+second branch and $m<x$ on the first, so $y<x$ and the merged read must be
+$[y,x]$. The two diamonds share $L$ and $S_B$; if they also share $S_A$, the
+merge has one output. Note that $x$ and $y$ are never displayed together
+before the merge: the obligation is carried entirely by the deleted $g$ and
+$m$.
+\end{proof}
+
+The theorem says what a correct state must contain after
+$h^1_A$ and $h^2_A$: two different values, although both documents consist
+of the single character $x$. A design whose state for a one-character
+document is a function of that character alone cannot satisfy the strong
+list specification, whatever its merge.
+
+\subsection{How much must be remembered}
+
+The five-element witness generalizes to a lower bound on the information a
+survivor must retain about the elements deleted around it.
+
+\begin{theorem}[retention lower bound]
+\label{thm:lower}
+Let $D$ be sequentially sound and satisfy the strong list specification on
+every legal diamond. For every $n\ge 1$ there is a legal history $h_L$ inserting $n$ elements and
+legal continuations $h^0_A,\ldots,h^n_A$, each inserting one element $x$ and
+then deleting all $n$ elements of $h_L$, such that the states
+$\mathsf{fold}(L,h^k_A)$ take at least $\lceil (n+1)/2\rceil$ distinct
+values. Every one of these states reads $[x]$. Consequently a state whose
+document is the single character $x$ must carry at least
+$\log_2\lceil (n+1)/2\rceil$ bits beyond $x$'s identifier and payload once
+$n$ elements have been deleted.
+\end{theorem}
+
+\begin{proof}
+Let $h_L$ insert $e_1,\ldots,e_n$ each immediately after the previous one,
+so $L$ reads $[e_1,\ldots,e_n]$. Write $e_0=0$ and let
+$h^k_A=[\ins(x,e_k,\cdot),\ \del(e_1),\ldots,\del(e_n)]$, whose first read
+is $[e_1,\ldots,e_k,x,e_{k+1},\ldots,e_n]$ and whose last is $[x]$. Fix
+$k<k'$ with $k'-k\ge 2$ and choose $g$ with $k<g<k'$. Let
+$h_B=[\ins(y,e_g,\cdot)]$, so $S_B$ reads
+$[e_1,\ldots,e_g,y,e_{g+1},\ldots,e_n]$. In the diamond with $h^k_A$, the
+first branch displayed $x$ before $e_{k+1}$, and $e_{k+1}$ is displayed at
+or before $e_g$, which the second branch displayed before $y$; so $x<y$ and
+the merged read must be $[x,y]$. In the diamond with $h^{k'}_A$, the second
+branch displayed $y$ before $e_{g+1}$, and the first branch displayed
+$e_{g+1}$ at or before $e_{k'}$, which precedes $x$; so $y<x$ and the merged
+read must be $[y,x]$. The two diamonds share $L$ and $S_B$, so
+$\mathsf{fold}(L,h^k_A)\neq\mathsf{fold}(L,h^{k'}_A)$, otherwise the single
+merge output would violate one of them. The indices $0,2,4,\ldots$ are
+pairwise at distance at least $2$, giving $\lceil (n+1)/2\rceil$ pairwise
+distinct states. The bit bound follows because these states share identifier
+and payload of $x$ and differ only in retained information.
+\end{proof}
+
+The bound concerns information, not representation, and the three kernels
+pay it in three currencies. The baseline pays with graves: $n$ identifiers,
+shared by every survivor. EmbedRGA pays inside the survivor: $x$'s coordinate
+under $h^k_A$ is the code of $e_k$'s path followed by $\Gamma(t_x-e_k)$,
+different for different $k$, and as long as the ancestor spine. The
+ancestor-spine workload in Section~\ref{sec:eval} is this bound made
+concrete. Peritext pays a third way for its marks, retaining deleted
+identifiers whose positions mark boundaries still need. What the bound
+excludes is a design whose state after $n$ deletions is the live document
+plus a bounded number of bits. Attiya et al.~\cite{attiya2016list} introduced
+the full strong and weak list specifications and proved an $\Omega(D)$
+metadata lower bound for push-based protocols with at least three replicas,
+including executions with causal atomic broadcast. Their protocol model and
+bound are not the theorem above; the diamond argument isolates a weaker
+logarithmic consequence for ternary merge using three replicas and one merge.
+
+\subsection{Convergence does not force retention}
+\label{sec:convergence-not-enough}
+
+Nothing in Proposition~\ref{prop:reorder} involves a merge. The reorder
+happens on one replica, inside $\mathsf{do}$, so a design that reorders the
+same way on every replica converges while violating its sequential
+specification. Replication-aware linearizability certifies convergence to
+the datatype's own fold; when the fold itself reorders survivors, every
+replica agrees on the wrong answer and the convergence theorem is satisfied.
+This is why Table~\ref{tab:anomalies} lists sequential reference semantics
+separately from replication-aware linearizability, and why
+Section~\ref{sec:proved-all} treats the sequential theorem as independent
+evidence. The memory retained by the three kernels is justified by
+Propositions~\ref{prop:reorder} and~\ref{prop:no-commute} and
+Theorems~\ref{thm:fooling-rga}, \ref{thm:fooling-strong},
+and~\ref{thm:lower}, not by convergence.
+
+\section{Three verified sequence representations}
+
+The three representations implement the same insert-after/delete interface,
+but they retain different information and offer different ordering policies:
+\begin{center}
+\begin{tabular}{@{}p{.20\textwidth}p{.34\textwidth}p{.34\textwidth}@{}}
+\toprule
+Kernel & Position of a live descendant & What survives deletion of its anchor \\
+\midrule
+RGA & identity edge to anchor $a$ & birth of $a$ and a grave marker \\
+EmbedRGA & immutable anonymous path coordinate & path geometry; identity $a$ may disappear \\
+SidedEmbedRGA & path coordinate with an L/R band & path geometry and compact mint-policy summary \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{EmbedRGA}
+
+EmbedRGA assigns an immutable coordinate when an operation is minted. An
+insert carries a prefix $\pi$ derived from its observed anchor and appends an
+ordered prefix-code word:
+\[
+  \mathsf{coord}(\ins(t,\pi,a,x))=\pi\cdot\Gamma(t-a).
+\]
+The materialized state is one list of $(t,x,\mathsf{coord})$ records strictly
+sorted by coordinate. Insert is sorted insertion, delete filters one record,
+and ternary merge applies OR-set survival relative to the LCA before
+re-sorting. Because distinct honest births have distinct keys, sorted lists
+with the same record set are equal. This canonical representation is the core
+of the convergence proof.
+
+The coordinate carries path geometry without retaining each deleted ancestor
+identity. This is more than a constant-factor encoding change after state GC:
+an ancestor spine can leave thousands of identity-bearing tombstones in RGA,
+whereas an embedded descendant needs only its path code.
+
+\subsection{SidedEmbedRGA and the Fugue policies}
+
+SidedEmbedRGA adds $d\in\{L,R\}$ to a minted insert and encodes it in a
+sided block:
+\[
+  \mathsf{scoord}(\ins(t,\pi,a,d,x))
+    =\pi\cdot\mathsf{sBlock}_{\Gamma}(d,t-a).
+\]
+The MRDT effect treats the side as immutable operation data. A generation
+policy decides which side and parent to mint from the issuer's knowledge.
+This separation lets one proved kernel host several policies.
+
+\begin{definition}[non-interleaving]
+A local typing run is a sequence of causally consecutive inserts made by one
+replica. A merged read is forward non-interleaving when each forward run forms
+one interval. The maximal property also protects the paper's backward-run
+cases, subject to its stated exception.
+\end{definition}
+
+The Lean development proves:
+\[
+\begin{array}{rcl}
+\mathsf{FugueReach} &\Longrightarrow& \mathsf{ForwardNI},\\
+\mathsf{Fugue} &\not\Longrightarrow& \mathsf{MaximalBackwardNI},\\
+\mathsf{FugueMaxReach} &\Longrightarrow&
+  \mathsf{ForwardNI}\land\mathsf{BackwardNI}\land\mathsf{MaximalNI}.
+\end{array}
+\]
+The corresponding Lean results are:
+\[
+\begin{gathered}
+\lean{fugue\_forward\_ni},\qquad
+\lean{fugue\_not\_maximally\_noninterleaving\_backward},\\
+\lean{fuguemax\_forward\_ni},\quad
+\lean{fuguemax\_backward\_ni},\quad
+\lean{fuguemax\_maximally\_noninterleaving}.
+\end{gathered}
+\]
+The coordinate-level \lean{FMSig} remains an internal replay model. The
+separate enriched \lean{FugueMax.datatype} stores the birth/origin metadata
+needed by the exact positional issuer and has its own public package,
+\lean{FugueMax.verified}. Its sequential state is a plain list. For ordinary
+and virtual certified executions, \lean{FugueMax.correct} gives one witness
+for list correctness and all three maximal-non-interleaving clauses. It does
+not assume a separate \lean{MaxReach} proof. This package is distinct from
+\lean{Instances.ProductionRGA.sided}; its datatype-state collection remains
+staged, and no independent FugueMax runtime is claimed.
+
+\subsection{What is proved for all three}
+\label{sec:proved-all}
+
+Table~\ref{tab:sequence-certificates} separates merge preservation from the
+operation-issuance premise of the public theorem. ``Join for all contexts''
+means \lean{Join}; ``Join under $G$'' means \lean{JoinOn} with replay-context
+predicate $G$.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+RDT & Merge theorem & Issuance policy & Role of issuance \\
+\midrule
+RGA & Join for all contexts & \lean{applicable} & list legality \\
+EmbedRGA & Join under \lean{EHonestCore} & \lean{eApplicable} & Join condition and list legality \\
+SidedEmbedRGA & Join under \lean{SHonestCore} & \lean{sApplicable} & Join condition and list legality \\
+\bottomrule
+\end{tabular}
+\caption{Merge scope and issuance are independent proof axes. RGA issuance
+is load-bearing for its intended list specification even though its merge
+theorem holds at every replay context.}
+\label{tab:sequence-certificates}
+\end{table}
+
+For each kernel, the repository packages a generation contract, ordinary and
+virtual-merge-base convergence, an independent list specification, and the
+bridge from certified minting to a legal list witness. The capstones are
+\lean{Instances.RGA.verified}, \lean{Instances.ProductionRGA.embed}, and
+\lean{Instances.ProductionRGA.sided}. Each is a public
+\lean{VerifiedMRDT} package. The repository retains the separately named
+\lean{replayEmbed} and \lean{replaySided} packages for raw-fold proofs.
+
+The sequential theorem matters independently of convergence. EmbedRGA and
+SidedEmbedRGA refine explicit list machines for a legal minted linear history.
+Each kernel also has the merged-history \lean{VerifiedMRDT} theorem: each
+replicated version has an exact, causally ordered, legal sequential witness
+with the intended list view. Each package supplies one \lean{ReplayPolicy}
+named \lean{rc}; \lean{loOn} combines it with visibility, retaining every
+causal edge whose operation pair conflicts according to $rc$. The proof-level
+\lean{UpdateSig} is derived from the MRDT
+signature. The generation premise
+preserves the actual editor protocol rather than silently totalizing invalid
+anchor use as a no-op.
+
+\section{Peritext over the sided sequence}
+
+Peritext represents formatting as immutable mark events over a character
+sequence. The production-facing Lean state has three logical components:
+\[
+  S_{\mathit{rich}}=
+  \underbrace{S_{\mathit{text}}}_{\text{sided insertion shadow}}
+  \times
+  \underbrace{D}_{\text{grow-only deleted character IDs}}
+  \times
+  \underbrace{M}_{\text{grow-only mark events}}.
+\]
+Native text deletion is disabled. A user deletion adds the identifier to
+$D$, preserving the birth position needed to resolve mark boundaries. A mark
+records a globally fresh mark ID, type, value, start and end identifiers, and
+boundary sides.
+
+At the paper level, a rich operation is one of
+\[
+ o ::= \mathsf{textIns}(t,\pi,a,d,x)
+   \mid \mathsf{delete}(x)
+   \mid \mathsf{mark}(m,\mathit{kind},\mathit{value},
+                      a_s,d_s,a_e,d_e,\mathit{action}).
+\]
+The update routes the operation to exactly one product component:
+\begin{align*}
+ (T,D,M)\mathbin{+}\mathsf{textIns}(\cdots)&=(T+\mathsf{ins}(\cdots),D,M),\\
+ (T,D,M)\mathbin{+}\mathsf{delete}(x)&=(T,D\cup\{x\},M),\\
+ (T,D,M)\mathbin{+}\mathsf{mark}(m,\ldots)&=(T,D,M\cup\{\mathsf{mark}(m,\ldots)\}).
+\end{align*}
+Ternary merge is the product of the sided-text merge and two set unions.
+This product structure explains convergence, but not client legality: the
+cross-component issuance policy supplies that missing relation.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm]
+  \node[certnode,text width=.40\textwidth] (guard)
+    {issuance policy\\legal sided insert; live delete target;\\live mark endpoints and fresh mark ID};
+  \node[data,text width=.40\textwidth,below=of guard] (product)
+    {replicated product $S_{text}\times D\times M$\\components merge independently};
+  \node[theoremnode,text width=.40\textwidth,below=of product] (view)
+    {rich query\\order live characters; resolve boundaries;\\compute active marks};
+  \draw[flow] (guard)--node[right=3mm,font=\scriptsize]{mint and deliver}(product);
+  \draw[flow] (product)--node[right=3mm,font=\scriptsize]{render}(view);
+\end{tikzpicture}
+\caption{Peritext state and query pipeline. Text ordering, logical deletion,
+and mark evidence merge independently. The rich query is the only place that
+combines all three components.}
+\label{fig:peritext-pipeline}
+\end{figure}
+
+The cross-component issuance policy in Figure~\ref{fig:peritext-pipeline}
+requires an insert to satisfy the sided sequence policy, a deletion to name a known live
+character, and a mark to name known live endpoints with a fresh mark ID. The
+theorem \lean{coreHonest\_of\_mint} derives the sequence history fact needed by
+the product Join proof.
+
+The independent rich sequential machine stores an ordinary list of character
+records, a deleted-ID set, and a mark-event set. The representation relation
+equates the sided MRDT projection with that list after removing the logical
+root, and equates both grow-only stores exactly. Consequently:
+
+\begin{theorem}[rich sequential correctness]
+For every legal minted operation list $\rho$, the state obtained by folding
+the Sided Peritext MRDT is related to the state obtained by running the
+independent rich editor machine on $\rho$.
+\hfill\lean{rich\_sequentially\_correct}
+\end{theorem}
+
+The production signature narrows the query to rendered rich text without
+changing the operational carrier. \lean{richVerified} transfers the
+merged-history legalization to this rendered query boundary. It proves query
+agreement for the document-order rich-text render, not only for the three raw
+components. \lean{richReplayVerified} remains as the explicitly internal
+raw-fold package.
+The JavaScript export \code{peritext} selects
+\code{peritextSidedEmbedRGA}; the RGA and one-sided EmbedRGA variants remain
+available as controlled baselines.
+
+\section{Datatype-state garbage collection}
+
+Peritext cannot discard every deleted birth immediately. Mark endpoints and
+future Fugue minting can still depend on old order. A compact materialization
+therefore contains
+\[
+ C=\langle T,K,D,M,c\rangle,
+\]
+where $T$ is retained sided text, $K$ is a finite LiveGap policy summary,
+$D$ is retained deletion evidence, $M$ is the mark list, and $c$ is a stable
+Lamport cutoff. The cutoff has one interpretation:
+\[
+  \mathsf{keep}(x)=\mathsf{false}\quad\Longrightarrow\quad x\le c.
+\]
+It is not a second tombstone set. It compactly separates collected old
+identifiers from future fresh identifiers. A new Lamport identifier must be
+strictly greater than $c$, so it is necessarily retained by the epoch policy.
+
+The refinement relation connects this compact state to the uncollected rich
+state $F=(T_F,D_F,M_F)$. It existentially records a retention predicate $k$
+and Fugue knowledge $K_F$ and requires
+\begin{align*}
+ T_F&=\mathsf{gFold}(K_F),
+ &T&=\mathsf{filter}_k(T_F),\\
+ \mathsf{GapMapOK}(K_F,K),
+ &\neg k(x)&\Rightarrow x\le c,\\
+ \forall q.\ \mathsf{query}(C,q)&=\mathsf{render}(F,q).&&
+\end{align*}
+This is \lean{StateGC.Protocol.Represents}. Equality of current reads is only
+one field. The text projection and gap-map fields are what make subsequent
+insertion and merge provable.
+
+\subsection{Three atomic collectors}
+
+\begin{figure}[H]
+\small
+\[
+\Rule{Collect-Text}{
+  \forall x.\ \neg k(x)\Rightarrow x\in D \quad
+  \mathsf{endpoints}(M)\subseteq k \quad
+  K'\text{ exactly summarizes future mint choices}
+}{
+  \langle T,K,D,M,c\rangle\rightsquigarrow
+  \langle \mathsf{filter}_k(T),K',D,M,\max(c,c')\rangle
+}
+\]
+\[
+\Rule{Trim-Deletes}{}{
+  \langle T,K,D,M,c\rangle\rightsquigarrow
+  \langle T,K,D\cap\ids(T),M,c\rangle
+}
+\]
+\[
+\Rule{Drop-Mark-Pair}{
+  m=\mathsf{add}\quad r=\mathsf{remove}\quad m<r\quad
+  \alpha(m,r,M)\quad\beta(m,r,T)
+}{
+  \langle T,K,D,M,c\rangle\rightsquigarrow
+  \langle T,K,D,M\setminus\{m,r\},c\rangle
+}
+\]
+\caption{The three Peritext state-GC steps. The $\alpha$ and $\beta$ premises
+exclude delayed same-type marks and characters in the Lamport growth window;
+checked counterexamples show that both are necessary.}
+\label{fig:state-gc-rules}
+\end{figure}
+
+Each rule in Figure~\ref{fig:state-gc-rules} preserves every rendered query:
+\lean{collectText\_query\_preserved},
+\lean{trimDeleted\_query\_preserved}, and
+\lean{dropMarkPair\_query\_preserved}. Query preservation alone is
+insufficient: the compact state must accept future operations and later merge
+with replicas collected in other epochs. The continuation proof uses three
+additional facts.
+
+\begin{enumerate}
+\item The LiveGap map reconstructs exactly the Fugue side, parent, and parent
+chain used to mint the next insert
+(\lean{compactInsertOp\_exact}).
+\item Future Lamport IDs lie above the stable cutoff and therefore cannot be
+mistaken for collected IDs (\lean{TextPlan.keeps\_fresh}).
+\item Independently collected branches translate to a common projection
+before ternary merge; compact merge equals that projection of semantic merge
+(\lean{merge\_text\_after\_epoch\_translation}).
+\end{enumerate}
+
+\subsection{Protocol refinement}
+
+A physical version may have no materialization, but every replica head has
+one. Each materialized head carries a \lean{Represents} witness linking compact
+text, gap summaries, cutoff, and all rich queries to the semantic state.
+Collection and epoch reframing are silent. Ordinary apply/merge and virtual
+merge are visible.
+
+The physical state contains one ghost semantic configuration for the proof
+and a partial materialization map:
+\[
+ P=\langle C_{sem},\mathsf{compact}:\mathit{Version}\rightharpoonup
+ \mathsf{CompactState}\rangle.
+\]
+Every mapped version must represent its semantic state, and every replica
+head must be mapped. The transition labels are optional semantic labels:
+\[
+\begin{array}{rcll}
+ P\xrightarrow{\tau}P' &:& \mathsf{collectText},\ \mathsf{trimDeleted},\
+   \mathsf{dropMarkPair},\ \mathsf{reframe},
+   &C'_{sem}=C_{sem},\\
+ P\xrightarrow{\ell}P' &:& \mathsf{ordinary},\ \mathsf{virtual},
+   &C_{sem}\xrightarrow{\ell}_{\mathsf{StepV}}C'_{sem}.
+\end{array}
+\]
+An apply label additionally requires its timestamp to lie above the compact
+head's stable cutoff. Fetch advances the Lamport clock before the runtime may
+mint that operation.
+
+\begin{theorem}[Peritext state-GC refinement]
+Erase collection and reframe labels from any finite valid physical execution.
+The remaining labels form an execution of the uncollected virtual-merge-base
+semantics, with the same rich queries at materialized heads.
+\hfill\lean{StateGC.Protocol.refines}
+\end{theorem}
+
+\section{Distributed commit-history garbage collection}
+
+The second collector is generic to the MRDT runtime. Replica $r$ stores only
+\[
+  L_r=\langle h_r,C_r\rangle,\qquad h_r\in C_r,
+\]
+where $h_r$ is its head and $C_r$ its locally held immutable commits. A remote
+fetch unions advertised commits; a separate head-sync action selects a held
+version. Evidence is derived from authored commits already in $C_r$.
+
+The asynchronous transitions are:
+\begin{figure}[H]
+\footnotesize
+\[
+\Rule{Fetch}{M=C_s}{
+ W\longrightarrow W[d\mapsto\langle h_d,C_d\cup M\rangle]}
+\]
+\[
+\Rule{Head-Sync}{v\in C_r}{
+ W\longrightarrow W[r\mapsto\langle v,C_r\rangle]}
+\qquad
+\Rule{Collect}{\mathsf{Certificate}(\langle h_r,C_r\rangle,K)}{
+ W\longrightarrow W[r\mapsto\langle h_r,K\rangle]}.
+\]
+\caption{Distributed commit-history transitions. Fetch corresponds to
+receiving immutable commits from a remote; it does not move the local head.
+Collection changes one replica and requires complete frontier evidence.}
+\label{fig:peritext-history-rules}
+\end{figure}
+
+A local collection requires frontier evidence for every registered replica
+and a keep certificate that preserves head reachability and LCA answers. The
+compressed DAG connects retained versions according to original reachability;
+it need not retain the old root or every path node.
+
+The collecting protocol refines the same asynchronous fetch/head-sync
+protocol with GC erased. State GC then composes directly with this refinement:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \node[certnode,text width=.25\textwidth] (physical) at (0,0)
+    {combined physical run\\both collectors};
+  \node[theoremnode,text width=.25\textwidth] (semantic) at (5.25,0)
+    {uncollected Peritext\\same visible labels};
+  \node[theoremnode,text width=.25\textwidth] (editor) at (10.5,0)
+    {RA-linearizable versions\\sequential rich view};
+  \draw[flow] (physical)--(semantic);
+  \draw[flow] (semantic)--(editor);
+\end{tikzpicture}
+\caption{End-to-end semantic path for both collectors. The history collector
+is framework supplied; the state collector is Peritext supplied. Both arrows
+denote proved semantic implications: \lean{CombinedSteps.refinesV} followed by
+the verified Peritext capstones. They do not denote implementation extraction.}
+\label{fig:end-to-end-gc}
+\end{figure}
+
+\lean{GC.CombinedSteps.refinesV} is the generic composition theorem. It avoids
+an intermediate global or stop-the-world semantics: distributed GC refines
+the no-GC asynchronous system directly.
+
+\section{Ordering anomalies and evidence}
+
+Finite anomaly fixtures are useful regression tests, but they are not a
+substitute for quantified intent theorems. Table~\ref{tab:anomalies} separates
+the two kinds of evidence.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.18\textwidth}
+  >{\raggedright\arraybackslash}p{0.33\textwidth}
+  >{\centering\arraybackslash}p{0.08\textwidth}
+  >{\centering\arraybackslash}p{0.09\textwidth}
+  >{\centering\arraybackslash}p{0.16\textwidth}@{}}
+\toprule
+Property or corpus & Scope & RGA & \shortstack{Embed\\RGA} & \shortstack{Sided/\\FugueMax} \\
+\midrule
+Sequential reference semantics & all legal sequential histories, Lean
+  & proved & proved & proved \\
+RA-linearizability & certified ordinary and virtual histories, Lean
+  & proved & proved & proved \\
+Forward non-interleaving & all Fugue-policy reachable states, Lean
+  & -- & -- & proved \\
+Maximal backward non-interleaving & policy-level quantified result, Lean
+  & no claim & no claim & Fugue refuted; FugueMax proved \\
+L1, L3a/b, L4, L5, L7--L13, L16, L17, L19 & 15 reviewed directed JS fixtures
+  & baseline outputs & baseline outputs & all pass expected reads \\
+L2, L6, L14, L15, L18, L20--L25 & no current reviewed runtime fixture
+  & untested & untested & untested \\
+Retention of deleted-element order & forced by
+  Theorems~\ref{thm:fooling-strong} and~\ref{thm:lower}, pen and paper
+  & graves $G$ & dead codes & dead codes \\
+\bottomrule
+\end{tabular}
+\caption{Current anomaly evidence. ``Untested'' is not reported as a pass.
+The directed corpus validates implementation behavior; only the quantified
+Lean rows establish general semantic properties.}
+\label{tab:anomalies}
+\end{table}
+
+The L19 fixture is a backward-run case. Two replicas insert runs toward the
+front of a shared document. The reviewed sided implementations produce
+$[50,30,10,61,41,21,1]$, keeping each local run contiguous. The stronger
+FugueMax theorem generalizes beyond this fixture. We do not claim an external
+Yjs, Automerge, or Loro anomaly result from the current harness because the
+repository does not contain reviewed adapters for the full anchored corpus.
+
+\section{Implementation}
+
+The JavaScript runtime provides content-addressed commits, replicas, fetch and
+head synchronization, three-way merge, snapshots, distributed frontier
+evidence, commit GC, and datatype state-GC hooks. Persistent maps and sets
+avoid copying full logical stores on each update. Binary snapshot codecs pack
+identifiers and coordinate symbols rather than shipping textual bit strings.
+
+The runtime exposes six relevant datatypes:
+\code{rga}, \code{embedRGA}, \code{liveGapSidedEmbedRGA}, and Peritext built
+over each of those three kernels. The default \code{peritext} is the sided
+variant. Snapshot recovery means loading a native continuation snapshot into
+a fresh in-process state and materializing its visible document; it does not
+create a new logical replica or change replica identity.
+
+The Lean code and JavaScript have different trust boundaries. Lean verifies
+mathematical definitions and refinements. JavaScript tests check that the
+implementation agrees with expected reads, a split-map oracle, randomized
+fork/join executions, snapshot round trips, frontier refusal, offline replica
+return, and collection invariants. Differential testing is a practical next
+step toward an extracted reference executable; no Lean-to-C-to-Wasm path is
+claimed here.
+
+\section{Evaluation}
+\label{sec:eval}
+
+All reported cells are generated from checked-in drivers on Apple M4 Pro,
+24~GB RAM, macOS arm64, and Node.js 26.3.1. Repeated reports use three isolated
+processes per cell. Drivers fail before reporting a cell if their semantic,
+convergence, snapshot, or scenario-specific GC gates fail.
+
+\subsection{Sequence kernels}
+
+Table~\ref{tab:kernels} reports medians for four real sequential traces.
+\emph{Recovery} loads the kernel's continuation snapshot into a fresh state
+and materializes the visible sequence. Snapshot bytes are not a lower bound:
+each kernel has its own current codec.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lrlrrr@{}}
+\toprule
+Trace & Ops & Kernel & Apply (ms) & Snapshot (B) & Recovery (ms) \\
+\midrule
+friendsforever & 35,200 & RGA & 32.0 & 145,183 & 17.4 \\
+ & & Embed & 20.5 & 59,064 & 13.4 \\
+ & & Sided & 34.6 & 63,113 & 17.9 \\
+clownschool & 43,500 & RGA & 19.1 & 138,358 & 16.8 \\
+ & & Embed & 16.3 & 62,412 & 12.1 \\
+ & & Sided & 25.8 & 62,912 & 16.0 \\
+seph-blog1 & 368,209 & RGA & 1,892.5 & 1,440,927 & 348.0 \\
+ & & Embed & 1,795.1 & 161,046 & 47.4 \\
+ & & Sided & 1,924.0 & 210,153 & 84.3 \\
+automerge-paper & 260,978 & RGA & 2,031.9 & 1,182,880 & 267.8 \\
+ & & Embed & 1,927.2 & 249,973 & 88.6 \\
+ & & Sided & 2,083.2 & 323,888 & 138.6 \\
+\bottomrule
+\end{tabular}
+\caption{Repeated sequence-kernel comparison.}
+\label{tab:kernels}
+\end{table}
+
+On \code{seph-blog1}, EmbedRGA uses 8.9 times fewer snapshot bytes than RGA;
+on \code{automerge-paper}, it uses 4.7 times fewer. SidedEmbedRGA uses
+1--30\% more snapshot space than EmbedRGA across these traces. On the two
+large traces, its apply time is 7--8\% higher. This is the central design
+tradeoff: EmbedRGA minimizes current continuation state, while sided ordering
+pays metadata and compute for a stronger interleaving policy.
+
+\subsection{Both collectors in Peritext}
+
+Table~\ref{tab:peritext-gc} reports the combined-GC mode. Durable state is the
+continuation state needed for future editing, including the current
+materialization and GC summaries, not only visible characters.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Workload & Kernel & Time (s) & Durable state & Commits before $\to$ after \\
+\midrule
+concurrent rich & Embed & 13.07 & 95,438 B & 4,108 $\to$ 1 \\
+& Sided & 14.53 & 212,685 B & 4,108 $\to$ 1 \\
+format trace & Embed & 36.18 & 72,182 B & 26,753 $\to$ 1 \\
+ & Sided & 36.63 & 203,219 B & 26,753 $\to$ 1 \\
+mark churn & Embed & 42.21 & 1,014 B & 4,543 $\to$ 1 \\
+ & Sided & 42.40 & 3,764 B & 4,543 $\to$ 1 \\
+empty document & Embed & 0.32 & 9 B & 1,203 $\to$ 1 \\
+ & Sided & 0.32 & 61 B & 1,203 $\to$ 1 \\
+\bottomrule
+\end{tabular}
+\caption{Repeated Peritext evaluation with both continuation-safe state and
+commit-history GC.}
+\label{tab:peritext-gc}
+\end{table}
+
+The RGA rows previously shown here used current-read-only dead-leaf pruning.
+The negative control in \code{runtime/test/rga.test.js} concerns the
+PeritextRGA wrapper: its shadow omits text deletions and thus admits retained
+anchors. Erasure rejects a continuation admitted by that wrapper. Plain RGA
+instead rejects insertion after an observed deleted anchor. These are
+different issuance contracts; the wrapper control is not an impossibility
+theorem for plain RGA reclamation. Those measurement rows remain omitted.
+The new Lean RGA packing certificate retains every identifier; it has not yet
+been implemented or measured in the JavaScript runtime.
+
+The empty-document row is a sanity check, not an asymptotic theorem. On this
+settled workload, both tombstone-free kernels remove all character identities
+and marks and history shrinks to one commit. The remaining 9--61 bytes are
+codec and continuation headers.
+
+An isolated ancestor-spine workload explains why EmbedRGA remains useful even
+after both collectors. It performs 21,200 text operations and deletes 6,000
+ancestor identities. In the historical negative-control run, RGA retains
+150,561 bytes and all 6,000 identities; EmbedRGA retains 46,072 bytes and no
+deleted identity; SidedEmbedRGA retains 80,965 bytes and no deleted identity.
+All histories shrink to one commit. Anonymous path geometry can therefore be
+substantially smaller than an identity-bearing ancestor spine; the RGA number
+is descriptive, not evidence for its unsafe state hook.
+
+\subsection{External plain-text systems}
+
+Table~\ref{tab:external} gives one representative common-interface trace.
+These systems expose different continuation formats. Save bytes therefore
+describe each current native continuation snapshot; they are not semantic
+apples-to-apples lower bounds. We compare rich text only among the three Sal
+Peritext variants because the harness does not coerce external rich-text
+semantics into Peritext's mark model.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+System (\code{seph-blog1}) & Total (ms) & Save (B) & Recovery (ms) \\
+\midrule
+Sal RGA & 454.89 & 1,440,927 & 356.78 \\
+Sal EmbedRGA & 367.41 & 161,046 & 52.67 \\
+Sal SidedEmbedRGA & 508.94 & 210,153 & 85.23 \\
+Yjs & 750.40 & 338,289 & 9.31 \\
+Automerge & 10,018.46 & 205,250 & 443.01 \\
+Loro & 303.07 & 336,808 & 0.23 \\
+list-positions & 485.01 & 572,686 & 3.65 \\
+\bottomrule
+\end{tabular}
+\caption{Repeated plain-text comparison on a common sequential trace. Native
+save formats retain different auxiliary information.}
+\label{tab:external}
+\end{table}
+
+The fast recovery values for Yjs and Loro reflect their native snapshot
+representations and optimized implementations. They do not establish the
+absence of ordering anomalies, and the current paper does not infer such a
+result from performance tests.
+
+\section{Evidence boundary and limitations}
+\label{sec:limits}
+
+The current artifact proves the semantic kernels, virtual-merge-base executions,
+issuance policies, sequential refinements, Peritext state GC, distributed
+commit GC, and their composition. It validates but does not verify the
+JavaScript transliteration. The retention arguments of
+Section~\ref{sec:retention} are pen-and-paper proofs over finite executions
+and are not part of the Lean ledger. Same-replica crash recovery and durable replica
+identity are not yet a formal protocol. The reviewed JavaScript anomaly corpus
+contains 15 directed cases, not all labels L1--L25. External rich-text
+semantics are deliberately not compared.
+
+The stable-cut theorem assumes Lamport-style monotone identifiers. A runtime
+must advance its local clock after fetch before minting. The compact LiveGap
+map is required for future Fugue decisions even when it is irrelevant to the
+current read. Removing a stable dead leaf without the required policy summary
+has a checked counterexample that changes a future read.
+
+\section{Reproduction}
+
+From the repository root, run \code{./scripts/check-mrdt-refactor.sh} for the
+Lean and runtime gates and \code{./scripts/check-working-papers.sh} for both
+papers and their declaration ledger. Regenerate the measurements with
+\code{node benchmarks/tools/run-kernel-comparison.mjs 3} and
+\code{node benchmarks/tools/run-peritext-paper.mjs --repeat 3}.
+
+\begin{thebibliography}{9}
+
+\bibitem{attiya2016list}
+Hagit Attiya, Sebastian Burckhardt, Alexey Gotsman, Adam Morrison, Hongseok
+Yang, and Marek Zawirski.
+\newblock Specification and complexity of collaborative text editing.
+\newblock In \emph{Proceedings of the 2016 ACM Symposium on Principles of
+Distributed Computing (PODC)}, 2016.
+
+\bibitem{roh2011rga}
+Hyun-Gul Roh, Myeongjae Jeon, Jin-Soo Kim, and Joonwon Lee.
+\newblock Replicated abstract data types: Building blocks for collaborative
+applications.
+\newblock \emph{Journal of Parallel and Distributed Computing},
+71(3):354--368, 2011.
+\newblock \url{https://doi.org/10.1016/j.jpdc.2010.12.006}.
+
+\end{thebibliography}
+
+\end{document}

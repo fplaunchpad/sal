@@ -2,13 +2,8 @@
 // runtime datatype, and THE PARAMETRICITY PAYOFF -- rich text carried by the
 // general DistributedReplica with no Peritext-specific runtime code.
 //
-// FIXTURE PROVENANCE. Every expected value below is EXTRACTED from the
-// validated reference model whiteboard/litmus/peritext_read_model.py (which
-// passes end to end), via the harness scratchpad/extract_fixtures.py, run as:
-//     cd whiteboard/litmus && \
-//       PYTHONPATH=whiteboard/litmus python3 .../extract_fixtures.py
-// The values are hand-transcribed from that JSON dump -- NOT read back from the
-// JS implementation under test (no self-oracle). Python anchor 0 = JS anchorId
+// FIXTURE PROVENANCE. Every expected value below is a reviewed literal, not
+// read back from the JS implementation under test (no self-oracle). Anchor 0 = JS anchorId
 // null (document start). Each PASS carries a FAIL companion pinning the
 // tempting degenerate reading (a leak, a constant read, an atomic delete).
 

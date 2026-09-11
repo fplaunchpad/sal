@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "suite": "peritext",
+  "workload": "mark-churn",
+  "system": "peritext-sided-embed-rga",
+  "mode": "both-delayed",
+  "preset": "freq",
+  "config": {
+    "initial": 200,
+    "rounds": 30,
+    "burst": 20,
+    "seed": 1729,
+    "pairDrop": true,
+    "scenario": "mark-churn",
+    "representation": "sided-embed-rga",
+    "matrixVersion": 3
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-20T10:56:49.430Z"
+  },
+  "gates": {
+    "converged": true,
+    "gcRenderPreserved": true,
+    "snapshotOk": true,
+    "stateCompactionFiredOrExpectedNoop": true,
+    "delayedPruneRefused": true,
+    "emptyMetadataFloor": true,
+    "multiEpochCompaction": true
+  },
+  "metrics": {
+    "operations": 1001,
+    "elapsedMs": 654.868541,
+    "syncMs": 39.59846100000001,
+    "syncBytes": 280884,
+    "historyGcMs": 0,
+    "stateGcMs": 12.554917,
+    "intermediateEpochs": 0,
+    "intermediatePruned": 0,
+    "commitsBeforeFinalGc": 1011,
+    "commitsAfter": 1,
+    "commitsWhileAwaitingAck": 1012,
+    "epochPruned": 1011,
+    "epochPruneReason": null,
+    "durableStateBytes": 1547,
+    "visibleChars": 200,
+    "shadowRecords": 200,
+    "identityRecords": 200,
+    "deletedIds": 0,
+    "markRecords": 0,
+    "coordinateSymbols": 200,
+    "renderDigest": "c8a92515fc50b9932d775588106f7f2335c06aa412ed22a55479c5a692b74d7e"
+  }
+}

@@ -21,7 +21,7 @@ import { DistributedReplica } from '../../runtime/src/replica.js';
 import { compactibleEmbedRGA } from '../../runtime/src/compact.js';
 
 export class Node extends DistributedReplica {
-  constructor(datatype = compactibleEmbedRGA, name = 'n0') {
-    super(datatype, name);
+  constructor(datatype = compactibleEmbedRGA, name = 'n0', opts = {}) {
+    super(datatype, name, opts);
   }
 }

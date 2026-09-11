@@ -1,0 +1,96 @@
+# Verified MRDT framework
+
+This directory contains the current paper artifact. The raw datatype signature
+has no invariant or applicability fields. A datatype implementation supplies a
+single origin `Issuance` relation, an independent `SequentialSpec`, convergence,
+a single `rc : ReplayPolicy`, sequential correctness, and representation through
+`VerifiedMRDT`. The derived linearization order `loOn` contains every visibility edge
+whose pair is conflicting according to `rc`, and adds a concurrent edge only
+when `rc` returns `Fst_then_snd`; `Either` adds none. Safety is an optional separate certificate. Convergence
+certificates store only the widened theorem; the ordinary theorem is derived.
+The raw-fold package is named `ReplayAdequateMRDT`. It supports internal replay
+proofs and datatypes with a checked negative classification; it is not the
+public sequential-correctness result. The framework supplies the ordinary and
+canonical virtual-merge-base operational semantics and distributed commit-history GC.
+Datatype-state GC is an optional representation certificate.
+
+`PackagedMRDT` is the release boundary: it pairs one raw signature with a
+`VerifiedMRDT` for that exact signature. `Metatheory/ProductionLedger.lean`
+is the typed registry of released datatypes. Replay-only results,
+counterexamples, and internal policy signatures live in
+`Metatheory/NegativeLedger.lean`; they cannot be registered by name alone.
+
+The proof-level `UpdateSig` is a merge-free projection of `MRDTSig`; it is not
+an executable datatype interface or transition system. Historical binary
+proofs request their merge operation separately through
+`HistoricalBinaryMerge`.
+`Instances/RcSPOT.lean` checks the key control: LWW admits a three-write
+timestamp chain, while an unconstrained policy contributes no `loOn` edges.
+`Instances/LWWRegister.lean` packages the full LWW result: timestamped `max`
+updates commute, and its timestamp-directed `loOn` has a sorted witness
+refining to a total overwrite register.
+
+## Minimal distributed-GC state
+
+The paper-facing commit collector stores only a head and a retained commit set
+at each replica:
+
+```text
+World = Replica → { head : Version, commits : Set Version }
+```
+
+The fixed roster and immutable commit metadata are protocol parameters. Each
+operation commit carries an optional author; roots and merge commits are
+unauthored. The collector derives per-author frontier evidence from retained
+commit records and reachability. It does not store `self`, a copied roster, an
+author set, or a per-author commit index in `Local`. The datatype-rich `core`
+in `GC.Runtime` is ghost specification state used by the refinement theorem,
+not a second physical copy of the runtime store.
+
+`Instances/TreeMove.lean` formalizes the TPDS replicated tree-move algorithm
+as a finite event-set MRDT with canonical timestamp replay. It proves merge
+convergence, cycle-safe rendering, issuer checks, and the framework's
+direct chronological mutable-tree refinement. The incremental undo/redo refinement and
+stable-prefix/trash collection are packaged as a concrete `StateGCProtocol`.
+The generic composition theorem combines that protocol directly with asynchronous
+distributed commit-history GC.
+
+`Instances/AegisSheet.lean` is an executable spreadsheet-intent model derived
+from the PaPoC 2026 merge and undo matrices. It packages stable identities,
+update-wins deletion conflicts, persistent cell conflicts, moves, selective
+undo, and anchored ranges as a convergent union-merge MRDT. The companion
+`AegisSheetSequential.lean` proves guarded refinement to an independent
+incremental spreadsheet machine. Strict Lamport chronology gives each finite
+event set one sequential enumeration, so the representation relation fixes the
+machine's complete token, position, cell, range, and purge state rather than
+echoing the event list. It also proves that, on every guarded minted history,
+the incremental and declarative observers agree on rows, columns, latest
+positions, cell values after purge masking, and range values; this equality is
+part of the public sequential relation. The companion
+`AegisSheetGC.lean` proves that naive local tombstone purging is not a silent
+state GC under later revival. It implements a replicated semantic cutoff
+marker whose compact timestamp-to-coordinate entries preserve causal context
+and observed-remove axis tokens after cell payload collection. Its
+`StateGCCertificate` proves query preservation, collection idempotence, and
+closure under guarded updates and compatible branch merges. Generic authored
+frontier evidence derives the marker's configured-roster acknowledgements.
+The old whole-prefix legality remains refuted: two independent origins can
+each pass issuance while neither ordering passes that guard.
+`concurrent_origins_not_guarded_chronological` checks the obstruction. The
+public `VerifiedMRDT` instead uses causal-origin legality, which validates each
+event against its encoded origin view rather than rechecking it against the
+merged serialization prefix.
+Equivalence with the Bismuth Scala
+implementation is refuted at commit `dd4c614`: the audit in
+`docs/aegissheet-scala-audit.md` records move-undo, range-undo, and crossed-range
+counterexamples.
+
+The neutral transition-system and replay definitions used by the metatheory live
+in `Framework/Base`; they are not the Shapiro op-based-to-state-based emulation
+development.
+
+Run the release gate with:
+
+```sh
+./scripts/check-mrdt-refactor.sh
+```

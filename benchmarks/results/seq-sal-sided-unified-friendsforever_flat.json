@@ -1,0 +1,63 @@
+{
+ "workload": "seq",
+ "system": "sal-sided-unified",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "friendsforever_flat",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-08-20T10:51:35.320Z"
+ },
+ "ops": {
+  "total": 26078,
+  "inserts": 23720
+ },
+ "finalChars": 21362,
+ "apply": {
+  "totalMs": 41.983417,
+  "count": 26078,
+  "warmupExcluded": 1000,
+  "meanUs": 1.5429955339341255,
+  "medianUs": 0.958,
+  "p95Us": 4.625,
+  "p99Us": 5.541,
+  "maxUs": 601.084
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "sided-policy-binary",
+   "bytes": 63113,
+   "timeMs": 31.311708,
+   "note": "lossless binary parent-link snapshot including the Fugue policy summary",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "sided-policy-binary",
+   "medianMs": 20.281125,
+   "runs": 5,
+   "allMs": [
+    17.427791,
+    19.512167,
+    20.281125,
+    24.865208,
+    24.979292
+   ]
+  }
+ ],
+ "compaction": null,
+ "memory": {
+  "baselineHeap": 11591128,
+  "peakHeapSampled": 32530056,
+  "retainedHeapAfterGc": 7475936,
+  "externalDelta": 208664,
+  "arrayBuffersDelta": 208624,
+  "rssEnd": 116523008,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

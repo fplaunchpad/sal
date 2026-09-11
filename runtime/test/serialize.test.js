@@ -1,6 +1,6 @@
 // Run-table serializer tests.
 //
-// EXPECTED ACCOUNTING VALUES ARE HAND-DERIVED via whiteboard/litmus/
+// EXPECTED ACCOUNTING VALUES ARE HAND-DERIVED from the run-table format.
 // run_table_measure.py, never #eval'd from serialize.js: the
 // directed totals below were printed by run_table_measure.account(t, False)
 // on the same three trees, so a serialize.js bug shows as a mismatch against

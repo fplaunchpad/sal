@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "suite": "peritext",
+  "workload": "concurrent-rich",
+  "system": "sal-peritext",
+  "mode": "text-state",
+  "preset": "freq",
+  "config": {
+    "initial": 200,
+    "rounds": 30,
+    "burst": 20,
+    "seed": 1729,
+    "pairDrop": false
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T06:44:41.443Z"
+  },
+  "gates": {
+    "converged": true,
+    "gcRenderPreserved": true,
+    "snapshotOk": true,
+    "stateCompactionFired": true,
+    "delayedPruneRefused": true
+  },
+  "metrics": {
+    "operations": 1400,
+    "elapsedMs": 1098.2527080000002,
+    "syncMs": 66.179498,
+    "syncBytes": 393436,
+    "historyGcMs": 0,
+    "stateGcMs": 4.774,
+    "commitsBeforeFinalGc": 1431,
+    "commitsAfter": 1432,
+    "commitsWhileAwaitingAck": null,
+    "epochPruned": 0,
+    "durableStateBytes": 28164,
+    "visibleChars": 311,
+    "shadowRecords": 472,
+    "deletedIds": 161,
+    "markRecords": 498,
+    "coordinateSymbols": 9074,
+    "renderDigest": "682dc18acbe938ee5a2c27f4911af0e6bd0e7bba097a7142bc66a166dfc1120a"
+  }
+}

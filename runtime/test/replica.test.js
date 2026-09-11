@@ -124,6 +124,25 @@ test('orset gets everything EXCEPT state compaction (parametric refusal)', () =>
 });
 
 // ------------------------------------------------------------- (d) commit GC
+test('distributed commit GC refuses when any roster member lacks frontier evidence', () => {
+  const a = new DistributedReplica(orset, 'A');
+  a.register('B');
+  a.commit({ type: 'add', tag: 'A#0', el: 'x' });
+  const before = a.dag.size;
+  const g = a.gc();
+  assert.equal(g.refused, true);
+  assert.deepEqual(g.missing, ['B']);
+  assert.equal(g.dropped, 0);
+  assert.equal(a.dag.size, before, 'refusal is a no-op');
+});
+
+test('distributed commit GC closes membership after the first destructive collection', () => {
+  const a = new DistributedReplica(orset, 'A');
+  a.commit({ type: 'add', tag: 'A#0', el: 'x' });
+  assert.ok(a.gc().dropped > 0);
+  assert.throws(() => a.register('late'), /open-membership/);
+});
+
 test('commit GC prunes below the pairwise-meet horizon, reads preserved (embed + orset)', () => {
   for (const dt of [compactibleEmbedRGA, orset]) {
     const a = new DistributedReplica(dt, 'A'), b = new DistributedReplica(dt, 'B');
@@ -138,6 +157,7 @@ test('commit GC prunes below the pairwise-meet horizon, reads preserved (embed +
     const readBefore = eq(a.read());
     const sizeBefore = a.dag.size;
     const g = a.gc();            // prune history strictly below the meet horizon
+    assert.equal(g.refused, false);
     assert.ok(g.dropped > 0, `${dt === orset ? 'orset' : 'embed'}: gc pruned commits below the horizon`);
     assert.ok(a.dag.size < sizeBefore, 'the store shrank');
     assert.equal(eq(a.read()), readBefore, 'reads preserved across commit GC');

@@ -24,6 +24,8 @@
 // (see the note at the bottom).
 
 import { embedRGA } from './embedRGA.js';
+import { rga } from './rga.js';
+import { liveGapSidedEmbedRGA } from './liveGapSidedEmbedRGA.js';
 import { PMap, PSet, isPMap, isPSet, eachEntry } from '../pmap.js';
 
 // Members of a PSet (hash order) or a legacy plain Set (insertion order):
@@ -35,18 +37,20 @@ const eachMember = (s, fn) => {
 
 // ---------------------------------------------------------------- resolver ctx
 // One pass over the shadow builds everything the resolver reads.
-function buildCtx(state) {
-  const entries = embedRGA.readEntries(state.text.shadow); // reading order
+function buildCtx(state, textRGA) {
+  const entries = textRGA.readEntries(state.text.shadow); // reading order
   const birth = entries.map(([id]) => id);                 // all ids, in order
   const cp = new Map(entries.map(([id, r]) => [id, r.el])); // id -> codepoint
   const deleted = state.text.deleted;
   const live = birth.filter((c) => !deleted.has(c));       // survivors, in order
   const pos = new Map(live.map((c, i) => [c, i]));          // live id -> live idx
   const bpos = new Map(birth.map((c, i) => [c, i]));        // birth id -> birth idx
-  return { birth, live, cp, deleted, pos, bpos, shadow: state.text.shadow };
+  const hasBirth = (id) => typeof textRGA.has === 'function'
+    ? textRGA.has(state.text.shadow, id) : state.text.shadow.has(id);
+  return { birth, live, cp, deleted, pos, bpos, shadow: state.text.shadow, hasBirth };
 }
 
-const isLive = (ctx, a) => ctx.shadow.has(a) && !ctx.deleted.has(a);
+const isLive = (ctx, a) => ctx.hasBirth(a) && !ctx.deleted.has(a);
 
 // Nearest live id strictly one `step` away from birth index `i` (or null).
 function scan(birth, deleted, i, step) {
@@ -107,8 +111,8 @@ function coveredIds(m, ctx) {
 // The full document-order render: per live char, its ACTIVE mark set. Per
 // (char, mtype) the covering mark with the highest mid wins (LWW); an active
 // mark is one whose winner is not a removeMark.
-function renderDoc(state) {
-  const ctx = buildCtx(state);
+function renderDoc(state, textRGA) {
+  const ctx = buildCtx(state, textRGA);
   const best = new Map();                      // live id -> Map(mtype -> {mid, removed, value})
   for (const c of ctx.live) best.set(c, new Map());
   for (const m of state.marks.values()) {
@@ -135,18 +139,27 @@ const frozenMark = (op) => Object.freeze({
   ts: op.ts ?? op.mid, removed: op.type === 'removeMark',
 });
 
-export const peritext = {
+/** Build the same Peritext semantics over any insertion-order kernel exposing
+ * the EmbedRGA contract. This makes the prefix-sharing representation a
+ * representation choice, rather than a second rich-text semantics. */
+export function makePeritext(textRGA = embedRGA) {
+return {
+  needsPrepare: !!textRGA.needsPrepare,
   /** state: { text: { shadow: PMap (via embedRGA), deleted: PSet }, marks:
    *  PMap } -- persistent containers: apply is O(log n), no live-set copy.
    *  Legacy Set/Map sub-states are accepted read-only and copied on write. */
   init() {
-    return { text: { shadow: embedRGA.init(), deleted: PSet.empty() }, marks: PMap.empty() };
+    return { text: { shadow: textRGA.init(), deleted: PSet.empty() }, marks: PMap.empty() };
+  },
+
+  prepare(state, op) {
+    if (op.type !== 'ins' || typeof textRGA.prepare !== 'function') return op;
+    return textRGA.prepare(state.text.shadow, op);
   },
 
   apply(state, op) {
     if (op.type === 'ins') {
-      const shadow = embedRGA.apply(state.text.shadow,
-        { type: 'ins', id: op.id, el: op.el, anchorId: op.anchorId });
+      const shadow = textRGA.apply(state.text.shadow, op);
       return { text: { shadow, deleted: state.text.deleted }, marks: state.marks };
     }
     if (op.type === 'del') {
@@ -175,12 +188,12 @@ export const peritext = {
       ? state.text.deleted : PSet.from(state.text.deleted)).begin();
     const marks = (isPMap(state.marks) ? state.marks : PMap.from(state.marks)).begin();
     for (const op of ops) {
-      if (op.type === 'ins') insOps.push({ type: 'ins', id: op.id, el: op.el, anchorId: op.anchorId });
+      if (op.type === 'ins') insOps.push(op);
       else if (op.type === 'del') deleted.add(op.id);
       else if (op.type === 'addMark' || op.type === 'removeMark') marks.set(op.mid, frozenMark(op));
       else throw new Error(`unknown peritext op type: ${op.type}`);
     }
-    const shadow = insOps.length ? embedRGA.applyBatch(state.text.shadow, insOps) : state.text.shadow;
+    const shadow = insOps.length ? textRGA.applyBatch(state.text.shadow, insOps) : state.text.shadow;
     return { text: { shadow, deleted: deleted.freeze() }, marks: marks.freeze() };
   },
 
@@ -191,7 +204,13 @@ export const peritext = {
   // unique, so a mark present under one mid is the same mark everywhere and
   // is never overwritten. Hash-order scans: content-canonical outputs.
   merge3(l, a, b) {
-    const shadow = embedRGA.merge3(l.text.shadow, a.text.shadow, b.text.shadow);
+    // Peritext's shadow records births; logical deletion lives exclusively in
+    // text.deleted.  Therefore a missing shadow record can mean physical GC,
+    // never a user deletion.  Merge births as an add-only union by using the
+    // empty shadow as the ternary base.  Passing l.text.shadow here would make
+    // the underlying removal-capable RGA interpret a collected record as a
+    // delete and could discard a concurrent mark endpoint.
+    const shadow = textRGA.merge3(textRGA.init(), a.text.shadow, b.text.shadow);
     const ad = a.text.deleted;
     const deleted = (isPSet(ad) ? ad : PSet.from(ad)).begin();
     eachMember(l.text.deleted, (x) => deleted.add(x));
@@ -202,22 +221,55 @@ export const peritext = {
     return { text: { shadow, deleted: deleted.freeze() }, marks: marks.freeze() };
   },
 
+  /** Runtime witness for the physical premises of the Lean
+   * `PhysicalMergeEvidence` certificate.  Inputs have already been translated
+   * to one epoch by DistributedReplica.  This check is intentionally about
+   * continuation state, not rendered output: every mark endpoint must still
+   * have a birth record, and every retained record must carry the unioned
+   * delete bit. */
+  auditMergeCoverage(l, a, b, merged) {
+    const ctx = buildCtx(merged, textRGA);
+    const expectedDeleted = new Set();
+    for (const s of [l, a, b]) eachMember(s.text.deleted, (id) => expectedDeleted.add(id));
+    const missingMarkEndpoints = [];
+    eachEntry(merged.marks, (mid, m) => {
+      for (const id of [m.startId, m.endId]) {
+        if (Number.isInteger(id) && !ctx.hasBirth(id)) missingMarkEndpoints.push([mid, id]);
+      }
+    });
+    const deleteMismatches = [];
+    for (const id of ctx.birth) {
+      if (merged.text.deleted.has(id) !== expectedDeleted.has(id)) deleteMismatches.push(id);
+    }
+    return Object.freeze({
+      ok: missingMarkEndpoints.length === 0 && deleteMismatches.length === 0,
+      missingMarkEndpoints: Object.freeze(missingMarkEndpoints),
+      deleteMismatches: Object.freeze(deleteMismatches),
+    });
+  },
+
   // The DOCUMENT-ORDER rich-text read: [{ id, char, marks:[{mtype,value}] }].
-  read(state) { return renderDoc(state); },
+  read(state) { return renderDoc(state, textRGA); },
 
   // Flag projection [(char, isMtype)], the rendered flag view. A pure
   // projection of read(), not a re-derivation.
   flags(state, mtype) {
-    return renderDoc(state).map((e) => [e.char, e.marks.some((m) => m.mtype === mtype)]);
+    return renderDoc(state, textRGA).map((e) => [e.char, e.marks.some((m) => m.mtype === mtype)]);
   },
 
   // The covered live ids of one mark (debug / test helper).
-  coveredIds(state, mark) { return coveredIds(mark, buildCtx(state)); },
+  coveredIds(state, mark) { return coveredIds(mark, buildCtx(state, textRGA)); },
 
   // Serialization (snapshot bytes / any inline-state wire commit). Lossless
   // round-trip; no compaction commits are emitted so decodeState is only a
   // snapshot path, but providing both keeps the datatype whole.
   encodeState(state) {
+    if (typeof state.text.shadow.entries !== 'function') {
+      return {
+        text: { kernel: textRGA.encodeState(state.text.shadow), deleted: [...state.text.deleted] },
+        marks: [...state.marks.entries()].map(([, m]) => m),
+      };
+    }
     return {
       text: {
         shadow: [...state.text.shadow.entries()].map(([id, r]) => [id, r.coord, r.el]),
@@ -227,6 +279,12 @@ export const peritext = {
     };
   },
   decodeState(enc) {
+    if ('kernel' in enc.text) {
+      return {
+        text: { shadow: textRGA.decodeState(enc.text.kernel), deleted: PSet.from(enc.text.deleted) },
+        marks: PMap.from(enc.marks.map((m) => [m.mid, Object.freeze(m)])),
+      };
+    }
     return {
       text: {
         shadow: PMap.from(enc.text.shadow.map(([id, coord, el]) => [id, Object.freeze({ coord, el })])),
@@ -238,9 +296,12 @@ export const peritext = {
 
   // Canonical serialization (twin-comparison / content-address helper).
   fingerprint(state) {
+    const shadow = typeof state.text.shadow.entries === 'function'
+      ? [...state.text.shadow.entries()].sort(([x], [y]) => (x < y ? -1 : 1))
+        .map(([id, r]) => [id, r.coord, r.el])
+      : textRGA.fingerprint(state.text.shadow);
     return JSON.stringify({
-      shadow: [...state.text.shadow.entries()].sort(([x], [y]) => (x < y ? -1 : 1))
-        .map(([id, r]) => [id, r.coord, r.el]),
+      shadow,
       deleted: [...state.text.deleted].sort((x, y) => x - y),
       marks: [...state.marks.entries()].sort(([x], [y]) => x - y)
         .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId, m.startSide, m.endSide, m.ts, m.removed]),
@@ -255,3 +316,20 @@ export const peritext = {
   // retention-roots design. Blind pruning WOULD flip reads; that negative
   // control is kept executable as opts.noRetention in compact-peritext.js.
 };
+}
+
+/** Peritext over the one-sided tombstone-free EmbedRGA kernel. */
+export const peritextEmbedRGA = makePeritext(embedRGA);
+
+/** Peritext over the plain tombstone RGA baseline. */
+export const peritextRGA = makePeritext(rga);
+
+/** Peritext over the unified sided/Fugue EmbedRGA kernel. */
+export const peritextSidedEmbedRGA = makePeritext(liveGapSidedEmbedRGA);
+
+/** Production default. */
+export const peritext = peritextSidedEmbedRGA;
+
+export const PeritextRGA = peritextRGA;
+export const PeritextEmbedRGA = peritextEmbedRGA;
+export const PeritextSidedEmbedRGA = peritextSidedEmbedRGA;

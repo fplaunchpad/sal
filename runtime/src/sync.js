@@ -36,10 +36,13 @@ import { lca, CrissCrossError } from './lca.js';
 import { frontierOf, stableCut } from './frontier.js';
 import { encode as encodeSnapshot } from './serialize.js';
 import { commitContentId, contentId } from './hash.js';
+import { encodeWire, decodeWire, binaryWireBytes } from './wire.js';
 
 const utf8 = new TextEncoder();
-/** Byte size of a JSON-serializable wire message (browser-safe; no Buffer). */
-export const wireBytes = (msg) => utf8.encode(JSON.stringify(msg)).length;
+/** Reference/debug JSON size and the production binary wire size. */
+export const jsonWireBytes = (msg) => utf8.encode(JSON.stringify(msg)).length;
+export const wireBytes = binaryWireBytes;
+export { encodeWire, decodeWire } from './wire.js';
 
 export class Peer {
   #headId;
@@ -118,9 +121,11 @@ export class Peer {
    *  recomputed global id must match the wire id (content-address gate). */
   ingest(wireCommits) {
     let added = 0;
+    let priorGid = null;
     for (const wc of wireCommits) {
-      if (this.byGid.has(wc.gid)) continue; // dedup: already held
-      const localParents = wc.parents.map((g) => this.byGid.get(g));
+      if (wc.gid !== null && this.byGid.has(wc.gid)) { priorGid = wc.gid; continue; }
+      const parentGids = wc.parents.map((g) => g === null ? priorGid : g);
+      const localParents = parentGids.map((g) => this.byGid.get(g));
       if (localParents.some((p) => p === undefined)) {
         throw new Error(`ingest: unknown parent for ${wc.gid} (delta not ancestor-closed)`);
       }
@@ -138,7 +143,8 @@ export class Peer {
       }
       const c = this.dag.add({ parents: localParents, op, state });
       const g = this.#index(c);
-      if (g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+      if (wc.gid !== null && g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+      priorGid = g;
       added++;
     }
     if (added > 0) this.#refresh();
@@ -190,8 +196,12 @@ export function syncPeers(a, b) {
   const toA = b.delta(hasA); // commits A lacks, from B
   const aHead = a.headGid, bHead = b.headGid;
   const baseline = a.snapshotBytes() + b.snapshotBytes();
-  b.ingest(toB);
-  a.ingest(toA);
+  // Exercise the actual transport boundary. Ingest still recomputes every
+  // state and content id; binary decoding does not enlarge the trust boundary.
+  const msgB = encodeWire({ t: 'delta', c: toB });
+  const msgA = encodeWire({ t: 'delta', c: toA });
+  b.ingest(decodeWire(msgB).c);
+  a.ingest(decodeWire(msgA).c);
   let merged = true;
   try {
     b.mergeWithGid(aHead);
@@ -199,7 +209,7 @@ export function syncPeers(a, b) {
   } catch (e) {
     if (e instanceof CrissCrossError) merged = false; else throw e;
   }
-  const bytes = wireBytes({ t: 'delta', c: toB }) + wireBytes({ t: 'delta', c: toA });
+  const bytes = msgB.length + msgA.length;
   return { bytes, baseline, toBCount: toB.length, toACount: toA.length, merged };
 }
 
@@ -209,15 +219,30 @@ export function syncPeers(a, b) {
  *  separate stores, so wireBytes(...) measures the real per-sync payload the
  *  protocol would transmit. Uses the shared local ids as global ids (unique
  *  within one store). */
-export function sharedDelta(dag, fromHeadId, toHeadId) {
+export function sharedContentGids(dag, datatype, { hash = contentId } = {}) {
+  const gids = new Map();
+  const ids = dag.ids().sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+  for (const id of ids) {
+    const c = dag.get(id);
+    const parents = c.parents.map((p) => gids.get(p));
+    if (parents.some((p) => p === undefined)) throw new Error('sharedContentGids: pruned parent');
+    gids.set(id, commitContentId(c, parents, { fingerprint: datatype.fingerprint, hash }));
+  }
+  return gids;
+}
+
+export function sharedDelta(dag, fromHeadId, toHeadId, gids = null) {
   const have = dag.ancestorSet(toHeadId);
   const out = [];
-  for (const cid of dag.ancestorSet(fromHeadId)) {
+  const ancestry = [...dag.ancestorSet(fromHeadId)]
+    .sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+  for (const cid of ancestry) {
     if (have.has(cid)) continue;
     const c = dag.get(cid);
     if (c.parents.length === 0) continue; // root shared
     out.push({
-      gid: cid, parents: c.parents,
+      gid: gids?.get(cid) ?? cid,
+      parents: c.parents.map((p) => gids?.get(p) ?? p),
       op: c.op ? { replica: c.op.replica, seq: c.op.seq } : null,
       payload: c.op ? c.op.payload : null,
     });

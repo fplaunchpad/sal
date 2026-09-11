@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "sequential-trace",
+  "system": "loro",
+  "trace": "automerge-paper",
+  "config": {
+    "trace": "automerge-paper"
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryBytes": 25769803776,
+    "exposeGc": true,
+    "date": "2026-08-21T13:52:42.384Z"
+  },
+  "gates": {
+    "textOk": true,
+    "compactionTextOk": true
+  },
+  "metrics": {
+    "operations": 259778,
+    "finalChars": 104852,
+    "applyTotalMs": 200.373083,
+    "applyMedianUs": 0.459,
+    "applyP95Us": 1.417,
+    "primarySaveBytes": 251015,
+    "retainedHeapBytes": 299480,
+    "positionIndexMs": null,
+    "datatypeApplyMs": null
+  },
+  "detail": {
+    "workload": "seq",
+    "system": "loro",
+    "systemVersion": "1.13.7",
+    "trace": "automerge-paper",
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "cpu": "Apple M4 Pro",
+      "logicalCpus": 12,
+      "memoryBytes": 25769803776,
+      "exposeGc": true,
+      "date": "2026-08-21T13:52:42.384Z"
+    },
+    "ops": {
+      "total": 259778,
+      "inserts": 182315
+    },
+    "finalChars": 104852,
+    "apply": {
+      "totalMs": 200.373083,
+      "count": 259778,
+      "warmupExcluded": 1000,
+      "meanUs": 0.7291739676479454,
+      "medianUs": 0.459,
+      "p95Us": 1.417,
+      "p99Us": 2.084,
+      "maxUs": 207.959
+    },
+    "gates": {
+      "textOk": true
+    },
+    "saves": [
+      {
+        "label": "snapshot",
+        "bytes": 251015,
+        "timeMs": 12.263291,
+        "note": "state + full history",
+        "estimated": false
+      },
+      {
+        "label": "shallow-snapshot",
+        "bytes": 65066,
+        "timeMs": 3.140209,
+        "note": "state with history dropped at current frontiers",
+        "estimated": false
+      }
+    ],
+    "loads": [
+      {
+        "label": "snapshot",
+        "medianMs": 0.339708,
+        "runs": 5,
+        "allMs": [
+          0.3205,
+          0.328459,
+          0.339708,
+          0.354333,
+          1.720667
+        ]
+      }
+    ],
+    "compaction": null,
+    "adapterCost": null,
+    "memory": {
+      "baselineHeap": 76609728,
+      "peakHeapSampled": 87858408,
+      "retainedHeapAfterGc": 299480,
+      "externalDelta": 2099257,
+      "arrayBuffersDelta": 2078480,
+      "rssEnd": 282050560,
+      "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+    }
+  }
+}

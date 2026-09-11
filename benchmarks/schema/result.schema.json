@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fplaunchpad/sal/benchmarks/result.schema.json",
+  "title": "Sal benchmark result",
+  "type": "object",
+  "required": ["schemaVersion", "suite", "workload", "system", "config", "environment", "gates", "metrics"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "suite": { "type": "string", "minLength": 1 },
+    "workload": { "type": "string", "minLength": 1 },
+    "system": { "type": "string", "minLength": 1 },
+    "mode": { "type": "string" },
+    "preset": { "type": "string" },
+    "config": { "type": "object" },
+    "environment": { "type": "object" },
+    "gates": { "type": "object", "additionalProperties": { "type": "boolean" } },
+    "metrics": { "type": "object" }
+  },
+  "additionalProperties": true
+}

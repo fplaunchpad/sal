@@ -71,9 +71,8 @@ a.gc();                                 // keep-set commit GC over its own DAG
 - `src/frontier.js` -- THE ONE FRONTIER. `frontierOf(dag, head)`
   gives, per replica, its latest absorbed commit (its *evidence commit*);
   `stableCut(dag, head, registered, self)` intersects those event sets into
-  the largest cut this head can CERTIFY. This is exactly `AllHeardSince` /
-  `settledAt_of_allHeard` of
-  `Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean` (see below).
+  the largest cut this head can certify. Its direct no-GC refinement is proved
+  in `Sal/MRDTs/GC/Refinement.lean`.
 - `src/sync.js` -- the delta/op WIRE protocol: content-
   addressed `Peer`s over SEPARATE stores exchange head frontiers and ship the
   ancestor-set difference as a delta, converging by merge (see below).
@@ -106,12 +105,19 @@ A datatype is `{ init, apply(state, op), merge3(l, a, b), read(state) }`,
 all pure (`apply`/`merge3` return fresh states: commits keep old states;
 "fresh" is O(log n) structural sharing over `src/pmap.js`,
 and `merge3` on persistent states is a delta merge from one parent).
+
+`evidence-manifest.json` is the release inventory. Each production datatype
+names the exact Lean `VerifiedMRDT` package associated with its semantics and
+records that the JavaScript correspondence is differential-tested rather than
+extracted. Benchmark baselines and representation experiments are listed
+separately and are not silently presented as released verified datatypes.
 The bundled datatypes also expose an optional `fingerprint(state)` used by
 the twin tests, and `embedRGA` adds `readIds`/`readEntries`/`symbolCount`,
 `orset` adds `observe` (helpers for honest op construction and cost probes).
-THREE datatypes ship: `embedRGA` (a sequence), `orset` (a set), and
-`peritext` (rich text = the verified document-order mark model over
-`embedRGA`, see its own section below).
+The released runtime entries are `rga`, `embed-rga`, `sided-embed-rga`, and
+`peritext`, as listed in `evidence-manifest.json`. The tombstone `orset` module
+is retained only as a historical test/comparison fixture. The efficient Lean
+OR-set has no released JavaScript port.
 
 ## Peritext: verified document-order rich text over embedRGA
 
@@ -145,23 +151,20 @@ datatype is the only new piece (the parametricity payoff, proven directly in
   to the nearest survivor on its gravity side, GROWTH IS END-SIDE ONLY (an
   `endSide=after` end grows right over the newer-than-mark run; a `before` start
   is stable).
-- MATCHES THE VERIFIED MODEL exactly:
-  `whiteboard/litmus/peritext_read_model.py` (the executable
-  `DocumentOrderResolver`) and
-  `Sal/ConditionedMRDTs/MRDT_Instances/Peritext_Embed/PeritextEmbed_MarkIntent.lean`
+- MATCHES THE VERIFIED MODEL in
+  `Sal/MRDTs/Instances/PeritextRender.lean`
   (`doc_no_backward_leak`, `doc_delete_can_respan`, the Ex1–8 renderings).
   `test/peritext.test.js` pins the Ex1–8 paper examples, the directed
   no-backward-leak (delete a bold start anchor; the boundary rehomes forward,
   earlier text stays plain, never a backward tree-ancestry leak),
   the gravity contrast (bold grows at its end, a link does not), the honest
   atomicity re-span (`doc_delete_can_respan`), and mark-permutation convergence,
-  each PASS with a `≠` FAIL companion. Expected values are EXTRACTED by
-  running the Python reference (invocation cited in the test header), never read
-  back from the JS implementation.
+  each PASS with a `≠` FAIL companion. Expected values are reviewed fixtures,
+  never read back from the JS implementation.
 - STATE COMPACTION FIRES for `compactiblePeritext`: the marks-layer GC of
-  `src/compact-peritext.js` (design and machine verdicts in
-  `whiteboard/marks-gc-note.md`, reference
-  semantics `whiteboard/litmus/marks_gc_check.py`). The keep-set is live ids ∪
+  `src/compact-peritext.js`, whose obligations are mechanized in
+  `Sal/MRDTs/Instances/PeritextRenderGC.lean` and
+  `Sal/MRDTs/Instances/PeritextMarkPairGC.lean`. The keep-set is live ids ∪
   mark boundary anchor ids ∪ declared in-flight anchors: retained dead anchors
   survive as re-coded dead records (still listed in `deleted`), so rehoming
   never loses a birth position; every other settled-dead record drops exactly
@@ -198,7 +201,7 @@ ship:
 
 - `eliasDeltaCode` (the DEFAULT, used by the exported `embedRGA`): the
   flipped Elias-delta code transliterated from the verified Lean instance
-  `eliasDeltaCode` in `Sal/MRDTs/RGA_Embed/Embed_Code_EliasDelta.lean`
+  by `Sal/MRDTs/Instances/RGAKernel/BinaryCode.lean`
   (`dEnc d = binEnc (size d) ++ (d minus its leading bit)`, header `binEnc`
   from `Embed_Code_Binary.lean`); codeword cost `log2 d + O(log log d)`.
   The kernel-checked example values from that file are pinned in
@@ -233,8 +236,7 @@ flip an order; the negative-control test demonstrates the flip via the
 returned `translate` is the lazy stable-prefix map
 `rho-hat(c) = rho(stab c) ++ rest c`.
 
-SPINE FUSION (opt-in via `opts.fuseSpines`, design note
-`whiteboard/embed-recoding-note.md`). A fusible spine is a
+SPINE FUSION (opt-in via `opts.fuseSpines`). A fusible spine is a
 maximal chain of dead below-cut nodes, each with exactly one child branch
 counting every known coordinate INCLUDING declared in-flight prefixes,
 and no in-flight op anchored at any spine node; it collapses to ONE level
@@ -253,7 +255,7 @@ per-step reads vs an uncompacted control; a run reports ~129 spines
 fused, ~182 levels removed, 0 guard skips under settled cuts).
 
 Measured on the josephg editing traces
-(`whiteboard/litmus/embed_compact_measure.py`, which mirrors the fusion
+(`benchmarks/models/embed_compact_measure.py`, which mirrors the fusion
 map and re-checks history-independence three ways plus display order on
 the fused coordinates), bits per live char, before / renumber-only /
 renumber+fusion: automerge-paper 2304 / 2076 / 1279 (1.8x), seph-blog1
@@ -274,8 +276,7 @@ lower-epoch side and the LCA payload into the newer epoch record by
 record, so replicas that never compact keep merging and their records are
 translated on ingest. SETTLED-CUT CONTRACT: sound only when the cut is
 settled at the compacting replica (all concurrency delivered:
-heard-from-everyone-since-the-cut, `whiteboard/stability-vc-note.md`
-section 2); the caller asserts it, and evidence certificates are a
+heard-from-everyone-since-the-cut); the caller asserts it, and evidence certificates are a
 follow-on. This shared-store `Runtime` still linearizes epochs; the
 first-class `DistributedReplica` (below) instead merges divergent epochs
 via the certificate-determined join (THE EPOCH DIAMOND).
@@ -284,7 +285,7 @@ via the certificate-determined join (THE EPOCH DIAMOND).
 
 `src/serialize.js` is the SHIPPED lossless serializer. `encode(state) -> Uint8Array`,
 `decode(bytes) -> state`. It builds the canonical RUN TABLE of the state
-(the run-table projection of `whiteboard/run-table-note.md`): decode every
+(the run-table projection measured by `benchmarks/models/run_table_measure.py`): decode every
 live record's coordinate into a shared kept tree, cut it
 into maximal FUSIBLE chains (a node's unique kept child at delta 1 and equal
 liveness, side vacuously R), and address each record as `(run-id, offset)`.
@@ -340,9 +341,14 @@ delta would be larger, e.g. a brand-new or very-far-behind peer).
   linear fold), pins per-round read equality, and measures the payload: the
   per-round delta is a function of that round's ops, CONSTANT across rounds,
   while a whole-state resync grows with the document, so in steady state the
-  delta is well under half the whole-state baseline. (The delta is JSON
-  op-encoding; a binary framing would shrink it further, the same
-  representation gap the save-size story documents.)
+  delta is well under half the whole-state baseline. `src/wire.js` supplies the
+  deterministic binary framing: repeated strings are interned, safe integers
+  use varints, content ids use raw bytes, and local commit references use
+  numeric varints. Linear authored runs omit intermediate ids and parent links;
+  their explicit endpoint hash recursively authenticates the reconstructed
+  chain. The decoder is exercised before ingest; ingest still
+  recomputes state and the content id, so the codec does not enlarge the trust
+  boundary. JSON sizing remains available only as a diagnostic control.
 - HEAD-SYNC PRESERVED. A peer only ever merges its current head with the
   current head another peer just advertised, never a stale interior commit --
   the hypothesis `gc_safety` consumes. Merges go through the same `lca()`
@@ -357,7 +363,8 @@ Yjs/Automerge's update-bytes column).
 
 `replica.compactStable(opts)` uses a CHECKED certificate built from the frontier
 (`src/frontier.js`) in place of `replica.compact`'s ASSERTED settledness. The
-exact correspondence to `Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean`:
+correspondence to `Sal/MRDTs/GC/Protocol.lean` and
+`Sal/MRDTs/GC/Refinement.lean`:
 
 | runtime                                   | formal target                       |
 | ----------------------------------------- | ----------------------------------- |
@@ -369,9 +376,9 @@ exact correspondence to `Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean`
 The certificate is CHECKED: if any registered replica has not been heard from
 since the cut (its evidence commit is absent from this head's ancestry),
 compaction is REFUSED (a no-op returning `{ compacted: false, missing }`). That
-is the runtime witness of `settledAt_of_allHeard`'s not-heard breaker (the
-`createReplica` case, EvidenceDischarge section 3): absence of evidence is
-refusal, never assumption. `test/sync.test.js` pins this directed at
+is the runtime witness of `settledAt_of_allHeard`'s not-heard breaker: absence
+of evidence from a registered replica is refusal, never assumption.
+`test/sync.test.js` pins this directed at
 runtime level with the discriminating-remove countermodel
 (`stability-vc-note.md` section 2): a concurrent op held by a lagging replica
 makes `compactStable` refuse, then fire once that replica is heard from, reads
@@ -418,6 +425,35 @@ set to this head plus the frontier's per-replica evidence commits), all under
 SHA content addressing (`commitContentId`). `syncReplicas(a, b)` runs one
 bidirectional round.
 
+`DistributedReplica.gc()` is evidence-gated: if any other registered member
+has no frontier entry, it returns `{refused:true, missing:[...]}` and changes
+nothing. Absence of evidence is never treated as a smaller head set. On
+success, GC deletes payloads outside the keep set and removes every parent
+reference crossing its boundary; retained seeds become parent-free bases, so
+the old root and dangling historical skeleton are not retained. The Lean
+counterpart is `Metatheory/GC_CompressedDAG.lean` plus
+`Metatheory/Distributed_GC.lean`.
+
+Epoch-base history pruning also accepts a fetch-aligned acknowledgement from a
+quiescent peer. `syncReplicas(a, b)` records each peer's advertised current
+head and epoch after a successful bidirectional fetch/head-sync round. The
+receiver accepts the receipt only if its local content-addressed DAG contains
+that exact head and recomputes the same epoch key. The receipt does not create
+a datatype operation or enter the causal frontier. Before every registered
+peer acknowledges the cut, `pruneToEpochBase()` continues to refuse. The Lean
+counterpart is `Metatheory/Distributed_GC_Acknowledgements.lean`; it proves
+that arbitrary finite fetch/ack/GC executions refine the no-GC semantics after
+receipt steps are erased, and that complete receipts provide
+datatype-independent pruning evidence. Receipts are soft state and are not
+persisted; after restart, a replica safely waits for another fetch round.
+
+Run `npm run bench:empty-gc` to measure the empty-document steady state. The
+2026-08-15 reference run grew histories to 22, 202, and 2,002 commits. After
+state GC, a quiet-peer fetch acknowledgement, and history pruning, every case
+retained one epoch-base commit, 9 datatype bytes, zero coordinate symbols, and
+zero visible characters. Treat timings as machine-specific measurements; the
+constant retained counts are also asserted by the harness.
+
 DATATYPE-PARAMETRIC. Everything except state compaction is datatype-agnostic
 (`init`/`apply`/`merge3`/`read`). A datatype that also provides `{compact,
 remapState, encodeState, decodeState}` additionally gets `compactStable` (the
@@ -438,8 +474,7 @@ identity in `DistributedReplica` is the SETTLED CUT plus its certificate, held i
 a CUT-INDEXED DAG (`src/epoch.js`) whose nodes are cuts and whose edges are
 compaction refinements and JOINS (`W = U ∪ V`), NOT a per-replica integer. A
 cross-epoch merge does not THROW: it is the certificate-determined join,
-validated (`whiteboard/epoch-protocol-note.md`) and mechanized
-(`Sal/.../EmbedRGA_EpochDiamond.lean`, `diamond_confluence` at s1). Two heads at
+validated by the runtime tests and mechanized in the MRDT state-GC modules. Two heads at
 INCOMPARABLE cuts merge by lifting both DOWN to their common base frame through
 the per-epoch INVERSE maps (`buildInverseTranslate`) and `merge3`-ing there; the
 merged read equals the never-compacted twin, with no coordination (both replicas
@@ -483,7 +518,7 @@ aggressively on one, reads and states asserted identical throughout.
 
 Criss-cross merges genuinely arise under honest head-sync (two disjoint
 replica pairs merge the same diverged heads `x`,`y` into rival merge
-commits; any later sync across them finds MCAs `{x, y}`). Virtual LCAs
+commits; any later sync across them finds MCAs `{x, y}`). Virtual merge bases
 (recursive merging of the MCAs, git style) are not in the in-process
 verified model, so `lca()` throws `CrissCrossError`: an explicit gate,
 never a silent pick. Consequence: a criss-crossed replica pair using `lca()`
@@ -498,16 +533,20 @@ RESOLVES criss-crosses rather than gating them: its merge base is the
 resolved sub-bases), which feeds the epoch join exactly as a single LCA
 would (`#baseFor` also returns the base's epoch key). A criss-cross whose
 antichain also SPANS epochs (incomparable cuts AND a criss-cross) is the
-doubly-hard case the virtual-LCA and epoch-diamond constructions do not
+doubly-hard case the virtual-merge-base and epoch-diamond constructions do not
 claim; it throws `CrissCrossError` so consumers defer it. Pinned in
 `test/virtual-lca.test.js`. The in-process `runtime.js`/`sync.js` use
 `lca()` (the gate above).
 
-ROSTER HYGIENE + FORGET. `DistributedReplica` tracks `authors` (replicas that
-have authored a commit here) alongside `registered`; `unregister(name)` drops
-a name IFF it never authored (a lurker), keeping writers conservatively, and
-`forget(name)` drops it unconditionally (the operator-directed lever to
-release the GC horizon a departed author pins). Pinned in `test/forget.test.js`.
+ROSTER HYGIENE + FORGET. The paper semantics uses a fixed roster and gives each
+replica only `{head, commits}`. `DistributedReplica` additionally implements
+dynamic membership. Its `everAuthored` summary survives commit deletion so
+`unregister(name)` can drop a name IFF it never authored (a lurker), while
+keeping writers conservatively. `forget(name)` drops the summary and roster
+entry unconditionally; this operator-directed action releases the GC horizon
+that a departed author pins. Frontier evidence does not read this summary. It
+is derived from immutable `commit.op.replica` metadata. Pinned in
+`test/forget.test.js`.
 
 EPOCH-BASE HISTORY PRUNING (`pruneToEpochBase`). After a SETTLED compaction,
 history below it is dropped and the compaction becomes a parent-free EPOCH
@@ -529,7 +568,9 @@ under-evidenced refusal, records round-trip) and the hub pruning test in
 The keep-set is computed against the CURRENT registered replica set. A
 replica registered after a GC, or an unregistered peer, may need pruned
 history; membership must be closed at GC time. Operationally the runtime
-refuses `rt.replica(...)` once the root commit has been pruned.
+refuses `rt.replica(...)` once the root commit has been pruned. The separate
+store additionally refuses `DistributedReplica.gc()` until every existing
+roster member has frontier evidence.
 
 ## Running the tests
 
@@ -578,7 +619,9 @@ retention roots + A3 guarded pair-drop, hand-derived directed cases D6/D1/D3/D7
 each PASS with its FAIL companion -- the no-retention read flip, the alpha
 undeclared-straggler flip, the beta growth-window flip, the unguarded-renumber
 order flip -- plus refuse-then-fire under the certificate, the settled-delete
-gate, and a 150-trial multi-epoch twin PBT with declared stragglers against a
+gate, an empty-document audit proving that durable datatype metadata returns
+to the fresh-empty representation while quiescent-peer epoch history safely
+remains gated, and a 150-trial multi-epoch twin PBT with declared stragglers against a
 never-compacted control, cost bound retained ≤ 2 per mark record asserted),
 `test/pmap.test.js` (the persistent HAMT: randomized Map
 equivalence over mixed set/delete batches for number and string keys,
@@ -613,11 +656,11 @@ skin, not runtime machinery:
 
 ## Datatype ports are UNVERIFIED transliterations
 
-`embedRGA` ports the embedded-chain RGA from the Python model
-`whiteboard/litmus/embed_tree.py` (`EmbedTree`/`EmbedTreeCode`); `orset`
-is a standard observed-remove set. Neither JS file is verified; they are
-pinned to the verified semantics by fixtures extracted by RUNNING the
-Python model (invocations recorded in `test/embed.test.js`): L1
+`embedRGA` implements the embedded-chain RGA proved in
+`Sal/MRDTs/Instances/ProductionRGA.lean`; `orset`
+is a retired observed-remove comparison fixture, not a released datatype.
+Neither JS file is verified; the sequence port is
+pinned to the verified semantics by reviewed fixtures: L1
 delete-reorder and the two sibling-splice fooling-pair worlds, which pin
 exactly the dead-ancestor coordinate-prefix behavior. A 300-scenario
 randomized differential run against the Python model was also performed
@@ -650,3 +693,25 @@ fixtures):
 4. The merge live-set is written `(A ∩ B) ∪ (A ∖ L) ∪ (B ∖ L)` (the task's
    form) vs the model's `(L ∩ A ∩ B) ∪ (A ∖ L) ∪ (B ∖ L)`; these are equal
    since `(A ∩ B) ∖ L ⊆ A ∖ L`.
+
+## Experimental prefix-sharing representation
+
+`src/datatypes/sharedEmbedRGA.js` factors repeated coordinate prefixes into
+immutable shared nodes and keeps stable birth provenance separate from
+epoch-local order paths. `src/shared-compact.js` performs settled-cut rank
+renumbering and dead-spine fusion directly over that graph; the original
+absolute-coordinate compactor remains its differential oracle. Nonempty
+in-flight paths and frozen anchors are handled directly and conservatively:
+affected sibling groups are not renumbered and guarded spines are not fused.
+`compactibleSharedPeritext` runs the same graph beneath Peritext's retention
+roots and A3 mark-pair collection. This representation is a promotion canary,
+not yet the default datatype.
+
+Run `npm run bench:shared-gc` for the full concurrent, offline-evidence, and
+three-epoch convergence/snapshot canary. The tests in
+`test/shared-embed-rga.test.js` include future editing after recovery,
+independently decoded merge, certified GC, returning pre-compaction peers, and
+a 40-trial cross-epoch twin comparison with a never-compacted control.
+`test/peritext-gc.test.js` additionally checks dead mark-boundary retention,
+frozen in-flight insertion order, certified empty-document collection, and
+shared snapshot recovery.

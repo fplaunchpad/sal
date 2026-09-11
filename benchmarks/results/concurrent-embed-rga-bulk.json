@@ -1,0 +1,88 @@
+{
+ "workload": "concurrent",
+ "system": "embed-rga",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "preset": "bulk",
+ "config": {
+  "rounds": 6,
+  "burst": 500,
+  "seed": 42,
+  "insRatio": 0.8
+ },
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
+  "exposeGc": true,
+  "date": "2026-08-21T13:52:44.726Z"
+ },
+ "finalChars": 3604,
+ "gates": {
+  "converged": true
+ },
+ "sync": {
+  "count": 6,
+  "warmupExcluded": 0,
+  "meanUs": 1406.2156666666667,
+  "medianUs": 1637.834,
+  "p95Us": 1775.542,
+  "p99Us": 1775.542,
+  "maxUs": 1775.542,
+  "totalMs": 8.437294
+ },
+ "syncPayloadBytes": {
+  "total": 98041,
+  "perSyncMean": 16340.166666666666
+ },
+ "localOps": {
+  "count": 6000,
+  "totalMs": 117.14970699999998,
+  "meanUs": 19.524951166666664
+ },
+ "saves": [
+  {
+   "label": "shared-runs-serialized",
+   "bytes": 31796,
+   "estimated": false
+  }
+ ],
+ "compaction": {
+  "ms": 4.080792,
+  "stats": {
+   "nodesBefore": 4191,
+   "nodesAfter": 4162,
+   "groupsRenumbered": 2187,
+   "symbolsBefore": 4191,
+   "symbolsAfter": 4162,
+   "groupsSkippedInflight": 0,
+   "groupsSkippedUnstable": 0,
+   "spinesFused": 26,
+   "levelsRemoved": 29,
+   "spinesSkippedInflight": 0
+  },
+  "saves": [
+   {
+    "label": "shared-runs-serialized+compacted",
+    "bytes": 38591
+   }
+  ]
+ },
+ "adapterCost": {
+  "indexTotalMs": 5.181586,
+  "datatypeTotalMs": 109.816949,
+  "rebuildTotalMs": 3.673832,
+  "indexCalls": 12000,
+  "datatypeCalls": 6000,
+  "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+ },
+ "runtimeGcMsTotal": 2.5727919999999997,
+ "memory": {
+  "baselineHeap": 4202384,
+  "peakHeapSampled": 24456648,
+  "retainedHeapAfterGc": 2650744,
+  "externalDelta": 40,
+  "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+ }
+}

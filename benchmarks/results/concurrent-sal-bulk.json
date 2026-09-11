@@ -13,7 +13,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-07-21T01:41:47.726Z"
+  "date": "2026-08-20T10:53:31.515Z"
  },
  "finalChars": 3604,
  "gates": {
@@ -22,33 +22,23 @@
  "sync": {
   "count": 6,
   "warmupExcluded": 0,
-  "meanUs": 731.5901666666666,
-  "medianUs": 753.458,
-  "p95Us": 810.5,
-  "p99Us": 810.5,
-  "maxUs": 810.5,
-  "totalMs": 4.389541
+  "meanUs": 860.0071666666666,
+  "medianUs": 922.5,
+  "p95Us": 1048.042,
+  "p99Us": 1048.042,
+  "maxUs": 1048.042,
+  "totalMs": 5.160043
  },
  "syncPayloadBytes": {
-  "total": 729153,
-  "perSyncMean": 121525.5
+  "total": 98041,
+  "perSyncMean": 16340.166666666666
  },
  "localOps": {
   "count": 6000,
-  "totalMs": 98.462041,
-  "meanUs": 16.410340166666668
+  "totalMs": 110.979458,
+  "meanUs": 18.496576333333334
  },
  "saves": [
-  {
-   "label": "json-shipped",
-   "bytes": 386110,
-   "estimated": false
-  },
-  {
-   "label": "binary-estimate",
-   "bytes": 54864,
-   "estimated": true
-  },
   {
    "label": "run-table-serialized",
    "bytes": 19699,
@@ -56,7 +46,7 @@
   }
  ],
  "compaction": {
-  "ms": 7.221417,
+  "ms": 7.12125,
   "stats": {
    "symbolsBefore": 336071,
    "symbolsAfter": 79410,
@@ -69,21 +59,16 @@
   },
   "saves": [
    {
-    "label": "json-shipped+compacted",
-    "bytes": 129449
-   },
-   {
-    "label": "binary-estimate+compacted",
-    "bytes": 22324,
-    "estimated": true
+    "label": "run-table-serialized+compacted",
+    "bytes": 10876
    }
   ]
  },
- "runtimeGcMsTotal": 5.189207000000001,
+ "runtimeGcMsTotal": 3.624584,
  "memory": {
-  "baselineHeap": 3991080,
-  "peakHeapSampled": 22607856,
-  "retainedHeapAfterGc": 3181024,
+  "baselineHeap": 4181816,
+  "peakHeapSampled": 23098712,
+  "retainedHeapAfterGc": 2295192,
   "externalDelta": 40,
   "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
  }

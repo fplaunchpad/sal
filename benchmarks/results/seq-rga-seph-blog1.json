@@ -1,0 +1,74 @@
+{
+ "workload": "seq",
+ "system": "rga",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "seph-blog1",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
+  "exposeGc": true,
+  "date": "2026-08-21T13:52:08.860Z"
+ },
+ "ops": {
+  "total": 368209,
+  "inserts": 212489
+ },
+ "finalChars": 56769,
+ "apply": {
+  "totalMs": 454.892667,
+  "count": 368209,
+  "warmupExcluded": 1000,
+  "meanUs": 1.1993376523995871,
+  "medianUs": 1.042,
+  "p95Us": 1.5,
+  "p99Us": 2.084,
+  "maxUs": 1334
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "rga-binary",
+   "bytes": 1440927,
+   "timeMs": 168.335666,
+   "note": "continuation-capable packed insertion tree and tombstone set",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "rga-binary",
+   "medianMs": 357.8,
+   "runs": 5,
+   "allMs": [
+    344.981208,
+    346.730625,
+    357.8,
+    401.649167,
+    407.874833
+   ]
+  }
+ ],
+ "compaction": null,
+ "adapterCost": {
+  "indexTotalMs": 194.743071,
+  "datatypeTotalMs": 202.148549,
+  "rebuildTotalMs": 0,
+  "indexCalls": 736418,
+  "datatypeCalls": 368209,
+  "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+ },
+ "memory": {
+  "baselineHeap": 53679400,
+  "peakHeapSampled": 191543480,
+  "retainedHeapAfterGc": 59148296,
+  "externalDelta": 2945712,
+  "arrayBuffersDelta": 2945672,
+  "rssEnd": 383860736,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

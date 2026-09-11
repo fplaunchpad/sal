@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "concurrent",
+  "system": "sided-embed-rga",
+  "preset": "bulk",
+  "config": {
+    "rounds": 6,
+    "burst": 500,
+    "seed": 42,
+    "insRatio": 0.8
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryBytes": 25769803776,
+    "exposeGc": true,
+    "date": "2026-08-21T13:52:45.003Z"
+  },
+  "gates": {
+    "converged": true
+  },
+  "metrics": {
+    "operations": 6000,
+    "finalChars": 3604,
+    "syncTotalMs": 22.841792,
+    "syncMedianUs": 4725.375,
+    "syncP95Us": 5745.167,
+    "syncPayloadBytes": 198675,
+    "localOpMeanUs": 20.597659833333335,
+    "primarySaveBytes": 20247,
+    "runtimeGcMs": 2.758582,
+    "positionIndexMs": 5.370793,
+    "positionIndexRebuildMs": 3.613125,
+    "datatypeApplyMs": 116.023303
+  },
+  "detail": {
+    "workload": "concurrent",
+    "system": "sided-embed-rga",
+    "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+    "preset": "bulk",
+    "config": {
+      "rounds": 6,
+      "burst": 500,
+      "seed": 42,
+      "insRatio": 0.8
+    },
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "cpu": "Apple M4 Pro",
+      "logicalCpus": 12,
+      "memoryBytes": 25769803776,
+      "exposeGc": true,
+      "date": "2026-08-21T13:52:45.003Z"
+    },
+    "finalChars": 3604,
+    "gates": {
+      "converged": true
+    },
+    "sync": {
+      "count": 6,
+      "warmupExcluded": 0,
+      "meanUs": 3806.9653333333335,
+      "medianUs": 4725.375,
+      "p95Us": 5745.167,
+      "p99Us": 5745.167,
+      "maxUs": 5745.167,
+      "totalMs": 22.841792
+    },
+    "syncPayloadBytes": {
+      "total": 198675,
+      "perSyncMean": 33112.5
+    },
+    "localOps": {
+      "count": 6000,
+      "totalMs": 123.58595900000002,
+      "meanUs": 20.597659833333335
+    },
+    "saves": [
+      {
+        "label": "sided-policy-binary",
+        "bytes": 20247,
+        "estimated": false
+      }
+    ],
+    "compaction": null,
+    "adapterCost": {
+      "indexTotalMs": 5.370793,
+      "datatypeTotalMs": 116.023303,
+      "rebuildTotalMs": 3.613125,
+      "indexCalls": 12000,
+      "datatypeCalls": 6000,
+      "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+    },
+    "runtimeGcMsTotal": 2.758582,
+    "memory": {
+      "baselineHeap": 4202352,
+      "peakHeapSampled": 29623912,
+      "retainedHeapAfterGc": 3065912,
+      "externalDelta": 40,
+      "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+    }
+  }
+}

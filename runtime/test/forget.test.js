@@ -2,7 +2,7 @@
 // and then went dark stays registered conservatively (unregister keeps
 // writers), so its frontier evidence PINS the stability cut at its last-synced
 // position -- nothing typed since can be reclaimed. `forget` drops it from BOTH
-// the roster and the authors set, releasing the horizon. SOUNDNESS is the
+// the roster and the conservative ever-authored summary, releasing the horizon. SOUNDNESS is the
 // operator's to grant: a forgotten peer that returns must re-sync fresh, not
 // merge a stale-head delta. PASS+FAIL shaped: the cut is capped WHILE the dark
 // author is rostered, then GC fires AFTER the forget, reads preserved.

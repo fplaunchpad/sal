@@ -17,6 +17,8 @@ test('gc genuinely prunes: linear history then sync collapses to one commit', ()
   assert.equal(kept, 1);
   assert.equal(dropped, 10);
   assert.equal(rt.dag.size, 1);
+  assert.deepEqual(rt.dag.get(rA.head.id).parents, [],
+    'retained head is a root-free parentless base');
   // the runtime keeps working after the prune
   assert.equal(rA.read().length, 10);
   rA.commit({ type: 'add', tag: 'post', el: 'post' });

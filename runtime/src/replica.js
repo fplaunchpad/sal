@@ -39,25 +39,42 @@ import { frontierOf, stableCut, insertIds } from './frontier.js';
 import { commitContentId, contentId } from './hash.js';
 import { compactibleEmbedRGA } from './compact.js';
 import { EpochDag, EPOCH0, cutKey, serializeCut, deserializeCut, doubleCertificate, buildInverseTranslate } from './epoch.js';
+import { encodeWire, decodeWire } from './wire.js';
+import { LamportMint, observePayload, stampOperation } from './mint.js';
 
 export class DistributedReplica {
   #headId;
-  constructor(datatype = compactibleEmbedRGA, name = 'r0', { hash = contentId } = {}) {
+  constructor(datatype = compactibleEmbedRGA, name = 'r0', { hash = contentId, mint = null } = {}) {
     this.datatype = datatype;
     this.name = name;
     this.hash = hash;
     this.dag = new Dag();
     this.seq = 0;
+    this.mint = mint === null ? null : new LamportMint(mint);
     this.gid = new Map();               // local id -> content id (sha)
     this.byGid = new Map();             // content id -> local id
+    // Dynamic-membership extension. The paper semantics instead takes one
+    // fixed roster as a protocol parameter, so neither field below belongs to
+    // the minimal commit-GC store {head, commits}.
     this.registered = new Set([name]);  // replica ids heard of / rostered
-    this.authors = new Set([name]);     // replica ids that have AUTHORED a commit here
+    this.gcClosed = false;              // successful commit GC closes membership
+    // Conservative summary that survives deletion of the commits from which it
+    // was learned. It is required only by unregister(); frontier evidence is
+    // always derived from immutable commit.op.replica metadata.
+    this.everAuthored = new Set();
     this.epochDag = new EpochDag();     // cut-indexed epoch DAG (src/epoch.js)
     this.epochOf = new Map();           // local commit id -> epoch cut key
     this.epochBase = new Map();         // local id -> pruned parent's gid (parent-free epoch bases)
+    this.gcBoundary = new Set();        // certified parent-free commit-GC boundaries
+    // Authenticated transport receipts: peer -> epoch key of the peer's
+    // advertised current head. These are not datatype commits and do not enter
+    // the causal frontier. acknowledgeFetch() accepts a receipt only when this
+    // store holds that exact head and recomputes the claimed epoch from it.
+    this.fetchAcks = new Map();
     const root = this.dag.add({ parents: [], op: null, state: datatype.init() });
     this.epochOf.set(root.id, EPOCH0);
     this.#index(root);
+    this.rootGid = this.gid.get(root.id);
     this.#headId = root.id;
     this.frontier = frontierOf(this.dag, this.#headId);
   }
@@ -70,6 +87,32 @@ export class DistributedReplica {
   /** The head's epoch cut KEY (the coordinate-addressed cut identity). */
   get epochKey() { return this.epochOf.get(this.#headId); }
   read() { return this.datatype.read(this.head.state); }
+
+  /** Persisted separately from datatype state and commit history, so neither
+   * state GC nor commit GC can make a restarted replica reuse an identifier. */
+  exportMintState() { return this.mint?.snapshot() ?? null; }
+
+  mintTime() {
+    if (this.mint === null) throw new Error('trusted minting requires a unique persistent mint slot');
+    return this.mint.next();
+  }
+
+  generate(payload) {
+    if (this.mint === null) throw new Error('trusted minting requires a unique persistent mint slot');
+    return stampOperation(this.mint, payload);
+  }
+
+  generateBatch(payloads) { return payloads.map((op) => this.generate(op)); }
+
+  commitGenerated(payload) {
+    const generated = this.generate(payload);
+    return { gid: this.commit(generated), payload: generated };
+  }
+
+  commitGeneratedBatch(payloads) {
+    const generated = this.generateBatch(payloads);
+    return { gid: this.commitBatch(generated), payload: generated };
+  }
 
   #gidOf(commit) {
     const pg = commit.parents.map((p) => this.gid.get(p));
@@ -85,9 +128,12 @@ export class DistributedReplica {
 
   /** Apply one op on this replica's own current head (the only local mutator). */
   commit(payload) {
-    const state = this.datatype.apply(this.head.state, payload);
+    const prepared = typeof this.datatype.prepare === 'function'
+      ? this.datatype.prepare(this.head.state, payload) : payload;
+    const state = this.datatype.apply(this.head.state, prepared);
+    if (this.mint !== null) observePayload(this.mint, prepared);
     const c = this.dag.add({
-      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload }, state });
+      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload: prepared }, state });
     this.epochOf.set(c.id, this.epochOf.get(this.#headId));
     this.#index(c);
     this.#headId = c.id;
@@ -102,9 +148,22 @@ export class DistributedReplica {
   commitBatch(ops) {
     if (ops.length === 0) return this.headGid;
     if (ops.length === 1) return this.commit(ops[0]);
-    const state = this.#applyOps(this.head.state, ops);
+    let state, prepared;
+    if (this.datatype.needsPrepare) {
+      state = this.head.state;
+      prepared = [];
+      for (const op of ops) {
+        const p = this.datatype.prepare(state, op);
+        prepared.push(p);
+        state = this.datatype.apply(state, p);
+      }
+    } else {
+      prepared = ops;
+      state = this.#applyOps(this.head.state, ops);
+    }
+    if (this.mint !== null) observePayload(this.mint, prepared);
     const c = this.dag.add({
-      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload: ops }, state });
+      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload: prepared }, state });
     this.epochOf.set(c.id, this.epochOf.get(this.#headId));
     this.#index(c);
     this.#headId = c.id;
@@ -144,13 +203,25 @@ export class DistributedReplica {
     for (const cid of this.dag.ancestorSet(this.#headId)) {
       if (theirGids.has(this.gid.get(cid))) continue;
       const c = this.dag.get(cid);
-      if (c.parents.length === 0 && !this.epochBase.has(cid)) continue; // root shared; epoch bases DO ship
+      if (c.parents.length === 0 && !this.epochBase.has(cid) && !this.gcBoundary.has(cid)) continue;
       missing.push(cid);
     }
     missing.sort((x, y) => Number(x.slice(1)) - Number(y.slice(1)));
     return missing.map((cid) => {
       const c = this.dag.get(cid);
       const parents = c.parents.map((p) => this.gid.get(p));
+      if (this.gcBoundary.has(cid)) {
+        if (typeof this.datatype.encodeState !== 'function'
+            || typeof this.datatype.fingerprint !== 'function') {
+          throw new Error('GC boundary transfer requires encodeState + fingerprint');
+        }
+        const gid = this.gid.get(cid), epoch = this.epochOf.get(cid);
+        const state = this.datatype.encodeState(c.state);
+        const fp = this.datatype.fingerprint(c.state);
+        const roster = [...this.registered].sort();
+        const proof = contentId({ gcBoundary: true, gid, epoch, fp, roster });
+        return { gid, kind: 'base', parents, epoch, fp, roster, proof, state };
+      }
       if (c.op !== null) {
         return { gid: this.gid.get(cid), kind: 'op', parents,
           op: { replica: c.op.replica, seq: c.op.seq }, payload: c.op.payload };
@@ -199,6 +270,17 @@ export class DistributedReplica {
     return s;
   }
 
+  #mergeInFrame(l, a, b, epochKey) {
+    const state = this.datatype.merge3(l, a, b);
+    if (typeof this.datatype.auditMergeCoverage === 'function') {
+      const evidence = this.datatype.auditMergeCoverage(l, a, b, state);
+      if (!evidence.ok) {
+        throw new Error(`merge coverage certificate failed: ${JSON.stringify(evidence)}`);
+      }
+    }
+    return { state, epochKey };
+  }
+
   /** THE CROSS-EPOCH JOIN. Merge heads `aId` and `bId`, returning the
    *  merged state and the epoch key it lands in. Same epoch throughout: unchanged
    *  merge3 (byte-identical). Same epoch heads over a lower LCA: lift the LCA UP,
@@ -220,23 +302,36 @@ export class DistributedReplica {
     // fold of the MCA antichain when the pair criss-crosses (mcas of mcas). It
     // returns the base state AND the epoch its coordinates are coded in, which
     // feeds the epoch lift below exactly as a single LCA would.
-    const base = this.#baseFor([aId], bId);
+    let base;
+    try {
+      base = this.#baseFor([aId], bId);
+    } catch (e) {
+      if (!this.datatype.headOnlyMerge || !/no common ancestor/.test(e.message)) throw e;
+      // Certified root-free boundaries may disconnect the compressed physical
+      // DAG. Peritext's proved merge rule does not inspect LCA payload state.
+      if (ea === eb) return this.#mergeInFrame(this.datatype.init(), aState, bState, ea);
+      const a0 = this.#toEpoch(aState, ea, EPOCH0);
+      const b0 = this.#toEpoch(bState, eb, EPOCH0);
+      if (a0 === null || b0 === null) throw new CrissCrossError([aId, bId]);
+      this.epochDag.join(ea, eb);
+      return this.#mergeInFrame(this.datatype.init(), a0, b0, EPOCH0);
+    }
     const el = base.epoch, lState = base.state;
 
     if (ea === eb && ea === el) {
-      return { state: this.datatype.merge3(lState, aState, bState), epochKey: ea };
+      return this.#mergeInFrame(lState, aState, bState, ea);
     }
     if (ea === eb) {
       // same-epoch heads, lower LCA: lift the LCA up, stay in the heads' epoch.
       const lUp = this.#liftState(lState, el, ea);
-      if (lUp !== null) return { state: this.datatype.merge3(lUp, aState, bState), epochKey: ea };
+      if (lUp !== null) return this.#mergeInFrame(lUp, aState, bState, ea);
     }
     // Cross-epoch: lift both heads down to the LCA's frame, merge there.
     const aE = ea === el ? aState : this.#toEpoch(aState, ea, el);
     const bE = eb === el ? bState : this.#toEpoch(bState, eb, el);
     if (aE !== null && bE !== null) {
       if (ea !== eb) this.epochDag.join(ea, eb);
-      return { state: this.datatype.merge3(lState, aE, bE), epochKey: el };
+      return this.#mergeInFrame(lState, aE, bE, el);
     }
     // Last resort: lift everything down to the uncompacted base (epoch 0).
     const a0 = this.#toEpoch(aState, ea, EPOCH0);
@@ -246,7 +341,7 @@ export class DistributedReplica {
       throw new Error('cross-epoch merge: an inverse epoch map is unavailable for translation');
     }
     if (ea !== eb) this.epochDag.join(ea, eb);
-    return { state: this.datatype.merge3(l0, a0, b0), epochKey: EPOCH0 };
+    return this.#mergeInFrame(l0, a0, b0, EPOCH0);
   }
 
   /** Ingest a delta: add each missing commit, recomputing state (apply/merge3)
@@ -254,9 +349,17 @@ export class DistributedReplica {
    *  recomputed gid must equal the wire gid (content-address gate). */
   ingest(wireCommits) {
     let added = 0;
+    let priorGid = null;
     for (const wc of wireCommits) {
-      if (this.byGid.has(wc.gid)) continue;
-      const localParents = wc.parents.map((g) => this.byGid.get(g));
+      if (wc.gid !== null && this.byGid.has(wc.gid)) { priorGid = wc.gid; continue; }
+      const parentGids = wc.parents.map((g) => g === null ? priorGid : g);
+      if (parentGids.includes(this.rootGid) && !this.byGid.has(this.rootGid)) {
+        const root = this.dag.add({ parents: [], op: null, state: this.datatype.init() });
+        this.epochOf.set(root.id, EPOCH0);
+        const g = this.#index(root);
+        if (g !== this.rootGid) throw new Error('canonical root reconstruction mismatch');
+      }
+      const localParents = parentGids.map((g) => this.byGid.get(g));
       // an epoch base (a pruned compaction) arrives with its parent ABSENT; its
       // content id verifies WITHOUT the parent, so it is the one allowed exception
       // to ancestor-closure.
@@ -265,12 +368,40 @@ export class DistributedReplica {
         throw new Error(`ingest: unknown parent for ${wc.gid} (delta not ancestor-closed)`);
       }
       let op = null, state, epochKey;
-      if (wc.kind === 'op') {
+      if (wc.kind === 'base') {
+        if (typeof this.datatype.decodeState !== 'function'
+            || typeof this.datatype.fingerprint !== 'function') {
+          throw new Error('GC boundary ingest requires decodeState + fingerprint');
+        }
+        state = this.datatype.decodeState(wc.state);
+        const fp = this.datatype.fingerprint(state);
+        if (fp !== wc.fp) throw new Error(`GC boundary fingerprint mismatch for ${wc.gid}`);
+        const roster = [...(wc.roster ?? [])].sort();
+        const proof = contentId({ gcBoundary: true, gid: wc.gid,
+          epoch: wc.epoch, fp, roster });
+        if (proof !== wc.proof) throw new Error(`GC boundary certificate mismatch for ${wc.gid}`);
+        if (!this.epochDag.has(wc.epoch)) {
+          throw new Error(`GC boundary epoch ${wc.epoch} is unavailable; fetch its epoch certificate first`);
+        }
+        const unknown = roster.filter((r) => !this.registered.has(r));
+        if (this.gcClosed && unknown.length > 0) {
+          throw new Error(`open-membership after commit GC: boundary introduces ${unknown.join(', ')}`);
+        }
+        for (const r of roster) this.registered.add(r);
+        const c = this.dag.add({ parents: localParents, op: null, state });
+        this.gid.set(c.id, wc.gid); this.byGid.set(wc.gid, c.id);
+        this.epochOf.set(c.id, wc.epoch); this.gcBoundary.add(c.id);
+        priorGid = wc.gid; added++;
+        continue;
+      } else if (wc.kind === 'op') {
+        if (this.gcClosed && !this.registered.has(wc.op.replica)) {
+          throw new Error(`open-membership after commit GC: ${wc.op.replica} is not in the closed roster`);
+        }
         op = { replica: wc.op.replica, seq: wc.op.seq, payload: wc.payload };
         state = this.#applyOps(this.dag.get(localParents[0]).state, wc.payload);
         epochKey = this.epochOf.get(localParents[0]);
         this.registered.add(wc.op.replica);
-        this.authors.add(wc.op.replica);
+        this.everAuthored.add(wc.op.replica);
       } else if (wc.kind === 'compact' && localParents[0] === undefined) {
         // EPOCH-BASE BOOTSTRAP: the parent was pruned below a settled cut. Verify
         // the gid over the wire parent STRING + fingerprint (parent-free but
@@ -280,14 +411,14 @@ export class DistributedReplica {
         state = this.datatype.decodeState(wc.state);
         const cut = deserializeCut(wc.cut ?? {});
         const cc = this.dag.add({ parents: [], op: null, state });
-        this.epochBase.set(cc.id, wc.parents[0]);
-        const g = commitContentId({ parents: [null], op: null, state }, [wc.parents[0]],
+        this.epochBase.set(cc.id, parentGids[0]);
+        const g = commitContentId({ parents: [null], op: null, state }, [parentGids[0]],
           { fingerprint: this.datatype.fingerprint, hash: this.hash });
-        if (g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+        if (wc.gid !== null && g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
         this.gid.set(cc.id, g); this.byGid.set(g, cc.id);
         this.epochDag.compaction(g, { settledIds: cut.settledIds ?? new Set(), cut, parentKey: EPOCH0 });
         this.epochOf.set(cc.id, g);
-        added++;
+        priorGid = g; added++;
         continue;
       } else if (wc.kind === 'compact') {
         // decode the inline state (the content-address witness), and RECOMPUTE
@@ -302,7 +433,11 @@ export class DistributedReplica {
         // (always available). The FORWARD map is RECOMPUTED from parentState + cut
         // (the certificate) -- best-effort, only the LCA-up lift consults it.
         let translateInv = null, translate = null;
-        try { translateInv = buildInverseTranslate(this.#coord(parentState), this.#coord(state)); } catch { translateInv = null; }
+        if (typeof this.datatype.inverseTranslate === 'function') {
+          translateInv = this.datatype.inverseTranslate(parentState, state, cut);
+        } else {
+          try { translateInv = buildInverseTranslate(this.#coord(parentState), this.#coord(state)); } catch { translateInv = null; }
+        }
         if (typeof this.datatype.compact === 'function') {
           try { translate = this.datatype.compact(parentState, cut).translate; } catch { translate = null; }
         }
@@ -316,7 +451,10 @@ export class DistributedReplica {
       const c = this.dag.add({ parents: localParents, op, state });
       this.epochOf.set(c.id, epochKey);
       const g = this.#index(c);
-      if (g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+      if (wc.gid !== null && g !== wc.gid) throw new Error(
+        `content-address mismatch (${wc.kind ?? 'legacy'}, parents=${parentGids.join(',')}): recomputed ${g} != wire ${wc.gid}`);
+      if (wc.kind === 'op' && this.mint !== null) observePayload(this.mint, wc.payload);
+      priorGid = g;
       added++;
     }
     if (added > 0) this.#refresh();
@@ -355,18 +493,24 @@ export class DistributedReplica {
    *  is otherwise only known once you ingest one of its ops; the transport calls
    *  this when a peer JOINS, so compactStable can REFUSE for a member never
    *  heard from (the open-membership / not-heard-from breaker). */
-  register(name) { this.registered.add(name); }
+  register(name) {
+    if (this.gcClosed && !this.registered.has(name)) {
+      throw new Error(`open-membership after commit GC: ${name} must bootstrap through a certified epoch base`);
+    }
+    this.registered.add(name);
+  }
 
   /** Drop `name` from the roster IFF it never AUTHORED a commit here. A
    *  joined-then-left lurker holds no ops the stability cut must wait for; a
    *  WRITER stays registered conservatively (the GC-horizon-vs-offline edge).
    *  Returns true if dropped. */
   unregister(name) {
-    if (name === this.name || this.authors.has(name)) return false;
+    if (name === this.name || this.everAuthored.has(name)) return false;
     return this.registered.delete(name);
   }
 
-  /** FORGET `name` entirely: drop it from BOTH the roster and the authors set,
+  /** FORGET `name` entirely: drop it from BOTH the roster and the conservative
+   *  ever-authored summary,
    *  even if it authored. Unlike `unregister` (which conservatively keeps
    *  writers), this LIFTS the stability-cut horizon a departed author otherwise
    *  pins at its last-synced position -- the operator-directed answer to "an
@@ -376,8 +520,23 @@ export class DistributedReplica {
    *  true if the roster changed. */
   forget(name) {
     if (name === this.name) return false;
-    this.authors.delete(name);
+    this.everAuthored.delete(name);
+    this.fetchAcks.delete(name);
     return this.registered.delete(name);
+  }
+
+  /** Record that `peer` completed a fetch/head-sync round at `headGid`.
+   *  The transport authenticates the peer identity. The content-address and
+   *  epoch checks below bind the receipt to locally verified DAG material.
+   *  Receipts advance monotonically by the epoch cut order. */
+  acknowledgeFetch(peer, headGid, epochKey) {
+    if (!this.registered.has(peer)) return false;
+    const cid = this.byGid.get(headGid);
+    if (cid === undefined || this.epochOf.get(cid) !== epochKey) return false;
+    const old = this.fetchAcks.get(peer);
+    if (old !== undefined && !this.epochDag.subcut(old, epochKey)) return false;
+    this.fetchAcks.set(peer, epochKey);
+    return true;
   }
 
   // ---- VIRTUAL LCAs x EPOCH LIFT: the criss-cross-resolving base.
@@ -487,7 +646,11 @@ export class DistributedReplica {
     // cross-epoch merge lift this state DOWN to a common frame. Buildable from
     // the pre/post coordinate correspondence; skipped for non-coord-map states.
     let translateInv = null;
-    try { translateInv = buildInverseTranslate(this.#coord(this.head.state), this.#coord(state)); } catch { translateInv = null; }
+    if (typeof this.datatype.inverseTranslate === 'function') {
+      translateInv = this.datatype.inverseTranslate(this.head.state, state, cut);
+    } else {
+      try { translateInv = buildInverseTranslate(this.#coord(this.head.state), this.#coord(state)); } catch { translateInv = null; }
+    }
     const parentKey = this.epochOf.get(this.#headId);
     const cutSettled = cut.settledIds ?? settledIds;
     // Create the compaction commit, THEN key the epoch by its content id (the
@@ -512,17 +675,38 @@ export class DistributedReplica {
    *  merges only, closed membership (src/gc.js). Also prunes the content-id and
    *  epoch indexes of dropped commits. Returns { kept, dropped }. */
   gc(headIds) {
+    // Distributed GC needs evidence from every other roster member.  The old
+    // default silently omitted missing frontier entries, which treated absence
+    // of evidence as permission to collect.  Match stableCut's refusal rule.
+    if (headIds === undefined) {
+      const missing = [...this.registered]
+        .filter((rep) => rep !== this.name && !this.frontier.has(rep));
+      if (missing.length > 0) {
+        return { kept: this.dag.size, dropped: 0, refused: true, missing,
+          reason: `frontier evidence absent: not heard from ${missing.join(', ')}` };
+      }
+    }
     const heads = headIds ?? [this.#headId, ...[...this.frontier.values()].map((e) => e.id)];
+    const formerParentCount = new Map([...this.dag.values()]
+      .map((c) => [c.id, c.parents.length]));
     const res = runGc(this.dag, heads);
+    for (const c of this.dag.values()) {
+      const oldCount = formerParentCount.get(c.id) ?? 0;
+      if (c.parents.length < oldCount && !this.epochBase.has(c.id)) {
+        this.gcBoundary.add(c.id);
+      }
+    }
+    if (res.dropped > 0) this.gcClosed = true;
     for (const cid of [...this.gid.keys()]) {
       if (!this.dag.has(cid)) {
         this.byGid.delete(this.gid.get(cid));
         this.gid.delete(cid);
         this.epochOf.delete(cid);
         this.epochBase.delete(cid);
+        this.gcBoundary.delete(cid);
       }
     }
-    return res;
+    return { ...res, refused: false, missing: [] };
   }
 
   /** PRUNE HISTORY BELOW THE NEWEST SETTLED COMPACTION, turning it into a
@@ -557,7 +741,10 @@ export class DistributedReplica {
     for (const rep of this.registered) {
       if (rep === this.name) continue;
       const e = this.frontier.get(rep);
-      if (e && !this.epochDag.subcut(kKey, this.epochOf.get(e.id))) {
+      const authoredPastCut = e && this.epochDag.subcut(kKey, this.epochOf.get(e.id));
+      const fetchPastCut = this.fetchAcks.has(rep)
+        && this.epochDag.subcut(kKey, this.fetchAcks.get(rep));
+      if (!authoredPastCut && !fetchPastCut) {
         return { pruned: 0, reason: `evidence from ${rep} has not reached the compaction cut` };
       }
     }
@@ -613,6 +800,12 @@ export function syncReplicas(a, b) {
   const hasA = a.ancestryGids(), hasB = b.ancestryGids();
   const toB = a.delta(hasB), toA = b.delta(hasA);
   const aHead = a.headGid, bHead = b.headGid;
-  b.ingest(toB); a.ingest(toA);
+  b.ingest(decodeWire(encodeWire({ t: 'delta', c: toB })).c);
+  a.ingest(decodeWire(encodeWire({ t: 'delta', c: toA })).c);
   b.mergeWithGid(aHead); a.mergeWithGid(bHead);
+  // The successful bidirectional round returns each peer's current advertised
+  // head. Record a transport receipt even when the peer authored no new op.
+  // acknowledgeFetch validates the head and epoch against local DAG material.
+  a.acknowledgeFetch(b.name, b.headGid, b.epochKey);
+  b.acknowledgeFetch(a.name, a.headGid, a.epochKey);
 }

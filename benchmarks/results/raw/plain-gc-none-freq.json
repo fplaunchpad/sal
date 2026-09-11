@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "concurrent-gc-ablation",
+  "system": "sal",
+  "mode": "none",
+  "preset": "freq",
+  "config": {
+    "rounds": 60,
+    "burst": 25,
+    "seed": 42,
+    "representation": "absolute",
+    "acknowledgementDelayRounds": 0
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-20T10:53:38.126Z"
+  },
+  "gates": {
+    "converged": true,
+    "stateCompactionFired": true,
+    "delayedPruneRefused": true
+  },
+  "metrics": {
+    "operations": 3000,
+    "elapsedMs": 5245.235041999999,
+    "syncMs": 229.15683600000006,
+    "historyGcMs": 0,
+    "historyDropped": 0,
+    "commitsBeforeFinalGc": 3061,
+    "commitsAfter": 3061,
+    "durableStateBytes": 159068,
+    "visibleChars": 1804,
+    "coordinateSymbols": 134403,
+    "stateGcMs": 0,
+    "epochPruned": 0,
+    "commitsWhileAwaitingAck": null
+  }
+}

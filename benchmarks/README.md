@@ -1,23 +1,25 @@
-# benchmarks/ : embed RGA runtime vs production CRDT libraries
+# benchmarks/: verified Sal sequence kernels vs production CRDT libraries
 
-Cross-system performance comparison of our shipped embed RGA runtime
-(`runtime/`, the unverified ESM transliteration of the Lean-verified embed
-kernel) against four production sequence-CRDT implementations, on the
-metrics CRDT papers use. Every cell in the matrix comes from a run of the
-scripts in this directory on this machine; no cell is quoted from
-literature.
+Cross-system comparison of the JavaScript implementations corresponding to
+the verified RGA, EmbedRGA, and SidedEmbedRGA designs against four production
+sequence-CRDT implementations. Every matrix cell comes from a run on this
+machine; no cell is quoted from literature. EmbedRGA and SidedEmbedRGA are both
+paper-facing choices: the former targets lower retained metadata, while the
+latter retains policy state for stronger non-interleaving semantics.
 
 ## Systems
 
 | key | system | what is measured |
 | --- | --- | --- |
-| `sal` | ours: `runtime/src/datatypes/embedRGA.js` (flipped Elias-delta code, the verified default) + `runtime/src/pmap.js` (persistent HAMT state container) + `runtime/src/compact.js` + `runtime/src/runtime.js` (head-sync Runtime for the concurrent workload) | the AS-SHIPPED persistent datatype: `apply` returns a fresh persistent-HAMT state (O(log n) path copy, structural sharing), records carry absolute chain coordinates as `'0'/'1'` bit-strings |
+| `rga` | Sal RGA | verified explicit-tombstone baseline |
+| `embed-rga` | Sal EmbedRGA | verified shared-coordinate design with lower retained metadata |
+| `sided-embed-rga` | Sal SidedEmbedRGA | verified sided policy with stronger non-interleaving behavior |
 | `yjs` | Yjs 13.6.31 | `Y.Text` |
 | `automerge` | @automerge/automerge 3.3.2 (wasm) | text field, one `Automerge.change` per char (the automerge-perf convention) |
 | `loro` | loro-crdt 1.13.7 (wasm) | `LoroText` |
 | `listpositions` | list-positions 2.0.0 | `Text` (chars at CRDT positions). NOT a full CRDT library: it ships positions and a local structure, op delivery is left to the app; its sync row uses an op-log integration (see below) |
 
-All five installed cleanly from npm; none dropped.
+All external systems installed cleanly from npm; none was dropped.
 
 ## Reproduction
 
@@ -30,6 +32,38 @@ node run.mjs --only seq:sal        # substring filter on job ids
 node run.mjs --skip-projection    # skip the python run-table projection
 ```
 
+The npm interface is `npm run bench:quick`, `npm run bench:full`, and
+`npm run summarize`. The GC-ablation workers write schema-versioned records to
+`results/raw/`; `tools/normalize.mjs` validates their required fields and emits
+`results/summary.json` plus plot-ready `results/tables/results.csv` and the
+GC-specific `results/tables/plain-gc.csv`. The schema is
+`schema/result.schema.json`. Every sequential, concurrent, and churn worker
+embeds its detailed legacy result under `detail`, so normalization does not
+discard methodology-specific measurements.
+
+The plain-text Sal GC sweep runs both the absolute and shared representations
+through the production `DistributedReplica` and five
+configurations: `none`, `history`, `state`, `both`, and `both-delayed`. In the
+both-GC configurations, state compaction consumes the settled causal ancestry
+before commit history is pruned to the acknowledged epoch base. Reversing this
+order weakens the state-GC certificate and is not labeled as the production
+configuration.
+
+## Peritext suite
+
+`PERITEXT_WORKLOADS.md` is the semantic contract for rich-text measurements.
+The unified runner implements all seven workload families for both Peritext
+text representations and six Sal GC
+configurations and writes `results/tables/peritext.csv`. It gates the run with
+directed gravity and dead-anchor fixtures whose expected values come from the
+independently validated Python model, complete-render convergence, snapshot
+round-trip, pre-evidence refusal, post-acknowledgement pruning, and equal render
+digests across all ablations. `empty-rich` additionally checks that full state
+GC reaches the 9-byte fresh-empty representation, and `multi-epoch-rich`
+requires three actual settled-cut compactions. External rich-text adapters remain staged until
+their interval, removal, and gravity behavior passes the declared comparison
+boundary.
+
 Each job runs in a fresh `node --expose-gc` child process (heap and wasm
 isolation), sequentially, never in parallel. Raw per-job results are
 checked in under `results/*.json`; `results/summary.md` is the generated
@@ -38,10 +72,10 @@ matrix (embedded below).
 ## Workloads
 
 * **(a) Sequential trace replay, per-char apply.** The real editing traces
-  of the josephg corpus as checked into `whiteboard/litmus/traces/`
+  of the josephg corpus in `benchmarks/traces/`
   (`friendsforever_flat`, `clownschool_flat`, `seph-blog1`,
   `automerge-paper`), flattened to single-character events exactly as
-  `whiteboard/litmus/entropy_measure.py` applies them (for each patch
+  `benchmarks/models/entropy_measure.py` applies them (for each patch
   `[pos, ndel, content]`: `ndel` single-char deletes at `pos`, then the
   content chars one at a time). Gate: the final text must equal the
   trace's `endContent`. All trace characters are BMP code points, so
@@ -70,8 +104,9 @@ matrix (embedded below).
    overhead is roughly 30-60 ns per op on this machine and is NOT
    subtracted; sub-microsecond medians (Yjs, Loro, list-positions) carry
    that additive bias. For `sal` the op includes the adapter's
-   position-to-id bookkeeping (an id-array splice) plus the datatype
-   `apply` (an O(log n) persistent-HAMT path copy; a copied-Map container
+   position-to-id bookkeeping (expected O(log n) rank operations in an
+   indexed sequence) plus the datatype `apply` (an O(log n)
+   persistent-HAMT path copy; a copied-Map container
    would instead copy the whole live-set Map per op and dominate every
    trace, the pre-HAMT interface cost reported below).
 2. **Save size**: bytes of each library's NATIVE serialization, measured
@@ -107,7 +142,7 @@ matrix (embedded below).
    `arrayBuffers` deltas (recorded in the JSON), NOT in heapUsed; heap
    numbers are not comparable across the wasm boundary and are flagged.
 
-## Fair play: our three columns
+## Sal durable artifact
 
 Our shipped runtime stores ABSOLUTE chain coordinates: a record's
 coordinate is the full root-to-record delta chain under the flipped
@@ -115,7 +150,13 @@ Elias-delta code, kept as a `'0'/'1'` JS string (1 byte per bit, and JS
 strings are 2-byte-capable; the in-heap cost is higher still). This is a
 KNOWN representation gap with a designed successor (the run table),
 shipped as a serializer (`runtime/src/serialize.js`).
-The matrix therefore reports four clearly-labeled columns for us:
+The paper-facing matrix reports the shipped run-table binary as Sal's durable
+artifact. JSON and the former packed-bits arithmetic estimate are retained only
+as historical diagnostics and are not cross-system ranking columns. The
+run-table encoding is lossless for reads and composes with settled-cut
+compaction.
+
+Historical development notes for the superseded diagnostic columns follow:
 
 1. **runtime-as-shipped (measured)**: `json-shipped` = the datatype's own
    JSON serialization (coord bit-strings verbatim), plus
@@ -144,7 +185,7 @@ The matrix therefore reports four clearly-labeled columns for us:
    at production save size (below Yjs update-v2, on par with Loro
    shallow-snapshot).
 4. **run-table PROJECTION (measured-in-model)**: the exact bit accounting
-   of `whiteboard/litmus/run_table_measure.py` executed on the
+   of `benchmarks/models/run_table_measure.py` executed on the
    same trace via `tools/run_table_projection.py`;
    `projected bytes = ceil(order-metadata bits / 8) + UTF-8 text bytes`.
    The model charges per-record run-id + offset and per-entry headers; it
@@ -156,8 +197,8 @@ The matrix therefore reports four clearly-labeled columns for us:
    BELOW this projection because the model deliberately charges the
    recoverable positional fields (per-record run-id and offset, and the
    parent-offset the tail-attachment lemma makes derivable) that a real
-   encoder stores positionally and drops (whiteboard/run-table-note.md
-   section 9.1). Reconciliation, not a bug in either: the shipped metadata
+   encoder stores positionally and drops. Reconciliation, not a bug in either:
+   the shipped metadata
    bit count == model total minus (rec_id + rec_off + hdr_poff), an
    identity asserted in the tests.
 
@@ -212,8 +253,9 @@ Where we lose, as shipped:
   ~30-60 ns of the gap being timer overhead) and faster than Automerge
   (24-27 us) on every trace; whole-trace replay 1.9 s on automerge-paper
   vs 0.2 s (Loro), 0.67 s (Yjs), 7.1 s (Automerge). The residue at 100k+
-  chars (4 us median vs 0.5 us on small docs) is the O(log n) trie depth
-  plus the adapter's O(n) id-array splice, not a live-set copy.
+  chars (4 us median vs 0.5 us on small docs) was measured with the old
+  O(n) id-array adapter. Current runs use an indexed sequence; regenerate
+  the repeated results before drawing a new scaling conclusion.
 * **Save size, absolute-chain representation.** 1637-2991 bytes/char as
   JSON (243 MB for the 105k-char doc) vs 0.6-10 bytes/char for every
   production save. Packing the same bits (binary-estimate) still leaves
@@ -469,10 +511,14 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   the documented op-log integration and its payload is unoptimized JSON.
 * Loro sync timing includes commit + delta export + import in both
   directions through the wasm boundary.
-* For `sal`, each timed op includes the adapter's position-to-id
-  bookkeeping (id-array splice) on top of the datatype `apply`; deletes
-  tick the Lamport clock (dense logical time, matching the litmus model
-  and hence the projection's id stream).
+* For `sal`, each timed op includes position-to-id bookkeeping through an
+  indexed sequence (expected O(log n) lookup/insert/delete) on top of the
+  datatype `apply`; deletes tick the Lamport clock (dense logical time,
+  matching the litmus model and hence the projection's id stream). Overall
+  wall time remains the primary comparable metric. Sal result files also
+  expose nested `adapterCost` measurements for the index and datatype; these
+  diagnostic timers add overhead and must not be summed as an independent
+  wall-clock measurement. Concurrent view rebuild cost is reported apart.
 * Cross-system merged ORDER may differ on concurrent insertions; only
   intra-system convergence is gated.
 * Heap columns are not comparable across the wasm boundary (Automerge,
@@ -486,9 +532,11 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   production save size. Two related items remain out of scope here: (a) a
   BATCHED-APPLY path (the mutable/transient fast path below),
   and (b) a WIRE FORMAT: the serializer is a save/load (whole-state)
-  encoder, and a delta/op wire format for sync is separate (the concurrent
-  payload column reports the runtime's JSON wire-delta bytes via
-  `sharedDelta`, unoptimized JSON rather than a designed binary format).
+  encoder, while sync uses the deterministic binary delta codec in
+  `runtime/src/wire.js`. The concurrent payload column applies that codec to
+  `sharedDelta` using real content ids. Linear authored runs elide intermediate
+  ids and parent references; the explicit endpoint hash authenticates the
+  reconstructed chain.
 * The mutable/batched apply follow-on is done. The O(live-set)
   Map copy per op comes from the state container, not the order
   machinery; the persistent HAMT (`runtime/src/pmap.js`) moves per-char
@@ -498,10 +546,24 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   proven equal to folding `apply` in `runtime/test/applybatch.test.js`);
   the DAG granularity is one op per commit.
 * Concurrent sessions at realistic document sizes (the merge numbers here
-  are small-doc), and a binary wire format for our sync (the payload
-  column is unoptimized JSON delta bytes).
+  are small-doc), plus repeated trials of the authenticated run-batched binary
+  sync format on plain text and Peritext payloads.
 
 ## Files
+
+The canonical paper-facing reports are:
+
+- `results/summary.md`: verified Sal kernels versus external systems;
+- `results/primary-comparison-repeated.{json,md}`: repeated fresh-process
+  Sal-versus-external comparison, with machine-readable observations and
+  median/min/max tables;
+- `results/kernel-comparison-repeated.md`: repeated RGA, EmbedRGA, and
+  SidedEmbedRGA comparison;
+- `results/peritext-paper-repeated.md`: repeated rich-text and two-GC
+  evaluation, including the isolated ancestor-spine experiment.
+
+Other JSON files are source measurements or aggregates, not competing prose
+reports.
 
 * `run.mjs`: one-command orchestrator.
 * `workloads/seq.mjs|concurrent.mjs|churn.mjs`: the three workloads, one

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "concurrent",
+  "system": "loro",
+  "preset": "bulk",
+  "config": {
+    "rounds": 6,
+    "burst": 500,
+    "seed": 42,
+    "insRatio": 0.8
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryBytes": 25769803776,
+    "exposeGc": true,
+    "date": "2026-08-21T13:52:45.702Z"
+  },
+  "gates": {
+    "converged": true
+  },
+  "metrics": {
+    "operations": 6000,
+    "finalChars": 3604,
+    "syncTotalMs": 98.95471,
+    "syncMedianUs": 16997.959,
+    "syncP95Us": 21936.792,
+    "syncPayloadBytes": 28515,
+    "localOpMeanUs": 2.302242666666667,
+    "primarySaveBytes": 39130,
+    "runtimeGcMs": null,
+    "positionIndexMs": null,
+    "positionIndexRebuildMs": null,
+    "datatypeApplyMs": null
+  },
+  "detail": {
+    "workload": "concurrent",
+    "system": "loro",
+    "systemVersion": "1.13.7",
+    "preset": "bulk",
+    "config": {
+      "rounds": 6,
+      "burst": 500,
+      "seed": 42,
+      "insRatio": 0.8
+    },
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "cpu": "Apple M4 Pro",
+      "logicalCpus": 12,
+      "memoryBytes": 25769803776,
+      "exposeGc": true,
+      "date": "2026-08-21T13:52:45.702Z"
+    },
+    "finalChars": 3604,
+    "gates": {
+      "converged": true
+    },
+    "sync": {
+      "count": 6,
+      "warmupExcluded": 0,
+      "meanUs": 16492.451666666668,
+      "medianUs": 16997.959,
+      "p95Us": 21936.792,
+      "p99Us": 21936.792,
+      "maxUs": 21936.792,
+      "totalMs": 98.95471
+    },
+    "syncPayloadBytes": {
+      "total": 28515,
+      "perSyncMean": 4752.5
+    },
+    "localOps": {
+      "count": 6000,
+      "totalMs": 13.813456000000002,
+      "meanUs": 2.302242666666667
+    },
+    "saves": [
+      {
+        "label": "snapshot",
+        "bytes": 39130,
+        "estimated": false
+      },
+      {
+        "label": "shallow-snapshot",
+        "bytes": 39172,
+        "estimated": false
+      }
+    ],
+    "compaction": null,
+    "adapterCost": null,
+    "runtimeGcMsTotal": null,
+    "memory": {
+      "baselineHeap": 5373752,
+      "peakHeapSampled": 6184344,
+      "retainedHeapAfterGc": 411528,
+      "externalDelta": 21033,
+      "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+    }
+  }
+}

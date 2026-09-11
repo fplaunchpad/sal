@@ -1,0 +1,17 @@
+[
+  {"name":"L1 delete-reorder","kind":"seq","ops":[["ins",1,0],["ins",2,0],["ins",3,1],["del",1]],"read":[2,3]},
+  {"name":"L3a chain(front) del-run","kind":"seq","ops":[["ins",1,0],["ins",2,0],["ins",3,0],["ins",4,0],["ins",5,0],["del",2],["del",3],["del",4]],"read":[5,1]},
+  {"name":"L3b chain(after) del-run","kind":"seq","ops":[["ins",1,0],["ins",2,1],["ins",3,2],["ins",4,3],["ins",5,4],["del",2],["del",3],["del",4]],"read":[1,5]},
+  {"name":"L17 ceiling escape (seq)","kind":"seq","ops":[["ins",1,0],["ins",2,1],["ins",3,2],["ins",4,3],["ins",5,1],["del",2],["del",3]],"read":[1,5,4]},
+  {"name":"L4 criss-cross split","kind":"merge","lca":[["ins",1,0]],"a":[["ins",2,1],["ins",4,0],["del",1]],"b":[["ins",3,1]],"read":[4,3,2]},
+  {"name":"L5 ins||del anchor","kind":"merge","lca":[["ins",1,0]],"a":[["ins",2,1]],"b":[["del",1]],"read":[2]},
+  {"name":"L7 concurrent runs","kind":"merge","lca":[["ins",1,0]],"a":[["ins",10,1],["ins",11,10]],"b":[["ins",20,1],["ins",21,20]],"read":[1,20,21,10,11]},
+  {"name":"L19 backward runs (h)","kind":"merge","lca":[["ins",1,0]],"a":[["ins",10,0],["ins",30,0],["ins",50,0]],"b":[["ins",21,0],["ins",41,0],["ins",61,0]],"read":[50,30,10,61,41,21,1]},
+  {"name":"L8 T2 dual markers","kind":"merge","lca":[["ins",2,0],["ins",3,0]],"a":[["ins",10,3],["del",3]],"b":[["ins",20,2],["del",2]],"read":[10,20]},
+  {"name":"L9 w-slot","kind":"merge","lca":[["ins",2,0],["ins",3,0]],"a":[["ins",4,0]],"b":[["ins",6,3],["del",3]],"read":[4,6,2]},
+  {"name":"L10 attach-deep","kind":"merge","lca":[["ins",1,0],["ins",2,1]],"a":[["ins",10,2],["del",1]],"b":[["ins",20,1]],"read":[20,2,10]},
+  {"name":"L11 head jump-back","kind":"merge","lca":[["ins",1,0],["ins",2,1]],"a":[["ins",10,0],["del",1]],"b":[["ins",20,2]],"read":[10,2,20]},
+  {"name":"L12 leapfrog","kind":"merge","lca":[["ins",1,0],["ins",2,1]],"a":[["del",1]],"b":[["ins",3,2]],"read":[2,3]},
+  {"name":"L13 puncture","kind":"merge","lca":[["ins",1,0],["ins",2,1],["ins",3,2]],"a":[["del",2],["ins",4,1]],"b":[["ins",5,2]],"read":[1,4,5,3]},
+  {"name":"L16 concurrent del","kind":"merge","lca":[["ins",1,0],["ins",2,1]],"a":[["del",1]],"b":[["del",1],["ins",10,2]],"read":[2,10]}
+]

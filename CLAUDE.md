@@ -1,16 +1,14 @@
 # Project notes for agents
 
-- Before working on any RGA MRDT (anything under `Sal/MRDTs/RGA*`), read
-  `AgentNotes.md` at the repo root. It indexes the several RGA design attempts,
-  records which one is proved (the tombstone-free path-carrying RGA in
-  `Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_MRDT.lean`), and says which branch each
-  unfinished attempt is parked on.
-
-- Review `README.md` on every push and keep it consistent with the actual state
-  of the repo. Before pushing, check that the "What's verified" catalog, the RDT
-  count, and any file or branch references match what is on the branch being
-  pushed (RDTs added, removed, renamed, or moved; sorries closed or opened).
-  Update `README.md` in the same push if it has drifted.
+- `PRIORITIZED_REMAINING_WORK.md` is the only development task list.
+- `Sal/MRDTs/Metatheory/RefactorLedger.lean` is the production theorem ledger.
+- Run `scripts/check-mrdt-refactor.sh` before pushing. It builds the Lean ledger,
+  rejects historical framework dependencies and unproved production theorems,
+  and runs the complete JavaScript runtime suite.
+- Historical conditioned, rehoming, Shesha, and emulation experiments are on
+  `archive/conditioned-mrdts-2026-08-21`; do not restore them to the production
+  tree.
+- Keep `README.md` synchronized with the actual branch contents.
 
 - SPOT files (concrete-execution tests) are PASS+FAIL shaped, like good unit
   tests: every SPOT block carries at least one `≠`/`¬` companion pinning the

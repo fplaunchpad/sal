@@ -1,0 +1,68 @@
+{
+ "workload": "concurrent",
+ "system": "rga",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "preset": "bulk",
+ "config": {
+  "rounds": 6,
+  "burst": 500,
+  "seed": 42,
+  "insRatio": 0.8
+ },
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
+  "exposeGc": true,
+  "date": "2026-08-21T13:52:44.472Z"
+ },
+ "finalChars": 3604,
+ "gates": {
+  "converged": true
+ },
+ "sync": {
+  "count": 6,
+  "warmupExcluded": 0,
+  "meanUs": 919.9585,
+  "medianUs": 1010.9170000000001,
+  "p95Us": 1088.834,
+  "p99Us": 1088.834,
+  "maxUs": 1088.834,
+  "totalMs": 5.519751
+ },
+ "syncPayloadBytes": {
+  "total": 98041,
+  "perSyncMean": 16340.166666666666
+ },
+ "localOps": {
+  "count": 6000,
+  "totalMs": 115.95729100000001,
+  "meanUs": 19.326215166666667
+ },
+ "saves": [
+  {
+   "label": "rga-binary",
+   "bytes": 34165,
+   "estimated": false
+  }
+ ],
+ "compaction": null,
+ "adapterCost": {
+  "indexTotalMs": 5.249492,
+  "datatypeTotalMs": 108.594879,
+  "rebuildTotalMs": 3.726835,
+  "indexCalls": 12000,
+  "datatypeCalls": 6000,
+  "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+ },
+ "runtimeGcMsTotal": 2.654208,
+ "memory": {
+  "baselineHeap": 4202344,
+  "peakHeapSampled": 27101448,
+  "retainedHeapAfterGc": 2647576,
+  "externalDelta": 40,
+  "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+ }
+}

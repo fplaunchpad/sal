@@ -1,0 +1,74 @@
+{
+ "workload": "seq",
+ "system": "rga",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "clownschool_flat",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
+  "exposeGc": true,
+  "date": "2026-08-21T13:52:03.957Z"
+ },
+ "ops": {
+  "total": 24326,
+  "inserts": 22737
+ },
+ "finalChars": 21148,
+ "apply": {
+  "totalMs": 27.687917,
+  "count": 24326,
+  "warmupExcluded": 1000,
+  "meanUs": 1.042113264168739,
+  "medianUs": 0.875,
+  "p95Us": 1.458,
+  "p99Us": 2.5,
+  "maxUs": 362.958
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "rga-binary",
+   "bytes": 138358,
+   "timeMs": 13.292166,
+   "note": "continuation-capable packed insertion tree and tombstone set",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "rga-binary",
+   "medianMs": 17.893417,
+   "runs": 5,
+   "allMs": [
+    15.241334,
+    17.68925,
+    17.893417,
+    19.124125,
+    20.849708
+   ]
+  }
+ ],
+ "compaction": null,
+ "adapterCost": {
+  "indexTotalMs": 12.126441,
+  "datatypeTotalMs": 11.027453,
+  "rebuildTotalMs": 0,
+  "indexCalls": 48652,
+  "datatypeCalls": 24326,
+  "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+ },
+ "memory": {
+  "baselineHeap": 10878616,
+  "peakHeapSampled": 30645688,
+  "retainedHeapAfterGc": 5755184,
+  "externalDelta": 194648,
+  "arrayBuffersDelta": 194608,
+  "rssEnd": 111820800,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

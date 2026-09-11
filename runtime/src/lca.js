@@ -2,7 +2,7 @@
 //
 // The merge discipline needs ONE lowest common ancestor to feed
 // merge3(lcaState, aState, bState). Over a DAG the MCA need not be unique
-// (criss-cross merges), a case this gate does not resolve: virtual LCAs
+// (criss-cross merges), a case this gate does not resolve: virtual merge bases
 // (recursive merge of the MCAs, git-merge style) are not yet supported.
 // So lca() is an explicit gate: unique MCA => return it; multiple MCAs =>
 // throw CrissCrossError. Never a silent pick.
@@ -11,7 +11,7 @@ export class CrissCrossError extends Error {
   constructor(mcaIds) {
     super(
       `criss-cross merge: ${mcaIds.length} maximal common ancestors ` +
-      `(${mcaIds.join(', ')}). Virtual LCAs are not yet in the ` +
+      `(${mcaIds.join(', ')}). Virtual merge bases are not yet in the ` +
       `verified model; refusing to pick one silently.`
     );
     this.name = 'CrissCrossError';

@@ -65,11 +65,14 @@
 // retainedForMarks, markRecords, markPairsDropped }. Cost:
 // retainedForMarks <= 2 * markRecords, structural (a mark has two boundaries).
 
-import { peritext } from './datatypes/peritext.js';
+import { peritextEmbedRGA, peritextSidedEmbedRGA, makePeritext } from './datatypes/peritext.js';
 import { embedRGA } from './datatypes/embedRGA.js';
 import { compactEliasDelta, remapState } from './compact.js';
+import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns, pathDeltas } from './datatypes/sharedEmbedRGA.js';
+import { buildSharedInverseTranslate, compactSharedDirect, remapSharedState, sharedToAbsolute } from './shared-compact.js';
 import { encode as encodeRunTable, decode as decodeRunTable, buildRunTable } from './serialize.js';
 import { PMap, PSet, isPMap, eachEntry } from './pmap.js';
+import { liveGapSidedEmbedRGA } from './datatypes/liveGapSidedEmbedRGA.js';
 
 // ---- the v2 SNAPSHOT ENCODING: run-table shadow + id sidecar ---------------
 // The datatype's plain encodeState (v1) writes every record's ABSOLUTE
@@ -161,7 +164,7 @@ export function a3Pairs(marks, shadow, inflightIns, inflightMarks,
   return pairs;
 }
 
-export function compactPeritext(state, cut, opts = {}) {
+function compactPeritextWith(state, cut, opts, textCompact, coordOfRecord, recordCost) {
   const settledIds = cut?.settledIds ?? new Set();
   const settledDelIds = cut?.settledDelIds ?? new Set();
   const settledMarkMids = cut?.settledMarkMids ?? new Set();
@@ -216,7 +219,7 @@ export function compactPeritext(state, cut, opts = {}) {
   let settledDead = 0, retainedForMarks = 0;
   eachEntry(shadow, (id, rec) => {
     recordsBefore++;
-    symbolsBeforeFull += rec.coord.length;
+    symbolsBeforeFull += recordCost(rec);
     if (deleted.has(id) && settledDelIds.has(id) && settledIds.has(id)) {
       settledDead++;
       if (!markAnchors.has(id) && !inflAnchor.has(id)) { recordsDropped++; return; }
@@ -235,11 +238,11 @@ export function compactPeritext(state, cut, opts = {}) {
       throw new Error(
         `declared in-flight insert ${id}: anchor ${anchorId} has no kept record`);
     }
-    frozenAnchorCoords.push(a.coord);
+    frozenAnchorCoords.push(coordOfRecord(a, anchorId, keepShadow));
   }
 
   // --- re-code the kept shadow via the shared text-layer machinery.
-  const inner = compactEliasDelta(keepShadow,
+  const inner = textCompact(keepShadow,
     { settledIds, inflight: [], frozenAnchorCoords }, opts);
 
   // --- rebuild the state: re-coded shadow; `deleted` restricted to kept
@@ -265,12 +268,111 @@ export function compactPeritext(state, cut, opts = {}) {
   return { state: out, translate: inner.translate, stats };
 }
 
+export function compactPeritext(state, cut, opts = {}) {
+  return compactPeritextWith(state, cut, opts, compactEliasDelta,
+    (r) => r.coord, (r) => r.coord.length);
+}
+
+/** Retention-root/A3 Peritext GC over the native prefix-sharing text graph. */
+export function compactSharedPeritext(state, cut, opts = {}) {
+  const coords = new Map();
+  // A shared path is a persistent parent chain. Computing pathDeltas(r).length
+  // independently for every live record is quadratic on an insertion spine.
+  // Cache depths by node identity so every shared node is visited once while
+  // retaining the same absolute-symbol accounting used by the generic stats.
+  const depths = new WeakMap();
+  const pathDepth = (rec) => {
+    let p = rec.path, known = 0;
+    const missing = [];
+    while (p && !depths.has(p)) { missing.push(p); p = p.parent; }
+    if (p) known = depths.get(p);
+    for (let i = missing.length - 1; i >= 0; i--) {
+      known++; depths.set(missing[i], known);
+    }
+    return rec.path ? depths.get(rec.path) : 0;
+  };
+  return compactPeritextWith(state, cut, opts, compactSharedDirect,
+    (_r, id, shadow) => {
+      if (coords.size === 0) for (const [k, v] of sharedToAbsolute(shadow)) coords.set(k, v.coord);
+      return coords.get(id);
+    }, pathDepth);
+}
+
+/** Retention-root/A3 Peritext GC over the unified sided/Fugue policy graph.
+ *  Unlike coordinate compaction, the sided kernel only removes irrelevant
+ *  nodes and leaves the retained coordinate frame unchanged. Deleted mark
+ *  boundaries are made ineligible for deletion before the kernel closes its
+ *  keep set under chain ancestry and live-gap evidence. */
+export function compactSidedPeritext(state, cut, opts = {}) {
+  const settledIds = cut?.settledIds ?? new Set();
+  const settledDelIds = cut?.settledDelIds ?? new Set();
+  const settledMarkMids = cut?.settledMarkMids ?? new Set();
+  const inflightIns = cut?.inflightIns ?? [];
+  const inflightMarks = cut?.inflightMarks ?? [];
+  const noRetention = opts.noRetention === true;
+  const pairDrop = opts.pairDrop !== false && !noRetention;
+  let marksOut = isPMap(state.marks) ? state.marks : PMap.from(state.marks);
+  let markPairsDropped = 0;
+  if (pairDrop) {
+    const pairs = a3Pairs([...marksOut.values()], state.text.shadow.records,
+      inflightIns, inflightMarks, settledMarkMids,
+      opts.unguardedPairDrop === true);
+    if (pairs.length) {
+      const t = marksOut.begin();
+      for (const [m, r] of pairs) if (t.has(m.mid) && t.has(r.mid)) {
+        t.delete(m.mid); t.delete(r.mid); markPairsDropped++;
+      }
+      marksOut = t.freeze();
+    }
+  }
+  const retained = new Set();
+  if (!noRetention) marksOut.forEach((m) => {
+    for (const id of anchorsOf(m)) retained.add(id);
+  });
+  for (const m of inflightMarks) for (const id of anchorsOf(m)) retained.add(id);
+  for (const x of inflightIns) if (Number.isInteger(x.anchorId)) retained.add(x.anchorId);
+
+  const drop = new Set();
+  eachEntry(state.text.shadow.records, (id) => {
+    if (state.text.deleted.has(id) && settledIds.has(id)
+        && settledDelIds.has(id) && !retained.has(id)) drop.add(id);
+  });
+  const compacted = liveGapSidedEmbedRGA.dropRecords(state.text.shadow, drop);
+  const beforeNodes = liveGapSidedEmbedRGA.nodeCount(state.text.shadow);
+  const afterNodes = liveGapSidedEmbedRGA.nodeCount(compacted);
+  const inner = { state: compacted, translate: new Map(), stats: {
+    symbolsBefore: beforeNodes, symbolsAfter: afterNodes,
+    policyNodesBefore: beforeNodes, policyNodesAfter: afterNodes,
+  } };
+  const deleted = PSet.empty().begin();
+  eachMember(state.text.deleted, (id) => {
+    if (inner.state.records.has(id)) deleted.add(id);
+  });
+  const out = { text: { shadow: inner.state, deleted: deleted.freeze() }, marks: marksOut };
+  return { state: out, translate: new Map(), stats: {
+    ...inner.stats,
+    recordsBefore: state.text.shadow.records.size,
+    recordsAfter: inner.state.records.size,
+    recordsDropped: state.text.shadow.records.size - inner.state.records.size,
+    retainedForMarks: [...retained].filter((id) => state.text.deleted.has(id)).length,
+    markRecords: marksOut.size,
+    markPairsDropped,
+  } };
+}
+
 /** Record-wise coordinate translation (the epoch-lifting hook): shadow
  *  coordinates re-mapped, deleted set and marks carried unchanged (ids are
  *  never rewritten). */
 export function remapPeritextState(state, translate) {
   return {
     text: { shadow: remapState(state.text.shadow, translate), deleted: state.text.deleted },
+    marks: state.marks,
+  };
+}
+
+export function remapSharedPeritextState(state, translate) {
+  return {
+    text: { shadow: remapSharedState(state.text.shadow, translate), deleted: state.text.deleted },
     marks: state.marks,
   };
 }
@@ -299,7 +401,10 @@ export function peritextCutFromMeet(meet) {
  *  encodeState/decodeState come from the datatype itself (they already carry
  *  compaction commits losslessly). */
 export const compactiblePeritext = {
-  ...peritext,
+  ...peritextEmbedRGA,
+  // Machine-checked by HeadOnlyMergeCertificate.related: the virtual merge base is
+  // ghost evidence; the physical Peritext merge consumes branch heads only.
+  headOnlyMerge: true,
   compact: compactPeritext,
   remapState: remapPeritextState,
   cutFromMeet: peritextCutFromMeet,
@@ -321,7 +426,7 @@ export const compactiblePeritext = {
     };
   },
   decodeState(enc) {
-    if (!enc || enc.v !== 2) return peritext.decodeState(enc); // legacy v1
+    if (!enc || enc.v !== 2) return peritextEmbedRGA.decodeState(enc); // v1
     return {
       text: {
         shadow: rekeyShadow(decodeRunTable(b64decode(enc.rt)), enc.ids),
@@ -346,4 +451,74 @@ export const compactiblePeritext = {
     ]);
     return shadow + new TextEncoder().encode(aux).length;
   },
+};
+
+const sharedPeritext = makePeritext(sharedEmbedRGA);
+
+/** Production Peritext representation with prefix sharing and both state-GC
+ * guards (retention roots/A3 plus direct frozen/in-flight text compaction). */
+export const compactibleSharedPeritext = {
+  ...sharedPeritext,
+  compact: compactSharedPeritext,
+  remapState: remapSharedPeritextState,
+  inverseTranslate: (pre, post) => buildSharedInverseTranslate(
+    pre.text.shadow, post.text.shadow),
+  cutFromMeet: peritextCutFromMeet,
+  coordState: (s) => sharedToAbsolute(s.text.shadow),
+  encodeState(state) {
+    return {
+      v: 3,
+      shadow: [...encodeSharedRuns(state.text.shadow)],
+      deleted: [...state.text.deleted].sort((x, y) => x - y),
+      marks: [...state.marks.entries()].sort(([x], [y]) => x - y).map(([, m]) => m),
+    };
+  },
+  decodeState(enc) {
+    if (!enc || enc.v !== 3) throw new Error('shared Peritext snapshot: expected v3');
+    return {
+      text: {
+        shadow: decodeSharedRuns(Uint8Array.from(enc.shadow)),
+        deleted: PSet.from(enc.deleted),
+      },
+      marks: PMap.from(enc.marks.map((m) => [m.mid, Object.freeze({ ...m })])),
+    };
+  },
+  fingerprint(state) {
+    return JSON.stringify({
+      // encodeSharedRuns is lossless and canonical, but traverses each shared
+      // path node once. Expanding pathDeltas independently per record is
+      // quadratic on an ancestor spine and made content-addressing dominate GC.
+      shadow: b64encode(encodeSharedRuns(state.text.shadow)),
+      deleted: [...state.text.deleted].sort((x, y) => x - y),
+      marks: [...state.marks.entries()].sort(([x], [y]) => x - y)
+        .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId,
+          m.startSide, m.endSide, m.ts, m.removed]),
+    });
+  },
+  symbolCount: (state) => sharedEmbedRGA.nodeCount(state.text.shadow),
+  saveBytes(state) {
+    const shadow = encodeSharedRuns(state.text.shadow).length;
+    const aux = JSON.stringify([
+      [...state.text.deleted].sort((x, y) => x - y),
+      [...state.marks.entries()].sort(([x], [y]) => x - y)
+        .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId,
+          m.startSide, m.endSide, m.ts, m.removed]),
+    ]);
+    return shadow + new TextEncoder().encode(aux).length;
+  },
+};
+
+/** Production sided Peritext with certified policy-state and marks retention
+ * GC. Policy collection is identity-framed: it drops irrelevant records but
+ * never recodes a retained chain. */
+export const compactibleSidedPeritext = {
+  ...peritextSidedEmbedRGA,
+  compact: compactSidedPeritext,
+  remapState: (state, _translate) => state,
+  inverseTranslate: (_pre, _post, _cut) => new Map(),
+  cutFromMeet: peritextCutFromMeet,
+  coordState: (state) => state.text.shadow,
+  symbolCount: (state) => liveGapSidedEmbedRGA.nodeCount(state.text.shadow),
+  saveBytes: (state) => new TextEncoder().encode(
+    JSON.stringify(peritextSidedEmbedRGA.encodeState(state))).length,
 };
