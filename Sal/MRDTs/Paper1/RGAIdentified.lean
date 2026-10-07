@@ -256,14 +256,15 @@ theorem insert_delete_commute (strict : Bool) (id anchor target : ℕ)
 /-- Honest issuance supplies precisely the conflict exclusions needed by the
 canonical witness; global concrete/specification commutation agreement is not
 assumed (and is false for this grow-only implementation). -/
-theorem canonical_respects_specVisibility (strict : Bool)
-    {C : Configuration RGAM} (exec : CertifiedExecution RGAM generation C)
+theorem canonical_respects_specVisibility_of_evidence (strict : Bool)
+    {C : Configuration RGAM} (good : CanonicalConfig C)
+    (honest : MintHonest RGAM applicable C)
     {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
     (hver : C.ver v = some (s, E)) {ops : List (Op RGAOp)}
     (hperm : listPermOf ops E) :
     respects (canonical ops)
       (projectedSpecVisibility project (machine strict).toSpec C.replayContext) := by
-  have combined := (canonical_ordered ops).and (canonical_respects_rc exec hver hperm)
+  have combined := (canonical_ordered ops).and (canonical_respects_rc_of_evidence good honest hver hperm)
   apply combined.imp
   intro a b h hspec
   obtain ⟨ats, ar, aop⟩ := a
@@ -289,6 +290,16 @@ theorem canonical_respects_specVisibility (strict : Bool)
       | remove other =>
           exact hspec.2 (by
             simpa only [project, Op.op] using deletes_commute strict other target)
+
+theorem canonical_respects_specVisibility (strict : Bool)
+    {C : Configuration RGAM} (exec : CertifiedExecution RGAM generation C)
+    {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
+    (hver : C.ver v = some (s, E)) {ops : List (Op RGAOp)}
+    (hperm : listPermOf ops E) :
+    respects (canonical ops)
+      (projectedSpecVisibility project (machine strict).toSpec C.replayContext) :=
+  canonical_respects_specVisibility_of_evidence strict
+    (exec.canonicalConfig (fun _ _ => Sal.MRDTs.Instances.RGA.join _)) exec.mintHonest hver hperm
 
 private theorem strict_runs_missing {s t : List ℕ × Finset ℕ} {ls}
     (h : Runs (machine true).transition s ls t) :

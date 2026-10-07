@@ -6,6 +6,410 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: anchored-enqueue Queue
+
+- **Goal:** develop a separate queue whose enqueue records the observed tail
+  and whose dequeue records the observed head, preserving the existing Queue.
+- **Candidate:** immutable insertion coordinates and head-only issuance make
+  enqueue effectors commute on valid states and admit an independent FIFO
+  history; a separate full birth set may be unnecessary.
+- **Falsifier:** an actual certified execution lacking a legal FIFO witness,
+  or a required scoped algebraic law failing on valid represented states.
+- **Formal oracle:** checked issuance and representation invariants, scoped
+  VCs, explicit RA witnesses or certified counterexamples, and PASS+FAIL controls.
+- **Semantic reference:** the requested independent FIFO specification:
+  enqueue appends a fresh identity/value and ignores its anchor; dequeue removes
+  the named head, permits repeated removal of an already removed identity,
+  and rejects a live non-head. Anchors are checked at the original issuer.
+
+- [x] Define the separate signature, deterministic sibling order, issuer, and
+  independent FIFO specification; justify handling of removed anchors.
+- [x] Check same-tail enqueues, singleton dequeue/enqueue, duplicate dequeues,
+  and continued operations after merge, each with a negative control.
+- [x] Prove invariant preservation and investigate concrete commutation,
+  scoped VCs, and ordinary/recursive-virtual RA correctness, or certify a
+  counterexample identifying the precise failed obligation.
+- [x] Independently review Sol 6.1 agent proofs, update the manuscript note and
+  README, integrate the ledger, and run both gates. Proof automation is deferred.
+
+`AnchoredQueue.History.correct`, `correctV`, `executions`, and `executionsV`
+prove the independent FIFO criterion for the actual public tagged-head signature.
+They require only ordinary or recursive-virtual certified execution, with no
+assumed explaining history. A delete-first schedule followed by the exact
+surviving birth list enumerates the original events, is FIFO-legal, preserves
+both required orders and reconstructs the tagged state. Head/tail issuance
+supplies the key causal-removal lemma. The new VC-to-Join route establishes
+representation; all implementation equalities remain concrete.
+
+The compact state retains live records and immutable coordinates, not a
+separate birth set. Coordinates still retain historical position information
+and can grow; this is not a bounded-space claim. Original Queue is unchanged,
+so this separate Lean variant does not alter the 20-of-22 production count.
+The public certified trace and four requested PASS+FAIL scenarios are checked.
+Additional independent-specification controls distinguish duplicate removal,
+invented removal, ID reuse, live non-head removal and ignored enqueue anchors.
+
+Root verification and an independent Sol 6.1 audit passed. The ledger requires
+the new merge VC route, actual scheduling and survivor proofs, causal-removal
+lemma, public-language commutation, and recursive virtual-base transport. It
+audits all new final roots and controls against standard Lean axioms.
+`scripts/check-paper1.sh` passes (3559 Lean jobs), and
+`scripts/check-mrdt-refactor.sh` passes (3587 Lean jobs, 22 exact contracts,
+13 certificate-gate tests, 187 runtime tests, 569 benchmark records).
+`git diff --check` passes. README and the separate manuscript note are updated;
+the manuscript itself and original Queue are unchanged. No commit or push was
+performed. Proof automation remains deferred.
+
+### Checked: remaining invariant-scoped RGA ports
+
+Extend the checked Embedded RGA result to Sided Embedded RGA, native Peritext,
+and FugueMax without changing their implementations, issuers, public queries,
+or independent sequential specifications. The target includes ordinary and
+recursive virtual executions, original-counterexample controls, and independent
+proof/dependency review. If a variant fails, require a certified counterexample
+inside its justified invariant domain. Queue and proof automation are separate.
+
+- [x] Sided Embedded RGA: invariant closure, scoped VCs/replay, independent
+  history bridge, final execution certificates, and old-counterexample control.
+- [x] Native Peritext: instantiate the payload-parametric invariant certificate
+  at the original rich-text payload and recheck the original counterexample.
+- [x] FugueMax: invariant closure, scoped VCs/replay, and a final certificate or
+  an invariant-domain certified obstruction against the original specification.
+- [x] Independently audit proofs, integrate the ledger, run both gates, and
+  update README and the manuscript reconciliation note.
+
+Sided and native Peritext have final ordinary/virtual certificates and checked
+original-counterexample controls. Fugue has invariant closure, scoped replay,
+all new raw merge VCs, stored-state and actual recursive-virtual-base validity.
+Its final outcome is a stronger certified obstruction: the original issuer
+prepares an insertion naming a deleted birth, while the independent list
+specification requires a live anchor. Specification visibility alone excludes
+every sequential witness, for every invariant and policy. All concrete trace
+states satisfy the justified invariant; the relevant implementation effectors
+commute throughout it. `CertifiedFugueInvariantObstruction` records both the
+positive admitted reordered result and the negative full criterion.
+
+This settles the goal's explicit counterexample alternative for Fugue. Across
+retained and invariant-scoped routes, 20 of the 22 production entries now have
+positive certificates. The exact paper OR-set is additional. Fugue and Queue
+remain distinct history-criterion and policy-class obstructions; neither is
+silently weakened or implemented differently.
+
+Final validation: `scripts/check-paper1.sh` passes (3543 Lean jobs), and
+`scripts/check-mrdt-refactor.sh` passes (3571 Lean jobs, 22 exact contracts,
+13 certificate-gate tests, 187 runtime tests, 569 benchmark records). New roots
+use standard axioms only. Recursive audits require the new VC/Join and
+invariant/history dependencies; the Fugue specification-only rejection is
+checked to exclude the earlier raw-order rejection dependencies. Sol 6.1 agents
+completed cross-reviews, followed by root source review and gate verification.
+`git diff --check` passes. The manuscript has not been edited.
+
+### Checked: invariant-scoped commutation for Embedded RGA
+
+Research question: does the raw-order obstruction disappear when both clauses
+of the RA witness order use concrete commutation on independently justified
+representation states, while preserving the implementation, issuer, query,
+and independent sequential specification?
+
+The domain is sorted lists whose live records come from insertion events in
+the certified context. It includes arbitrary supported subsets and does not
+require the two tested events to be fresh or simultaneously issuable. This
+prevents causal conflicts from disappearing through vacuous readiness tests.
+
+- [x] Define invariant commutation and use it in both causal and absorber
+  clauses; retain the previous raw criterion for comparison.
+- [x] Prove initialization, arbitrary eligible update, and merge closure;
+  identify commutation exactly and retain a valid birth/delete counterexample.
+- [x] Prove generic represented replay convergence and restriction, keeping
+  the state domain fixed when the event set is restricted.
+- [x] Prove the insertion-first history respects the revised order, reconstructs
+  the exact state, preserves specification visibility, and admits the original
+  query answer in the independent language.
+- [x] Connect the new VC execution route, restricted replay laws, and history
+  bridge into ordinary and recursive-virtual execution certificates.
+- [x] Check the certified four-event example against both criteria, audit
+  dependencies, run both gates, and update the manuscript reconciliation note.
+
+This first port is Embedded RGA. It does not claim that the remaining native
+RGA variants or Queue have been settled under the revised criterion. Concrete
+equality remains the default; proof automation remains deferred.
+
+`CertifiedRGAInvariantCertificate.correct`, `correctV`, `executions`, and
+`executionsV` combine invariant preservation, new scoped replay laws, and the
+independent history criterion. `virtual_base_valid` covers actual recursive
+virtual merge bases. `implementation_replay_equal` uses generic invariant
+convergence for causal replays; `canonical_valid_history` separately proves the
+same public insertion-first witness has exact fold equality, revised-order
+respect, specification visibility, and original language admission.
+
+`CertifiedRGAInvariantControls.certified_execution_comparison` checks the
+original four-event execution: the revised criterion passes while the retained
+raw criterion fails. The real birth/delete dependence remains. The ledger
+requires the new VC/Join, virtual-execution, invariant commutation, and history
+proof dependencies and rejects legacy datatype Join/final correctness routes.
+
+Validation: the Paper1 gate passes (3532 Lean jobs); the production gate passes
+(3560 Lean jobs, 22 exact public contracts, 13 certificate-gate tests, 187 runtime
+tests, and 569 benchmark records). New theorem roots use only standard axioms.
+Independent source/dependency review found no vacuous domain or changed
+implementation/specification/issuer. `git diff --check` passes.
+
+### Checked: execution- and issuance-certified metatheory
+
+The certified campaign is settled under the unchanged full-event raw-order
+criterion: three of the eight previously excluded entries have positive
+certificates, and five have obstructions in actual certified scope. This
+fulfils the campaign's explicit counterexample alternative; it does not claim
+that all eight satisfy the criterion. Original implementations, queries,
+independent specifications, and issuers are preserved. The fourteen existing
+positives and exact paper OR-set remain, including the accepted LWW
+empty-policy result.
+
+- **Goal:** derive stored canonicality and explicit RA-linearizability from
+  algebraic VCs restricted to justified eligible events and represented states.
+- **Candidate:** issuance and execution invariants exclude the six RGA global
+  witnesses and are preserved through the replay and merge proof steps.
+- **Falsifier:** a certified execution requiring an algebraic law that fails on
+  its represented states, or a legal reconstruction/reordering that loses the
+  evidence required by the next proof step.
+- **Formal oracle:** scoped convergence, reconstruction, ordinary/virtual merge
+  induction, and concrete datatype certificates, checked without new axioms.
+- **Reality oracle:** the unchanged production issuers and specifications,
+  alongside the paper's event order and operation-policy interface.
+
+- [x] Prove scoped replay laws and preservation of eligibility through swaps.
+- [x] Connect represented-state merge VCs to certified ordinary and recursive
+  virtual executions without assuming a datatype's previous direct Join.
+- [x] Complete the generic independent sequential-history bridge at certified
+  scope; instantiate it for MVR, Core, and RichCore. Keep per-datatype
+  impossibility results separate from positive bridge instances.
+- [x] Settle Queue and MVR using certified examples or positive certificates.
+- [x] Settle all six embedded RGA variants using original issuance evidence,
+  with final RA certificates or certified-scope obstructions.
+- [x] Validate existing positives, audit dependencies, and update coverage,
+  README, and the separate manuscript reconciliation note.
+
+Any residual obstruction must occur within the relevant certified scope;
+forbidden-input counterexamples are not sufficient. Concrete equality remains
+the default. Proof automation remains deferred.
+
+Checked progress: `CertifiedReplay.legal_swap`, `represented_fold`, and
+`convergence_on` prove scoped replay preservation. `CertifiedPolicy` states
+local concurrent exactness and retains guarded no-chain explicitly. Readiness
+means certified membership, freshness and causal readiness, not reissuability.
+`CertifiedScopeRestriction.restrict_laws` handles version-specific event sets
+without equating semantic orders with different absorber sets.
+
+MVR now has a closed five-VC → raw Join induction → stored/recursive-virtual
+representation → explicit independent history witness route in
+`CertifiedMVRCertificate`. Final dependency audits require these new proofs
+and reject legacy direct MVR correctness. `CertifiedMVRControls` distinguishes
+legal replay from regenerating operations at reordered states.
+
+All six original RGA issuers supply exact scoped replay laws through
+`CertifiedRGAIssuance`. Their five raw merge VCs now derive stored canonicality
+through ordinary and recursive virtual merges. Core and RichCore additionally
+have complete independent sequential-history bridges and final certificates.
+RichCore reuses the new Core operational VCs, with a separate proof for its
+original public query and sequential specification.
+
+`CertifiedCoverage` preserves all 22 original packages: fourteen retained
+guarded positives, three scoped positives (MVR, Core, RichCore), certified
+raw-order obstructions for the native list variants and Fugue, plus one
+certified Queue policy obstruction. In total there are four raw-order
+obstructions and seventeen end-to-end positive production entries. Exact paper
+OR-set is an additional positive.
+
+Queue's original issuer permits the fork/apply/apply witness in
+`CertifiedQueueMVRQueue`. Both legal orders of concurrent same-payload enqueues
+yield different tagged heads at the represented empty root. Local exactness
+forces a payload self-edge forbidden by no-chain. This refutes the restricted
+policy class, not Queue's existing independent correctness theorem.
+`no_scoped_policy` refutes the actual scoped policy interface for any such scope
+that includes the certified empty root.
+
+Final validation: `scripts/check-paper1.sh` passes (3524 jobs), including
+standard-axiom audits and recursive dependencies for the new MVR, Core, and
+RichCore final certificates. `scripts/check-mrdt-refactor.sh` passes (3552 Lean
+jobs), 22 exact public contracts, 13 certificate-gate tests, 187 runtime tests,
+and 569 validated benchmark records. Existing positives, exact paper OR-set,
+and LWW remain checked. `git diff --check` passes. Independent source/dependency
+audits cover all six RGA VC/execution routes, the scoped metatheory, and all five
+certified obstructions.
+
+The raw-order issue now has complete certified counterexamples for embedded
+RGA, sided RGA, and native Peritext. `CertifiedRGARawOrderObstruction`,
+`CertifiedSidedRawOrderObstruction`, and `CertifiedPeritextRawOrderObstruction`
+prove failure for every payload policy in actual original-issuer executions.
+All permutations of the four update events are checked against the unchanged
+independent language. Each file also supplies an admitted sequential history
+with the correct result, which fails the raw-order requirement.
+
+The trace inserts A, forks, deletes A and inserts root B on the left, inserts
+C after live A on the right, then merges to [B,C]. Global raw noncommutation
+forces delete-A before insert-B because the pair differs on an unsorted scratch
+state. The specification's insertion-order legality then prevents explaining
+[B,C]. The execution itself is well formed; the scratch state is used only by
+the criterion's globally quantified commutation test. Specification-conflict
+visibility is not needed for this rejection.
+
+A follow-up decision on replacing global raw commutation in the witness order
+with a represented-state relation remains separate from this completed
+classification. No semantic order has been
+changed. Fugue now has a separate three-update certified obstruction in
+`CertifiedFugueRawOrderObstruction`: insert seed 1, delete 1, prepare and insert
+replacement 3. The original issuer uses the retained birth of 1 and produces
+`.ins 1 .L`; the final public query is [3]. A raw-order edge from deletion to
+replacement rules out every legal original sequential history, regardless of
+answer. The admitted positive control [seed, replacement, delete] returns [3]
+but violates that edge. All six permutations are checked. This is not inferred
+from the other RGA variants.
+
+Certified campaign outcome by original excluded entry:
+
+| Entry | Checked outcome | Final evidence |
+|---|---|---|
+| MVR | Full scoped ordinary/virtual RA certificate | `CertifiedQueueMVR.MVR.Certificate.executions` / `executionsV` |
+| Sided Peritext Core | Full scoped ordinary/virtual RA certificate | `CertifiedRGACoreCertificate.executions` / `executionsV` |
+| Sided Peritext RichCore | Full scoped ordinary/virtual RA certificate | `CertifiedRGARichCertificate.executions` / `executionsV` |
+| Queue | Certified payload-policy/no-chain obstruction | `CertifiedQueueMVR.Queue.certified_control` / `no_scoped_policy` |
+| Embedded RGA | Certified full-event raw-order obstruction | `CertifiedRGARawOrderObstruction.certified_raw_criterion_failure` |
+| Sided embedded RGA | Certified full-event raw-order obstruction | `CertifiedSidedRawOrderObstruction.certified_raw_criterion_failure` |
+| Native Peritext | Certified full-event raw-order obstruction | `CertifiedPeritextRawOrderObstruction.certified_raw_criterion_failure` |
+| FugueMax | Certified full-event raw-order obstruction | `CertifiedFugueRawOrderObstruction.certified_raw_criterion_failure` |
+
+All four raw-order results quantify over every payload policy. They do not
+claim failure of a different payload-projected specification language. All
+positive results use raw equality, and all residual counterexamples are actual
+original-issuer certified traces with independent positive/negative controls.
+
+### Guarded framework and registry campaign
+
+Manuscript reconciliation is maintained separately in
+[`docs/paper1-formalism-reconciliation.md`](docs/paper1-formalism-reconciliation.md).
+The guarded framework and registry classification now cover every production
+MRDT and RGA variant: 14 positive certificates and eight checked obstructions
+to the globally quantified contract, plus the exact paper OR-set outside the
+registry. All positive entries use concrete equality. LWW is supported with an
+empty operation policy; only its original timestamp-order policy violates
+no-chain. The target remains the OOPSLA deadline specified by KC, next Thursday
+at 17:30 IST. Manuscript reconciliation and any subsequent change to the global
+law scope are separate from the completed classification.
+
+Proof automation is a follow-on research direction. Finish this formalism and
+datatype campaign before exploring new automation. Existing tactics remain
+available for the current proofs; automation development is deferred.
+
+The earlier uniform-law mechanization alone did not establish the intended
+guarded contract. The corrected core and registry proofs now do so at the
+explicit scope below. User-supplied `rc` remains a relation on operation
+payloads. Its event exactness law requires distinct timestamps and different
+replicas, as in Neem's interface. The eight uniform-law counterexamples below
+do **not** classify those datatypes under this corrected contract.
+
+- **Goal:** establish the guarded framework and its metatheory before resuming
+  instance migration.
+- **Candidate:** supported semantic-order replays converge under guarded
+  exactness, no-chain, and an explicitly stated conditional-commutation law.
+- **Falsifier:** same-replica updates can fail to commute even when their payload
+  policy is empty; consequently the old transport to policy-based `loOn` fails.
+- **Formal oracle:** direct Lean proofs of convergence, order existence, and
+  canonical uniqueness, followed by the observational and execution bridges.
+- **Reality oracle:** Neem's F* interface and the manuscript's order definition.
+  F* conditional commutation uses policy conflict, whereas the semantic order
+  uses actual noncommutation for absorbers. Their equivalence outside the
+  exactness guard must not be assumed.
+
+Tasks for this correction:
+
+- [x] Audit the conditional-commutation premise against both sources and make
+  any additional sufficient premise explicit.
+- [x] Check direct guarded replay convergence and finite order existence.
+- [x] Define canonical states directly using the semantic order; prove
+  uniqueness without `paperOrder_iff_loOn`.
+- [x] Transport the guarded metatheory through the observational abstraction.
+- [x] Migrate the generic ordinary/virtual execution and sequential-history
+  bridges to the guarded canonical interface; close the exact and efficient
+  OR-set certificates through raw equality VCs and derived stored canonicality.
+- [x] Classify every production datatype under the corrected guarded route:
+  14 positive end-to-end certificates and eight checked contract obstructions.
+- [x] Separate the earlier uniform-law adapters and their obstruction results
+  from the primary guarded contract; reassess all eight former negative entries.
+- [x] Audit the OR-set execution dependencies against previous direct and
+  observational Join routes and run the paper1 gate after integration.
+
+Checked core evidence: `GuardedReplay.Laws`, `convergence_on_guarded`,
+`GuardedReplay.exists_paperOrder_enumeration`, and
+`AbstractMRDT.Guarded.canonical_exists` / `canonical_equivalent`.
+`GuardedPolicyControls` checks cross-replica exactness and rejects its unguarded
+extension; a supported same-replica example has a semantic causal edge absent
+from policy-based `loOn`. The conditional law follows Neem's manuscript's
+payload conditional-commutation assumption; it is an explicit additional
+premise relative to the guarded F* interface alone. Some positive commuting ports reuse stronger uniform VC proofs through
+explicit adapters; their public certificates use the guarded interface.
+The joint `scripts/check-paper1.sh` gate passes with 3,460 build jobs after
+adding this core. Its recursive dependency audit checks that guarded canonical
+uniqueness does not use the uniform replay/order transport. This validates the
+new core alongside existing certificates. The subsequent raw OR-set campaign
+completes the bridge migration for both sets, as recorded below.
+
+### Registry evidence and remaining research boundary
+
+`GuardedCoverage.packages_eq_production` checks all 22 original packages,
+including signatures and issuers. `counts` proves 14 positive and eight negative
+entries. Each positive carries a checked raw-equality witness and ordinary and
+virtual execution theorems; Join and stored canonicality are derived from VCs.
+The exact paper OR-set is an additional checked result.
+
+Positive entries: grow-only-set, add-store, finite-add-store, counter,
+increment-only-counter, pn-counter, flat-grow-only-set, flat-grow-only-map,
+bounded-counter, LWW register, plain RGA, TreeMove, AegisSheet, efficient OR-set.
+
+The other eight carry `∀ A, ¬ ∃ P, Guarded.Laws A P` proofs in
+`GuardedQueueMVR` and `GuardedRGAObstructions`: Queue, MVR, embedded RGA,
+sided embedded RGA, Peritext embedded RGA, sided Peritext core, sided Peritext
+rich core, and registered FugueMax. These are checked limits of the global law
+contract, not failed proof attempts or refutations of certified executions.
+The six RGA witnesses are impossible under their original issuers; explicit
+`never_issuable` controls certify that scope. A theorem restricted to issuable
+events/states would be a new framework extension, not an already established
+impossibility result for that alternative.
+
+LWW's `GuardedLWWPort` proves the independent ordinary overwrite history by
+chronological ordering. Its empty policy meets no-chain, without changing the
+implementation, queries, or issuance. `GuardedLWWExclusion` retains the checked
+failure of the previous timestamp policy and the positive empty-policy control.
+The earlier blanket LWW exclusion is superseded.
+
+Final campaign validation: `scripts/check-paper1.sh` passes (3,477 jobs),
+including standard-axiom audits, all positive ordinary/virtual VC-route checks,
+guarded counterexamples and issuer controls, exact package coverage, and raw
+stored canonicality for every positive entry. `git diff --check` passes.
+
+### Guarded equality checkpoint
+
+The exact and efficient OR-sets now instantiate `AbstractMRDT.Raw.MergeVCs`.
+`GuardedRawJoin` derives representation Join by strict finite-history induction
+from the five raw equations and proved replay/peel evidence. The exact
+`ORSet.RawExecution.certificate` and efficient
+`EfficientORSet.RawCertificate.certificate` derive stored canonicality and prove
+ordinary and recursive virtual execution correctness against the independent
+ordinary-set history language, with full inputs and specification visibility.
+Both expose `storedCanonical` (raw replay equality) and `convergence` (raw
+state equality). Join and stored canonicality are not outstanding assumptions.
+
+Concrete equality therefore suffices for both OR-sets. Metadata guards remain
+essential: `GuardedEqualityVC` refutes freshness-only causal add and incoherent
+local redistribution, while `GuardedRawORSetVC` derives the needed coverage from
+histories. The raw certificates still reuse some proved observational
+reconstruction helpers, so removing all abstraction infrastructure is not part
+of this result. The ledger forbids the old direct and observational Join proofs
+in the new execution conclusions. This OR-set checkpoint preceded the complete
+registry campaign above; manuscript edits remain separate.
+Checkpoint validation: the `scripts/check-paper1.sh` gate passes with 3,471 build
+jobs, including all four ordinary/virtual raw execution dependency checks;
+`git diff --check` passes.
+
 Branch: `paper1`, created from `main`. Manuscript: sibling
 `../Sal_paper`, with `main.tex` selecting the active sections.
 KC approved the remaining policy choices and activated the goal on 2026-10-05.
@@ -435,11 +839,17 @@ standard-axiom audits of the new bridges, controls, and coverage inventory.
 checks, all 187 runtime tests, and validation of 569 benchmark records.
 `git diff --check` passes. No manuscript edits were made.
 
-Counting correctness results rather than restricted-law packages, 13 of the
-22 original entries now have full-input specification-visible RA proofs:
+Counting witness results rather than restricted-law packages, 13 of the
+22 original entries now have full-input specification-visible witness proofs:
 the twelve compatible entries plus the direct EfficientORSet result. Eight
 entries retain main's verification but lack this new criterion proof; LWW is
 excluded. The additional exact paper OR-set is outside the original registry.
+Correction from the 2026-10-07 source audit: the manuscript's definition
+explicitly requires rc-non-comm and cond-comm before the witness clauses.
+The earlier Lean witness predicates did not include those prerequisites;
+efficient OR-set's direct proof therefore does not establish the full original
+definition. Its abstraction-first certificate below establishes the full
+revised definition with observable replay prerequisites included.
 
 Migration inventory (targeted instance proofs and typed coverage are checked):
 
@@ -466,6 +876,222 @@ honestly issuable bad execution or invalidate the broader production proofs.
 BoundedCounter demonstrates why global commutation compatibility remains an
 optional sufficient route: its guarded abstract language fails that VC while
 issued causal witnesses establish the stronger criterion.
+
+## Query-relative implementation replay (2026-10-07)
+
+KC authorized changing implementation replay to query-relative reasoning.
+The research question is whether metadata-sensitive concrete noncommutation
+is a necessary restriction, or an artifact of the chosen replay equality.
+
+- [x] Define observational equality using every future update sequence and
+  query; prove update congruence and expose a query-separating `abs` interface.
+- [x] Use the observational quotient throughout replay: commutation,
+  conditional absorption, canonicality, and uniqueness. Retain no-chain and
+  exact operation-policy coverage on that algebra (`QueryReplay.lean`).
+- [x] Change both conflict and absorber tests in the new RA witness order.
+  Retain independent specification visibility and full timestamp/replica inputs.
+- [x] Prove the efficient OR-set satisfies these replay restrictions. Its
+  same-replica add/add pair now commutes; a paired control proves it still
+  fails concrete commutation and the old ordering test (`QueryORSet.lean`).
+- [x] Prove exact and efficient OR-set certified correctness, for every stored
+  version under ordinary and virtual execution, using the same generic
+  observable canonical-history bridge (`QueryExactORSet.lean`, `QueryORSet.lean`).
+- [x] Check the merge boundary: element equality is not a merge congruence.
+  Hidden tags and execution/representation evidence remain necessary for
+  establishing canonicality of merged versions. No quotient merge is assumed.
+- [ ] Reassess the remaining old state-equality policy obstructions under
+  observable equality before claiming new migration counts. The earlier
+  12/9/1 inventory is a classification of the concrete replay route only.
+
+Validation: `scripts/check-paper1.sh` passes (3,413 build jobs), including
+standard-axiom audits for both observable certified theorems, replay
+uniqueness, the generic history bridge, and the merge-congruence counterexample.
+No manuscript changes or commits were made for this revision.
+
+## Abstraction-first formalism (2026-10-07)
+
+KC authorized attempting a full paper-facing abstraction/equivalence revision.
+The research question is which representation-sensitive merge assumptions
+make observable replay sound without an unrestricted quotient merge.
+
+- [x] Introduce `AbstractMRDT.Model` with `abs`, independent abstract updates
+  and queries, and simulation laws. Define semantic state equality by `abs`.
+  Query completeness identifies exactly future-query-equivalent concrete
+  states; abstract state may retain information exposed only by later updates.
+- [x] Use equivalence throughout commutation, absorption, canonicality,
+  replay uniqueness, convergence, and the full-input RA criterion and bridge
+  (`AbstractFormalism.lean`). Keep event/store identity structural.
+  Bundle the replay prerequisites into the full RA predicates, and expose
+  `Witness`/`VersionsWitness` separately to prevent witness-only overclaims.
+- [x] State all five merge VCs with equivalent conclusions and explicit
+  history-indexed representation premises (`AbstractMerge.lean`).
+- [x] Prove representation Join implies merged abstract canonicality and
+  equivalent merge outputs for two represented tuples from the same histories.
+- [x] Package abstraction-first certificates and prove ordinary/virtual
+  finite-execution correctness and observable convergence
+  (`AbstractSoundness.lean`). Preserve mint and issuance evidence.
+- [x] Instantiate the complete certificates for both exact and efficient
+  OR-set, using the same ordinary-set semantic state and history bridge.
+  Prove representation Join for both (`AbstractORSet.lean`). Efficient set's
+  representation uses its tag/history invariant and a finite event enumeration;
+  it does not assume a concrete canonical state as a premise.
+- [x] Check the negative control: abstract-canonical representatives alone
+  fail Join even for supported, causally closed event sets. A fresh tag absent
+  from the represented history incorrectly survives an observed removal
+  (`AbstractControls.canonical_only_join_fails`, paired `merge_control`).
+- [x] Audit Neem's F★ contract. It guards rc-non-comm by different replicas
+  and timestamp distinctness while retaining concrete equality. Prove its
+  guarded condition and the unqualified condition's failure in Lean
+  (`NeemScope.guarded_vs_unqualified`). Its paper's displayed condition lacks
+  the replica guard. This is a scope discrepancy, not an audit of the entire
+  bottom-up theorem or a new F★ verification run.
+- [x] **Derive and validate representation Join from observational merge VCs.**
+  The active abstraction-based sufficient-condition goal is completed on
+  2026-10-07 for both exact and efficient OR-sets, including issuance-certified
+  ordinary and virtual executions.
+  - `MetadataJoin.representationJoin_of_vcs` derives Join by strong induction
+    from the five observational VCs, explicit directed metadata companions,
+    guarded history-indexed substitution, and replay/peel supplies. Join is
+    the conclusion, not an assumed decomposition or substitution obligation.
+  - `MetadataDependencies` separates metadata reconstruction edges from
+    semantic conflicts. Edges are causal and cover observable conflicts;
+    they may retain commuting tag-replacement predecessors. Common semantic
+    and metadata maxima, closed pasts, and represented peel choices are
+    checked for both sets (`MetadataMaximal`, `MetadataReconstruction`,
+    `EfficientMetadataReconstruction`, `MetadataSupply`).
+  - `MetadataSubstitution`, `MetadataInduction`, `MetadataRewrite`,
+    `MetadataCausalFrame`, `MetadataRedistribution`, and `MetadataDecomposition`
+    supply the guarded substitutions, empty/causal/local/shared cases, and
+    strictly smaller side decompositions. Both sets discharge every metadata
+    companion independently of Join.
+  - `ORSetVCJoin.mergeVCs` and `EfficientORSetVCJoin.mergeVCs` discharge the
+    complete observational VC packages. Both `vcRepresentationJoin` proofs
+    instantiate the same generic induction. Shared redistribution uses the
+    same unconditional concrete set identity; efficient add VCs use equality
+    of element observations, allowing different concrete tags.
+  - Exact set's `ORSetVCJoin.vcCertificate` derives its stored-version invariant
+    from `vcJoinAt`. Efficient set's `EfficientVCExecution.vcCertificate` uses
+    `EfficientVCHistoryMerge` and `EfficientVCVirtual` to carry derived Join
+    through stored versions and every recursive virtual-base merge.
+  - Both instances prove `vcCertifiedVersionsRAV`, `vcCertifiedExecutions`,
+    and `vcCertifiedExecutionsV`. These cover every stored version at every
+    visited configuration, retain mint/issuance evidence, and use independent
+    sequential-history compatibility and soundness premises.
+  - `VCExecutionContract.VCConditions` packages the complete sufficient
+    conditions with no assumed Join field. Its generic `executions` and
+    `executionsV` theorems apply to both checked `vcConditions` inhabitants.
+    The derived certificate preserves separate stored-version and independent
+    sequential-history evidence.
+  - The ledger's `assert_vc_dependencies` traverses proof dependencies. Both
+    Join results and all four execution results must use `join_at_sizes` and
+    their datatype VC/causal/local/shared obligations. Earlier direct Join,
+    direct history merge, and direct represented-version proofs are forbidden
+    on these routes. Standard-axiom audits also cover the certificates,
+    execution invariants, virtual-base proof, and intermediate obligations.
+  - Paired negative controls remain checked: abstract canonicality alone
+    fails metadata-sensitive Join; an older observationally maximal add is
+    unsafe to reappend; omitting its predecessor from reconstruction past
+    gives correct membership but invalid tags (`AbstractControls`,
+    `MetadataPeelControl`). No unrestricted observational merge congruence or
+    representation saturation is assumed.
+  Validation: `scripts/check-paper1.sh` passes (3,446 jobs), including the
+  dependency-route audits and rejection of unproved Paper1 declarations.
+  `git diff --check` passes. No manuscript edits, commits, or pushes were made.
+- [x] Port/reassess the remaining MRDTs against this primary formalism. The
+  earlier concrete-policy inventory and theorem names are retained for audit;
+  they are not a new abstract-policy incompatibility classification.
+  Active goal (2026-10-07): port the remaining paper1 MRDTs to the
+  abstraction-based sufficient-condition theorem, reusing existing proofs;
+  prioritize RGA's full-input sequential-history bridge and report each
+  datatype as proved, counterexample-blocked, or needing an explicit assumption.
+  - [x] Supply a general future-query quotient model (`FutureModel`) and a
+    commuting-class VC adapter (`CommutingVCReplay`). The adapter derives Join
+    from the new metadata induction rather than an existing datatype Join.
+  - [x] Separate replay/merge VCs from sequential-history evidence
+    (`VCReplayConditions`). Add an execution-scoped bridge
+    (`ScopedHistoryBridge`) that selects an accepted merge-free history and
+    uses observational canonical uniqueness to explain the stored answer.
+  - [x] Finish and audit plain RGA's scoped abstraction certificate. The
+    independent strict list language conflicts even when implementation
+    updates commute; global specification compatibility must not be assumed.
+  - [x] Port the eight simple set/counter entries and the three guarded
+    bounded-counter/TreeMove/AegisSheet entries.
+  - [x] Reassess queue, compact MVR, and all six embedded RGA/Fugue entries
+    using actual query observations and future updates.
+  - [x] Integrate registry coverage, dependency/axiom audits, paired controls,
+    README findings, and the final paper1 verification gate.
+    `AbstractCoverage.packages_eq_production` checks all original packages and
+    issuers; `counts` proves 13 positive VC routes, eight universal-law
+    obstructions, and one LWW exclusion. Every positive route yields ordinary
+    and virtual all-version execution correctness. The ledger checks all
+    twelve commuting ports' ordinary/virtual execution dependencies against
+    the new Join induction and metadata VC obligations, excluding their old
+    concrete Join and serialization routes. Both OR-set routes retain their
+    existing dependency audits. All positive conditions, scoped bridges,
+    negative laws, paired controls, and coverage are standard-axiom audited.
+    `scripts/check-paper1.sh` passes (3,455 jobs); `git diff --check` passes.
+    No manuscript edits, commits, or pushes were made.
+
+  Datatype results on the unchanged production signatures and issuers:
+
+  | Registry entry | Abstraction-based result | Evidence / bridge |
+  |---|---|---|
+  | grow-only-set | Proved | `SimplePorts.gsetConditions`; independent list/set language |
+  | add-store | Proved | `SimplePorts.addStoreConditions`; independent list/set language |
+  | finite-add-store | Proved | `SimplePorts.finiteAddConditions`; independent list/finite-set language |
+  | counter | Proved | `SimplePorts.counterConditions`; independent sum language |
+  | increment-only-counter | Proved | `SimplePorts.iocConditions`; independent sum language |
+  | pn-counter | Proved | `SimplePorts.pnConditions`; independent sum language |
+  | flat-grow-only-set | Proved | `SimplePorts.booleanSetConditions`; independent membership language |
+  | flat-grow-only-map | Proved | `SimplePorts.booleanMapConditions`; immutable binding membership |
+  | bounded-counter | Proved | `GuardedPorts.Bounded.conditions`; issued causal history and prefix balance safety |
+  | rga | Proved | `RGA.AbstractPort.conditions`; strict identified list/registry, execution-scoped history |
+  | tree-move | Proved | `GuardedPorts.Tree.conditions`; causal-origin legality |
+  | aegis-sheet | Proved | `GuardedPorts.Sheet.conditions`; causal-origin legality |
+  | efficient-or-set | Proved | `EfficientORSet.AbstractSpec.vcConditions`; ordinary-set observation |
+  | queue | Counterexample-blocked for global Laws | `ObservationalObstructions.Queue.no_laws`; tagged head distinguishes same-label orders |
+  | mvr | Counterexample-blocked for global Laws | `ObservationalObstructions.MVR.no_laws`; metadata-dependent observable overwrite conflict |
+  | embed-rga | Counterexample-blocked for global Laws | `ObservationalObstructions.Embedded.no_laws`; observable conflict triangle |
+  | sided-embed-rga | Counterexample-blocked for global Laws | `ObservationalObstructions.Sided.no_laws`; observable conflict triangle |
+  | peritext-embed-rga | Counterexample-blocked for global Laws | `ObservationalObstructions.peritext_no_laws`; observable conflict triangle |
+  | sided-peritext-core | Counterexample-blocked for global Laws | `ObservationalObstructions.SidedPeritext.core_no_laws`; observable conflict triangle |
+  | sided-peritext-rich-core | Counterexample-blocked for global Laws | `ObservationalObstructions.SidedPeritext.rich_no_laws`; observable conflict triangle |
+  | fugue-max | Counterexample-blocked for global Laws | `ObservationalObstructions.RegisteredFugueMax.no_laws`; supplied-ID query distinguishes same-label orders |
+  | lww-register | Excluded as instructed | Retain original production proof; restricted paper no-chain route not attempted |
+
+  The exact paper OR-set remains proved outside the 22-entry production
+  registry. All positive ports retain ordinary and virtual all-version
+  execution guarantees. Simple state abstractions are identity, with
+  query-completeness proved from their immediate reads; guarded ports use the
+  future-query quotient. Neither construction assumes quotient merge congruence.
+
+  Research findings: plain RGA's global specification compatibility is
+  impossible even after quotienting (`RGA.AbstractPort.globalCompatibility_impossible`).
+  Its positive result therefore selects a strict accepted history using
+  timestamp uniqueness, causal support, birth provenance, and live-anchor
+  issuance evidence. Parameterized metadata lemmas reuse those facts without
+  importing the old direct RGA Join proof. The other guarded ports similarly
+  construct history evidence from the new VC-derived canonical configuration.
+
+  All eight negative results quantify over **every sound abstraction Model**,
+  including models without a QueryComplete premise. Five embedded variants
+  use distinct values at tied coordinates, producing an immediately observable
+  three-operation conflict clique forbidden by no-chain. Equal-value metadata
+  swaps alone were deliberately not reused as observational counterexamples.
+  Queue, MVR, and the registered issuer-births FugueMax fail operation-only
+  exact noncommutation. These are global-law obstructions over raw inputs,
+  not proofs of bad issuance-certified executions. Restricting the law domain
+  to issued inputs, changing its labels, or weakening no-chain would be a
+  separate formalism revision; none is silently assumed here.
+
+Validation: `scripts/check-paper1.sh` passes (3,455 build jobs), including
+standard-axiom audits for both OR-sets and all remaining positive abstraction
+ports, observable convergence, ordinary/virtual finite executions,
+representation Join/substitution, independent scoped history bridges, the
+canonical-only Join counterexample, the Neem guarded/unqualified comparison,
+all eight observational policy obstructions, typed complete registry coverage,
+paired controls, and proof-route dependency audits.
+`git diff --check` passes. No manuscript edits, commits, or pushes were made.
 
 ## 0. Finish the plain-MRDT cutover
 

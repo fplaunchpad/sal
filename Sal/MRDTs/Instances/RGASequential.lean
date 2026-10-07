@@ -361,15 +361,12 @@ structure VersionWellFormed (E : Set (Op RGAOp)) : Prop where
 
 /-- Generation honesty plus the framework's causal closure invariant imply
 the static facts used by the sequential proof. -/
-theorem versionWellFormed_of_execution {C : Configuration RGAM}
-    (exec : CertifiedExecution RGAM generation C)
+theorem versionWellFormed_of_evidence {C : Configuration RGAM}
+    (hgood : CanonicalConfig C) (hmint : MintHonest RGAM applicable C)
     {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
     (hver : C.ver v = some (s, E)) : VersionWellFormed E := by
-  have hgood : CanonicalConfig C :=
-    exec.canonicalConfig (fun _ _ => join _)
   have hsub := hgood.version_events_supported v s E hver
   have hclosed := hgood.version_events_causal v s E hver
-  have hmint : MintHonest RGAM applicable C := exec.mintHonest
   refine ⟨?_, ?_, ?_⟩
   · intro a b ha hb htime
     exact C.replayContext.ts_unique (hsub a ha) (hsub b hb) htime
@@ -391,6 +388,13 @@ theorem versionWellFormed_of_execution {C : Configuration RGAM}
     have hpastSet := (hpast.2 _).mp hmem
     exact ⟨parentReplica, parentAnchor,
       hclosed _ _ hpastSet.2 he⟩
+
+theorem versionWellFormed_of_execution {C : Configuration RGAM}
+    (exec : CertifiedExecution RGAM generation C)
+    {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
+    (hver : C.ver v = some (s, E)) : VersionWellFormed E :=
+  versionWellFormed_of_evidence
+    (exec.canonicalConfig (fun _ _ => join _)) exec.mintHonest hver
 
 /-- On certified version histories the simplified insertion edge agrees with
 the previous symmetric-conflict-then-timestamp definition. -/
@@ -733,16 +737,13 @@ theorem canonical_refines_list {ops : List (Op RGAOp)}
   rw [read_eq_sequence_of_birthGraveRel (birthGraveSound (canonical ops)),
     list_run_eq_sequence hperm hwf]
 
-theorem canonical_respects_rc {C : Configuration RGAM}
-    (exec : CertifiedExecution RGAM generation C)
+theorem canonical_respects_rc_of_evidence {C : Configuration RGAM}
+    (hgood : CanonicalConfig C) (hmint : MintHonest RGAM applicable C)
     {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
     (hver : C.ver v = some (s, E))
     {ops : List (Op RGAOp)} (hperm : listPermOf ops E) :
     respects (canonical ops) (@loOn RGAM.toUpdateSig rc C.replayContext E) := by
-  have hgood : CanonicalConfig C :=
-    exec.canonicalConfig (fun _ _ => join _)
   have hsub := hgood.version_events_supported v s E hver
-  have hmint : MintHonest RGAM applicable C := exec.mintHonest
   have hcan := canonical_listPermOf hperm
   have hordered := canonical_ordered ops
   have hall : ∀ e ∈ canonical ops, e ∈ C.events := by
@@ -799,6 +800,15 @@ theorem canonical_respects_rc {C : Configuration RGAM}
             | remove other =>
                 simpa [rc, rcOrder] using hvisConflict.2
       · exact (rc_not_before a b hab) hconcurrent.2.2.1
+
+theorem canonical_respects_rc {C : Configuration RGAM}
+    (exec : CertifiedExecution RGAM generation C)
+    {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
+    (hver : C.ver v = some (s, E))
+    {ops : List (Op RGAOp)} (hperm : listPermOf ops E) :
+    respects (canonical ops) (@loOn RGAM.toUpdateSig rc C.replayContext E) :=
+  canonical_respects_rc_of_evidence
+    (exec.canonicalConfig (fun _ _ => join _)) exec.mintHonest hver hperm
 
 noncomputable def listReplayAdequacy :
     @ReplayAdequacyCertificate RGAM generation rc := by

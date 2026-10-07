@@ -1,0 +1,1 @@
+{"counter": false, "seeds": [31, 173, 20261007, 601], "max_events": 9, "ticks_per_trial": 14, "negative_controls": 2, "merge_controls": 3, "counts": {"trials": 40000, "snapshots": 441459, "ordinary_merges": 123359, "multi_base_skips": 708, "dequeues": 93069, "enqueues": 225031, "noninitial_gca_merges": 39759, "continued_updates_after_merge": 58321}}

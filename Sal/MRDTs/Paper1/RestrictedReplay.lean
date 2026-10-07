@@ -1,12 +1,13 @@
 import Sal.MRDTs.Framework.MergeLaws
 
 /-!
-# The paper's restricted, operation-level conflict policy
+# Uniform-law adapter for an operation-level conflict policy
 
-This adapter enforces the paper restrictions before reusing the existing replay
-and Join proofs. Its `loOn` uses concrete noncommutation, including in the
-absorber clause. No-chain and exact noncommutation are requirements here, rather
-than optional properties of the broader production certificate.
+This earlier adapter assumes uniform event exactness to reuse the existing
+replay and Join proofs. Under that assumption its `loOn` agrees with concrete
+noncommutation, including in the absorber clause. The intended event-guarded
+contract is in `GuardedReplay`; its metatheory must use `paperOrder` directly.
+The uniform adapter and its negative results do not classify guarded policies.
 -/
 
 namespace Sal.MRDTs.Paper1
