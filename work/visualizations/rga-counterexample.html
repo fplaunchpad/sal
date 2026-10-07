@@ -1,0 +1,72 @@
+<div id="rga-counterexample-view">
+  <style>
+    #rga-counterexample-view { color:var(--foreground); }
+    #rga-counterexample-view .lanes { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; margin:20px 0; }
+    #rga-counterexample-view .event { padding:10px 0; border-bottom:1px solid var(--border); overflow-wrap:anywhere; }
+    #rga-counterexample-view .event span { display:block; }
+    #rga-counterexample-view .center { text-align:center; margin:18px 0; }
+    #rga-counterexample-view .orders { display:grid; gap:8px; margin:18px 0; overflow-wrap:anywhere; }
+    #rga-counterexample-view .answer { font-weight:500; }
+    @media(max-width:450px) { #rga-counterexample-view .lanes { grid-template-columns:1fr; gap:16px; } }
+  </style>
+  <h2>One execution, three explanations</h2>
+  <label class="form-label" for="rga-explanation">Criterion and application labels</label>
+  <select class="form-select" id="rga-explanation">
+    <option value="coarse">Stronger criterion · operation-only labels</option>
+    <option value="explicit">Stronger criterion · explicit insertion IDs</option>
+    <option value="literal">Literal criterion · operation-only labels</option>
+  </select>
+  <div class="center">Shared roots <code>1, 2</code> → fork</div>
+  <div class="lanes" aria-label="Two legal replica branches">
+    <section aria-labelledby="rga-lane-a">
+      <h3 id="rga-lane-a">Replica A</h3>
+      <div class="event"><code>remove(1)</code></div>
+      <div class="event"><code data-event="4">addAfter(2)</code><span class="text-small">Actual inserted ID: 4</span></div>
+      <div class="event"><code data-event="5">addAfter(2)</code><span class="text-small">Actual inserted ID: 5</span></div>
+    </section>
+    <section aria-labelledby="rga-lane-b">
+      <h3 id="rga-lane-b">Replica B</h3>
+      <div class="event"><code>remove(2)</code></div>
+      <div class="event"><code data-event="7">addAfter(1)</code><span class="text-small">Actual inserted ID: 7</span></div>
+      <div class="event"><code data-event="8">addAfter(1)</code><span class="text-small">Actual inserted ID: 8</span></div>
+    </section>
+  </div>
+  <div class="center">Merge → query <code>[5,4,8,7]</code></div>
+  <div class="orders" aria-live="polite">
+    <div id="rga-order-a">Required: remove(1) → both addAfter(2)</div>
+    <div id="rga-order-b">Required: remove(2) → both addAfter(1)</div>
+    <div class="answer" id="rga-verdict">No witness in either the strict or permissive language</div>
+    <div class="text-small" id="rga-witness">All event orders and globally fresh allocations excluded</div>
+  </div>
+  <script>
+    (() => {
+      const root = document.getElementById('rga-counterexample-view');
+      const control = root.querySelector('#rga-explanation');
+      const modes = {
+        coarse: ['Required: remove(1) → both addAfter(2)', 'Required: remove(2) → both addAfter(1)', 'No witness in either the strict or permissive language', 'All event orders and globally fresh allocations excluded'],
+        explicit: ['remove(1) commutes with addAfter(4,2) and addAfter(5,2)', 'remove(2) commutes with addAfter(7,1) and addAfter(8,1)', 'A witness exists in both languages', 'Witness: insert IDs 1,2,4,5,7,8; then remove 1 and 2'],
+        literal: ['No implementation-conflict ordering for these commuting updates', 'The extra specification-visibility requirement is absent', 'A witness exists in both languages', 'Witness: insert IDs 1,2,4,5,7,8; then remove 1 and 2']
+      };
+      const ids = ['rga-order-a','rga-order-b','rga-verdict','rga-witness'];
+      const valid = value => Object.prototype.hasOwnProperty.call(modes,value);
+      function show(value) {
+        control.value = valid(value) ? value : 'coarse';
+        const mode = control.value;
+        ids.forEach((id,index) => { root.querySelector('#'+id).textContent = modes[mode][index]; });
+        root.querySelectorAll('[data-event]').forEach(node => {
+          const id = Number(node.dataset.event), anchor = id < 6 ? 2 : 1;
+          node.textContent = mode === 'explicit' ? `addAfter(${id},${anchor})` : `addAfter(${anchor})`;
+        });
+      }
+      show(window.openai?.widgetState?.modelContent?.mode);
+      control.addEventListener('change',() => {
+        show(control.value);
+        window.openai?.setWidgetState?.({modelContent:{mode:control.value},privateContent:null})?.catch(() => {});
+      });
+      window.addEventListener('openai:set_globals', event => {
+        const value = event.detail?.globals?.widgetState?.modelContent?.mode;
+        if(valid(value)) show(value);
+      });
+    })();
+  </script>
+</div>

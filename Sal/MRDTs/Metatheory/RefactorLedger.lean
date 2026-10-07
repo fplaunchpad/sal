@@ -1,4 +1,5 @@
 import Sal.MRDTs.Framework.StateGC
+import Sal.MRDTs.Paper1.Ledger
 import Sal.MRDTs.Metatheory.Countermodels.TaggedORSet
 import Sal.MRDTs.Framework.Product
 import Sal.MRDTs.Metatheory.ProductionLedger

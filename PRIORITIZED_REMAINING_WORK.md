@@ -4,7 +4,471 @@ This is the canonical development task list for Sal. This repository owns
 Lean, JavaScript, executable validation, benchmark artifacts, and the two
 anonymous long-form working papers under `docs/`.
 
+## Paper1: specialize the framework to the submission formalism
+
+Branch: `paper1`, created from `main`. Manuscript: sibling
+`../Sal_paper`, with `main.tex` selecting the active sections.
+KC approved the remaining policy choices and activated the goal on 2026-10-05.
+The core mechanization is complete and audited on that date: the final paper
+gate and production ledger build pass. Manuscript reconciliation remains item
+13 below; it is distinct from the completed literal-criterion mechanization.
+
+**Agreed decisions:** retain execution and issuance evidence; restore
+`rc-no-chain`; introduce the paper's explicit RA-linearizability definition;
+represent the sequential specification as a prefix-closed language of histories;
+use operation-level `rc` and exact concrete noncommutation equivalence.
+The later agreement retains timestamp and replica ID in sequential update
+inputs; the original operation-only RGA investigation is a scoped counterfactual.
+The paper has yet to describe the retained issuance discipline.
+
+**Scope:** mechanize the paper's explicit criterion and sufficient conditions
+for issuance-certified executions, establish the core result with the exact
+paper OR-set, and investigate the sequential-history bridge with RGA.
+
+The research question beyond the paper's core OR-set argument is: **which
+execution and honest-issuance facts suffice to construct an admitted sequential
+history for an issuance-sensitive datatype?** Do not start broad instance
+migration, runtime work, or polishing before investigating this question.
+
+### Paper1 research evidence
+
+The manuscript is the independent oracle for trusted definitions. Lean is the
+formal oracle for implications and counterexamples, not for manuscript intent.
+The initial candidate claim that the active definition rejects no-op removal
+is refuted: an empty implementation conflict order permits the reversed
+`[remove, add]` witness. The smallest falsifier is one sequential add followed
+by one no-op removal and a `true` read.
+
+| Finding | Evidence class | Formal oracle and scope |
+|---|---|---|
+| History specifications can be represented directly as prefix-closed languages | Machine-checked | `Paper1.HistorySpec`; abstract labelled runs construct a language without determinism or final-state acceptance |
+| Restricted operation policies reuse the existing set-relative replay theory | Machine-checked | `RestrictedLaws.replayLaws`, `paperOrder_iff_loOn`; exact noncommutation and operation-level no-chain are explicit requirements |
+| Five merge VCs plus an independent sequential-history premise imply the active criterion | Machine-checked | `certifiedRA_of_fiveVCs`; issuance-certified ordinary/virtual traces retain mint provenance |
+| The exact paper OR-set meets the active criterion | Machine-checked | `ORSet.certifiedRA`, `ORSet.certifiedRAV`, `ORSet.rawUniformRA`; finite reachable state fragment, all add tags retained, ordinary-set language, one history for all queries at each raw reachable version |
+| The motivating OR-set defeater is a legal RA-linearizable execution | Machine-checked | `ORSet.Execution.defeater_execution`, `defeater_ra_execution`, `figure_states`, `figure_observations`; retained-semantics realization includes explicit fork/copy versions and checks both true branch reads and the final false read |
+| The active and appendix criteria differ on the no-op-removal example | Machine-checked counterexample | `CriterionCounterexample.criteria_differ_on_reachable_mutation`; a legal, issuance-certified trace satisfies the literal criterion and fails the appendix candidate |
+| The no-op-removal mutation converges despite its incorrect sequential answer | Machine-checked | `CriterionCounterexample.mutant_join`, `raw_replay_witness`, `raw_store_convergence`; every raw reachable store has canonical retained-add states, and equal event sets give equal stored states |
+| Every raw execution of the no-op mutation meets the literal criterion | Machine-checked | `CriterionCounterexample.mutant_rawRA`; removals-first witnesses explain retained additions, although `fold_history_sound_fails` rejects the unrestricted sequential proof premise |
+| The old deterministic RGA fold cannot factor through operation-only labels | Machine-checked | `RGA.old_list_run_does_not_factor`; singleton insertions with different timestamps have identical projections and distinct list queries |
+| Independent nondeterministic allocation supplies a projected RGA history bridge | Machine-checked | `RGA.admitted_of_execution`, `RGA.certifiedRA`, `RGA.certifiedRAV`; fresh allocation registry prevents reuse after deletion, missing anchors are explicitly no-ops |
+| Allocating RGA labels have specification conflicts missing from the implementation | Machine-checked | `RGA.specification_conflicts_not_covered`; both crossed insertion/deletion pairs have contextual language conflicts; this disproves a sufficient premise, not the full stronger criterion |
+| Operation-only globally fresh allocating specification visibility fails | Machine-checked full counterexample | `AllocatingCounterexample.certified_counterexample`; actual eight-event certified trace, all witness orders and unbounded natural-number allocation choices excluded by a proved abstraction |
+| Strict operation-only specification visibility fails | Machine-checked full counterexample | `CrossedExecution.Evidence.strict_failure`, `mint_certified`; eight-event actual trace from the initial store, all ordering/allocation choices excluded. `Strict.Investigation.six_event_no_history` separately excludes all from-empty witnesses for the original six-event labels |
+
+The active definition's omission of specification visibility is a manuscript
+decision to resolve with Vimala. Keep `RALinearizable` and
+`SpecificationRALinearizable` separate until that decision is made. The latter
+has a sufficient lifting premise `SpecificationConflictsCovered`; do not assume
+it for all-commuting RGA updates or equate it with honest issuance.
+
+### Interpretation and remaining manuscript work
+
+The checked criterion follows active `ralin.tex`, not the commented-out
+appendix. The appendix candidate uses contextual language commutation: swapping
+adjacent update labels preserves admission in every labelled prefix and suffix.
+This is an explicit completion of the appendix's underspecified spec-conflict
+notation, awaiting author agreement.
+
+`RestrictedLaws.noncomm_exact` is uniform over every pair of timestamped events
+with the given operation labels. It is stronger than an existential operation
+conflict interpretation. The exact OR-set and current RGA satisfy this uniform
+interpretation; no claim is made for LWW.
+
+The proof retains the development's operational semantics. `Step.fork` allocates
+a fresh, ranked child snapshot, rather than aliasing the source head. The
+manuscript omits its fork rule and has differing descriptions of allocation;
+no equivalence with an alias-head fork semantics is asserted. `Step.apply`
+checks timestamp uniqueness both in the global event registry and across all
+stored versions (`freshTime`, `freshStore`); neither premise requires numeric
+timestamp monotonicity in isolation. However, every `Configuration` carries
+`causal_mono : vis a b → a.time < b.time`, so a valid successor of apply does
+require its timestamp to exceed all events at the issuer's head. This is
+stronger than the displayed manuscript rule's uniqueness premise. The RGA
+issuer additionally requires an insertion's
+identifier to exceed a non-root referenced anchor, an instance-specific assumption
+used by the list-history bridge. Versions are numerically ranked to support
+well-founded ancestry.
+These store constraints and instance issuance premises are explicit in the
+theorems, not consequences of the RA criterion. Resolve their presentation
+with Vimala.
+
+The theorem map is `Paper1/Ledger.lean`: it audits all principal soundness,
+OR-set, RGA, and counterexample dependencies against Lean's standard axioms.
+`check-paper1.sh` builds it and rejects unproved declarations. Existing GC and
+refinement packages remain under their existing public contracts; the release
+gate validates those packages, not a new history-language GC theorem.
+Manuscript reconciliation and broader GC adaptation remain follow-up work.
+
+| Manuscript concept | Checked declaration |
+|---|---|
+| `ralin.tex`: sequential history language and event projection | `HistorySpec`, `HistoryMachine.toSpec`, `projectedUpdates` |
+| `ralin.tex`: set-relative order with defeaters | `paperOrder`, `paperOrder_iff_loOn` |
+| `ralin.tex`: configuration, execution, implementation criterion | `RALinearizable`, `RAExecution`, `RAImplementation` |
+| `proof_strategy.tex`: replay restrictions and five merge obligations | `RestrictedLaws`, `PaperMergeVCs.toCanonical` |
+| Independent sequential premise plus merge soundness | `certifiedRA_of_fiveVCs`, `certifiedRA_of_fiveVCs_issued`, `CertifiedRAV.executions` |
+| Stronger one-witness-for-all-queries guarantee | `UniformVersionsRALinearizable`, `uniform_ra_of_replay_total` (total sequential premise) |
+| `motivation.tex`: exact tagged OR-set and ordinary-set explanation | `ORSet.D`, `ORSet.join`, `ORSet.simulation`, `ORSet.rawRA` |
+| `seq_spec.tex`: no-op-removal claim | `CriterionCounterexample.criteria_differ_on_reachable_mutation` (refutes literal rejection) |
+| `appendix_soundness.tex`: independent specification visibility | `SpecificationRALinearizable`, `specificationCertifiedRA_of_join_issued` (separate candidate) |
+| Retained issuance-sensitive RGA investigation | `RGA.admitted_of_execution`, `RGA.certifiedRAV`, `RGA.specification_conflicts_not_covered` |
+
+1. [x] **Retain execution and issuance evidence.** Keep store semantics,
+   causal closure, timestamp freshness, ancestor/event-set correspondence,
+   mint provenance, `Issuance.CanIssue`, and issuance-certified executions.
+   State these assumptions explicitly in soundness theorems.
+2. [x] **Restore restricted replay assumptions.** Restore `rc-no-chain` and
+   derive acyclicity from it. LWW need not fit this restricted branch.
+   Make `rc` a relation on application operations lifted
+   to events, and require
+   `¬ commutes(a,b) ↔ rc(a,b) ∨ rc(b,a)`. State conditional commutation using
+   concrete noncommutation, and make explicit how operation-level commutation
+   quantifies over timestamped events.
+3. [x] **Match the paper's set-relative linearization relation.** Keep
+   visibility edges between concretely noncommuting events. Keep concurrent
+   `rc` edges unless their target has a visible, noncommuting absorber inside
+   the event set being replayed. Prove correspondence with existing `loOn`
+   under the restored conflict equivalence to reuse its metatheory.
+4. [x] **Define a history-language sequential specification.** Introduce
+   application-update labels and query/returned-value labels, with
+   `HistorySpec.admits : List Label → Prop`, prefix closure, and admission of
+   the empty history. Decidability is unnecessary. Define event-to-operation
+   projection explicitly; review the operation alphabet so implementation
+   metadata does not enter the specification unintentionally.
+5. [x] **Construct history specifications from abstract machines.** Use an
+   abstract state, initial state, and labelled transition relation. Admit a
+   history exactly when a finite run from the initial state consumes its
+   labels, with no final-state acceptance condition. Prove prefix closure by
+   truncation. Support partial and nondeterministic specifications;
+   deterministic update/query machines are a special case. The language is
+   the public specification, and the machine is one way to define it.
+6. [x] **Define RA-linearizability explicitly.** At a configuration, for
+   each active replica and query, require a sequence enumerating its head's
+   events, respecting the set-relative order, whose projected updates followed
+   by the actual query result are admitted. An execution satisfies the
+   criterion at every reached configuration; an implementation satisfies it
+   for every execution in the selected class. Distinguish raw and
+   issuance-certified guarantees, with the initial soundness theorem targeting
+   the latter. Keep abstraction relations, certificates, and proof obligations
+   out of the correctness predicate itself.
+7. [x] **Separate canonical correctness from RA-linearizability.** Prove
+   existence and uniqueness of canonical replay states under the restricted
+   replay assumptions. Require canonical correctness at every allocated
+   version, including historical merge ancestors. Derive convergence from
+   this invariant; use it to establish the separate RA-linearizability
+   criterion.
+8. [x] **Reuse the five merge VCs and Join derivation.** VC1 is branch
+   symmetry; VC2 canonical initial-base identity; VC3 local redistribution;
+   VC4 shared redistribution; VC5 causal delta. Preserve supported-set,
+   closure, canonical-state, and maximal-event hypotheses. Derive Join from
+   these conditions, while retaining direct Join proofs as an alternative.
+   Distinguish weakly closed and fully causally closed Join obligations:
+   restricting contexts alone does not change the quantified branch sets.
+9. [x] **Prove operational canonical correctness.** Establish preservation
+   through apply, fork, query, and ordinary merge. Reuse virtual merge bases
+   where compatible. Resolve and document fork-allocation and timestamp
+    differences between the paper and development explicitly (recorded above;
+    the theorem concerns the retained semantics, without asserting equivalence
+    to alias-head fork semantics).
+10. [x] **Bridge canonical correctness to history acceptance and
+    RA-linearizability.** Prove that an appropriate canonical replay's
+    projected history followed by the implementation's query result is
+    admitted. Offer abstract-state simulation as a sufficient method:
+    initial-state agreement, update simulation, and query agreement. For
+    issuance-sensitive datatypes, use execution and mint provenance to prove
+    witness admissibility. Original issuance does not imply issuability at a
+    reordered replay position. Derive one-witness-for-all-queries and
+    all-allocated-version results separately as stronger conclusions.
+11. [x] **Validate with the paper's exact OR-set.** Retain all addition
+    tags rather than substitute the production efficient OR-set. Define an
+    independent ordinary-set history specification. Prove the defeater
+    execution is RA-linearizable, and test the claim that no-op removal is
+    rejected. The claim is false
+    under the literal criterion: the checked mutation satisfies it and fails
+    the separate appendix candidate. `mutant_join` and `raw_store_convergence`
+    independently establish convergence on all raw reachable stores.
+    Use PASS+FAIL SPOTs with hand-derived
+    expected outcomes.
+12. [x] **Investigate an issuance-sensitive example, starting with RGA.**
+    Determine which execution and issuance facts suffice to construct an
+    admitted sequential history. Surface incompatibility with restricted
+    replay assumptions rather than weakening them automatically. This is the
+    main research milestone beyond the core OR-set argument.
+13. [ ] **Reconcile manuscript and branch after definitions stabilize.**
+    Map paper definitions and theorems to exact Lean declarations. Document
+    issuance restrictions and remaining semantic differences. Review
+    GC/refinement compatibility, and synchronize the branch README and theorem
+    ledger. Broad instance migration was subsequently authorized in the
+    full-input migration goal below; runtime work and manuscript edits remain
+    outside that goal.
+
+## Paper1 overnight investigation: specification visibility and RGA
+
+Goal: determine whether honest issuance supplies a full sequential-history
+bridge for the stronger appendix candidate, and whether insertion identity must
+be part of the application label. Work on `paper1`, preserve the previous core,
+and do not edit the manuscript or commit/push.
+
+Trusted definitions are `SpecificationRALinearizable`, `HistorySpec.Commutes`,
+the existing `RGA.allocationMachine`, `RGA.Strict.machine`, `RGAM`, and
+`generation`. The manuscript remains the oracle for author intent; this enquiry
+uses the stronger criterion as an explicit research candidate.
+
+| Question | Candidate claim | Smallest falsifier | Formal oracle | Status |
+|---|---|---|---|---|
+| Operation-only allocating language | Every certified reachable RGA head has a spec-visible admitted witness | One fully reachable, honestly issued head with no permissible ordering/allocation producing its actual read | `AllocatingCounterexample.certified_counterexample`, `Comparison.same_execution_comparison` | Machine-checked refutation; all orders and unbounded fresh allocations excluded |
+| Strict live-anchor language | The crossed-delete obstruction rules out all from-empty witnesses | An alternative from-empty history returning `[4,6]` and preserving both spec-visible local orders | `Strict.Investigation.six_event_no_history`, `CrossedExecution.Evidence.strict_failure`, `mint_certified` | Machine-checked; final absence and physical deletion force a cycle; this exclusion does not require global freshness |
+| Explicit insertion identifiers | Canonical insert-first histories satisfy the stronger criterion with explicit ID labels | One certified event set whose projected canonical history violates admission or spec visibility | `Identified.certifiedStrictRA/RAV`, `certifiedMissingNoopRA/RAV`, `Comparison.strict_alphabet_comparison` | Machine-checked for every stored version; same certified crossed endpoint provides reachable nonvacuity |
+
+1. [x] Resolve the primary operation-only allocating criterion universally, by
+   an end-to-end theorem or a full certified counterexample covering every
+   ordering and fresh allocation choice.
+
+The falsifier starts with shared root insertions 1 and 2. One branch deletes 1
+and inserts 4 and 5 after 2; the other deletes 2 and inserts 7 and 8 after 1.
+The actual ancestor-aware merge reads `[5,4,8,7]`. `CrossedExecution.execution`
+checks the store steps and greatest common ancestor;
+`CrossedExecution.Evidence.mint_certified` checks honest issuance. Both coarse
+specifications fail, whereas both explicitly identified specifications accept
+the identical endpoint (`Comparison.same_execution_comparison`).
+
+The primary exclusion is not bounded identifier testing. `transition_projects`
+and `runs_project` map arbitrary natural-number allocations to the two named
+anchor classes and an other-identifier count. Forgetting reservations in the
+other class overapproximates the language. Kernel-checked finite certificates
+then exclude four surviving children for every crossed order; the event-order
+bridge covers every permutation. The smaller six-event permissive scenario
+does admit a witness by renaming allocations and using a missing-anchor no-op
+(`single_cross_relabeling`), so the earlier fixed-prefix argument alone was
+insufficient.
+
+2. [x] Resolve the strict from-empty crossed trace, without assuming its roots
+   allocated the implementation IDs. Prove the trace genuinely reachable and
+   honestly issued, and keep PASS+FAIL controls.
+3. [x] Compare explicit-ID labels through an explicit event projection. Keep
+   the concrete datatype and issuer unchanged. State fresh-ID, anchor-birth,
+   deletion-target-birth, visibility, and causal-closure assumptions precisely.
+
+The explicit-ID machine is an ordinary list plus an independent finite
+allocation registry. Its label is `addAfter id anchor`, with `project` mapping
+the insertion event's identifier into this visible application payload; replica
+metadata is stripped. `projection_does_not_factor` checks that this is a real
+alphabet change, not a function of the old anchor-only label. The original
+operation-only criterion remains definitionally the `Op.op` specialization of
+`ProjectedSpecificationRALinearizable`.
+
+The positive proof uses unique insertion IDs for registry freshness; causally
+closed anchor births and numeric anchor ordering for strict canonical
+acceptance; causal timestamp ordering for visible insertion pairs; honest
+insertion-origin grave guards to exclude a prior visible deletion of the new
+ID or non-root anchor; and independent disjoint insertion/deletion and
+idempotent-deletion commutation for the remaining edges. Full timestamp
+uniqueness, deletion-target births, and legacy interaction-order constraints are
+inherited sufficient evidence. The theorem does not establish their minimality
+or necessity; abstract removal is total/idempotent and its run case does not
+inspect deletion-target births.
+
+Adversarial checks include ID zero, deletion before an independent root
+insertion, repeated deletion, children retained after deleting their anchor,
+and the actual certified crossed trace. The existing framework permits data ID
+zero; anchor zero always denotes the root sentinel. Do not silently assume an
+exclusive sentinel reservation or positive timestamps. Both identified
+languages have PASS+FAIL controls for physical deletion, order, strict-anchor
+legality, and registry non-reuse. A finite auxiliary campaign checks 4,484
+insertion/deletion diamonds over 38 list/registry states and detects a discarded
+anchor-guard mutant; that bounded campaign is evidence, not the general proof.
+
+4. [x] Audit positive results for vacuity and trusted-model changes. Record
+   search seeds, sizes, and failures separately from proofs; a bounded search
+   or failed sufficient premise is not a full criterion refutation.
+
+Exploratory allocation search used seed 3416, with 300 generated honest event
+graphs per size and replica count (2 and 3 replicas). The completed size-3
+through size-8 prefix covered 3,600 cases: no detected falsifiers, 39 resource
+unknowns at size 8, and 3,000 definite successes through size 7. Its per-case
+state cap was 150,000; the campaign was stopped during size 9 after the directed
+eight-event falsifier was found. The transient script was
+`/tmp/rga-alloc-search.py`, invoked with `python3 /tmp/rga-alloc-search.py 3416`;
+the counts were captured from live output, without a retained output log.
+These search results are exploratory evidence only. The checked theorem covers
+all 40,320 tagged event permutations; 4,480 obey the four crossed edges and
+quotient to 560 coarse action words. The proved allocation abstraction covers
+all natural identifiers, independently of search caps.
+
+The directed eight-event search was reproduced during the final goal audit:
+it found no witness with a 2,000,000-state cap and a peak of 2,392 states
+(`/tmp/paper1-directed-search-audit.log`). This agrees with, but does not
+replace, the universal Lean counterexample.
+
+5. [x] Integrate results into the theorem ledger and README, run appropriate
+   Lean/axiom gates, and record any exact remaining obligation. Do not mark the
+   goal complete if a required question is unresolved.
+
+Final validation (2026-10-06): `scripts/check-paper1.sh` passes (3,155 build
+jobs), the production `RefactorLedger` builds (3,417 jobs), and `git diff
+--check` passes. Principal declarations have only `propext`, `Classical.choice`,
+and `Quot.sound` as transitive axioms; no admitted production proof or native
+evaluation axiom is used. The previous full release gate passed 187 runtime
+tests; this investigation changes no runtime implementation. The research
+questions above are resolved. Necessity/minimality of all inherited evidence
+and manuscript author intent remain separate follow-up questions, not claims
+of these sufficient-condition theorems. No manuscript edit, commit, or push.
+
+The resubmitted goal was audited against the current theorem bodies and
+definitions on 2026-10-06. All five requirements are covered by the declarations
+above. The ledger's obsolete fixed-prefix-only description was corrected, and
+the all-version positive result and non-factoring projection now have explicit
+axiom checks. Both Lean gates and `git diff --check` passed again.
+
+## Paper1 agreed full event sequential inputs
+
+KC agreed on 2026-10-06 that sequential update labels retain the original
+timestamp, replica ID, and application operation, matching MRDT update inputs.
+Insertion uses its supplied timestamp as the inserted identifier. Freshness and
+honest issuance remain execution assumptions; sequential witnesses may reorder
+events without changing their inputs or requiring increasing replay timestamps.
+
+Research claim: the independent list/registry language with full event inputs
+satisfies the stronger criterion on certified RGA executions. A falsifier is a
+certified head without a full-input sequential witness; the existing crossed
+execution provides a nonvacuity control. Lean checks the theorem, while the
+agreed signature and `rgaUpdate` identifier use are the definition oracle.
+
+- [x] Define full-input history semantics and prove correspondence with the
+  existing identified list language, including contextual conflicts.
+- [x] Prove ordinary/virtual certified guarantees and PASS+FAIL controls for
+  the crossed trace, supplied IDs, replicas, and non-monotone witness times.
+- [x] Update README and theorem ledger, and pass Lean/axiom gates. Keep the
+  old operation-only results as explicitly scoped counterfactuals.
+
+Machine-checked evidence: `HistoryInputs.lean` defines full event literal and
+stronger criteria. `HistorySpec.withInputs_commutes_iff` proves exact contextual
+conflict correspondence for surjective input mappings, and
+`HistoryMachine.toSpec_withInputs` connects machine runs to the language.
+`RGA.EventSpec.machine` accepts the entire original tuple and uses its timestamp
+as the new ID; `replica_independent` proves that replica placement is accepted
+but does not affect current list transitions. The strict list/registry language
+is primary; the missing-anchor variant is retained separately.
+
+`RGA.EventSpec.certifiedRA/RAV` proves the stronger full-input criterion,
+`certifiedLiteralRA/RAV` gives the literal criterion, and
+`versions_of_execution` covers every stored version. `certifiedExecutions/V`
+covers every visited configuration of certified traces. `commutes_iff` proves
+that retaining full inputs introduces no extra conflicts compared with the
+identified alphabet. `crossed_accepted` checks the original actual certified
+eight-event head and nonempty `[5,4,8,7]` read. `supplied_inputs_control` accepts
+the supplied IDs across two replicas with replay timestamps `4,7,5` and rejects
+the deletion-no-op answer. The model retains global timestamp freshness and
+honest issuance from the existing framework; no minimality claim is added.
+
+Validation on 2026-10-06: `lake build Sal.MRDTs.Paper1.RGAEventSpec` passes;
+`scripts/check-paper1.sh` passes (3,157 jobs), including all earlier research
+results and the new transitive axiom audits; the production `RefactorLedger`
+build passes (3,419 jobs); `git diff --check` passes. No new axioms or unproved
+declarations. The concrete RGA, issuer, runtime, and manuscript are unchanged.
+
+## Paper1 observable commutation compatibility bridge
+
+KC requested on 2026-10-06 that specification compatibility be made explicit
+in the sequential-history bridge, separate from the five merge VCs.
+
+- [x] Expose `CommutationCompatibility`: concrete commutation implies
+  contextual observable commutation in the independent history language.
+  Contexts include future updates and queries; abstract state equality is not
+  required. Prove equivalence to the existing operation-only
+  `SpecificationConflictsCovered` premise.
+- [x] Prove specification-conflict visibility is contained in `paperOrder`
+  under this VC, and upgrade full-event literal RA witnesses to the stronger
+  criterion. Combine compatibility, five merge VCs, and independent history
+  acceptance in a certified virtual/ordinary sufficient-condition theorem.
+- [x] Check positive controls for the exact OR-set with operation-only and
+  full-event labels, and a negative theorem for the no-op-removal mutant.
+
+Evidence: `Sal/MRDTs/Paper1/CommutationBridge.lean`, audited in `Ledger.lean`.
+This exposes an already present contrapositive premise and supplies the
+full-input ordering adapter; it does not replace sequential history acceptance
+or change the literal RA definition. Global compatibility is sufficient, not
+necessary. In particular, the existing RGA guarantee continues through the
+issued chosen-history route, not an assertion of global compatibility.
+The proposed immediate-query-only equivalence has not been substituted for
+contextual equivalence: later operations and partial-history legality can
+distinguish orders that an immediate query cannot distinguish.
+The manuscript has not been edited. References to an appendix mean only the
+excluded `appendix_soundness.tex` source, not an included paper appendix.
+Validation: the targeted `CommutationBridge` build and the standard-axiom
+audit of all seven new public results pass; `git diff --check` passes. The
+paper1 ledger gate subsequently passed (3,158 jobs). Its duplicate production
+build was stopped so the costly existing allocation certificate ran once;
+the complete production/runtime gate is rerun in the migration milestone below.
+
+## Paper1 full-input framework and production migration
+
+Goal authorized by KC on 2026-10-06: finish the full-input
+sequential-history framework and migrate all production MRDTs compatible with
+the paper's restricted assumptions, in parallel. Preserve independent
+specifications, execution/issuance evidence, positive/negative controls, and
+literal RA as a consequence of specification-visible RA. Keep LWW aside;
+report other incompatibilities without weakening restrictions. Do not edit
+the manuscript. The original goal also excluded commits and pushes; KC
+authorized committing and pushing the completed updates on 2026-10-07.
+
+- [x] Generalize simulations, full-input history acceptance, honest-issuance
+  and certified-execution history premises, Join/five-VC soundness, all-version
+  correctness, and ordinary/virtual trace transfer (`EventBridge.lean`).
+- [x] Integrate exact OR-set using the independent ordinary-set machine and
+  plain RGA using its independent list/registry and execution-scoped canonical
+  history proof (`ORSetEventSpec.lean`, `RGAEventMigration.lean`).
+- [x] Retain production causal-origin legality in the history-language adapter
+  for independent TreeMove/AegisSheet in-place reference machines
+  (`GuardedHistory.lean`, `TreeSheetEventSpec.lean`).
+- [x] Complete all compatible production ports and their paired controls;
+  targeted builds and standard-axiom audits pass. Joint ledger audit is below.
+- [x] Check a typed coverage inventory against the exact production registry
+  (`MigrationCoverage.packages_eq_production`, `counts`): original packages,
+  signatures, issuers, order and names all preserved; 12 compatible, 9 proved
+  incompatible with unchanged restrictions, 1 explicitly excluded LWW.
+- [x] Integrate new declaration/axiom audits, synchronize README, and finish
+  paper1 and production/runtime verification gates.
+
+Validation: `scripts/check-paper1.sh` passes (3,410 build jobs), including
+standard-axiom audits of the new bridges, controls, and coverage inventory.
+`scripts/check-mrdt-refactor.sh` passes (3,438 build jobs), public-certificate
+checks, all 187 runtime tests, and validation of 569 benchmark records.
+`git diff --check` passes. No manuscript edits were made.
+
+Counting correctness results rather than restricted-law packages, 13 of the
+22 original entries now have full-input specification-visible RA proofs:
+the twelve compatible entries plus the direct EfficientORSet result. Eight
+entries retain main's verification but lack this new criterion proof; LWW is
+excluded. The additional exact paper OR-set is outside the original registry.
+
+Migration inventory (targeted instance proofs and typed coverage are checked):
+
+| Original production entries | Disposition | Evidence |
+|---|---|---|
+| grow-only-set, add-store, finite-add-store | Compatible | `SimpleEventPorts.Add/Finite` independent list-based set observation |
+| counter, increment-only-counter, pn-counter | Compatible | `SimpleEventPorts.Delta` independent sum observation |
+| flat-grow-only-set, flat-grow-only-map | Compatible | `SimpleEventPorts.Boolean` membership; map retains immutable bindings |
+| bounded-counter | Compatible, issued chosen-history route | `BoundedCounterEvent` guarded independent per-replica balances |
+| rga | Compatible, execution-scoped route | `RGA.EventMigration.history`, exact supplied insertion IDs |
+| tree-move, aegis-sheet | Compatible, causal-origin history route | `TreeSheetEventSpec`, public legality preserved |
+| efficient-or-set | Incompatible with exact operation-level replay restriction; direct full-input history result also proved | `EfficientORSet.EventSpec.noncommutation_does_not_factor`, `restrictedLaws_impossible`, `certifiedVersionsRAV` |
+| queue, mvr | Incompatible with exact operation-level noncommutation | `PolicyObstructions.Queue/MVR.no_restricted_policy` |
+| embed-rga, sided-embed-rga, peritext-embed-rga, sided-peritext-core, sided-peritext-rich-core, fugue-max | Incompatible with exact operation-level policy plus no-chain on unchanged carriers | `RGAEmbeddingObstructions`, including exact registered signatures |
+| lww-register | Excluded by user instruction | Original production verification retained |
+
+The nine exceptions are proof results, not unfinished compatible ports.
+EfficientORSet and compact MVR have metadata-sensitive noncommutation that
+cannot factor through application-operation labels. Queue likewise fails
+operation-level exactness. Embedded RGA variants have same-application-label
+event pairs that do not commute, forcing a forbidden self conflict under
+exactness/no-chain. These raw-state policy obstructions do not assert an
+honestly issuable bad execution or invalidate the broader production proofs.
+BoundedCounter demonstrates why global commutation compatibility remains an
+optional sufficient route: its guarded abstract language fails that VC while
+issued causal witnesses establish the stronger criterion.
+
 ## 0. Finish the plain-MRDT cutover
+
 
 - [x] Create `refactor/plain-mrdt-framework` and preserve the previous tree on
   `archive/conditioned-mrdts-2026-08-21`.
