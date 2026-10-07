@@ -1,0 +1,120 @@
+\section{The execution model and recursive merge bases}
+\label{sec:execution}
+
+This section specifies the store underlying certified execution in
+Definition~\ref{def:issuance}. A merge base is a property of the version graph;
+its state is then used by the datatype's three-way merge.
+
+\begin{definition}[Ranked store and ordinary execution]
+\label{def:execution}
+A configuration is $C=(S,h,\operatorname{par},\prec_C)$, where
+$S(v)=(s_v,E_v)$ is a partial store, $h(r)$ is an active replica's allocated
+head, and $\operatorname{par}(v)$ lists its parents. Version ranks are natural
+numbers and each parent has smaller rank. Version $0$ stores
+$(\sigma_0,\varnothing)$. Visibility endpoints belong to the events represented
+at active heads. Visible predecessors of a head's events belong to that head,
+distinct events have distinct timestamps, and
+\[
+ a\prec_C b\Longrightarrow a.t<b.t.
+\]
+Distinct events from the same replica are visibility-comparable. Reachable
+stores additionally have transitive visibility and causally closed stored
+histories. Write $v\preceq w$ for the reflexive transitive closure of parent
+edges directed from parent to child.
+
+All steps preserve the store except at the explicitly fresh version, preserve
+other heads, and leave visibility unchanged unless stated otherwise:
+\begin{enumerate}
+\item \textbf{Fork.} For a fresh replica $r'$ and existing head $h(r)=v$,
+allocate $v'>v$ with $S(v')=S(v)$, $\operatorname{par}(v')=[v]$, and
+$h(r')=v'$. The source head is unchanged.
+\item \textbf{Apply.} For $h(r)=v$, $S(v)=(s,E)$, and $e=(t,r,o)$,
+allocate $v'>v$ with
+\[
+ S(v')=(u(s,e),E\cup\{e\}),\qquad
+ \operatorname{par}(v')=[v],\qquad h(r)=v'.
+\]
+Replace visibility by $\prec_C\ \cup\ (E\times\{e\})$.
+The timestamp is fresh against all events in the registry and every stored
+history. The target configuration must satisfy the clock condition above,
+so $p.t<t$ for every $p\in E$. Raw apply has no client guard; certified apply
+adds $G(e,s)$ from Definition~\ref{def:issuance}.
+\item \textbf{Ordinary merge.} For heads $v_1,v_2$ with stored states
+$s_1,s_2$, choose an allocated greatest common ancestor $g$ as defined below.
+Allocate $v'>v_1,v_2$ with
+\[
+ S(v')=(m(s_g,s_1,s_2),E_{v_1}\cup E_{v_2}),\qquad
+ \operatorname{par}(v')=[v_1,v_2].
+\]
+Update the receiving replica's head to $v'$.
+\item \textbf{Query.} Return $\operatorname{read}(s_{h(r)},q)$ without
+changing the configuration.
+\end{enumerate}
+The initial store has just version $0$ and one replica pointing to it.
+Executions are finite sequences of these steps. The certified relation also
+retains the original-mint evidence described in Definition~\ref{def:issuance}.
+\end{definition}
+% Sources: Framework.Execution.Configuration, Step; Framework.Certificates.
+
+\begin{definition}[Greatest common ancestor]
+\label{def:gca}
+A greatest common ancestor $g$ of $v_1,v_2$ satisfies
+\[
+ g\preceq v_1\land g\preceq v_2\land
+ \forall w,\ (w\preceq v_1\land w\preceq v_2)\Longrightarrow w\preceq g.
+\]
+A maximal common ancestor need only have no strictly later common ancestor;
+there may be several incomparable maximal common ancestors and no greatest one.
+The store model carries the coherence property
+$E_g=E_{v_1}\cap E_{v_2}$ whenever an allocated greatest common ancestor exists.
+\end{definition}
+
+\begin{theorem}[Intersection from event origins]
+\label{thm:gca-intersection}
+Suppose parents are allocated, histories grow along parent edges, and every
+event has an allocated origin version containing it which is an ancestor of
+\emph{every} version containing that event. Then for allocated $g,v_1,v_2$
+with $g$ their greatest common ancestor,
+\[
+ E_g=E_{v_1}\cap E_{v_2}.
+\]
+\end{theorem}
+The forward inclusion follows from history monotonicity. For a shared event,
+its origin is common to both heads and therefore precedes $g$, proving the
+reverse inclusion. The store-invariant proof supplies this justification for
+the coherence field of Definition~\ref{def:gca}; it is not a statement about
+arbitrary event labels attached to an arbitrary DAG.
+% Source: Metatheory.StoreInvariant.gca_events_of_storeInv.
+
+\begin{definition}[Recursive virtual merge base]
+\label{def:virtual}
+For a finite set of versions $T$ and a version $w$, let $M(T,w)$ be the list,
+in increasing rank, of maximal elements of
+\[
+ \{x\mid x\preceq w\land\exists v\in T,\ x\preceq v\}.
+\]
+Write $s_v$ for the stored state at $v$, using $\sigma_0$ as the total-function
+default when unallocated; correctness uses allocated supports. Define the
+base $B$ and scratch fold $F$ by
+\begin{align*}
+ B(T,w)&=
+ \begin{cases}
+ \sigma_0,&M(T,w)=[],\\
+ F(\{v\},s_v,\eta),&M(T,w)=v::\eta,
+ \end{cases}\\
+ F(T,s,[])&=s,\\
+ F(T,s,v::\eta)&=F(T\cup\{v\},m(B(T,v),s,s_v),\eta).
+\end{align*}
+The virtual base of $v_1,v_2$ is $B(\{v_1\},v_2)$.
+The widened merge step uses this state in place of $s_g$ in
+Definition~\ref{def:execution}, without requiring a greatest common ancestor.
+Only the final merged version is allocated. The scratch folds do not create
+replicas, events, or intermediate stored versions.
+\end{definition}
+The recursion is well-founded by the size of the joint ancestor support,
+lexicographically with the pending list length. The execution theorem must
+establish correctness of these recursive scratch states as well as ordinary
+stored versions; replacing $g$ by an arbitrary maximal common ancestor is not
+this construction.
+% Sources: Metatheory.VirtualMergeBase.vfoldAux, virtualBaseAux,
+% virtualMergeBaseState; Framework.Execution.StepV.

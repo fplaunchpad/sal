@@ -6,6 +6,15 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: manuscript reconciliation and formal reference
+
+- [x] Compare the Overleaf snapshot `f3afb8c` with the checked framework;
+  rebuild its manuscript PDF and preserve the GitHub manuscript branch.
+- [x] Write a self-contained paper1 formal reference and a revision note
+  identifying manuscript locations, reasons and numbered replacement definitions.
+  All 85 declaration anchors were checked with Lean; both PDFs were visually
+  reviewed. No implementation or theorem changes were needed.
+
 ### Checked: anchored-enqueue Queue
 
 - **Goal:** develop a separate queue whose enqueue records the observed tail

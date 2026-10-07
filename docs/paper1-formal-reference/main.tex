@@ -1,0 +1,58 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{array,booktabs,longtable,tabularx,enumitem,microtype,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\setlist{nosep,leftmargin=*}
+\setlength{\emergencystretch}{2em}
+\title{Sal: Formal Reference for the Paper Revision\\
+\large Concrete Equality, Certified Executions, and Independent Histories}
+\author{FP Launchpad}
+\date{7 October 2026}
+\hypersetup{pdftitle={Sal: Formal Reference for the Paper Revision},
+ pdfauthor={FP Launchpad},bookmarksopen=true,bookmarksnumbered=true}
+\begin{document}
+\maketitle
+\begin{abstract}
+This reference states the formal objects needed to revise the Sal paper:
+operation policies and event guards, commutation on valid concrete states,
+issuance-certified execution, represented merge conditions, and an independent
+sequential-history criterion. It is written for readers of the paper and does
+not require knowledge of Lean. A query must be explained by one history that
+contains exactly the original events, respects the required implementation
+and specification orders, and is admitted by the sequential specification.
+The merge theorem and the specification bridge are separate obligations.
+\end{abstract}
+\paragraph{Status and reading guide.}
+The generic metatheory described here is machine-checked under its stated
+premises. Those premises remain obligations of each datatype; the theorem is
+not a claim that every MRDT satisfies them. The broken-remove example explains
+why specification visibility changes the paper's literal criterion. The
+anchored queue and Fugue examples delimit the successful and unsuccessful
+applications of the stronger criterion.
+
+The reference corresponds to the formalization on Sal branch \texttt{paper1},
+commit \texttt{07fe525}, and was compared with the Overleaf manuscript snapshot
+\texttt{f3afb8c} of 7 October 2026. It does not certify physical networking or
+an implementation outside the stated mathematical machine. Numbered definitions
+and results are the targets of the separate manuscript-reconciliation note;
+Appendix~\ref{app:traceability} supplies optional mechanization traceability.
+Concrete equality is used throughout implementation reasoning. A specification
+simulation function, when used, has a separate purpose.
+\tableofcontents
+\input{semantics}
+\input{execution}
+\input{merge}
+\input{bridge}
+\appendix
+\input{traceability}
+\end{document}

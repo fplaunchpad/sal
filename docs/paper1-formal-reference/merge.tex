@@ -1,0 +1,306 @@
+% Mechanization map for the appendix:
+% def:representation: AbstractMerge.Representation; GuardedRawJoin.Unique.
+% def:metadata: MetadataDependencies; MetadataDependencies.Closed/Past;
+%   MetadataDependencies.closed_diff_of_max.
+% def:merge-vcs: AbstractMRDT.Raw.Context and MergeVCs in GuardedRawJoin.lean.
+% def:replay-supply: AbstractMRDT.Raw.PeelChoice and ReplaySupply.
+% thm:join: AbstractMRDT.Raw.join_at_sizes and representationJoin_of_vcs.
+% thm:execution: CertifiedClosedExecution.ClosedJoinAt,
+%   canonicalConfig_of_execution and virtualMergeBaseState_canonical;
+%   CertifiedRGAExecution.Embedded.represented_of_canonical,
+%   canonical_of_represented and closedJoinAt are a concrete adapter example.
+
+\section{Concrete representations and merge induction}
+
+The merge argument must retain enough information to reconstruct an event's
+metadata, including commuting predecessors when necessary. The following
+contract states the concrete equations used by the checked merge induction.
+It establishes representation preservation. An independent sequential-history
+argument is still required for the correctness criterion.
+
+Write $u_e(s)$ for the update of state $s$ by the original event $e$, and
+$m(l,a,b)$ for three-way merge. In this section only, $a\leftrightarrow b$
+means commutation on \emph{all} concrete states. For an operation policy
+$P$ on update payloads, define the raw semantic order
+\[
+\begin{aligned}
+ \ell^C_H(a,b)\iff{}&
+ (a\mathrel{\prec_C}b\land\neg(a\leftrightarrow b))\\
+ &\lor\bigl(\neg(a\mathrel{\prec_C}b)
+ \land\neg(b\mathrel{\prec_C}a)\land P(a.o,b.o)\\
+ &\hspace{12mm}\land\neg\exists c\in H.
+ b\mathrel{\prec_C}c\land\neg(b\leftrightarrow c)\bigr).
+\end{aligned}
+\]
+These are the relations consumed by the raw merge theorem; they do not
+replace invariant-scoped commutation in the final history criterion.
+
+\begin{definition}[Indexed concrete representation]\label{def:representation}
+A representation is a predicate
+\[
+ R:\mathsf{ReplayContext}\times\mathcal P(\mathcal E)\times\Sigma
+       \longrightarrow\mathsf{Prop}.
+\]
+The assertion $R(C,H,s)$ relates the \emph{entire concrete state} $s$ to a
+specific event set $H$ in context $C$. It need not be defined as reachability,
+and it is not inferred from the desired query answer. Define
+\[
+\begin{aligned}
+ \mathsf{Supp}_C(H)&\iff H\subseteq\mathcal E_C,\\
+ \mathsf{Unique}(R)&\iff
+   \forall C,H,s,t.\ R(C,H,s)\land R(C,H,t)\Longrightarrow s=t.
+\end{aligned}
+\]
+An enumeration $\pi\equiv H$ is a finite list without repetitions whose
+members are exactly $H$. Thus every finite-set assumption below is an
+explicit enumeration assumption.
+\end{definition}
+
+\begin{definition}[Metadata dependencies]\label{def:metadata}
+For every context $C$, choose a relation $M_C$ on events satisfying
+\[
+\begin{aligned}
+ M_C(a,b)&\Longrightarrow a\mathrel{\prec_C}b,\\
+ a\mathrel{\prec_C}b\land\neg(a\leftrightarrow b)
+    &\Longrightarrow M_C(a,b).
+\end{aligned}
+\]
+It may retain additional visible predecessors which commute. Define
+\[
+\begin{aligned}
+ \mathsf{Closed}_{M_C}(H)&\iff
+   \forall a,b.\ M_C(a,b)\land b\in H\Longrightarrow a\in H,\\
+ \mathsf{Past}_{M_C}(e)&=\{x\mid x=e\ \lor\ M_C^+(x,e)\},\\
+ \mathsf{Max}^{\ell}_{C,H}(e)&\iff
+   \forall x\in H\setminus\{e\}.\ \neg\ell^C_H(e,x),\\
+ \mathsf{Max}^{M}_{C,H}(e)&\iff
+   \forall x\in H\setminus\{e\}.\ \neg M_C(e,x).
+\end{aligned}
+\]
+The two maximality conditions are separate. If $H\subseteq U$ is
+$M_C$-closed and $e$ is $M_C$-maximal in $U$, then
+$H\setminus\{e\}$ remains $M_C$-closed. Semantic maximality alone does not
+justify this step. For the embedded sequence and anchored queue ports,
+$M_C=\prec_C$; their reconstruction past retains all causal metadata.
+\end{definition}
+
+\begin{definition}[Five concrete merge VCs]\label{def:merge-vcs}
+The following conditions are universally quantified over the displayed
+contexts, histories, events and states. Define the common hypotheses
+\[
+\begin{aligned}
+ A_C(H)&:=\mathsf{Supp}_C(H)\land\mathsf{Closed}_{M_C}(H),\\
+ K_C(H_1,H_2,e)&:=
+   \mathsf{Trans}(\prec_C)\land\mathsf{Irrefl}(\prec_C)
+   \land A_C(H_1)\land A_C(H_2)\\
+ &\hspace{12mm}\land\mathsf{Max}^{\ell}_{C,H_1\cup H_2}(e)
+   \land\mathsf{Max}^{M}_{C,H_1\cup H_2}(e).
+\end{aligned}
+\]
+Within each condition, abbreviate $R_C(H,s):=R(C,H,s)$,
+$D:=\mathsf{Past}_{M_C}(e)$ and $H^-:=H\setminus\{e\}$.
+These abbreviations compress only repeated hypotheses.
+\begin{enumerate}[label=\textbf{VC\arabic*.},leftmargin=*,itemsep=.65em]
+\item \emph{Merge commutativity.} From
+\[
+ A_C(H_1),\ A_C(H_2),\ R_C(H_1\cap H_2,l),\ R_C(H_1,a),\ R_C(H_2,b)
+\]
+conclude $m(l,a,b)=m(l,b,a)$. This equation is required on represented
+triples, not on arbitrary concrete states.
+
+\item \emph{Initial branch.} From $A_C(H)$ and $R_C(H,s)$ conclude
+\[
+ m(\sigma_0,\sigma_0,s)=s.
+\]
+
+\item \emph{Local redistribution.} Assume $K_C(H_1,H_2,e)$,
+$e\in H_1\setminus H_2$, and \emph{all} the representation premises
+\[
+\begin{gathered}
+ R_C(H_1\cap H_2,l),\quad R_C(D^-,B),\quad
+ R_C(H_1^-,t),\quad R_C(H_2,b),\\
+ R_C(D,u_e(B)),\quad R_C(H_1,m(B,t,u_e(B))),\\
+ R_C((H_1\cup H_2)^-,m(l,t,b)).
+\end{gathered}
+\]
+Then
+\[
+ m(l,m(B,t,u_e(B)),b)=m(B,m(l,t,b),u_e(B)).
+\]
+
+\item \emph{Shared redistribution.} Assume $K_C(H_1,H_2,e)$,
+$e\in H_1\cap H_2$, and
+\[
+\begin{gathered}
+ R_C((H_1\cap H_2)^-,t_0),\quad R_C(D^-,B),\\
+ R_C(H_1^-,t_1),\quad R_C(H_2^-,t_2),\quad R_C(D,u_e(B)),\\
+ R_C(H_1\cap H_2,m(B,t_0,u_e(B))),\\
+ R_C(H_1,m(B,t_1,u_e(B))),\quad
+ R_C(H_2,m(B,t_2,u_e(B))),\\
+ R_C((H_1\cup H_2)^-,m(t_0,t_1,t_2)).
+\end{gathered}
+\]
+Then
+\[
+\begin{aligned}
+ &m\bigl(m(B,t_0,u_e(B)),m(B,t_1,u_e(B)),m(B,t_2,u_e(B))\bigr)\\
+ &\hspace{20mm}=m\bigl(B,m(t_0,t_1,t_2),u_e(B)\bigr).
+\end{aligned}
+\]
+
+\item \emph{Causal delta.} Assume transitive, irreflexive visibility,
+$A_C(U)$, $e\in U$, both $\mathsf{Max}^{\ell}_{C,U}(e)$ and
+$\mathsf{Max}^{M}_{C,U}(e)$, and
+\[
+ R_C(U^-,s),\quad R_C(D^-,B),\quad R_C(D,u_e(B)),\quad R_C(U,u_e(s)).
+\]
+Then $m(B,s,u_e(B))=u_e(s)$.
+\end{enumerate}
+The represented smaller-union merge in VC3 and VC4 is obtained by a
+\emph{strictly smaller} induction call. Its presence is not a premise
+asserting the desired join theorem for the original union. The represented
+side reconstructions are also derived on proper subsets, or by VC5 when a
+side equals the whole union.
+\end{definition}
+
+\begin{definition}[Replay supply and a peel witness]\label{def:replay-supply}
+At a fixed context $C$, replay supply consists of both clauses:
+\begin{enumerate}[label=(\roman*),leftmargin=*,itemsep=.25em]
+\item For every $H$ and $\pi$, if $\pi\equiv H$ and
+$\mathsf{Supp}_C(H)$, some $s$ satisfies $R_C(H,s)$.
+\item For every represented, supported, nonempty, $M_C$-closed $U$, there
+exist $e\in U$ and states $s,B$ satisfying
+\[
+\begin{gathered}
+ \mathsf{Max}^{\ell}_{C,U}(e),\qquad\mathsf{Max}^{M}_{C,U}(e),\\
+ R_C(U^-,s),\quad R_C(\mathsf{Past}_{M_C}(e)^-,B),\\
+ R_C(\mathsf{Past}_{M_C}(e),u_e(B)),\quad R_C(U,u_e(s)).
+\end{gathered}
+\]
+\end{enumerate}
+The second clause is the \emph{peel witness}. It supplies update
+reconstruction, not a merge-preservation assumption. Its existence is a
+separate datatype obligation; acyclicity of $\ell$ alone supplies neither
+metadata maximality nor the four representation assertions.
+\end{definition}
+
+\begin{theorem}[Finite concrete join induction]\label{thm:join}
+Assume the five VCs, $\mathsf{Unique}(R)$, and
+\[
+\begin{aligned}
+ &\forall C,H,s.\ R(C,H,s)\Longrightarrow R(C,\varnothing,\sigma_0),\\
+ &\forall C,H,s.\ R(C,H,s)\Longrightarrow\exists\pi.\ \pi\equiv H.
+\end{aligned}
+\]
+Fix a context $C$ with transitive, irreflexive visibility and replay supply.
+For all $H_1,H_2,l,a,b$, if $A_C(H_1)$, $A_C(H_2)$ and
+\[
+ R_C(H_1\cap H_2,l),\qquad R_C(H_1,a),\qquad R_C(H_2,b),
+\]
+then
+\[
+ R_C(H_1\cup H_2,m(l,a,b)).
+\]
+\end{theorem}
+\begin{proof}[Proof structure]
+Induct strongly on the length of a duplicate-free enumeration of
+$H_1\cup H_2$. An empty side uses uniqueness, the initial-representation
+hypothesis and VC2, with VC1 if the right side is empty. Otherwise replay
+supply chooses a peel witness. Removing its event preserves metadata closure
+by $M_C$-maximality. Supply gives represented predecessor states for the
+branches and their intersection. The smaller induction calls establish
+side reconstruction and the smaller-union merge representation. Uniqueness
+identifies the reconstructed sides with the original sides; VC3 or VC4
+then brings the event outside. VC5 and the peel witness's represented update
+reconstruct the union. Every recursive call has a strictly smaller event
+set; none assumes representation preservation of an unresolved merge.
+\end{proof}
+
+\begin{remark}[The full-causal-closure join contract]
+The checked derived contract quantifies over fully causally closed
+$H_1,H_2$, not over all merely conflict-closed histories. To obtain it from
+Theorem~\ref{thm:join}, require replay supply for every $C,H_1,H_2,a,b$
+with transitive, irreflexive visibility, supported sides and
+$R_C(H_1,a),R_C(H_2,b)$. This is the quantifier order of the supply hypothesis
+in the checked derived theorem. Causal closure implies $M_C$-closure because
+$M_C\subseteq\prec_C$. Hence the theorem gives the concrete
+\emph{representation join} contract
+\[
+\begin{gathered}
+ \mathsf{Supp}_C(H_1),\ \mathsf{Supp}_C(H_2),\quad
+ \mathsf{CausalClosed}_C(H_1),\ \mathsf{CausalClosed}_C(H_2),\\
+ R_C(H_1\cap H_2,l),\ R_C(H_1,a),\ R_C(H_2,b)
+ \quad\Longrightarrow\quad R_C(H_1\cup H_2,m(l,a,b)),
+\end{gathered}
+\]
+under transitive, irreflexive visibility. This contract includes intermediate
+representation evidence which canonical query agreement by itself does not
+provide.
+\end{remark}
+
+\begin{theorem}[Lifting to certified executions]\label{thm:execution}
+Fix an internal replay policy whose directed event relation is $\rho$.
+This auxiliary policy supplies concrete replay witnesses; it is separate from
+the public payload policy and from the revised invariant-scoped history order.
+Let $K_\rho(a,b):=\rho(a,b)\lor\rho(b,a)$. Its set-relative order is
+\[
+\begin{aligned}
+ \lambda^\rho_{C,H}(a,b)\iff{}&
+ (a\prec_C b\land K_\rho(a,b))\\
+ &\lor\bigl(\neg(a\prec_C b)\land\neg(b\prec_C a)\land\rho(a,b)\\
+ &\hspace{12mm}\land\neg\exists c\in H.\ b\prec_C c\land K_\rho(b,c)\bigr).
+\end{aligned}
+\]
+Define
+\[
+ \mathsf{Can}^{\rho}_C(H,s)\iff
+ \exists\pi.\ \pi\equiv H\land
+ \mathsf{Respects}(\pi,\lambda^\rho_{C,H})\land
+ u^*(\sigma_0,\pi)=s.
+\]
+Suppose, for \emph{every} configuration $C$ satisfying
+original mint honesty, the following full-causal-closure canonical join
+contract holds:
+\[
+\begin{gathered}
+ \mathsf{Trans}(\prec_C),\ \mathsf{Irrefl}(\prec_C),\quad
+ \mathsf{Supp}_C(H_1),\ \mathsf{Supp}_C(H_2),\\
+ \mathsf{CausalClosed}_C(H_1),\ \mathsf{CausalClosed}_C(H_2),\\
+ \mathsf{Can}^{\rho}_C(H_1\cap H_2,l),\quad
+ \mathsf{Can}^{\rho}_C(H_1,a),\quad\mathsf{Can}^{\rho}_C(H_2,b)\\
+ \Longrightarrow\quad\mathsf{Can}^{\rho}_C(H_1\cup H_2,m(l,a,b)).
+\end{gathered}
+\]
+Every ordinary or recursive-virtual issuance-certified execution from the
+initial configuration then has $\mathsf{Can}^{\rho}_C(H,s)$ at every allocated
+version $C.S(v)=(s,H)$. Its event sets are supported and causally closed;
+visibility is transitive and irreflexive. Moreover, if the store invariant and
+this canonical configuration invariant hold, its recursive virtual base for
+versions $(s_1,H_1)$ and $(s_2,H_2)$ is canonical for $H_1\cap H_2$.
+\end{theorem}
+
+The displayed join hypothesis is derived rather than supplied as a datatype
+axiom: the five VCs, uniqueness, initial representation, finite enumeration
+and replay supply yield representation join. A port additionally proves
+\[
+ R_C(H,s)\quad\Longleftrightarrow\quad\mathsf{Can}^{\rho}_C(H,s)
+\]
+for supported, causally closed histories in each mint-honest context
+with transitive, irreflexive visibility. The backward implication makes the
+three canonical inputs represented; representation join constructs the union;
+the forward implication makes its result canonical. The embedded ports have
+exactly this correspondence. Other ports can use stronger represented
+canonical-state certificates rather than asserting this equivalence generally.
+
+The execution induction carries the store invariant together with canonicality.
+Ordinary merges use the actual greatest common ancestor's intersection history.
+This event-intersection coherence is an admissibility property of the
+configuration in Definition~\ref{def:execution}; for operational stores it is
+proved from the store invariant, rather than from graph ancestry alone.
+Recursive virtual merges use a nested induction on finite ancestry support:
+the inner fold represents the union of its inputs, and each recursively
+computed base represents their intersection. Original issuance guards remain
+at original mint states. Neither intermediate peeling nor scratch computation
+requires reissuing an event. This theorem is a merge-and-replay guarantee;
+legality and specification visibility of one independent sequential word are
+additional obligations of the final correctness bridge.

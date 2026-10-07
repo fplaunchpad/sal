@@ -12,6 +12,10 @@ execution evidence, with local sequential simulations or suitable-history
 proofs supplying the bridge to specification acceptance. The exact paper
 OR-set retains every addition tag and has an ancestor-aware Join proof.
 
+The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
+changes against the current Overleaf manuscript, with numbered references to a
+[self-contained formal reference PDF](docs/paper1-formal-reference/main.pdf).
+
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay
 in `GuardedConvergence` and `GuardedOrder`, and the full-event criterion in

@@ -1,0 +1,8 @@
+label	module	declaration
+def:execution	Sal.MRDTs.Framework.Execution	Sal.MRDTs.Configuration
+def:execution	Sal.MRDTs.Framework.Execution	Sal.MRDTs.Step
+def:gca	Sal.MRDTs.Framework.Execution	Sal.MRDTs.IsGCA
+thm:gca-intersection	Sal.MRDTs.Metatheory.StoreInvariant	Sal.MRDTs.gca_events_of_storeInv
+def:virtual	Sal.MRDTs.Metatheory.VirtualMergeBase	Sal.MRDTs.virtualMergeBaseState
+def:virtual	Sal.MRDTs.Metatheory.VirtualMergeBase	Sal.MRDTs.vfoldAux
+def:virtual	Sal.MRDTs.Framework.Execution	Sal.MRDTs.StepV

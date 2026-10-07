@@ -1,0 +1,220 @@
+\section{Independent specification and history bridges}
+\label{sec:history-bridge}
+
+Representation correctness answers whether a stored state is explained by the
+issued event set. The independent specification answers whether that explanation
+is a permitted sequential history. These are separate obligations. In particular,
+convergence of implementation replays of the same history does not establish that
+any of their query answers belongs to the intended datatype.
+
+Use the independent history language and projection of Definition~\ref{def:history}.
+Write $S$ for that language, retain its projection $f$, and abbreviate
+\[
+ F(\pi)=u^*(\sigma_0,\pi).
+\]
+This expression contains no merges. Write $L_{C,E}$ for the implementation order
+chosen for context $C$ and endpoint event set $E$: the raw order of
+Definition~\ref{def:order}, or its separately justified invariant-scoped
+replacement. Its separate specification-visibility obligation
+uses $\operatorname{sv}^{f,S}_C$ from Definition~\ref{def:history}. Event identities remain
+in the witness even when the independent specification ignores their metadata.
+
+\subsection{A sufficient global route}
+
+A local simulation into an independent deterministic sequential machine $M$
+for payload labels consists of a relation $R_{\mathrm{seq}}$, initial machine state $m_0$,
+machine update $w$ and query $\operatorname{read}_M$, with these properties:
+\begin{align*}
+ &R_{\mathrm{seq}}(\sigma_0,m_0),\\
+ &R_{\mathrm{seq}}(s,m)\Longrightarrow
+   R_{\mathrm{seq}}(u(s,e),w(m,e.o))
+   &&\text{for every event }e,\\
+ &R_{\mathrm{seq}}(s,m)\Longrightarrow
+   \operatorname{read}(s,q)=\operatorname{read}_M(m,q)
+   &&\text{for every query }q.
+\end{align*}
+There is no issuance, freshness or invariant premise on the update clause.
+For $f(e)=e.o$, induction establishes the unrestricted sequential-history premise
+\begin{equation}
+ \forall\pi,q,\qquad
+ \operatorname{labels}_f(\pi)\cdot
+ [\operatorname{qry}\bigl(q,\operatorname{read}(F(\pi),q)\bigr)]\in S.
+ \label{eq:total-fold-sound}
+\end{equation}
+% SequentialSimulation.lean: SequentialSimulation; SequentialSimulation.sound.
+% RALinearizability.lean: FoldHistorySound; uniform_ra_of_replay_total;
+% ra_of_canonical_total; certifiedRA_of_join_total.
+Together with a stored replay witness and the replay laws, this suffices for the
+literal criterion: choose the replay word and substitute its equality with the
+stored state. The unrestricted premise concerns \emph{merge-free folds}; it does
+not assert that every permutation respects $L_{C,E}$ or is an admissible
+linearization.
+
+For the stronger criterion, the global bridge additionally records
+commutation compatibility:
+\begin{equation}
+ \operatorname{Commutes}_{\mathrm{impl}}(a,b)
+ \Longrightarrow f(a)\bowtie_S f(b).
+ \label{eq:commutation-compatibility}
+\end{equation}
+Here implementation commutation must be the commutation notion used in the
+chosen order. By contraposition, every specification-conflicting visibility
+edge is then an implementation-conflicting visibility edge. The same replay
+word respects both relations. Equation~\eqref{eq:total-fold-sound} still supplies
+history admission; compatibility alone cannot supply it.
+% CommutationBridge.lean: CommutationCompatibility;
+% projectedSpecVisibility_sub_paperOrder; eventSpecificationRA_of_compatibility.
+% GuardedHistoryBridge.lean: of_canonical; ScopedCertificate.ofTotal.
+
+\begin{example}[A convergent set with a no-op remove]\label{ex:broken-set}
+Consider a one-element set implemented by a finite set of addition timestamps, initially empty.
+An add inserts its timestamp; a remove leaves the state unchanged; the query
+returns whether the timestamp set is nonempty. Retain the ordinary observed-remove
+three-way merge
+\[
+ m(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l).
+\] Let the independent sequential machine instead implement add
+as setting presence to true and remove as setting it to false.
+
+The real, single-replica execution is
+\[
+ \operatorname{add}\ ;\ \operatorname{remove}\ ;\
+ \operatorname{query}(\mathrm{true}).
+\]
+All implementation updates commute, so with an empty arbitration policy the
+literal implementation order is empty. The witness
+$[\operatorname{remove},\operatorname{add}]$ explains the wrong answer in the
+independent language and satisfies the literal criterion. Indeed, this mutant
+converges and satisfies the literal criterion on every raw ordinary execution;
+it does not satisfy unrestricted fold soundness.
+
+In the independent set language, add and remove do not contextually commute.
+Their causal order is therefore required by $\operatorname{sv}^{f,S}_C$. The only respecting
+witness is add before remove, whose query answer is false. The stronger
+criterion rejects the displayed execution. This is a certified counterexample
+to identifying literal RA with preservation of sequential specification
+conflicts; it is not a counterexample to a theorem that assumes
+Equation~\eqref{eq:total-fold-sound}.
+\end{example}
+% CriterionCounterexample.lean: all_commute; mutant_join; mutant_rawRA;
+% wrong_answer_ra_linearizable; causal_history_rejects_true;
+% wrong_answer_not_specification_ra; criteria_differ_on_reachable_mutation.
+
+\subsection{Choosing a permitted history within a certified execution}
+
+Global fold soundness can be unsuitable for a datatype whose public operations
+have guards: an arbitrary word may name a nonexistent birth, reuse an identity,
+or remove a live non-head. Restricting the implementation's representation
+invariant does not automatically prove the independent language's guards.
+A second route proves existence of a suitable history on the supported,
+causally closed event sets of certified executions.
+
+\begin{definition}[Execution-scoped history adequacy]\label{def:history-adequacy}
+Fix an issuance discipline $G$, an implementation order $L$, and an independent
+language $S$. They satisfy execution-scoped history adequacy when, for every
+$G$-certified configuration $C$, every stored version $(s,E)$ and every query $q$,
+there is a word $\pi$ such that
+\begin{align*}
+ &\pi\text{ enumerates }E\text{ exactly once},\\
+ &\pi\text{ respects }L_{C,E}\text{ and }\operatorname{sv}^{f,S}_C,\\
+ &\operatorname{labels}_f(\pi)\cdot
+   [\operatorname{qry}\bigl(q,\operatorname{read}(F(\pi),q)\bigr)]\in S.
+\end{align*}
+The quantifier order is $\forall q\,\exists\pi$. The accepted answer describes the
+merge-free fold, rather than the stored state $s$. Both order obligations and
+language admission use the same $\pi$.
+\end{definition}
+% ScopedHistoryBridge.lean: AbstractMRDT.ExecutionHistoryAdequacy.
+% RALinearizability.lean: HistoryAdequate; IssuedHistoryAdequacy (literal variant).
+% SpecificationVisibility.lean: IssuedSpecificationHistoryAdequacy.
+
+\begin{theorem}[Representation and history bridge]\label{thm:history-bridge}
+Fix the datatype, issuance discipline, independent language, and chosen
+implementation replay order. Define exact concrete canonicality by
+\[
+ \operatorname{Can}_{C,E}(s)\quad\Longleftrightarrow\quad
+ \exists\pi.\ \pi\text{ enumerates }E\ \land\
+ \pi\text{ respects }L_{C,E}\ \land\ F(\pi)=s.
+\]
+The concrete specialization of the history bridge has these assumptions:
+\begin{enumerate}[nosep]
+ \item the chosen replay order has a proved uniqueness property: any two
+       exact canonical states for the same supported event set agree on all queries;
+ \item every stored event set of the certified execution is supported, and its
+       stored state is canonical for that set;
+ \item execution-scoped history adequacy of
+       Definition~\ref{def:history-adequacy} holds.
+\end{enumerate}
+Then every stored version satisfies the criterion with independent
+specification visibility: one word enumerates its original events, respects
+both required relations, and explains its stored query answer in $S$.
+Consequently all active heads satisfy that criterion. If the assumptions are
+established at every configuration of a finite certified execution, the result
+holds throughout that execution, including executions with recursively
+synthesized virtual merge bases.
+\end{theorem}
+% ScopedHistoryBridge.lean: AbstractMRDT.versions_of_scoped_history;
+% ScopedVCConditions.versionsV; ScopedVCConditions.executions;
+% ScopedVCConditions.executionsV.
+% GuardedHistoryBridge.lean: Guarded.versions_of_scoped_history;
+% Guarded.ScopedCertificate.versions; Guarded.ScopedCertificate.executionsV.
+
+\noindent\emph{Proof.}
+Adequacy supplies a word $\pi$ whose fold is canonical by its permutation and
+order properties. Replay uniqueness identifies the queries of that fold and
+the separately canonical stored state. Substitute this query equality in the
+accepted history. Its word, permutation and two order properties do not change.
+Apply the argument at each visited configuration for the execution claim.
+The stored-state premise is where the merge argument enters; history adequacy
+alone cannot discharge it.\hfill$\square$
+
+This uniqueness assumption must be established for the chosen implementation
+order; it is not automatic from scoped laws. For example,
+Theorem~\ref{thm:scoped-replay} requires causally ready implementation replays;
+it does not give equality of every pair of permutations respecting only the
+invariant order. A concrete port may instead prove an exact representation
+relation between its selected independent history and the stored live state,
+as in Example~\ref{ex:queue}.
+
+\begin{example}[Anchored enqueue with an independent FIFO]\label{ex:queue}
+Enqueue records its issuer's observed tail and dequeue its observed head. The
+implementation keeps ordered live records and carried coordinates; it stores
+no removed birth records. The independent FIFO appends a fresh tagged value,
+ignoring its recorded tail; it removes a named head, permits repeated removal
+of an already removed identity, and rejects removal of a live non-head.
+The absent-removal case requires a prior birth in the sequential prefix;
+invented identities cannot be removed. Lack of tombstones does not mean lack
+of metadata: carried coordinates preserve placement information and can grow
+with their ancestry.
+
+Head-only issuance implies that removed births form a causal downset among
+enqueue events. Order the original dequeue events chronologically. Immediately
+before an identity's first dequeue, emit its birth; emit subsequent duplicate
+dequeues without another birth. Append the surviving births in their stored
+coordinate order. The FIFO is empty between the removal blocks. The downset
+property preserves causal enqueue conflicts, and surviving coordinates preserve
+the remaining causal enqueue order. This one word has the exact final tagged
+live list and satisfies both order obligations. The resulting theorem applies
+to certified ordinary and recursive virtual executions with the unchanged
+public tagged-head query.
+\end{example}
+% AnchoredQueueCausality.lean: removed_births_causal_downset.
+% AnchoredQueueRanks.lean: DeadEndpoint.causalRanks; exists_deadEndpoint.
+% AnchoredQueueSchedule.lean: deadWord_legal; schedule_legal; schedule_fold.
+% AnchoredQueueCertificate.lean: History.stored_publicWitness;
+% History.correct; History.correctV; History.executions; History.executionsV.
+
+\begin{example}[Fugue and a live-anchor specification]\label{ex:fugue}
+The original Fugue issuer permits insertion naming a deleted birth. A certified
+trace creates a birth, deletes it, then inserts a replacement anchored to that
+birth. Its independent live-anchor language permits the replacement before the
+deletion, but rejects it after the deletion. Specification visibility requires
+the actual causal deletion-before-replacement order. No admitted word satisfies
+that requirement, for any representation-state domain or arbitration policy.
+The relevant implementation effectors nevertheless commute on the proved closed
+invariant domain. Thus representation invariants repair an implementation-order
+issue without repairing this issuance/specification mismatch. A successful
+claim must reconcile those two interfaces explicitly.
+\end{example}
+% CertifiedFugueInvariantObstruction.lean: certified_failure;
+% implementation_spec_separation; valid_execution_counterexample.
