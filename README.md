@@ -35,7 +35,7 @@ TreeMove, AegisSheet and MVR. The combined audit covers all 23 current named
 instances including aliases. The experiment README separates reusable framework proofs from
 per-RDT work and estimates the additional proof code for each instance. Lean tactics (`simp`, `grind`,
 `tauto`, `omega`, `aesop`) solve the prepared finite equations without an external SMT
-solver. MVR and Embedded/Sided RGA now use reusable certified templates with
+solver. Both OR-sets, MVR and Embedded/Sided RGA use reusable templates with
 no per-RDT history induction; Queue and Peritext reuse the Embedded template.
 A named rule set selects raw RGA helpers automatically. The experiment README
 counts remaining annotations, registrations and supplied helper proofs.

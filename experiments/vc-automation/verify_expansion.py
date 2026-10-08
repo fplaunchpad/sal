@@ -24,7 +24,7 @@ seen = set()
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--transfer', action='store_true', help='Check all Track A instances')
 parser.add_argument('--certified', action='store_true', help='Also check the certified RGA-family routes')
-parser.add_argument('--automated', action='store_true', help='Use reusable certified templates for MVR and RGA in the 23-case audit')
+parser.add_argument('--automated', action='store_true', help='Use reusable templates for both OR-sets, MVR and RGA in the 23-case audit')
 parser.add_argument('--all', action='store_true', help='Check all 23 current named cases')
 args = parser.parse_args()
 if args.automated:
@@ -60,6 +60,8 @@ if args.all:
 if args.automated:
     visit('AutomatedMVR')
     visit('AutomatedRGA')
+    visit('AutomatedORSet')
+    visit('AutomatedEfficientORSet')
 OUT.mkdir(exist_ok=True)
 build_log = []
 for name in order:
@@ -96,8 +98,10 @@ if args.all:
                  'NeemExpansion.TransferAegisSheet.expanded_vcs',
                  'NeemExpansion.CertifiedMVR.expanded_vcs']
 if args.automated:
-    audit = 'import AutomatedMVR\nimport AutomatedRGA\n' + audit
+    audit = 'import AutomatedMVR\nimport AutomatedRGA\nimport AutomatedORSet\nimport AutomatedEfficientORSet\n' + audit
     replacements = {
+        'NeemExpansion.Exact.expanded_vcs': 'NeemExpansion.AutomatedORSet.automated_vcs',
+        'NeemExpansion.Efficient.expanded_vcs': 'NeemExpansion.AutomatedEfficientORSet.automated_vcs',
         'NeemExpansion.CertifiedMVR.expanded_vcs': 'NeemExpansion.AutomatedMVR.automated_vcs',
         'NeemExpansion.CertifiedRGA.expanded_vcs': 'NeemExpansion.AutomatedRGA.Sided.automated_vcs',
         'NeemExpansion.CertifiedEmbedded.expanded_vcs': 'NeemExpansion.AutomatedRGA.Embedded.automated_vcs',
@@ -123,7 +127,9 @@ forbidden = [d for d in deps if forbidden_dependency(d)]
 blocks = log.split('VC_AUDIT_COMPLETE')[:-1]
 experiment_dependencies = {t: sorted(set(re.findall(r'VC_EXP_DEP (\S+)', block)))
                            for t, block in zip(theorems, blocks)}
-old_adapters = ('NeemExpansion.CertifiedMVR.', 'NeemExpansion.CertifiedRGA.',
+old_adapters = ('NeemExpansion.Exact.', 'NeemExpansion.Efficient.',
+                'EfficientReplayAdapter.', 'CausalEventClassification.',
+                'NeemExpansion.CertifiedMVR.', 'NeemExpansion.CertifiedRGA.',
                 'NeemExpansion.CertifiedEmbedded.', 'NeemExpansion.CertifiedEmbeddedReplay.',
                 'NeemExpansion.CertifiedSidedReplay.', 'NeemExpansion.CertifiedEmbeddedTransfers.')
 if args.automated:

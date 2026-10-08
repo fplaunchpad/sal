@@ -28,8 +28,8 @@ bodies; they exclude RDT implementation definitions and generic framework code.
 | Native RGA | 21 | Component decomposition and finite membership equations. |
 | TreeMove | 10 | Commuting template and insertion/union simplification. |
 | AegisSheet | 10 | Commuting template and insertion/union simplification. |
-| Ordinary OR-set | 274 | Finite equations, policy facts and replay/ordering connections. |
-| Efficient OR-set | 359 | Finite equations and update/order/representation adapters. |
+| Ordinary OR-set | 108 | Raw-definition annotations, operation cases and finite policy equations; the template converts its replay witness. |
+| Efficient OR-set | 218 | The same finite equation template, plus mask mappings and projections of its existing live/dead representation. |
 | MVR | 15 | Four record mappings, six finite laws and template instantiation. |
 | Embedded RGA | 113 | Ordered-record mappings, finite laws, helper references and existing honesty projections. |
 | Sided Embedded RGA | 112 | The corresponding sided-record mappings and finite laws. |
@@ -45,57 +45,27 @@ reuse rows assume the parent proof exists. The
 hashes and dependency totals; shared dependency totals must not be summed.
 Core and Fugue retain their existing expansion routes.
 
-## Certified templates: current boundary
+Both OR-sets, MVR and both RGAs use shared templates; their instance files
+contain no history induction. Queue and Peritext reuse the Embedded RGA template. Lean selects
+registered RGA membership, ordering and equality helpers automatically. For both
+OR-sets, a shared tactic unfolds registered raw definitions, converts equation
+assumptions to membership formulas, and solves the finite cases with `simp` and
+`grind`. Operation cases and frozen-state choices remain explicit.
 
-MVR uses a [generic record template](GenericCertifiedRecords.lean). The author
-provides record, identifier and overwrite projections and six finite laws:
-carrier injectivity, empty initial state, birth timestamp, update membership,
-merge membership and issuer target membership. In [MVR](AutomatedMVR.lean),
-all six close with `simp`/`rfl`. The framework derives provenance, visible births,
-freshness and overwrite coverage, then assembles the unchanged five VCs.
+The local-code counts exclude existing helper-library proofs: Embedded RGA
+uses another **135 lines**, and Sided RGA **143 lines**. Each registers five
+helper names; eight lines of identifier reasoning and 14 lines of registry/tactic
+declarations are shared. If the helpers are unavailable, the RDT author must supply them.
+Neither OR-set route uses an existing datatype theorem helper. Their shared
+finite registry/tactic adds **11 declaration lines**; policy assembly adds **49**,
+and the efficient representation’s mask template adds **64**. These framework
+costs are separate from the per-instance rows and reuse the generic coverage
+library. The [helper inventory](results/template-effort.json) records these costs.
 
-Embedded and Sided RGA use one [ordered-record template](GenericOrderedRecords.lean).
-Its eight mappings describe records, identifiers, keys, updates and ordering;
-ten finite laws describe initialization, update, merge and ordered equality.
-The [instances](AutomatedRGA.lean) also project the existing certified
-representation’s creator and chain evidence. The template derives replay
-membership, sortedness, coherence, freshness and deletion coverage by generic
-induction. **No RDT-specific history induction remains in MVR or either RGA
-interface.** Queue and Peritext reuse the Embedded instance.
-
-The [helper registry](OrderedRecordAutomation.lean) lets Lean select the raw
-membership, sortedness and extensionality lemmas automatically. Each family
-registers five helper names. `ordered_record_simp` performs membership rewriting;
-`ordered_record` uses goal matching through a named Aesop rule set and `grind`.
-The instance proofs no longer name those individual helpers. The registry
-contains no history, VC or Join theorem.
-
-RGA still requires explicit finite case analysis, representation projections
-and the helper library itself. These are counted as author work, not hidden
-behind the final theorem:
-
-| Template instance | Local annotations/proofs | Retained RDT-specific helper proofs | Combined code |
-|---|---:|---:|---:|
-| MVR | 15 | 0 | 15 |
-| Embedded RGA | 113 | 135 | 248 |
-| Sided Embedded RGA | 112 | 143 | 255 |
-
-There are also eight shared lines for identifier-membership reasoning, counted
-once across the two RGAs. The shared selection registry/rules take 27 nonblank
-source lines (including imports and declarations); these contain the ten
-datatype helper registrations and shared conversion/tactic code. Retained
-helper counts include transitive, source-written
-RDT-module theorems for insertion/merge membership, sortedness and extensionality;
-the Sided count includes its key-injection lemma. If those helpers are not already
-available, the author must supply them. General coordinate, collection and order
-library proofs are assumed available. The [helper inventory](results/template-effort.json)
-lists the exact declarations; regenerate it with `measure_template_effort.py`.
-
-The templates consume the **existing** issuance/execution evidence. They do not
-automatically prove issuer honesty from an arbitrary new issuer. No new datatype
-history invariant is assumed, and the dependency audit rejects reuse of the
-previous MVR/RGA history adapters in the five new template-based bundles.
-Automatically synthesizing the mappings and finite helper scripts remains open.
+Mappings, finite-case setup and projections of existing certification evidence
+remain explicit. The templates do not automatically establish issuer honesty
+for a new RDT. The audit excludes the old datatype history adapters from these
+seven template-based proofs.
 
 ## Scope and reproduction
 
@@ -113,7 +83,7 @@ python3 experiments/vc-automation/verify_expansion.py --automated
 python3 experiments/vc-automation/measure_template_effort.py
 ```
 
-This rebuilds all 23 cases, selecting the reusable templates for MVR, Embedded
-RGA, Sided RGA, Queue and Peritext. The [combined audit](results/automated-audit.json)
+This rebuilds all 23 cases, selecting the reusable templates for both OR-sets, MVR,
+Embedded RGA, Sided RGA, Queue and Peritext. The [combined audit](results/automated-audit.json)
 records source hashes, standard Lean axioms and transitive dependencies. The
 [scope inventory](transfer-inventory.json) identifies each theorem.

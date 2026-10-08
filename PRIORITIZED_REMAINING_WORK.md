@@ -6,6 +6,27 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: reusable automation for both OR-sets
+
+Research question: can ordinary and efficient OR-set use shared policy/replay
+templates and automatically discharged finite obligations, without their old
+datatype-specific adapters? Preserve the exact implementations, representations,
+policies, metadata and five-VC statements. The oracle is a fresh build and
+transitive dependency audit; a wrapper around old instance proofs does not count.
+
+- [x] Factor generic policy, canonical-replay and five-VC assembly templates.
+- [x] Instantiate ordinary OR-set with finite obligations and explicit annotations.
+- [x] Instantiate efficient OR-set, deriving semantic-to-replay evidence through
+  generic birth/kill induction and finite event certificates.
+- [x] Independently audit both routes and rerun the complete 23-case suite.
+- [x] Update current-only README effort counts, including helper/registration
+  work; keep sequential bridges and unrelated implementations unchanged.
+
+Independent combined verification: all 23 unchanged bundles rebuilt and audited
+(45 modules), with no old datatype adapter dependencies in the new OR-set routes.
+Both repository gates passed. Current author declaration code is 108 lines for
+ordinary OR-set and 218 for efficient OR-set; generic templates are counted separately.
+
 ### Checked: reduce per-RDT proof work with reusable certified templates
 
 Research question: can MVR, Embedded RGA and Sided Embedded RGA obtain their

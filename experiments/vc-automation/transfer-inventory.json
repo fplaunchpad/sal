@@ -313,7 +313,7 @@
         "predicate": "CanIssue _ _ := True"
       },
       "selected_existing_vc_route": "EfficientORSet.GuardedRawVC.mergeVCs",
-      "transfer_theorem": "NeemExpansion.Efficient.expanded_vcs",
+      "transfer_theorem": "NeemExpansion.AutomatedEfficientORSet.automated_vcs",
       "status": "previously-checked-transfer",
       "transfer_status": "independently-checked"
     },
@@ -380,7 +380,7 @@
         "predicate": "CanIssue := fun _ _ => True"
       },
       "selected_existing_vc_route": "ORSet.GuardedRawVC.mergeVCs",
-      "transfer_theorem": "NeemExpansion.Exact.expanded_vcs",
+      "transfer_theorem": "NeemExpansion.AutomatedORSet.automated_vcs",
       "status": "previously-checked-transfer",
       "transfer_status": "independently-checked"
     },

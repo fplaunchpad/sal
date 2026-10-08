@@ -39,482 +39,398 @@
     "GenericOrderedRecords.lean": "5d972be354423f6407d948dd7f89cc45ff3d7bb8e535e81f9bece5859f08b4eb",
     "OrderedRecordRules.lean": "51d656deab0aeeb01cba96d6f7a1906ba9bbdb8f7076fa0264a8003532ed7a53",
     "OrderedRecordAutomation.lean": "b321d58b6c21b5cc64ec0bbb16ba6b46d23e3b0186cc5444027cfe9ca9543617",
-    "AutomatedRGA.lean": "fec6e114833bbf702e887b5bbd7f11559d1c85cec53ba58bce517acabca27f46"
+    "AutomatedRGA.lean": "fec6e114833bbf702e887b5bbd7f11559d1c85cec53ba58bce517acabca27f46",
+    "AutomatedEfficientORSet.lean": "840345696cb5c9b8088dc8b4a9fb753d185e5c0207618c9947d790a95068cbd5",
+    "AutomatedORSet.lean": "c8e05a9fb7f018c98bfdcaefc7a1f9361b7becbcbb9f47fa612b537807a3836b",
+    "GenericMaskCanonical.lean": "34ddb117ae6c7a44bd1ee4de2eff92fbd748913694b857ecdaa492dbfa1b9a99",
+    "GenericPolicyExpansion.lean": "9b6cc10cf4b0efb0a7eb4fff766565f36fe6d2d003b14441b23ec6f47daad03a",
+    "PolicyExpansionAutomation.lean": "17a1bb4b705b069d5ac2effc399f946582baf73e88d07c7f1590b0246bf77cdd",
+    "PolicyExpansionRules.lean": "1f4f3eb29b6a105357de29cefe4c78fb92afdd1f58b3d8dde25d4bca500f85a9"
   },
   "bundles": [
     {
-      "theorem": "NeemExpansion.Exact.expanded_vcs",
-      "body_lines": 229,
-      "declaration_lines": 274,
+      "theorem": "NeemExpansion.AutomatedORSet.automated_vcs",
+      "body_lines": 96,
+      "declaration_lines": 108,
       "proofs": {
-        "NeemExpansion.Exact.signature": {
-          "file": "InductiveLeaves.lean",
-          "line": 112,
+        "NeemExpansion.AutomatedORSet.signature": {
+          "file": "AutomatedORSet.lean",
+          "line": 13,
           "declaration_lines": 1,
           "body_lines": 1
         },
-        "NeemExpansion.Exact.diagonal": {
-          "file": "InductiveLeaves.lean",
-          "line": 115,
-          "declaration_lines": 2,
-          "body_lines": 2
-        },
-        "NeemExpansion.Exact.comm": {
-          "file": "InductiveLeaves.lean",
-          "line": 146,
-          "declaration_lines": 2,
-          "body_lines": 2
-        },
-        "NeemExpansion.Exact.local_common_opposite": {
-          "file": "LocalExpansion.lean",
-          "line": 82,
-          "declaration_lines": 7,
-          "body_lines": 7
-        },
-        "NeemExpansion.Exact.fresh_base": {
-          "file": "LocalExpansion.lean",
-          "line": 109,
-          "declaration_lines": 5,
-          "body_lines": 5
-        },
-        "NeemExpansion.Exact.fresh_step": {
-          "file": "LocalExpansion.lean",
-          "line": 115,
-          "declaration_lines": 7,
-          "body_lines": 7
-        },
-        "NeemExpansion.Exact.local_opposite_fresh": {
-          "file": "LocalExpansion.lean",
-          "line": 133,
-          "declaration_lines": 9,
-          "body_lines": 9
-        },
-        "NeemExpansion.Exact.local_empty_past": {
-          "file": "LocalExpansion.lean",
-          "line": 143,
-          "declaration_lines": 6,
-          "body_lines": 6
-        },
-        "NeemExpansion.Exact.local_past_singleton": {
-          "file": "LocalExpansion.lean",
-          "line": 150,
-          "declaration_lines": 10,
-          "body_lines": 10
-        },
-        "NeemExpansion.Exact.local_empty_sides": {
-          "file": "LocalSingleton.lean",
-          "line": 52,
-          "declaration_lines": 2,
-          "body_lines": 1
-        },
-        "NeemExpansion.Exact.kernelStable": {
-          "file": "InductivePolicy.lean",
-          "line": 40,
-          "declaration_lines": 7,
-          "body_lines": 7
-        },
-        "NeemExpansion.Exact.conditionalBase": {
-          "file": "InductivePolicy.lean",
-          "line": 48,
-          "declaration_lines": 30,
-          "body_lines": 30
-        },
-        "NeemExpansion.Exact.expandedUniform": {
-          "file": "ExpandedPolicy.lean",
-          "line": 11,
-          "declaration_lines": 17,
-          "body_lines": 17
-        },
-        "NeemExpansion.Exact.expandedLaws": {
-          "file": "ExpandedPolicy.lean",
-          "line": 29,
-          "declaration_lines": 2,
-          "body_lines": 1
-        },
-        "NeemExpansion.Exact.local_kernels": {
-          "file": "LocalAssembly.lean",
-          "line": 200,
-          "declaration_lines": 3,
-          "body_lines": 2
-        },
-        "NeemExpansion.Exact.representation_canonical": {
-          "file": "LocalAssembly.lean",
-          "line": 218,
-          "declaration_lines": 18,
-          "body_lines": 15
-        },
-        "NeemExpansion.Exact.no_chain": {
-          "file": "LocalAssembly.lean",
-          "line": 237,
-          "declaration_lines": 4,
-          "body_lines": 3
-        },
-        "NeemExpansion.Exact.rawRepresentation": {
-          "file": "LocalAssembly.lean",
-          "line": 242,
-          "declaration_lines": 2,
-          "body_lines": 2
-        },
-        "NeemExpansion.Exact.raw_local": {
-          "file": "LocalAssembly.lean",
-          "line": 245,
-          "declaration_lines": 17,
-          "body_lines": 5
-        },
-        "NeemExpansion.Exact.shared_nested": {
-          "file": "SharedExpansion.lean",
-          "line": 29,
-          "declaration_lines": 3,
-          "body_lines": 3
-        },
-        "NeemExpansion.Exact.causal_common_kernel": {
-          "file": "InductiveSupplement.lean",
-          "line": 61,
-          "declaration_lines": 7,
-          "body_lines": 7
-        },
-        "NeemExpansion.Exact.causal_commuting_kernel": {
-          "file": "InductiveSupplement.lean",
-          "line": 69,
-          "declaration_lines": 9,
-          "body_lines": 9
-        },
-        "NeemExpansion.Exact.causal_absorber_kernel": {
-          "file": "InductiveSupplement.lean",
-          "line": 79,
-          "declaration_lines": 7,
-          "body_lines": 7
-        },
-        "NeemExpansion.Exact.causal_strict_kernel": {
-          "file": "CausalExpansion.lean",
-          "line": 137,
-          "declaration_lines": 8,
-          "body_lines": 8
-        },
-        "CausalEventClassification.Exact.element": {
-          "file": "CausalEventClassification.lean",
-          "line": 13,
-          "declaration_lines": 2,
+        "NeemExpansion.AutomatedORSet.annotation@14": {
+          "file": "AutomatedORSet.lean",
+          "line": 14,
+          "declaration_lines": 1,
           "body_lines": 0
         },
-        "CausalEventClassification.Exact.commute_distinct_elements": {
-          "file": "CausalEventClassification.lean",
-          "line": 16,
-          "declaration_lines": 5,
-          "body_lines": 4
-        },
-        "CausalEventClassification.Exact.conflict_classification": {
-          "file": "CausalEventClassification.lean",
-          "line": 22,
-          "declaration_lines": 8,
-          "body_lines": 6
-        },
-        "CausalEventClassification.Exact.remove_add_noncomm": {
-          "file": "CausalEventClassification.lean",
-          "line": 31,
-          "declaration_lines": 6,
-          "body_lines": 5
-        },
-        "CausalEventClassification.Exact.absorber_classification": {
-          "file": "CausalEventClassification.lean",
-          "line": 38,
-          "declaration_lines": 19,
-          "body_lines": 15
-        },
-        "CausalEventClassification.Exact.strict_asymmetric": {
-          "file": "CausalEventClassification.lean",
-          "line": 58,
-          "declaration_lines": 4,
-          "body_lines": 3
-        },
-        "NeemExpansion.Exact.causal_event_certificate": {
-          "file": "CausalCoverage.lean",
-          "line": 194,
-          "declaration_lines": 4,
-          "body_lines": 3
-        },
-        "NeemExpansion.Exact.causal_kernels": {
-          "file": "CausalCoverage.lean",
-          "line": 199,
-          "declaration_lines": 3,
-          "body_lines": 2
-        },
-        "NeemExpansion.Exact.policy_order": {
-          "file": "CausalCoverage.lean",
-          "line": 203,
-          "declaration_lines": 5,
-          "body_lines": 4
-        },
-        "NeemExpansion.Exact.raw_causal": {
-          "file": "CausalCoverage.lean",
-          "line": 209,
-          "declaration_lines": 15,
-          "body_lines": 5
-        },
-        "NeemExpansion.Exact.native_initial": {
-          "file": "ExpandedVCs.lean",
-          "line": 13,
-          "declaration_lines": 4,
-          "body_lines": 3
-        },
-        "NeemExpansion.Exact.expanded_vcs": {
-          "file": "ExpandedVCs.lean",
-          "line": 37,
-          "declaration_lines": 14,
-          "body_lines": 13
-        }
-      }
-    },
-    {
-      "theorem": "NeemExpansion.Efficient.expanded_vcs",
-      "body_lines": 301,
-      "declaration_lines": 359,
-      "proofs": {
-        "NeemExpansion.Efficient.signature": {
-          "file": "InductiveLeaves.lean",
-          "line": 366,
-          "declaration_lines": 1,
-          "body_lines": 1
-        },
-        "NeemExpansion.Efficient.diagonal": {
-          "file": "InductiveLeaves.lean",
-          "line": 368,
-          "declaration_lines": 2,
-          "body_lines": 2
-        },
-        "NeemExpansion.Efficient.comm": {
-          "file": "InductiveLeaves.lean",
-          "line": 399,
-          "declaration_lines": 2,
-          "body_lines": 2
-        },
-        "NeemExpansion.Efficient.local_common_opposite": {
-          "file": "LocalExpansion.lean",
-          "line": 183,
-          "declaration_lines": 7,
-          "body_lines": 7
-        },
-        "NeemExpansion.Efficient.fresh_base": {
-          "file": "LocalExpansion.lean",
-          "line": 210,
-          "declaration_lines": 5,
-          "body_lines": 5
-        },
-        "NeemExpansion.Efficient.fresh_step": {
-          "file": "LocalExpansion.lean",
-          "line": 216,
-          "declaration_lines": 7,
-          "body_lines": 7
-        },
-        "NeemExpansion.Efficient.local_opposite_fresh": {
-          "file": "LocalExpansion.lean",
-          "line": 234,
-          "declaration_lines": 9,
-          "body_lines": 9
-        },
-        "NeemExpansion.Efficient.local_empty_past": {
-          "file": "LocalExpansion.lean",
-          "line": 244,
-          "declaration_lines": 6,
-          "body_lines": 6
-        },
-        "NeemExpansion.Efficient.local_past_singleton": {
-          "file": "LocalExpansion.lean",
-          "line": 251,
-          "declaration_lines": 10,
-          "body_lines": 10
-        },
-        "NeemExpansion.Efficient.local_empty_sides": {
-          "file": "LocalSingleton.lean",
-          "line": 58,
-          "declaration_lines": 2,
-          "body_lines": 1
-        },
-        "NeemExpansion.Efficient.kernelStable": {
-          "file": "InductivePolicy.lean",
-          "line": 85,
-          "declaration_lines": 7,
-          "body_lines": 7
-        },
-        "NeemExpansion.Efficient.conditionalBase": {
-          "file": "InductivePolicy.lean",
-          "line": 93,
-          "declaration_lines": 35,
-          "body_lines": 35
-        },
-        "NeemExpansion.Efficient.expandedLaws": {
-          "file": "ExpandedPolicy.lean",
-          "line": 38,
-          "declaration_lines": 18,
-          "body_lines": 17
-        },
-        "EfficientReplayAdapter.birth": {
-          "file": "EfficientReplayAdapter.lean",
+        "NeemExpansion.AutomatedORSet.diagonal": {
+          "file": "AutomatedORSet.lean",
           "line": 16,
           "declaration_lines": 1,
           "body_lines": 1
         },
-        "EfficientReplayAdapter.Born": {
-          "file": "EfficientReplayAdapter.lean",
+        "NeemExpansion.AutomatedORSet.comm": {
+          "file": "AutomatedORSet.lean",
           "line": 17,
           "declaration_lines": 1,
           "body_lines": 1
         },
-        "EfficientReplayAdapter.Kill": {
-          "file": "EfficientReplayAdapter.lean",
+        "NeemExpansion.AutomatedORSet.initial": {
+          "file": "AutomatedORSet.lean",
           "line": 18,
           "declaration_lines": 1,
           "body_lines": 1
         },
-        "EfficientReplayAdapter.update_certificate": {
-          "file": "EfficientReplayAdapter.lean",
+        "NeemExpansion.AutomatedORSet.fresh_base": {
+          "file": "AutomatedORSet.lean",
           "line": 20,
-          "declaration_lines": 7,
-          "body_lines": 6
-        },
-        "EfficientReplayAdapter.commutes_of_not_kill": {
-          "file": "EfficientReplayAdapter.lean",
-          "line": 28,
-          "declaration_lines": 8,
-          "body_lines": 7
-        },
-        "EfficientReplayAdapter.noncomm_of_kill": {
-          "file": "EfficientReplayAdapter.lean",
-          "line": 37,
-          "declaration_lines": 10,
-          "body_lines": 8
-        },
-        "EfficientReplayAdapter.supported_distinct": {
-          "file": "EfficientReplayAdapter.lean",
-          "line": 55,
-          "declaration_lines": 6,
-          "body_lines": 4
-        },
-        "EfficientReplayAdapter.order_certificate": {
-          "file": "EfficientReplayAdapter.lean",
-          "line": 64,
-          "declaration_lines": 40,
-          "body_lines": 35
-        },
-        "EfficientReplayAdapter.representation_canonical": {
-          "file": "EfficientReplayAdapter.lean",
-          "line": 108,
-          "declaration_lines": 28,
-          "body_lines": 25
-        },
-        "NeemExpansion.Efficient.local_kernels": {
-          "file": "LocalAssembly.lean",
-          "line": 207,
-          "declaration_lines": 3,
+          "declaration_lines": 2,
           "body_lines": 2
         },
-        "NeemExpansion.Efficient.raw_local": {
-          "file": "LocalAssembly.lean",
-          "line": 272,
-          "declaration_lines": 20,
-          "body_lines": 5
-        },
-        "NeemExpansion.Efficient.shared_nested": {
-          "file": "SharedExpansion.lean",
-          "line": 36,
+        "NeemExpansion.AutomatedORSet.fresh_step": {
+          "file": "AutomatedORSet.lean",
+          "line": 22,
           "declaration_lines": 3,
           "body_lines": 3
         },
-        "NeemExpansion.Efficient.causal_common_kernel": {
-          "file": "InductiveSupplement.lean",
-          "line": 115,
-          "declaration_lines": 7,
-          "body_lines": 7
+        "NeemExpansion.AutomatedORSet.local_common": {
+          "file": "AutomatedORSet.lean",
+          "line": 25,
+          "declaration_lines": 4,
+          "body_lines": 4
         },
-        "NeemExpansion.Efficient.causal_commuting_kernel": {
-          "file": "InductiveSupplement.lean",
-          "line": 123,
+        "NeemExpansion.AutomatedORSet.local_opposite": {
+          "file": "AutomatedORSet.lean",
+          "line": 29,
+          "declaration_lines": 4,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedORSet.local_empty": {
+          "file": "AutomatedORSet.lean",
+          "line": 33,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedORSet.local_singleton": {
+          "file": "AutomatedORSet.lean",
+          "line": 36,
+          "declaration_lines": 5,
+          "body_lines": 5
+        },
+        "NeemExpansion.AutomatedORSet.causal_common": {
+          "file": "AutomatedORSet.lean",
+          "line": 41,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedORSet.causal_commuting": {
+          "file": "AutomatedORSet.lean",
+          "line": 44,
+          "declaration_lines": 4,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedORSet.causal_strict": {
+          "file": "AutomatedORSet.lean",
+          "line": 48,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedORSet.causal_absorber": {
+          "file": "AutomatedORSet.lean",
+          "line": 51,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedORSet.annotation@55": {
+          "file": "AutomatedORSet.lean",
+          "line": 55,
+          "declaration_lines": 1,
+          "body_lines": 0
+        },
+        "NeemExpansion.AutomatedORSet.policy_order": {
+          "file": "AutomatedORSet.lean",
+          "line": 56,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedORSet.annotation@61": {
+          "file": "AutomatedORSet.lean",
+          "line": 61,
+          "declaration_lines": 1,
+          "body_lines": 0
+        },
+        "NeemExpansion.AutomatedORSet.no_chain": {
+          "file": "AutomatedORSet.lean",
+          "line": 62,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedORSet.commute_nonconflict": {
+          "file": "AutomatedORSet.lean",
+          "line": 66,
+          "declaration_lines": 6,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedORSet.noncomm_full": {
+          "file": "AutomatedORSet.lean",
+          "line": 72,
+          "declaration_lines": 13,
+          "body_lines": 11
+        },
+        "NeemExpansion.AutomatedORSet.conditional_base": {
+          "file": "AutomatedORSet.lean",
+          "line": 85,
+          "declaration_lines": 6,
+          "body_lines": 6
+        },
+        "NeemExpansion.AutomatedORSet.kernel_stable": {
+          "file": "AutomatedORSet.lean",
+          "line": 91,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedORSet.kit": {
+          "file": "AutomatedORSet.lean",
+          "line": 95,
+          "declaration_lines": 25,
+          "body_lines": 24
+        },
+        "NeemExpansion.AutomatedORSet.automated_vcs": {
+          "file": "AutomatedORSet.lean",
+          "line": 121,
+          "declaration_lines": 5,
+          "body_lines": 3
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.AutomatedEfficientORSet.automated_vcs",
+      "body_lines": 188,
+      "declaration_lines": 218,
+      "proofs": {
+        "NeemExpansion.AutomatedEfficientORSet.signature": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 15,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedEfficientORSet.annotation@16": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 16,
+          "declaration_lines": 1,
+          "body_lines": 0
+        },
+        "NeemExpansion.AutomatedEfficientORSet.diagonal": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 18,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedEfficientORSet.comm": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 19,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedEfficientORSet.initial": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 20,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedEfficientORSet.fresh_base": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 22,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.AutomatedEfficientORSet.fresh_step": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 24,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedEfficientORSet.local_common": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 27,
+          "declaration_lines": 4,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedEfficientORSet.local_opposite": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 31,
+          "declaration_lines": 4,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedEfficientORSet.local_empty": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 35,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedEfficientORSet.local_singleton": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 38,
+          "declaration_lines": 5,
+          "body_lines": 5
+        },
+        "NeemExpansion.AutomatedEfficientORSet.causal_common": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 43,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedEfficientORSet.causal_commuting": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 46,
+          "declaration_lines": 4,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedEfficientORSet.causal_strict": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 50,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedEfficientORSet.causal_absorber": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 53,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedEfficientORSet.birth": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 57,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedEfficientORSet.mask_update": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 58,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedEfficientORSet.mask_commuting": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 63,
+          "declaration_lines": 6,
+          "body_lines": 5
+        },
+        "NeemExpansion.AutomatedEfficientORSet.mask_noncomm": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 69,
           "declaration_lines": 9,
-          "body_lines": 9
-        },
-        "NeemExpansion.Efficient.causal_absorber_kernel": {
-          "file": "InductiveSupplement.lean",
-          "line": 133,
-          "declaration_lines": 7,
           "body_lines": 7
         },
-        "NeemExpansion.Efficient.causal_strict_kernel": {
-          "file": "CausalExpansion.lean",
-          "line": 152,
-          "declaration_lines": 8,
-          "body_lines": 8
+        "NeemExpansion.AutomatedEfficientORSet.maskKit": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 79,
+          "declaration_lines": 14,
+          "body_lines": 13
         },
-        "CausalEventClassification.Efficient.element": {
-          "file": "CausalEventClassification.lean",
-          "line": 67,
+        "NeemExpansion.AutomatedEfficientORSet.semantic_shape": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 94,
+          "declaration_lines": 14,
+          "body_lines": 12
+        },
+        "NeemExpansion.AutomatedEfficientORSet.element": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 109,
           "declaration_lines": 2,
           "body_lines": 0
         },
-        "CausalEventClassification.Efficient.commute_distinct_elements": {
-          "file": "CausalEventClassification.lean",
-          "line": 70,
+        "NeemExpansion.AutomatedEfficientORSet.commute_distinct_elements": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 112,
           "declaration_lines": 5,
           "body_lines": 4
         },
-        "CausalEventClassification.Efficient.conflict_classification": {
-          "file": "CausalEventClassification.lean",
-          "line": 76,
+        "NeemExpansion.AutomatedEfficientORSet.conflict_classification": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 118,
           "declaration_lines": 8,
           "body_lines": 6
         },
-        "CausalEventClassification.Efficient.remove_add_noncomm": {
-          "file": "CausalEventClassification.lean",
-          "line": 85,
+        "NeemExpansion.AutomatedEfficientORSet.remove_add_noncomm": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 127,
           "declaration_lines": 6,
           "body_lines": 5
         },
-        "CausalEventClassification.Efficient.absorber_classification": {
-          "file": "CausalEventClassification.lean",
-          "line": 92,
+        "NeemExpansion.AutomatedEfficientORSet.absorber_classification": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 134,
           "declaration_lines": 19,
           "body_lines": 15
         },
-        "CausalEventClassification.Efficient.strict_asymmetric": {
-          "file": "CausalEventClassification.lean",
-          "line": 112,
+        "NeemExpansion.AutomatedEfficientORSet.strict_asymmetric": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 154,
           "declaration_lines": 4,
           "body_lines": 3
         },
-        "NeemExpansion.Efficient.causal_event_certificate": {
-          "file": "CausalCoverage.lean",
-          "line": 231,
-          "declaration_lines": 4,
-          "body_lines": 3
+        "NeemExpansion.AutomatedEfficientORSet.annotation@159": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 159,
+          "declaration_lines": 1,
+          "body_lines": 0
         },
-        "NeemExpansion.Efficient.causal_kernels": {
-          "file": "CausalCoverage.lean",
-          "line": 236,
-          "declaration_lines": 3,
-          "body_lines": 2
-        },
-        "NeemExpansion.Efficient.policy_order": {
-          "file": "CausalCoverage.lean",
-          "line": 240,
+        "NeemExpansion.AutomatedEfficientORSet.policy_order": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 160,
           "declaration_lines": 5,
           "body_lines": 4
         },
-        "NeemExpansion.Efficient.raw_causal": {
-          "file": "CausalCoverage.lean",
-          "line": 246,
-          "declaration_lines": 15,
-          "body_lines": 5
+        "NeemExpansion.AutomatedEfficientORSet.annotation@165": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 165,
+          "declaration_lines": 1,
+          "body_lines": 0
         },
-        "NeemExpansion.Efficient.native_initial": {
-          "file": "ExpandedVCs.lean",
-          "line": 25,
+        "NeemExpansion.AutomatedEfficientORSet.no_chain": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 166,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.AutomatedEfficientORSet.commute_nonconflict": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 170,
+          "declaration_lines": 6,
+          "body_lines": 4
+        },
+        "NeemExpansion.AutomatedEfficientORSet.guarded_noncomm": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 177,
+          "declaration_lines": 12,
+          "body_lines": 10
+        },
+        "NeemExpansion.AutomatedEfficientORSet.conditional_base": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 190,
+          "declaration_lines": 35,
+          "body_lines": 35
+        },
+        "NeemExpansion.AutomatedEfficientORSet.kernel_stable": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 227,
           "declaration_lines": 3,
           "body_lines": 3
         },
-        "NeemExpansion.Efficient.expanded_vcs": {
-          "file": "ExpandedVCs.lean",
-          "line": 60,
-          "declaration_lines": 15,
+        "NeemExpansion.AutomatedEfficientORSet.kit": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 231,
+          "declaration_lines": 14,
           "body_lines": 13
+        },
+        "NeemExpansion.AutomatedEfficientORSet.automated_vcs": {
+          "file": "AutomatedEfficientORSet.lean",
+          "line": 246,
+          "declaration_lines": 5,
+          "body_lines": 3
         }
       }
     },

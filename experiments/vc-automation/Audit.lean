@@ -21,7 +21,9 @@ elab "audit_vc " n:ident : command => do
       if let some info := env.find? current then
         if current.toString.startsWith "Sal." && (match info with | .thmInfo _ => true | _ => false) then
           logInfo m!"VC_DEP {current}"
-        if current.toString.startsWith "NeemExpansion." && (match info with | .thmInfo _ => true | _ => false) then
+        if (current.toString.startsWith "NeemExpansion." ||
+            current.toString.startsWith "EfficientReplayAdapter." ||
+            current.toString.startsWith "CausalEventClassification.") && (match info with | .thmInfo _ => true | _ => false) then
           logInfo m!"VC_EXP_DEP {current}"
         pending := info.getUsedConstantsAsSet.toList ++ pending
   logInfo "VC_AUDIT_COMPLETE"

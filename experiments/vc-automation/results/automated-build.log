@@ -166,3 +166,124 @@ Note: This linter can be disabled with `set_option linter.unnecessarySimpa false
 'NeemExpansion.AutomatedRGA.Sided.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NeemExpansion.AutomatedRGA.anchored_queue' depends on axioms: [propext, Classical.choice, Quot.sound]
 'NeemExpansion.AutomatedRGA.peritext' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## PolicyExpansionRules
+
+## PolicyExpansionAutomation
+
+## GenericPolicyExpansion
+'NeemExpansion.PolicyExpansion.assemble' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.PolicyExpansion.canonical_of_loWitness' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## AutomatedORSet
+'NeemExpansion.AutomatedORSet.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## GenericMaskCanonical
+
+## AutomatedEfficientORSet
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:68:31: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵update, ̲birth, ̲kills] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:102:15: warning: This simp argument is unused:
+  MaskCanonical.Shape
+
+Hint: Omit it from the simp argument list.
+  simp only [̵M̵a̵s̵k̵C̵a̵n̵o̵n̵i̵c̵a̵l̵.̵S̵h̵a̵p̵e̵,̵m̵a̵s̵k̵K̵i̵t̵,̵I̵n̵d̵u̵c̵t̵i̵v̵e̵M̵a̵s̵k̵.̵A̵l̵i̵v̵e̵,̵b̵i̵r̵t̵h̵,̵l̵i̵v̵e̵,̵d̵e̵a̵d̵]̵[̲m̲a̲s̲k̲K̲i̲t̲,̲ ̲I̲n̲d̲u̲c̲t̲i̲v̲e̲M̲a̲s̲k̲.̲A̲l̲i̲v̲e̲,̲ ̲b̲i̲r̲t̲h̲,̲ ̲l̲i̲v̲e̲,̲ ̲d̲e̲a̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:116:58: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵update, ̲element] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:207:12: warning: This simp argument is unused:
+  signature
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲L̲o̲c̲a̲l̲A̲s̲s̲e̲m̲b̲l̲y̲.̲o̲f̲M̲R̲D̲T̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:207:22: warning: This simp argument is unused:
+  LocalAssembly.ofMRDT
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲s̲i̲g̲n̲a̲t̲u̲r̲e̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:207:43: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [signature, ̲LocalAssembly.ofMRDT,D̵,̵ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:211:10: warning: This simp argument is unused:
+  signature
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲L̲o̲c̲a̲l̲A̲s̲s̲e̲m̲b̲l̲y̲.̲o̲f̲M̲R̲D̲T̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:211:20: warning: This simp argument is unused:
+  LocalAssembly.ofMRDT
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲s̲i̲g̲n̲a̲t̲u̲r̲e̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:211:41: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [signature, ̲LocalAssembly.ofMRDT,D̵,̵ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:219:12: warning: This simp argument is unused:
+  signature
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲L̲o̲c̲a̲l̲A̲s̲s̲e̲m̲b̲l̲y̲.̲o̲f̲M̲R̲D̲T̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:219:22: warning: This simp argument is unused:
+  LocalAssembly.ofMRDT
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲s̲i̲g̲n̲a̲t̲u̲r̲e̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:219:43: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [signature, ̲LocalAssembly.ofMRDT,D̵,̵ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:223:10: warning: This simp argument is unused:
+  signature
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲L̲o̲c̲a̲l̲A̲s̲s̲e̲m̲b̲l̲y̲.̲o̲f̲M̲R̲D̲T̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:223:20: warning: This simp argument is unused:
+  LocalAssembly.ofMRDT
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲s̲i̲g̲n̲a̲t̲u̲r̲e̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:223:41: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [signature, ̲LocalAssembly.ofMRDT,D̵,̵ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'NeemExpansion.AutomatedEfficientORSet.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
