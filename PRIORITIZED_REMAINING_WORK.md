@@ -6,6 +6,39 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: reduce per-RDT proof work with reusable certified templates
+
+Research question: can MVR, Embedded RGA and Sided Embedded RGA obtain their
+unchanged five-VC bundles from fixed finite obligations, without per-RDT history
+inductions? Candidate: generic record provenance/issuance and ordered-record
+normalization templates suffice. The oracle is the exact existing `Raw.MergeVCs`
+statements plus a dependency audit rejecting the previous datatype adapters.
+A template requiring a datatype history theorem as an input does not establish
+the claim. Existing implementations, issuers, representations and policies are
+the fixed reference; no new history invariant may be assumed.
+
+- [x] Build a parametric certified-record template and finite MVR instantiation.
+- [x] Build a parametric ordered-record template and finite Embedded/Sided RGA
+  instantiations; transfer to current Queue and Peritext.
+- [x] Independently check template premises, finite obligations and dependency
+  closure; report every residual manual lemma or annotation as author work.
+- [x] Rebuild/audit the combined 23 cases with the new routes selected.
+- [x] Update README with current proof effort and the exact automation
+  boundary. Framework induction is not per-RDT author work; merely hiding an
+  existing adapter in a tactic does not count as a reduction.
+
+- [x] Register raw list helpers for automatic selection by a shared tactic;
+  count registrations and retained helper proofs explicitly, then rerun audit.
+
+Sequential-bridge automation and Fugue-specific extensions remain deferred.
+
+Verified all 23 cases through `verify_expansion.py --automated` (39 modules).
+The five new bundles exclude old datatype history adapters. Current local
+author code: MVR 15 lines, Embedded 113, Sided 112; retained raw helper proofs
+are additionally counted in the README. No per-RDT history induction remains
+in these three interfaces. Original issuer certification and sequential bridges
+are outside this automation.
+
 ### Checked: four remaining VC automation routes
 
 Goal: obtain the unchanged five-VC bundles for Bounded Counter, TreeMove,

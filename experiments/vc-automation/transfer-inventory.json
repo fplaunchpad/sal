@@ -199,8 +199,9 @@
       },
       "selected_existing_vc_route": "CertifiedRGAVC.Embedded.mergeVCs",
       "status": "excluded-track-a",
-      "transfer_theorem": "NeemExpansion.CertifiedEmbedded.expanded_vcs",
-      "transfer_status": "independently-checked"
+      "transfer_theorem": "NeemExpansion.AutomatedRGA.Embedded.automated_vcs",
+      "transfer_status": "independently-checked",
+      "automation_route": "reusable certified template; finite obligations and existing representation projections"
     },
     {
       "id": "sided-embed-rga",
@@ -215,8 +216,9 @@
       },
       "selected_existing_vc_route": "CertifiedRGAVC.Sided.mergeVCs",
       "status": "excluded-track-a",
-      "transfer_theorem": "NeemExpansion.CertifiedRGA.expanded_vcs",
-      "transfer_status": "independently-checked"
+      "transfer_theorem": "NeemExpansion.AutomatedRGA.Sided.automated_vcs",
+      "transfer_status": "independently-checked",
+      "automation_route": "reusable certified template; finite obligations and existing representation projections"
     },
     {
       "id": "peritext-embed-rga",
@@ -231,8 +233,9 @@
       },
       "selected_existing_vc_route": "CertifiedPeritextVC.mergeVCs",
       "status": "excluded-track-a",
-      "transfer_theorem": "NeemExpansion.CertifiedEmbeddedTransfers.peritext",
-      "transfer_status": "independently-checked"
+      "transfer_theorem": "NeemExpansion.AutomatedRGA.peritext",
+      "transfer_status": "independently-checked",
+      "automation_route": "reusable certified template; finite obligations and existing representation projections"
     },
     {
       "id": "sided-peritext-core",
@@ -344,8 +347,9 @@
       "selected_existing_vc_route": "CertifiedQueueMVR.MVR.RawVC.mergeVCs",
       "status": "checked-transfer",
       "scope_note": "Exact Instances.MVRLive.D; representation carries CertifiedExecution and Represents event/state evidence.",
-      "transfer_theorem": "NeemExpansion.CertifiedMVR.expanded_vcs",
-      "transfer_status": "independently-checked"
+      "transfer_theorem": "NeemExpansion.AutomatedMVR.automated_vcs",
+      "transfer_status": "independently-checked",
+      "automation_route": "reusable certified template; finite obligations and existing representation projections"
     },
     {
       "id": "fugue-max",
@@ -387,10 +391,11 @@
       "issuance": "Paper1.AnchoredQueue.issuance",
       "state_dependent_issuance": true,
       "selected_existing_vc_route": "AnchoredQueue.mergeVCs",
-      "transfer_theorem": "NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue",
+      "transfer_theorem": "NeemExpansion.AutomatedRGA.anchored_queue",
       "transfer_status": "independently-checked",
       "scope_note": "Q is Embedded E unaryCode Nat. This is not Instances.Queue.Q.",
-      "preferred_name": "Queue (current anchored-enqueue implementation)"
+      "preferred_name": "Queue (current anchored-enqueue implementation)",
+      "automation_route": "reusable certified template; finite obligations and existing representation projections"
     }
   ]
 }

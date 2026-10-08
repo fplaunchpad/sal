@@ -33,10 +33,12 @@ state-dependent issuance, the ordinary OR-set example, and the RGA family,
 including current Queue (anchored enqueue) and FugueMax, plus Bounded Counter,
 TreeMove, AegisSheet and MVR. The combined audit covers all 23 current named
 instances including aliases. The experiment README separates reusable framework proofs from
-per-RDT work and estimates the additional proof code for each instance. Built-in Lean tactics (`simp`, `grind`,
-`tauto`, `omega`) solve the prepared finite equations without an external SMT
-solver. History inductions, soundness bridges, and datatype-specific evidence
-and normalization adapters were developed manually.
+per-RDT work and estimates the additional proof code for each instance. Lean tactics (`simp`, `grind`,
+`tauto`, `omega`, `aesop`) solve the prepared finite equations without an external SMT
+solver. MVR and Embedded/Sided RGA now use reusable certified templates with
+no per-RDT history induction; Queue and Peritext reuse the Embedded template.
+A named rule set selects raw RGA helpers automatically. The experiment README
+counts remaining annotations, registrations and supplied helper proofs.
 The audit excludes old datatype VC, Join and history-invariant proof reuse.
 Production certificates remain unchanged. Fugue's merge VC proof does not
 resolve its separate sequential-specification obstruction.

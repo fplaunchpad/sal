@@ -1,116 +1,119 @@
 # Automating Sal’s five merge VCs
 
-The experiment proves Sal’s **five unchanged merge VCs** from finite equations
-and checked history-expansion arguments. Implementations, issuers, policies and
-representations stay unchanged. No previous datatype VC/Join proof or additional
-datatype state/history invariant is supplied.
+**All 23 current named instances have kernel-checked five-VC proofs.** The
+finite equations close with Lean tactics (`simp`, `grind`, `tauto`, `omega`,
+`aesop`); the final proofs require no external SMT solver. Implementations,
+issuers, representations, policies and VC statements are unchanged.
 
-**All 23 current named instances have kernel-checked five-VC proofs.** The finite
-VC templates are discharged with Lean’s built-in tactics; no external SMT
-solver is needed for the final proofs. Some instances also require the
-RDT-specific adapter proofs listed below.
+## What does the RDT author supply?
 
-## What does the RDT author currently write?
+Shared induction templates and soundness proofs are framework work. The author
+supplies datatype mappings, finite-law instantiations and any required helper
+lemmas. The table reports the current local proof/annotation code, charging
+shared families once. Counts include statements and annotations, not just tactic
+bodies; they exclude RDT implementation definitions and generic framework code.
 
-Shared induction templates, coverage proofs and VC-to-Join soundness theorems
-are **framework work**, not work to repeat for each RDT. The relevant remaining
-cost is instantiating those templates and connecting an RDT’s definitions and
-existing certification premises to them.
-
-The table estimates **additional proof-body lines in the current experiment**,
-with shared datatype proofs charged once. It excludes RDT descriptions and
-generic framework proofs. Small counts include routine unfolding, extensionality,
-case splits and calls to `simp`, `grind`, `tauto` or `omega`. Larger counts also
-include explicit intermediate arguments and datatype-specific inductions.
-
-| Instance | Approx. additional proof lines | Current datatype-specific work |
+| Instance | Approx. local code lines | Current author work |
 |---|---:|---|
-| Grow-only set | 10 | Instantiate commuting template; set extensionality and simplification. |
-| Add-store | 1 | Reuse the same generic Add-store proof as grow-only set. |
+| Grow-only set | 10 | Commuting template, set extensionality and simplification. |
+| Add-store | 1 | Reuse the same Add-store proof as grow-only set. |
 | Finite add-store | 10 | Finite-set extensionality and simplification. |
-| Counter | 5 | Generic additive-counter equations, unfolding and `omega`. |
+| Counter | 5 | Additive-counter equations and `omega`. |
 | Increment-only counter | 1 | Specialize the additive-counter proof. |
-| PN-counter | 1 | Specialize the same proof to signed increments. |
-| Flat grow-only set | 5 | Pointwise Boolean equations and simplification. |
-| Flat grow-only map | 1 | Specialize the Boolean-store proof to key/value pairs. |
-| Bounded Counter | 20 | Component decomposition, operation cases and `omega`; no new history proof. |
-| LWW register | 5 | Maximum algebra, using its existing empty-policy port. |
-| Native RGA | 20 | Component decomposition and finite membership equations; no new history induction. |
-| TreeMove | 10 | Commuting template, insertion/union unfolding and simplification. |
-| AegisSheet | 10 | Commuting template, insertion/union unfolding and simplification. |
-| Ordinary OR-set | 230 | Finite equations and policy facts; connect replay and ordering to generic coverage. |
-| Efficient OR-set | 300 | Finite equations; update/order certificates and semantic-representation-to-replay adapter. |
-| MVR | 85 | One-step membership; issuer overwrite equality to visible-birth evidence; freshness and coverage. Uses generic provenance induction. |
-| Embedded RGA | 260 | Generic membership/provenance instantiation; freshness/deletion evidence; list-to-set correspondence and sortedness induction. |
-| Sided Embedded RGA | 260 | Corresponding evidence, list normalization and sortedness proofs for sided records. |
-| Peritext Embedded RGA | 1 | Specialize the Embedded RGA proof to its payload type. |
-| Queue (anchored enqueue) | 1 | Specialize the Embedded RGA proof to its carrier. |
-| Sided Peritext Core | 160 | Reuse Sided RGA; text projection, store membership, component normalization and update/merge correspondence. |
-| Sided Peritext RichCore | 10 | Reuse Core and adapt context fields. |
-| FugueMax | 450 | Birth-store and list adapters, generator branch lemmas, and timestamp induction deriving insertion-chain evidence from issuance. |
+| PN-counter | 1 | Specialize it to signed increments. |
+| Flat grow-only set | 7 | Pointwise Boolean equations. |
+| Flat grow-only map | 1 | Specialize the Boolean-store proof. |
+| Bounded Counter | 21 | Component decomposition, operation cases and `omega`. |
+| LWW register | 6 | Maximum algebra, using its existing empty-policy port. |
+| Native RGA | 21 | Component decomposition and finite membership equations. |
+| TreeMove | 10 | Commuting template and insertion/union simplification. |
+| AegisSheet | 10 | Commuting template and insertion/union simplification. |
+| Ordinary OR-set | 274 | Finite equations, policy facts and replay/ordering connections. |
+| Efficient OR-set | 359 | Finite equations and update/order/representation adapters. |
+| MVR | 15 | Four record mappings, six finite laws and template instantiation. |
+| Embedded RGA | 113 | Ordered-record mappings, finite laws, helper references and existing honesty projections. |
+| Sided Embedded RGA | 112 | The corresponding sided-record mappings and finite laws. |
+| Peritext Embedded RGA | 3 | Specialize the Embedded RGA theorem. |
+| Queue (anchored enqueue) | 4 | Specialize the Embedded RGA theorem. |
+| Sided Peritext Core | 209 | Text projection, store membership and component normalization; reuses the earlier Sided RGA adapter. |
+| Sided Peritext RichCore | 11 | Reuse Core and adapt context fields. |
+| FugueMax | 548 | Record/list adapters, generator lemmas and an issuance timestamp induction. |
 
-These are estimates of the **present marginal proof code**, not lower bounds
-on user effort or a prediction for a new RDT from scratch. Reuse rows assume
-the named parent proof already exists. Counts also assume the existing library
-of raw datatype/collection helper lemmas; they do not include developing those
-helpers, existing policy/issuance certification, or sequential bridges.
+These are current code-size estimates, not unavoidable human effort. One-line
+reuse rows assume the parent proof exists. The
+[declaration inventory](results/proof-effort.json) records source locations,
+hashes and dependency totals; shared dependency totals must not be summed.
+Core and Fugue retain their existing expansion routes.
 
-For example, MVR’s visible-birth argument uses a generic history induction:
-its remaining code connects the one-step update and issuer definitions to that
-induction. Further templates could remove such per-RDT proof work. We have not
-established that any listed adapter must remain user-written.
+## Certified templates: current boundary
 
-Counting method: nonblank, noncomment lines in reachable datatype-specific
-**theorem bodies**, including tactic setup and assembly. Theorem statements,
-definitions, shared framework proofs and unused experimental lemmas are
-excluded. Counts are rounded; one-line aliases count as one line. The
-[source-count inventory](results/proof-effort.json) records declarations,
-source locations, hashes and unrounded dependency totals. Shared totals must
-not be added together. Core’s generic store-fold induction is framework work;
-its datatype-specific instantiations are counted.
+MVR uses a [generic record template](GenericCertifiedRecords.lean). The author
+provides record, identifier and overwrite projections and six finite laws:
+carrier injectivity, empty initial state, birth timestamp, update membership,
+merge membership and issuer target membership. In [MVR](AutomatedMVR.lean),
+all six close with `simp`/`rfl`. The framework derives provenance, visible births,
+freshness and overwrite coverage, then assembles the unchanged five VCs.
 
-## Scope of the result
+Embedded and Sided RGA use one [ordered-record template](GenericOrderedRecords.lean).
+Its eight mappings describe records, identifiers, keys, updates and ordering;
+ten finite laws describe initialization, update, merge and ordered equality.
+The [instances](AutomatedRGA.lean) also project the existing certified
+representation’s creator and chain evidence. The template derives replay
+membership, sortedness, coherence, freshness and deletion coverage by generic
+induction. **No RDT-specific history induction remains in MVR or either RGA
+interface.** Queue and Peritext reuse the Embedded instance.
+
+The [helper registry](OrderedRecordAutomation.lean) lets Lean select the raw
+membership, sortedness and extensionality lemmas automatically. Each family
+registers five helper names. `ordered_record_simp` performs membership rewriting;
+`ordered_record` uses goal matching through a named Aesop rule set and `grind`.
+The instance proofs no longer name those individual helpers. The registry
+contains no history, VC or Join theorem.
+
+RGA still requires explicit finite case analysis, representation projections
+and the helper library itself. These are counted as author work, not hidden
+behind the final theorem:
+
+| Template instance | Local annotations/proofs | Retained RDT-specific helper proofs | Combined code |
+|---|---:|---:|---:|
+| MVR | 15 | 0 | 15 |
+| Embedded RGA | 113 | 135 | 248 |
+| Sided Embedded RGA | 112 | 143 | 255 |
+
+There are also eight shared lines for identifier-membership reasoning, counted
+once across the two RGAs. The shared selection registry/rules take 27 nonblank
+source lines (including imports and declarations); these contain the ten
+datatype helper registrations and shared conversion/tactic code. Retained
+helper counts include transitive, source-written
+RDT-module theorems for insertion/merge membership, sortedness and extensionality;
+the Sided count includes its key-injection lemma. If those helpers are not already
+available, the author must supply them. General coordinate, collection and order
+library proofs are assumed available. The [helper inventory](results/template-effort.json)
+lists the exact declarations; regenerate it with `measure_template_effort.py`.
+
+The templates consume the **existing** issuance/execution evidence. They do not
+automatically prove issuer honesty from an arbitrary new issuer. No new datatype
+history invariant is assumed, and the dependency audit rejects reuse of the
+previous MVR/RGA history adapters in the five new template-based bundles.
+Automatically synthesizing the mappings and finite helper scripts remains open.
+
+## Scope and reproduction
 
 The 23 cases include aliases and specializations. Core/RichCore retain their
-existing native-insert-only premise. Queue means anchored enqueue; the earlier
-unanchored queue is historical and excluded from this count.
+native-insert-only premise. Queue means anchored enqueue; the earlier unanchored
+queue is historical and excluded. Five VCs feed the checked Join theorem, but
+full RA-linearizability additionally needs the sequential bridge. Fugue’s
+sequential-specification obstruction remains open. Sequential-bridge automation
+is deferred; production bundles still use their existing proofs.
 
-The checked metatheory connects the expanded obligations to the five merge VCs
-and the existing Join theorem. Full RA-linearizability additionally requires
-the sequential-specification bridge. Fugue’s five-VC proof does not resolve its
-known sequential-specification obstruction. Sequential-bridge automation is
-outside this experiment, and production bundles still use their existing proofs.
-
-## Solver comparison
-
-We tested three approaches on 30 local-redistribution, freshness and causal-delta
-equations across the two OR-sets, using the same preparation for each approach.
-
-| Approach | Lean-checked proofs | Solver successes without checked proofs | Unsolved |
-|---|---:|---:|---:|
-| Lean’s built-in automation (`simp` / `grind`) | **30/30** | 0 | 0 |
-| lean-smt with cvc5 | 24/30 | 0 | 6 |
-| Lean-auto with Z3 | 4/30 | 26/30 | 0 |
-
-Lean-auto’s four checked proofs came from its internal simplification. Its Z3
-successes did not produce kernel-checked proofs. lean-smt returned incomplete
-responses for six equations.
-
-These 30 equations are a benchmark, not the five VCs themselves or a minimal
-list of proof obligations. Some exploratory equations are unused by the final
-proof. The complete five-VC proofs were checked separately.
-
-## Reproduce
-
-From the repository root, with production Lean dependencies built, run:
+From the repository root, with production dependencies built:
 
 ```sh
-python3 experiments/vc-automation/verify_expansion.py --all
+python3 experiments/vc-automation/verify_expansion.py --automated
+python3 experiments/vc-automation/measure_template_effort.py
 ```
 
-This rebuilds the experiment modules and audits every named five-VC instance.
-The [combined audit](results/all-audit.json) records source hashes,
-standard Lean axioms and transitive proof dependencies. See the
-[scope inventory](transfer-inventory.json) for individual theorem names.
-Benchmark details are in [local trials](results/local-campaign.json) and
-[causal trials](results/causal-campaign.json).
+This rebuilds all 23 cases, selecting the reusable templates for MVR, Embedded
+RGA, Sided RGA, Queue and Peritext. The [combined audit](results/automated-audit.json)
+records source hashes, standard Lean axioms and transitive dependencies. The
+[scope inventory](transfer-inventory.json) identifies each theorem.

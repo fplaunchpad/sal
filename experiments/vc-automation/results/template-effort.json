@@ -1,0 +1,163 @@
+{
+  "method": "Nonblank noncomment declaration lines, including theorem statements, proof bodies, definitions/annotations and helper lemmas; imports/namespace/open/variable/#print scaffolding excluded. Retained helper proofs are actual source-written theorems in the RDT modules reached by the audit; generated equations and general coordinate/collection library proofs are excluded.",
+  "cases": {
+    "MVR": {
+      "author_lines": 15,
+      "retained_datatype_helpers": {},
+      "retained_helper_lines": 0,
+      "author_plus_retained_helpers": 15
+    },
+    "Embedded RGA": {
+      "author_lines": 113,
+      "retained_datatype_helpers": {
+        "Sal.MRDTs.Instances.EmbedRGA.mem_eInsert": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "line": 154,
+          "lines": 10
+        },
+        "Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "line": 165,
+          "lines": 24
+        },
+        "Sal.MRDTs.Instances.EmbedRGA.esorted_ext": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "line": 210,
+          "lines": 34
+        },
+        "Sal.MRDTs.Instances.EmbedRGA.mem_eMerge2": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "line": 247,
+          "lines": 16
+        },
+        "Sal.MRDTs.Instances.EmbedRGA.eMerge2_sorted": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "line": 264,
+          "lines": 38
+        },
+        "Sal.MRDTs.Instances.EmbedRGA.eMerge_sorted": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "line": 305,
+          "lines": 13
+        }
+      },
+      "retained_helper_lines": 135,
+      "author_plus_retained_helpers": 248
+    },
+    "Sided RGA": {
+      "author_lines": 112,
+      "retained_datatype_helpers": {
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sInsert": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "line": 146,
+          "lines": 10
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sInsert_sorted": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "line": 157,
+          "lines": 24
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA.ssorted_ext": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "line": 202,
+          "lines": 34
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sMerge2": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "line": 239,
+          "lines": 16
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge2_sorted": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "line": 256,
+          "lines": 38
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge_sorted": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "line": 298,
+          "lines": 13
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sFold_snoc": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "line": 324,
+          "lines": 5
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sKey_inj": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "line": 591,
+          "lines": 3
+        }
+      },
+      "retained_helper_lines": 143,
+      "author_plus_retained_helpers": 255
+    }
+  },
+  "raw_helper_registrations": {
+    "Embedded RGA": [
+      "mem_eInsert",
+      "mem_eMerge2",
+      "eInsert_sorted",
+      "eMerge_sorted",
+      "esorted_ext"
+    ],
+    "Sided RGA": [
+      "mem_sInsert",
+      "mem_sMerge2",
+      "sInsert_sorted",
+      "sMerge_sorted",
+      "ssorted_ext"
+    ]
+  },
+  "shared_helper_and_two_transfer_declarations": 15,
+  "framework_lines": {
+    "GenericCertifiedRecords.lean": 136,
+    "GenericOrderedRecords.lean": 251,
+    "OrderedRecordRules.lean": 2,
+    "OrderedRecordAutomation.lean": 12
+  },
+  "source_sha256": {
+    "AutomatedMVR.lean": "914ae732bf51ec6173c831fc6d165c01088a4b608a0c13850687508957ca5d5f",
+    "AutomatedRGA.lean": "fec6e114833bbf702e887b5bbd7f11559d1c85cec53ba58bce517acabca27f46",
+    "CausalCoverage.lean": "24e991c82d10d027f2c842e8b103d3fe4991fade6a07b2a8f8731cd4712e7c20",
+    "CausalEventClassification.lean": "30fd54f3e603d654197f5d3306d5ffc5a1bd0c3de09528d141e3873d056e33aa",
+    "CausalExpansion.lean": "b4eb3bf7f04961e2795b8af795a9cb356ca16f8cd6e913bcbdcb19cf817e6a51",
+    "CertifiedCoreExpansion.lean": "fa6789e9eea4f0bc24d9aaaf858b5377abad148dfa0fd5660064aac2dd16293f",
+    "CertifiedEmbeddedExpansion.lean": "a2d068a469ad2409ca4dbfc2a7019d86098eec4c32f214d48a242dade62f6ba1",
+    "CertifiedEmbeddedReplay.lean": "b1cadf0f6f818b81490d9bd642f588997d32ef24773003c2a228a1e744d8528d",
+    "CertifiedExpansion.lean": "ed737c665cdb9d8a276fc63a1c43c78de7505ee993b43a415196677309aee62d",
+    "CertifiedExpansionControls.lean": "de75cbb4bf8f88ca4b7c69d4ccf41fb9075f220118e6fb647083c8d36f81a6b5",
+    "CertifiedFugueEvidence.lean": "c8072fc345791a142949ae1f3571ddd0be804b7c69ca2552d4d883c32ef6facf",
+    "CertifiedFugueExpansion.lean": "1c6a1eee94ef94c833993d0e89dd7a1623e2a2fc38ead298a02c2f0bd0f1387e",
+    "CertifiedFugueNormalization.lean": "e5ad39f303338e93fd2623eacaa5e608811c7c09a40693841493fc07cb192ce8",
+    "CertifiedFugueVCExpansion.lean": "57b73d9df73a6f9a86e6871335fe4a6e2dd21ca02f1006763435cfaec6b868bb",
+    "CertifiedMVRExpansion.lean": "f3d551b173faf55eadcf118264acd74e0e8a3a0f26ad5acfd3d1a5ee4022c5ca",
+    "CertifiedRGAExpansion.lean": "a19fe50e0b7429b52956a1ad8913f0e0341a17b4dbf79b4cdd1e89fb5149e7f2",
+    "CertifiedReplayExpansion.lean": "c2f3b2607a92abb24752cb24c64823cdc0516cbe7d62358aec6ccf388b6ea2f1",
+    "EfficientReplayAdapter.lean": "4bd6a15b9f3e91a1b56952fcaee7398aab630b08f6511e3aae351db9838404cb",
+    "ExpandedPolicy.lean": "ccef67c3599a9310500b6c5b2131820dbdab667ab4566228094931d8d97ecb9d",
+    "ExpandedVCs.lean": "8253f0648d65e37f5971cce5b2a9410a6f99b381023e48859f190f01965fc2e3",
+    "GenericCertifiedRecords.lean": "07fc372ae72170a36b7e158c63632127c6707c8c98e08675c2ab118b73ca888d",
+    "GenericOrderedRecords.lean": "5d972be354423f6407d948dd7f89cc45ff3d7bb8e535e81f9bece5859f08b4eb",
+    "InductiveLeaves.lean": "86df5a939cff88762debc89c28639e8b3711822c8a7c0568f8e7c5103521a7fb",
+    "InductiveMask.lean": "6d622c6eec1525b0750de2efd05b426bae0b2d468688d6aefc12c134c9547a66",
+    "InductivePolicy.lean": "2e67c5d66c99fd819e7d0f431e50c295a8f0b55733acba08784c14358880d854",
+    "InductiveSupplement.lean": "12863e8b106b2a93299d6bafbe8d49dc3b6509bd59069f503e2381c51f29e4ec",
+    "LocalAssembly.lean": "f58f8523738491fe70f2fe1000bc2af4fd133fab16b406a56129b393ba2995e9",
+    "LocalCoverage.lean": "94d7ee3c5d0d85501230b715155875cf32d82fd67f69dcdddb79aeabdf46e296",
+    "LocalExpansion.lean": "9155c5a8dfb3b7fb9652f44b93c6ad6b1a4b78a71643c246b37dc08565f411c9",
+    "LocalSingleton.lean": "d89ba220851daff7627c4f13c9329676981230d8cfe52f2482042f40f6e0371f",
+    "OrderedRecordAutomation.lean": "b321d58b6c21b5cc64ec0bbb16ba6b46d23e3b0186cc5444027cfe9ca9543617",
+    "OrderedRecordRules.lean": "51d656deab0aeeb01cba96d6f7a1906ba9bbdb8f7076fa0264a8003532ed7a53",
+    "SharedExpansion.lean": "f34d224e46cdda9ee35a821c618116d849618235ffeaad77b54a1bea88111d56",
+    "TransferAegisSheet.lean": "eb5cd3a93cf0de2046aaddb586d5e042788b16d0edd641025310945a8ad078fe",
+    "TransferGuardedCommuting.lean": "4dd40a20d5cad2cfe6bd370aa9c98b8d8acfd63e85af05702a34b528a39e4d9b",
+    "TransferLWW.lean": "a32e58f9b92f7ce8ea899f1ff59495cae2c51e8129d46e461115f93aba631628",
+    "TransferProductExpansion.lean": "ce4dbbe442e2e16f7abe0cdddd87fc20bd514c4b93ebb31d29898c49a1f76580",
+    "TransferSimple.lean": "f97fe78ca9da7ade2dffc5b184f8b49d01d2e585aad2719123ed487005582739",
+    "TransferVCs.lean": "c20617623635978cc8fe774f1a142c88d1b0398b22e400bf7da694cec4c18116"
+  },
+  "helper_source_sha256": {
+    "Sal/MRDTs/Instances/EmbedRGA.lean": "cecd02c8445a3c1157a61dfadd34c97d4bb1c9fd20a5ff82be31f99e37ee18b4",
+    "Sal/MRDTs/Instances/SidedEmbedRGA.lean": "72e65e82f06a4bc80f59b0b80be18ecd3e78c366b4ec38f1bd4d1e1865c4adcb"
+  }
+}

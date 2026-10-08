@@ -1,0 +1,168 @@
+## InductiveLeaves
+
+## LocalExpansion
+
+## LocalSingleton
+'NeemExpansion.Signature.local_singleton_restrictedReplay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.local_empty_sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.local_empty_sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## InductivePolicy
+
+## ExpandedPolicy
+
+## InductiveMask
+'InductiveMask.membership_iff_suffix' depends on axioms: [propext, Quot.sound]
+'InductiveMask.suffix_iff_alive' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InductiveMask.replay_iff_alive' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## EfficientReplayAdapter
+
+## LocalCoverage
+
+## LocalAssembly
+
+## SharedExpansion
+
+## InductiveSupplement
+
+## CausalExpansion
+'NeemExpansion.Signature.causal_restrictedReplay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.causal_strict_kernel' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.causal_strict_kernel' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CausalEventClassification
+/Users/kc/repos/sal/experiments/vc-automation/CausalEventClassification.lean:20:58: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵step, ̲element] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/CausalEventClassification.lean:74:58: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵update, ̲element] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+
+## CausalCoverage
+'NeemExpansion.CausalCoverage.reset_of_context' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CausalCoverage.raw_causal_delta' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.raw_causal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.raw_causal' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## ExpandedVCs
+'NeemExpansion.Exact.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## TransferSimple
+'NeemExpansion.TransferSimple.Add.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.TransferSimple.Finite.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.TransferSimple.Delta.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.TransferSimple.Boolean.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## TransferLWW
+'NeemExpansion.TransferLWW.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## TransferVCs
+
+## CertifiedExpansion
+
+## CertifiedReplayExpansion
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedReplayExpansion.lean:129:22: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+
+## CertifiedRGAExpansion
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedRGAExpansion.lean:43:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedRGAExpansion.lean:157:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+'NeemExpansion.CertifiedRGA.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedExpansionControls
+
+## TransferProductExpansion
+'NeemExpansion.TransferProduct.NativeRGA.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedCoreExpansion
+'NeemExpansion.CertifiedCore.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CertifiedCore.rich_expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedEmbeddedReplay
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedEmbeddedReplay.lean:67:22: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+
+## CertifiedEmbeddedExpansion
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedEmbeddedExpansion.lean:46:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedEmbeddedExpansion.lean:160:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedEmbeddedExpansion.lean:240:0: warning: automatically included section variable(s) unused in theorem `NeemExpansion.CertifiedEmbedded.finite_merge`:
+  [Inhabited α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Inhabited α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+'NeemExpansion.CertifiedEmbedded.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CertifiedEmbeddedTransfers.peritext' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedFugueExpansion
+
+## CertifiedFugueNormalization
+
+## CertifiedFugueEvidence
+'NeemExpansion.CertifiedFugue.chain_of_mint' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CertifiedFugue.delete_birth_of_mint' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedFugueVCExpansion
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedFugueVCExpansion.lean:36:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedFugueVCExpansion.lean:64:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedFugueVCExpansion.lean:123:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+
+## TransferGuardedCommuting
+'NeemExpansion.TransferGuardedCommuting.Bounded.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.TransferGuardedCommuting.Tree.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## TransferAegisSheet
+'NeemExpansion.TransferAegisSheet.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedMVRExpansion
+'NeemExpansion.CertifiedMVR.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## GenericCertifiedRecords
+
+## AutomatedMVR
+'NeemExpansion.AutomatedMVR.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## GenericOrderedRecords
+/Users/kc/repos/sal/experiments/vc-automation/GenericOrderedRecords.lean:152:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/GenericOrderedRecords.lean:162:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+
+## OrderedRecordRules
+
+## OrderedRecordAutomation
+
+## AutomatedRGA
+'NeemExpansion.AutomatedRGA.Embedded.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.AutomatedRGA.Sided.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.AutomatedRGA.anchored_queue' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.AutomatedRGA.peritext' depends on axioms: [propext, Classical.choice, Quot.sound]

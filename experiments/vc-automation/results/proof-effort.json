@@ -1,5 +1,5 @@
 {
-  "method": "Approximate physical nonblank noncomment theorem-body lines after the top-level :=, including by and tactic scaffolding. Only experiment datatype-specific theorem declarations reachable from each final bundle are included. Generic framework theorems, definitions, theorem statements, unused experiments, production helper proofs and sequential bridges are excluded. Full dependency totals share proof code and must not be summed. README marginal estimates assign shared family proofs once; abbrev specializations cost one binding line.",
+  "method": "Current reachable experiment-specific declaration lines, including statements, proof bodies and helper definitions/annotations; excludes comments, blank lines, generic framework declarations and production helper-library proofs. Dependency totals share code and must not be summed. README assigns family reuse once. New template helper-library costs are measured separately in template-effort.json. Source declaration parsing is an estimate, not a lower bound on author work.",
   "source_sha256": {
     "InductiveLeaves.lean": "86df5a939cff88762debc89c28639e8b3711822c8a7c0568f8e7c5103521a7fb",
     "LocalExpansion.lean": "9155c5a8dfb3b7fb9652f44b93c6ad6b1a4b78a71643c246b37dc08565f411c9",
@@ -33,14 +33,26 @@
     "CertifiedFugueVCExpansion.lean": "57b73d9df73a6f9a86e6871335fe4a6e2dd21ca02f1006763435cfaec6b868bb",
     "TransferGuardedCommuting.lean": "4dd40a20d5cad2cfe6bd370aa9c98b8d8acfd63e85af05702a34b528a39e4d9b",
     "TransferAegisSheet.lean": "eb5cd3a93cf0de2046aaddb586d5e042788b16d0edd641025310945a8ad078fe",
-    "CertifiedMVRExpansion.lean": "f3d551b173faf55eadcf118264acd74e0e8a3a0f26ad5acfd3d1a5ee4022c5ca"
+    "CertifiedMVRExpansion.lean": "f3d551b173faf55eadcf118264acd74e0e8a3a0f26ad5acfd3d1a5ee4022c5ca",
+    "GenericCertifiedRecords.lean": "07fc372ae72170a36b7e158c63632127c6707c8c98e08675c2ab118b73ca888d",
+    "AutomatedMVR.lean": "914ae732bf51ec6173c831fc6d165c01088a4b608a0c13850687508957ca5d5f",
+    "GenericOrderedRecords.lean": "5d972be354423f6407d948dd7f89cc45ff3d7bb8e535e81f9bece5859f08b4eb",
+    "OrderedRecordRules.lean": "51d656deab0aeeb01cba96d6f7a1906ba9bbdb8f7076fa0264a8003532ed7a53",
+    "OrderedRecordAutomation.lean": "b321d58b6c21b5cc64ec0bbb16ba6b46d23e3b0186cc5444027cfe9ca9543617",
+    "AutomatedRGA.lean": "fec6e114833bbf702e887b5bbd7f11559d1c85cec53ba58bce517acabca27f46"
   },
   "bundles": [
     {
       "theorem": "NeemExpansion.Exact.expanded_vcs",
-      "body_lines": 226,
-      "declaration_lines": 269,
+      "body_lines": 229,
+      "declaration_lines": 274,
       "proofs": {
+        "NeemExpansion.Exact.signature": {
+          "file": "InductiveLeaves.lean",
+          "line": 112,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
         "NeemExpansion.Exact.diagonal": {
           "file": "InductiveLeaves.lean",
           "line": 115,
@@ -137,6 +149,12 @@
           "declaration_lines": 4,
           "body_lines": 3
         },
+        "NeemExpansion.Exact.rawRepresentation": {
+          "file": "LocalAssembly.lean",
+          "line": 242,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
         "NeemExpansion.Exact.raw_local": {
           "file": "LocalAssembly.lean",
           "line": 245,
@@ -172,6 +190,12 @@
           "line": 137,
           "declaration_lines": 8,
           "body_lines": 8
+        },
+        "CausalEventClassification.Exact.element": {
+          "file": "CausalEventClassification.lean",
+          "line": 13,
+          "declaration_lines": 2,
+          "body_lines": 0
         },
         "CausalEventClassification.Exact.commute_distinct_elements": {
           "file": "CausalEventClassification.lean",
@@ -243,9 +267,15 @@
     },
     {
       "theorem": "NeemExpansion.Efficient.expanded_vcs",
-      "body_lines": 297,
-      "declaration_lines": 353,
+      "body_lines": 301,
+      "declaration_lines": 359,
       "proofs": {
+        "NeemExpansion.Efficient.signature": {
+          "file": "InductiveLeaves.lean",
+          "line": 366,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
         "NeemExpansion.Efficient.diagonal": {
           "file": "InductiveLeaves.lean",
           "line": 368,
@@ -317,6 +347,24 @@
           "line": 38,
           "declaration_lines": 18,
           "body_lines": 17
+        },
+        "EfficientReplayAdapter.birth": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 16,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "EfficientReplayAdapter.Born": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 17,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "EfficientReplayAdapter.Kill": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 18,
+          "declaration_lines": 1,
+          "body_lines": 1
         },
         "EfficientReplayAdapter.update_certificate": {
           "file": "EfficientReplayAdapter.lean",
@@ -395,6 +443,12 @@
           "line": 152,
           "declaration_lines": 8,
           "body_lines": 8
+        },
+        "CausalEventClassification.Efficient.element": {
+          "file": "CausalEventClassification.lean",
+          "line": 67,
+          "declaration_lines": 2,
+          "body_lines": 0
         },
         "CausalEventClassification.Efficient.commute_distinct_elements": {
           "file": "CausalEventClassification.lean",
@@ -648,135 +702,75 @@
       }
     },
     {
-      "theorem": "NeemExpansion.CertifiedRGA.expanded_vcs",
-      "body_lines": 256,
-      "declaration_lines": 312,
+      "theorem": "NeemExpansion.AutomatedRGA.Sided.automated_vcs",
+      "body_lines": 97,
+      "declaration_lines": 120,
       "proofs": {
-        "NeemExpansion.CertifiedSidedReplay.update_provenance": {
-          "file": "CertifiedReplayExpansion.lean",
-          "line": 73,
-          "declaration_lines": 14,
-          "body_lines": 13
-        },
-        "NeemExpansion.CertifiedSidedReplay.provenance": {
-          "file": "CertifiedReplayExpansion.lean",
-          "line": 88,
-          "declaration_lines": 4,
-          "body_lines": 2
-        },
-        "NeemExpansion.CertifiedSidedReplay.step_membership": {
-          "file": "CertifiedReplayExpansion.lean",
-          "line": 93,
-          "declaration_lines": 10,
-          "body_lines": 8
-        },
-        "NeemExpansion.CertifiedSidedReplay.membership": {
-          "file": "CertifiedReplayExpansion.lean",
-          "line": 104,
-          "declaration_lines": 30,
-          "body_lines": 27
-        },
-        "NeemExpansion.CertifiedRGA.replay_membership": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 14,
-          "declaration_lines": 13,
-          "body_lines": 10
-        },
-        "NeemExpansion.CertifiedRGA.provenance": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 29,
-          "declaration_lines": 4,
-          "body_lines": 1
-        },
-        "NeemExpansion.CertifiedRGA.compatible": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 34,
-          "declaration_lines": 10,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedRGA.merge_toFinset": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 45,
-          "declaration_lines": 11,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedRGA.fresh_id": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 57,
+        "NeemExpansion.AutomatedRGA.id_mem": {
+          "file": "AutomatedRGA.lean",
+          "line": 15,
           "declaration_lines": 8,
           "body_lines": 6
         },
-        "NeemExpansion.CertifiedRGA.update_toFinset": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 66,
-          "declaration_lines": 10,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedRGA.keys_distinct": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 77,
-          "declaration_lines": 16,
-          "body_lines": 13
-        },
-        "NeemExpansion.CertifiedRGA.raw_provenance": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 96,
-          "declaration_lines": 15,
-          "body_lines": 14
-        },
-        "NeemExpansion.CertifiedRGA.replay_sorted": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 112,
-          "declaration_lines": 26,
-          "body_lines": 24
-        },
-        "NeemExpansion.CertifiedRGA.sorted": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 139,
-          "declaration_lines": 5,
-          "body_lines": 4
-        },
-        "NeemExpansion.CertifiedRGA.keys_compatible": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 145,
-          "declaration_lines": 13,
-          "body_lines": 10
-        },
-        "NeemExpansion.CertifiedRGA.merge_sorted": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 159,
-          "declaration_lines": 4,
+        "NeemExpansion.AutomatedRGA.Sided.Born": {
+          "file": "AutomatedRGA.lean",
+          "line": 80,
+          "declaration_lines": 2,
           "body_lines": 1
         },
-        "NeemExpansion.CertifiedRGA.birth_fresh": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 165,
-          "declaration_lines": 10,
-          "body_lines": 7
+        "NeemExpansion.AutomatedRGA.Sided.Kill": {
+          "file": "AutomatedRGA.lean",
+          "line": 82,
+          "declaration_lines": 1,
+          "body_lines": 1
         },
-        "NeemExpansion.CertifiedRGA.delta_evidence": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 178,
-          "declaration_lines": 27,
-          "body_lines": 22
+        "NeemExpansion.AutomatedRGA.Sided.provenance_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 84,
+          "declaration_lines": 7,
+          "body_lines": 6
         },
-        "NeemExpansion.CertifiedRGA.local_evidence": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 208,
-          "declaration_lines": 26,
-          "body_lines": 19
+        "NeemExpansion.AutomatedRGA.Sided.membership_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 92,
+          "declaration_lines": 8,
+          "body_lines": 6
         },
-        "NeemExpansion.CertifiedRGA.finite_merge": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 237,
-          "declaration_lines": 3,
+        "NeemExpansion.AutomatedRGA.Sided.ordered_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 101,
+          "declaration_lines": 12,
+          "body_lines": 9
+        },
+        "NeemExpansion.AutomatedRGA.Sided.merge_cell": {
+          "file": "AutomatedRGA.lean",
+          "line": 114,
+          "declaration_lines": 14,
+          "body_lines": 8
+        },
+        "NeemExpansion.AutomatedRGA.Sided.kit": {
+          "file": "AutomatedRGA.lean",
+          "line": 202,
+          "declaration_lines": 40,
+          "body_lines": 39
+        },
+        "NeemExpansion.AutomatedRGA.Sided.issuer": {
+          "file": "AutomatedRGA.lean",
+          "line": 243,
+          "declaration_lines": 19,
+          "body_lines": 18
+        },
+        "NeemExpansion.AutomatedRGA.Sided.adapter": {
+          "file": "AutomatedRGA.lean",
+          "line": 285,
+          "declaration_lines": 5,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedRGA.Sided.automated_vcs": {
+          "file": "AutomatedRGA.lean",
+          "line": 291,
+          "declaration_lines": 4,
           "body_lines": 2
-        },
-        "NeemExpansion.CertifiedRGA.expanded_vcs": {
-          "file": "CertifiedRGAExpansion.lean",
-          "line": 242,
-          "declaration_lines": 53,
-          "body_lines": 52
         }
       }
     },
@@ -801,9 +795,21 @@
     },
     {
       "theorem": "NeemExpansion.CertifiedCore.expanded_vcs",
-      "body_lines": 311,
-      "declaration_lines": 393,
+      "body_lines": 320,
+      "declaration_lines": 404,
       "proofs": {
+        "NeemExpansion.CertifiedSidedReplay.Born": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 70,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedSidedReplay.Kill": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 71,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
         "NeemExpansion.CertifiedSidedReplay.update_provenance": {
           "file": "CertifiedReplayExpansion.lean",
           "line": 73,
@@ -936,6 +942,24 @@
           "declaration_lines": 11,
           "body_lines": 8
         },
+        "NeemExpansion.CertifiedCore.FiniteState": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 113,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.normalize": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 115,
+          "declaration_lines": 2,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.unite": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 117,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
         "NeemExpansion.CertifiedCore.normalize_merge": {
           "file": "CertifiedCoreExpansion.lean",
           "line": 119,
@@ -953,6 +977,12 @@
           "line": 134,
           "declaration_lines": 14,
           "body_lines": 10
+        },
+        "NeemExpansion.CertifiedCore.step": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 149,
+          "declaration_lines": 5,
+          "body_lines": 4
         },
         "NeemExpansion.CertifiedCore.normalize_update": {
           "file": "CertifiedCoreExpansion.lean",
@@ -994,9 +1024,21 @@
     },
     {
       "theorem": "NeemExpansion.CertifiedCore.rich_expanded_vcs",
-      "body_lines": 320,
-      "declaration_lines": 404,
+      "body_lines": 329,
+      "declaration_lines": 415,
       "proofs": {
+        "NeemExpansion.CertifiedSidedReplay.Born": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 70,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedSidedReplay.Kill": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 71,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
         "NeemExpansion.CertifiedSidedReplay.update_provenance": {
           "file": "CertifiedReplayExpansion.lean",
           "line": 73,
@@ -1129,6 +1171,24 @@
           "declaration_lines": 11,
           "body_lines": 8
         },
+        "NeemExpansion.CertifiedCore.FiniteState": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 113,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.normalize": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 115,
+          "declaration_lines": 2,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.unite": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 117,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
         "NeemExpansion.CertifiedCore.normalize_merge": {
           "file": "CertifiedCoreExpansion.lean",
           "line": 119,
@@ -1146,6 +1206,12 @@
           "line": 134,
           "declaration_lines": 14,
           "body_lines": 10
+        },
+        "NeemExpansion.CertifiedCore.step": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 149,
+          "declaration_lines": 5,
+          "body_lines": 4
         },
         "NeemExpansion.CertifiedCore.normalize_update": {
           "file": "CertifiedCoreExpansion.lean",
@@ -1192,421 +1258,253 @@
       }
     },
     {
-      "theorem": "NeemExpansion.CertifiedEmbedded.expanded_vcs",
-      "body_lines": 256,
-      "declaration_lines": 312,
+      "theorem": "NeemExpansion.AutomatedRGA.Embedded.automated_vcs",
+      "body_lines": 97,
+      "declaration_lines": 121,
       "proofs": {
-        "NeemExpansion.CertifiedEmbeddedReplay.update_provenance": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 11,
-          "declaration_lines": 14,
-          "body_lines": 13
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.provenance": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 26,
-          "declaration_lines": 4,
-          "body_lines": 2
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.step_membership": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 31,
-          "declaration_lines": 10,
-          "body_lines": 8
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.membership": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 42,
-          "declaration_lines": 30,
-          "body_lines": 27
-        },
-        "NeemExpansion.CertifiedEmbedded.replay_membership": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 17,
-          "declaration_lines": 13,
-          "body_lines": 10
-        },
-        "NeemExpansion.CertifiedEmbedded.provenance": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 32,
-          "declaration_lines": 4,
-          "body_lines": 1
-        },
-        "NeemExpansion.CertifiedEmbedded.compatible": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 37,
-          "declaration_lines": 10,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.merge_toFinset": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 48,
-          "declaration_lines": 11,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.fresh_id": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 60,
+        "NeemExpansion.AutomatedRGA.id_mem": {
+          "file": "AutomatedRGA.lean",
+          "line": 15,
           "declaration_lines": 8,
           "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.update_toFinset": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 69,
-          "declaration_lines": 10,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.keys_distinct": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 80,
-          "declaration_lines": 16,
-          "body_lines": 13
-        },
-        "NeemExpansion.CertifiedEmbedded.raw_provenance": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 99,
-          "declaration_lines": 15,
-          "body_lines": 14
-        },
-        "NeemExpansion.CertifiedEmbedded.replay_sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 115,
-          "declaration_lines": 26,
-          "body_lines": 24
-        },
-        "NeemExpansion.CertifiedEmbedded.sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 142,
-          "declaration_lines": 5,
-          "body_lines": 4
-        },
-        "NeemExpansion.CertifiedEmbedded.keys_compatible": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 148,
-          "declaration_lines": 13,
-          "body_lines": 10
-        },
-        "NeemExpansion.CertifiedEmbedded.merge_sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 162,
-          "declaration_lines": 4,
+        "NeemExpansion.AutomatedRGA.Embedded.Born": {
+          "file": "AutomatedRGA.lean",
+          "line": 27,
+          "declaration_lines": 2,
           "body_lines": 1
         },
-        "NeemExpansion.CertifiedEmbedded.birth_fresh": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 168,
-          "declaration_lines": 10,
-          "body_lines": 7
+        "NeemExpansion.AutomatedRGA.Embedded.Kill": {
+          "file": "AutomatedRGA.lean",
+          "line": 29,
+          "declaration_lines": 1,
+          "body_lines": 1
         },
-        "NeemExpansion.CertifiedEmbedded.delta_evidence": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 181,
-          "declaration_lines": 27,
-          "body_lines": 22
+        "NeemExpansion.AutomatedRGA.Embedded.provenance_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 31,
+          "declaration_lines": 8,
+          "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.local_evidence": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 211,
-          "declaration_lines": 26,
-          "body_lines": 19
+        "NeemExpansion.AutomatedRGA.Embedded.membership_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 40,
+          "declaration_lines": 8,
+          "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.finite_merge": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 240,
-          "declaration_lines": 3,
+        "NeemExpansion.AutomatedRGA.Embedded.ordered_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 49,
+          "declaration_lines": 12,
+          "body_lines": 9
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.merge_cell": {
+          "file": "AutomatedRGA.lean",
+          "line": 62,
+          "declaration_lines": 14,
+          "body_lines": 8
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.kit": {
+          "file": "AutomatedRGA.lean",
+          "line": 136,
+          "declaration_lines": 40,
+          "body_lines": 39
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.issuer": {
+          "file": "AutomatedRGA.lean",
+          "line": 177,
+          "declaration_lines": 19,
+          "body_lines": 18
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.adapter": {
+          "file": "AutomatedRGA.lean",
+          "line": 268,
+          "declaration_lines": 5,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.automated_vcs": {
+          "file": "AutomatedRGA.lean",
+          "line": 274,
+          "declaration_lines": 4,
           "body_lines": 2
-        },
-        "NeemExpansion.CertifiedEmbedded.expanded_vcs": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 245,
-          "declaration_lines": 53,
-          "body_lines": 52
         }
       }
     },
     {
-      "theorem": "NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue",
-      "body_lines": 257,
-      "declaration_lines": 317,
+      "theorem": "NeemExpansion.AutomatedRGA.anchored_queue",
+      "body_lines": 98,
+      "declaration_lines": 125,
       "proofs": {
-        "NeemExpansion.CertifiedEmbeddedReplay.update_provenance": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 11,
-          "declaration_lines": 14,
-          "body_lines": 13
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.provenance": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 26,
-          "declaration_lines": 4,
-          "body_lines": 2
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.step_membership": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 31,
-          "declaration_lines": 10,
-          "body_lines": 8
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.membership": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 42,
-          "declaration_lines": 30,
-          "body_lines": 27
-        },
-        "NeemExpansion.CertifiedEmbedded.replay_membership": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 17,
-          "declaration_lines": 13,
-          "body_lines": 10
-        },
-        "NeemExpansion.CertifiedEmbedded.provenance": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 32,
-          "declaration_lines": 4,
-          "body_lines": 1
-        },
-        "NeemExpansion.CertifiedEmbedded.compatible": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 37,
-          "declaration_lines": 10,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.merge_toFinset": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 48,
-          "declaration_lines": 11,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.fresh_id": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 60,
+        "NeemExpansion.AutomatedRGA.id_mem": {
+          "file": "AutomatedRGA.lean",
+          "line": 15,
           "declaration_lines": 8,
           "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.update_toFinset": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 69,
-          "declaration_lines": 10,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.keys_distinct": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 80,
-          "declaration_lines": 16,
-          "body_lines": 13
-        },
-        "NeemExpansion.CertifiedEmbedded.raw_provenance": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 99,
-          "declaration_lines": 15,
-          "body_lines": 14
-        },
-        "NeemExpansion.CertifiedEmbedded.replay_sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 115,
-          "declaration_lines": 26,
-          "body_lines": 24
-        },
-        "NeemExpansion.CertifiedEmbedded.sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 142,
-          "declaration_lines": 5,
-          "body_lines": 4
-        },
-        "NeemExpansion.CertifiedEmbedded.keys_compatible": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 148,
-          "declaration_lines": 13,
-          "body_lines": 10
-        },
-        "NeemExpansion.CertifiedEmbedded.merge_sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 162,
-          "declaration_lines": 4,
+        "NeemExpansion.AutomatedRGA.Embedded.Born": {
+          "file": "AutomatedRGA.lean",
+          "line": 27,
+          "declaration_lines": 2,
           "body_lines": 1
         },
-        "NeemExpansion.CertifiedEmbedded.birth_fresh": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 168,
-          "declaration_lines": 10,
-          "body_lines": 7
+        "NeemExpansion.AutomatedRGA.Embedded.Kill": {
+          "file": "AutomatedRGA.lean",
+          "line": 29,
+          "declaration_lines": 1,
+          "body_lines": 1
         },
-        "NeemExpansion.CertifiedEmbedded.delta_evidence": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 181,
-          "declaration_lines": 27,
-          "body_lines": 22
+        "NeemExpansion.AutomatedRGA.Embedded.provenance_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 31,
+          "declaration_lines": 8,
+          "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.local_evidence": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 211,
-          "declaration_lines": 26,
-          "body_lines": 19
+        "NeemExpansion.AutomatedRGA.Embedded.membership_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 40,
+          "declaration_lines": 8,
+          "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.finite_merge": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 240,
-          "declaration_lines": 3,
+        "NeemExpansion.AutomatedRGA.Embedded.ordered_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 49,
+          "declaration_lines": 12,
+          "body_lines": 9
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.merge_cell": {
+          "file": "AutomatedRGA.lean",
+          "line": 62,
+          "declaration_lines": 14,
+          "body_lines": 8
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.kit": {
+          "file": "AutomatedRGA.lean",
+          "line": 136,
+          "declaration_lines": 40,
+          "body_lines": 39
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.issuer": {
+          "file": "AutomatedRGA.lean",
+          "line": 177,
+          "declaration_lines": 19,
+          "body_lines": 18
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.adapter": {
+          "file": "AutomatedRGA.lean",
+          "line": 268,
+          "declaration_lines": 5,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.automated_vcs": {
+          "file": "AutomatedRGA.lean",
+          "line": 274,
+          "declaration_lines": 4,
           "body_lines": 2
         },
-        "NeemExpansion.CertifiedEmbedded.expanded_vcs": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 245,
-          "declaration_lines": 53,
-          "body_lines": 52
-        },
-        "NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 308,
-          "declaration_lines": 5,
+        "NeemExpansion.AutomatedRGA.anchored_queue": {
+          "file": "AutomatedRGA.lean",
+          "line": 302,
+          "declaration_lines": 4,
           "body_lines": 1
         }
       }
     },
     {
-      "theorem": "NeemExpansion.CertifiedEmbeddedTransfers.peritext",
-      "body_lines": 257,
-      "declaration_lines": 316,
+      "theorem": "NeemExpansion.AutomatedRGA.peritext",
+      "body_lines": 98,
+      "declaration_lines": 124,
       "proofs": {
-        "NeemExpansion.CertifiedEmbeddedReplay.update_provenance": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 11,
-          "declaration_lines": 14,
-          "body_lines": 13
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.provenance": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 26,
-          "declaration_lines": 4,
-          "body_lines": 2
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.step_membership": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 31,
-          "declaration_lines": 10,
-          "body_lines": 8
-        },
-        "NeemExpansion.CertifiedEmbeddedReplay.membership": {
-          "file": "CertifiedEmbeddedReplay.lean",
-          "line": 42,
-          "declaration_lines": 30,
-          "body_lines": 27
-        },
-        "NeemExpansion.CertifiedEmbedded.replay_membership": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 17,
-          "declaration_lines": 13,
-          "body_lines": 10
-        },
-        "NeemExpansion.CertifiedEmbedded.provenance": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 32,
-          "declaration_lines": 4,
-          "body_lines": 1
-        },
-        "NeemExpansion.CertifiedEmbedded.compatible": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 37,
-          "declaration_lines": 10,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.merge_toFinset": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 48,
-          "declaration_lines": 11,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.fresh_id": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 60,
+        "NeemExpansion.AutomatedRGA.id_mem": {
+          "file": "AutomatedRGA.lean",
+          "line": 15,
           "declaration_lines": 8,
           "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.update_toFinset": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 69,
-          "declaration_lines": 10,
-          "body_lines": 7
-        },
-        "NeemExpansion.CertifiedEmbedded.keys_distinct": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 80,
-          "declaration_lines": 16,
-          "body_lines": 13
-        },
-        "NeemExpansion.CertifiedEmbedded.raw_provenance": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 99,
-          "declaration_lines": 15,
-          "body_lines": 14
-        },
-        "NeemExpansion.CertifiedEmbedded.replay_sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 115,
-          "declaration_lines": 26,
-          "body_lines": 24
-        },
-        "NeemExpansion.CertifiedEmbedded.sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 142,
-          "declaration_lines": 5,
-          "body_lines": 4
-        },
-        "NeemExpansion.CertifiedEmbedded.keys_compatible": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 148,
-          "declaration_lines": 13,
-          "body_lines": 10
-        },
-        "NeemExpansion.CertifiedEmbedded.merge_sorted": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 162,
-          "declaration_lines": 4,
+        "NeemExpansion.AutomatedRGA.Embedded.Born": {
+          "file": "AutomatedRGA.lean",
+          "line": 27,
+          "declaration_lines": 2,
           "body_lines": 1
         },
-        "NeemExpansion.CertifiedEmbedded.birth_fresh": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 168,
-          "declaration_lines": 10,
-          "body_lines": 7
+        "NeemExpansion.AutomatedRGA.Embedded.Kill": {
+          "file": "AutomatedRGA.lean",
+          "line": 29,
+          "declaration_lines": 1,
+          "body_lines": 1
         },
-        "NeemExpansion.CertifiedEmbedded.delta_evidence": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 181,
-          "declaration_lines": 27,
-          "body_lines": 22
+        "NeemExpansion.AutomatedRGA.Embedded.provenance_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 31,
+          "declaration_lines": 8,
+          "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.local_evidence": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 211,
-          "declaration_lines": 26,
-          "body_lines": 19
+        "NeemExpansion.AutomatedRGA.Embedded.membership_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 40,
+          "declaration_lines": 8,
+          "body_lines": 6
         },
-        "NeemExpansion.CertifiedEmbedded.finite_merge": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 240,
-          "declaration_lines": 3,
+        "NeemExpansion.AutomatedRGA.Embedded.ordered_step": {
+          "file": "AutomatedRGA.lean",
+          "line": 49,
+          "declaration_lines": 12,
+          "body_lines": 9
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.merge_cell": {
+          "file": "AutomatedRGA.lean",
+          "line": 62,
+          "declaration_lines": 14,
+          "body_lines": 8
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.kit": {
+          "file": "AutomatedRGA.lean",
+          "line": 136,
+          "declaration_lines": 40,
+          "body_lines": 39
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.issuer": {
+          "file": "AutomatedRGA.lean",
+          "line": 177,
+          "declaration_lines": 19,
+          "body_lines": 18
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.adapter": {
+          "file": "AutomatedRGA.lean",
+          "line": 268,
+          "declaration_lines": 5,
+          "body_lines": 1
+        },
+        "NeemExpansion.AutomatedRGA.Embedded.automated_vcs": {
+          "file": "AutomatedRGA.lean",
+          "line": 274,
+          "declaration_lines": 4,
           "body_lines": 2
         },
-        "NeemExpansion.CertifiedEmbedded.expanded_vcs": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 245,
-          "declaration_lines": 53,
-          "body_lines": 52
-        },
-        "NeemExpansion.CertifiedEmbeddedTransfers.peritext": {
-          "file": "CertifiedEmbeddedExpansion.lean",
-          "line": 316,
-          "declaration_lines": 4,
+        "NeemExpansion.AutomatedRGA.peritext": {
+          "file": "AutomatedRGA.lean",
+          "line": 307,
+          "declaration_lines": 3,
           "body_lines": 1
         }
       }
     },
     {
       "theorem": "NeemExpansion.CertifiedFugueVCExpansion.expanded_vcs",
-      "body_lines": 449,
-      "declaration_lines": 534,
+      "body_lines": 458,
+      "declaration_lines": 548,
       "proofs": {
+        "NeemExpansion.CertifiedFugue.Born": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 10,
+          "declaration_lines": 2,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedFugue.Kill": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 12,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
         "NeemExpansion.CertifiedFugue.update_provenance": {
           "file": "CertifiedFugueExpansion.lean",
           "line": 14,
@@ -1630,6 +1528,12 @@
           "line": 60,
           "declaration_lines": 8,
           "body_lines": 6
+        },
+        "NeemExpansion.CertifiedFugue.ChainFacts": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 81,
+          "declaration_lines": 3,
+          "body_lines": 2
         },
         "NeemExpansion.CertifiedFugue.lookup_chain": {
           "file": "CertifiedFugueExpansion.lean",
@@ -1738,6 +1642,24 @@
           "line": 72,
           "declaration_lines": 9,
           "body_lines": 7
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.killed": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 82,
+          "declaration_lines": 2,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.born": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 85,
+          "declaration_lines": 2,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.recordStep": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 88,
+          "declaration_lines": 4,
+          "body_lines": 3
         },
         "NeemExpansion.CertifiedFugueVCExpansion.recordStep_mem": {
           "file": "CertifiedFugueVCExpansion.lean",
@@ -1859,57 +1781,21 @@
       }
     },
     {
-      "theorem": "NeemExpansion.CertifiedMVR.expanded_vcs",
-      "body_lines": 84,
-      "declaration_lines": 98,
+      "theorem": "NeemExpansion.AutomatedMVR.automated_vcs",
+      "body_lines": 13,
+      "declaration_lines": 15,
       "proofs": {
-        "NeemExpansion.CertifiedMVR.update_cell": {
-          "file": "CertifiedMVRExpansion.lean",
-          "line": 22,
-          "declaration_lines": 3,
-          "body_lines": 2
+        "NeemExpansion.AutomatedMVR.model": {
+          "file": "AutomatedMVR.lean",
+          "line": 15,
+          "declaration_lines": 13,
+          "body_lines": 12
         },
-        "NeemExpansion.CertifiedMVR.fold_provenance": {
-          "file": "CertifiedMVRExpansion.lean",
-          "line": 26,
-          "declaration_lines": 5,
-          "body_lines": 4
-        },
-        "NeemExpansion.CertifiedMVR.issued_birth": {
-          "file": "CertifiedMVRExpansion.lean",
-          "line": 34,
-          "declaration_lines": 12,
-          "body_lines": 9
-        },
-        "NeemExpansion.CertifiedMVR.overwrite_visible": {
-          "file": "CertifiedMVRExpansion.lean",
-          "line": 47,
-          "declaration_lines": 7,
-          "body_lines": 4
-        },
-        "NeemExpansion.CertifiedMVR.represented": {
-          "file": "CertifiedMVRExpansion.lean",
-          "line": 55,
-          "declaration_lines": 4,
-          "body_lines": 3
-        },
-        "NeemExpansion.CertifiedMVR.birth_fresh": {
-          "file": "CertifiedMVRExpansion.lean",
-          "line": 60,
-          "declaration_lines": 7,
-          "body_lines": 5
-        },
-        "NeemExpansion.CertifiedMVR.survive_subset": {
-          "file": "CertifiedMVRExpansion.lean",
-          "line": 70,
-          "declaration_lines": 8,
-          "body_lines": 5
-        },
-        "NeemExpansion.CertifiedMVR.expanded_vcs": {
-          "file": "CertifiedMVRExpansion.lean",
-          "line": 79,
-          "declaration_lines": 52,
-          "body_lines": 52
+        "NeemExpansion.AutomatedMVR.automated_vcs": {
+          "file": "AutomatedMVR.lean",
+          "line": 29,
+          "declaration_lines": 2,
+          "body_lines": 1
         }
       }
     }
