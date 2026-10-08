@@ -6,6 +6,45 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: common finite-obligation verification interface
+
+Research question: can existing execution and issuance evidence systematically
+reduce the unchanged five VCs to automatically solvable finite obligations?
+Given the implementation, operation policy, existing contract and declarative
+annotations, a common verification command must assemble the proof. Sequential
+bridge automation is separate. No implementation/specification changes or new
+assumed history invariants may make an obligation pass.
+
+- [x] Consolidate commuting, policy and certified-record templates behind one
+  Lean verification interface and a common command with precise open goals.
+- [x] Select registered algebra, collection and ordering helpers automatically.
+- [x] Replace Core/RichCore history adapters with reusable framework proofs
+  and finite/declarative instance inputs, preserving their existing premises.
+- [x] Replace Fugue history and issuance inductions with reusable framework
+  proofs and finite/declarative instance inputs; leave its sequential bridge alone.
+- [x] Route all 23 current instances through the interface and independently
+  audit exact theorem statements, standard axioms and transitive dependencies.
+- [x] Establish that no per-RDT interface contains bespoke history induction
+  or silently supplies a datatype correctness theorem; test failure diagnostics.
+- [x] Report only current author effort, including mappings, annotations,
+  helper registrations and required helper proofs; run both repository gates.
+
+Oracle: Lean kernel checking plus independent premise/dependency inspection.
+A renamed adapter or dispatcher of completed datatype VC bundles does not count.
+Residual finite goals must be reported explicitly; an unresolved requirement
+keeps this goal open.
+
+
+Verified through `verify_expansion.py --common`: 23 exact contract matches,
+56 source modules rebuilt, standard axioms and no forbidden correctness/history
+adapter dependencies. Positive/negative controls check finite equations,
+missing Input/Shared obligations, rejected correctness registrations and an
+extra-premise contract mismatch. Both repository gates passed. Current author
+footprint deduplicates to 984 declaration lines plus 22 local annotation lines;
+1,077 retained datatype helper lines are separately charged. No per-instance
+history induction remains; finite mappings, invariants and helper proofs remain
+explicit author inputs. Sequential-bridge automation remains separate.
+
 ### Checked: reusable automation for both OR-sets
 
 Research question: can ordinary and efficient OR-set use shared policy/replay

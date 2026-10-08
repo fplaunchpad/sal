@@ -11,6 +11,7 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 import tempfile
 
 from run_inductive import forbidden_dependency, STANDARD_AXIOMS
@@ -25,14 +26,17 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--transfer', action='store_true', help='Check all Track A instances')
 parser.add_argument('--certified', action='store_true', help='Also check the certified RGA-family routes')
 parser.add_argument('--automated', action='store_true', help='Use reusable templates for both OR-sets, MVR and RGA in the 23-case audit')
+parser.add_argument('--common', action='store_true', help='Check all 23 through the common declarative verification interface')
 parser.add_argument('--all', action='store_true', help='Check all 23 current named cases')
 args = parser.parse_args()
+if args.common:
+    args.automated = True
 if args.automated:
     args.all = True
 if args.all:
     args.transfer = args.certified = True
 module = 'TransferVCs' if args.transfer else 'ExpandedVCs'
-prefix = 'automated' if args.automated else 'all' if args.all else 'certified' if args.certified else 'transfer' if args.transfer else 'expansion'
+prefix = 'common' if args.common else 'automated' if args.automated else 'all' if args.all else 'certified' if args.certified else 'transfer' if args.transfer else 'expansion'
 
 
 def visit(name):
@@ -62,6 +66,11 @@ if args.automated:
     visit('AutomatedRGA')
     visit('AutomatedORSet')
     visit('AutomatedEfficientORSet')
+if args.common:
+    visit('CommonInstances')
+    visit('AutomatedCore')
+    visit('AutomatedFugue')
+    visit('CommonVerificationControls')
 OUT.mkdir(exist_ok=True)
 build_log = []
 for name in order:
@@ -97,6 +106,7 @@ if args.all:
                  'NeemExpansion.TransferGuardedCommuting.Tree.expanded_vcs',
                  'NeemExpansion.TransferAegisSheet.expanded_vcs',
                  'NeemExpansion.CertifiedMVR.expanded_vcs']
+reference_theorems = list(theorems)
 if args.automated:
     audit = 'import AutomatedMVR\nimport AutomatedRGA\nimport AutomatedORSet\nimport AutomatedEfficientORSet\n' + audit
     replacements = {
@@ -109,7 +119,22 @@ if args.automated:
         'NeemExpansion.CertifiedEmbeddedTransfers.peritext': 'NeemExpansion.AutomatedRGA.peritext',
     }
     theorems = [replacements.get(t, t) for t in theorems]
+if args.common:
+    audit = 'import CommonInstances\nimport AutomatedCore\nimport AutomatedFugue\n' + audit
+    common_names = ['ordinaryORSet', 'efficientORSet', 'gset', 'addStore', 'finiteAdd',
+                    'counter', 'ioc', 'pn', 'booleanSet', 'booleanMap', 'lww', 'sided',
+                    'nativeRGA', None, None, 'embedded', 'anchored_queue', 'peritext',
+                    None, 'bounded', 'tree', 'aegis', 'mvr']
+    assert len(common_names) == len(theorems)
+    theorems = ['NeemExpansion.CommonInstances.' + n if n is not None else t
+                for n, t in zip(common_names, theorems)]
+    for i, name in {13: 'NeemExpansion.AutomatedCore.automated_vcs',
+                    14: 'NeemExpansion.AutomatedCore.rich_automated_vcs',
+                    18: 'NeemExpansion.AutomatedFugue.automated_vcs'}.items():
+        theorems[i] = name
 audit += '\n' + '\n'.join('audit_vc ' + t for t in theorems) + '\n'
+audit += '\n'.join(f'audit_vc_contract {t} against {r}'
+                   for t, r in zip(theorems, reference_theorems)) + '\n'
 with tempfile.TemporaryDirectory(prefix='sal-expansion-audit-') as tmp:
     path = Path(tmp) / 'AuditExpansion.lean'
     path.write_text(audit)
@@ -119,6 +144,7 @@ log = result.stdout
 (OUT / (prefix + '-audit.log')).write_text(log)
 assert result.returncode == 0, log
 assert log.count('VC_AUDIT_COMPLETE') == len(theorems), log
+assert log.count('VC_CONTRACT_MATCH') == len(theorems), log
 axiom_groups = re.findall(r'VC_AXIOMS \[(.*?)\]', log)
 assert len(axiom_groups) == len(theorems), log
 assert all(set(a.split(', ')) <= STANDARD_AXIOMS for a in axiom_groups), axiom_groups
@@ -133,10 +159,26 @@ old_adapters = ('NeemExpansion.Exact.', 'NeemExpansion.Efficient.',
                 'NeemExpansion.CertifiedEmbedded.', 'NeemExpansion.CertifiedEmbeddedReplay.',
                 'NeemExpansion.CertifiedSidedReplay.', 'NeemExpansion.CertifiedEmbeddedTransfers.')
 if args.automated:
-    for t in replacements.values():
+    for t in (theorems if args.common else replacements.values()):
         forbidden += [d for d in experiment_dependencies[t] if d.startswith(old_adapters)]
+if args.common:
+    for t in theorems:
+        forbidden += [d for d in experiment_dependencies[t]
+            if d.startswith(('NeemExpansion.CertifiedCore.', 'NeemExpansion.CertifiedFugue'))
+            or d in reference_theorems or d in replacements.values()
+            or d.endswith(('.expanded_vcs', '.rich_expanded_vcs'))]
+controls = []
+if args.common:
+    control = subprocess.run([sys.executable, str(HERE / 'test_contract_audit.py')],
+        cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    (OUT / 'common-contract-controls.log').write_text(control.stdout)
+    assert control.returncode == 0, control.stdout
+    controls = ['CommonVerificationControls.lean', 'test_contract_audit.py']
 report = {
+    'controls': controls,
     'theorems': theorems,
+    'reference_theorems': reference_theorems,
+    'contract_matches': re.findall(r'VC_CONTRACT_MATCH (\S+) (\S+)', log),
     'build_order': order,
     'source_sha256': {n + '.lean': hashlib.sha256((HERE / (n + '.lean')).read_bytes()).hexdigest()
                       for n in order},
@@ -144,6 +186,9 @@ report = {
     'dependencies': deps,
     'forbidden_dependencies': forbidden,
     'experiment_dependencies': experiment_dependencies,
+    'declaration_sources': {t: [dict(zip(['name', 'module', 'start_line', 'end_line', 'kind'], row))
+        for row in re.findall(r'VC_SOURCE (\S+) (\S+) (\d+) (\d+) (\S+)', block)]
+        for t, block in zip(theorems, blocks)},
 }
 (OUT / (prefix + '-audit.json')).write_text(json.dumps(report, indent=2) + '\n')
 assert not forbidden, forbidden

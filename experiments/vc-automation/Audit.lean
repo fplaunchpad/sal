@@ -25,5 +25,23 @@ elab "audit_vc " n:ident : command => do
             current.toString.startsWith "EfficientReplayAdapter." ||
             current.toString.startsWith "CausalEventClassification.") && (match info with | .thmInfo _ => true | _ => false) then
           logInfo m!"VC_EXP_DEP {current}"
+        if current.toString.startsWith "Sal." || current.toString.startsWith "NeemExpansion." then
+          if let some moduleIdx := env.getModuleIdxFor? current then
+            if let some ranges ← findDeclarationRanges? current then
+              let kind := match info with | .thmInfo _ => "theorem" | _ => "definition"
+              logInfo m!"VC_SOURCE {current} {env.header.moduleNames[moduleIdx.toNat]!} {ranges.range.pos.line} {ranges.range.endPos.line} {kind}"
         pending := info.getUsedConstantsAsSet.toList ++ pending
   logInfo "VC_AUDIT_COMPLETE"
+
+-- Compare full theorem types, including quantifiers and premises. This checks
+-- the reference type without adding its proof to the new dependency closure.
+open Lean Elab Command Meta in
+elab "audit_vc_contract " actual:ident " against " reference:ident : command => do
+  let an ← liftCoreM <| Lean.Elab.realizeGlobalConstNoOverloadWithInfo actual
+  let rn ← liftCoreM <| Lean.Elab.realizeGlobalConstNoOverloadWithInfo reference
+  liftTermElabM do
+    let a ← inferType (← mkConstWithFreshMVarLevels an)
+    let r ← inferType (← mkConstWithFreshMVarLevels rn)
+    unless ← isDefEq a r do
+      throwError "VC contract mismatch\nactual: {a}\nreference: {r}"
+    logInfo m!"VC_CONTRACT_MATCH {an} {rn}"

@@ -27,21 +27,18 @@ VC route; Embedded RGA uses that merge route with certified representation and
 an exact selected-history bridge. A [reviewable manuscript patch](docs/paper1-manuscript-reconciliation.patch)
 provides the corresponding revisions against Overleaf `0450d48`.
 
-The [five-VC automation experiment](experiments/vc-automation/README.md) now
-checks all five unchanged VCs for the ten production entries without
-state-dependent issuance, the ordinary OR-set example, and the RGA family,
-including current Queue (anchored enqueue) and FugueMax, plus Bounded Counter,
-TreeMove, AegisSheet and MVR. The combined audit covers all 23 current named
-instances including aliases. The experiment README separates reusable framework proofs from
-per-RDT work and estimates the additional proof code for each instance. Lean tactics (`simp`, `grind`,
-`tauto`, `omega`, `aesop`) solve the prepared finite equations without an external SMT
-solver. Both OR-sets, MVR and Embedded/Sided RGA use reusable templates with
-no per-RDT history induction; Queue and Peritext reuse the Embedded template.
-A named rule set selects raw RGA helpers automatically. The experiment README
-counts remaining annotations, registrations and supplied helper proofs.
-The audit excludes old datatype VC, Join and history-invariant proof reuse.
-Production certificates remain unchanged. Fugue's merge VC proof does not
-resolve its separate sequential-specification obstruction.
+The [five-VC automation experiment](experiments/vc-automation/README.md)
+checks all 23 current named instances through the common `mrdt_verify` command.
+Registered inputs supply finite laws, datatype mappings and existing execution
+or issuance evidence. Shared templates derive the history arguments, including
+Core/RichCore and Fugue; no instance interface contains a bespoke history induction.
+Lean selects registered algebra, collection and ordering helpers. The audit
+compares complete theorem types and excludes old datatype correctness proofs;
+negative controls check missing obligations and rejected correctness registrations.
+The experiment README counts local declarations, annotations and supplied helper
+proofs separately, including shared coordinate libraries. Production certificates
+remain unchanged. Fugue's five-VC proof does not resolve its separate
+sequential-specification obstruction.
 
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay

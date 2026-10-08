@@ -1,0 +1,359 @@
+## InductiveLeaves
+
+## LocalExpansion
+
+## LocalSingleton
+'NeemExpansion.Signature.local_singleton_restrictedReplay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.local_empty_sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.local_empty_sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## InductivePolicy
+
+## ExpandedPolicy
+
+## InductiveMask
+'InductiveMask.membership_iff_suffix' depends on axioms: [propext, Quot.sound]
+'InductiveMask.suffix_iff_alive' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InductiveMask.replay_iff_alive' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## EfficientReplayAdapter
+
+## LocalCoverage
+
+## LocalAssembly
+
+## SharedExpansion
+
+## InductiveSupplement
+
+## CausalExpansion
+'NeemExpansion.Signature.causal_restrictedReplay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.causal_strict_kernel' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.causal_strict_kernel' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CausalEventClassification
+/Users/kc/repos/sal/experiments/vc-automation/CausalEventClassification.lean:20:58: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵step, ̲element] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/CausalEventClassification.lean:74:58: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵update, ̲element] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+
+## CausalCoverage
+'NeemExpansion.CausalCoverage.reset_of_context' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CausalCoverage.raw_causal_delta' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.raw_causal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.raw_causal' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## ExpandedVCs
+'NeemExpansion.Exact.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## TransferSimple
+'NeemExpansion.TransferSimple.Add.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.TransferSimple.Finite.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.TransferSimple.Delta.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.TransferSimple.Boolean.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## TransferLWW
+'NeemExpansion.TransferLWW.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## TransferVCs
+
+## CertifiedExpansion
+
+## CertifiedReplayExpansion
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedReplayExpansion.lean:129:22: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+
+## CertifiedRGAExpansion
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedRGAExpansion.lean:43:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedRGAExpansion.lean:157:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+'NeemExpansion.CertifiedRGA.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedExpansionControls
+
+## TransferProductExpansion
+'NeemExpansion.TransferProduct.NativeRGA.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedCoreExpansion
+'NeemExpansion.CertifiedCore.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CertifiedCore.rich_expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedEmbeddedReplay
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedEmbeddedReplay.lean:67:22: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+
+## CertifiedEmbeddedExpansion
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedEmbeddedExpansion.lean:46:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedEmbeddedExpansion.lean:160:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedEmbeddedExpansion.lean:240:0: warning: automatically included section variable(s) unused in theorem `NeemExpansion.CertifiedEmbedded.finite_merge`:
+  [Inhabited α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Inhabited α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+'NeemExpansion.CertifiedEmbedded.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CertifiedEmbeddedTransfers.peritext' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedFugueExpansion
+
+## CertifiedFugueNormalization
+
+## CertifiedFugueEvidence
+'NeemExpansion.CertifiedFugue.chain_of_mint' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CertifiedFugue.delete_birth_of_mint' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedFugueVCExpansion
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedFugueVCExpansion.lean:36:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedFugueVCExpansion.lean:64:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/CertifiedFugueVCExpansion.lean:123:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+
+## TransferGuardedCommuting
+'NeemExpansion.TransferGuardedCommuting.Bounded.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.TransferGuardedCommuting.Tree.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## TransferAegisSheet
+'NeemExpansion.TransferAegisSheet.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CertifiedMVRExpansion
+'NeemExpansion.CertifiedMVR.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## GenericCertifiedRecords
+
+## AutomatedMVR
+'NeemExpansion.AutomatedMVR.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## GenericOrderedRecords
+/Users/kc/repos/sal/experiments/vc-automation/GenericOrderedRecords.lean:152:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/GenericOrderedRecords.lean:162:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+
+## OrderedRecordRules
+
+## OrderedRecordAutomation
+
+## AutomatedRGA
+'NeemExpansion.AutomatedRGA.Embedded.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.AutomatedRGA.Sided.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.AutomatedRGA.anchored_queue' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.AutomatedRGA.peritext' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## PolicyExpansionRules
+
+## PolicyExpansionAutomation
+
+## GenericPolicyExpansion
+'NeemExpansion.PolicyExpansion.assemble' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.PolicyExpansion.canonical_of_loWitness' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## AutomatedORSet
+'NeemExpansion.AutomatedORSet.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## GenericMaskCanonical
+
+## AutomatedEfficientORSet
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:68:31: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵update, ̲birth, ̲kills] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:102:15: warning: This simp argument is unused:
+  MaskCanonical.Shape
+
+Hint: Omit it from the simp argument list.
+  simp only [̵M̵a̵s̵k̵C̵a̵n̵o̵n̵i̵c̵a̵l̵.̵S̵h̵a̵p̵e̵,̵m̵a̵s̵k̵K̵i̵t̵,̵I̵n̵d̵u̵c̵t̵i̵v̵e̵M̵a̵s̵k̵.̵A̵l̵i̵v̵e̵,̵b̵i̵r̵t̵h̵,̵l̵i̵v̵e̵,̵d̵e̵a̵d̵]̵[̲m̲a̲s̲k̲K̲i̲t̲,̲ ̲I̲n̲d̲u̲c̲t̲i̲v̲e̲M̲a̲s̲k̲.̲A̲l̲i̲v̲e̲,̲ ̲b̲i̲r̲t̲h̲,̲ ̲l̲i̲v̲e̲,̲ ̲d̲e̲a̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:116:58: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵update, ̲element] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:207:12: warning: This simp argument is unused:
+  signature
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲L̲o̲c̲a̲l̲A̲s̲s̲e̲m̲b̲l̲y̲.̲o̲f̲M̲R̲D̲T̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:207:22: warning: This simp argument is unused:
+  LocalAssembly.ofMRDT
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲s̲i̲g̲n̲a̲t̲u̲r̲e̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:207:43: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [signature, ̲LocalAssembly.ofMRDT,D̵,̵ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:211:10: warning: This simp argument is unused:
+  signature
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲L̲o̲c̲a̲l̲A̲s̲s̲e̲m̲b̲l̲y̲.̲o̲f̲M̲R̲D̲T̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:211:20: warning: This simp argument is unused:
+  LocalAssembly.ofMRDT
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲s̲i̲g̲n̲a̲t̲u̲r̲e̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:211:41: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [signature, ̲LocalAssembly.ofMRDT,D̵,̵ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:219:12: warning: This simp argument is unused:
+  signature
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲L̲o̲c̲a̲l̲A̲s̲s̲e̲m̲b̲l̲y̲.̲o̲f̲M̲R̲D̲T̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:219:22: warning: This simp argument is unused:
+  LocalAssembly.ofMRDT
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲s̲i̲g̲n̲a̲t̲u̲r̲e̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:219:43: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [signature, ̲LocalAssembly.ofMRDT,D̵,̵ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:223:10: warning: This simp argument is unused:
+  signature
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲L̲o̲c̲a̲l̲A̲s̲s̲e̲m̲b̲l̲y̲.̲o̲f̲M̲R̲D̲T̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:223:20: warning: This simp argument is unused:
+  LocalAssembly.ofMRDT
+
+Hint: Omit it from the simp argument list.
+  simp [̵s̵i̵g̵n̵a̵t̵u̵r̵e̵,̵L̵o̵c̵a̵l̵A̵s̵s̵e̵m̵b̵l̵y̵.̵o̵f̵M̵R̵D̵T̵,̵D̵,̵[̲s̲i̲g̲n̲a̲t̲u̲r̲e̲,̲ ̲D̲,̲ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedEfficientORSet.lean:223:41: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [signature, ̲LocalAssembly.ofMRDT,D̵,̵ update]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'NeemExpansion.AutomatedEfficientORSet.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CommonVerificationRules
+
+## CommonAlgebraAutomation
+
+## GenericMonotoneProduct
+/Users/kc/repos/sal/experiments/vc-automation/GenericMonotoneProduct.lean:207:26: warning: This simp argument is unused:
+  product
+
+Hint: Omit it from the simp argument list.
+  simp [normalize, ̲unite, ̲produ̵c̵t̵,̵p̵r̵o̵d̵Sig, ̲Instances.FinsetStore.D, ̲K.init_carrier]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+
+## GenericArchivedOrderedRecords
+/Users/kc/repos/sal/experiments/vc-automation/GenericArchivedOrderedRecords.lean:154:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/GenericArchivedOrderedRecords.lean:164:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/Users/kc/repos/sal/experiments/vc-automation/GenericArchivedOrderedRecords.lean:237:42: warning: This simp argument is unused:
+  add
+
+Hint: Omit it from the simp argument list.
+  simp [a̵d̵d̵,̵ih, ̲List.mem_append, ̲List.mem_singleton]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/GenericArchivedOrderedRecords.lean:237:65: warning: This simp argument is unused:
+  List.mem_singleton
+
+Hint: Omit it from the simp argument list.
+  simp [̵a̵d̵d̵,̵i̵h̵,̵L̵i̵s̵t̵.̵m̵e̵m̵_̵a̵p̵p̵e̵n̵d̵,̵L̵i̵s̵t̵.̵m̵e̵m̵_̵s̵i̵n̵g̵l̵e̵t̵o̵n̵]̵[̲a̲d̲d̲,̲ ̲i̲h̲,̲ ̲L̲i̲s̲t̲.̲m̲e̲m̲_̲a̲p̲p̲e̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/GenericArchivedOrderedRecords.lean:293:89: warning: This simp argument is unused:
+  add
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵a̵d̵d̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+
+## GenericQueryLift
+
+## CommonVerification
+
+## CommonInstances
+'NeemExpansion.CommonInstances.ordinaryORSet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CommonInstances.efficientORSet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CommonInstances.embedded' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CommonInstances.mvr' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## AutomatedCore
+'NeemExpansion.AutomatedCore.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.AutomatedCore.rich_automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## GenericCertifiedIssuance
+
+## AutomatedFugue
+/Users/kc/repos/sal/experiments/vc-automation/AutomatedFugue.lean:190:58: warning: This simp argument is unused:
+  eq_comm
+
+Hint: Omit it from the simp argument list.
+  simp [̵h̵i̵,̵i̵n̵s̵e̵r̵t̵i̵o̵n̵,̵e̵q̵_̵c̵o̵m̵m̵]̵[̲h̲i̲,̲ ̲i̲n̲s̲e̲r̲t̲i̲o̲n̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'NeemExpansion.AutomatedFugue.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CommonVerificationControls

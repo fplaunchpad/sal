@@ -1,0 +1,1659 @@
+{
+  "method": "Report transitive, source-written datatype helper theorems for every VC root.\n\nUses Lean's declaration ranges rather than guessing namespace scopes. Shared\nhelpers appear under each consumer; do not sum the per-root totals. Datatype\ndefinitions and generated equations/deriving proofs are excluded.\n",
+  "cases": {
+    "NeemExpansion.CommonInstances.ordinaryORSet": {
+      "helper_lines": 0,
+      "declarations": {}
+    },
+    "NeemExpansion.CommonInstances.efficientORSet": {
+      "helper_lines": 0,
+      "declarations": {}
+    },
+    "NeemExpansion.CommonInstances.gset": {
+      "helper_lines": 6,
+      "declarations": {
+        "Sal.MRDTs.Instances.AddStore:27:32": {
+          "file": "Sal/MRDTs/Instances/AddStore.lean",
+          "start_line": 27,
+          "end_line": 32,
+          "lines": 6,
+          "constants": [
+            "Sal.MRDTs.Instances.AddStore.all_comm"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.addStore": {
+      "helper_lines": 6,
+      "declarations": {
+        "Sal.MRDTs.Instances.AddStore:27:32": {
+          "file": "Sal/MRDTs/Instances/AddStore.lean",
+          "start_line": 27,
+          "end_line": 32,
+          "lines": 6,
+          "constants": [
+            "Sal.MRDTs.Instances.AddStore.all_comm"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.finiteAdd": {
+      "helper_lines": 6,
+      "declarations": {
+        "Sal.MRDTs.Instances.FinsetStore:31:36": {
+          "file": "Sal/MRDTs/Instances/FinsetStore.lean",
+          "start_line": 31,
+          "end_line": 36,
+          "lines": 6,
+          "constants": [
+            "Sal.MRDTs.Instances.FinsetStore.all_comm"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.counter": {
+      "helper_lines": 8,
+      "declarations": {
+        "Sal.MRDTs.Instances.FlatCounters:32:39": {
+          "file": "Sal/MRDTs/Instances/FlatCounters.lean",
+          "start_line": 32,
+          "end_line": 39,
+          "lines": 8,
+          "constants": [
+            "Sal.MRDTs.Instances.FlatCounters.all_comm"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.ioc": {
+      "helper_lines": 8,
+      "declarations": {
+        "Sal.MRDTs.Instances.FlatCounters:32:39": {
+          "file": "Sal/MRDTs/Instances/FlatCounters.lean",
+          "start_line": 32,
+          "end_line": 39,
+          "lines": 8,
+          "constants": [
+            "Sal.MRDTs.Instances.FlatCounters.all_comm"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.pn": {
+      "helper_lines": 8,
+      "declarations": {
+        "Sal.MRDTs.Instances.FlatCounters:32:39": {
+          "file": "Sal/MRDTs/Instances/FlatCounters.lean",
+          "start_line": 32,
+          "end_line": 39,
+          "lines": 8,
+          "constants": [
+            "Sal.MRDTs.Instances.FlatCounters.all_comm"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.booleanSet": {
+      "helper_lines": 7,
+      "declarations": {
+        "Sal.MRDTs.Instances.FlatGrowOnly:32:36": {
+          "file": "Sal/MRDTs/Instances/FlatGrowOnly.lean",
+          "start_line": 32,
+          "end_line": 36,
+          "lines": 5,
+          "constants": [
+            "Sal.MRDTs.Instances.FlatGrowOnly.all_comm"
+          ]
+        },
+        "Sal.MRDTs.Instances.Common:5:6": {
+          "file": "Sal/MRDTs/Instances/Common.lean",
+          "start_line": 5,
+          "end_line": 6,
+          "lines": 2,
+          "constants": [
+            "Sal.MRDTs.Instances.bor_rc"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.booleanMap": {
+      "helper_lines": 7,
+      "declarations": {
+        "Sal.MRDTs.Instances.FlatGrowOnly:32:36": {
+          "file": "Sal/MRDTs/Instances/FlatGrowOnly.lean",
+          "start_line": 32,
+          "end_line": 36,
+          "lines": 5,
+          "constants": [
+            "Sal.MRDTs.Instances.FlatGrowOnly.all_comm"
+          ]
+        },
+        "Sal.MRDTs.Instances.Common:5:6": {
+          "file": "Sal/MRDTs/Instances/Common.lean",
+          "start_line": 5,
+          "end_line": 6,
+          "lines": 2,
+          "constants": [
+            "Sal.MRDTs.Instances.bor_rc"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.lww": {
+      "helper_lines": 4,
+      "declarations": {
+        "Sal.MRDTs.Instances.LWWRegister:66:69": {
+          "file": "Sal/MRDTs/Instances/LWWRegister.lean",
+          "start_line": 66,
+          "end_line": 69,
+          "lines": 4,
+          "constants": [
+            "Sal.MRDTs.Instances.LWWRegister.all_comm"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.sided": {
+      "helper_lines": 297,
+      "declarations": {
+        "Sal.MRDTs.Instances.SidedEmbedRGA:590:593": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 590,
+          "end_line": 593,
+          "lines": 3,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sKey_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:372:441": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 372,
+          "end_line": 441,
+          "lines": 67,
+          "constants": [
+            "Sal.EmbedRGA.sidedCoordOf_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:356:358": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 356,
+          "end_line": 358,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.sideSym_band_ne"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:87:91": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 87,
+          "end_line": 91,
+          "lines": 5,
+          "constants": [
+            "Sal.EmbedRGA.sBlock_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 194,
+          "end_line": 199,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.enc_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:352:354": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 352,
+          "end_line": 354,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.sideSym_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:346:350": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 346,
+          "end_line": 350,
+          "lines": 5,
+          "constants": [
+            "Sal.EmbedRGA.sBlock_eq"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 360,
+          "end_line": 370,
+          "lines": 10,
+          "constants": [
+            "Sal.EmbedRGA.map_prefix_reflect"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:146:155": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 146,
+          "end_line": 155,
+          "lines": 10,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sInsert"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:295:310": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 295,
+          "end_line": 310,
+          "lines": 13,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:256:293": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 256,
+          "end_line": 293,
+          "lines": 38,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge2_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 80,
+          "end_line": 92,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_total"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:239:254": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 239,
+          "end_line": 254,
+          "lines": 16,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sMerge2"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 49,
+          "end_line": 78,
+          "lines": 30,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_trans"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:199:235": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 199,
+          "end_line": 235,
+          "lines": 34,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.ssorted_ext"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 35,
+          "end_line": 47,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_asymm"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 30,
+          "end_line": 33,
+          "lines": 4,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_irrefl"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:157:180": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 157,
+          "end_line": 180,
+          "lines": 24,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sInsert_sorted"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.nativeRGA": {
+      "helper_lines": 10,
+      "declarations": {
+        "Sal.MRDTs.Instances.RGA:83:90": {
+          "file": "Sal/MRDTs/Instances/RGA.lean",
+          "start_line": 83,
+          "end_line": 90,
+          "lines": 8,
+          "constants": [
+            "Sal.MRDTs.Instances.RGA.RGAM_all_comm"
+          ]
+        },
+        "Sal.MRDTs.Instances.Common:5:6": {
+          "file": "Sal/MRDTs/Instances/Common.lean",
+          "start_line": 5,
+          "end_line": 6,
+          "lines": 2,
+          "constants": [
+            "Sal.MRDTs.Instances.bor_rc"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.AutomatedCore.automated_vcs": {
+      "helper_lines": 297,
+      "declarations": {
+        "Sal.MRDTs.Instances.SidedEmbedRGA:590:593": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 590,
+          "end_line": 593,
+          "lines": 3,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sKey_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:372:441": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 372,
+          "end_line": 441,
+          "lines": 67,
+          "constants": [
+            "Sal.EmbedRGA.sidedCoordOf_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:356:358": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 356,
+          "end_line": 358,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.sideSym_band_ne"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:87:91": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 87,
+          "end_line": 91,
+          "lines": 5,
+          "constants": [
+            "Sal.EmbedRGA.sBlock_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 194,
+          "end_line": 199,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.enc_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:352:354": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 352,
+          "end_line": 354,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.sideSym_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:346:350": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 346,
+          "end_line": 350,
+          "lines": 5,
+          "constants": [
+            "Sal.EmbedRGA.sBlock_eq"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 360,
+          "end_line": 370,
+          "lines": 10,
+          "constants": [
+            "Sal.EmbedRGA.map_prefix_reflect"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:146:155": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 146,
+          "end_line": 155,
+          "lines": 10,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sInsert"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:295:310": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 295,
+          "end_line": 310,
+          "lines": 13,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:256:293": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 256,
+          "end_line": 293,
+          "lines": 38,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge2_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 80,
+          "end_line": 92,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_total"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:239:254": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 239,
+          "end_line": 254,
+          "lines": 16,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sMerge2"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 49,
+          "end_line": 78,
+          "lines": 30,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_trans"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:199:235": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 199,
+          "end_line": 235,
+          "lines": 34,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.ssorted_ext"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 35,
+          "end_line": 47,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_asymm"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 30,
+          "end_line": 33,
+          "lines": 4,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_irrefl"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:157:180": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 157,
+          "end_line": 180,
+          "lines": 24,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sInsert_sorted"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.AutomatedCore.rich_automated_vcs": {
+      "helper_lines": 297,
+      "declarations": {
+        "Sal.MRDTs.Instances.SidedEmbedRGA:590:593": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 590,
+          "end_line": 593,
+          "lines": 3,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sKey_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:372:441": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 372,
+          "end_line": 441,
+          "lines": 67,
+          "constants": [
+            "Sal.EmbedRGA.sidedCoordOf_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:356:358": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 356,
+          "end_line": 358,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.sideSym_band_ne"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:87:91": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 87,
+          "end_line": 91,
+          "lines": 5,
+          "constants": [
+            "Sal.EmbedRGA.sBlock_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 194,
+          "end_line": 199,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.enc_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:352:354": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 352,
+          "end_line": 354,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.sideSym_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:346:350": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 346,
+          "end_line": 350,
+          "lines": 5,
+          "constants": [
+            "Sal.EmbedRGA.sBlock_eq"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 360,
+          "end_line": 370,
+          "lines": 10,
+          "constants": [
+            "Sal.EmbedRGA.map_prefix_reflect"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:146:155": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 146,
+          "end_line": 155,
+          "lines": 10,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sInsert"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:295:310": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 295,
+          "end_line": 310,
+          "lines": 13,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:256:293": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 256,
+          "end_line": 293,
+          "lines": 38,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge2_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 80,
+          "end_line": 92,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_total"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:239:254": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 239,
+          "end_line": 254,
+          "lines": 16,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sMerge2"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 49,
+          "end_line": 78,
+          "lines": 30,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_trans"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:199:235": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 199,
+          "end_line": 235,
+          "lines": 34,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.ssorted_ext"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 35,
+          "end_line": 47,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_asymm"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 30,
+          "end_line": 33,
+          "lines": 4,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_irrefl"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:157:180": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 157,
+          "end_line": 180,
+          "lines": 24,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sInsert_sorted"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.embedded": {
+      "helper_lines": 250,
+      "declarations": {
+        "Sal.MRDTs.Instances.EmbedRGA:154:163": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 154,
+          "end_line": 163,
+          "lines": 10,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.mem_eInsert"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:165:188": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 165,
+          "end_line": 188,
+          "lines": 24,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 80,
+          "end_line": 92,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_total"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 49,
+          "end_line": 78,
+          "lines": 30,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_trans"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:247:262": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 247,
+          "end_line": 262,
+          "lines": 16,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.mem_eMerge2"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:303:317": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 303,
+          "end_line": 317,
+          "lines": 13,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eMerge_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:264:301": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 264,
+          "end_line": 301,
+          "lines": 38,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eMerge2_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:207:243": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 207,
+          "end_line": 243,
+          "lines": 34,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.esorted_ext"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 35,
+          "end_line": 47,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_asymm"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 30,
+          "end_line": 33,
+          "lines": 4,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_irrefl"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:207:250": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 207,
+          "end_line": 250,
+          "lines": 41,
+          "constants": [
+            "Sal.EmbedRGA.coordOf_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 194,
+          "end_line": 199,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.enc_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:149:156": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 149,
+          "end_line": 156,
+          "lines": 8,
+          "constants": [
+            "Sal.EmbedRGA.key_inj"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.anchored_queue": {
+      "helper_lines": 283,
+      "declarations": {
+        "Sal.MRDTs.Instances.RGAKernel.Code:78:99": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
+          "start_line": 78,
+          "end_line": 99,
+          "lines": 22,
+          "constants": [
+            "Sal.EmbedRGA.unaryEnc_not_prefix"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.Code:66:76": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
+          "start_line": 66,
+          "end_line": 76,
+          "lines": 11,
+          "constants": [
+            "Sal.EmbedRGA.unaryEnc_mono"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:154:163": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 154,
+          "end_line": 163,
+          "lines": 10,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.mem_eInsert"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:165:188": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 165,
+          "end_line": 188,
+          "lines": 24,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 80,
+          "end_line": 92,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_total"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 49,
+          "end_line": 78,
+          "lines": 30,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_trans"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:247:262": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 247,
+          "end_line": 262,
+          "lines": 16,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.mem_eMerge2"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:303:317": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 303,
+          "end_line": 317,
+          "lines": 13,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eMerge_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:264:301": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 264,
+          "end_line": 301,
+          "lines": 38,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eMerge2_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:207:243": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 207,
+          "end_line": 243,
+          "lines": 34,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.esorted_ext"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 35,
+          "end_line": 47,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_asymm"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 30,
+          "end_line": 33,
+          "lines": 4,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_irrefl"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:207:250": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 207,
+          "end_line": 250,
+          "lines": 41,
+          "constants": [
+            "Sal.EmbedRGA.coordOf_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 194,
+          "end_line": 199,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.enc_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:149:156": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 149,
+          "end_line": 156,
+          "lines": 8,
+          "constants": [
+            "Sal.EmbedRGA.key_inj"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.peritext": {
+      "helper_lines": 250,
+      "declarations": {
+        "Sal.MRDTs.Instances.EmbedRGA:154:163": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 154,
+          "end_line": 163,
+          "lines": 10,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.mem_eInsert"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:165:188": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 165,
+          "end_line": 188,
+          "lines": 24,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 80,
+          "end_line": 92,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_total"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 49,
+          "end_line": 78,
+          "lines": 30,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_trans"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:247:262": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 247,
+          "end_line": 262,
+          "lines": 16,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.mem_eMerge2"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:303:317": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 303,
+          "end_line": 317,
+          "lines": 13,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eMerge_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:264:301": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 264,
+          "end_line": 301,
+          "lines": 38,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.eMerge2_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.EmbedRGA:207:243": {
+          "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+          "start_line": 207,
+          "end_line": 243,
+          "lines": 34,
+          "constants": [
+            "Sal.MRDTs.Instances.EmbedRGA.esorted_ext"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 35,
+          "end_line": 47,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_asymm"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 30,
+          "end_line": 33,
+          "lines": 4,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_irrefl"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:207:250": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 207,
+          "end_line": 250,
+          "lines": 41,
+          "constants": [
+            "Sal.EmbedRGA.coordOf_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 194,
+          "end_line": 199,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.enc_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:149:156": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 149,
+          "end_line": 156,
+          "lines": 8,
+          "constants": [
+            "Sal.EmbedRGA.key_inj"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.AutomatedFugue.automated_vcs": {
+      "helper_lines": 700,
+      "declarations": {
+        "Sal.MRDTs.Instances.SidedEmbedRGA:295:310": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 295,
+          "end_line": 310,
+          "lines": 13,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:256:293": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 256,
+          "end_line": 293,
+          "lines": 38,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge2_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 80,
+          "end_line": 92,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_total"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:239:254": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 239,
+          "end_line": 254,
+          "lines": 16,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sMerge2"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 49,
+          "end_line": 78,
+          "lines": 30,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_trans"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:146:155": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 146,
+          "end_line": 155,
+          "lines": 10,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sInsert"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:199:235": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 199,
+          "end_line": 235,
+          "lines": 34,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.ssorted_ext"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 35,
+          "end_line": 47,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_asymm"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 30,
+          "end_line": 33,
+          "lines": 4,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_irrefl"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:157:180": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 157,
+          "end_line": 180,
+          "lines": 24,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sInsert_sorted"
+          ]
+        },
+        "Sal.MRDTs.Instances.SidedEmbedRGA:590:593": {
+          "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+          "start_line": 590,
+          "end_line": 593,
+          "lines": 3,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.sKey_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:835:945": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 835,
+          "end_line": 945,
+          "lines": 109,
+          "constants": [
+            "Sal.EmbedRGA.fmCoordOf_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:136:137": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 136,
+          "end_line": 137,
+          "lines": 2,
+          "constants": [
+            "Sal.EmbedRGA.fw_head_band"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:781:783": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 781,
+          "end_line": 783,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.symLc_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:804:833": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 804,
+          "end_line": 833,
+          "lines": 27,
+          "constants": [
+            "Sal.EmbedRGA.fwTag_cancel"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:130:134": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 130,
+          "end_line": 134,
+          "lines": 5,
+          "constants": [
+            "Sal.EmbedRGA.fwTag_append"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:789:802": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 789,
+          "end_line": 802,
+          "lines": 11,
+          "constants": [
+            "Sal.EmbedRGA.fw_group_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:151:153": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 151,
+          "end_line": 153,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.fw_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:101:119": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 101,
+          "end_line": 119,
+          "lines": 18,
+          "constants": [
+            "Sal.EmbedRGA.tagOK_prefixFree"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:83:99": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 83,
+          "end_line": 99,
+          "lines": 16,
+          "constants": [
+            "Sal.EmbedRGA.key_body_prefixFree"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:157:174": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 157,
+          "end_line": 174,
+          "lines": 18,
+          "constants": [
+            "Sal.EmbedRGA.keyLt_first_diff"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:69:81": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 69,
+          "end_line": 81,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.tagOK_symbols_le"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:208:215": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 208,
+          "end_line": 215,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.fmBlock_head_R"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:63:67": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 63,
+          "end_line": 67,
+          "lines": 5,
+          "constants": [
+            "Sal.EmbedRGA.tagOK_head"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:785:787": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 785,
+          "end_line": 787,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.compl_map_symL"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:217:222": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 217,
+          "end_line": 222,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.fmBlock_head_L"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+          "start_line": 194,
+          "end_line": 199,
+          "lines": 6,
+          "constants": [
+            "Sal.EmbedRGA.enc_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:771:773": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 771,
+          "end_line": 773,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.symRc_inj"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:775:777": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 775,
+          "end_line": 777,
+          "lines": 3,
+          "constants": [
+            "Sal.EmbedRGA.compl_map_symR"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:194:206": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 194,
+          "end_line": 206,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.fmBlock_ne_nil"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+          "start_line": 360,
+          "end_line": 370,
+          "lines": 10,
+          "constants": [
+            "Sal.EmbedRGA.map_prefix_reflect"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMaxIssuer:174:184": {
+          "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
+          "start_line": 174,
+          "end_line": 184,
+          "lines": 11,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.canIssue_delete_iff"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMaxIssuer:136:146": {
+          "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
+          "start_line": 136,
+          "end_line": 146,
+          "lines": 9,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.delete_position_finite"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMaxIssuer:161:172": {
+          "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
+          "start_line": 161,
+          "end_line": 172,
+          "lines": 12,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.canIssue_insert_iff"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMaxIssuer:124:134": {
+          "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
+          "start_line": 124,
+          "end_line": 134,
+          "lines": 9,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.insert_position_finite"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:463:467": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 463,
+          "end_line": 467,
+          "lines": 5,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mChainOf_eq_of_rec"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:450:461": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 450,
+          "end_line": 461,
+          "lines": 12,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mRecOfId_of_minted"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:469:479": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 469,
+          "end_line": 479,
+          "lines": 11,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mChainOf_zero"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:1174:1182": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 1174,
+          "end_line": 1182,
+          "lines": 9,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_someFalse"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:1165:1172": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 1165,
+          "end_line": 1172,
+          "lines": 8,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_someTrue"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:1155:1163": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 1155,
+          "end_line": 1163,
+          "lines": 7,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_none"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:246:248": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 246,
+          "end_line": 248,
+          "lines": 3,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.succOfM_mem"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:227:244": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 227,
+          "end_line": 244,
+          "lines": 17,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.succOfM_pair"
+          ]
+        },
+        "Sal.MRDTs.Instances.Fugue:393:418": {
+          "file": "Sal/MRDTs/Instances/Fugue.lean",
+          "start_line": 393,
+          "end_line": 418,
+          "lines": 26,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.foldl_maxKey_mem"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:220:225": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 220,
+          "end_line": 225,
+          "lines": 6,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.mKeys_shape"
+          ]
+        },
+        "Sal.MRDTs.Instances.FugueMax:212:218": {
+          "file": "Sal/MRDTs/Instances/FugueMax.lean",
+          "start_line": 212,
+          "end_line": 218,
+          "lines": 7,
+          "constants": [
+            "Sal.MRDTs.Instances.SidedEmbedRGA.succCandM_sub"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:267:302": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 267,
+          "end_line": 302,
+          "lines": 33,
+          "constants": [
+            "Sal.EmbedRGA.tagOK_key"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:257:265": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 257,
+          "end_line": 265,
+          "lines": 9,
+          "constants": [
+            "Sal.EmbedRGA.fmCoordOf_symbols"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:243:255": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 243,
+          "end_line": 255,
+          "lines": 13,
+          "constants": [
+            "Sal.EmbedRGA.fmBlock_symbols"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:231:241": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 231,
+          "end_line": 241,
+          "lines": 11,
+          "constants": [
+            "Sal.EmbedRGA.fwTag_symbols"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:228:228": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 228,
+          "end_line": 228,
+          "lines": 1,
+          "constants": [
+            "Sal.EmbedRGA.symL_le"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:229:229": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 229,
+          "end_line": 229,
+          "lines": 1,
+          "constants": [
+            "Sal.EmbedRGA.symL_ne3"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:227:227": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 227,
+          "end_line": 227,
+          "lines": 1,
+          "constants": [
+            "Sal.EmbedRGA.symR_ne3"
+          ]
+        },
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:226:226": {
+          "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+          "start_line": 226,
+          "end_line": 226,
+          "lines": 1,
+          "constants": [
+            "Sal.EmbedRGA.symR_le"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.bounded": {
+      "helper_lines": 21,
+      "declarations": {
+        "Sal.MRDTs.Instances.BoundedCounter:95:103": {
+          "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+          "start_line": 95,
+          "end_line": 103,
+          "lines": 9,
+          "constants": [
+            "Sal.MRDTs.Instances.BoundedCounter.BC_all_comm"
+          ]
+        },
+        "Sal.MRDTs.Instances.BoundedCounter:53:55": {
+          "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+          "start_line": 53,
+          "end_line": 55,
+          "lines": 3,
+          "constants": [
+            "Sal.MRDTs.Instances.BoundedCounter.bcUpdate_inc_fst"
+          ]
+        },
+        "Sal.MRDTs.Instances.BoundedCounter:85:91": {
+          "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+          "start_line": 85,
+          "end_line": 91,
+          "lines": 6,
+          "constants": [
+            "Sal.MRDTs.Instances.BoundedCounter.bcState_ext"
+          ]
+        },
+        "Sal.MRDTs.Instances.BoundedCounter:63:65": {
+          "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+          "start_line": 63,
+          "end_line": 65,
+          "lines": 3,
+          "constants": [
+            "Sal.MRDTs.Instances.BoundedCounter.bcUpdate_dec_snd"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.tree": {
+      "helper_lines": 12,
+      "declarations": {
+        "Sal.MRDTs.Instances.TreeMove:231:235": {
+          "file": "Sal/MRDTs/Instances/TreeMove.lean",
+          "start_line": 231,
+          "end_line": 235,
+          "lines": 5,
+          "constants": [
+            "Sal.MRDTs.Instances.TreeMove.all_comm"
+          ]
+        },
+        "Sal.MRDTs.Instances.TreeMove:107:113": {
+          "file": "Sal/MRDTs/Instances/TreeMove.lean",
+          "start_line": 107,
+          "end_line": 113,
+          "lines": 7,
+          "constants": [
+            "Sal.MRDTs.Instances.TreeMove.eventKey_injective"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.aegis": {
+      "helper_lines": 5,
+      "declarations": {
+        "Sal.MRDTs.Instances.AegisSheet:446:450": {
+          "file": "Sal/MRDTs/Instances/AegisSheet.lean",
+          "start_line": 446,
+          "end_line": 450,
+          "lines": 5,
+          "constants": [
+            "Sal.MRDTs.Instances.AegisSheet.all_comm"
+          ]
+        }
+      }
+    },
+    "NeemExpansion.CommonInstances.mvr": {
+      "helper_lines": 0,
+      "declarations": {}
+    }
+  },
+  "source_sha256": {
+    "Sal/MRDTs/Instances/AddStore.lean": "0e434e830301c117dd2663da71bd6f992204fb07559f7799424a2c8f801ee826",
+    "Sal/MRDTs/Instances/FinsetStore.lean": "2143a6df2b6ad4a0c7c8029cb225cabe6e9dc24535dc2c5883ea6e12bf1a8b2f",
+    "Sal/MRDTs/Instances/FlatCounters.lean": "e80d80b593273f33c6de03167698a503c8539c830f96fed9f7da7f8dd9d0433e",
+    "Sal/MRDTs/Instances/FlatGrowOnly.lean": "4ab08116e5d0eea4350e681f5df66fdfb2025bcdfeb398003b46e78e31aa4f65",
+    "Sal/MRDTs/Instances/Common.lean": "9991f820e96caf2949c723cf864b2007650b23f7c661ddd93680594fc6920c51",
+    "Sal/MRDTs/Instances/LWWRegister.lean": "dbf5ef8ea741f8c19f38360ff7db6d011f09f91c20bc607b5679ed82c9ed3a23",
+    "Sal/MRDTs/Instances/SidedEmbedRGA.lean": "72e65e82f06a4bc80f59b0b80be18ecd3e78c366b4ec38f1bd4d1e1865c4adcb",
+    "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean": "6a1899ba9002e6dfd55a379c957c420a6d9fc6bfa4fd57db6fce69d4dcf120d7",
+    "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean": "e3f16be201427f395e443cc6fa8413f00b56eb9c61fcf2d8623fcc32fb0d46ab",
+    "Sal/MRDTs/Instances/RGA.lean": "c6b1352e5ea8c8d3b0a1af7137669863a40ee0400057baafcff83c550824a811",
+    "Sal/MRDTs/Instances/EmbedRGA.lean": "cecd02c8445a3c1157a61dfadd34c97d4bb1c9fd20a5ff82be31f99e37ee18b4",
+    "Sal/MRDTs/Instances/RGAKernel/Code.lean": "15d82e486743efc3b6b2cc8daa40c55a95b52974f7dcf8aeec0a24543738c6db",
+    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean": "f0347eb378e4d213b8822b0e15f33200c1d1af1c54f296a103fa297bef584d13",
+    "Sal/MRDTs/Instances/FugueMaxIssuer.lean": "2f00e80c1542ffbaeb10bd2ebdcc02eda40e078bdfe03c15b80a9cbcfdafb87f",
+    "Sal/MRDTs/Instances/FugueMax.lean": "a29542e3d35360e8950869f7170645f602ed77679ae6552c5545e6f0e42e6f97",
+    "Sal/MRDTs/Instances/Fugue.lean": "c2071799d0a759f1a693461e2ad08829890cf624d17f57073bb2753b3d2d90f7",
+    "Sal/MRDTs/Instances/BoundedCounter.lean": "2d877c0bab2c8394f3e7d372c4545386418a6854941c60a2c0ff7b9a1b5d5ee2",
+    "Sal/MRDTs/Instances/TreeMove.lean": "9d155160f9b81840b7f2ea460c38c47a32a552a62b2c1c65327aa5c7772271c8",
+    "Sal/MRDTs/Instances/AegisSheet.lean": "1ef6fc34ce1b75d782a2cd40d710d6815850a73987e655d389e3c48236638d95"
+  }
+}

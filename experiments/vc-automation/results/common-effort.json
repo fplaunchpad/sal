@@ -1,0 +1,6586 @@
+{
+  "shared_registry_annotation_lines": 11,
+  "shared_registry_annotations": [
+    {
+      "file": "experiments/vc-automation/OrderedRecordAutomation.lean",
+      "line": 10,
+      "text": "attribute [ordered_record_simps, aesop (rule_sets := [OrderedRecord]) norm simp]"
+    },
+    {
+      "file": "experiments/vc-automation/OrderedRecordAutomation.lean",
+      "line": 11,
+      "text": "mem_eInsert mem_sInsert mem_eMerge2 mem_sMerge2 List.mem_toFinset"
+    },
+    {
+      "file": "experiments/vc-automation/OrderedRecordAutomation.lean",
+      "line": 12,
+      "text": "attribute [aesop (rule_sets := [OrderedRecord]) safe apply]"
+    },
+    {
+      "file": "experiments/vc-automation/OrderedRecordAutomation.lean",
+      "line": 13,
+      "text": "eInsert_sorted sInsert_sorted eMerge_sorted sMerge_sorted esorted_ext ssorted_ext List.Pairwise.filter"
+    },
+    {
+      "file": "experiments/vc-automation/OrderedRecordAutomation.lean",
+      "line": 22,
+      "text": "attribute [aesop (rule_sets := [OrderedRecord]) safe apply] ordered_record_membership"
+    },
+    {
+      "file": "experiments/vc-automation/PolicyExpansionAutomation.lean",
+      "line": 8,
+      "text": "attribute [policy_expansion_simps]"
+    },
+    {
+      "file": "experiments/vc-automation/PolicyExpansionAutomation.lean",
+      "line": 9,
+      "text": "Signature.distinct Signature.comm Signature.CausalEquation"
+    },
+    {
+      "file": "experiments/vc-automation/PolicyExpansionAutomation.lean",
+      "line": 10,
+      "text": "Signature.LocalEquation Signature.FreshEquation Signature.Commutes"
+    },
+    {
+      "file": "experiments/vc-automation/PolicyExpansionAutomation.lean",
+      "line": 11,
+      "text": "Signature.commutes Signature.KernelStable Signature.ConditionalBase"
+    },
+    {
+      "file": "experiments/vc-automation/CommonAlgebraAutomation.lean",
+      "line": 9,
+      "text": "attribute [mrdt_algebra] mrdt_max_repeat"
+    },
+    {
+      "file": "experiments/vc-automation/CommonAlgebraAutomation.lean",
+      "line": 10,
+      "text": "attribute [mrdt_algebra] max_assoc max_left_comm max_comm max_self max_bot_left max_bot_right"
+    }
+  ],
+  "method": "Measure source footprint of the current 23 common verification roots.\n\nCounts complete source-written declarations (types, annotations and proofs),\nnot human time. Per-root closures overlap: only the unique campaign total is\nsummable. Generic framework proofs and existing implementation definitions are\nexcluded. Retained datatype theorem helpers are reported separately.\n",
+  "limitations": [
+    "Source lines measure proof/annotation footprint, not human effort or proof difficulty.",
+    "Per-root totals overlap and must not be summed; campaign totals deduplicate file/line pairs.",
+    "Generic framework proofs are intentionally excluded; existing source-written datatype helper theorems are included separately.",
+    "Induction/recursor scans are syntax diagnostics, not a proof that a helper hides no history reasoning.",
+    "Registry framework macros are excluded; instance-side attribute/registration commands are recorded separately."
+  ],
+  "cases": {
+    "NeemExpansion.CommonInstances.ordinaryORSet": {
+      "instance_lines": 104,
+      "retained_helper_lines": 0,
+      "declaration_keys": [
+        "AutomatedORSet:13:13",
+        "AutomatedORSet:16:16",
+        "AutomatedORSet:17:17",
+        "AutomatedORSet:18:18",
+        "AutomatedORSet:20:21",
+        "AutomatedORSet:22:24",
+        "AutomatedORSet:25:28",
+        "AutomatedORSet:29:32",
+        "AutomatedORSet:33:35",
+        "AutomatedORSet:36:40",
+        "AutomatedORSet:41:43",
+        "AutomatedORSet:44:47",
+        "AutomatedORSet:48:50",
+        "AutomatedORSet:51:53",
+        "AutomatedORSet:56:60",
+        "AutomatedORSet:62:65",
+        "AutomatedORSet:66:71",
+        "AutomatedORSet:72:84",
+        "AutomatedORSet:85:90",
+        "AutomatedORSet:91:93",
+        "AutomatedORSet:95:119",
+        "CommonInstances:126:127",
+        "CommonInstances:91:92"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 3,
+      "total_lines": 107
+    },
+    "NeemExpansion.CommonInstances.efficientORSet": {
+      "instance_lines": 218,
+      "retained_helper_lines": 0,
+      "declaration_keys": [
+        "AutomatedEfficientORSet:109:110",
+        "AutomatedEfficientORSet:112:116",
+        "AutomatedEfficientORSet:118:125",
+        "AutomatedEfficientORSet:127:132",
+        "AutomatedEfficientORSet:134:152",
+        "AutomatedEfficientORSet:154:157",
+        "AutomatedEfficientORSet:15:15",
+        "AutomatedEfficientORSet:160:164",
+        "AutomatedEfficientORSet:166:169",
+        "AutomatedEfficientORSet:170:175",
+        "AutomatedEfficientORSet:177:188",
+        "AutomatedEfficientORSet:18:18",
+        "AutomatedEfficientORSet:190:224",
+        "AutomatedEfficientORSet:19:19",
+        "AutomatedEfficientORSet:20:20",
+        "AutomatedEfficientORSet:227:229",
+        "AutomatedEfficientORSet:22:23",
+        "AutomatedEfficientORSet:231:244",
+        "AutomatedEfficientORSet:24:26",
+        "AutomatedEfficientORSet:27:30",
+        "AutomatedEfficientORSet:31:34",
+        "AutomatedEfficientORSet:35:37",
+        "AutomatedEfficientORSet:38:42",
+        "AutomatedEfficientORSet:43:45",
+        "AutomatedEfficientORSet:46:49",
+        "AutomatedEfficientORSet:50:52",
+        "AutomatedEfficientORSet:53:55",
+        "AutomatedEfficientORSet:57:57",
+        "AutomatedEfficientORSet:58:62",
+        "AutomatedEfficientORSet:63:68",
+        "AutomatedEfficientORSet:69:77",
+        "AutomatedEfficientORSet:79:92",
+        "AutomatedEfficientORSet:94:107",
+        "CommonInstances:128:130",
+        "CommonInstances:98:102"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 3,
+      "total_lines": 221
+    },
+    "NeemExpansion.CommonInstances.gset": {
+      "instance_lines": 13,
+      "retained_helper_lines": 6,
+      "declaration_keys": [
+        "CommonInstances:132:134",
+        "CommonInstances:21:23",
+        "Sal.MRDTs.Instances.AddStore:27:32",
+        "TransferSimple:51:57"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 20
+    },
+    "NeemExpansion.CommonInstances.addStore": {
+      "instance_lines": 13,
+      "retained_helper_lines": 6,
+      "declaration_keys": [
+        "CommonInstances:135:137",
+        "CommonInstances:21:23",
+        "Sal.MRDTs.Instances.AddStore:27:32",
+        "TransferSimple:51:57"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 20
+    },
+    "NeemExpansion.CommonInstances.finiteAdd": {
+      "instance_lines": 13,
+      "retained_helper_lines": 6,
+      "declaration_keys": [
+        "CommonInstances:138:140",
+        "CommonInstances:29:31",
+        "Sal.MRDTs.Instances.FinsetStore:31:36",
+        "TransferSimple:65:71"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 20
+    },
+    "NeemExpansion.CommonInstances.counter": {
+      "instance_lines": 8,
+      "retained_helper_lines": 8,
+      "declaration_keys": [
+        "CommonInstances:141:143",
+        "CommonInstances:37:39",
+        "Sal.MRDTs.Instances.FlatCounters:32:39",
+        "TransferSimple:79:80"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 17
+    },
+    "NeemExpansion.CommonInstances.ioc": {
+      "instance_lines": 8,
+      "retained_helper_lines": 8,
+      "declaration_keys": [
+        "CommonInstances:144:146",
+        "CommonInstances:37:39",
+        "Sal.MRDTs.Instances.FlatCounters:32:39",
+        "TransferSimple:79:80"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 17
+    },
+    "NeemExpansion.CommonInstances.pn": {
+      "instance_lines": 8,
+      "retained_helper_lines": 8,
+      "declaration_keys": [
+        "CommonInstances:147:149",
+        "CommonInstances:37:39",
+        "Sal.MRDTs.Instances.FlatCounters:32:39",
+        "TransferSimple:79:80"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 17
+    },
+    "NeemExpansion.CommonInstances.booleanSet": {
+      "instance_lines": 9,
+      "retained_helper_lines": 7,
+      "declaration_keys": [
+        "CommonInstances:150:152",
+        "CommonInstances:45:47",
+        "Sal.MRDTs.Instances.Common:5:6",
+        "Sal.MRDTs.Instances.FlatGrowOnly:32:36",
+        "TransferSimple:89:91"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 17
+    },
+    "NeemExpansion.CommonInstances.booleanMap": {
+      "instance_lines": 9,
+      "retained_helper_lines": 7,
+      "declaration_keys": [
+        "CommonInstances:153:155",
+        "CommonInstances:45:47",
+        "Sal.MRDTs.Instances.Common:5:6",
+        "Sal.MRDTs.Instances.FlatGrowOnly:32:36",
+        "TransferSimple:89:91"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 17
+    },
+    "NeemExpansion.CommonInstances.lww": {
+      "instance_lines": 8,
+      "retained_helper_lines": 4,
+      "declaration_keys": [
+        "CommonInstances:156:158",
+        "CommonInstances:53:54",
+        "CommonInstances:55:57",
+        "Sal.MRDTs.Instances.LWWRegister:66:69"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 2,
+      "total_lines": 14
+    },
+    "NeemExpansion.CommonInstances.sided": {
+      "instance_lines": 112,
+      "retained_helper_lines": 297,
+      "declaration_keys": [
+        "AutomatedRGA:101:112",
+        "AutomatedRGA:114:127",
+        "AutomatedRGA:202:241",
+        "AutomatedRGA:243:261",
+        "AutomatedRGA:285:289",
+        "AutomatedRGA:80:81",
+        "AutomatedRGA:82:82",
+        "AutomatedRGA:84:90",
+        "AutomatedRGA:92:99",
+        "CommonInstances:120:121",
+        "CommonInstances:173:174",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:346:350",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:352:354",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:356:358",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:372:441",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:87:91",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:146:155",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:157:180",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:199:235",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:239:254",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:256:293",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:295:310",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:590:593"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 410
+    },
+    "NeemExpansion.CommonInstances.nativeRGA": {
+      "instance_lines": 24,
+      "retained_helper_lines": 10,
+      "declaration_keys": [
+        "CommonInstances:159:161",
+        "CommonInstances:62:64",
+        "Sal.MRDTs.Instances.Common:5:6",
+        "Sal.MRDTs.Instances.RGA:83:90",
+        "TransferProductExpansion:56:73"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 35
+    },
+    "NeemExpansion.AutomatedCore.automated_vcs": {
+      "instance_lines": 120,
+      "retained_helper_lines": 297,
+      "declaration_keys": [
+        "AutomatedCore:16:24",
+        "AutomatedCore:26:29",
+        "AutomatedCore:33:36",
+        "AutomatedRGA:101:112",
+        "AutomatedRGA:114:127",
+        "AutomatedRGA:202:241",
+        "AutomatedRGA:243:261",
+        "AutomatedRGA:80:81",
+        "AutomatedRGA:82:82",
+        "AutomatedRGA:84:90",
+        "AutomatedRGA:92:99",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:346:350",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:352:354",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:356:358",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:372:441",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:87:91",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:146:155",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:157:180",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:199:235",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:239:254",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:256:293",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:295:310",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:590:593"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 418
+    },
+    "NeemExpansion.AutomatedCore.rich_automated_vcs": {
+      "instance_lines": 123,
+      "retained_helper_lines": 297,
+      "declaration_keys": [
+        "AutomatedCore:16:24",
+        "AutomatedCore:26:29",
+        "AutomatedCore:38:41",
+        "AutomatedCore:45:47",
+        "AutomatedRGA:101:112",
+        "AutomatedRGA:114:127",
+        "AutomatedRGA:202:241",
+        "AutomatedRGA:243:261",
+        "AutomatedRGA:80:81",
+        "AutomatedRGA:82:82",
+        "AutomatedRGA:84:90",
+        "AutomatedRGA:92:99",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:346:350",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:352:354",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:356:358",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:372:441",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:87:91",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:146:155",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:157:180",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:199:235",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:239:254",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:256:293",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:295:310",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:590:593"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 2,
+      "total_lines": 422
+    },
+    "NeemExpansion.CommonInstances.embedded": {
+      "instance_lines": 115,
+      "retained_helper_lines": 250,
+      "declaration_keys": [
+        "AutomatedRGA:136:175",
+        "AutomatedRGA:177:195",
+        "AutomatedRGA:268:272",
+        "AutomatedRGA:27:28",
+        "AutomatedRGA:29:29",
+        "AutomatedRGA:31:38",
+        "AutomatedRGA:40:47",
+        "AutomatedRGA:49:60",
+        "AutomatedRGA:62:75",
+        "CommonInstances:114:115",
+        "CommonInstances:175:178",
+        "Sal.MRDTs.Instances.EmbedRGA:154:163",
+        "Sal.MRDTs.Instances.EmbedRGA:165:188",
+        "Sal.MRDTs.Instances.EmbedRGA:207:243",
+        "Sal.MRDTs.Instances.EmbedRGA:247:262",
+        "Sal.MRDTs.Instances.EmbedRGA:264:301",
+        "Sal.MRDTs.Instances.EmbedRGA:303:317",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:149:156",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:207:250",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 366
+    },
+    "NeemExpansion.CommonInstances.anchored_queue": {
+      "instance_lines": 114,
+      "retained_helper_lines": 283,
+      "declaration_keys": [
+        "AutomatedRGA:136:175",
+        "AutomatedRGA:177:195",
+        "AutomatedRGA:268:272",
+        "AutomatedRGA:27:28",
+        "AutomatedRGA:29:29",
+        "AutomatedRGA:31:38",
+        "AutomatedRGA:40:47",
+        "AutomatedRGA:49:60",
+        "AutomatedRGA:62:75",
+        "CommonInstances:114:115",
+        "CommonInstances:179:181",
+        "Sal.MRDTs.Instances.EmbedRGA:154:163",
+        "Sal.MRDTs.Instances.EmbedRGA:165:188",
+        "Sal.MRDTs.Instances.EmbedRGA:207:243",
+        "Sal.MRDTs.Instances.EmbedRGA:247:262",
+        "Sal.MRDTs.Instances.EmbedRGA:264:301",
+        "Sal.MRDTs.Instances.EmbedRGA:303:317",
+        "Sal.MRDTs.Instances.RGAKernel.Code:66:76",
+        "Sal.MRDTs.Instances.RGAKernel.Code:78:99",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:149:156",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:207:250",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 398
+    },
+    "NeemExpansion.CommonInstances.peritext": {
+      "instance_lines": 113,
+      "retained_helper_lines": 250,
+      "declaration_keys": [
+        "AutomatedRGA:136:175",
+        "AutomatedRGA:177:195",
+        "AutomatedRGA:268:272",
+        "AutomatedRGA:27:28",
+        "AutomatedRGA:29:29",
+        "AutomatedRGA:31:38",
+        "AutomatedRGA:40:47",
+        "AutomatedRGA:49:60",
+        "AutomatedRGA:62:75",
+        "CommonInstances:114:115",
+        "CommonInstances:182:183",
+        "Sal.MRDTs.Instances.EmbedRGA:154:163",
+        "Sal.MRDTs.Instances.EmbedRGA:165:188",
+        "Sal.MRDTs.Instances.EmbedRGA:207:243",
+        "Sal.MRDTs.Instances.EmbedRGA:247:262",
+        "Sal.MRDTs.Instances.EmbedRGA:264:301",
+        "Sal.MRDTs.Instances.EmbedRGA:303:317",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:149:156",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:207:250",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 364
+    },
+    "NeemExpansion.AutomatedFugue.automated_vcs": {
+      "instance_lines": 252,
+      "retained_helper_lines": 700,
+      "declaration_keys": [
+        "AutomatedFugue:106:171",
+        "AutomatedFugue:13:13",
+        "AutomatedFugue:14:14",
+        "AutomatedFugue:15:15",
+        "AutomatedFugue:173:242",
+        "AutomatedFugue:17:23",
+        "AutomatedFugue:244:262",
+        "AutomatedFugue:25:90",
+        "AutomatedFugue:264:267",
+        "AutomatedFugue:269:271",
+        "AutomatedFugue:274:275",
+        "AutomatedFugue:92:93",
+        "AutomatedFugue:95:104",
+        "Sal.MRDTs.Instances.Fugue:393:418",
+        "Sal.MRDTs.Instances.FugueMax:1155:1163",
+        "Sal.MRDTs.Instances.FugueMax:1165:1172",
+        "Sal.MRDTs.Instances.FugueMax:1174:1182",
+        "Sal.MRDTs.Instances.FugueMax:212:218",
+        "Sal.MRDTs.Instances.FugueMax:220:225",
+        "Sal.MRDTs.Instances.FugueMax:227:244",
+        "Sal.MRDTs.Instances.FugueMax:246:248",
+        "Sal.MRDTs.Instances.FugueMax:450:461",
+        "Sal.MRDTs.Instances.FugueMax:463:467",
+        "Sal.MRDTs.Instances.FugueMax:469:479",
+        "Sal.MRDTs.Instances.FugueMaxIssuer:124:134",
+        "Sal.MRDTs.Instances.FugueMaxIssuer:136:146",
+        "Sal.MRDTs.Instances.FugueMaxIssuer:161:172",
+        "Sal.MRDTs.Instances.FugueMaxIssuer:174:184",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78",
+        "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:101:119",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:130:134",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:136:137",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:151:153",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:157:174",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:194:206",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:208:215",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:217:222",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:226:226",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:227:227",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:228:228",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:229:229",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:231:241",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:243:255",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:257:265",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:267:302",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:63:67",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:69:81",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:771:773",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:775:777",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:781:783",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:785:787",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:789:802",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:804:833",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:835:945",
+        "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:83:99",
+        "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:146:155",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:157:180",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:199:235",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:239:254",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:256:293",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:295:310",
+        "Sal.MRDTs.Instances.SidedEmbedRGA:590:593"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 953
+    },
+    "NeemExpansion.CommonInstances.bounded": {
+      "instance_lines": 24,
+      "retained_helper_lines": 21,
+      "declaration_keys": [
+        "CommonInstances:162:164",
+        "CommonInstances:69:71",
+        "Sal.MRDTs.Instances.BoundedCounter:53:55",
+        "Sal.MRDTs.Instances.BoundedCounter:63:65",
+        "Sal.MRDTs.Instances.BoundedCounter:85:91",
+        "Sal.MRDTs.Instances.BoundedCounter:95:103",
+        "TransferGuardedCommuting:13:30"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 46
+    },
+    "NeemExpansion.CommonInstances.tree": {
+      "instance_lines": 13,
+      "retained_helper_lines": 12,
+      "declaration_keys": [
+        "CommonInstances:165:167",
+        "CommonInstances:76:78",
+        "Sal.MRDTs.Instances.TreeMove:107:113",
+        "Sal.MRDTs.Instances.TreeMove:231:235",
+        "TransferGuardedCommuting:41:47"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 26
+    },
+    "NeemExpansion.CommonInstances.aegis": {
+      "instance_lines": 13,
+      "retained_helper_lines": 5,
+      "declaration_keys": [
+        "CommonInstances:168:170",
+        "CommonInstances:83:85",
+        "Sal.MRDTs.Instances.AegisSheet:446:450",
+        "TransferAegisSheet:11:18"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 19
+    },
+    "NeemExpansion.CommonInstances.mvr": {
+      "instance_lines": 17,
+      "retained_helper_lines": 0,
+      "declaration_keys": [
+        "AutomatedMVR:14:27",
+        "CommonInstances:107:108",
+        "CommonInstances:171:172"
+      ],
+      "induction_syntax": {},
+      "explicit_recursors": {},
+      "registration_annotation_lines": 1,
+      "total_lines": 18
+    }
+  },
+  "unique_campaign": {
+    "instance_lines": 984,
+    "retained_helper_lines": 1077,
+    "registration_annotation_lines": 22
+  },
+  "declarations": {
+    "CommonInstances:126:127": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 126,
+      "end_line": 127,
+      "code_lines": [
+        126,
+        127
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:91:92": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 91,
+      "end_line": 92,
+      "code_lines": [
+        91,
+        92
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.OrdinaryORSet.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:95:119": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 95,
+      "end_line": 119,
+      "code_lines": [
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.kit"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:48:50": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 48,
+      "end_line": 50,
+      "code_lines": [
+        48,
+        49,
+        50
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.causal_strict"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:13:13": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 13,
+      "end_line": 13,
+      "code_lines": [
+        13
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.signature"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:29:32": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 29,
+      "end_line": 32,
+      "code_lines": [
+        29,
+        30,
+        31,
+        32
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.local_opposite"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:91:93": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 91,
+      "end_line": 93,
+      "code_lines": [
+        91,
+        92,
+        93
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.kernel_stable"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:25:28": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 25,
+      "end_line": 28,
+      "code_lines": [
+        25,
+        26,
+        27,
+        28
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.local_common"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:33:35": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 33,
+      "end_line": 35,
+      "code_lines": [
+        33,
+        34,
+        35
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.local_empty"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:41:43": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 41,
+      "end_line": 43,
+      "code_lines": [
+        41,
+        42,
+        43
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.causal_common"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:17:17": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 17,
+      "end_line": 17,
+      "code_lines": [
+        17
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:56:60": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 56,
+      "end_line": 60,
+      "code_lines": [
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.policy_order"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:51:53": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 51,
+      "end_line": 53,
+      "code_lines": [
+        51,
+        52,
+        53
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.causal_absorber"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:20:21": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 20,
+      "end_line": 21,
+      "code_lines": [
+        20,
+        21
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.fresh_base"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:16:16": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 16,
+      "end_line": 16,
+      "code_lines": [
+        16
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.diagonal"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:44:47": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 44,
+      "end_line": 47,
+      "code_lines": [
+        44,
+        45,
+        46,
+        47
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.causal_commuting"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:72:84": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 72,
+      "end_line": 84,
+      "code_lines": [
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.noncomm_full"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:66:71": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 66,
+      "end_line": 71,
+      "code_lines": [
+        66,
+        67,
+        68,
+        69,
+        70,
+        71
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.commute_nonconflict"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:85:90": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 85,
+      "end_line": 90,
+      "code_lines": [
+        85,
+        86,
+        87,
+        88,
+        89,
+        90
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.conditional_base"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:22:24": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 22,
+      "end_line": 24,
+      "code_lines": [
+        22,
+        23,
+        24
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.fresh_step"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:18:18": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 18,
+      "end_line": 18,
+      "code_lines": [
+        18
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.initial"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:36:40": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 36,
+      "end_line": 40,
+      "code_lines": [
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.local_singleton"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedORSet:62:65": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "start_line": 62,
+      "end_line": 65,
+      "code_lines": [
+        62,
+        63,
+        64,
+        65
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedORSet.no_chain"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:128:130": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 128,
+      "end_line": 130,
+      "code_lines": [
+        128,
+        129,
+        130
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:98:102": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 98,
+      "end_line": 102,
+      "code_lines": [
+        98,
+        99,
+        100,
+        101,
+        102
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.EfficientORSet.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:94:107": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 94,
+      "end_line": 107,
+      "code_lines": [
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.semantic_shape"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:79:92": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 79,
+      "end_line": 92,
+      "code_lines": [
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.maskKit"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:69:77": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 69,
+      "end_line": 77,
+      "code_lines": [
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.mask_noncomm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:57:57": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 57,
+      "end_line": 57,
+      "code_lines": [
+        57
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.birth"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:63:68": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 63,
+      "end_line": 68,
+      "code_lines": [
+        63,
+        64,
+        65,
+        66,
+        67,
+        68
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.mask_commuting"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:58:62": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 58,
+      "end_line": 62,
+      "code_lines": [
+        58,
+        59,
+        60,
+        61,
+        62
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.mask_update"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:231:244": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 231,
+      "end_line": 244,
+      "code_lines": [
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243,
+        244
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.kit"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:53:55": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 53,
+      "end_line": 55,
+      "code_lines": [
+        53,
+        54,
+        55
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.causal_absorber"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:15:15": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 15,
+      "end_line": 15,
+      "code_lines": [
+        15
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.signature"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:46:49": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 46,
+      "end_line": 49,
+      "code_lines": [
+        46,
+        47,
+        48,
+        49
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.causal_commuting"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:50:52": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 50,
+      "end_line": 52,
+      "code_lines": [
+        50,
+        51,
+        52
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.causal_strict"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:227:229": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 227,
+      "end_line": 229,
+      "code_lines": [
+        227,
+        228,
+        229
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.kernel_stable"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:134:152": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 134,
+      "end_line": 152,
+      "code_lines": [
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.absorber_classification"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:127:132": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 127,
+      "end_line": 132,
+      "code_lines": [
+        127,
+        128,
+        129,
+        130,
+        131,
+        132
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.remove_add_noncomm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:112:116": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 112,
+      "end_line": 116,
+      "code_lines": [
+        112,
+        113,
+        114,
+        115,
+        116
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.commute_distinct_elements"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:109:110": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 109,
+      "end_line": 110,
+      "code_lines": [
+        109,
+        110
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.element"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:18:18": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 18,
+      "end_line": 18,
+      "code_lines": [
+        18
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.diagonal"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:20:20": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 20,
+      "end_line": 20,
+      "code_lines": [
+        20
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.initial"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:22:23": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 22,
+      "end_line": 23,
+      "code_lines": [
+        22,
+        23
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.fresh_base"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:160:164": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 160,
+      "end_line": 164,
+      "code_lines": [
+        160,
+        161,
+        162,
+        163,
+        164
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.policy_order"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:31:34": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 31,
+      "end_line": 34,
+      "code_lines": [
+        31,
+        32,
+        33,
+        34
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.local_opposite"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:177:188": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 177,
+      "end_line": 188,
+      "code_lines": [
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.guarded_noncomm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:170:175": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 170,
+      "end_line": 175,
+      "code_lines": [
+        170,
+        171,
+        172,
+        173,
+        174,
+        175
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.commute_nonconflict"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:27:30": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 27,
+      "end_line": 30,
+      "code_lines": [
+        27,
+        28,
+        29,
+        30
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.local_common"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:38:42": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 38,
+      "end_line": 42,
+      "code_lines": [
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.local_singleton"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:190:224": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 190,
+      "end_line": 224,
+      "code_lines": [
+        190,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.conditional_base"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:118:125": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 118,
+      "end_line": 125,
+      "code_lines": [
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.conflict_classification"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:154:157": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 154,
+      "end_line": 157,
+      "code_lines": [
+        154,
+        155,
+        156,
+        157
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.strict_asymmetric"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:19:19": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 19,
+      "end_line": 19,
+      "code_lines": [
+        19
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:166:169": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 166,
+      "end_line": 169,
+      "code_lines": [
+        166,
+        167,
+        168,
+        169
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.no_chain"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:43:45": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 43,
+      "end_line": 45,
+      "code_lines": [
+        43,
+        44,
+        45
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.causal_common"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:35:37": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 35,
+      "end_line": 37,
+      "code_lines": [
+        35,
+        36,
+        37
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.local_empty"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedEfficientORSet:24:26": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "start_line": 24,
+      "end_line": 26,
+      "code_lines": [
+        24,
+        25,
+        26
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedEfficientORSet.fresh_step"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:132:134": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 132,
+      "end_line": 134,
+      "code_lines": [
+        132,
+        133,
+        134
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.gset"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.gset"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:21:23": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 21,
+      "end_line": 23,
+      "code_lines": [
+        21,
+        22,
+        23
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Add.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.gset",
+        "NeemExpansion.CommonInstances.addStore"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "TransferSimple:51:57": {
+      "category": "instance",
+      "file": "experiments/vc-automation/TransferSimple.lean",
+      "start_line": 51,
+      "end_line": 57,
+      "code_lines": [
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57
+      ],
+      "constants": [
+        "NeemExpansion.TransferSimple.Add.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.gset",
+        "NeemExpansion.CommonInstances.addStore"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.AddStore:27:32": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/AddStore.lean",
+      "start_line": 27,
+      "end_line": 32,
+      "code_lines": [
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.AddStore.all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.gset",
+        "NeemExpansion.CommonInstances.addStore"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:135:137": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 135,
+      "end_line": 137,
+      "code_lines": [
+        135,
+        136,
+        137
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.addStore"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.addStore"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:138:140": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 138,
+      "end_line": 140,
+      "code_lines": [
+        138,
+        139,
+        140
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.finiteAdd"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.finiteAdd"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FinsetStore:31:36": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FinsetStore.lean",
+      "start_line": 31,
+      "end_line": 36,
+      "code_lines": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.FinsetStore.all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.finiteAdd"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:29:31": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 29,
+      "end_line": 31,
+      "code_lines": [
+        29,
+        30,
+        31
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Finite.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.finiteAdd"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "TransferSimple:65:71": {
+      "category": "instance",
+      "file": "experiments/vc-automation/TransferSimple.lean",
+      "start_line": 65,
+      "end_line": 71,
+      "code_lines": [
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71
+      ],
+      "constants": [
+        "NeemExpansion.TransferSimple.Finite.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.finiteAdd"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:141:143": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 141,
+      "end_line": 143,
+      "code_lines": [
+        141,
+        142,
+        143
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.counter"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.counter"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:37:39": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 37,
+      "end_line": 39,
+      "code_lines": [
+        37,
+        38,
+        39
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Delta.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.counter",
+        "NeemExpansion.CommonInstances.ioc",
+        "NeemExpansion.CommonInstances.pn"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "TransferSimple:79:80": {
+      "category": "instance",
+      "file": "experiments/vc-automation/TransferSimple.lean",
+      "start_line": 79,
+      "end_line": 80,
+      "code_lines": [
+        79,
+        80
+      ],
+      "constants": [
+        "NeemExpansion.TransferSimple.Delta.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.counter",
+        "NeemExpansion.CommonInstances.ioc",
+        "NeemExpansion.CommonInstances.pn"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FlatCounters:32:39": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FlatCounters.lean",
+      "start_line": 32,
+      "end_line": 39,
+      "code_lines": [
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.FlatCounters.all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.counter",
+        "NeemExpansion.CommonInstances.ioc",
+        "NeemExpansion.CommonInstances.pn"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:144:146": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 144,
+      "end_line": 146,
+      "code_lines": [
+        144,
+        145,
+        146
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.ioc"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.ioc"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:147:149": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 147,
+      "end_line": 149,
+      "code_lines": [
+        147,
+        148,
+        149
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.pn"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.pn"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:150:152": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 150,
+      "end_line": 152,
+      "code_lines": [
+        150,
+        151,
+        152
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.booleanSet"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.booleanSet"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:45:47": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 45,
+      "end_line": 47,
+      "code_lines": [
+        45,
+        46,
+        47
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Boolean.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.booleanSet",
+        "NeemExpansion.CommonInstances.booleanMap"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "TransferSimple:89:91": {
+      "category": "instance",
+      "file": "experiments/vc-automation/TransferSimple.lean",
+      "start_line": 89,
+      "end_line": 91,
+      "code_lines": [
+        89,
+        90,
+        91
+      ],
+      "constants": [
+        "NeemExpansion.TransferSimple.Boolean.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.booleanSet",
+        "NeemExpansion.CommonInstances.booleanMap"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FlatGrowOnly:32:36": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FlatGrowOnly.lean",
+      "start_line": 32,
+      "end_line": 36,
+      "code_lines": [
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.FlatGrowOnly.all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.booleanSet",
+        "NeemExpansion.CommonInstances.booleanMap"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.Common:5:6": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/Common.lean",
+      "start_line": 5,
+      "end_line": 6,
+      "code_lines": [
+        5,
+        6
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.bor_rc"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.booleanSet",
+        "NeemExpansion.CommonInstances.booleanMap",
+        "NeemExpansion.CommonInstances.nativeRGA"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:153:155": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 153,
+      "end_line": 155,
+      "code_lines": [
+        153,
+        154,
+        155
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.booleanMap"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.booleanMap"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:156:158": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 156,
+      "end_line": 158,
+      "code_lines": [
+        156,
+        157,
+        158
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.lww"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.lww"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:55:57": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 55,
+      "end_line": 57,
+      "code_lines": [
+        55,
+        56,
+        57
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.LWW.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.lww"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:53:54": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 53,
+      "end_line": 54,
+      "code_lines": [
+        53,
+        54
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.LWW.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.lww"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.LWWRegister:66:69": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/LWWRegister.lean",
+      "start_line": 66,
+      "end_line": 69,
+      "code_lines": [
+        66,
+        67,
+        68,
+        69
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.LWWRegister.all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.lww"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:173:174": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 173,
+      "end_line": 174,
+      "code_lines": [
+        173,
+        174
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.sided"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:120:121": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 120,
+      "end_line": 121,
+      "code_lines": [
+        120,
+        121
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Sided.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:285:289": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 285,
+      "end_line": 289,
+      "code_lines": [
+        285,
+        286,
+        287,
+        288,
+        289
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.adapter"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:243:261": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 243,
+      "end_line": 261,
+      "code_lines": [
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.issuer"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.SidedEmbedRGA:590:593": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "start_line": 590,
+      "end_line": 593,
+      "code_lines": [
+        591,
+        592,
+        593
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sKey_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:372:441": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+      "start_line": 372,
+      "end_line": 441,
+      "code_lines": [
+        375,
+        376,
+        377,
+        378,
+        379,
+        380,
+        381,
+        382,
+        383,
+        384,
+        385,
+        386,
+        387,
+        388,
+        389,
+        390,
+        391,
+        392,
+        393,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400,
+        401,
+        402,
+        403,
+        404,
+        405,
+        406,
+        407,
+        408,
+        409,
+        410,
+        411,
+        412,
+        413,
+        414,
+        415,
+        416,
+        417,
+        418,
+        419,
+        420,
+        421,
+        422,
+        423,
+        424,
+        425,
+        426,
+        427,
+        428,
+        429,
+        430,
+        431,
+        432,
+        433,
+        434,
+        435,
+        436,
+        437,
+        438,
+        439,
+        440,
+        441
+      ],
+      "constants": [
+        "Sal.EmbedRGA.sidedCoordOf_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:356:358": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+      "start_line": 356,
+      "end_line": 358,
+      "code_lines": [
+        356,
+        357,
+        358
+      ],
+      "constants": [
+        "Sal.EmbedRGA.sideSym_band_ne"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:87:91": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+      "start_line": 87,
+      "end_line": 91,
+      "code_lines": [
+        87,
+        88,
+        89,
+        90,
+        91
+      ],
+      "constants": [
+        "Sal.EmbedRGA.sBlock_ne_nil"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:194:199": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+      "start_line": 194,
+      "end_line": 199,
+      "code_lines": [
+        194,
+        195,
+        196,
+        197,
+        198,
+        199
+      ],
+      "constants": [
+        "Sal.EmbedRGA.enc_ne_nil"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:352:354": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+      "start_line": 352,
+      "end_line": 354,
+      "code_lines": [
+        352,
+        353,
+        354
+      ],
+      "constants": [
+        "Sal.EmbedRGA.sideSym_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:346:350": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+      "start_line": 346,
+      "end_line": 350,
+      "code_lines": [
+        346,
+        347,
+        348,
+        349,
+        350
+      ],
+      "constants": [
+        "Sal.EmbedRGA.sBlock_eq"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.SidedChainLex:360:370": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
+      "start_line": 360,
+      "end_line": 370,
+      "code_lines": [
+        361,
+        362,
+        363,
+        364,
+        365,
+        366,
+        367,
+        368,
+        369,
+        370
+      ],
+      "constants": [
+        "Sal.EmbedRGA.map_prefix_reflect"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:202:241": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 202,
+      "end_line": 241,
+      "code_lines": [
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.kit"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:84:90": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 84,
+      "end_line": 90,
+      "code_lines": [
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.provenance_step"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.SidedEmbedRGA:146:155": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "start_line": 146,
+      "end_line": 155,
+      "code_lines": [
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sInsert"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:80:81": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 80,
+      "end_line": 81,
+      "code_lines": [
+        80,
+        81
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.Born"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.SidedEmbedRGA:295:310": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "start_line": 295,
+      "end_line": 310,
+      "code_lines": [
+        298,
+        299,
+        300,
+        301,
+        302,
+        303,
+        304,
+        305,
+        306,
+        307,
+        308,
+        309,
+        310
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge_sorted"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.SidedEmbedRGA:256:293": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "start_line": 256,
+      "end_line": 293,
+      "code_lines": [
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267,
+        268,
+        269,
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276,
+        277,
+        278,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        291,
+        292,
+        293
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge2_sorted"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [
+        260
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:80:92": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+      "start_line": 80,
+      "end_line": 92,
+      "code_lines": [
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92
+      ],
+      "constants": [
+        "Sal.EmbedRGA.keyLt_total"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.SidedEmbedRGA:239:254": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "start_line": 239,
+      "end_line": 254,
+      "code_lines": [
+        239,
+        240,
+        241,
+        242,
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sMerge2"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [
+        242
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:49:78": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+      "start_line": 49,
+      "end_line": 78,
+      "code_lines": [
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78
+      ],
+      "constants": [
+        "Sal.EmbedRGA.keyLt_trans"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.SidedEmbedRGA:199:235": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "start_line": 199,
+      "end_line": 235,
+      "code_lines": [
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.ssorted_ext"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:35:47": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+      "start_line": 35,
+      "end_line": 47,
+      "code_lines": [
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "constants": [
+        "Sal.EmbedRGA.keyLt_asymm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:30:33": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+      "start_line": 30,
+      "end_line": 33,
+      "code_lines": [
+        30,
+        31,
+        32,
+        33
+      ],
+      "constants": [
+        "Sal.EmbedRGA.keyLt_irrefl"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [
+        31
+      ],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:101:112": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 101,
+      "end_line": 112,
+      "code_lines": [
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.ordered_step"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.SidedEmbedRGA:157:180": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "start_line": 157,
+      "end_line": 180,
+      "code_lines": [
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175,
+        176,
+        177,
+        178,
+        179,
+        180
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.sInsert_sorted"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs",
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:114:127": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 114,
+      "end_line": 127,
+      "code_lines": [
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.merge_cell"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:92:99": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 92,
+      "end_line": 99,
+      "code_lines": [
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.membership_step"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:82:82": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 82,
+      "end_line": 82,
+      "code_lines": [
+        82
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Sided.Kill"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided",
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:159:161": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 159,
+      "end_line": 161,
+      "code_lines": [
+        159,
+        160,
+        161
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.nativeRGA"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.nativeRGA"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGA:83:90": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGA.lean",
+      "start_line": 83,
+      "end_line": 90,
+      "code_lines": [
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.RGA.RGAM_all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.nativeRGA"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:62:64": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 62,
+      "end_line": 64,
+      "code_lines": [
+        62,
+        63,
+        64
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.NativeRGA.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.nativeRGA"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "TransferProductExpansion:56:73": {
+      "category": "instance",
+      "file": "experiments/vc-automation/TransferProductExpansion.lean",
+      "start_line": 56,
+      "end_line": 73,
+      "code_lines": [
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73
+      ],
+      "constants": [
+        "NeemExpansion.TransferProduct.NativeRGA.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.nativeRGA"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedCore:33:36": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedCore.lean",
+      "start_line": 33,
+      "end_line": 36,
+      "code_lines": [
+        33,
+        34,
+        35,
+        36
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedCore.automated_vcs"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedCore.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedCore:26:29": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedCore.lean",
+      "start_line": 26,
+      "end_line": 29,
+      "code_lines": [
+        26,
+        27,
+        28,
+        29
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedCore.input"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedCore:16:24": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedCore.lean",
+      "start_line": 16,
+      "end_line": 24,
+      "code_lines": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedCore.evidence"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedCore:45:47": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedCore.lean",
+      "start_line": 45,
+      "end_line": 47,
+      "code_lines": [
+        45,
+        46,
+        47
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedCore:38:41": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedCore.lean",
+      "start_line": 38,
+      "end_line": 41,
+      "code_lines": [
+        38,
+        39,
+        40,
+        41
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedCore.rich_input"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:175:178": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 175,
+      "end_line": 178,
+      "code_lines": [
+        175,
+        176,
+        177,
+        178
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.embedded"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:114:115": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 114,
+      "end_line": 115,
+      "code_lines": [
+        114,
+        115
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Embedded.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:136:175": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 136,
+      "end_line": 175,
+      "code_lines": [
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.kit"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:40:47": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 40,
+      "end_line": 47,
+      "code_lines": [
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.membership_step"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:27:28": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 27,
+      "end_line": 28,
+      "code_lines": [
+        27,
+        28
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.Born"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:29:29": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 29,
+      "end_line": 29,
+      "code_lines": [
+        29
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.Kill"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.EmbedRGA:154:163": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+      "start_line": 154,
+      "end_line": 163,
+      "code_lines": [
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.EmbedRGA.mem_eInsert"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:49:60": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 49,
+      "end_line": 60,
+      "code_lines": [
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.ordered_step"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.EmbedRGA:165:188": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+      "start_line": 165,
+      "end_line": 188,
+      "code_lines": [
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175,
+        176,
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:62:75": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 62,
+      "end_line": 75,
+      "code_lines": [
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.merge_cell"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.EmbedRGA:247:262": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+      "start_line": 247,
+      "end_line": 262,
+      "code_lines": [
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.EmbedRGA.mem_eMerge2"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [
+        250
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.EmbedRGA:303:317": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+      "start_line": 303,
+      "end_line": 317,
+      "code_lines": [
+        305,
+        306,
+        307,
+        308,
+        309,
+        310,
+        311,
+        312,
+        313,
+        314,
+        315,
+        316,
+        317
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.EmbedRGA.eMerge_sorted"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.EmbedRGA:264:301": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+      "start_line": 264,
+      "end_line": 301,
+      "code_lines": [
+        264,
+        265,
+        266,
+        267,
+        268,
+        269,
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276,
+        277,
+        278,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        291,
+        292,
+        293,
+        294,
+        295,
+        296,
+        297,
+        298,
+        299,
+        300,
+        301
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.EmbedRGA.eMerge2_sorted"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [
+        268
+      ],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:31:38": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 31,
+      "end_line": 38,
+      "code_lines": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.provenance_step"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.EmbedRGA:207:243": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+      "start_line": 207,
+      "end_line": 243,
+      "code_lines": [
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.EmbedRGA.esorted_ext"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:268:272": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 268,
+      "end_line": 272,
+      "code_lines": [
+        268,
+        269,
+        270,
+        271,
+        272
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.adapter"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedRGA:177:195": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedRGA.lean",
+      "start_line": 177,
+      "end_line": 195,
+      "code_lines": [
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194,
+        195
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedRGA.Embedded.issuer"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:207:250": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+      "start_line": 207,
+      "end_line": 250,
+      "code_lines": [
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250
+      ],
+      "constants": [
+        "Sal.EmbedRGA.coordOf_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex:149:156": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
+      "start_line": 149,
+      "end_line": 156,
+      "code_lines": [
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156
+      ],
+      "constants": [
+        "Sal.EmbedRGA.key_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:179:181": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 179,
+      "end_line": 181,
+      "code_lines": [
+        179,
+        180,
+        181
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.anchored_queue"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.anchored_queue"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.Code:78:99": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
+      "start_line": 78,
+      "end_line": 99,
+      "code_lines": [
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "constants": [
+        "Sal.EmbedRGA.unaryEnc_not_prefix"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.anchored_queue"
+      ],
+      "induction_syntax_lines": [
+        80
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.Code:66:76": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
+      "start_line": 66,
+      "end_line": 76,
+      "code_lines": [
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76
+      ],
+      "constants": [
+        "Sal.EmbedRGA.unaryEnc_mono"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.anchored_queue"
+      ],
+      "induction_syntax_lines": [
+        67
+      ],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:182:183": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 182,
+      "end_line": 183,
+      "code_lines": [
+        182,
+        183
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.peritext"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:274:275": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 274,
+      "end_line": 275,
+      "code_lines": [
+        274,
+        275
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:269:271": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 269,
+      "end_line": 271,
+      "code_lines": [
+        269,
+        270,
+        271
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.input"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:25:90": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 25,
+      "end_line": 90,
+      "code_lines": [
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.kit"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:13:13": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 13,
+      "end_line": 13,
+      "code_lines": [
+        13
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.insertion"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:14:14": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 14,
+      "end_line": 14,
+      "code_lines": [
+        14
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.written"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:15:15": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 15,
+      "end_line": 15,
+      "code_lines": [
+        15
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.target"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:17:23": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 17,
+      "end_line": 23,
+      "code_lines": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.provenance_step"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:264:267": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 264,
+      "end_line": 267,
+      "code_lines": [
+        264,
+        265,
+        266,
+        267
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.adapter"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:244:262": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 244,
+      "end_line": 262,
+      "code_lines": [
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.issuer"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:835:945": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 835,
+      "end_line": 945,
+      "code_lines": [
+        837,
+        838,
+        839,
+        840,
+        841,
+        842,
+        843,
+        844,
+        845,
+        846,
+        847,
+        848,
+        849,
+        850,
+        851,
+        852,
+        853,
+        854,
+        855,
+        856,
+        857,
+        858,
+        859,
+        860,
+        861,
+        862,
+        863,
+        864,
+        865,
+        866,
+        867,
+        868,
+        869,
+        870,
+        871,
+        872,
+        873,
+        874,
+        875,
+        876,
+        877,
+        878,
+        879,
+        880,
+        881,
+        882,
+        883,
+        884,
+        885,
+        886,
+        887,
+        888,
+        889,
+        890,
+        891,
+        892,
+        893,
+        894,
+        895,
+        896,
+        897,
+        898,
+        899,
+        900,
+        901,
+        902,
+        903,
+        904,
+        905,
+        906,
+        907,
+        908,
+        909,
+        910,
+        911,
+        912,
+        913,
+        914,
+        915,
+        916,
+        917,
+        918,
+        919,
+        920,
+        921,
+        922,
+        923,
+        924,
+        925,
+        926,
+        927,
+        928,
+        929,
+        930,
+        931,
+        932,
+        933,
+        934,
+        935,
+        936,
+        937,
+        938,
+        939,
+        940,
+        941,
+        942,
+        943,
+        944,
+        945
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fmCoordOf_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:136:137": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 136,
+      "end_line": 137,
+      "code_lines": [
+        136,
+        137
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fw_head_band"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:781:783": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 781,
+      "end_line": 783,
+      "code_lines": [
+        781,
+        782,
+        783
+      ],
+      "constants": [
+        "Sal.EmbedRGA.symLc_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:804:833": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 804,
+      "end_line": 833,
+      "code_lines": [
+        806,
+        807,
+        808,
+        809,
+        810,
+        811,
+        812,
+        813,
+        814,
+        816,
+        817,
+        818,
+        819,
+        820,
+        821,
+        822,
+        823,
+        824,
+        825,
+        826,
+        827,
+        828,
+        829,
+        830,
+        831,
+        832,
+        833
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fwTag_cancel"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:130:134": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 130,
+      "end_line": 134,
+      "code_lines": [
+        130,
+        131,
+        132,
+        133,
+        134
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fwTag_append"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [
+        132
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:789:802": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 789,
+      "end_line": 802,
+      "code_lines": [
+        792,
+        793,
+        794,
+        795,
+        796,
+        797,
+        798,
+        799,
+        800,
+        801,
+        802
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fw_group_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:151:153": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 151,
+      "end_line": 153,
+      "code_lines": [
+        151,
+        152,
+        153
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fw_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:101:119": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 101,
+      "end_line": 119,
+      "code_lines": [
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119
+      ],
+      "constants": [
+        "Sal.EmbedRGA.tagOK_prefixFree"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:83:99": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 83,
+      "end_line": 99,
+      "code_lines": [
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "constants": [
+        "Sal.EmbedRGA.key_body_prefixFree"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:157:174": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 157,
+      "end_line": 174,
+      "code_lines": [
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174
+      ],
+      "constants": [
+        "Sal.EmbedRGA.keyLt_first_diff"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:69:81": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 69,
+      "end_line": 81,
+      "code_lines": [
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81
+      ],
+      "constants": [
+        "Sal.EmbedRGA.tagOK_symbols_le"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:208:215": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 208,
+      "end_line": 215,
+      "code_lines": [
+        210,
+        211,
+        212,
+        213,
+        214,
+        215
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fmBlock_head_R"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:63:67": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 63,
+      "end_line": 67,
+      "code_lines": [
+        63,
+        64,
+        65,
+        66,
+        67
+      ],
+      "constants": [
+        "Sal.EmbedRGA.tagOK_head"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:785:787": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 785,
+      "end_line": 787,
+      "code_lines": [
+        785,
+        786,
+        787
+      ],
+      "constants": [
+        "Sal.EmbedRGA.compl_map_symL"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:217:222": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 217,
+      "end_line": 222,
+      "code_lines": [
+        217,
+        218,
+        219,
+        220,
+        221,
+        222
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fmBlock_head_L"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:771:773": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 771,
+      "end_line": 773,
+      "code_lines": [
+        771,
+        772,
+        773
+      ],
+      "constants": [
+        "Sal.EmbedRGA.symRc_inj"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:775:777": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 775,
+      "end_line": 777,
+      "code_lines": [
+        775,
+        776,
+        777
+      ],
+      "constants": [
+        "Sal.EmbedRGA.compl_map_symR"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:194:206": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 194,
+      "end_line": 206,
+      "code_lines": [
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fmBlock_ne_nil"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:173:242": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 173,
+      "end_line": 242,
+      "code_lines": [
+        173,
+        174,
+        175,
+        176,
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.issuanceModel"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:92:93": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 92,
+      "end_line": 93,
+      "code_lines": [
+        92,
+        93
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.ChainFacts"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMaxIssuer:174:184": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
+      "start_line": 174,
+      "end_line": 184,
+      "code_lines": [
+        174,
+        175,
+        176,
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.canIssue_delete_iff"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMaxIssuer:136:146": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
+      "start_line": 136,
+      "end_line": 146,
+      "code_lines": [
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.delete_position_finite"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMaxIssuer:161:172": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
+      "start_line": 161,
+      "end_line": 172,
+      "code_lines": [
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.canIssue_insert_iff"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMaxIssuer:124:134": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
+      "start_line": 124,
+      "end_line": 134,
+      "code_lines": [
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.insert_position_finite"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:106:171": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 106,
+      "end_line": 171,
+      "code_lines": [
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.generated_chain"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedFugue:95:104": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "start_line": 95,
+      "end_line": 104,
+      "code_lines": [
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedFugue.lookup_chain"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:463:467": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 463,
+      "end_line": 467,
+      "code_lines": [
+        463,
+        464,
+        465,
+        466,
+        467
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mChainOf_eq_of_rec"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:450:461": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 450,
+      "end_line": 461,
+      "code_lines": [
+        450,
+        451,
+        452,
+        453,
+        454,
+        455,
+        456,
+        457,
+        458,
+        459,
+        460,
+        461
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mRecOfId_of_minted"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:469:479": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 469,
+      "end_line": 479,
+      "code_lines": [
+        469,
+        470,
+        471,
+        472,
+        473,
+        474,
+        475,
+        476,
+        477,
+        478,
+        479
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mChainOf_zero"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:1174:1182": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 1174,
+      "end_line": 1182,
+      "code_lines": [
+        1174,
+        1175,
+        1176,
+        1177,
+        1178,
+        1179,
+        1180,
+        1181,
+        1182
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_someFalse"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:1165:1172": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 1165,
+      "end_line": 1172,
+      "code_lines": [
+        1165,
+        1166,
+        1167,
+        1168,
+        1169,
+        1170,
+        1171,
+        1172
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_someTrue"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:1155:1163": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 1155,
+      "end_line": 1163,
+      "code_lines": [
+        1157,
+        1158,
+        1159,
+        1160,
+        1161,
+        1162,
+        1163
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_none"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:246:248": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 246,
+      "end_line": 248,
+      "code_lines": [
+        246,
+        247,
+        248
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.succOfM_mem"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:227:244": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 227,
+      "end_line": 244,
+      "code_lines": [
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243,
+        244
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.succOfM_pair"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.Fugue:393:418": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/Fugue.lean",
+      "start_line": 393,
+      "end_line": 418,
+      "code_lines": [
+        393,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400,
+        401,
+        402,
+        403,
+        404,
+        405,
+        406,
+        407,
+        408,
+        409,
+        410,
+        411,
+        412,
+        413,
+        414,
+        415,
+        416,
+        417,
+        418
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.foldl_maxKey_mem"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [
+        397
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:220:225": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 220,
+      "end_line": 225,
+      "code_lines": [
+        220,
+        221,
+        222,
+        223,
+        224,
+        225
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.mKeys_shape"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.FugueMax:212:218": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/FugueMax.lean",
+      "start_line": 212,
+      "end_line": 218,
+      "code_lines": [
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.SidedEmbedRGA.succCandM_sub"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:267:302": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 267,
+      "end_line": 302,
+      "code_lines": [
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276,
+        277,
+        278,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        291,
+        292,
+        293,
+        294,
+        295,
+        296,
+        297,
+        298,
+        299,
+        300,
+        301,
+        302
+      ],
+      "constants": [
+        "Sal.EmbedRGA.tagOK_key"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:257:265": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 257,
+      "end_line": 265,
+      "code_lines": [
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fmCoordOf_symbols"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [
+        259
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:243:255": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 243,
+      "end_line": 255,
+      "code_lines": [
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fmBlock_symbols"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:231:241": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 231,
+      "end_line": 241,
+      "code_lines": [
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241
+      ],
+      "constants": [
+        "Sal.EmbedRGA.fwTag_symbols"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [
+        233
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:228:228": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 228,
+      "end_line": 228,
+      "code_lines": [
+        228
+      ],
+      "constants": [
+        "Sal.EmbedRGA.symL_le"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:229:229": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 229,
+      "end_line": 229,
+      "code_lines": [
+        229
+      ],
+      "constants": [
+        "Sal.EmbedRGA.symL_ne3"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:227:227": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 227,
+      "end_line": 227,
+      "code_lines": [
+        227
+      ],
+      "constants": [
+        "Sal.EmbedRGA.symR_ne3"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex:226:226": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
+      "start_line": 226,
+      "end_line": 226,
+      "code_lines": [
+        226
+      ],
+      "constants": [
+        "Sal.EmbedRGA.symR_le"
+      ],
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:162:164": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 162,
+      "end_line": 164,
+      "code_lines": [
+        162,
+        163,
+        164
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.bounded"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.bounded"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.BoundedCounter:95:103": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+      "start_line": 95,
+      "end_line": 103,
+      "code_lines": [
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.BoundedCounter.BC_all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.bounded"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.BoundedCounter:53:55": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+      "start_line": 53,
+      "end_line": 55,
+      "code_lines": [
+        53,
+        54,
+        55
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.BoundedCounter.bcUpdate_inc_fst"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.bounded"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.BoundedCounter:85:91": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+      "start_line": 85,
+      "end_line": 91,
+      "code_lines": [
+        86,
+        87,
+        88,
+        89,
+        90,
+        91
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.BoundedCounter.bcState_ext"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.bounded"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.BoundedCounter:63:65": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+      "start_line": 63,
+      "end_line": 65,
+      "code_lines": [
+        63,
+        64,
+        65
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.BoundedCounter.bcUpdate_dec_snd"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.bounded"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:69:71": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 69,
+      "end_line": 71,
+      "code_lines": [
+        69,
+        70,
+        71
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Bounded.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.bounded"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "TransferGuardedCommuting:13:30": {
+      "category": "instance",
+      "file": "experiments/vc-automation/TransferGuardedCommuting.lean",
+      "start_line": 13,
+      "end_line": 30,
+      "code_lines": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "constants": [
+        "NeemExpansion.TransferGuardedCommuting.Bounded.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.bounded"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:165:167": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 165,
+      "end_line": 167,
+      "code_lines": [
+        165,
+        166,
+        167
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.tree"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.tree"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.TreeMove:231:235": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/TreeMove.lean",
+      "start_line": 231,
+      "end_line": 235,
+      "code_lines": [
+        231,
+        232,
+        233,
+        234,
+        235
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.TreeMove.all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.tree"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.TreeMove:107:113": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/TreeMove.lean",
+      "start_line": 107,
+      "end_line": 113,
+      "code_lines": [
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.TreeMove.eventKey_injective"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.tree"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:76:78": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 76,
+      "end_line": 78,
+      "code_lines": [
+        76,
+        77,
+        78
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Tree.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.tree"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "TransferGuardedCommuting:41:47": {
+      "category": "instance",
+      "file": "experiments/vc-automation/TransferGuardedCommuting.lean",
+      "start_line": 41,
+      "end_line": 47,
+      "code_lines": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "constants": [
+        "NeemExpansion.TransferGuardedCommuting.Tree.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.tree"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:168:170": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 168,
+      "end_line": 170,
+      "code_lines": [
+        168,
+        169,
+        170
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.aegis"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.aegis"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal.MRDTs.Instances.AegisSheet:446:450": {
+      "category": "retained_helper",
+      "file": "Sal/MRDTs/Instances/AegisSheet.lean",
+      "start_line": 446,
+      "end_line": 450,
+      "code_lines": [
+        446,
+        447,
+        448,
+        449,
+        450
+      ],
+      "constants": [
+        "Sal.MRDTs.Instances.AegisSheet.all_comm"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.aegis"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:83:85": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 83,
+      "end_line": 85,
+      "code_lines": [
+        83,
+        84,
+        85
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.Aegis.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.aegis"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "TransferAegisSheet:11:18": {
+      "category": "instance",
+      "file": "experiments/vc-automation/TransferAegisSheet.lean",
+      "start_line": 11,
+      "end_line": 18,
+      "code_lines": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "constants": [
+        "NeemExpansion.TransferAegisSheet.kernels"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.aegis"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:171:172": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 171,
+      "end_line": 172,
+      "code_lines": [
+        171,
+        172
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.mvr"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.mvr"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "CommonInstances:107:108": {
+      "category": "instance",
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "start_line": 107,
+      "end_line": 108,
+      "code_lines": [
+        107,
+        108
+      ],
+      "constants": [
+        "NeemExpansion.CommonInstances.MVR.input"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.mvr"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "AutomatedMVR:14:27": {
+      "category": "instance",
+      "file": "experiments/vc-automation/AutomatedMVR.lean",
+      "start_line": 14,
+      "end_line": 27,
+      "code_lines": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "constants": [
+        "NeemExpansion.AutomatedMVR.model"
+      ],
+      "consumers": [
+        "NeemExpansion.CommonInstances.mvr"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    }
+  },
+  "commands": [
+    {
+      "file": "experiments/vc-automation/AutomatedCore.lean",
+      "line": 31,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.AutomatedCore",
+      "consumers": [
+        "NeemExpansion.AutomatedCore.automated_vcs",
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/AutomatedCore.lean",
+      "line": 43,
+      "text": "register_mrdt_input rich_input",
+      "scope": "NeemExpansion.AutomatedCore",
+      "consumers": [
+        "NeemExpansion.AutomatedCore.rich_automated_vcs"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "line": 16,
+      "text": "attribute [local policy_expansion_simps] signature LocalAssembly.ofMRDT D update merge rc",
+      "scope": "NeemExpansion.AutomatedEfficientORSet",
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/AutomatedEfficientORSet.lean",
+      "line": 159,
+      "text": "attribute [local policy_expansion_simps] EfficientORSet.EventSpec.conflict Op.op Op.rep",
+      "scope": "NeemExpansion.AutomatedEfficientORSet",
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/AutomatedFugue.lean",
+      "line": 272,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.AutomatedFugue",
+      "consumers": [
+        "NeemExpansion.AutomatedFugue.automated_vcs"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "line": 14,
+      "text": "attribute [local policy_expansion_simps] signature LocalAssembly.ofMRDT D step merge ORSet.order",
+      "scope": "NeemExpansion.AutomatedORSet",
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/AutomatedORSet.lean",
+      "line": 55,
+      "text": "attribute [local policy_expansion_simps] conflict Op.op Op.rep",
+      "scope": "NeemExpansion.AutomatedORSet",
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 24,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Add",
+      "consumers": [
+        "NeemExpansion.CommonInstances.addStore",
+        "NeemExpansion.CommonInstances.gset"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 32,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Finite",
+      "consumers": [
+        "NeemExpansion.CommonInstances.finiteAdd"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 40,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Delta",
+      "consumers": [
+        "NeemExpansion.CommonInstances.counter",
+        "NeemExpansion.CommonInstances.ioc",
+        "NeemExpansion.CommonInstances.pn"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 48,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Boolean",
+      "consumers": [
+        "NeemExpansion.CommonInstances.booleanMap",
+        "NeemExpansion.CommonInstances.booleanSet"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 52,
+      "text": "attribute [local mrdt_implementation] D update",
+      "scope": "NeemExpansion.CommonInstances.LWW",
+      "consumers": [
+        "NeemExpansion.CommonInstances.lww"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 58,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.LWW",
+      "consumers": [
+        "NeemExpansion.CommonInstances.lww"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 65,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.NativeRGA",
+      "consumers": [
+        "NeemExpansion.CommonInstances.nativeRGA"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 72,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Bounded",
+      "consumers": [
+        "NeemExpansion.CommonInstances.bounded"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 79,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Tree",
+      "consumers": [
+        "NeemExpansion.CommonInstances.tree"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 86,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Aegis",
+      "consumers": [
+        "NeemExpansion.CommonInstances.aegis"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 93,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.OrdinaryORSet",
+      "consumers": [
+        "NeemExpansion.CommonInstances.ordinaryORSet"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 103,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.EfficientORSet",
+      "consumers": [
+        "NeemExpansion.CommonInstances.efficientORSet"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 109,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.MVR",
+      "consumers": [
+        "NeemExpansion.CommonInstances.mvr"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 116,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Embedded",
+      "consumers": [
+        "NeemExpansion.CommonInstances.anchored_queue",
+        "NeemExpansion.CommonInstances.embedded",
+        "NeemExpansion.CommonInstances.peritext"
+      ]
+    },
+    {
+      "file": "experiments/vc-automation/CommonInstances.lean",
+      "line": 122,
+      "text": "register_mrdt_input input",
+      "scope": "NeemExpansion.CommonInstances.Sided",
+      "consumers": [
+        "NeemExpansion.CommonInstances.sided"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "experiments/vc-automation/CommonInstances.lean": "c595a9a473ed5debbdc49c8a6e532ec6b6d7eb248925338cab8ebfda12e13996",
+    "experiments/vc-automation/AutomatedORSet.lean": "c8e05a9fb7f018c98bfdcaefc7a1f9361b7becbcbb9f47fa612b537807a3836b",
+    "experiments/vc-automation/AutomatedEfficientORSet.lean": "840345696cb5c9b8088dc8b4a9fb753d185e5c0207618c9947d790a95068cbd5",
+    "experiments/vc-automation/TransferSimple.lean": "f97fe78ca9da7ade2dffc5b184f8b49d01d2e585aad2719123ed487005582739",
+    "Sal/MRDTs/Instances/AddStore.lean": "0e434e830301c117dd2663da71bd6f992204fb07559f7799424a2c8f801ee826",
+    "Sal/MRDTs/Instances/FinsetStore.lean": "2143a6df2b6ad4a0c7c8029cb225cabe6e9dc24535dc2c5883ea6e12bf1a8b2f",
+    "Sal/MRDTs/Instances/FlatCounters.lean": "e80d80b593273f33c6de03167698a503c8539c830f96fed9f7da7f8dd9d0433e",
+    "Sal/MRDTs/Instances/FlatGrowOnly.lean": "4ab08116e5d0eea4350e681f5df66fdfb2025bcdfeb398003b46e78e31aa4f65",
+    "Sal/MRDTs/Instances/Common.lean": "9991f820e96caf2949c723cf864b2007650b23f7c661ddd93680594fc6920c51",
+    "Sal/MRDTs/Instances/LWWRegister.lean": "dbf5ef8ea741f8c19f38360ff7db6d011f09f91c20bc607b5679ed82c9ed3a23",
+    "experiments/vc-automation/AutomatedRGA.lean": "fec6e114833bbf702e887b5bbd7f11559d1c85cec53ba58bce517acabca27f46",
+    "Sal/MRDTs/Instances/SidedEmbedRGA.lean": "72e65e82f06a4bc80f59b0b80be18ecd3e78c366b4ec38f1bd4d1e1865c4adcb",
+    "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean": "6a1899ba9002e6dfd55a379c957c420a6d9fc6bfa4fd57db6fce69d4dcf120d7",
+    "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean": "e3f16be201427f395e443cc6fa8413f00b56eb9c61fcf2d8623fcc32fb0d46ab",
+    "Sal/MRDTs/Instances/RGAKernel/Code.lean": "15d82e486743efc3b6b2cc8daa40c55a95b52974f7dcf8aeec0a24543738c6db",
+    "Sal/MRDTs/Instances/RGA.lean": "c6b1352e5ea8c8d3b0a1af7137669863a40ee0400057baafcff83c550824a811",
+    "experiments/vc-automation/TransferProductExpansion.lean": "ce4dbbe442e2e16f7abe0cdddd87fc20bd514c4b93ebb31d29898c49a1f76580",
+    "experiments/vc-automation/AutomatedCore.lean": "79f3a61f36bc238e7c9fac2f2814eed97230bd2bae314f76d774f3fcfd2ea156",
+    "Sal/MRDTs/Instances/EmbedRGA.lean": "cecd02c8445a3c1157a61dfadd34c97d4bb1c9fd20a5ff82be31f99e37ee18b4",
+    "experiments/vc-automation/AutomatedFugue.lean": "aa164baf30e3e08b88c3bc967cc3f1fa0996fdf2fbe5f78f14d0ea11335fbfa2",
+    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean": "f0347eb378e4d213b8822b0e15f33200c1d1af1c54f296a103fa297bef584d13",
+    "Sal/MRDTs/Instances/FugueMaxIssuer.lean": "2f00e80c1542ffbaeb10bd2ebdcc02eda40e078bdfe03c15b80a9cbcfdafb87f",
+    "Sal/MRDTs/Instances/FugueMax.lean": "a29542e3d35360e8950869f7170645f602ed77679ae6552c5545e6f0e42e6f97",
+    "Sal/MRDTs/Instances/Fugue.lean": "c2071799d0a759f1a693461e2ad08829890cf624d17f57073bb2753b3d2d90f7",
+    "Sal/MRDTs/Instances/BoundedCounter.lean": "2d877c0bab2c8394f3e7d372c4545386418a6854941c60a2c0ff7b9a1b5d5ee2",
+    "experiments/vc-automation/TransferGuardedCommuting.lean": "4dd40a20d5cad2cfe6bd370aa9c98b8d8acfd63e85af05702a34b528a39e4d9b",
+    "Sal/MRDTs/Instances/TreeMove.lean": "9d155160f9b81840b7f2ea460c38c47a32a552a62b2c1c65327aa5c7772271c8",
+    "Sal/MRDTs/Instances/AegisSheet.lean": "1ef6fc34ce1b75d782a2cd40d710d6815850a73987e655d389e3c48236638d95",
+    "experiments/vc-automation/TransferAegisSheet.lean": "eb5cd3a93cf0de2046aaddb586d5e042788b16d0edd641025310945a8ad078fe",
+    "experiments/vc-automation/AutomatedMVR.lean": "914ae732bf51ec6173c831fc6d165c01088a4b608a0c13850687508957ca5d5f",
+    "experiments/vc-automation/OrderedRecordAutomation.lean": "b321d58b6c21b5cc64ec0bbb16ba6b46d23e3b0186cc5444027cfe9ca9543617",
+    "experiments/vc-automation/PolicyExpansionAutomation.lean": "17a1bb4b705b069d5ac2effc399f946582baf73e88d07c7f1590b0246bf77cdd",
+    "experiments/vc-automation/CommonAlgebraAutomation.lean": "c842acb636d9dfaa0e57cd67fc2b72a8059ca0d57437bf7cd10701ae0f084db7"
+  },
+  "audit_sha256": "7d5f9bb589adbc426d61c01f832378b63e67c3f215687ad87b1e7041b19f1be0"
+}

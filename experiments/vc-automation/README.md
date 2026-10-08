@@ -1,75 +1,79 @@
 # Automating Sal’s five merge VCs
 
-**All 23 current named instances have kernel-checked five-VC proofs.** The
-finite equations close with Lean tactics (`simp`, `grind`, `tauto`, `omega`,
-`aesop`); the final proofs require no external SMT solver. Implementations,
-issuers, representations, policies and VC statements are unchanged.
+**All 23 current named instances pass the common verification interface.**
+The kernel checks the exact existing `Raw.MergeVCs` types. Implementations,
+issuers, policies, representations and specifications are unchanged.
 
 ## What does the RDT author supply?
 
-Shared induction templates and soundness proofs are framework work. The author
-supplies datatype mappings, finite-law instantiations and any required helper
-lemmas. The table reports the current local proof/annotation code, charging
-shared families once. Counts include statements and annotations, not just tactic
-bodies; they exclude RDT implementation definitions and generic framework code.
+The author supplies record/component mappings, finite laws and projections of
+existing representation or issuance evidence. A typed `Input` selects a shared
+proof template; `mrdt_verify` assembles all five VCs. Registration rejects finished
+VC proofs and direct correctness premises; the dependency audit checks hidden reuse. Generic templates derive replay, ordering, normalization
+and coverage facts; current instance declarations contain no bespoke history
+induction.
 
-| Instance | Approx. local code lines | Current author work |
-|---|---:|---|
-| Grow-only set | 10 | Commuting template, set extensionality and simplification. |
-| Add-store | 1 | Reuse the same Add-store proof as grow-only set. |
-| Finite add-store | 10 | Finite-set extensionality and simplification. |
-| Counter | 5 | Additive-counter equations and `omega`. |
-| Increment-only counter | 1 | Specialize the additive-counter proof. |
-| PN-counter | 1 | Specialize it to signed increments. |
-| Flat grow-only set | 7 | Pointwise Boolean equations. |
-| Flat grow-only map | 1 | Specialize the Boolean-store proof. |
-| Bounded Counter | 21 | Component decomposition, operation cases and `omega`. |
-| LWW register | 6 | Maximum algebra, using its existing empty-policy port. |
-| Native RGA | 21 | Component decomposition and finite membership equations. |
-| TreeMove | 10 | Commuting template and insertion/union simplification. |
-| AegisSheet | 10 | Commuting template and insertion/union simplification. |
-| Ordinary OR-set | 108 | Raw-definition annotations, operation cases and finite policy equations; the template converts its replay witness. |
-| Efficient OR-set | 218 | The same finite equation template, plus mask mappings and projections of its existing live/dead representation. |
-| MVR | 15 | Four record mappings, six finite laws and template instantiation. |
-| Embedded RGA | 113 | Ordered-record mappings, finite laws, helper references and existing honesty projections. |
-| Sided Embedded RGA | 112 | The corresponding sided-record mappings and finite laws. |
-| Peritext Embedded RGA | 3 | Specialize the Embedded RGA theorem. |
-| Queue (anchored enqueue) | 4 | Specialize the Embedded RGA theorem. |
-| Sided Peritext Core | 209 | Text projection, store membership and component normalization; reuses the earlier Sided RGA adapter. |
-| Sided Peritext RichCore | 11 | Reuse Core and adapt context fields. |
-| FugueMax | 548 | Record/list adapters, generator lemmas and an issuance timestamp induction. |
+The following source-line counts include complete declaration statements,
+annotations and proof bodies. “Instance” also includes input registration and
+local definition annotations. “Retained helpers” charges the transitive closure
+of source-written datatype theorem helpers, including coordinate and ordering
+libraries. Existing implementation definitions and generic framework proofs are
+excluded. A specialization includes the family work it consumes.
 
-These are current code-size estimates, not unavoidable human effort. One-line
-reuse rows assume the parent proof exists. The
-[declaration inventory](results/proof-effort.json) records source locations,
-hashes and dependency totals; shared dependency totals must not be summed.
-Core and Fugue retain their existing expansion routes.
+| Instance | Instance lines | Retained helper lines |
+|---|---:|---:|
+| Ordinary OR-set | 107 | 0 |
+| Efficient OR-set | 221 | 0 |
+| Grow-only set | 14 | 6 |
+| Add-store | 14 | 6 |
+| Finite add-store | 14 | 6 |
+| Counter | 9 | 8 |
+| Increment-only counter | 9 | 8 |
+| PN-counter | 9 | 8 |
+| Flat grow-only set | 10 | 7 |
+| Flat grow-only map | 10 | 7 |
+| LWW register | 10 | 4 |
+| Sided Embedded RGA | 113 | 297 |
+| Native RGA | 25 | 10 |
+| Sided Peritext Core | 121 | 297 |
+| Sided Peritext RichCore | 125 | 297 |
+| Embedded RGA | 116 | 250 |
+| Queue (anchored enqueue) | 115 | 283 |
+| Peritext Embedded RGA | 114 | 250 |
+| FugueMax | 253 | 700 |
+| Bounded Counter | 25 | 21 |
+| TreeMove | 14 | 12 |
+| AegisSheet | 14 | 5 |
+| MVR | 18 | 0 |
 
-Both OR-sets, MVR and both RGAs use shared templates; their instance files
-contain no history induction. Queue and Peritext reuse the Embedded RGA template. Lean selects
-registered RGA membership, ordering and equality helpers automatically. For both
-OR-sets, a shared tactic unfolds registered raw definitions, converts equation
-assumptions to membership formulas, and solves the finite cases with `simp` and
-`grind`. Operation cases and frozen-state choices remain explicit.
+**Do not sum the rows:** family declarations and helpers recur under each
+consumer. Across the campaign, deduplicating source file/line pairs gives
+**984 instance declaration lines, 22 instance annotation/registration lines,
+and 1,077 retained helper lines**. The shared finite-helper registries contribute
+another **11 annotation lines**, recorded separately. Framework proof and tactic
+implementation code is not included in these author-side totals.
 
-The local-code counts exclude existing helper-library proofs: Embedded RGA
-uses another **135 lines**, and Sided RGA **143 lines**. Each registers five
-helper names; eight lines of identifier reasoning and 14 lines of registry/tactic
-declarations are shared. If the helpers are unavailable, the RDT author must supply them.
-Neither OR-set route uses an existing datatype theorem helper. Their shared
-finite registry/tactic adds **11 declaration lines**; policy assembly adds **49**,
-and the efficient representation’s mask template adds **64**. These framework
-costs are separate from the per-instance rows and reuse the generic coverage
-library. The [helper inventory](results/template-effort.json) records these costs.
+These are reproducible source footprints, not estimates of human time or proof
+difficulty. The [current effort inventory](results/common-effort.json) records
+all declaration ranges, consumers, registration commands and source hashes.
+Ranges come from Lean’s transitive dependency audit, rather than selected helper
+names. Comment-stripped instance ranges contain no `induction` or explicit
+recursor syntax; this diagnostic complements the dependency audit and manual
+review, and does not by itself certify the meaning of every helper.
 
-Mappings, finite-case setup and projections of existing certification evidence
-remain explicit. The templates do not automatically establish issuer honesty
-for a new RDT. The audit excludes the old datatype history adapters from these
-seven template-based proofs.
+Lean selects registered maximum algebra for LWW and raw RGA membership, ordering and equality helpers from
+the finite goals. OR-set finite tactics unfold registered raw definitions and
+solve membership equations with `simp` and `grind`. Mappings, constructor cases,
+fresh-ID setup and projections of existing certification evidence remain
+explicit. Templates do not establish issuer honesty automatically for a new RDT.
+Core/RichCore use generic ordered-text/product and query-lift inputs. Fugue uses
+generic archived-record and certified-issuance templates; its chain-validity
+annotation and finite generator-preservation proofs remain supplied author work.
 
 ## Scope and reproduction
 
-The 23 cases include aliases and specializations. Core/RichCore retain their
+The 23 cases include aliases and specializations. LWW retains its existing
+empty-policy port. Core/RichCore retain their
 native-insert-only premise. Queue means anchored enqueue; the earlier unanchored
 queue is historical and excluded. Five VCs feed the checked Join theorem, but
 full RA-linearizability additionally needs the sequential bridge. Fugue’s
@@ -79,11 +83,21 @@ is deferred; production bundles still use their existing proofs.
 From the repository root, with production dependencies built:
 
 ```sh
-python3 experiments/vc-automation/verify_expansion.py --automated
-python3 experiments/vc-automation/measure_template_effort.py
+python3 experiments/vc-automation/verify_expansion.py --common
+python3 experiments/vc-automation/measure_common_effort.py
+python3 experiments/vc-automation/measure_helper_sources.py
 ```
 
-This rebuilds all 23 cases, selecting the reusable templates for both OR-sets, MVR,
-Embedded RGA, Sided RGA, Queue and Peritext. The [combined audit](results/automated-audit.json)
-records source hashes, standard Lean axioms and transitive dependencies. The
-[scope inventory](transfer-inventory.json) identifies each theorem.
+The verifier rebuilds all 23 common roots, compares their complete VC types and
+audits transitive proof dependencies against forbidden datatype correctness and
+history adapters. The [combined audit](results/common-audit.json) records source
+hashes, standard Lean axioms, dependencies and declaration locations. The
+[scope inventory](transfer-inventory.json) identifies the unchanged targets.
+
+Use `register_mrdt_input input` after defining a finite `CommonVerification.Input`,
+then finish the unchanged VC theorem with `by mrdt_verify`. For a partial input,
+`mrdt_obligations` exposes the remaining typed fields. The checked
+[controls](CommonVerificationControls.lean) demonstrate missing-input and missing
+`Shared` diagnostics, reject completed correctness registrations, and show that
+false finite equations remain unproved. The common verification command also
+runs the positive/negative full-contract comparison controls.

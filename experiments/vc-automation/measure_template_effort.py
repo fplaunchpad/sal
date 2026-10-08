@@ -85,6 +85,9 @@ def helper_declarations(file, dependencies):
 
 
 audit = json.loads((HERE / 'results/automated-audit.json').read_text())
+assert {'NeemExpansion.AutomatedORSet.automated_vcs',
+        'NeemExpansion.AutomatedEfficientORSet.automated_vcs'} <= set(audit['theorems']), \
+    'Run verify_expansion.py --automated for the current OR-set routes first.'
 deps = set(audit['dependencies'])
 rga = namespace_counts('AutomatedRGA.lean')
 helpers = {
