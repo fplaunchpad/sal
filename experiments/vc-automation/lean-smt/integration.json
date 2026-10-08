@@ -1,0 +1,8 @@
+{
+  "plugin": ".lake/packages/cvc5/.lake/build/lib/libcvc5_cvc5.dylib",
+  "tactic": "smt (timeout := some 20) [*]",
+  "trust": false,
+  "smt_rev": "f58d19d5d0803fcccb5ccb1b4473774dd2ae9f9a",
+  "cvc5_ffi_rev": "ef0efbf437ae79124c65557c13aa5bfcee948f80",
+  "cvc5_version": "1.3.2"
+}

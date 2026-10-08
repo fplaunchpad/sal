@@ -1,0 +1,46 @@
+ProbeDropInstance.lean:12:35: warning: unused variable `P`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+ProbeDropInstance.lean:16:29: warning: unused variable `P`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+fun v =>
+  have this := v.merge_comm;
+  this : MergeVCs P R scheme → merge_comm_goal P R scheme
+fun v =>
+  have this := v.init;
+  this : MergeVCs P R scheme → init_goal P R scheme
+fun v =>
+  have this := v.causal_delta;
+  this : MergeVCs P R scheme → causal_delta_goal P R scheme
+fun v =>
+  have this := v.local_redistribute;
+  this : MergeVCs P R scheme → local_redistribute_goal P R scheme
+fun v =>
+  have this := v.shared;
+  this : MergeVCs P R scheme → shared_goal P R scheme
+ProbeDropInstance.lean:108:2: error: Tactic `clear` failed: variable 'C✝' depends on 'inst✝'
+
+α : Type
+inst✝ : DecidableEq α
+C✝ : Sal.MRDTs.Foundation.ReplayContext (Sal.MRDTs.Paper1.ORSet.D α).toUpdateSig
+E₁✝ E₂✝ : Set (Sal.MRDTs.Foundation.Op (Sal.MRDTs.Paper1.ORSet.D α).AppOp)
+l✝ a✝⁷ b✝ : (Sal.MRDTs.Paper1.ORSet.D α).State
+a✝⁶ : Sal.MRDTs.Paper1.ConcreteMRDT.Supported C✝ E₁✝
+a✝⁵ : Sal.MRDTs.Paper1.ConcreteMRDT.Supported C✝ E₂✝
+a✝⁴ : (Sal.MRDTs.Paper1.ORSet.RawReplay.scheme C✝).Closed E₁✝
+a✝³ : (Sal.MRDTs.Paper1.ORSet.RawReplay.scheme C✝).Closed E₂✝
+a✝² : Sal.MRDTs.Paper1.ORSet.RawReplay.representation C✝ (E₁✝ ∩ E₂✝) l✝
+a✝¹ : Sal.MRDTs.Paper1.ORSet.RawReplay.representation C✝ E₁✝ a✝⁷
+a✝ : Sal.MRDTs.Paper1.ORSet.RawReplay.representation C✝ E₂✝ b✝
+⊢ (Sal.MRDTs.Paper1.ORSet.D α).merge l✝ a✝⁷ b✝ = (Sal.MRDTs.Paper1.ORSet.D α).merge l✝ b✝ a✝⁷
+VC_AXIOMS [propext, Quot.sound, Classical.choice, sorryAx]
+VC_DEP Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.ofConcrete._proof_2
+VC_DEP Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.ofConcrete._proof_1
+VC_DEP Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_2
+VC_DEP Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_5
+VC_DEP Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_6
+VC_DEP Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_3
+VC_DEP Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_4
+VC_DEP Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_1
+VC_AUDIT_COMPLETE

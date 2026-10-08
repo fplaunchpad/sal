@@ -27,6 +27,14 @@ VC route; Embedded RGA uses that merge route with certified representation and
 an exact selected-history bridge. A [reviewable manuscript patch](docs/paper1-manuscript-reconciliation.patch)
 provides the corresponding revisions against Overleaf `0450d48`.
 
+An isolated [five-VC automation experiment](experiments/vc-automation/README.md)
+compares native Lean tactics, Lean-auto/Duper, lean-smt/cvc5 and Z3-based routes
+on unchanged exact/efficient OR-set and Embedded RGA obligations. It separates
+solver verdicts from kernel-checked proofs, records explicit preprocessing and
+helper premises, and preserves the production proof bundles. Its reusable
+native normalization closes the commutativity, initialization and shared-event
+VCs for both OR-sets without external solver dependencies.
+
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay
 in `GuardedConvergence`, `GuardedOrder`, and `ConcreteReplay`, and the full-event

@@ -1,0 +1,3 @@
+✅ Valid
+experiments/vc-automation/lean-auto/ControlBlaster.lean:3:8: warning: declaration uses `sorry`
+'blasterTrueControl' depends on axioms: [sorryAx]

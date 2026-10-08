@@ -6,6 +6,32 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: automate the five merge VCs
+
+- [x] Freeze unchanged exact/efficient OR-set and Embedded RGA VC statements,
+  controlled premise tiers, resource limits and positive/negative controls.
+- [x] Compare simp/grind, Lean-auto+Duper, lean-smt+cvc5, Blaster+Z3 and
+  Lean-auto SMT backends; separate solver success from kernel-checked proofs.
+- [x] Record per-obligation timings, assistance, failure stage and dependencies;
+  test transfer from the ten OR-set obligations to Embedded RGA.
+- [x] Publish reproducible experiments and an evidence-based recommendation;
+  integrate checked proofs where practical without weakening production claims.
+
+Research question: can the existing five VCs be discharged from definitions
+and stated premises, or with reusable generic lemmas? Failure within the fixed
+budget or a need for datatype-specific helpers refutes that level of automation
+for that case, not the VC. The formal oracle is the unchanged Lean proposition,
+its resulting proof dependencies and solver logs. Source statements and known
+true/false controls validate the benchmark. Invariant discovery and sequential
+bridge automation are outside this experiment.
+
+Measured outcome: 324 controlled attempts; generic normalization gives checked
+proofs for six of ten OR-set VCs. The other four and the five Embedded RGA VCs
+remain unsolved by the tested configurations. A reusable native tactic and all
+logs/pins are retained in [the experiment](experiments/vc-automation/README.md).
+The next research step is representation-to-membership normalization, rather
+than invariant discovery or a claim of complete five-VC automation.
+
 ### Checked: audit the manuscript's complete correctness claim
 
 - [x] Fetch the current Overleaf source and identify the included claims and case studies.

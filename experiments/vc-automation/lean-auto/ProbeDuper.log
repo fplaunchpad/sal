@@ -1,0 +1,22 @@
+ProbeDuper.lean:14:35: warning: unused variable `P`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+ProbeDuper.lean:18:29: warning: unused variable `P`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+fun v =>
+  have this := v.merge_comm;
+  this : MergeVCs P R scheme → merge_comm_goal P R scheme
+fun v =>
+  have this := v.init;
+  this : MergeVCs P R scheme → init_goal P R scheme
+fun v =>
+  have this := v.causal_delta;
+  this : MergeVCs P R scheme → causal_delta_goal P R scheme
+fun v =>
+  have this := v.local_redistribute;
+  this : MergeVCs P R scheme → local_redistribute_goal P R scheme
+fun v =>
+  have this := v.shared;
+  this : MergeVCs P R scheme → shared_goal P R scheme
+'probe' depends on axioms: [propext, Classical.choice, Quot.sound]

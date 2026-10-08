@@ -1,0 +1,17 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "sal_commit": "ebf0a30981afec34ede3a02b47ea06b1077adfa5",
+  "lean": "Lean (version 4.28.0, arm64-apple-darwin24.6.0, commit 7e01a1bf5c70fc6167d49c345d3bf80596e9a79b, Release)",
+  "z3": "Z3 version 4.16.0 - 64 bit",
+  "protocol": "30s process, 20s solver, 1000000 heartbeats; sequential final trials",
+  "date": "2026-10-08",
+  "run.py_sha256": "90dbd695754d209831b63bc012261a6fc200c37dac8880f623ef26ef93c0dbc2",
+  "Cases.lean_sha256": "f0b2146f5d3fa013bf6f09eca8424ea4dea824938946d07f85a85ad96d75ac71",
+  "Audit.lean_sha256": "70f5a83f5f3cb1c8a81641cbf2c29b9ebce67047e31b6928826393ea9ded6c6b",
+  "premises.json_sha256": "70bd67fa2d60f08492bbd7c67eabb9af18d1dbfaa6b6f0d1fa2b3d2feaf9b85c",
+  "lean-auto/lake-manifest.json_sha256": "12239eefe02f6d3a48448f314f86602a1a38b41401dff525985ecbc669263ba2",
+  "lean-smt/lake-manifest.json_sha256": "74af830ceec6778b95fa6982eebbd650c14c9598982ef2645e2f9152ef0fee8f",
+  "note": "Adapter/tier refinement history is recorded by per-trial generated sources; campaign initial helpers quantify over types, refined helper applications specialize them.",
+  "hash_scope": "Final replay harness. Per-trial sources in archives are authoritative for each measured invocation; original matrix uses polymorphic helpers, refinement specializes them."
+}

@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "name": "exact.merge_comm",
+      "goal": "VCAutomation.Exact.merge_comm",
+      "generic_goal": "VCAutomation.merge_comm_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "exact.init",
+      "goal": "VCAutomation.Exact.init",
+      "generic_goal": "VCAutomation.init_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "exact.causal_delta",
+      "goal": "VCAutomation.Exact.causal_delta",
+      "generic_goal": "VCAutomation.causal_delta_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "exact.local_redistribute",
+      "goal": "VCAutomation.Exact.local_redistribute",
+      "generic_goal": "VCAutomation.local_redistribute_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "exact.shared",
+      "goal": "VCAutomation.Exact.shared",
+      "generic_goal": "VCAutomation.shared_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "efficient.merge_comm",
+      "goal": "VCAutomation.Efficient.merge_comm",
+      "generic_goal": "VCAutomation.merge_comm_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "efficient.init",
+      "goal": "VCAutomation.Efficient.init",
+      "generic_goal": "VCAutomation.init_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "efficient.causal_delta",
+      "goal": "VCAutomation.Efficient.causal_delta",
+      "generic_goal": "VCAutomation.causal_delta_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "efficient.local_redistribute",
+      "goal": "VCAutomation.Efficient.local_redistribute",
+      "generic_goal": "VCAutomation.local_redistribute_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "efficient.shared",
+      "goal": "VCAutomation.Efficient.shared",
+      "generic_goal": "VCAutomation.shared_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1"
+      ]
+    },
+    {
+      "name": "embedded.merge_comm",
+      "goal": "VCAutomation.Embedded.merge_comm",
+      "generic_goal": "VCAutomation.merge_comm_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1",
+        "Inhabited \u03b1",
+        "\u0393 : OrderedPrefixCode"
+      ]
+    },
+    {
+      "name": "embedded.init",
+      "goal": "VCAutomation.Embedded.init",
+      "generic_goal": "VCAutomation.init_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1",
+        "Inhabited \u03b1",
+        "\u0393 : OrderedPrefixCode"
+      ]
+    },
+    {
+      "name": "embedded.causal_delta",
+      "goal": "VCAutomation.Embedded.causal_delta",
+      "generic_goal": "VCAutomation.causal_delta_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1",
+        "Inhabited \u03b1",
+        "\u0393 : OrderedPrefixCode"
+      ]
+    },
+    {
+      "name": "embedded.local_redistribute",
+      "goal": "VCAutomation.Embedded.local_redistribute",
+      "generic_goal": "VCAutomation.local_redistribute_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1",
+        "Inhabited \u03b1",
+        "\u0393 : OrderedPrefixCode"
+      ]
+    },
+    {
+      "name": "embedded.shared",
+      "goal": "VCAutomation.Embedded.shared",
+      "generic_goal": "VCAutomation.shared_goal",
+      "parameters": [
+        "\u03b1",
+        "DecidableEq \u03b1",
+        "Inhabited \u03b1",
+        "\u0393 : OrderedPrefixCode"
+      ]
+    }
+  ],
+  "tiers": {
+    "definitions": {
+      "theorem_hints": [],
+      "description": "Only definitions/projections, local hypotheses and logic; controlled tactics must avoid global theorem databases."
+    },
+    "generic": {
+      "description": "Actual common preprocessing uses only actually_applied_orset; other listed library lemmas are candidates, not silently supplied. Embedded unfolds E only.",
+      "candidate_library_lemmas": [
+        "Finset.ext",
+        "Finset.mem_union",
+        "Finset.mem_inter",
+        "Finset.mem_sdiff",
+        "Finset.mem_filter",
+        "Finset.mem_insert",
+        "Finset.notMem_empty",
+        "List.mem_toFinset",
+        "List.mem_cons",
+        "List.mem_append",
+        "Set.mem_union",
+        "Set.mem_inter_iff",
+        "Set.mem_diff",
+        "Set.mem_singleton_iff"
+      ],
+      "actually_applied_orset": [
+        "Finset.ext",
+        "Finset.mem_union",
+        "Finset.mem_inter",
+        "Finset.mem_sdiff",
+        "Finset.notMem_empty"
+      ],
+      "actually_applied_embedded": []
+    },
+    "helpers": {
+      "additional_imports": [
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra"
+      ],
+      "additional_theorem_hints": [
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.provenance",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.compatible",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_membership",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_toFinset",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.sorted",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.keys_compatible",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_sorted",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.fresh_id",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.recordStep_mem",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.update_toFinset",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.membership",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.killed_covered",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.fresh_born",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.eq_of_toFinset",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.common_record",
+        "Sal.MRDTs.Paper1.ORSet.mem_run_iff_live",
+        "Sal.MRDTs.Paper1.ORSet.live_iff_fixed_add",
+        "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.kills_noncomm",
+        "Sal.MRDTs.Paper1.EfficientORSet.RawReplay.raw_noncomm_kills"
+      ],
+      "description": "Representation/membership/provenance/sortedness helpers, no final causal/local/shared equations.",
+      "helper_application": {
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.provenance": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.provenance \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.compatible": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.compatible \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_membership": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_membership \u03b1 inferInstance inferInstance",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_toFinset": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_toFinset \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.sorted": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.sorted \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.keys_compatible": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.keys_compatible \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_sorted": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.merge_sorted \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.fresh_id": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.fresh_id \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.recordStep_mem": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.recordStep_mem \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.update_toFinset": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.update_toFinset \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.membership": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.membership \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.killed_covered": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.killed_covered \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.fresh_born": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.fresh_born \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.eq_of_toFinset": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.eq_of_toFinset \u03b1 inferInstance inferInstance",
+        "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.common_record": "@Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.common_record \u03b1 inferInstance inferInstance \u0393",
+        "Sal.MRDTs.Paper1.ORSet.mem_run_iff_live": "@Sal.MRDTs.Paper1.ORSet.mem_run_iff_live \u03b1 inferInstance",
+        "Sal.MRDTs.Paper1.ORSet.live_iff_fixed_add": "@Sal.MRDTs.Paper1.ORSet.live_iff_fixed_add \u03b1 inferInstance",
+        "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.kills_noncomm": "@Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.kills_noncomm \u03b1 inferInstance",
+        "Sal.MRDTs.Paper1.EfficientORSet.RawReplay.raw_noncomm_kills": "@Sal.MRDTs.Paper1.EfficientORSet.RawReplay.raw_noncomm_kills \u03b1 inferInstance"
+      }
+    }
+  },
+  "explicitly_forbidden": [
+    "Sal.MRDTs.Paper1.ORSet.ConcreteRep.causal_replay_eq",
+    "Sal.MRDTs.Paper1.ORSet.ConcreteRep.local_replay_eq",
+    "Sal.MRDTs.Paper1.ORSet.ConcreteRep.shared_replay_eq",
+    "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.causal_replay_eq",
+    "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.local_replay_eq",
+    "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.shared_replay_eq",
+    "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.merge_update_eq",
+    "Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra.Embedded.finite_causal",
+    "Sal.MRDTs.Paper1.SetMergeAlgebra.local_redistribute",
+    "Sal.MRDTs.Paper1.GuardedEqualityVC.causal_add_eq",
+    "Sal.MRDTs.Paper1.GuardedEqualityVC.local_add_eq"
+  ],
+  "forbidden_categories": [
+    "Any mergeVCs bundle or projection instantiated with an existing bundle",
+    "Any representationJoin/Join theorem",
+    "Any solved VC or datatype theorem with the same final merge equation",
+    "Any benchmark proof from previous runs"
+  ],
+  "audit": "Cases.lean TypeAudit has five #check casts from arbitrary bundle fields; no concrete bundle proof is referenced."
+}

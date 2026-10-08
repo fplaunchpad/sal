@@ -1,0 +1,23 @@
+[
+  {
+    "source": "Controls.lean",
+    "returncode": 0,
+    "expected_returncode": 0,
+    "wall_seconds": 1.554,
+    "matched": true
+  },
+  {
+    "source": "FalseControl.lean",
+    "returncode": 1,
+    "expected_returncode": 1,
+    "wall_seconds": 1.659,
+    "matched": true
+  },
+  {
+    "source": "ControlMissingPremise.lean",
+    "returncode": 1,
+    "expected_returncode": 1,
+    "wall_seconds": 1.491,
+    "matched": true
+  }
+]
