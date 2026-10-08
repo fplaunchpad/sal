@@ -38,7 +38,7 @@ That matrix tested unexpanded obligations. The follow-up now proves **all five
 unchanged VCs for both OR-sets** through equation-based history induction and
 new finite kernels. An independent rebuild and dependency audit found no reused
 VC, Join or datatype state/history invariant proofs. Native Lean checked all
-72 benchmarked finite obligations; deriving the expansion and its coverage
+30 benchmarked Sal local/causal equations; deriving the expansion and its coverage
 remains manual. Production certificates are unchanged; issuance-certified
 RGA/queue automation is still deferred.
 
