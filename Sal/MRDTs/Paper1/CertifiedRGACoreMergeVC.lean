@@ -15,8 +15,8 @@ theorem merge_sorted (Γ : OrderedPrefixCode) (C : ReplayContext (Core Γ).toUpd
   CertifiedRGAVCAlgebra.Sided.merge_sorted Γ _ _ _ _ _ _
     (represented_text Γ C A a ha) (represented_text Γ C B b hb)
 
-theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
-    (model Γ) (policy Γ) (representation Γ) (scheme Γ) := by
+theorem mergeVCs (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.MergeVCs
+    (policy Γ) (representation Γ) (scheme Γ) := by
   refine ⟨?_,?_,?_,?_,?_⟩
   · intro C E₁ E₂ l a b _ _ _ _ hl ha hb
     apply eq_of_normalize Γ _ _ (merge_sorted Γ C _ _ l a b ha hb)
@@ -64,8 +64,8 @@ theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
       normalize_merge Γ C _ _ _ t₀ t₁ t₂ h₀ h₁ h₂ (fun _ h => ⟨h.1.1,h.2⟩) (fun _ h => ⟨h.1.2,h.2⟩)]
     simp [unite,Finset.union_assoc,Finset.union_left_comm,Finset.union_comm]
 
-theorem representationJoin (Γ : OrderedPrefixCode) : AbstractMRDT.RepresentationJoin (representation Γ) := by
-  apply AbstractMRDT.Raw.representationJoin_of_vcs (mergeVCs Γ) (unique Γ) (initial Γ) (finite Γ)
+theorem representationJoin (Γ : OrderedPrefixCode) : ConcreteMRDT.RepresentationJoin (representation Γ) := by
+  apply ConcreteMRDT.Raw.representationJoin_of_vcs (mergeVCs Γ) (unique Γ) (initial Γ) (finite Γ)
   intro C E₁ E₂ a b trans irr _ _ ha _
   exact replaySupply Γ C ha.1 ha.2.1 trans irr
 

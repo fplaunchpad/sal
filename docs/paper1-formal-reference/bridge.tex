@@ -10,10 +10,8 @@ theorem, distinguishes its literal RA criterion from the criterion retaining
 specification conflicts, and gives an additional route for guarded operations.
 Write $\pi(\sigma_0)$ for the merge-free fold of $\doop$ along $\pi$,
 $\F{ops}_f(\pi)$ for its projected update labels, and $\loOn{E}$
-for the raw implementation order of Definition~\ref{def:order}. In the scoped
-extension below, $L_{C,E}$ denotes a separately fixed replay order: the raw
-$\loOn{E}$ or the invariant order $\F{lo}^{C,I}_E$. Any uniqueness premise
-must be established for that particular order.
+for the raw implementation order of Definition~\ref{def:order}. The scoped bridge below also uses this raw order. Ports using the invariant
+order $\F{lo}^{C,I}_E$ instead supply their own exact history witnesses.
 
 \begin{example}[A convergent implementation which is not a set]
 \label{ex:broken-set}
@@ -137,7 +135,7 @@ full-event fold premise. Erasing event metadata is an explicit specification
 choice, rather than a consequence of the bridge.
 % CommutationBridge.lean: CommutationCompatibility;
 % projectedSpecVisibility_sub_paperOrder; specificationRA_of_fiveVCs_compatible.
-% GuardedHistoryBridge.lean: of_canonical; ScopedCertificate.ofTotal.
+% ConcreteHistoryBridge.lean: of_canonical; ScopedCertificate.ofTotal.
 
 \subsection{Choosing a permitted history within a certified execution}
 
@@ -149,13 +147,13 @@ A second route proves existence of a suitable history on the supported,
 causally closed event sets of certified executions.
 
 \begin{definition}[Execution-scoped history adequacy]\label{def:history-adequacy}
-Fix an issuance discipline $G$, an implementation order $L$, and an independent
+Fix an issuance discipline $G$, the raw implementation order $\loOn{E}$, and an independent
 full-event language $\Spec$; take $f=\mathrm{id}$. They satisfy execution-scoped history adequacy when, for every
 $G$-certified configuration $C$, every stored version $(s,E)$ and every query $q$,
 there is a word $\pi$ such that
 \begin{align*}
  &\pi\text{ enumerates }E\text{ exactly once},\\
- &\pi\text{ respects }L_{C,E}\text{ and }\operatorname{sv}^{f,\Spec}_C,\\
+ &\pi\text{ respects }\loOn{E}\text{ and }\operatorname{sv}^{f,\Spec}_C,\\
  &\F{ops}_f(\pi)\cdot
    [q\Rightarrow\F{query}(\pi(\sigma_0),q)]\in\Spec.
 \end{align*}
@@ -163,24 +161,24 @@ The quantifier order is $\forall q\,\exists\pi$. The accepted answer describes t
 merge-free fold, rather than the stored state $s$. Both order obligations and
 language admission use the same $\pi$.
 \end{definition}
-% ScopedHistoryBridge.lean: AbstractMRDT.ExecutionHistoryAdequacy.
+% ConcreteHistoryBridge.lean: ConcreteMRDT.ExecutionHistoryAdequacy.
 % RALinearizability.lean: HistoryAdequate; IssuedHistoryAdequacy (literal variant).
 % SpecificationVisibility.lean: IssuedSpecificationHistoryAdequacy.
 
 \begin{theorem}[Representation and history bridge]\label{thm:history-bridge}
-Fix the datatype, issuance discipline, independent language, and chosen
+Fix the datatype, issuance discipline, independent language, and raw
 implementation replay order. Define exact concrete canonicality by
 \[
  \operatorname{Can}_{C,E}(s)\quad\Longleftrightarrow\quad
  \exists\pi.\ \pi\text{ enumerates }E\ \land\
- \pi\text{ respects }L_{C,E}\ \land\ \pi(\sigma_0)=s.
+ \pi\text{ respects }\loOn{E}\ \land\ \pi(\sigma_0)=s.
 \]
 This is an additional history-selection route, rather than a replacement for
 the manuscript's unrestricted lifting premise. The concrete specialization
 of the checked bridge has these assumptions:
 \begin{enumerate}[nosep]
- \item the chosen replay order has a proved uniqueness property: any two
-       exact canonical states for the same supported event set agree on all queries;
+ \item the raw replay order has a proved uniqueness property: any two
+       exact canonical states for the same supported event set are equal;
  \item every stored event set of the certified execution is supported, and its
        stored state is canonical for that set;
  \item execution-scoped history adequacy of
@@ -194,16 +192,16 @@ established at every configuration of a finite certified execution, the result
 holds throughout that execution, including executions with recursively
 synthesized virtual merge bases.
 \end{theorem}
-% ScopedHistoryBridge.lean: AbstractMRDT.versions_of_scoped_history;
+% ConcreteHistoryBridge.lean: ConcreteMRDT.versions_of_scoped_history;
 % ScopedVCConditions.versionsV; ScopedVCConditions.executions;
 % ScopedVCConditions.executionsV.
-% GuardedHistoryBridge.lean: Guarded.versions_of_scoped_history;
-% Guarded.ScopedCertificate.versions; Guarded.ScopedCertificate.executionsV.
+% ConcreteHistoryBridge.lean: ConcreteMRDT.versions_of_scoped_history;
+% ConcreteMRDT.ScopedCertificate.versions; Guarded.ScopedCertificate.executionsV.
 
 \noindent\emph{Proof.}
 Adequacy supplies a word $\pi$ whose fold is canonical by its permutation and
-order properties. Replay uniqueness identifies the queries of that fold and
-the separately canonical stored state. Substitute this query equality in the
+order properties. Replay uniqueness identifies that fold with
+the separately canonical stored state. Substitute this state equality in the
 accepted history. Its word, permutation and two order properties do not change.
 Apply the argument at each visited configuration for the execution claim.
 The stored-state premise is where the merge argument enters; history adequacy

@@ -1,5 +1,6 @@
 import Sal.MRDTs.Instances.MVRLiveContract
 import Sal.MRDTs.Paper1.GuardedQueueMVR
+import Sal.MRDTs.Paper1.EventBridge
 
 /-! Eligibility is membership in a genuinely certified configuration. Compact
 MVR's carried overwrite targets then have visible births; concurrent eligible

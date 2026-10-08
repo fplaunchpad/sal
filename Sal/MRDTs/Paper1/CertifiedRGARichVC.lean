@@ -5,20 +5,19 @@ VC equations and metadata supply remain the operational Core proof. -/
 namespace Sal.MRDTs.Paper1.CertifiedRGARichVC
 open Foundation Sal.EmbedRGA Instances.SidedPeritext
 noncomputable section
-abbrev representation (Γ : OrderedPrefixCode) : AbstractMRDT.Representation (RichCore Γ) :=
+abbrev representation (Γ : OrderedPrefixCode) : ConcreteMRDT.Representation (RichCore Γ) :=
   CertifiedRGACoreVC.representation Γ
 
-def model (Γ : OrderedPrefixCode) : AbstractMRDT.Model (RichCore Γ) := Raw.model (RichCore Γ)
 def policy (Γ : OrderedPrefixCode) : OperationPolicy (RichCore Γ).AppOp := CertifiedRGACoreVC.policy Γ
 
 def scheme (Γ : OrderedPrefixCode) (C : ReplayContext (RichCore Γ).toUpdateSig) :
-    AbstractMRDT.MetadataDependencies (model Γ) C where
+    ConcreteMRDT.MetadataDependencies C where
   before := C.vis
   causal _ _ h := h
   covers _ _ h _ := h
 
-theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
-    (model Γ) (policy Γ) (representation Γ) (scheme Γ) := by
+theorem mergeVCs (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.MergeVCs
+    (policy Γ) (representation Γ) (scheme Γ) := by
   have h := CertifiedRGACoreMergeVC.mergeVCs Γ
   refine ⟨h.merge_comm,h.init,h.causal_delta,?_,?_⟩
   · intro C E₁ E₂ l B t b e ctx
@@ -32,7 +31,7 @@ theorem replaySupply (Γ : OrderedPrefixCode) (C : ReplayContext (RichCore Γ).t
     (honest : Instances.SidedEmbedRGA.SHonestCore Γ (projReplayContext₁ C))
     (native : CertifiedRGACoreVC.NativeInsertOnly Γ C) (trans : Transitive C.vis)
     (irr : ∀e, ¬C.vis e e) :
-    AbstractMRDT.Raw.ReplaySupply (model Γ) (policy Γ) (representation Γ) (scheme Γ) C := by
+    ConcreteMRDT.Raw.ReplaySupply (policy Γ) (representation Γ) (scheme Γ) C := by
   have h := CertifiedRGACoreVC.replaySupply Γ C honest native trans irr
   refine ⟨h.represented,?_⟩
   intro H s rep sup nonempty closed
@@ -41,8 +40,8 @@ theorem replaySupply (Γ : OrderedPrefixCode) (C : ReplayContext (RichCore Γ).t
     choice.remainder,choice.past,choice.remainder_rep,choice.past_rep,
     choice.reconstructed_past,choice.reconstructed_union⟩⟩
 
-theorem representationJoin (Γ : OrderedPrefixCode) : AbstractMRDT.RepresentationJoin (representation Γ) := by
-  apply AbstractMRDT.Raw.representationJoin_of_vcs (mergeVCs Γ)
+theorem representationJoin (Γ : OrderedPrefixCode) : ConcreteMRDT.RepresentationJoin (representation Γ) := by
+  apply ConcreteMRDT.Raw.representationJoin_of_vcs (mergeVCs Γ)
     (CertifiedRGACoreVC.unique Γ) (CertifiedRGACoreVC.initial Γ) (CertifiedRGACoreVC.finite Γ)
   intro C E₁ E₂ a b trans irr _ _ ha _
   exact replaySupply Γ C ha.1 ha.2.1 trans irr

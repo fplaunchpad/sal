@@ -1,12 +1,12 @@
-import Sal.MRDTs.Paper1.MetadataReconstruction
+import Sal.MRDTs.Paper1.ConcreteMetadata
 import Sal.MRDTs.Paper1.GuardedReplay
 
-namespace Sal.MRDTs.Paper1.AbstractMRDT.Raw
+namespace Sal.MRDTs.Paper1.ConcreteMRDT.Raw
 open Foundation Classical
 variable {D : MRDTSig}
 
-structure Context (A : Model D) (P : OperationPolicy D.AppOp)
-    (scheme : ∀ C, MetadataDependencies A C) (C : ReplayContext D.toUpdateSig)
+structure Context (P : OperationPolicy D.AppOp)
+    (scheme : ∀ C, MetadataDependencies C) (C : ReplayContext D.toUpdateSig)
     (E₁ E₂ : Set (Op D.AppOp)) (e : Op D.AppOp) : Prop where
   trans : Transitive C.vis
   irrefl : ∀ x, ¬ C.vis x x
@@ -17,9 +17,9 @@ structure Context (A : Model D) (P : OperationPolicy D.AppOp)
   semantic : ∀ x ∈ E₁ ∪ E₂, x ≠ e → ¬ paperOrder P C (E₁ ∪ E₂) e x
   metadata : ∀ x ∈ E₁ ∪ E₂, x ≠ e → ¬ (scheme C).before e x
 
-structure PeelChoice (A : Model D) (P : OperationPolicy D.AppOp)
+structure PeelChoice (P : OperationPolicy D.AppOp)
     (R : Representation D) (C : ReplayContext D.toUpdateSig)
-    (M : MetadataDependencies A C) (U : Set (Op D.AppOp)) where
+    (M : MetadataDependencies C) (U : Set (Op D.AppOp)) where
   event : Op D.AppOp
   member : event ∈ U
   semantic_maximal : ∀ x ∈ U, x ≠ event → ¬ paperOrder P C U event x
@@ -36,8 +36,8 @@ The local/shared smaller-union representation is evidence produced by the
 strictly smaller induction call, never a global Join hypothesis. Their side
 reconstruction evidence is likewise derived on proper subsets, or by the
 causal equation for the whole union. -/
-structure MergeVCs (A : Model D) (P : OperationPolicy D.AppOp)
-    (R : Representation D) (scheme : ∀ C, MetadataDependencies A C) : Prop where
+structure MergeVCs (P : OperationPolicy D.AppOp)
+    (R : Representation D) (scheme : ∀ C, MetadataDependencies C) : Prop where
   merge_comm : ∀ C E₁ E₂ l a b,
     Supported C E₁ → Supported C E₂ → (scheme C).Closed E₁ → (scheme C).Closed E₂ →
     R C (E₁ ∩ E₂) l → R C E₁ a → R C E₂ b → D.merge l a b = D.merge l b a
@@ -50,14 +50,14 @@ structure MergeVCs (A : Model D) (P : OperationPolicy D.AppOp)
     R C (U \ {e}) s → R C ((scheme C).Past e \ {e}) B →
     R C ((scheme C).Past e) (D.update B e) → R C U (D.update s e) →
     D.merge B s (D.update B e) = D.update s e
-  local_redistribute : ∀ C E₁ E₂ l B t b e, Context A P scheme C E₁ E₂ e → e ∈ E₁ → e ∉ E₂ →
+  local_redistribute : ∀ C E₁ E₂ l B t b e, Context P scheme C E₁ E₂ e → e ∈ E₁ → e ∉ E₂ →
     R C (E₁ ∩ E₂) l → R C ((scheme C).Past e \ {e}) B →
     R C (E₁ \ {e}) t → R C E₂ b → R C ((scheme C).Past e) (D.update B e) →
     R C E₁ (D.merge B t (D.update B e)) →
     R C ((E₁ ∪ E₂) \ {e}) (D.merge l t b) →
     D.merge l (D.merge B t (D.update B e)) b =
       D.merge B (D.merge l t b) (D.update B e)
-  shared : ∀ C E₁ E₂ t₀ t₁ t₂ B e, Context A P scheme C E₁ E₂ e → e ∈ E₁ → e ∈ E₂ →
+  shared : ∀ C E₁ E₂ t₀ t₁ t₂ B e, Context P scheme C E₁ E₂ e → e ∈ E₁ → e ∈ E₂ →
     R C ((E₁ ∩ E₂) \ {e}) t₀ → R C ((scheme C).Past e \ {e}) B →
     R C (E₁ \ {e}) t₁ → R C (E₂ \ {e}) t₂ → R C ((scheme C).Past e) (D.update B e) →
     R C (E₁ ∩ E₂) (D.merge B t₀ (D.update B e)) →
@@ -68,18 +68,18 @@ structure MergeVCs (A : Model D) (P : OperationPolicy D.AppOp)
 
 def Unique (R : Representation D) : Prop := ∀ C E a b, R C E a → R C E b → a = b
 
-structure ReplaySupply (A : Model D) (P : OperationPolicy D.AppOp)
-    (R : Representation D) (scheme : ∀ C, MetadataDependencies A C)
+structure ReplaySupply (P : OperationPolicy D.AppOp)
+    (R : Representation D) (scheme : ∀ C, MetadataDependencies C)
     (C : ReplayContext D.toUpdateSig) where
   represented : ∀ E π, listPermOf π E → Supported C E → ∃ s, R C E s
   peel : ∀ E s, R C E s → Supported C E → E.Nonempty → (scheme C).Closed E →
-    Nonempty (PeelChoice A P R C (scheme C) E)
+    Nonempty (PeelChoice P R C (scheme C) E)
 
-private theorem causal_frame {A : Model D} {P : OperationPolicy D.AppOp}
-    {R : Representation D} {scheme : ∀ C, MetadataDependencies A C}
-    (vcs : MergeVCs A P R scheme) (unique : Unique R)
+private theorem causal_frame {P : OperationPolicy D.AppOp}
+    {R : Representation D} {scheme : ∀ C, MetadataDependencies C}
+    (vcs : MergeVCs P R scheme) (unique : Unique R)
     (C : ReplayContext D.toUpdateSig) (U : Set (Op D.AppOp))
-    (choice : PeelChoice A P R C (scheme C) U)
+    (choice : PeelChoice P R C (scheme C) U)
     (trans : Transitive C.vis) (irrefl : ∀ x, ¬ C.vis x x)
     (supported : Supported C U) (closed : (scheme C).Closed U)
     (mid : D.State) (represented : R C (U \ {choice.event}) mid) :
@@ -90,9 +90,9 @@ private theorem causal_frame {A : Model D} {P : OperationPolicy D.AppOp}
     choice.remainder_rep choice.past_rep choice.reconstructed_past choice.reconstructed_union]
   exact choice.reconstructed_union
 
-def JoinAtSize (A : Model D) (P : OperationPolicy D.AppOp)
+def JoinAtSize (P : OperationPolicy D.AppOp)
     (R : Representation D) (C : ReplayContext D.toUpdateSig)
-    (M : MetadataDependencies A C) (n : Nat) : Prop :=
+    (M : MetadataDependencies C) (n : Nat) : Prop :=
   ∀ E₁ E₂ l a b π, listPermOf π (E₁ ∪ E₂) → π.length = n →
     Supported C E₁ → Supported C E₂ → M.Closed E₁ → M.Closed E₂ →
     R C (E₁ ∩ E₂) l → R C E₁ a → R C E₂ b → R C (E₁ ∪ E₂) (D.merge l a b)
@@ -113,16 +113,16 @@ private theorem enumeration_length_lt {β : Type} {xs ys : List β}
   simp only [List.length_cons] at bound
   omega
 
-theorem side_decomposition {A : Model D} {P : OperationPolicy D.AppOp}
-    {R : Representation D} {scheme : ∀ C, MetadataDependencies A C}
-    (vcs : MergeVCs A P R scheme) (unique : Unique R)
+theorem side_decomposition {P : OperationPolicy D.AppOp}
+    {R : Representation D} {scheme : ∀ C, MetadataDependencies C}
+    (vcs : MergeVCs P R scheme) (unique : Unique R)
     (finite : ∀ C E s, R C E s → ∃ π, listPermOf π E)
     (C : ReplayContext D.toUpdateSig) (U : Set (Op D.AppOp))
-    (choice : PeelChoice A P R C (scheme C) U)
+    (choice : PeelChoice P R C (scheme C) U)
     (trans : Transitive C.vis) (irrefl : ∀ x, ¬ C.vis x x)
     (supported : Supported C U) (closed : (scheme C).Closed U)
     (π : List (Op D.AppOp)) (perm : listPermOf π U)
-    (IH : ∀ m, m < π.length → JoinAtSize A P R C (scheme C) m)
+    (IH : ∀ m, m < π.length → JoinAtSize P R C (scheme C) m)
     (E : Set (Op D.AppOp)) (s t : D.State) (subset : E ⊆ U)
     (closedSide : (scheme C).Closed E) (member : choice.event ∈ E)
     (represented : R C E s) (pre : R C (E \ {choice.event}) t) :
@@ -164,12 +164,12 @@ theorem side_decomposition {A : Model D} {P : OperationPolicy D.AppOp}
     simpa only [union] using result
 
 
-private theorem local_step {A : Model D} {P : OperationPolicy D.AppOp}
-    {R : Representation D} {scheme : ∀ C, MetadataDependencies A C}
-    (vcs : MergeVCs A P R scheme) (unique : Unique R)
+private theorem local_step {P : OperationPolicy D.AppOp}
+    {R : Representation D} {scheme : ∀ C, MetadataDependencies C}
+    (vcs : MergeVCs P R scheme) (unique : Unique R)
     (C : ReplayContext D.toUpdateSig) (E₁ E₂ : Set (Op D.AppOp))
-    (choice : PeelChoice A P R C (scheme C) (E₁ ∪ E₂))
-    (ctx : Context A P scheme C E₁ E₂ choice.event)
+    (choice : PeelChoice P R C (scheme C) (E₁ ∪ E₂))
+    (ctx : Context P scheme C E₁ E₂ choice.event)
     (l a b t : D.State) (member : choice.event ∈ E₁) (absent : choice.event ∉ E₂)
     (base : R C (E₁ ∩ E₂) l) (side : R C E₁ a)
     (other : R C E₂ b) (pre : R C (E₁ \ {choice.event}) t)
@@ -185,12 +185,12 @@ private theorem local_step {A : Model D} {P : OperationPolicy D.AppOp}
       base choice.past_rep pre other choice.reconstructed_past dec smaller]
   exact target
 
-private theorem shared_step {A : Model D} {P : OperationPolicy D.AppOp}
-    {R : Representation D} {scheme : ∀ C, MetadataDependencies A C}
-    (vcs : MergeVCs A P R scheme) (unique : Unique R)
+private theorem shared_step {P : OperationPolicy D.AppOp}
+    {R : Representation D} {scheme : ∀ C, MetadataDependencies C}
+    (vcs : MergeVCs P R scheme) (unique : Unique R)
     (C : ReplayContext D.toUpdateSig) (E₁ E₂ : Set (Op D.AppOp))
-    (choice : PeelChoice A P R C (scheme C) (E₁ ∪ E₂))
-    (ctx : Context A P scheme C E₁ E₂ choice.event)
+    (choice : PeelChoice P R C (scheme C) (E₁ ∪ E₂))
+    (ctx : Context P scheme C E₁ E₂ choice.event)
     (l a b t₀ t₁ t₂ : D.State) (mem₁ : choice.event ∈ E₁) (mem₂ : choice.event ∈ E₂)
     (base : R C (E₁ ∩ E₂) l) (side₁ : R C E₁ a) (side₂ : R C E₂ b)
     (pre₀ : R C ((E₁ ∩ E₂) \ {choice.event}) t₀)
@@ -209,17 +209,17 @@ private theorem shared_step {A : Model D} {P : OperationPolicy D.AppOp}
       pre₀ choice.past_rep pre₁ pre₂ choice.reconstructed_past dec₀ dec₁ dec₂ smaller]
   exact target
 
-theorem join_at_sizes {A : Model D} {P : OperationPolicy D.AppOp}
-    {R : Representation D} {scheme : ∀ C, MetadataDependencies A C}
-    (vcs : MergeVCs A P R scheme) (unique : Unique R)
+theorem join_at_sizes {P : OperationPolicy D.AppOp}
+    {R : Representation D} {scheme : ∀ C, MetadataDependencies C}
+    (vcs : MergeVCs P R scheme) (unique : Unique R)
     (initial : ∀ C E s, R C E s → R C ∅ D.init)
     (finite : ∀ C E s, R C E s → ∃ π, listPermOf π E)
     (C : ReplayContext D.toUpdateSig) (trans : Transitive C.vis)
     (irrefl : ∀ x, ¬ C.vis x x)
     (supply : ∀ E π, listPermOf π E → Supported C E → ∃ s, R C E s)
     (peel : ∀ E s, R C E s → Supported C E → E.Nonempty → (scheme C).Closed E →
-      Nonempty (PeelChoice A P R C (scheme C) E)) :
-    ∀ n, JoinAtSize A P R C (scheme C) n := by
+      Nonempty (PeelChoice P R C (scheme C) E)) :
+    ∀ n, JoinAtSize P R C (scheme C) n := by
   classical
   intro n
   induction n using Nat.strong_induction_on with
@@ -244,7 +244,7 @@ theorem join_at_sizes {A : Model D} {P : OperationPolicy D.AppOp}
     obtain ⟨s,hs⟩ := supply (E₁ ∪ E₂) π perm supU
     obtain ⟨choice⟩ := peel (E₁ ∪ E₂) s hs supU
       (nonempty₁.mono Set.subset_union_left) closedU
-    have recurs : ∀ m, m < π.length → JoinAtSize A P R C (scheme C) m := by
+    have recurs : ∀ m, m < π.length → JoinAtSize P R C (scheme C) m := by
       simpa only [length] using IH
     have eventMem := (perm.2 choice.event).mpr choice.member
     have permDiff : listPermOf (π.filter (· ≠ choice.event)) ((E₁ ∪ E₂) \ {choice.event}) :=
@@ -257,7 +257,7 @@ theorem join_at_sizes {A : Model D} {P : OperationPolicy D.AppOp}
       Set.subset_union_left closed₁ choice.metadata_maximal
     have closedPre₂ := (scheme C).closed_diff_of_max (E₁ ∪ E₂) E₂ choice.event
       Set.subset_union_right closed₂ choice.metadata_maximal
-    have ctx : Context A P scheme C E₁ E₂ choice.event :=
+    have ctx : Context P scheme C E₁ E₂ choice.event :=
       ⟨trans,irrefl,sup₁,sup₂,closed₁,closed₂,choice.semantic_maximal,choice.metadata_maximal⟩
     have sideSupply : ∀ E, E ⊆ E₁ ∪ E₂ → ∃ t, R C (E \ {choice.event}) t := by
       intro E subset
@@ -342,7 +342,7 @@ theorem join_at_sizes {A : Model D} {P : OperationPolicy D.AppOp}
         (by simpa only [intersection] using hl) ht₂ ha
       have midU : R C ((E₁ ∪ E₂) \ {choice.event}) (D.merge l t₂ a) := by
         simpa only [union] using mid
-      let swappedChoice : PeelChoice A P R C (scheme C) (E₂ ∪ E₁) := {
+      let swappedChoice : PeelChoice P R C (scheme C) (E₂ ∪ E₁) := {
         event := choice.event
         member := by simpa only [Set.union_comm] using choice.member
         semantic_maximal := by simpa only [Set.union_comm] using choice.semantic_maximal
@@ -353,9 +353,9 @@ theorem join_at_sizes {A : Model D} {P : OperationPolicy D.AppOp}
         past_rep := choice.past_rep
         reconstructed_past := choice.reconstructed_past
         reconstructed_union := by simpa only [Set.union_comm] using choice.reconstructed_union }
-      have swappedCtx : Context A P scheme C E₂ E₁ swappedChoice.event := by
+      have swappedCtx : Context P scheme C E₂ E₁ swappedChoice.event := by
         simpa only [swappedChoice,Set.union_comm] using
-          (show Context A P scheme C E₂ E₁ choice.event from
+          (show Context P scheme C E₂ E₁ choice.event from
             ⟨trans,irrefl,sup₂,sup₁,closed₂,closed₁,
               by simpa only [Set.union_comm] using choice.semantic_maximal,
               by simpa only [Set.union_comm] using choice.metadata_maximal⟩)
@@ -373,14 +373,14 @@ theorem join_at_sizes {A : Model D} {P : OperationPolicy D.AppOp}
 
 /-- The five raw equality VCs derive Join by strict finite-history induction.
 No merge-preservation or canonical-merge premise is supplied. -/
-theorem representationJoin_of_vcs {A : Model D} {P : OperationPolicy D.AppOp}
-    {R : Representation D} {scheme : ∀ C, MetadataDependencies A C}
-    (vcs : MergeVCs A P R scheme) (unique : Unique R)
+theorem representationJoin_of_vcs {P : OperationPolicy D.AppOp}
+    {R : Representation D} {scheme : ∀ C, MetadataDependencies C}
+    (vcs : MergeVCs P R scheme) (unique : Unique R)
     (initial : ∀ C E s, R C E s → R C ∅ D.init)
     (finite : ∀ C E s, R C E s → ∃ π, listPermOf π E)
     (supply : ∀ C E₁ E₂ a b, Transitive C.vis → (∀ x, ¬ C.vis x x) →
       Supported C E₁ → Supported C E₂ → R C E₁ a → R C E₂ b →
-      ReplaySupply A P R scheme C) : RepresentationJoin R := by
+      ReplaySupply P R scheme C) : RepresentationJoin R := by
   intro C E₁ E₂ l a b trans irrefl sup₁ sup₂ closed₁ closed₂ hl ha hb
   obtain ⟨π₁,hp₁⟩ := finite C E₁ a ha
   obtain ⟨π₂,hp₂⟩ := finite C E₂ b hb
@@ -392,4 +392,4 @@ theorem representationJoin_of_vcs {A : Model D} {P : OperationPolicy D.AppOp}
     (fun x y edge h => closed₁ x y ((scheme C).causal x y edge) h)
     (fun x y edge h => closed₂ x y ((scheme C).causal x y edge) h) hl ha hb
 
-end Sal.MRDTs.Paper1.AbstractMRDT.Raw
+end Sal.MRDTs.Paper1.ConcreteMRDT.Raw

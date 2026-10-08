@@ -66,7 +66,7 @@ specification-refinement function $\alpha$. \\[5pt]
 Extension for guarded datatypes &
 Definition~\ref{def:history-adequacy} and Theorem~\ref{thm:history-bridge}
 replace unrestricted fold soundness by a certified history argument with
-explicit query uniqueness. Examples~\ref{ex:queue}--\ref{ex:fugue} show its
+explicit concrete-state uniqueness. Examples~\ref{ex:queue}--\ref{ex:fugue} show its
 scope and limitations. \\
 \bottomrule
 \end{longtable}
@@ -78,5 +78,5 @@ this rewrite. The invariant commutation domain, original issuance evidence,
 metadata reconstruction premises and specification-visibility clause are
 mathematical differences from the manuscript, already present in the checked
 baseline. They require explicit manuscript changes rather than a renaming.
-The specification function $\alpha$ in Section 6 is not an observational
-quotient for implementation states.
+The specification function $\alpha$ in Section 6 relates concrete states to
+states of the independent sequential specification.

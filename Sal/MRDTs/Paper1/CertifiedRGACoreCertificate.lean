@@ -1,7 +1,7 @@
 import Sal.MRDTs.Paper1.CertifiedRGACoreExecution
 import Sal.MRDTs.Paper1.CertifiedRGACertificate
 import Sal.MRDTs.Paper1.CertifiedHistoryBridge
-import Sal.MRDTs.Paper1.AbstractSoundness
+import Sal.MRDTs.Paper1.ExecutionTrace
 import Sal.MRDTs.Paper1.GuardedHistory
 
 namespace Sal.MRDTs.Paper1.CertifiedRGACoreCertificate
@@ -183,14 +183,14 @@ theorem correctV (Γ : OrderedPrefixCode) {C : Configuration (Core Γ)}
 theorem executions (Γ : OrderedPrefixCode) (trace : List (Label (Core Γ) × Configuration (Core Γ)))
     (run : (certifiedTS (Core Γ) (Instances.SidedPeritext.generation Γ)).Execution (initConfig (Core Γ)) trace) :
     Correct Γ (initConfig (Core Γ)) ∧ ∀entry∈trace, Correct Γ entry.2 := by
-  have reached := AbstractMRDT.visited (Good := MintCertifiedReach (Core Γ) (Instances.SidedPeritext.generation Γ))
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReach (Core Γ) (Instances.SidedPeritext.generation Γ))
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) run .init
   exact ⟨correct Γ (.ordinary .init),fun entry member => correct Γ (.ordinary (reached entry member))⟩
 
 theorem executionsV (Γ : OrderedPrefixCode) (trace : List (Label (Core Γ) × Configuration (Core Γ)))
     (run : (certifiedTSV (Core Γ) (Instances.SidedPeritext.generation Γ)).Execution (initConfig (Core Γ)) trace) :
     Correct Γ (initConfig (Core Γ)) ∧ ∀entry∈trace, Correct Γ entry.2 := by
-  have reached := AbstractMRDT.visited (Good := MintCertifiedReachV (Core Γ) (canonicalVirtualMergeBase (Core Γ)) (Instances.SidedPeritext.generation Γ))
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReachV (Core Γ) (canonicalVirtualMergeBase (Core Γ)) (Instances.SidedPeritext.generation Γ))
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) run .init
   exact ⟨correct Γ (.virtual .init),fun entry member => correct Γ (.virtual (reached entry member))⟩
 

@@ -1,19 +1,17 @@
-import Sal.MRDTs.Paper1.CommutingVCReplay
+import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Paper1.RGAEventSpec
 
-/-! Plain RGA uses the shared observational VC induction and an independent
+/-! Plain RGA uses the shared concrete VC induction and an independent
 strict list/registry history bridge. Mint evidence establishes unique supplied
 identifiers, live anchors at issuance, and the absence of prior deletion.
 These facts select an accepted history; they do not redefine spec commutation.
 -/
-namespace Sal.MRDTs.Paper1.RGA.AbstractPort
-open Foundation AbstractMRDT
+namespace Sal.MRDTs.Paper1.RGA.ConcretePort
+open Foundation ConcreteMRDT
 open Sal.MRDTs.Instances.RGA
 
-noncomputable def model : Model RGAM := Model.future RGAM
-
 theorem joinAt (C : ReplayContext RGAM.toUpdateSig) : JoinAt RGAM C :=
-  CommutingPort.vcJoinAt model RGAM_all_comm RGAM_mergeLaws RGAM_deltaLaws
+  CommutingPort.vcJoinAt RGAM_all_comm RGAM_mergeLaws RGAM_deltaLaws
     RGAM_commutingPeelLaw C
 
 theorem canonicalConfig {C : Configuration RGAM}
@@ -46,36 +44,36 @@ theorem history : EventExecutionHistoryAdequacy RGAM (commutingPolicy RGAOp)
       List.map_cons, List.map_nil, List.map_map, SeqLabel.mapUpdate] using
       Identified.strict_canonical_admitted hp hwf
 
-noncomputable def conditions : ScopedVCConditions model (commutingPolicy RGAOp) EventSpec.spec generation :=
-  CommutingPort.scopedConditions model (future_complete RGAM) RGAM_all_comm
+noncomputable def conditions : ScopedVCConditions (commutingPolicy RGAOp) EventSpec.spec generation :=
+  CommutingPort.scopedConditions RGAM_all_comm
     RGAM_mergeLaws RGAM_deltaLaws RGAM_commutingPeelLaw generation history
 
 theorem versionsV {C : Configuration RGAM}
     (reach : MintCertifiedReachV RGAM (canonicalVirtualMergeBase RGAM) generation C) :
-    AbstractMRDT.VersionsRALinearizable model (commutingPolicy RGAOp) EventSpec.spec C :=
+    VersionsWitness (commutingPolicy RGAOp) EventSpec.spec C :=
   conditions.versionsV reach
 
 theorem executions (trace : List (Label RGAM × Configuration RGAM))
     (execution : (certifiedTS RGAM generation).Execution (initConfig RGAM) trace) :
-    ExecutionCorrect model (commutingPolicy RGAOp) EventSpec.spec trace :=
+    ExecutionCorrect (commutingPolicy RGAOp) EventSpec.spec trace :=
   conditions.executions trace execution
 
 theorem executionsV (trace : List (Label RGAM × Configuration RGAM))
     (execution : (certifiedTSV RGAM generation).Execution (initConfig RGAM) trace) :
-    ExecutionCorrect model (commutingPolicy RGAOp) EventSpec.spec trace :=
+    ExecutionCorrect (commutingPolicy RGAOp) EventSpec.spec trace :=
   conditions.executionsV trace execution
 
-/-- Observational implementation commutation does not make the independent
+/-- Concrete implementation commutation does not make the independent
 strict sequential language commute. The execution-scoped bridge is necessary
 for this unchanged specification. -/
-theorem globalCompatibility_impossible : ¬ SpecificationCompatibility model EventSpec.spec := by
+theorem globalCompatibility_impossible : ¬ CommutationCompatibility RGAM id EventSpec.spec := by
   intro compatible
   have h := compatible (1,0,.addAfter 0) (2,0,.remove 1)
-    (of_state_commutes (RGAM_all_comm _ _))
+    (RGAM_all_comm _ _)
   exact Identified.ReadSide.strict_add_delete_not_commute ((EventSpec.commutes_iff _ _).mp h)
 
 theorem crossed_control :
-    AbstractMRDT.VersionsRALinearizable model (commutingPolicy RGAOp) EventSpec.spec
+    VersionsWitness (commutingPolicy RGAOp) EventSpec.spec
       (CrossedExecution.config 10) ∧
     RGAM.query (CrossedExecution.records 10).1 () = [5,4,8,7] ∧
     RGAM.query (CrossedExecution.records 10).1 () ≠ [] := by
@@ -85,4 +83,4 @@ theorem crossed_control :
   change ([5,4,8,7] : List Nat) ≠ []
   decide
 
-end Sal.MRDTs.Paper1.RGA.AbstractPort
+end Sal.MRDTs.Paper1.RGA.ConcretePort

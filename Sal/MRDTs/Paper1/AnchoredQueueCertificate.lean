@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.ExecutionTrace
 import Sal.MRDTs.Paper1.AnchoredQueueCommutation
 import Sal.MRDTs.Paper1.AnchoredQueueSupport
 import Sal.MRDTs.Paper1.AnchoredQueueRanks
@@ -254,7 +255,7 @@ theorem executions (trace : List (Label publicQueue × Configuration publicQueue
       CertifiedRGAInvariantReplay.policy Public.language (initConfig publicQueue) ∧
     ∀ entry ∈ trace, InvariantOrder.VersionsRA publicQueue (Valid (Public.kernel entry.2))
       CertifiedRGAInvariantReplay.policy Public.language entry.2 := by
-  have reached := AbstractMRDT.visited (Good := MintCertifiedReach publicQueue Public.issuance)
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReach publicQueue Public.issuance)
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) run .init
   exact ⟨correct .init,fun entry member => correct (reached entry member)⟩
 
@@ -264,7 +265,7 @@ theorem executionsV (trace : List (Label publicQueue × Configuration publicQueu
       CertifiedRGAInvariantReplay.policy Public.language (initConfig publicQueue) ∧
     ∀ entry ∈ trace, InvariantOrder.VersionsRA publicQueue (Valid (Public.kernel entry.2))
       CertifiedRGAInvariantReplay.policy Public.language entry.2 := by
-  have reached := AbstractMRDT.visited (Good := MintCertifiedReachV publicQueue
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReachV publicQueue
       (canonicalVirtualMergeBase publicQueue) Public.issuance)
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) run .init
   exact ⟨correctV .init,fun entry member => correctV (reached entry member)⟩

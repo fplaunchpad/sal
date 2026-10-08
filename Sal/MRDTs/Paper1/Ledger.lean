@@ -49,22 +49,7 @@ import Sal.MRDTs.Paper1.RGAEventSpec
 import Sal.MRDTs.Paper1.CommutationBridge
 import Sal.MRDTs.Paper1.MigrationCoverage
 import Sal.MRDTs.Paper1.ORSetBridgeControls
-import Sal.MRDTs.Paper1.QueryORSet
-import Sal.MRDTs.Paper1.QueryExactORSet
-import Sal.MRDTs.Paper1.AbstractControls
-import Sal.MRDTs.Paper1.NeemScope
-import Sal.MRDTs.Paper1.MetadataORSet
-import Sal.MRDTs.Paper1.MetadataPeelControl
-import Sal.MRDTs.Paper1.MetadataRewrite
-import Sal.MRDTs.Paper1.EfficientMetadataCausal
-import Sal.MRDTs.Paper1.MetadataDecomposition
-import Sal.MRDTs.Paper1.ORSetRedistribution
-import Sal.MRDTs.Paper1.ORSetVCJoin
-import Sal.MRDTs.Paper1.EfficientORSetVCJoin
-import Sal.MRDTs.Paper1.EfficientVCExecution
-import Sal.MRDTs.Paper1.AbstractCoverage
 import Sal.MRDTs.Paper1.GuardedOrder
-import Sal.MRDTs.Paper1.GuardedAbstraction
 import Sal.MRDTs.Paper1.GuardedPolicyControls
 import Sal.MRDTs.Paper1.GuardedRawExactExecution
 import Sal.MRDTs.Paper1.GuardedRawEfficientCertificate
@@ -101,14 +86,11 @@ namespace Sal.MRDTs.Paper1
 #check SequentialSimulation
 #check IssuedHistoryAdequacy
 #check SpecificationRALinearizable
-#check QueryReplay.Equivalent
-#check QueryReplay.Abstraction
-#check QueryReplay.Laws
-#check QueryReplay.VersionsRALinearizable
-#check AbstractMRDT.Model
-#check AbstractMRDT.MergeVCs
-#check AbstractMRDT.Certificate
-#check AbstractMRDT.VCConditions
+#check ConcreteMRDT.Representation
+#check ConcreteMRDT.Canonical
+#check ConcreteMRDT.Raw.MergeVCs
+#check ConcreteMRDT.ScopedCertificate
+#check ConcreteMRDT.VCReplayConditions
 
 -- Audit all load-bearing bridges and the positive/negative research results.
 -- Only Lean's standard classical/extensional axioms are permitted.
@@ -124,10 +106,9 @@ assert_paper_axioms HistoryMachine.toSpec
 assert_paper_axioms convergence_on_guarded
 assert_paper_axioms GuardedReplay.paperOrder_acyclic
 assert_paper_axioms GuardedReplay.exists_paperOrder_enumeration
-assert_paper_axioms AbstractMRDT.Guarded.Laws.toReplay
-assert_paper_axioms AbstractMRDT.Guarded.canonical_equivalent
-assert_paper_axioms AbstractMRDT.Guarded.canonical_query_unique
-assert_paper_axioms AbstractMRDT.Guarded.canonical_exists
+assert_paper_axioms ConcreteMRDT.replay_equal
+assert_paper_axioms ConcreteMRDT.canonical_query_unique
+assert_paper_axioms ConcreteMRDT.canonical_exists
 assert_paper_axioms EfficientORSet.GuardedPolicyControls.guarded_exactness_control
 assert_paper_axioms EfficientORSet.GuardedPolicyControls.tag_control
 assert_paper_axioms EfficientORSet.GuardedPolicyControls.paperOrder_control
@@ -139,8 +120,10 @@ elab "assert_guarded_dependencies " n:ident : command => do
   let env ← getEnv
   let mut seen : NameSet := {}
   let mut pending := [root]
-  let forbidden := [``RestrictedLaws.replayLaws, ``paperOrder_iff_loOn,
-    ``AbstractMRDT.Laws.toRestricted, ``AbstractMRDT.canonical_query_unique]
+  let forbidden := ["Sal.MRDTs.Paper1.RestrictedLaws.replayLaws",
+    "Sal.MRDTs.Paper1.paperOrder_iff_loOn",
+    "Sal.MRDTs.Paper1.AbstractMRDT.Laws.toRestricted",
+    "Sal.MRDTs.Paper1.AbstractMRDT.canonical_query_unique"].map String.toName
   while !pending.isEmpty do
     let current := pending.head!
     pending := pending.tail!
@@ -153,12 +136,12 @@ elab "assert_guarded_dependencies " n:ident : command => do
   unless seen.contains ``convergence_on_guarded do
     throwError "{n} does not use direct guarded convergence"
 
-assert_guarded_dependencies AbstractMRDT.Guarded.canonical_equivalent
-assert_guarded_dependencies AbstractMRDT.Guarded.canonical_query_unique
+assert_guarded_dependencies ConcreteMRDT.replay_equal
+assert_guarded_dependencies ConcreteMRDT.canonical_query_unique
 
 assert_paper_axioms ORSet.Guarded.laws
 assert_paper_axioms EfficientORSet.Guarded.laws
-assert_paper_axioms AbstractMRDT.Raw.join_at_sizes
+assert_paper_axioms ConcreteMRDT.Raw.join_at_sizes
 assert_paper_axioms ORSet.GuardedRawVC.mergeVCs
 assert_paper_axioms EfficientORSet.GuardedRawVC.mergeVCs
 assert_paper_axioms ORSet.RawExecution.certificate
@@ -181,18 +164,21 @@ elab "assert_raw_vc_dependencies " n:ident " using " vc:ident : command => do
   let env ← getEnv
   let mut seen : NameSet := {}
   let mut pending := [root]
-  let forbidden := [``ORSet.join, ``ORSet.AbstractSpec.representationJoin,
-    ``ORSet.AbstractSpec.vcRepresentationJoin, ``ORSet.AbstractSpec.vcJoinAt,
-    ``ORSet.AbstractSpec.vcRepresentedVersions,
-    ``AbstractMRDT.join_at_sizes, ``AbstractMRDT.representationJoin_of_vcs,
-    ``Sal.MRDTs.Instances.EfficientORSet.represents_merge,
-    ``Sal.MRDTs.Instances.EfficientORSet.represented_of_mintCertifiedV,
-    ``Sal.MRDTs.Instances.EfficientORSet.virtualMergeBaseState_represents,
-    ``EfficientORSet.AbstractSpec.representationJoin,
-    ``EfficientORSet.AbstractSpec.vcRepresentationJoin,
-    ``EfficientORSet.AbstractSpec.vcRepresentedConfig,
-    ``EfficientORSet.AbstractSpec.vcRepresentedVersions,
-    ``EfficientORSet.AbstractSpec.vcVirtualMergeBaseStateRepresents]
+  let forbidden := ["Sal.MRDTs.Paper1.ORSet.join",
+    "Sal.MRDTs.Paper1.ORSet.AbstractSpec.representationJoin",
+    "Sal.MRDTs.Paper1.ORSet.AbstractSpec.vcRepresentationJoin",
+    "Sal.MRDTs.Paper1.ORSet.AbstractSpec.vcJoinAt",
+    "Sal.MRDTs.Paper1.ORSet.AbstractSpec.vcRepresentedVersions",
+    "Sal.MRDTs.Paper1.AbstractMRDT.join_at_sizes",
+    "Sal.MRDTs.Paper1.AbstractMRDT.representationJoin_of_vcs",
+    "Sal.MRDTs.Instances.EfficientORSet.represents_merge",
+    "Sal.MRDTs.Instances.EfficientORSet.represented_of_mintCertifiedV",
+    "Sal.MRDTs.Instances.EfficientORSet.virtualMergeBaseState_represents",
+    "Sal.MRDTs.Paper1.EfficientORSet.AbstractSpec.representationJoin",
+    "Sal.MRDTs.Paper1.EfficientORSet.AbstractSpec.vcRepresentationJoin",
+    "Sal.MRDTs.Paper1.EfficientORSet.AbstractSpec.vcRepresentedConfig",
+    "Sal.MRDTs.Paper1.EfficientORSet.AbstractSpec.vcRepresentedVersions",
+    "Sal.MRDTs.Paper1.EfficientORSet.AbstractSpec.vcVirtualMergeBaseStateRepresents"].map String.toName
   while !pending.isEmpty do
     let current := pending.head!
     pending := pending.tail!
@@ -202,7 +188,7 @@ elab "assert_raw_vc_dependencies " n:ident " using " vc:ident : command => do
         throwError "{n} uses earlier merge correctness route {current}"
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
-  for required in [``AbstractMRDT.Raw.join_at_sizes, obligation] do
+  for required in [``ConcreteMRDT.Raw.join_at_sizes, obligation] do
     unless seen.contains required do
       throwError "{n} omits raw VC dependency {required}"
 
@@ -212,137 +198,36 @@ assert_raw_vc_dependencies EfficientORSet.RawCertificate.executions using Effici
 assert_raw_vc_dependencies EfficientORSet.RawCertificate.executionsV using EfficientORSet.GuardedRawVC.mergeVCs
 assert_paper_axioms DeterministicSpec.updates_query_iff
 assert_paper_axioms RestrictedLaws.replayLaws
-assert_paper_axioms QueryReplay.Abstraction.equivalent_iff
-assert_paper_axioms AbstractMRDT.equivalent_iff_future
-assert_paper_axioms AbstractMRDT.causalPast_subset
-assert_paper_axioms AbstractMRDT.metadataSubstitution_of_unique
-assert_paper_axioms AbstractMRDT.join_empty_left
-assert_paper_axioms AbstractMRDT.MetadataDependencies.observable_past_subset
-assert_paper_axioms AbstractMRDT.MetadataDependencies.closed_diff_of_max
-assert_paper_axioms AbstractMRDT.joint_maximal_of_enumeration
-assert_paper_axioms ORSet.AbstractSpec.joint_maximal
-assert_paper_axioms EfficientORSet.AbstractSpec.joint_maximal
-assert_paper_axioms AbstractMRDT.canonical_snoc
-assert_paper_axioms AbstractMRDT.MetadataDependencies.past_closed
-assert_paper_axioms AbstractMRDT.MetadataDependencies.past_semantic_maximal
-assert_paper_axioms ORSet.AbstractSpec.peel_choice
-assert_paper_axioms AbstractMRDT.causal_reconstruction
-assert_paper_axioms EfficientORSet.AbstractSpec.kills_noncomm
-assert_paper_axioms EfficientORSet.AbstractSpec.represents_snoc_maximal
-assert_paper_axioms EfficientORSet.AbstractSpec.representation_exists
-assert_paper_axioms EfficientORSet.AbstractSpec.peel_choice
-assert_paper_axioms EfficientORSet.AbstractSpec.merge_update_eq
-assert_paper_axioms EfficientORSet.AbstractSpec.causal_replay_eq
-assert_paper_axioms EfficientORSet.AbstractSpec.causalMetadata
-assert_paper_axioms AbstractMRDT.causal_frame
-assert_paper_axioms AbstractMRDT.local_step
-assert_paper_axioms AbstractMRDT.shared_step
-assert_paper_axioms AbstractMRDT.swap_step
-assert_paper_axioms AbstractMRDT.side_decomposition
-assert_paper_axioms ORSet.AbstractSpec.mergeCommMetadata
-assert_paper_axioms EfficientORSet.AbstractSpec.mergeCommMetadata
-assert_paper_axioms AbstractMRDT.join_at_sizes
-assert_paper_axioms AbstractMRDT.representationJoin_of_vcs
-assert_paper_axioms ORSet.AbstractSpec.replaySupply
-assert_paper_axioms EfficientORSet.AbstractSpec.replaySupply
-assert_paper_axioms ORSet.AbstractSpec.shared_replay_eq
-assert_paper_axioms ORSet.AbstractSpec.sharedMetadata
-assert_paper_axioms EfficientORSet.AbstractSpec.shared_replay_eq
-assert_paper_axioms EfficientORSet.AbstractSpec.sharedMetadata
-assert_paper_axioms ORSet.AbstractSpec.local_replay_eq
-assert_paper_axioms ORSet.AbstractSpec.localMetadata
-assert_paper_axioms EfficientORSet.AbstractSpec.local_replay_eq
-assert_paper_axioms EfficientORSet.AbstractSpec.localMetadata
-assert_paper_axioms ORSet.AbstractSpec.causal_replay_eq
-assert_paper_axioms ORSet.AbstractSpec.causalMetadata
-assert_paper_axioms ORSet.AbstractSpec.mergeVCs
-assert_paper_axioms ORSet.AbstractSpec.vcRepresentationJoin
-assert_paper_axioms ORSet.AbstractSpec.vcJoinAt
-assert_paper_axioms ORSet.AbstractSpec.vcRepresentedVersions
-assert_paper_axioms ORSet.AbstractSpec.vcCertificate
-assert_paper_axioms ORSet.AbstractSpec.vcCertifiedVersionsRAV
-assert_paper_axioms ORSet.AbstractSpec.vcCertifiedExecutionsV
-assert_paper_axioms ORSet.AbstractSpec.vcCertifiedExecutions
-assert_paper_axioms EfficientORSet.AbstractSpec.causal_add_observation
-assert_paper_axioms EfficientORSet.AbstractSpec.local_add_observation
-assert_paper_axioms EfficientORSet.AbstractSpec.remove_past_subset
-assert_paper_axioms EfficientORSet.AbstractSpec.local_remove_eq
-assert_paper_axioms EfficientORSet.AbstractSpec.causal_remove_eq
-assert_paper_axioms EfficientORSet.AbstractSpec.mergeVCs
-assert_paper_axioms EfficientORSet.AbstractSpec.vcRepresentationJoin
-assert_paper_axioms EfficientORSet.AbstractSpec.vcHistoryMerge
-assert_paper_axioms EfficientORSet.AbstractSpec.vcVirtualMergeBaseStateRepresents
-assert_paper_axioms EfficientORSet.AbstractSpec.vcRepresentedConfig
-assert_paper_axioms EfficientORSet.AbstractSpec.vcRepresentedVersions
-assert_paper_axioms EfficientORSet.AbstractSpec.vcCertificate
-assert_paper_axioms EfficientORSet.AbstractSpec.vcCertifiedVersionsRAV
-assert_paper_axioms EfficientORSet.AbstractSpec.vcCertifiedExecutionsV
-assert_paper_axioms EfficientORSet.AbstractSpec.vcCertifiedExecutions
-assert_paper_axioms AbstractMRDT.VCConditions.toCertificate
-assert_paper_axioms AbstractMRDT.VCConditions.executions
-assert_paper_axioms AbstractMRDT.VCConditions.executionsV
-assert_paper_axioms ORSet.AbstractSpec.vcConditions
-assert_paper_axioms EfficientORSet.AbstractSpec.vcConditions
-
--- Check the proof route, not merely its axioms: the new execution proofs
--- must reach the metadata induction and avoid the earlier direct Join proofs.
-open Lean Elab Command in
-elab "assert_vc_dependencies " n:ident : command => do
-  let root ← liftCoreM <| Lean.Elab.realizeGlobalConstNoOverloadWithInfo n
-  let env ← getEnv
-  let mut seen : NameSet := {}
-  let mut pending := [root]
-  let forbidden := [``ORSet.join, ``ORSet.AbstractSpec.representationJoin,
-    ``ORSet.AbstractSpec.representedVersions,
-    ``Sal.MRDTs.Instances.EfficientORSet.represents_merge,
-    ``Sal.MRDTs.Instances.EfficientORSet.represented_of_mintCertifiedV,
-    ``Sal.MRDTs.Instances.EfficientORSet.virtualMergeBaseState_represents,
-    ``EfficientORSet.AbstractSpec.representationJoin,
-    ``EfficientORSet.AbstractSpec.representedVersions]
-  while !pending.isEmpty do
-    let current := pending.head!
-    pending := pending.tail!
-    unless seen.contains current do
-      seen := seen.insert current
-      if forbidden.contains current then
-        throwError "{n} uses earlier direct Join route {current}"
-      if let some info := env.find? current then
-        pending := info.getUsedConstantsAsSet.toList ++ pending
-  unless seen.contains ``AbstractMRDT.join_at_sizes do
-    throwError "{n} does not depend on the new metadata Join induction"
-  for leaf in ["mergeVCs", "causalMetadata", "localMetadata", "sharedMetadata"] do
-    let required := Name.str root.getPrefix leaf
-    unless seen.contains required do
-      throwError "{n} does not depend on datatype obligation {required}"
-
-assert_vc_dependencies ORSet.AbstractSpec.vcRepresentationJoin
-assert_vc_dependencies EfficientORSet.AbstractSpec.vcRepresentationJoin
-assert_vc_dependencies ORSet.AbstractSpec.vcCertifiedExecutions
-assert_vc_dependencies ORSet.AbstractSpec.vcCertifiedExecutionsV
-assert_vc_dependencies EfficientORSet.AbstractSpec.vcCertifiedExecutions
-assert_vc_dependencies EfficientORSet.AbstractSpec.vcCertifiedExecutionsV
+assert_paper_axioms ConcreteMRDT.MetadataDependencies.closed_diff_of_max
+assert_paper_axioms ConcreteMRDT.joint_maximal_of_enumeration
+assert_paper_axioms ConcreteMRDT.MetadataDependencies.past_closed
+assert_paper_axioms ConcreteMRDT.MetadataDependencies.past_semantic_maximal
+assert_paper_axioms ConcreteMRDT.Raw.representationJoin_of_vcs
 
 -- Commuting ports reuse concrete equations, but their execution proofs must
--- still derive Join through the primary abstraction/metadata VC induction.
+-- still derive Join through the primary concrete metadata VC induction.
 open Lean Elab Command in
 elab "assert_commuting_vc_dependencies " n:ident : command => do
   let root ← liftCoreM <| Lean.Elab.realizeGlobalConstNoOverloadWithInfo n
   let env ← getEnv
   let mut seen : NameSet := {}
   let mut pending := [root]
-  let forbidden := [``Sal.MRDTs.Instances.AddStore.join,
-    ``Sal.MRDTs.Instances.LWWRegister.join,
-    ``Sal.MRDTs.Instances.LWWRegister.sequentialCorrectness,
-    ``Sal.MRDTs.Instances.FinsetStore.join, ``Sal.MRDTs.Instances.FlatCounters.join,
-    ``Sal.MRDTs.Instances.FlatGrowOnly.join, ``Sal.MRDTs.Instances.RGA.join,
-    ``Sal.MRDTs.Instances.RGA.versionWellFormed_of_execution,
-    ``Sal.MRDTs.Instances.RGA.canonical_respects_rc,
-    ``RGA.Identified.canonical_respects_specVisibility,
-    ``Sal.MRDTs.Instances.BoundedCounter.sequentialCorrectness,
-    ``Sal.MRDTs.Instances.TreeMove.join, ``Sal.MRDTs.Instances.TreeMove.sequentialCorrectness,
-    ``Sal.MRDTs.Instances.AegisSheet.join,
-    ``Sal.MRDTs.Instances.AegisSheet.Sequential.canonical_causalOriginLegal,
-    ``Sal.MRDTs.Instances.AegisSheet.Sequential.sequentialCorrectness]
+  let forbidden := ["Sal.MRDTs.Instances.AddStore.join",
+    "Sal.MRDTs.Instances.LWWRegister.join",
+    "Sal.MRDTs.Instances.LWWRegister.sequentialCorrectness",
+    "Sal.MRDTs.Instances.FinsetStore.join",
+    "Sal.MRDTs.Instances.FlatCounters.join",
+    "Sal.MRDTs.Instances.FlatGrowOnly.join",
+    "Sal.MRDTs.Instances.RGA.join",
+    "Sal.MRDTs.Instances.RGA.versionWellFormed_of_execution",
+    "Sal.MRDTs.Instances.RGA.canonical_respects_rc",
+    "Sal.MRDTs.Paper1.RGA.Identified.canonical_respects_specVisibility",
+    "Sal.MRDTs.Instances.BoundedCounter.sequentialCorrectness",
+    "Sal.MRDTs.Instances.TreeMove.join",
+    "Sal.MRDTs.Instances.TreeMove.sequentialCorrectness",
+    "Sal.MRDTs.Instances.AegisSheet.join",
+    "Sal.MRDTs.Instances.AegisSheet.Sequential.canonical_causalOriginLegal",
+    "Sal.MRDTs.Instances.AegisSheet.Sequential.sequentialCorrectness"].map String.toName
   while !pending.isEmpty do
     let current := pending.head!
     pending := pending.tail!
@@ -352,124 +237,21 @@ elab "assert_commuting_vc_dependencies " n:ident : command => do
         throwError "{n} uses earlier concrete proof route {current}"
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
-  for required in [``AbstractMRDT.join_at_sizes, ``AbstractMRDT.CommutingPort.mergeVCs,
-      ``AbstractMRDT.CommutingPort.causalMetadata, ``AbstractMRDT.CommutingPort.localMetadata,
-      ``AbstractMRDT.CommutingPort.sharedMetadata] do
+  for required in [``ConcreteMRDT.Raw.join_at_sizes, ``ConcreteMRDT.CommutingPort.mergeVCs,
+      ``Sal.MRDTs.causalDeltaLaw_of_all_comm, ``Sal.MRDTs.DeltaLaws.local_redistribute,
+      ``Sal.MRDTs.DeltaLaws.redistribute] do
     unless seen.contains required do
-      throwError "{n} lacks required abstraction VC obligation {required}"
+      throwError "{n} lacks required concrete VC obligation {required}"
 
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.gsetExecutions
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.gsetExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.addStoreExecutions
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.addStoreExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.finiteAddExecutions
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.finiteAddExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.counterExecutions
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.counterExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.iocExecutions
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.iocExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.pnExecutions
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.pnExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.booleanSetExecutions
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.booleanSetExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.booleanMapExecutions
-assert_commuting_vc_dependencies AbstractMRDT.SimplePorts.booleanMapExecutionsV
-assert_commuting_vc_dependencies RGA.AbstractPort.executions
-assert_commuting_vc_dependencies RGA.AbstractPort.executionsV
-assert_commuting_vc_dependencies AbstractMRDT.GuardedPorts.Bounded.executions
-assert_commuting_vc_dependencies AbstractMRDT.GuardedPorts.Bounded.executionsV
-assert_commuting_vc_dependencies AbstractMRDT.GuardedPorts.Tree.executions
-assert_commuting_vc_dependencies AbstractMRDT.GuardedPorts.Tree.executionsV
-assert_commuting_vc_dependencies AbstractMRDT.GuardedPorts.Sheet.executions
-assert_commuting_vc_dependencies AbstractMRDT.GuardedPorts.Sheet.executionsV
-
-assert_paper_axioms AbstractMRDT.future_complete
-assert_paper_axioms AbstractMRDT.VCReplayConditions.join
-assert_paper_axioms AbstractMRDT.ScopedVCConditions.versionsV
-assert_paper_axioms AbstractMRDT.ScopedVCConditions.executions
-assert_paper_axioms AbstractMRDT.ScopedVCConditions.executionsV
-assert_paper_axioms RGA.AbstractPort.conditions
-assert_paper_axioms RGA.AbstractPort.executions
-assert_paper_axioms RGA.AbstractPort.executionsV
-assert_paper_axioms RGA.AbstractPort.globalCompatibility_impossible
-assert_paper_axioms RGA.AbstractPort.crossed_control
-assert_paper_axioms AbstractMRDT.SimplePorts.gsetConditions
-assert_paper_axioms AbstractMRDT.SimplePorts.addStoreConditions
-assert_paper_axioms AbstractMRDT.SimplePorts.finiteAddConditions
-assert_paper_axioms AbstractMRDT.SimplePorts.counterConditions
-assert_paper_axioms AbstractMRDT.SimplePorts.iocConditions
-assert_paper_axioms AbstractMRDT.SimplePorts.pnConditions
-assert_paper_axioms AbstractMRDT.SimplePorts.booleanSetConditions
-assert_paper_axioms AbstractMRDT.SimplePorts.booleanMapConditions
-assert_paper_axioms AbstractMRDT.GuardedPorts.Bounded.conditions
-assert_paper_axioms AbstractMRDT.GuardedPorts.Tree.conditions
-assert_paper_axioms AbstractMRDT.GuardedPorts.Sheet.conditions
-assert_paper_axioms ObservationalObstructions.Queue.no_laws
-assert_paper_axioms ObservationalObstructions.MVR.no_laws
-assert_paper_axioms ObservationalObstructions.Embedded.no_laws
-assert_paper_axioms ObservationalObstructions.Sided.no_laws
-assert_paper_axioms ObservationalObstructions.peritext_no_laws
-assert_paper_axioms ObservationalObstructions.SidedPeritext.core_no_laws
-assert_paper_axioms ObservationalObstructions.SidedPeritext.rich_no_laws
-assert_paper_axioms ObservationalObstructions.RegisteredFugueMax.no_laws
-assert_paper_axioms ObservationalObstructions.Queue.query_control
-assert_paper_axioms ObservationalObstructions.MVR.query_control
-assert_paper_axioms ObservationalObstructions.Embedded.query_control
-assert_paper_axioms ObservationalObstructions.Sided.query_control
-assert_paper_axioms ObservationalObstructions.peritext_query_control
-assert_paper_axioms ObservationalObstructions.SidedPeritext.core_query_control
-assert_paper_axioms ObservationalObstructions.SidedPeritext.rich_query_control
-assert_paper_axioms ObservationalObstructions.RegisteredFugueMax.query_control
-assert_paper_axioms AbstractMRDT.SimplePorts.add_control
-assert_paper_axioms AbstractMRDT.SimplePorts.finite_add_control
-assert_paper_axioms AbstractMRDT.SimplePorts.increment_control
-assert_paper_axioms AbstractMRDT.SimplePorts.pn_control
-assert_paper_axioms AbstractMRDT.SimplePorts.boolean_control
-assert_paper_axioms AbstractMRDT.SimplePorts.immutable_map_control
-assert_paper_axioms AbstractCoverage.packages_eq_production
-assert_paper_axioms AbstractCoverage.counts
-assert_paper_axioms AbstractCoverage.ProvedResult.executions
-assert_paper_axioms AbstractCoverage.ProvedResult.executionsV
-assert_paper_axioms ORSet.AbstractSpec.metadataSubstitution
-assert_paper_axioms EfficientORSet.AbstractSpec.metadataSubstitution
-assert_paper_axioms ORSet.AbstractSpec.initialMetadata
-assert_paper_axioms ORSet.AbstractSpec.initMetadata
-assert_paper_axioms EfficientORSet.AbstractSpec.initialMetadata
-assert_paper_axioms EfficientORSet.AbstractSpec.initMetadata
-assert_paper_axioms EfficientORSet.MetadataPeelControl.control
-assert_paper_axioms EfficientORSet.MetadataPeelControl.observable_dependency_missing
-assert_paper_axioms EfficientORSet.MetadataPeelControl.observable_past_empty
-assert_paper_axioms EfficientORSet.MetadataPeelControl.metadata_past_retains_older
-assert_paper_axioms EfficientORSet.MetadataPeelControl.causal_reconstruction_invalid
-assert_paper_axioms EfficientORSet.MetadataPeelControl.causal_reconstruction_observable
-assert_paper_axioms AbstractMRDT.Laws.toRestricted
-assert_paper_axioms AbstractMRDT.canonical_equivalent
-assert_paper_axioms AbstractMRDT.canonical_iff
-assert_paper_axioms AbstractMRDT.Model.historySound
-assert_paper_axioms AbstractMRDT.of_representation
-assert_paper_axioms AbstractMRDT.merge_canonical_of_representation
-assert_paper_axioms AbstractMRDT.merge_equivalent_of_representation
-assert_paper_axioms AbstractMRDT.Certificate.versionsV
-assert_paper_axioms AbstractMRDT.Certificate.convergence
-assert_paper_axioms AbstractMRDT.Certificate.executions
-assert_paper_axioms AbstractMRDT.Certificate.executionsV
-assert_paper_axioms ORSet.AbstractSpec.certificate
-assert_paper_axioms EfficientORSet.AbstractSpec.certificate
-assert_paper_axioms EfficientORSet.AbstractControls.merge_control
-assert_paper_axioms EfficientORSet.AbstractControls.canonical_only_join_fails
-assert_paper_axioms EfficientORSet.NeemScope.guarded_vs_unqualified
-assert_paper_axioms QueryReplay.commutes_iff
-assert_paper_axioms QueryReplay.Laws.toRestricted
-assert_paper_axioms QueryReplay.canonical_query_unique
-assert_paper_axioms QueryReplay.of_canonical
-assert_paper_axioms ORSet.QuerySpec.certifiedVersionsRA
-assert_paper_axioms ORSet.QuerySpec.certifiedVersionsRAV
-assert_paper_axioms EfficientORSet.QuerySpec.laws
-assert_paper_axioms EfficientORSet.QuerySpec.certifiedVersionsRA
-assert_paper_axioms EfficientORSet.QuerySpec.certifiedVersionsRAV
-assert_paper_axioms EfficientORSet.QuerySpec.same_replica_add_control
-assert_paper_axioms EfficientORSet.QuerySpec.ordering_control
-assert_paper_axioms EfficientORSet.QuerySpec.merge_congruence_fails
+assert_paper_axioms ConcreteMRDT.SimplePorts.add_control
+assert_paper_axioms ConcreteMRDT.SimplePorts.finite_add_control
+assert_paper_axioms ConcreteMRDT.SimplePorts.increment_control
+assert_paper_axioms ConcreteMRDT.SimplePorts.pn_control
+assert_paper_axioms ConcreteMRDT.SimplePorts.boolean_control
+assert_paper_axioms ConcreteMRDT.SimplePorts.immutable_map_control
+assert_paper_axioms ConcreteMRDT.VCReplayConditions.join
+assert_paper_axioms ConcreteMRDT.ScopedVCConditions.executions
+assert_paper_axioms ConcreteMRDT.ScopedVCConditions.executionsV
 assert_paper_axioms paperOrder_iff_loOn
 assert_paper_axioms SequentialSimulation.sound
 assert_paper_axioms ra_of_replay_total
@@ -656,56 +438,64 @@ assert_paper_axioms MigrationCoverage.exactORSet
 assert_paper_axioms MigrationCoverage.efficient_direct
 
 -- Corrected guarded registry campaign: positive VC routes and guarded exclusions.
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.gsetExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.gsetExecutions
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.gsetExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.gsetExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.addStoreExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.addStoreExecutions
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.addStoreExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.addStoreExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.finiteAddExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.finiteAddExecutions
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.finiteAddExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.finiteAddExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.counterExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.counterExecutions
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.counterExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.counterExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.iocExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.iocExecutions
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.iocExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.iocExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.pnExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.pnExecutions
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.pnExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.pnExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.booleanSetExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.booleanSetExecutions
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.booleanSetExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.booleanSetExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.booleanMapExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.booleanMapExecutions
-assert_paper_axioms AbstractMRDT.Guarded.SimplePorts.booleanMapExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.SimplePorts.booleanMapExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.ScopedPorts.boundedExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.ScopedPorts.boundedExecutions
-assert_paper_axioms AbstractMRDT.Guarded.ScopedPorts.boundedExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.ScopedPorts.boundedExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.ScopedPorts.treeExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.ScopedPorts.treeExecutions
-assert_paper_axioms AbstractMRDT.Guarded.ScopedPorts.treeExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.ScopedPorts.treeExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.ScopedPorts.sheetExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.ScopedPorts.sheetExecutions
-assert_paper_axioms AbstractMRDT.Guarded.ScopedPorts.sheetExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.ScopedPorts.sheetExecutionsV
-assert_paper_axioms AbstractMRDT.Guarded.ScopedPorts.rgaExecutions
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.ScopedPorts.rgaExecutions
-assert_paper_axioms AbstractMRDT.Guarded.ScopedPorts.rgaExecutionsV
-assert_commuting_vc_dependencies AbstractMRDT.Guarded.ScopedPorts.rgaExecutionsV
-assert_paper_axioms GuardedQueueMVR.Queue.no_laws
-assert_paper_axioms GuardedQueueMVR.MVR.no_laws
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.gsetExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.gsetExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.gsetExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.gsetExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.addStoreExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.addStoreExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.addStoreExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.addStoreExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.finiteAddExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.finiteAddExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.finiteAddExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.finiteAddExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.counterExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.counterExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.counterExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.counterExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.iocExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.iocExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.iocExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.iocExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.pnExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.pnExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.pnExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.pnExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.booleanSetExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.booleanSetExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.booleanSetExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.booleanSetExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.booleanMapExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.booleanMapExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.booleanMapExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.booleanMapExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.boundedExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.boundedExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.boundedExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.boundedExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.treeExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.treeExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.treeExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.treeExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.sheetExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.sheetExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.sheetExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.sheetExecutionsV
+assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.rgaExecutions
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.rgaExecutions
+assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.rgaExecutionsV
+assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.rgaExecutionsV
+assert_paper_axioms ConcreteObstructions.Queue.query_control
+assert_paper_axioms ConcreteObstructions.MVR.query_control
+assert_paper_axioms ConcreteObstructions.Embedded.query_control
+assert_paper_axioms ConcreteObstructions.Sided.query_control
+assert_paper_axioms ConcreteObstructions.peritext_query_control
+assert_paper_axioms ConcreteObstructions.SidedPeritext.core_query_control
+assert_paper_axioms ConcreteObstructions.SidedPeritext.rich_query_control
+assert_paper_axioms ConcreteObstructions.RegisteredFugueMax.query_control
+assert_paper_axioms GuardedQueueMVR.Queue.no_raw_laws
+assert_paper_axioms GuardedQueueMVR.MVR.no_raw_laws
 assert_paper_axioms GuardedQueueMVR.Queue.control
 assert_paper_axioms GuardedQueueMVR.MVR.origin_control
 assert_paper_axioms GuardedQueueMVR.MVR.control
@@ -821,7 +611,7 @@ elab "assert_certified_mvr_dependencies " n:ident : command => do
         throwError "{n} uses legacy MVR correctness {current}"
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
-  for required in [``AbstractMRDT.Raw.join_at_sizes,
+  for required in [``ConcreteMRDT.Raw.join_at_sizes,
       ``CertifiedQueueMVR.MVR.RawVC.mergeVCs,
       ``CertifiedQueueMVR.MVR.Execution.vcVirtualMergeBaseStateRepresents,
       ``CertifiedMVRHistory.replay_history,
@@ -874,7 +664,7 @@ elab "assert_certified_rga_dependencies " n:ident " using " vc:ident : command =
         throwError "{n} uses legacy RGA correctness {current}"
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
-  for required in [``AbstractMRDT.Raw.join_at_sizes, equations,
+  for required in [``ConcreteMRDT.Raw.join_at_sizes, equations,
       ``CertifiedClosedExecution.canonicalConfig_of_mintCertifiedV] do
     unless seen.contains required do
       throwError "{n} omits certified VC/execution dependency {required}"

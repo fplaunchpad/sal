@@ -19,7 +19,7 @@ execution correctness. Queue has a checked obstruction in an actual original
 certified execution. Embedded RGA, sided RGA, native Peritext, and Fugue have original-issuer
 certified raw-order obstructions for every payload policy. -/
 namespace Sal.MRDTs.Paper1.CertifiedCoverage
-open Foundation AbstractMRDT Sal.EmbedRGA
+open Foundation ConcreteMRDT Sal.EmbedRGA
 
 structure ScopedResult (D : MRDTSig) (I : Issuance D) where
   policy : OperationPolicy D.AppOp
@@ -31,11 +31,11 @@ structure ScopedResult (D : MRDTSig) (I : Issuance D) where
     (∀ v s E, C.ver v = some (s,E) →
       CertifiedReplay.RestrictedLaws (scope C E) policy ∧
       CertifiedReplay.Canonical (scope C E) policy D.init s) ∧
-    VersionsWitness (Raw.model D) policy spec C
+    VersionsWitness policy spec C
 
 theorem ScopedResult.versionsWitness {D : MRDTSig} {I : Issuance D}
     (result : ScopedResult D I) {C : Configuration D} (execution : CertifiedExecution D I C) :
-    VersionsWitness (Raw.model D) result.policy result.spec C :=
+    VersionsWitness result.policy result.spec C :=
   (result.correct C execution).2
 
 theorem ScopedResult.storedCanonical {D : MRDTSig} {I : Issuance D}
@@ -50,15 +50,15 @@ theorem ScopedResult.storedCanonical {D : MRDTSig} {I : Issuance D}
 theorem ScopedResult.versionsV {D : MRDTSig} {I : Issuance D}
     (result : ScopedResult D I) {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) I C) :
-    VersionsWitness (Raw.model D) result.policy result.spec C :=
+    VersionsWitness result.policy result.spec C :=
   result.versionsWitness (.virtual reach)
 
 theorem ScopedResult.executions {D : MRDTSig} {I : Issuance D}
     (result : ScopedResult D I) (trace : List (Label D × Configuration D))
     (run : (certifiedTS D I).Execution (initConfig D) trace) :
-    VersionsWitness (Raw.model D) result.policy result.spec (initConfig D) ∧
-      ∀ entry ∈ trace, VersionsWitness (Raw.model D) result.policy result.spec entry.2 := by
-  have reached := visited (Good := MintCertifiedReach D I)
+    VersionsWitness result.policy result.spec (initConfig D) ∧
+      ∀ entry ∈ trace, VersionsWitness result.policy result.spec entry.2 := by
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReach D I)
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) run .init
   exact ⟨result.versionsWitness (.ordinary .init),
     fun entry he => result.versionsWitness (.ordinary (reached entry he))⟩
@@ -66,9 +66,9 @@ theorem ScopedResult.executions {D : MRDTSig} {I : Issuance D}
 theorem ScopedResult.executionsV {D : MRDTSig} {I : Issuance D}
     (result : ScopedResult D I) (trace : List (Label D × Configuration D))
     (run : (certifiedTSV D I).Execution (initConfig D) trace) :
-    VersionsWitness (Raw.model D) result.policy result.spec (initConfig D) ∧
-      ∀ entry ∈ trace, VersionsWitness (Raw.model D) result.policy result.spec entry.2 := by
-  have reached := visited (Good := MintCertifiedReachV D (canonicalVirtualMergeBase D) I)
+    VersionsWitness result.policy result.spec (initConfig D) ∧
+      ∀ entry ∈ trace, VersionsWitness result.policy result.spec entry.2 := by
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReachV D (canonicalVirtualMergeBase D) I)
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) run .init
   exact ⟨result.versionsWitness (.virtual .init),
     fun entry he => result.versionsWitness (.virtual (reached entry he))⟩
@@ -202,26 +202,26 @@ def fugueObstruction : RawOrderObstruction (Instances.SidedEmbedRGA.FugueMax.dat
 
 noncomputable def inventory : List Entry :=
   [ guarded "grow-only-set" Instances.GSet.verified
-      (GuardedCoverage.provedTotal Guarded.SimplePorts.gsetCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.SimplePorts.gsetCertificate)
   , guarded "add-store" (Instances.AddStore.verified (α := Nat))
-      (GuardedCoverage.provedTotal Guarded.SimplePorts.addStoreCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.SimplePorts.addStoreCertificate)
   , guarded "finite-add-store" (Instances.FinsetStore.verified (α := Nat))
-      (GuardedCoverage.provedTotal Guarded.SimplePorts.finiteAddCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.SimplePorts.finiteAddCertificate)
   , guarded "counter" Instances.FlatCounters.counterVerified
-      (GuardedCoverage.provedTotal Guarded.SimplePorts.counterCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.SimplePorts.counterCertificate)
   , guarded "increment-only-counter" Instances.FlatCounters.iocVerified
-      (GuardedCoverage.provedTotal Guarded.SimplePorts.iocCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.SimplePorts.iocCertificate)
   , guarded "pn-counter" Instances.FlatCounters.pnVerified
-      (GuardedCoverage.provedTotal Guarded.SimplePorts.pnCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.SimplePorts.pnCertificate)
   , guarded "flat-grow-only-set" Instances.FlatGrowOnly.gosetVerified
-      (GuardedCoverage.provedTotal Guarded.SimplePorts.booleanSetCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.SimplePorts.booleanSetCertificate)
   , guarded "flat-grow-only-map" Instances.FlatGrowOnly.gomapVerified
-      (GuardedCoverage.provedTotal Guarded.SimplePorts.booleanMapCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.SimplePorts.booleanMapCertificate)
   , guarded "bounded-counter" Instances.BoundedCounter.verified
-      (GuardedCoverage.provedScoped Guarded.ScopedPorts.boundedCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped Guarded.ScopedPorts.boundedCertificate)
   , guarded "lww-register" Instances.LWWRegister.verified
-      (GuardedCoverage.provedScoped LWW.GuardedPort.certificate (fun _ _ => Iff.rfl))
-  , guarded "rga" Instances.RGA.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.rgaCertificate (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped LWW.GuardedPort.certificate)
+  , guarded "rga" Instances.RGA.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.rgaCertificate)
   , ⟨PackagedMRDT.of "embed-rga" (Instances.ProductionRGA.embed (α := Nat) unaryCode),
       .rawOrderObstruction _ embedObstruction⟩
   , ⟨PackagedMRDT.of "sided-embed-rga" (Instances.ProductionRGA.sided unaryCode),
@@ -230,10 +230,10 @@ noncomputable def inventory : List Entry :=
       .rawOrderObstruction _ peritextObstruction⟩
   , ⟨PackagedMRDT.of "sided-peritext-core" (Instances.SidedPeritext.verified unaryCode),.scoped coreResult⟩
   , ⟨PackagedMRDT.of "sided-peritext-rich-core" (Instances.SidedPeritext.richVerified unaryCode),.scoped richResult⟩
-  , guarded "tree-move" Instances.TreeMove.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.treeCertificate (fun _ _ => Iff.rfl))
-  , guarded "aegis-sheet" Instances.AegisSheet.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.sheetCertificate (fun _ _ => Iff.rfl))
+  , guarded "tree-move" Instances.TreeMove.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.treeCertificate)
+  , guarded "aegis-sheet" Instances.AegisSheet.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.sheetCertificate)
   , guarded "efficient-or-set" (Instances.EfficientORSet.verified (α := Nat))
-      (GuardedCoverage.provedScoped (EfficientORSet.RawCertificate.certificate (α := Nat)) (fun _ _ => Iff.rfl))
+      (GuardedCoverage.provedScoped (EfficientORSet.RawCertificate.certificate (α := Nat)))
   , ⟨PackagedMRDT.of "queue" Instances.Queue.verified,
       .queueObstruction rfl CertifiedQueueMVR.Queue.certified CertifiedQueueMVR.Queue.no_local_payload_policy
         CertifiedQueueMVR.Queue.no_scoped_policy⟩

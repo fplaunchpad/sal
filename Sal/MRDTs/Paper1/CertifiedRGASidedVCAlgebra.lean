@@ -1,5 +1,5 @@
 import Sal.MRDTs.Paper1.CertifiedRGAVCReplay
-import Sal.MRDTs.Paper1.ORSetLocalMetadata
+import Sal.MRDTs.Paper1.ConcreteORSetAlgebra
 
 /-! Independent raw merge algebra for certified immutable records. These
 lemmas normalize a merge by membership; they assume no merge correctness. -/

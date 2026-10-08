@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.ConcreteHistoryBridge
 import Sal.MRDTs.Paper1.GuardedRawORSetJoin
 
 /-! Exact OR-set execution correctness with raw equality. The merge induction
@@ -17,7 +18,7 @@ theorem vcJoinAt (C : ReplayContext (D α).toUpdateSig) :
   obtain ⟨π₁,hp₁,_,_⟩ := ha
   obtain ⟨π₂,hp₂,_,_⟩ := hb
   have perm := listPermOf_union (D := (D α).toUpdateSig) hp₁ hp₂
-  have sizes := AbstractMRDT.Raw.join_at_sizes GuardedRawVC.mergeVCs RawReplay.unique
+  have sizes := ConcreteMRDT.Raw.join_at_sizes GuardedRawVC.mergeVCs RawReplay.unique
     (fun C _ _ _ => RawReplay.initial C) RawReplay.finite
     C tr irrefl kit.represented kit.peel
   have joined := sizes _ E₁ E₂ l a b _ perm rfl sup₁ sup₂
@@ -47,12 +48,12 @@ private theorem virtual_reach {C : Configuration (D α)}
   | ordinary reach => exact reach.toV
   | virtual reach => exact reach
 
-theorem compatibility : AbstractMRDT.SpecificationCompatibility
-    (RawReplay.model (α := α)) (EventSpec.spec α) := EventSpec.commutationCompatibility
+theorem compatibility : CommutationCompatibility (D α) id (EventSpec.spec α) := EventSpec.commutationCompatibility
 
-def certificate : AbstractMRDT.Guarded.ScopedCertificate (RawReplay.model (α := α))
+def certificate : ConcreteMRDT.ScopedCertificate
     (conflict α) (EventSpec.spec α) (issuance α) :=
-  AbstractMRDT.Guarded.ScopedCertificate.ofTotal (Raw.laws Guarded.laws)
+  ConcreteMRDT.ScopedCertificate.ofTotal Guarded.laws
+    (fun C E supported _ _ hs ht => ConcreteMRDT.canonical_unique Guarded.laws C E supported hs ht)
     (fun _ exec v s E hv => (representedVersions (virtual_reach exec) v s E hv).2)
     (fun C exec v s E hv =>
       RawReplay.representsCanonical C.replayContext E s
@@ -70,12 +71,12 @@ theorem storedCanonical {C : Configuration (D α)}
 
 theorem versionsV {C : Configuration (D α)}
     (reach : MintCertifiedReachV (D α) (canonicalVirtualMergeBase (D α)) (issuance α) C) :
-    AbstractMRDT.Guarded.VersionsRALinearizable (RawReplay.model (α := α))
+    ConcreteMRDT.VersionsWitness
       (conflict α) (EventSpec.spec α) C := certificate.versionsV reach
 
 theorem versions {C : Configuration (D α)}
     (reach : MintCertifiedReach (D α) (issuance α) C) :
-    AbstractMRDT.Guarded.VersionsRALinearizable (RawReplay.model (α := α))
+    ConcreteMRDT.VersionsWitness
       (conflict α) (EventSpec.spec α) C := certificate.versions (.ordinary reach)
 
 theorem convergence {C : Configuration (D α)}
@@ -86,12 +87,12 @@ theorem convergence {C : Configuration (D α)}
 
 theorem executions (trace : List (Label (D α) × Configuration (D α)))
     (execution : (certifiedTS (D α) (issuance α)).Execution (initConfig (D α)) trace) :
-    AbstractMRDT.Guarded.ExecutionCorrect (RawReplay.model (α := α))
+    ConcreteMRDT.ExecutionCorrect
       (conflict α) (EventSpec.spec α) trace := certificate.executions trace execution
 
 theorem executionsV (trace : List (Label (D α) × Configuration (D α)))
     (execution : (certifiedTSV (D α) (issuance α)).Execution (initConfig (D α)) trace) :
-    AbstractMRDT.Guarded.ExecutionCorrect (RawReplay.model (α := α))
+    ConcreteMRDT.ExecutionCorrect
       (conflict α) (EventSpec.spec α) trace := certificate.executionsV trace execution
 
 #print axioms vcJoinAt

@@ -1,5 +1,5 @@
-import Sal.MRDTs.Paper1.GuardedRawModel
-import Sal.MRDTs.Paper1.AbstractCompatibility
+import Sal.MRDTs.Paper1.EventBridge
+import Sal.MRDTs.Paper1.GuardedReplay
 import Sal.MRDTs.Instances.LWWRegister
 
 /-! LWW's existing timestamp-order policy violates no-chain. This is a

@@ -184,14 +184,13 @@ theorem scoped_laws {C : Configuration Q} (h : CertifiedExecution Q issuance C)
 
 /-- Named new-framework merge VC package for the compact queue kernel.
 Issuance restriction changes no effector or merge algebra. -/
-theorem mergeVCs : AbstractMRDT.Raw.MergeVCs
-    (CertifiedRGAVCReplay.Embedded.model (α := Nat) unaryCode)
+theorem mergeVCs : ConcreteMRDT.Raw.MergeVCs
     CertifiedRGAVCReplay.Embedded.policy
-    (CertifiedRGAVCReplay.Embedded.representation unaryCode)
+    (CertifiedRGAVCReplay.Embedded.representation (α := Nat) unaryCode)
     (CertifiedRGAVCReplay.Embedded.scheme unaryCode) :=
   CertifiedRGAVC.Embedded.mergeVCs unaryCode
 
-theorem representationJoin : AbstractMRDT.RepresentationJoin
+theorem representationJoin : ConcreteMRDT.RepresentationJoin
     (CertifiedRGAVCReplay.Embedded.representation (α := Nat) unaryCode) :=
   CertifiedRGAVC.Embedded.representationJoin unaryCode
 

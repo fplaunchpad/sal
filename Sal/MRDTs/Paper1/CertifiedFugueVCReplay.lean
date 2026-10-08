@@ -1,6 +1,5 @@
 import Sal.MRDTs.Paper1.CertifiedRGAFugue
-import Sal.MRDTs.Paper1.GuardedRawModel
-import Sal.MRDTs.Paper1.GuardedRawJoin
+import Sal.MRDTs.Paper1.ConcreteJoin
 
 namespace Sal.MRDTs.Paper1.CertifiedFugueVCReplay
 open Foundation Sal.EmbedRGA
@@ -14,10 +13,9 @@ def representation (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toU
     ∃ xs, listPermOf xs H ∧ respects xs C.vis ∧
       applySeq (datatype Γ).toUpdateSig (datatype Γ).init xs = s
 
-def model (Γ : OrderedPrefixCode) : AbstractMRDT.Model (datatype Γ) := Raw.model (datatype Γ)
 def policy : OperationPolicy Payload where before _ _ := False
 def scheme (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdateSig) :
-    AbstractMRDT.MetadataDependencies (model Γ) C where
+    ConcreteMRDT.MetadataDependencies C where
   before := C.vis
   causal _ _ h := h
   covers _ _ h _ := h
@@ -33,7 +31,7 @@ theorem respects_lo (Γ : OrderedPrefixCode) (C : Configuration (datatype Γ))
   have eb := support ((perm.2 b).mp hb)
   exact hn (rc_visible C mint trans eb ea ((lo_iff_rc C mint trans H eb ea).mp edge))
 
-theorem unique (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.Unique (representation Γ) := by
+theorem unique (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.Unique (representation Γ) := by
   intro C H s t hs ht
   obtain ⟨K,mint,rfl⟩ := hs.1
   obtain ⟨xs,px,rx,fx⟩ := hs.2.2.2.2
@@ -119,7 +117,7 @@ theorem finite (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdat
 theorem peel (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdateSig)
     (U : Set (Op Payload)) (s : State) (rep : representation Γ C U s)
     (nonempty : U.Nonempty) (closed : (scheme Γ C).Closed U) :
-    Nonempty (AbstractMRDT.Raw.PeelChoice (model Γ) policy (representation Γ) C (scheme Γ C) U) := by
+    Nonempty (ConcreteMRDT.Raw.PeelChoice policy (representation Γ) C (scheme Γ C) U) := by
   obtain ⟨xs,perm,ordered,_⟩ := rep.2.2.2.2
   have semantic : respects xs (paperOrder policy C U) := by
     apply ordered.imp
@@ -128,12 +126,12 @@ theorem peel (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdateS
     · exact hn vis
     · exact bad
   obtain ⟨e,member,semanticMax,metadataMax⟩ :=
-    AbstractMRDT.joint_maximal_of_enumeration xs perm nonempty semantic ordered
+    ConcreteMRDT.joint_maximal_of_enumeration xs perm nonempty semantic ordered
   let M := scheme Γ C
   have pastSub : M.Past e ⊆ U := M.past_subset U e closed member
-  obtain ⟨pre,pPre⟩ := AbstractMRDT.enumeration_subset perm
+  obtain ⟨pre,pPre⟩ := ConcreteMRDT.enumeration_subset perm
     (show U \ {e} ⊆ U from Set.diff_subset)
-  obtain ⟨past,pPast⟩ := AbstractMRDT.enumeration_subset perm
+  obtain ⟨past,pPast⟩ := ConcreteMRDT.enumeration_subset perm
     (show M.Past e \ {e} ⊆ U from fun _ h => pastSub h.1)
   obtain ⟨a,ha⟩ := supply Γ C rep.1 rep.2.1 rep.2.2.1 _ pre pPre
     (fun _ h => rep.2.2.2.1 h.1)
@@ -167,7 +165,7 @@ theorem peel (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdateS
 
 theorem replaySupply (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdateSig)
     (honest : ∃ K : Configuration (datatype Γ), MintHonest (datatype Γ) (applicable Γ) K ∧ K.replayContext = C) (trans : Transitive C.vis) (irr : ∀ e, ¬ C.vis e e) :
-    AbstractMRDT.Raw.ReplaySupply (model Γ) policy (representation Γ) (scheme Γ) C := by
+    ConcreteMRDT.Raw.ReplaySupply policy (representation Γ) (scheme Γ) C := by
   refine ⟨?_,?_⟩
   · intro H xs perm support
     exact supply Γ C honest trans irr H xs perm (fun _ h => support _ h)

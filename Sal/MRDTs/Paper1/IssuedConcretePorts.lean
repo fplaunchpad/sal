@@ -1,12 +1,12 @@
-import Sal.MRDTs.Paper1.CommutingVCReplay
+import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Paper1.BoundedCounterEvent
 import Sal.MRDTs.Paper1.TreeSheetEventSpec
 
-/-! Abstraction VC ports for the three guarded commuting production datatypes.
+/-! Concrete VC ports for the three guarded commuting production datatypes.
 Their languages and issuers are unchanged. Canonical version evidence comes
 from the VC induction; origin legality is reconstructed from that evidence and
 honest issuance. No production Join theorem is used by these ports. -/
-namespace Sal.MRDTs.Paper1.AbstractMRDT.GuardedPorts
+namespace Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts
 open Foundation
 
 private theorem virtual_reach {D : MRDTSig} {I : Issuance D} {C : Configuration D}
@@ -19,8 +19,6 @@ private theorem virtual_reach {D : MRDTSig} {I : Issuance D} {C : Configuration 
 namespace Bounded
 open Instances.BoundedCounter
 
-noncomputable def model : Model BC := Model.future BC
-
 private theorem issuanceHonest {C : Configuration BC}
     (mint : MintHonest BC bcApplicable C) : HonestAppOn BC bcApplicable C := by
   intro e he
@@ -30,7 +28,7 @@ private theorem issuanceHonest {C : Configuration BC}
 theorem history : EventExecutionHistoryAdequacy BC (commutingPolicy BC.AppOp)
     BoundedCounterEvent.spec generation := by
   intro C exec v s E hv q
-  have good := CommutingPort.vcCanonicalConfig model BC_all_comm
+  have good := CommutingPort.vcCanonicalConfig BC_all_comm
     BC_mergeLaws BC_deltaLaws BC_commutingPeelLaw (virtual_reach exec)
   have causal := causalCanonical_of_all_comm_rc_either BC_all_comm
     (fun _ _ => rfl) good
@@ -49,24 +47,24 @@ theorem history : EventExecutionHistoryAdequacy BC (commutingPolicy BC.AppOp)
       rfl
     simpa only [projectedLabels, List.map_id_fun, answer] using accepted
 
-noncomputable def conditions : ScopedVCConditions model (commutingPolicy BC.AppOp)
+noncomputable def conditions : ScopedVCConditions (commutingPolicy BC.AppOp)
     BoundedCounterEvent.spec generation :=
-  CommutingPort.scopedConditions model (future_complete BC) BC_all_comm
+  CommutingPort.scopedConditions BC_all_comm
     BC_mergeLaws BC_deltaLaws BC_commutingPeelLaw generation history
 
 theorem versionsV {C : Configuration BC}
     (reach : MintCertifiedReachV BC (canonicalVirtualMergeBase BC) generation C) :
-    VersionsRALinearizable model (commutingPolicy BC.AppOp) BoundedCounterEvent.spec C :=
+    VersionsWitness (commutingPolicy BC.AppOp) BoundedCounterEvent.spec C :=
   conditions.versionsV reach
 
 theorem executions (trace : List (Label BC × Configuration BC))
     (exec : (certifiedTS BC generation).Execution (initConfig BC) trace) :
-    ExecutionCorrect model (commutingPolicy BC.AppOp) BoundedCounterEvent.spec trace :=
+    ExecutionCorrect (commutingPolicy BC.AppOp) BoundedCounterEvent.spec trace :=
   conditions.executions trace exec
 
 theorem executionsV (trace : List (Label BC × Configuration BC))
     (exec : (certifiedTSV BC generation).Execution (initConfig BC) trace) :
-    ExecutionCorrect model (commutingPolicy BC.AppOp) BoundedCounterEvent.spec trace :=
+    ExecutionCorrect (commutingPolicy BC.AppOp) BoundedCounterEvent.spec trace :=
   conditions.executionsV trace exec
 
 end Bounded
@@ -74,10 +72,8 @@ end Bounded
 namespace Tree
 open Instances.TreeMove
 
-noncomputable def model : Model D := Model.future D
-
 /-- Honest origins remain in a visibility-respecting replay prefix. The
-canonical configuration premise is supplied by the abstraction VC induction.
+canonical configuration premise is supplied by the concrete VC induction.
 -/
 theorem originLegal {C : Configuration D} (good : CanonicalConfig C)
     (mint : MintHonest D generation.CanIssue C)
@@ -111,7 +107,7 @@ theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     TreeMoveEvent.spec generation := by
   intro C exec v s E hv q
   cases q
-  have good := CommutingPort.vcCanonicalConfig model all_comm
+  have good := CommutingPort.vcCanonicalConfig all_comm
     mergeLaws deltaLaws commutingPeelLaw (virtual_reach exec)
   obtain ⟨ops,perm,_,folded⟩ := good.canonical v s E hv
   have state : ops.toFinset = s := by rw [← folded,applySeq_eq_toFinset]
@@ -145,24 +141,24 @@ theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     rw [answer]
     exact accepted
 
-noncomputable def conditions : ScopedVCConditions model (commutingPolicy D.AppOp)
+noncomputable def conditions : ScopedVCConditions (commutingPolicy D.AppOp)
     TreeMoveEvent.spec generation :=
-  CommutingPort.scopedConditions model (future_complete D) all_comm
+  CommutingPort.scopedConditions all_comm
     mergeLaws deltaLaws commutingPeelLaw generation history
 
 theorem versionsV {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
-    VersionsRALinearizable model (commutingPolicy D.AppOp) TreeMoveEvent.spec C :=
+    VersionsWitness (commutingPolicy D.AppOp) TreeMoveEvent.spec C :=
   conditions.versionsV reach
 
 theorem executions (trace : List (Label D × Configuration D))
     (exec : (certifiedTS D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy D.AppOp) TreeMoveEvent.spec trace :=
+    ExecutionCorrect (commutingPolicy D.AppOp) TreeMoveEvent.spec trace :=
   conditions.executions trace exec
 
 theorem executionsV (trace : List (Label D × Configuration D))
     (exec : (certifiedTSV D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy D.AppOp) TreeMoveEvent.spec trace :=
+    ExecutionCorrect (commutingPolicy D.AppOp) TreeMoveEvent.spec trace :=
   conditions.executionsV trace exec
 
 end Tree
@@ -170,8 +166,6 @@ end Tree
 namespace Sheet
 open Instances.AegisSheet
 open Instances.AegisSheet.Sequential
-
-def model : Model D := Model.future D
 
 /-- Parameterized form of causal-origin legality: support and causal closure
 are explicit evidence, not obtained from the existing production Join theorem.
@@ -210,7 +204,7 @@ theorem originLegal {C : Configuration D} (good : CanonicalConfig C)
 theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     AegisSheetEvent.spec generation := by
   intro C exec v s E hv q
-  have good := CommutingPort.vcCanonicalConfig model all_comm
+  have good := CommutingPort.vcCanonicalConfig all_comm
     mergeLaws deltaLaws commutingPeelLaw (virtual_reach exec)
   obtain ⟨ops,perm,_,_⟩ := good.canonical v s E hv
   have legal := originLegal good exec.mintHonest hv perm
@@ -231,24 +225,24 @@ theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     rw [answer]
     exact accepted
 
-noncomputable def conditions : ScopedVCConditions model (commutingPolicy D.AppOp)
+noncomputable def conditions : ScopedVCConditions (commutingPolicy D.AppOp)
     AegisSheetEvent.spec generation :=
-  CommutingPort.scopedConditions model (future_complete D) all_comm
+  CommutingPort.scopedConditions all_comm
     mergeLaws deltaLaws commutingPeelLaw generation history
 
 theorem versionsV {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
-    VersionsRALinearizable model (commutingPolicy D.AppOp) AegisSheetEvent.spec C :=
+    VersionsWitness (commutingPolicy D.AppOp) AegisSheetEvent.spec C :=
   conditions.versionsV reach
 
 theorem executions (trace : List (Label D × Configuration D))
     (exec : (certifiedTS D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy D.AppOp) AegisSheetEvent.spec trace :=
+    ExecutionCorrect (commutingPolicy D.AppOp) AegisSheetEvent.spec trace :=
   conditions.executions trace exec
 
 theorem executionsV (trace : List (Label D × Configuration D))
     (exec : (certifiedTSV D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy D.AppOp) AegisSheetEvent.spec trace :=
+    ExecutionCorrect (commutingPolicy D.AppOp) AegisSheetEvent.spec trace :=
   conditions.executionsV trace exec
 
 end Sheet
@@ -259,4 +253,4 @@ end Sheet
 #print axioms Bounded.executionsV
 #print axioms Tree.executionsV
 #print axioms Sheet.executionsV
-end Sal.MRDTs.Paper1.AbstractMRDT.GuardedPorts
+end Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts

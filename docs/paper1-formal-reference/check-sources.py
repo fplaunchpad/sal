@@ -4,6 +4,7 @@ import argparse
 import collections
 import csv
 import re
+import subprocess
 from pathlib import Path
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -24,9 +25,9 @@ groups = collections.OrderedDict(sorted(groups.items(), key=lambda pair: order.i
 lines = [r'\section{Mechanization Traceability}', r'\label{app:traceability}',
          'The main text can be read without Lean. This appendix maps each numbered',
          'statement to its checked declarations. Some statements group declarations',
-         'or specialize a generic interface to concrete equality. Existing source',
-         'links use the proof baseline; the new direct sequential lifting lemma',
-         'links to the accompanying file on \\texttt{paper1}. The declaration-check',
+         'or specialize a generic interface to concrete equality. Unchanged source',
+         'links use the proof baseline; migrated and new declarations link to their',
+         'accompanying files on \\texttt{paper1}. The declaration-check',
          'script supplied with this reference checks that every name resolves.',
          'The theorem ledger separately audits final roots for permitted axioms.', '']
 for label, entries in groups.items():
@@ -35,7 +36,14 @@ for label, entries in groups.items():
     for row in entries:
         modules.setdefault(row['module'], []).append(row['declaration'])
     for module, declarations in modules.items():
-        revision = 'paper1' if module.endswith('.PaperPresentation') else '07fe525'
+        source_path = module.replace('.', '/') + '.lean'
+        source = root.parent.parent / source_path
+        baseline = subprocess.run(
+            ['git', 'show', '07fe525:' + source_path],
+            cwd=root.parent.parent, capture_output=True, check=False)
+        revision = ('07fe525' if baseline.returncode == 0 and
+                    source.exists() and baseline.stdout == source.read_bytes()
+                    else 'paper1')
         url = f'https://github.com/fplaunchpad/sal/blob/{revision}/' + module.replace('.', '/') + '.lean'
         lines.append(r'\noindent\href{' + url + '}{' + module.split('.')[-1] + r'.lean}:\par')
         lines.extend(r'{\small\nolinkurl{' + declaration + r'}}\par' for declaration in declarations)

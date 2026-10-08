@@ -1,10 +1,10 @@
 % Mechanization map for the appendix:
-% def:representation: AbstractMerge.Representation; GuardedRawJoin.Unique.
+% def:representation: ConcreteFormalism.Representation; ConcreteJoin.Raw.Unique.
 % def:metadata: MetadataDependencies; MetadataDependencies.Closed/Past;
 %   MetadataDependencies.closed_diff_of_max.
-% def:merge-vcs: AbstractMRDT.Raw.Context and MergeVCs in GuardedRawJoin.lean.
-% def:replay-supply: AbstractMRDT.Raw.PeelChoice and ReplaySupply.
-% thm:join: AbstractMRDT.Raw.join_at_sizes and representationJoin_of_vcs.
+% def:merge-vcs: ConcreteMRDT.Raw.Context and MergeVCs in ConcreteJoin.lean.
+% def:replay-supply: ConcreteMRDT.Raw.PeelChoice and ReplaySupply.
+% thm:join: ConcreteMRDT.Raw.join_at_sizes and representationJoin_of_vcs.
 % thm:execution: CertifiedClosedExecution.ClosedJoinAt,
 %   canonicalConfig_of_execution and virtualMergeBaseState_canonical;
 %   CertifiedRGAExecution.Embedded.represented_of_canonical,
@@ -71,11 +71,8 @@ The manuscript uses the principal downset of noncommuting visibility.
 A concrete representation may need a commuting predecessor's identifier
 or anchor to reconstruct an event. Accordingly the checked contract chooses
 an explicit dependency relation $M_C$, and writes
-$\downarrow_M e$ for its principal downset. The concrete specialization used here takes the identity semantic model:
-its abstract state is $\Sigma$, its abstraction is the identity, and its
-update and query functions are the concrete functions. Thus the model's
-commutation test is exactly $\comm$, including its quantification over all
-concrete states. All representation equations below use concrete equality.
+$\downarrow_M e$ for its principal downset. Commutation is the concrete relation $\comm$. All representation equations
+below use concrete state equality.
 
 \begin{definition}[Metadata dependencies]\label{def:metadata}
 For every context $C$, choose a relation $M_C$ on events satisfying

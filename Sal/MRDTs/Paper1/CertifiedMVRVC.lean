@@ -1,16 +1,14 @@
 import Sal.MRDTs.Paper1.CertifiedMVRReplay
-import Sal.MRDTs.Paper1.GuardedRawJoin
-import Sal.MRDTs.Paper1.GuardedRawModel
+import Sal.MRDTs.Paper1.ConcreteJoin
 
 namespace Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.RawVC
-open Foundation Classical AbstractMRDT
+open Foundation Classical ConcreteMRDT
 set_option maxHeartbeats 1500000
 open Instances.MVRLive
 
-abbrev model := Sal.MRDTs.Paper1.Raw.model D
 abbrev policy := emptyPolicy
 
-def scheme (C : ReplayContext D.toUpdateSig) : MetadataDependencies model C where
+def scheme (C : ReplayContext D.toUpdateSig) : MetadataDependencies C where
   before := C.vis
   causal _ _ h := h
   covers _ _ h _ := h
@@ -22,7 +20,7 @@ def representation : Representation D := fun context E s =>
   ∃ C : Configuration D, CertifiedExecution D issuance C ∧ C.replayContext = context ∧
     E ⊆ C.events ∧ E.Finite ∧ Represents E s
 
-theorem unique : AbstractMRDT.Raw.Unique representation := by
+theorem unique : ConcreteMRDT.Raw.Unique representation := by
   intro context E a b ha hb
   obtain ⟨_,_,_,_,_,ha⟩ := ha
   obtain ⟨_,_,_,_,_,hb⟩ := hb
@@ -99,7 +97,7 @@ private theorem live_subset {A B : Set Event} {a b : State}
   rintro ⟨e,he,dead⟩
   exact ((hb p).mp live).2 ⟨e,sub he,dead⟩
 
-theorem mergeVCs : AbstractMRDT.Raw.MergeVCs model policy representation scheme := by
+theorem mergeVCs : ConcreteMRDT.Raw.MergeVCs policy representation scheme := by
   constructor
   · intro C E₁ E₂ l a b _ _ _ _ _ _ _
     exact Instances.MVRLive.merge_comm l a b
@@ -188,7 +186,7 @@ private theorem reattach (K : Configuration D) (exec : CertifiedExecution D issu
     exact Nat.lt_irrefl _ (issued_overwrite_lt exec.mintHonest (sup member) target)
 
 theorem replaySupply (K : Configuration D) (exec : CertifiedExecution D issuance K) :
-    AbstractMRDT.Raw.ReplaySupply model policy representation scheme K.replayContext := by
+    ConcreteMRDT.Raw.ReplaySupply policy representation scheme K.replayContext := by
   constructor
   · intro E π hp sup
     have supported : E ⊆ K.events := by simpa using sup
@@ -247,7 +245,7 @@ theorem replaySupply (K : Configuration D) (exec : CertifiedExecution D issuance
         by simpa only [unionRem] using updateRem⟩ }⟩
 
 theorem representationJoin : RepresentationJoin representation := by
-  apply AbstractMRDT.Raw.representationJoin_of_vcs mergeVCs unique initial finite
+  apply ConcreteMRDT.Raw.representationJoin_of_vcs mergeVCs unique initial finite
   intro context E₁ E₂ a b trans irrefl sup₁ sup₂ ha hb
   obtain ⟨K,exec,eq,_,_,_⟩ := ha
   subst context

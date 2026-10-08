@@ -1,15 +1,22 @@
-import Sal.MRDTs.Paper1.ObservationalObstructions
+import Sal.MRDTs.Paper1.GuardedReplay
+import Sal.MRDTs.Paper1.PolicyObstructions
 import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.Instances.SidedPeritext
 import Sal.MRDTs.Instances.FugueMaxImplementation
 
-/-! Query-relative obstructions for the six unchanged embedded production
-signatures. Distinct values make coordinate ties visible; the older raw
-same-value tie witness is deliberately not used for value-only queries.
-All laws quantify over raw operations, so these witnesses need not satisfy
-the production issuer guards. -/
-namespace Sal.MRDTs.Paper1.ObservationalObstructions
-open Foundation AbstractMRDT Sal.EmbedRGA
+namespace Sal.MRDTs.Paper1.ConcreteObstructions
+open Foundation
+
+theorem not_commutes_of_query {D : MRDTSig}
+    (a b : Op D.AppOp) (s : D.State) (q : D.Query)
+    (bad : D.query (D.update (D.update s a) b) q ≠
+      D.query (D.update (D.update s b) a) q) : ¬ D.toUpdateSig.commutes a b :=
+  fun h => bad (congrArg (fun state => D.query state q) (h s))
+
+end Sal.MRDTs.Paper1.ConcreteObstructions
+
+namespace Sal.MRDTs.Paper1.ConcreteObstructions
+open Foundation Sal.EmbedRGA
 
 namespace Embedded
 open Instances.EmbedRGA
@@ -25,18 +32,6 @@ theorem query_orders (Γ : OrderedPrefixCode) (i j : Nat) (x y : α)
   simp [E, tied, eUpdate, eIds, eInsert, Nat.sub_eq_zero_of_le hi,
     Nat.sub_eq_zero_of_le hj, keyLt_irrefl, different, hji]
 
-theorem noncommute (Γ : OrderedPrefixCode) (A : Model (E Γ α))
-    (i j : Nat) (x y : α) (hi : i ≤ 3) (hj : j ≤ 3)
-    (different : i ≠ j) (values : x ≠ y) :
-    ¬ Commutes A (tied i x) (tied j y) := by
-  apply not_commutes_of_query A _ _ [] ()
-  rw [(query_orders Γ i j x y hi hj different).1,
-    (query_orders Γ i j x y hi hj different).2]
-  intro eq
-  exact values (List.cons.inj eq).1
-
-/-- The old raw equal-value witness does not distinguish immediate reads.
-The negative companion fixes the distinct-value query-order falsifier. -/
 theorem query_control (Γ : OrderedPrefixCode) :
     (E Γ Nat).query ((E Γ Nat).update ((E Γ Nat).update [] (tied 1 9)) (tied 2 9)) () = [9,9] ∧
     (E Γ Nat).query ((E Γ Nat).update ((E Γ Nat).update [] (tied 2 9)) (tied 1 9)) () = [9,9] ∧
@@ -48,18 +43,6 @@ theorem query_control (Γ : OrderedPrefixCode) :
     (query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).2]
   change ([10,20] : List Nat) ≠ [20,10]
   decide
-
-theorem no_laws_three_values (Γ : OrderedPrefixCode) (A : Model (E Γ α))
-    (x y z : α) (xy : x ≠ y) (yz : y ≠ z) (xz : x ≠ z) :
-    ¬ ∃ P : OperationPolicy (EOp α), Laws A P :=
-  no_laws_triangle A (tied 1 x) (tied 2 y) (tied 3 z)
-    (noncommute Γ A 1 2 x y (by omega) (by omega) (by omega) xy)
-    (noncommute Γ A 2 3 y z (by omega) (by omega) (by omega) yz)
-    (noncommute Γ A 1 3 x z (by omega) (by omega) (by omega) xz)
-
-theorem no_laws (Γ : OrderedPrefixCode) (A : Model (E Γ Nat)) :
-    ¬ ∃ P : OperationPolicy (EOp Nat), Laws A P :=
-  no_laws_three_values Γ A 10 20 30 (by decide) (by decide) (by decide)
 
 end Embedded
 
@@ -76,16 +59,6 @@ theorem query_orders (Γ : OrderedPrefixCode) (i j x y : Nat)
   simp [S, tied, sUpdate, sIds, sInsert, Nat.sub_eq_zero_of_le hi,
     Nat.sub_eq_zero_of_le hj, keyLt_irrefl, different, hji]
 
-theorem noncommute (Γ : OrderedPrefixCode) (A : Model (S Γ))
-    (i j x y : Nat) (hi : i ≤ 3) (hj : j ≤ 3)
-    (different : i ≠ j) (values : x ≠ y) :
-    ¬ Commutes A (tied i x) (tied j y) := by
-  apply not_commutes_of_query A _ _ [] ()
-  rw [(query_orders Γ i j x y hi hj different).1,
-    (query_orders Γ i j x y hi hj different).2]
-  intro eq
-  exact values (List.cons.inj eq).1
-
 theorem query_control (Γ : OrderedPrefixCode) :
     (S Γ).query ((S Γ).update ((S Γ).update [] (tied 1 10)) (tied 2 20)) () = [10,20] ∧
     (S Γ).query ((S Γ).update ((S Γ).update [] (tied 2 20)) (tied 1 10)) () = [20,10] ∧
@@ -97,19 +70,7 @@ theorem query_control (Γ : OrderedPrefixCode) :
   change ([10,20] : List Nat) ≠ [20,10]
   decide
 
-theorem no_laws (Γ : OrderedPrefixCode) (A : Model (S Γ)) :
-    ¬ ∃ P : OperationPolicy SOp, Laws A P :=
-  no_laws_triangle A (tied 1 10) (tied 2 20) (tied 3 30)
-    (noncommute Γ A 1 2 10 20 (by omega) (by omega) (by omega) (by decide))
-    (noncommute Γ A 2 3 20 30 (by omega) (by omega) (by omega) (by decide))
-    (noncommute Γ A 1 3 10 30 (by omega) (by omega) (by omega) (by decide))
-
 end Sided
-
-theorem peritext_no_laws (Γ : OrderedPrefixCode) (A : Model (Instances.Peritext.D Γ)) :
-    ¬ ∃ P : OperationPolicy (Instances.Peritext.D Γ).AppOp, Laws A P :=
-  Embedded.no_laws_three_values Γ A (.char 10) (.char 20) (.char 30)
-    (by decide) (by decide) (by decide)
 
 theorem peritext_query_control (Γ : OrderedPrefixCode) :
     (Instances.Peritext.D Γ).query
@@ -146,23 +107,6 @@ theorem core_query_orders (Γ : OrderedPrefixCode) (i j x y : Nat)
       (congrArg (Sum.inl (β := Stores.Value))
       (Sided.query_orders Γ i j x y hi hj different).2)
 
-theorem core_noncommute (Γ : OrderedPrefixCode) (A : Model (Core Γ))
-    (i j x y : Nat) (hi : i ≤ 3) (hj : j ≤ 3)
-    (different : i ≠ j) (values : x ≠ y) :
-    ¬ Commutes A (tied i x) (tied j y) := by
-  apply not_commutes_of_query A _ _ (Core Γ).init (.inl ())
-  rw [(core_query_orders Γ i j x y hi hj different).1,
-    (core_query_orders Γ i j x y hi hj different).2]
-  intro eq
-  exact values (List.cons.inj (Sum.inl.inj eq)).1
-
-theorem core_no_laws (Γ : OrderedPrefixCode) (A : Model (Core Γ)) :
-    ¬ ∃ P : OperationPolicy (Core Γ).AppOp, Laws A P :=
-  no_laws_triangle A (tied 1 10) (tied 2 20) (tied 3 30)
-    (core_noncommute Γ A 1 2 10 20 (by omega) (by omega) (by omega) (by decide))
-    (core_noncommute Γ A 2 3 20 30 (by omega) (by omega) (by omega) (by decide))
-    (core_noncommute Γ A 1 3 10 30 (by omega) (by omega) (by omega) (by decide))
-
 theorem core_query_control (Γ : OrderedPrefixCode) :
     (Core Γ).query ((Core Γ).update ((Core Γ).update (Core Γ).init (tied 1 10))
       (tied 2 20)) (.inl ()) = .inl [10,20] ∧
@@ -189,23 +133,6 @@ theorem rich_query_orders (Γ : OrderedPrefixCode) (i j x y : Nat)
     Instances.PeritextRender.DocD.birthIds, Instances.PeritextRender.DocD.cp,
     Instances.PeritextRender.fmtAt, Instances.PeritextRender.bestCover,
     Instances.FinsetStore.D]
-
-theorem rich_noncommute (Γ : OrderedPrefixCode) (A : Model (RichCore Γ))
-    (i j x y : Nat) (hi : i ≤ 3) (hj : j ≤ 3)
-    (different : i ≠ j) (values : x ≠ y) :
-    ¬ Commutes A (tied i x) (tied j y) := by
-  apply not_commutes_of_query A _ _ (RichCore Γ).init .bold
-  rw [(rich_query_orders Γ i j x y hi hj different).1,
-    (rich_query_orders Γ i j x y hi hj different).2]
-  intro eq
-  exact values (congrArg Prod.fst (List.cons.inj eq).1)
-
-theorem rich_no_laws (Γ : OrderedPrefixCode) (A : Model (RichCore Γ)) :
-    ¬ ∃ P : OperationPolicy (RichCore Γ).AppOp, Laws A P :=
-  no_laws_triangle A (tied 1 10) (tied 2 20) (tied 3 30)
-    (rich_noncommute Γ A 1 2 10 20 (by omega) (by omega) (by omega) (by decide))
-    (rich_noncommute Γ A 2 3 20 30 (by omega) (by omega) (by omega) (by decide))
-    (rich_noncommute Γ A 1 3 10 30 (by omega) (by omega) (by omega) (by decide))
 
 theorem rich_query_control (Γ : OrderedPrefixCode) :
     (RichCore Γ).query ((RichCore Γ).update ((RichCore Γ).update (RichCore Γ).init
@@ -236,27 +163,52 @@ theorem query_control (Γ : OrderedPrefixCode) :
       (2,0,tiedPayload)) (1,0,tiedPayload)) () := by
   simp [datatype, rawUpdate, recordOf, tiedPayload, mStep, sIds, sInsert, keyLt_irrefl]
 
-theorem noncommute (Γ : OrderedPrefixCode) (A : Model (datatype Γ)) :
-    ¬ Commutes A (1,0,tiedPayload) (2,0,tiedPayload) :=
-  not_commutes_of_query A _ _ (datatype Γ).init () (query_control Γ).2.2
-
-theorem no_laws (Γ : OrderedPrefixCode) (A : Model (datatype Γ)) :
-    ¬ ∃ P : OperationPolicy Payload, Laws A P :=
-  no_laws_same_label A (1,0,tiedPayload) (2,0,tiedPayload) rfl (noncommute Γ A)
-
 end RegisteredFugueMax
 
-#print axioms Embedded.no_laws
-#print axioms Sided.no_laws
-#print axioms peritext_no_laws
-#print axioms SidedPeritext.core_no_laws
-#print axioms SidedPeritext.rich_no_laws
-#print axioms RegisteredFugueMax.no_laws
-#print axioms Embedded.query_control
-#print axioms Sided.query_control
-#print axioms peritext_query_control
-#print axioms SidedPeritext.core_query_control
-#print axioms SidedPeritext.rich_query_control
-#print axioms RegisteredFugueMax.query_control
+end Sal.MRDTs.Paper1.ConcreteObstructions
 
-end Sal.MRDTs.Paper1.ObservationalObstructions
+namespace Sal.MRDTs.Paper1.ConcreteObstructions
+open Foundation
+namespace Queue
+open Instances.Queue PolicyObstructions.Queue
+
+/-- Hand-derived PASS+FAIL: equal enqueue values still expose distinct tags
+at the production head query. -/
+theorem query_control :
+    Q.query (Q.update (Q.update [] left) right) () = some (1,7) ∧
+    Q.query (Q.update (Q.update [] right) left) () = some (2,7) ∧
+    Q.query (Q.update (Q.update [] left) right) () ≠
+      Q.query (Q.update (Q.update [] right) left) () := by
+  change _root_.List.head? (qUpdate (qUpdate [] left) right) = some (1,7) ∧
+    _root_.List.head? (qUpdate (qUpdate [] right) left) = some (2,7) ∧
+    _root_.List.head? (qUpdate (qUpdate [] left) right) ≠
+      _root_.List.head? (qUpdate (qUpdate [] right) left)
+  decide
+
+theorem noncommute : ¬ Q.toUpdateSig.commutes left right :=
+  not_commutes_of_query (D := Q) left right [] () query_control.2.2
+end Queue
+namespace MVR
+open Instances.MVRLive PolicyObstructions.MVR
+open Instances.MVR (MVROp clientStep queryValues writeValue overwrites)
+
+/-- The overwrite removes value 10 only when delivered after its birth. -/
+theorem query_control :
+    10 ∉ queryValues (Instances.MVRLive.update (Instances.MVRLive.update ∅ birth) overwrite) ∧
+    10 ∈ queryValues (Instances.MVRLive.update (Instances.MVRLive.update ∅ overwrite) birth) := by
+  simp [Instances.MVRLive.update, clientStep, queryValues, writeValue, overwrites, birth, overwrite]
+
+theorem noncommute : ¬ D.toUpdateSig.commutes birth overwrite := by
+  apply not_commutes_of_query (D := D) birth overwrite (∅ : Instances.MVRLive.State) ()
+  intro eq
+  change queryValues (Instances.MVRLive.update (Instances.MVRLive.update ∅ birth) overwrite) =
+    queryValues (Instances.MVRLive.update (Instances.MVRLive.update ∅ overwrite) birth) at eq
+  exact query_control.1 (eq ▸ query_control.2)
+
+theorem metadata_control :
+    D.toUpdateSig.commutes unrelatedBirth unrelatedOverwrite ∧
+    ¬ D.toUpdateSig.commutes birth overwrite ∧
+    birth.op = unrelatedBirth.op ∧ overwrite.op = unrelatedOverwrite.op :=
+  ⟨unrelated_commute,noncommute,rfl,rfl⟩
+end MVR
+end Sal.MRDTs.Paper1.ConcreteObstructions

@@ -177,10 +177,8 @@ they are not implemented by selecting one base arbitrarily.
 
 ## What can stay
 
-Keep concrete state equality. No semantic `abs` quotient is needed for the
-proved positive results. Keep §6's specification-refinement function `α`:
-it relates implementation states to independent specification states and
-serves a different purpose. The main exposition need not add a separate
+Keep concrete state equality and §6's specification-refinement function `α`,
+which relates implementation states to independent specification states. The main exposition need not add a separate
 direct-Join proof route.
 
 When adding case studies, the anchored Queue is a **separate design** from the

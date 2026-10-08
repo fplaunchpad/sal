@@ -2,9 +2,9 @@
 \label{app:traceability}
 The main text can be read without Lean. This appendix maps each numbered
 statement to its checked declarations. Some statements group declarations
-or specialize a generic interface to concrete equality. Existing source
-links use the proof baseline; the new direct sequential lifting lemma
-links to the accompanying file on \texttt{paper1}. The declaration-check
+or specialize a generic interface to concrete equality. Unchanged source
+links use the proof baseline; migrated and new declarations link to their
+accompanying files on \texttt{paper1}. The declaration-check
 script supplied with this reference checks that every name resolves.
 The theorem ledger separately audits final roots for permitted axioms.
 
@@ -111,39 +111,40 @@ The theorem ledger separately audits final roots for permitted axioms.
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantReplay.convergence_on}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantReplay.Canonical}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantReplay.canonical_unique}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteReplay.lean}{ConcreteReplay.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.canonical_unique}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteFormalism.lean}{ConcreteFormalism.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Canonical}}\par
 
 \medskip\noindent\textbf{Reference~\ref{def:representation}.}\par\nobreak
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AbstractMerge.lean}{AbstractMerge.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Representation}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedRawJoin.lean}{GuardedRawJoin.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.Unique}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteFormalism.lean}{ConcreteFormalism.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Representation}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteJoin.lean}{ConcreteJoin.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Unique}}\par
 
 \medskip\noindent\textbf{Reference~\ref{def:metadata}.}\par\nobreak
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/MetadataDependencies.lean}{MetadataDependencies.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.MetadataDependencies}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.MetadataDependencies.Closed}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.MetadataDependencies.Past}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.MetadataDependencies.closed_diff_of_max}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AbstractFormalism.lean}{AbstractFormalism.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Model}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Commutes}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteMetadata.lean}{ConcreteMetadata.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.Closed}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.Past}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.closed_diff_of_max}}\par
 
 \medskip\noindent\textbf{Reference~\ref{def:merge-vcs}.}\par\nobreak
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedRawJoin.lean}{GuardedRawJoin.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.Context}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.MergeVCs}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteJoin.lean}{ConcreteJoin.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Raw.MergeVCs}}\par
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/RestrictedReplay.lean}{RestrictedReplay.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.paperOrder}}\par
 
 \medskip\noindent\textbf{Reference~\ref{def:replay-supply}.}\par\nobreak
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedRawJoin.lean}{GuardedRawJoin.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.PeelChoice}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.ReplaySupply}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteJoin.lean}{ConcreteJoin.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Raw.ReplaySupply}}\par
 
 \medskip\noindent\textbf{Reference~\ref{thm:join}.}\par\nobreak
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedRawJoin.lean}{GuardedRawJoin.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.join_at_sizes}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.representationJoin_of_vcs}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteJoin.lean}{ConcreteJoin.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Raw.join_at_sizes}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.Raw.representationJoin_of_vcs}}\par
 
 \medskip\noindent\textbf{Reference~\ref{thm:execution}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/CertifiedClosedExecution.lean}{CertifiedClosedExecution.lean}:\par
@@ -181,23 +182,22 @@ The theorem ledger separately audits final roots for permitted axioms.
 {\small\nolinkurl{Sal.MRDTs.Paper1.specificationRA_of_fiveVCs_compatible}}\par
 
 \medskip\noindent\textbf{Reference~\ref{def:history-adequacy}.}\par\nobreak
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/ScopedHistoryBridge.lean}{ScopedHistoryBridge.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.ExecutionHistoryAdequacy}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean}{ConcreteHistoryBridge.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.ExecutionHistoryAdequacy}}\par
 
 \medskip\noindent\textbf{Reference~\ref{thm:history-bridge}.}\par\nobreak
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/ScopedHistoryBridge.lean}{ScopedHistoryBridge.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.versions_of_scoped_history}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.ScopedVCConditions.executionsV}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedHistoryBridge.lean}{GuardedHistoryBridge.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Guarded.versions_of_scoped_history}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean}{ConcreteHistoryBridge.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.versions_of_scoped_history}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/ConcreteVCExecution.lean}{ConcreteVCExecution.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions.executionsV}}\par
 
 \medskip\noindent\textbf{Reference~\ref{ex:queue}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AnchoredQueueCausality.lean}{AnchoredQueueCausality.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AnchoredQueue.removed_births_causal_downset}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean}{AnchoredQueueCertificate.lean}:\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean}{AnchoredQueueCertificate.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AnchoredQueue.History.stored_publicWitness}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AnchoredQueue.History.correctV}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AnchoredQueue.lean}{AnchoredQueue.lean}:\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/AnchoredQueue.lean}{AnchoredQueue.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AnchoredQueue.fifoLegal}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AnchoredQueue.CanIssue}}\par
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Instances/EmbedRGA.lean}{EmbedRGA.lean}:\par

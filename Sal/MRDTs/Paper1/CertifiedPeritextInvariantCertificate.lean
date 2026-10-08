@@ -2,7 +2,7 @@ import Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate
 import Sal.MRDTs.Paper1.CertifiedPeritextVC
 import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.Paper1.CertifiedRGAExecution
-import Sal.MRDTs.Paper1.AbstractSoundness
+import Sal.MRDTs.Paper1.ExecutionTrace
 import Sal.MRDTs.Paper1.CertifiedRGAInvariantReplay
 
 namespace Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate
@@ -96,24 +96,23 @@ theorem correctV (Γ : OrderedPrefixCode) {C : Configuration (D Γ)}
 theorem executions (Γ : OrderedPrefixCode) (trace : List (Label (D Γ) × Configuration (D Γ)))
     (run : (certifiedTS (D Γ) (generation Γ)).Execution (initConfig (D Γ)) trace) :
     Correct Γ (initConfig (D Γ)) ∧ ∀entry∈trace, Correct Γ entry.2 := by
-  have reached := AbstractMRDT.visited (Good := MintCertifiedReach (D Γ) (generation Γ))
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReach (D Γ) (generation Γ))
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) run .init
   exact ⟨correct Γ (.ordinary .init),fun entry member => correct Γ (.ordinary (reached entry member))⟩
 
 theorem executionsV (Γ : OrderedPrefixCode) (trace : List (Label (D Γ) × Configuration (D Γ)))
     (run : (certifiedTSV (D Γ) (generation Γ)).Execution (initConfig (D Γ)) trace) :
     Correct Γ (initConfig (D Γ)) ∧ ∀entry∈trace, Correct Γ entry.2 := by
-  have reached := AbstractMRDT.visited (Good := MintCertifiedReachV (D Γ) (canonicalVirtualMergeBase (D Γ)) (generation Γ))
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReachV (D Γ) (canonicalVirtualMergeBase (D Γ)) (generation Γ))
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) run .init
   exact ⟨correct Γ (.virtual .init),fun entry member => correct Γ (.virtual (reached entry member))⟩
 
-theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
-    (CertifiedRGAVCReplay.Embedded.model (α := Element) Γ)
+theorem mergeVCs (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.MergeVCs
     CertifiedRGAVCReplay.Embedded.policy (CertifiedPeritextVC.representation Γ)
     (CertifiedRGAVCReplay.Embedded.scheme Γ) := CertifiedPeritextVC.mergeVCs Γ
 
 theorem representationJoin (Γ : OrderedPrefixCode) :
-    AbstractMRDT.RepresentationJoin (CertifiedPeritextVC.representation Γ) :=
+    ConcreteMRDT.RepresentationJoin (CertifiedPeritextVC.representation Γ) :=
   CertifiedPeritextVC.representationJoin Γ
 
 #print axioms implementation_replay_equal

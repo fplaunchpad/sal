@@ -4,9 +4,9 @@
 Overleaf snapshot `0450d48` (8 October 2026). Appendix A maps the manuscript to
 this reference; Appendix B maps the reference to Lean declarations.
 
-Existing results use proof baseline `07fe525`. The accompanying
-`PaperPresentation.lean` adds a direct sequential lifting theorem without
-changing the datatype definitions or implementation semantics.
+The reference uses the concrete equality development on `paper1`. Source links
+use proof baseline `07fe525` for unchanged files and `paper1` for revised files.
+`PaperPresentation.lean` supplies the direct sequential lifting theorem.
 
 From the Sal repository root:
 
@@ -18,7 +18,7 @@ tectonic -X compile docs/paper1-formal-reference/main.tex
 ```
 
 The script regenerates the source appendix from the four `*-sources.tsv` files
-and emits a check for all 95 declarations. Repository gates additionally build
+and emits a check for all 94 declarations. Repository gates additionally build
 and audit the theorem ledger. When changing statements or numbering, update
 [the manuscript reconciliation note](../paper1-formalism-reconciliation.md),
 rebuild the PDF, and inspect its rendered pages.

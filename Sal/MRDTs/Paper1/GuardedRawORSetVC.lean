@@ -1,12 +1,12 @@
 import Sal.MRDTs.Paper1.GuardedEqualityVC
-import Sal.MRDTs.Paper1.EfficientRemoveObservations
+import Sal.MRDTs.Paper1.ConcreteORSetAlgebra
 import Sal.MRDTs.Paper1.GuardedRawORSetReplay
-import Sal.MRDTs.Paper1.GuardedRawJoin
+import Sal.MRDTs.Paper1.ConcreteJoin
 
 namespace Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC
 open Foundation
 open Sal.MRDTs.Instances.EfficientORSet
-open AbstractSpec
+open ConcreteRep
 variable {α : Type} [DecidableEq α]
 
 /-- Coherent represented histories supply the exact intersection coverage
@@ -14,10 +14,10 @@ needed by the raw local-add equation, without a Join premise. -/
 theorem local_add_represented (C : ReplayContext (D α).toUpdateSig)
     (E₁ E₂ : Set (Event α)) (l B t s : State α) (et er : Nat) (x : α)
     (member : (et,er,.add x) ∈ E₁) (absent : (et,er,.add x) ∉ E₂)
-    (closed : (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).Closed E₁)
+    (closed : (ConcreteMRDT.MetadataDependencies.ofConcrete C).Closed E₁)
     (base : Represents C.vis (E₁ ∩ E₂) l)
     (past : Represents C.vis
-      ((AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).Past (et,er,.add x) \
+      ((ConcreteMRDT.MetadataDependencies.ofConcrete C).Past (et,er,.add x) \
         {(et,er,.add x)}) B)
     (other : Represents C.vis E₂ s) :
     merge l (merge B t (update B (et,er,.add x))) s =
@@ -30,7 +30,7 @@ theorem local_add_represented (C : ReplayContext (D α).toUpdateSig)
   · intro p inPast inOther _ _
     have hp := (past p).mp inPast
     have hs := (other p).mp inOther
-    have subset := (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).past_subset
+    have subset := (ConcreteMRDT.MetadataDependencies.ofConcrete C).past_subset
       E₁ (et,er,.add x) closed member
     apply (base p).mpr
     refine ⟨⟨subset hp.1.1,hs.1⟩,?_⟩
@@ -38,10 +38,10 @@ theorem local_add_represented (C : ReplayContext (D α).toUpdateSig)
 
 theorem live_killed_before_raw (C : ReplayContext (D α).toUpdateSig)
     (U : Set (Event α)) (e : Event α)
-    (member : e ∈ U) (supported : AbstractMRDT.Supported C U)
+    (member : e ∈ U) (supported : ConcreteMRDT.Supported C U)
     (semantic : ∀ x ∈ U, x ≠ e → ¬ paperOrder (EventSpec.conflict α) C U e x)
     (metadata : ∀ x ∈ U, x ≠ e →
-      ¬ (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).before e x) :
+      ¬ (ConcreteMRDT.MetadataDependencies.ofConcrete C).before e x) :
     ∀ p : Record α, live C.vis (U \ {e}) p → kills p.1 p.2.2 e →
       C.vis (p.2.1,p.1,SetOp.add p.2.2) e := by
   intro p living kill
@@ -70,16 +70,16 @@ theorem live_killed_before_raw (C : ReplayContext (D α).toUpdateSig)
 
 theorem causal_replay_eq_raw (C : ReplayContext (D α).toUpdateSig)
     (U : Set (Event α)) (a b : State α) (e : Event α)
-    (member : e ∈ U) (supported : AbstractMRDT.Supported C U)
-    (closed : (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).Closed U)
+    (member : e ∈ U) (supported : ConcreteMRDT.Supported C U)
+    (closed : (ConcreteMRDT.MetadataDependencies.ofConcrete C).Closed U)
     (semantic : ∀ x ∈ U, x ≠ e → ¬ paperOrder (EventSpec.conflict α) C U e x)
     (metadata : ∀ x ∈ U, x ≠ e →
-      ¬ (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).before e x)
+      ¬ (ConcreteMRDT.MetadataDependencies.ofConcrete C).before e x)
     (ha : Represents C.vis (U \ {e}) a)
     (hb : Represents C.vis
-      ((AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).Past e \ {e}) b) :
+      ((ConcreteMRDT.MetadataDependencies.ofConcrete C).Past e \ {e}) b) :
     merge b a (update b e) = update a e := by
-  let M := AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C
+  let M := ConcreteMRDT.MetadataDependencies.ofConcrete C
   have pastSub := M.past_subset U e closed member
   apply merge_update_eq a b e
   · intro p birth mem
@@ -97,10 +97,10 @@ theorem causal_replay_eq_raw (C : ReplayContext (D α).toUpdateSig)
 theorem local_remove_represented (C : ReplayContext (D α).toUpdateSig)
     (E₁ E₂ : Set (Event α)) (l B t s : State α) (et er : Nat) (x : α)
     (member : (et,er,.remove x) ∈ E₁)
-    (closed : (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).Closed E₁)
+    (closed : (ConcreteMRDT.MetadataDependencies.ofConcrete C).Closed E₁)
     (base : Represents C.vis (E₁ ∩ E₂) l)
     (past : Represents C.vis
-      ((AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).Past (et,er,.remove x) \ {(et,er,.remove x)}) B)
+      ((ConcreteMRDT.MetadataDependencies.ofConcrete C).Past (et,er,.remove x) \ {(et,er,.remove x)}) B)
     (other : Represents C.vis E₂ s) :
     merge l (merge B t (update B (et,er,.remove x))) s =
       merge B (merge l t s) (update B (et,er,.remove x)) := by
@@ -108,7 +108,7 @@ theorem local_remove_represented (C : ReplayContext (D α).toUpdateSig)
   · intro p inPast _ inOther
     have hp := (past p).mp inPast
     have hs := (other p).mp inOther
-    have subset := (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).past_subset
+    have subset := (ConcreteMRDT.MetadataDependencies.ofConcrete C).past_subset
       E₁ (et,er,.remove x) closed member
     apply (base p).mpr
     refine ⟨⟨subset hp.1.1,hs.1⟩,?_⟩
@@ -118,7 +118,7 @@ theorem local_remove_represented (C : ReplayContext (D α).toUpdateSig)
 
 /-- All five equality-valued merge VCs. Every equation is proved directly;
 no concrete or abstract representation Join theorem is used. -/
-theorem mergeVCs : AbstractMRDT.Raw.MergeVCs (RawReplay.model (α := α)) (EventSpec.conflict α)
+theorem mergeVCs : ConcreteMRDT.Raw.MergeVCs (EventSpec.conflict α)
     representation (RawReplay.scheme (α := α)) := by
   refine ⟨?_,?_,?_,?_,?_⟩
   · intro C E₁ E₂ l a b _ _ _ _ _ _ _

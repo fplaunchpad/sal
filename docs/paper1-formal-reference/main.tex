@@ -55,17 +55,15 @@ cross-reference, followed by the optional Lean declaration map in
 Appendix~\ref{app:traceability}. Reading the main text requires no Lean knowledge.
 
 \paragraph{Status.}
-The existing results use Sal \texttt{paper1}, commit \texttt{07fe525}, with
-an additional direct lifting lemma supplied alongside this revision; the paper
+This revision follows Sal \texttt{paper1} after its concrete-equality cleanup.
+The source appendix links unchanged files to proof baseline \texttt{07fe525}
+and revised files to \texttt{paper1}; the paper
 baseline is Overleaf \texttt{0450d48} (8 October 2026). The generic results are
 machine-checked under the stated premises, which remain obligations of each
 datatype. The reference distinguishes the paper's unrestricted sufficient class
-from its extension to certified executions. In particular, convergence of
-causally ready replays does not establish uniqueness for every linear extension
-of the public order. The broken-set example and the anchored Queue and Fugue
-case studies expose the scope of the sequential-specification result. The
-claims concern the mathematical execution model, not an external networked
-implementation.
+from its extension to certified executions. The broken-set, anchored Queue and
+Fugue examples explain the scope of these results. The claims concern the
+mathematical execution model.
 \setcounter{tocdepth}{1}
 \tableofcontents
 \clearpage

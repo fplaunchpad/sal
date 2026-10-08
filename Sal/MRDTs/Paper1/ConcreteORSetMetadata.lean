@@ -1,6 +1,50 @@
-import Sal.MRDTs.Paper1.MetadataReconstruction
+import Sal.MRDTs.Paper1.ConcreteORSetSorting
 
-namespace Sal.MRDTs.Paper1.EfficientORSet.AbstractSpec
+namespace Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep
+open Foundation
+open Sal.MRDTs.Instances.EfficientORSet
+variable {α : Type} [DecidableEq α]
+
+theorem joint_maximal (C : ReplayContext (D α).toUpdateSig) (E : Set (Event α))
+    (π : List (Event α)) (perm : listPermOf π E) (nonempty : E.Nonempty)
+    (trans : Transitive C.vis) (mono : ∀ a b, C.vis a b → a.time < b.time) :
+    ∃ e ∈ E,
+      (∀ x ∈ E, x ≠ e → ¬ paperOrder (EventSpec.conflict α) C E e x) ∧
+      (∀ x ∈ E, x ≠ e → ¬ (ConcreteMRDT.MetadataDependencies.ofConcrete C).before e x) := by
+  obtain ⟨sorted,hperm,hsort⟩ := exists_sorted C.vis E π perm
+  apply ConcreteMRDT.joint_maximal_of_enumeration sorted hperm nonempty
+  · exact sorted_respects_raw C E sorted hperm trans mono hsort
+  · apply hsort.imp_of_mem
+    intro a b ha hb no edge
+    exact no (before_of_vis C.vis E trans mono ((hperm.2 a).mp ha) edge.1
+      (EventSpec.noncomm_same_element b a edge.2))
+
+end Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep
+
+namespace Sal.MRDTs.Paper1.ORSet.ConcreteRep
+open Foundation
+variable {α : Type} [DecidableEq α]
+
+theorem joint_maximal (C : ReplayContext (D α).toUpdateSig) (E : Set (Op (Update α)))
+    (s : (D α).State) (rep : representation C E s) (nonempty : E.Nonempty) :
+    ∃ e ∈ E,
+      (∀ x ∈ E, x ≠ e → ¬ paperOrder (conflict α) C E e x) ∧
+      (∀ x ∈ E, x ≠ e → ¬ (ConcreteMRDT.MetadataDependencies.ofConcrete C).before e x) := by
+  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  obtain ⟨π,hp,hr,_⟩ := rep
+  have ordered : respects π (paperOrder (conflict α) C E) := by
+    apply hr.imp
+    intro a b h edge
+    exact h ((paperOrder_iff_loOn restrictedLaws C E b a).mp edge)
+  have metadata : respects π (ConcreteMRDT.MetadataDependencies.ofConcrete C).before := by
+    apply hr.imp
+    intro a b h edge
+    exact h ((paperOrder_iff_loOn restrictedLaws C E b a).mp (Or.inl edge))
+  exact ConcreteMRDT.joint_maximal_of_enumeration π hp nonempty ordered metadata
+
+end Sal.MRDTs.Paper1.ORSet.ConcreteRep
+
+namespace Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep
 open Foundation
 open Sal.MRDTs.Instances.EfficientORSet
 open Classical
@@ -82,11 +126,11 @@ private theorem replica_vis (C : ReplayContext (D α).toUpdateSig)
 
 theorem live_killed_before (C : ReplayContext (D α).toUpdateSig)
     (U : Set (Event α)) (e : Event α)
-    (member : e ∈ U) (supported : AbstractMRDT.Supported C U)
+    (member : e ∈ U) (supported : ConcreteMRDT.Supported C U)
     (semantic : ∀ x ∈ U, x ≠ e →
-      ¬ AbstractMRDT.order (model (α := α)) (EventSpec.conflict α) C U e x)
+      ¬ paperOrder (EventSpec.conflict α) C U e x)
     (metadata : ∀ x ∈ U, x ≠ e →
-      ¬ (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).before e x) :
+      ¬ (ConcreteMRDT.MetadataDependencies.ofConcrete C).before e x) :
     ∀ p : Record α, live C.vis (U \ {e}) p → kills p.1 p.2.2 e →
       C.vis (p.2.1,p.1,SetOp.add p.2.2) e := by
   intro p living kill
@@ -109,21 +153,17 @@ theorem live_killed_before (C : ReplayContext (D α).toUpdateSig)
     apply semantic b hb ne
     refine Or.inr ⟨notforward,notback,⟨p.2.2,rfl,rfl⟩,?_⟩
     rintro ⟨z,hz,vis,conflict⟩
-    have policy := (laws.noncomm_exact b z).mp conflict
-    have killed : kills p.1 p.2.2 z := by
-      rcases z with ⟨zt,zr,zo⟩
-      cases zo <;> simp [EventSpec.conflict,Op.op,b,kills] at policy ⊢
-      simpa [eq_comm] using policy
+    have killed := raw_noncomm_kills p z conflict
     exact living.2 ⟨z,⟨hz,fun equal => notback (equal ▸ vis)⟩,vis,killed⟩
 
 theorem represents_snoc_maximal (C : ReplayContext (D α).toUpdateSig)
     (U : Set (Event α)) (s : State α) (e : Event α)
-    (member : e ∈ U) (supported : AbstractMRDT.Supported C U)
+    (member : e ∈ U) (supported : ConcreteMRDT.Supported C U)
     (irrefl : ∀ x, ¬ C.vis x x)
     (semantic : ∀ x ∈ U, x ≠ e →
-      ¬ AbstractMRDT.order (model (α := α)) (EventSpec.conflict α) C U e x)
+      ¬ paperOrder (EventSpec.conflict α) C U e x)
     (metadata : ∀ x ∈ U, x ≠ e →
-      ¬ (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).before e x)
+      ¬ (ConcreteMRDT.MetadataDependencies.ofConcrete C).before e x)
     (rep : Represents C.vis (U \ {e}) s) :
     Represents C.vis U (update s e) := by
   have union : (U \ {e}) ∪ {e} = U := by
@@ -150,7 +190,7 @@ theorem represents_snoc_maximal (C : ReplayContext (D α).toUpdateSig)
 the existing tag-sensitive sorting proof rather than a Join assumption. -/
 theorem representation_exists (C : ReplayContext (D α).toUpdateSig)
     (E : Set (Event α)) (π : List (Event α)) (perm : listPermOf π E)
-    (supported : AbstractMRDT.Supported C E) (trans : Transitive C.vis)
+    (supported : ConcreteMRDT.Supported C E) (trans : Transitive C.vis)
     (mono : ∀ a b, C.vis a b → a.time < b.time) :
     ∃ s, representation C E s := by
   obtain ⟨sorted,hperm,hsort⟩ := exists_sorted C.vis E π perm
@@ -162,28 +202,27 @@ theorem representation_exists (C : ReplayContext (D α).toUpdateSig)
 theorem peel_choice (C : ReplayContext (D α).toUpdateSig)
     (U : Set (Event α)) (s : State α) (rep : representation C U s)
     (nonempty : U.Nonempty)
-    (closed : (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C).Closed U)
+    (closed : (ConcreteMRDT.MetadataDependencies.ofConcrete C).Closed U)
     (irrefl : ∀ x, ¬ C.vis x x) :
-    Nonempty (AbstractMRDT.DependencyPeelChoice (model (α := α)) (EventSpec.conflict α)
-      representation C (AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C) U) := by
-  let M := AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C
+    Nonempty (ConcreteMRDT.Raw.PeelChoice (EventSpec.conflict α)
+      representation C (ConcreteMRDT.MetadataDependencies.ofConcrete C) U) := by
+  let M := ConcreteMRDT.MetadataDependencies.ofConcrete C
   obtain ⟨π,hp⟩ := rep.2.1
   have supported := rep.2.2.1
   have trans := rep.2.2.2.1
   have mono := rep.2.2.2.2
   obtain ⟨e,he,semantic,metadata⟩ := joint_maximal C U π hp nonempty trans mono
   have pastSub : M.Past e ⊆ U := M.past_subset U e closed he
-  obtain ⟨pre,hpre⟩ := AbstractMRDT.enumeration_subset hp
+  obtain ⟨pre,hpre⟩ := ConcreteMRDT.enumeration_subset hp
     (show U \ {e} ⊆ U from fun _ h => h.1)
-  obtain ⟨past,hpast⟩ := AbstractMRDT.enumeration_subset hp
+  obtain ⟨past,hpast⟩ := ConcreteMRDT.enumeration_subset hp
     (show M.Past e \ {e} ⊆ U from fun _ h => pastSub h.1)
-  obtain ⟨wholePast,hwhole⟩ := AbstractMRDT.enumeration_subset hp pastSub
+  obtain ⟨wholePast,hwhole⟩ := ConcreteMRDT.enumeration_subset hp pastSub
   obtain ⟨a,ha⟩ := representation_exists C _ pre hpre
     (fun x h => supported x h.1) trans mono
   obtain ⟨b,hb⟩ := representation_exists C _ past hpast
     (fun x h => supported x (pastSub h.1)) trans mono
-  refine ⟨⟨e,he,semantic,metadata,a,b,⟨representsCanonical C _ a ha,ha⟩,
-    ⟨representsCanonical C _ b hb,hb⟩,?_,?_⟩⟩
+  refine ⟨⟨e,he,semantic,metadata,a,b,ha,hb,?_,?_⟩⟩
   · refine ⟨represents_snoc_maximal C (M.Past e) b e (Or.inl rfl)
       (fun x h => supported x (pastSub h)) irrefl
       (M.past_semantic_maximal (EventSpec.conflict α) trans irrefl e) ?_ hb.1,
@@ -193,4 +232,49 @@ theorem peel_choice (C : ReplayContext (D α).toUpdateSig)
   · exact ⟨represents_snoc_maximal C U a e he supported irrefl semantic metadata ha.1,
       ⟨π,hp⟩,supported,trans,mono⟩
 
-end Sal.MRDTs.Paper1.EfficientORSet.AbstractSpec
+end Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep
+
+namespace Sal.MRDTs.Paper1.ORSet.ConcreteRep
+open Foundation
+variable {α : Type} [DecidableEq α]
+
+private theorem raw_maximal (C : ReplayContext (D α).toUpdateSig)
+    (E : Set (Op (Update α))) (e : Op (Update α))
+    (maximal : ∀ x ∈ E, x ≠ e →
+      ¬ paperOrder (conflict α) C E e x) :
+    ∀ x ∈ E, x ≠ e → ¬ @loOn (D α).toUpdateSig (conflict α).lift C E e x := by
+  intro x hx ne edge
+  apply maximal x hx ne
+  have paper := (paperOrder_iff_loOn restrictedLaws C E e x).mpr edge
+  exact paper
+
+/-- Produces the complete represented peel data without invoking merge or
+representation Join. -/
+theorem peel_choice (C : ReplayContext (D α).toUpdateSig)
+    (U : Set (Op (Update α))) (s : (D α).State)
+    (rep : representation C U s) (nonempty : U.Nonempty)
+    (supported : ConcreteMRDT.Supported C U)
+    (closed : (ConcreteMRDT.MetadataDependencies.ofConcrete C).Closed U)
+    (trans : Transitive C.vis) (irrefl : ∀ x, ¬ C.vis x x) :
+    Nonempty (ConcreteMRDT.Raw.PeelChoice (conflict α)
+      representation C (ConcreteMRDT.MetadataDependencies.ofConcrete C) U) := by
+  classical
+  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  let M := ConcreteMRDT.MetadataDependencies.ofConcrete C
+  obtain ⟨e,he,semantic,metadata⟩ := joint_maximal C U s rep nonempty
+  obtain ⟨π,hp,_,_⟩ := rep
+  have pastSub : M.Past e ⊆ U := M.past_subset U e closed he
+  obtain ⟨pre,hpre⟩ := ConcreteMRDT.enumeration_subset hp
+    (show U \ {e} ⊆ U from fun _ h => h.1)
+  obtain ⟨past,hpast⟩ := ConcreteMRDT.enumeration_subset hp
+    (show M.Past e \ {e} ⊆ U from fun _ h => pastSub h.1)
+  obtain ⟨a,ha⟩ := isCanonicalState_exists_of_replayLaws restrictedLaws.replayLaws
+    (fun {_ _ _} h k => trans h k) irrefl hpre (fun x h => supported x h.1)
+  obtain ⟨b,hb⟩ := isCanonicalState_exists_of_replayLaws restrictedLaws.replayLaws
+    (fun {_ _ _} h k => trans h k) irrefl hpast (fun x h => supported x (pastSub h.1))
+  refine ⟨⟨e,he,semantic,metadata,a,b,ha,hb,?_,?_⟩⟩
+  · exact isCanonicalState_snoc (Or.inl rfl)
+      (raw_maximal C _ e (M.past_semantic_maximal (conflict α) trans irrefl e)) hb
+  · exact isCanonicalState_snoc he (raw_maximal C U e semantic) ha
+
+end Sal.MRDTs.Paper1.ORSet.ConcreteRep

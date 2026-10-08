@@ -8,8 +8,8 @@ namespace Embedded
 open Instances.EmbedRGA CertifiedRGAVCReplay.Embedded CertifiedRGAVCAlgebra.Embedded
 variable {α : Type} [DecidableEq α] [Inhabited α]
 
-theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
-    (model (α := α) Γ) policy (representation Γ) (scheme Γ) := by
+theorem mergeVCs (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.MergeVCs
+    policy (representation (α := α) Γ) (scheme Γ) := by
   refine ⟨?_,?_,?_,?_,?_⟩
   · intro C E₁ E₂ l a b _ _ _ _ hl ha hb
     simp only [E] at *
@@ -73,9 +73,9 @@ theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
     simp only [SetMergeAlgebra.merge,Finset.mem_union,Finset.mem_inter,Finset.mem_sdiff]
     tauto
 
-theorem representationJoin (Γ : OrderedPrefixCode) : AbstractMRDT.RepresentationJoin
+theorem representationJoin (Γ : OrderedPrefixCode) : ConcreteMRDT.RepresentationJoin
     (representation (α := α) Γ) := by
-  apply AbstractMRDT.Raw.representationJoin_of_vcs (mergeVCs Γ) (unique Γ)
+  apply ConcreteMRDT.Raw.representationJoin_of_vcs (mergeVCs Γ) (unique Γ)
     (initial Γ) (finite Γ)
   intro C E₁ E₂ a b trans irrefl _ _ ha _
   exact replaySupply Γ C ha.1 trans irrefl

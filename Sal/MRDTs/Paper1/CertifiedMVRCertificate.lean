@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.ExecutionTrace
 import Sal.MRDTs.Paper1.CertifiedMVRExecution
 import Sal.MRDTs.Paper1.CertifiedMVRHistory
 import Sal.MRDTs.Paper1.CertifiedMVRReplay
@@ -7,7 +8,7 @@ import Sal.MRDTs.Paper1.CertifiedPolicy
 merge theorem. The scoped policy laws are stated explicitly; this is not an
 inhabitant of the old globally quantified guarded-law class. -/
 namespace Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.Certificate
-open Foundation AbstractMRDT Instances.MVRLive
+open Foundation ConcreteMRDT Instances.MVRLive
 local instance : ReplayPolicy D.toUpdateSig := rc
 abbrev language := CertifiedMVRHistory.language
 
@@ -51,7 +52,7 @@ def Correct (C : Configuration D) : Prop :=
   (∀ v s E, C.ver v = some (s,E) →
     CertifiedReplay.RestrictedLaws (scopeC C E) emptyPolicy ∧
     CertifiedReplay.Canonical (scopeC C E) emptyPolicy D.init s) ∧
-  VersionsWitness (Sal.MRDTs.Paper1.Raw.model D) emptyPolicy language C
+  VersionsWitness emptyPolicy language C
 
 theorem correct (historyMerge : Execution.HistoryMerge)
     {C : Configuration D} (execution : CertifiedExecution D issuance C) : Correct C := by
@@ -83,7 +84,7 @@ theorem convergence {C : Configuration D} (execution : CertifiedExecution D issu
 theorem executions (trace : List (Label D × Configuration D))
     (execution : (certifiedTS D issuance).Execution (initConfig D) trace) :
     Correct (initConfig D) ∧ ∀ entry ∈ trace, Correct entry.2 := by
-  have reached := visited (Good := MintCertifiedReach D issuance)
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReach D issuance)
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) execution .init
   exact ⟨versions (.ordinary .init),
     fun entry member => versions (.ordinary (reached entry member))⟩
@@ -91,7 +92,7 @@ theorem executions (trace : List (Label D × Configuration D))
 theorem executionsV (trace : List (Label D × Configuration D))
     (execution : (certifiedTSV D issuance).Execution (initConfig D) trace) :
     Correct (initConfig D) ∧ ∀ entry ∈ trace, Correct entry.2 := by
-  have reached := visited (Good := MintCertifiedReachV D (canonicalVirtualMergeBase D) issuance)
+  have reached := ExecutionTrace.visited (Good := MintCertifiedReachV D (canonicalVirtualMergeBase D) issuance)
     (fun _ _ _ pre step => .step pre step.1 step.2.1 step.2.2) execution .init
   exact ⟨versions (.virtual .init),
     fun entry member => versions (.virtual (reached entry member))⟩

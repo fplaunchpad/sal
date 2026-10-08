@@ -1,7 +1,5 @@
-import Sal.MRDTs.Paper1.GuardedORSet
-import Sal.MRDTs.Paper1.MetadataSupply
-import Sal.MRDTs.Paper1.GuardedRawModel
-import Sal.MRDTs.Paper1.GuardedRawJoin
+import Sal.MRDTs.Paper1.ConcreteORSetMetadata
+import Sal.MRDTs.Paper1.ConcreteReplay
 
 namespace Sal.MRDTs.Paper1.EfficientORSet.RawReplay
 open Foundation
@@ -9,7 +7,7 @@ open Sal.MRDTs.Instances.EfficientORSet
 open Classical
 variable {α : Type} [DecidableEq α]
 
-abbrev representation := AbstractSpec.representation (α := α)
+abbrev representation := ConcreteRep.representation (α := α)
 
 theorem representation_unique {C : ReplayContext (D α).toUpdateSig}
     {E : Set (Event α)} {s t : State α}
@@ -81,15 +79,14 @@ theorem raw_noncomm_kills (p : Record α) (z : Event α)
     exact nc (NeemScope.adds_commute_of_replica_ne p.2.1 p.1 zt zr p.2.2 x (Ne.symm ne))
 
 
-def model : AbstractMRDT.Model (D α) := Raw.model (D α)
 def scheme (C : ReplayContext (D α).toUpdateSig) :=
-  AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C
+  ConcreteMRDT.MetadataDependencies.ofConcrete C
 
 theorem representsCanonical : ∀ C E s, representation C E s →
-    AbstractMRDT.Guarded.Canonical (model (α := α)) (EventSpec.conflict α) C E s :=
+    ConcreteMRDT.Canonical (EventSpec.conflict α) C E s :=
   represents_raw_canonical
 
-theorem unique : AbstractMRDT.Raw.Unique (representation (α := α)) :=
+theorem unique : ConcreteMRDT.Raw.Unique (representation (α := α)) :=
   fun _ _ _ _ hs ht => representation_unique hs ht
 
 theorem initial (C : ReplayContext (D α).toUpdateSig)
@@ -109,47 +106,22 @@ theorem initial_from_representation (C : ReplayContext (D α).toUpdateSig)
 theorem finite (C : ReplayContext (D α).toUpdateSig) (E : Set (Event α))
     (s : State α) (h : representation C E s) : ∃ π, listPermOf π E := h.2.1
 
-/-- Raw causal edges belong to metadata dependencies; raw concurrent edges
-are also present in the existing ordinary-set semantic relation. -/
-theorem raw_maximal_of_joint (C : ReplayContext (D α).toUpdateSig)
-    (U : Set (Event α)) (e : Event α)
-    (semantic : ∀ x ∈ U, x ≠ e → ¬ AbstractMRDT.order
-      (AbstractSpec.model (α := α)) (EventSpec.conflict α) C U e x)
-    (metadata : ∀ x ∈ U, x ≠ e → ¬ (scheme (α := α) C).before e x) :
-    ∀ x ∈ U, x ≠ e → ¬ paperOrder (EventSpec.conflict α) C U e x := by
-  intro x hx ne edge
-  rcases edge with causal | concurrent
-  · exact metadata x hx ne causal
-  · apply semantic x hx ne
-    refine Or.inr ⟨concurrent.1,concurrent.2.1,concurrent.2.2.1,?_⟩
-    rintro ⟨z,hz,vis,nc⟩
-    apply concurrent.2.2.2 ⟨z,hz,vis,?_⟩
-    exact fun hc => nc (AbstractMRDT.of_state_commutes hc)
-
-/-- The selected metadata reconstruction reuses the earlier observable
-peel proof. Raw canonicality and uniqueness above are proved separately from
-that proof, and this adapter invokes no representation Join theorem. -/
 theorem peel_choice (C : ReplayContext (D α).toUpdateSig)
     (U : Set (Event α)) (s : State α) (rep : representation C U s)
     (nonempty : U.Nonempty) (closed : (scheme (α := α) C).Closed U)
     (irrefl : ∀ x, ¬ C.vis x x) :
-    Nonempty (AbstractMRDT.Raw.PeelChoice (model (α := α)) (EventSpec.conflict α)
-      representation C (scheme (α := α) C) U) := by
-  obtain ⟨choice⟩ := AbstractSpec.peel_choice C U s rep nonempty closed irrefl
-  exact ⟨⟨choice.event,choice.member,
-    raw_maximal_of_joint C U choice.event choice.semantic_maximal choice.metadata_maximal,
-    choice.metadata_maximal,choice.remainder,choice.past,
-    choice.remainder_admissible.2,choice.past_admissible.2,
-    choice.reconstructed_past,choice.reconstructed_union⟩⟩
+    Nonempty (ConcreteMRDT.Raw.PeelChoice (EventSpec.conflict α)
+      representation C (scheme (α := α) C) U) :=
+  ConcreteRep.peel_choice C U s rep nonempty closed irrefl
 
 theorem replaySupply (C : ReplayContext (D α).toUpdateSig)
     (trans : Transitive C.vis) (irrefl : ∀ x, ¬ C.vis x x)
     (mono : ∀ a b, C.vis a b → a.time < b.time) :
-    AbstractMRDT.Raw.ReplaySupply (model (α := α)) (EventSpec.conflict α) representation
+    ConcreteMRDT.Raw.ReplaySupply (EventSpec.conflict α) representation
       (scheme (α := α)) C := by
   refine ⟨?_,?_⟩
   · intro E π perm supported
-    exact AbstractSpec.representation_exists C E π perm supported trans mono
+    exact ConcreteRep.representation_exists C E π perm supported trans mono
   · intro E s rep _ nonempty closed
     exact peel_choice C E s rep nonempty closed irrefl
 
@@ -164,24 +136,23 @@ open Foundation
 open Classical
 variable {α : Type} [DecidableEq α]
 
-def model : AbstractMRDT.Model (D α) := Raw.model (D α)
 def scheme (C : ReplayContext (D α).toUpdateSig) :=
-  AbstractMRDT.MetadataDependencies.ofConcrete (model (α := α)) C
+  ConcreteMRDT.MetadataDependencies.ofConcrete C
 
 def representation (C : ReplayContext (D α).toUpdateSig)
     (E : Set (Op (Update α))) (s : (D α).State) : Prop :=
-  AbstractSpec.representation C E s ∧ AbstractMRDT.Supported C E
+  ConcreteRep.representation C E s ∧ ConcreteMRDT.Supported C E
 
 theorem representsCanonical (C : ReplayContext (D α).toUpdateSig)
     (E : Set (Op (Update α))) (s : (D α).State) (h : representation C E s) :
-    AbstractMRDT.Guarded.Canonical (model (α := α)) (conflict α) C E s := by
+    ConcreteMRDT.Canonical (conflict α) C E s := by
   obtain ⟨π,hp,hr,hf⟩ := h.1
   refine ⟨π,hp,?_,hf⟩
   apply hr.imp
   intro a b hab edge
   exact hab ((paperOrder_iff_loOn restrictedLaws C E b a).mp edge)
 
-theorem unique : AbstractMRDT.Raw.Unique (representation (α := α)) := by
+theorem unique : ConcreteMRDT.Raw.Unique (representation (α := α)) := by
   intro C E s t hs ht
   obtain ⟨π,hp,hr,hf⟩ := representsCanonical C E s hs
   obtain ⟨π',hp',hr',hf'⟩ := representsCanonical C E t ht
@@ -193,7 +164,7 @@ theorem initial (C : ReplayContext (D α).toUpdateSig) :
   refine ⟨⟨[],?_,?_,rfl⟩,?_⟩
   · exact ⟨List.nodup_nil,by simp⟩
   · simp [respects]
-  · simp [AbstractMRDT.Supported]
+  · simp [ConcreteMRDT.Supported]
 
 theorem finite (C : ReplayContext (D α).toUpdateSig) (E : Set (Op (Update α)))
     (s : (D α).State) (h : representation C E s) : ∃ π, listPermOf π E := by
@@ -207,34 +178,29 @@ theorem peel_choice (C : ReplayContext (D α).toUpdateSig)
     (U : Set (Op (Update α))) (s : (D α).State) (rep : representation C U s)
     (nonempty : U.Nonempty) (closed : (scheme (α := α) C).Closed U)
     (trans : Transitive C.vis) (irrefl : ∀ x, ¬ C.vis x x) :
-    Nonempty (AbstractMRDT.Raw.PeelChoice (model (α := α)) (conflict α)
+    Nonempty (ConcreteMRDT.Raw.PeelChoice (conflict α)
       representation C (scheme (α := α) C) U) := by
-  obtain ⟨choice⟩ := AbstractSpec.peel_choice C U s rep.1 nonempty rep.2 closed trans irrefl
-  let oldM := AbstractMRDT.MetadataDependencies.ofConcrete (AbstractSpec.model (α := α)) C
+  obtain ⟨choice⟩ := ConcreteRep.peel_choice C U s rep.1 nonempty rep.2 closed trans irrefl
+  let oldM := ConcreteMRDT.MetadataDependencies.ofConcrete C
   have pastSub : oldM.Past choice.event ⊆ U := oldM.past_subset U choice.event closed choice.member
   refine ⟨⟨choice.event,choice.member,?_,choice.metadata_maximal,
-    choice.remainder,choice.past,⟨choice.remainder_admissible.2,?_⟩,
-    ⟨choice.past_admissible.2,?_⟩,⟨choice.reconstructed_past,?_⟩,
+    choice.remainder,choice.past,⟨choice.remainder_rep,?_⟩,
+    ⟨choice.past_rep,?_⟩,⟨choice.reconstructed_past,?_⟩,
     ⟨choice.reconstructed_union,rep.2⟩⟩⟩
-  · intro x hx ne edge
-    apply choice.semantic_maximal x hx ne
-    have hc : ∀ a b, AbstractMRDT.Commutes (AbstractSpec.model (α := α)) a b ↔
-        (D α).toUpdateSig.commutes a b := by
-      intro a b
-      exact (AbstractMRDT.ofQuery_commutes QuerySpec.abstraction a b).trans
-        (QuerySpec.commutes_iff_concrete a b)
-    simpa only [AbstractMRDT.order,paperOrder,hc] using edge
+  · exact choice.semantic_maximal
   · exact fun x hx => rep.2 x hx.1
   · exact fun x hx => rep.2 x (pastSub hx.1)
   · exact fun x hx => rep.2 x (pastSub hx)
 
 theorem replaySupply (C : ReplayContext (D α).toUpdateSig)
     (trans : Transitive C.vis) (irrefl : ∀ x, ¬ C.vis x x) :
-    AbstractMRDT.Raw.ReplaySupply (model (α := α)) (conflict α) representation
+    ConcreteMRDT.Raw.ReplaySupply (conflict α) representation
       (scheme (α := α)) C := by
   refine ⟨?_,?_⟩
   · intro E π perm supported
-    obtain ⟨s,hs⟩ := (AbstractSpec.replaySupply C trans irrefl).represented E π perm supported
+    obtain ⟨s,hs⟩ := @isCanonicalState_exists_of_replayLaws (D α).toUpdateSig
+      (conflict α).lift restrictedLaws.replayLaws C
+      (fun {_ _ _} h k => trans h k) irrefl E π perm supported
     exact ⟨s,hs,supported⟩
   · intro E s rep _ nonempty closed
     exact peel_choice C E s rep nonempty closed trans irrefl

@@ -7,8 +7,8 @@ open Foundation Sal.EmbedRGA
 namespace Sided
 open Instances.SidedEmbedRGA CertifiedRGAVCReplay.Sided CertifiedRGAVCAlgebra.Sided
 
-theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
-    (model Γ) policy (representation Γ) (scheme Γ) := by
+theorem mergeVCs (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.MergeVCs
+    policy (representation Γ) (scheme Γ) := by
   refine ⟨?_,?_,?_,?_,?_⟩
   · intro C E₁ E₂ l a b _ _ _ _ hl ha hb
     simp only [S] at *
@@ -72,9 +72,9 @@ theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
     simp only [SetMergeAlgebra.merge,Finset.mem_union,Finset.mem_inter,Finset.mem_sdiff]
     tauto
 
-theorem representationJoin (Γ : OrderedPrefixCode) : AbstractMRDT.RepresentationJoin
+theorem representationJoin (Γ : OrderedPrefixCode) : ConcreteMRDT.RepresentationJoin
     (representation Γ) := by
-  apply AbstractMRDT.Raw.representationJoin_of_vcs (mergeVCs Γ) (unique Γ)
+  apply ConcreteMRDT.Raw.representationJoin_of_vcs (mergeVCs Γ) (unique Γ)
     (initial Γ) (finite Γ)
   intro C E₁ E₂ a b trans irrefl _ _ ha _
   exact replaySupply Γ C ha.1 trans irrefl

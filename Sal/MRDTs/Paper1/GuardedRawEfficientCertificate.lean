@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.ConcreteHistoryBridge
 import Sal.MRDTs.Paper1.GuardedRawORSetJoin
 import Sal.MRDTs.Paper1.GuardedRawEfficientExecution
 
@@ -11,16 +12,17 @@ variable {α : Type} [DecidableEq α]
 
 theorem representedVersions {C : Configuration (D α)}
     (execution : CertifiedExecution (D α) issuance C) :
-    ∀ v s E, C.ver v = some (s,E) → AbstractSpec.representation C.replayContext E s := by
+    ∀ v s E, C.ver v = some (s,E) → ConcreteRep.representation C.replayContext E s := by
   cases execution with
   | ordinary reach =>
     exact RawExecution.vcRepresentedVersions GuardedRawVC.representationJoin reach.toV
   | virtual reach =>
     exact RawExecution.vcRepresentedVersions GuardedRawVC.representationJoin reach
 
-def certificate : AbstractMRDT.Guarded.ScopedCertificate (RawReplay.model (α := α))
+def certificate : ConcreteMRDT.ScopedCertificate
     (EventSpec.conflict α) (EventSpec.spec α) issuance :=
-  AbstractMRDT.Guarded.ScopedCertificate.ofTotal (Raw.laws Guarded.laws)
+  ConcreteMRDT.ScopedCertificate.ofTotal Guarded.laws
+    (fun C E supported _ _ hs ht => ConcreteMRDT.canonical_unique Guarded.laws C E supported hs ht)
     (fun _ execution v s E hv => (representedVersions execution v s E hv).2.2.1)
     (fun _ execution v s E hv =>
       RawReplay.representsCanonical _ _ _ (representedVersions execution v s E hv))
@@ -37,17 +39,17 @@ theorem storedCanonical {C : Configuration (D α)}
 
 theorem versionsV {C : Configuration (D α)}
     (reach : MintCertifiedReachV (D α) (canonicalVirtualMergeBase (D α)) issuance C) :
-    AbstractMRDT.Guarded.VersionsRALinearizable (RawReplay.model (α := α))
+    ConcreteMRDT.VersionsWitness
       (EventSpec.conflict α) (EventSpec.spec α) C := certificate.versionsV reach
 
 theorem executions (trace : List (Label (D α) × Configuration (D α)))
     (execution : (certifiedTS (D α) issuance).Execution (initConfig (D α)) trace) :
-    AbstractMRDT.Guarded.ExecutionCorrect (RawReplay.model (α := α))
+    ConcreteMRDT.ExecutionCorrect
       (EventSpec.conflict α) (EventSpec.spec α) trace := certificate.executions trace execution
 
 theorem executionsV (trace : List (Label (D α) × Configuration (D α)))
     (execution : (certifiedTSV (D α) issuance).Execution (initConfig (D α)) trace) :
-    AbstractMRDT.Guarded.ExecutionCorrect (RawReplay.model (α := α))
+    ConcreteMRDT.ExecutionCorrect
       (EventSpec.conflict α) (EventSpec.spec α) trace := certificate.executionsV trace execution
 
 theorem convergence {C : Configuration (D α)}

@@ -1,4 +1,4 @@
-import Sal.MRDTs.Paper1.AbstractORSet
+import Sal.MRDTs.Paper1.EfficientORSetEventSpec
 
 /-! Audit of the local Neem F★ artifact. App_mrdt.fsti:64 requires distinct
 timestamps AND different replica IDs for rc_non_comm. The efficient model uses
@@ -30,36 +30,36 @@ theorem removes_commute (ta ra tb rb : Nat) (x y : α) :
   simp only [update,Finset.mem_filter]
   tauto
 
-theorem concrete_iff_observable_of_replica_ne (a b : Event α) (ne : a.rep ≠ b.rep) :
-    (D α).toUpdateSig.commutes a b ↔ QueryReplay.Commutes (D α) a b := by
-  refine ⟨QueryReplay.of_state_commutes,?_⟩
-  intro hc
+theorem guarded_noncomm_exact (a b : Event α) (ne : a.rep ≠ b.rep) :
+    ¬ (D α).toUpdateSig.commutes a b ↔
+      (EventSpec.conflict α).before a.op b.op ∨ (EventSpec.conflict α).before b.op a.op := by
   rcases a with ⟨ta,ra,ao⟩
   rcases b with ⟨tb,rb,bo⟩
   change ra ≠ rb at ne
   cases ao with
   | add x =>
     cases bo with
-    | add y => exact adds_commute_of_replica_ne ta ra tb rb x y ne
+    | add y =>
+      simp [EventSpec.conflict, Op.op, adds_commute_of_replica_ne ta ra tb rb x y ne]
     | remove y =>
       by_cases h : x = y
       · subst y
-        exact False.elim (QuerySpec.add_remove_conflict ta ra tb rb x hc)
-      · exact EventSpec.different_elements_commute _ _ h
+        simp [EventSpec.conflict, Op.op, EventSpec.add_remove_noncomm ta ra tb rb x]
+      · have commute := EventSpec.different_elements_commute (ta,ra,.add x) (tb,rb,.remove y) h
+        simp [EventSpec.conflict, Op.op, commute, h, Ne.symm h]
   | remove x =>
     cases bo with
-    | remove y => exact removes_commute ta ra tb rb x y
+    | remove y =>
+      simp [EventSpec.conflict, Op.op, removes_commute ta ra tb rb x y]
     | add y =>
       by_cases h : x = y
       · subst y
-        exact False.elim (QuerySpec.add_remove_conflict tb rb ta ra x (QuerySpec.commutes_symm hc))
-      · exact EventSpec.different_elements_commute _ _ h
-
-theorem guarded_noncomm_exact (a b : Event α) (ne : a.rep ≠ b.rep) :
-    ¬ (D α).toUpdateSig.commutes a b ↔
-      (EventSpec.conflict α).before a.op b.op ∨ (EventSpec.conflict α).before b.op a.op := by
-  rw [concrete_iff_observable_of_replica_ne a b ne]
-  exact QuerySpec.noncomm_exact a b
+        have noncomm : ¬ (D α).toUpdateSig.commutes (ta,ra,.remove x) (tb,rb,.add x) := by
+          intro commute
+          exact EventSpec.add_remove_noncomm tb rb ta ra x (fun s => (commute s).symm)
+        simp [EventSpec.conflict, Op.op, noncomm]
+      · have commute := EventSpec.different_elements_commute (ta,ra,.remove x) (tb,rb,.add y) h
+        simp [EventSpec.conflict, Op.op, commute, h, Ne.symm h]
 
 /-- PASS+FAIL: the source's guarded contract holds; the unqualified contract
 is refuted by two timestamp-distinct adds from one replica. -/

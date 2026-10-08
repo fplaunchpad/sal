@@ -1,47 +1,24 @@
-import Sal.MRDTs.Paper1.CommutingVCReplay
+import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Paper1.SimpleEventPorts
 
-/-! Abstraction-VC ports of the eight simple production MRDTs. Each abstraction
-retains exactly the state returned by its public query (set, finite set,
-Boolean function, or integer). Independent list-based history languages are
+/-! Concrete VC ports of the eight simple production MRDTs. Independent list-based history languages are
 reused from SimpleEventPorts. Join and represented-version supply are derived
 through the metadata VC induction, not taken from the old Join certificates. -/
-namespace Sal.MRDTs.Paper1.AbstractMRDT.SimplePorts
+namespace Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts
 open Foundation
 open SimpleEventPorts (setMachine finiteMachine booleanMachine deltaMachine)
 noncomputable section
-
-/-- Identity abstraction for datatypes whose public query exposes all state.
-This semantic model is separate from the independent history specification. -/
-def identity (D : MRDTSig) : Model D where
-  Abstract := D.State
-  abs := id
-  step := D.update
-  read := D.query
-  update_abs := fun _ _ => rfl
-  query_abs := fun _ _ => rfl
-
-theorem identity_complete (D : MRDTSig) (q : D.Query)
-    (separates : ∀ s t, D.query s q = D.query t q → s = t) :
-    (identity D).QueryComplete := by
-  intro s t h
-  exact separates s t (h [] q)
 
 variable {A : Type} [DecidableEq A]
 
 namespace Add
 abbrev D := SimpleEventPorts.Add.D (A := A)
 abbrev generation := SimpleEventPorts.Add.generation (A := A)
-def model : Model (D (A := A)) := identity D
-
-theorem complete : (model (A := A)).QueryComplete :=
-  identity_complete D () (fun _ _ h => h)
-
-theorem compatible : SpecificationCompatibility (model (A := A)) setMachine.toSpec :=
+theorem compatible : CommutationCompatibility (D (A := A)) id setMachine.toSpec :=
   fun a b _ => SimpleEventPorts.Add.commutes a b
 
-def conditions : VCConditions (model (A := A)) (commutingPolicy A) setMachine.toSpec generation where
-  toVCReplayConditions := CommutingPort.vcReplayConditions model complete
+def conditions : VCConditions (commutingPolicy A) setMachine.toSpec generation where
+  toVCReplayConditions := CommutingPort.vcReplayConditions
     Instances.AddStore.all_comm Instances.AddStore.mergeLaws Instances.AddStore.deltaLaws
     Instances.AddStore.commutingPeelLaw generation
   compatibility := compatible
@@ -51,38 +28,33 @@ abbrev certificate := (conditions (A := A)).toCertificate
 
 theorem versions {C : Configuration (D (A := A))}
     (reach : MintCertifiedReach D generation C) :
-    VersionsRALinearizable model (commutingPolicy A) setMachine.toSpec C :=
-  certificate.versions reach
+    VersionsWitness (commutingPolicy A) setMachine.toSpec C :=
+  certificate.versions (.ordinary reach)
 
 theorem versionsV {C : Configuration (D (A := A))}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
-    VersionsRALinearizable model (commutingPolicy A) setMachine.toSpec C :=
+    VersionsWitness (commutingPolicy A) setMachine.toSpec C :=
   certificate.versionsV reach
 
 theorem executions (trace : List (Label (D (A := A)) × Configuration D))
     (run : (certifiedTS D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy A) setMachine.toSpec trace :=
+    ExecutionCorrect (commutingPolicy A) setMachine.toSpec trace :=
   conditions.executions trace run
 
 theorem executionsV (trace : List (Label (D (A := A)) × Configuration D))
     (run : (certifiedTSV D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy A) setMachine.toSpec trace :=
+    ExecutionCorrect (commutingPolicy A) setMachine.toSpec trace :=
   conditions.executionsV trace run
 end Add
 
 namespace Finite
 abbrev D := SimpleEventPorts.Finite.D (A := A)
 abbrev generation := SimpleEventPorts.Finite.generation (A := A)
-def model : Model (D (A := A)) := identity D
-
-theorem complete : (model (A := A)).QueryComplete :=
-  identity_complete D () (fun _ _ h => h)
-
-theorem compatible : SpecificationCompatibility (model (A := A)) finiteMachine.toSpec :=
+theorem compatible : CommutationCompatibility (D (A := A)) id finiteMachine.toSpec :=
   fun a b _ => SimpleEventPorts.Finite.commutes a b
 
-def conditions : VCConditions (model (A := A)) (commutingPolicy A) finiteMachine.toSpec generation where
-  toVCReplayConditions := CommutingPort.vcReplayConditions model complete
+def conditions : VCConditions (commutingPolicy A) finiteMachine.toSpec generation where
+  toVCReplayConditions := CommutingPort.vcReplayConditions
     Instances.FinsetStore.all_comm Instances.FinsetStore.mergeLaws Instances.FinsetStore.deltaLaws
     Instances.FinsetStore.commutingPeelLaw generation
   compatibility := compatible
@@ -92,38 +64,33 @@ abbrev certificate := (conditions (A := A)).toCertificate
 
 theorem versions {C : Configuration (D (A := A))}
     (reach : MintCertifiedReach D generation C) :
-    VersionsRALinearizable model (commutingPolicy A) finiteMachine.toSpec C :=
-  certificate.versions reach
+    VersionsWitness (commutingPolicy A) finiteMachine.toSpec C :=
+  certificate.versions (.ordinary reach)
 
 theorem versionsV {C : Configuration (D (A := A))}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
-    VersionsRALinearizable model (commutingPolicy A) finiteMachine.toSpec C :=
+    VersionsWitness (commutingPolicy A) finiteMachine.toSpec C :=
   certificate.versionsV reach
 
 theorem executions (trace : List (Label (D (A := A)) × Configuration D))
     (run : (certifiedTS D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy A) finiteMachine.toSpec trace :=
+    ExecutionCorrect (commutingPolicy A) finiteMachine.toSpec trace :=
   conditions.executions trace run
 
 theorem executionsV (trace : List (Label (D (A := A)) × Configuration D))
     (run : (certifiedTSV D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy A) finiteMachine.toSpec trace :=
+    ExecutionCorrect (commutingPolicy A) finiteMachine.toSpec trace :=
   conditions.executionsV trace run
 end Finite
 
 namespace Boolean
 abbrev D := SimpleEventPorts.Boolean.D (A := A)
 abbrev generation := SimpleEventPorts.Boolean.generation (A := A)
-def model : Model (D (A := A)) := identity D
-
-theorem complete : (model (A := A)).QueryComplete :=
-  identity_complete D () (fun _ _ h => h)
-
-theorem compatible : SpecificationCompatibility (model (A := A)) booleanMachine.toSpec :=
+theorem compatible : CommutationCompatibility (D (A := A)) id booleanMachine.toSpec :=
   fun a b _ => SimpleEventPorts.Boolean.commutes a b
 
-def conditions : VCConditions (model (A := A)) (commutingPolicy A) booleanMachine.toSpec generation where
-  toVCReplayConditions := CommutingPort.vcReplayConditions model complete
+def conditions : VCConditions (commutingPolicy A) booleanMachine.toSpec generation where
+  toVCReplayConditions := CommutingPort.vcReplayConditions
     Instances.FlatGrowOnly.all_comm Instances.FlatGrowOnly.mergeLaws Instances.FlatGrowOnly.deltaLaws
     Instances.FlatGrowOnly.commutingPeelLaw generation
   compatibility := compatible
@@ -133,22 +100,22 @@ abbrev certificate := (conditions (A := A)).toCertificate
 
 theorem versions {C : Configuration (D (A := A))}
     (reach : MintCertifiedReach D generation C) :
-    VersionsRALinearizable model (commutingPolicy A) booleanMachine.toSpec C :=
-  certificate.versions reach
+    VersionsWitness (commutingPolicy A) booleanMachine.toSpec C :=
+  certificate.versions (.ordinary reach)
 
 theorem versionsV {C : Configuration (D (A := A))}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
-    VersionsRALinearizable model (commutingPolicy A) booleanMachine.toSpec C :=
+    VersionsWitness (commutingPolicy A) booleanMachine.toSpec C :=
   certificate.versionsV reach
 
 theorem executions (trace : List (Label (D (A := A)) × Configuration D))
     (run : (certifiedTS D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy A) booleanMachine.toSpec trace :=
+    ExecutionCorrect (commutingPolicy A) booleanMachine.toSpec trace :=
   conditions.executions trace run
 
 theorem executionsV (trace : List (Label (D (A := A)) × Configuration D))
     (run : (certifiedTSV D generation).Execution (initConfig D) trace) :
-    ExecutionCorrect model (commutingPolicy A) booleanMachine.toSpec trace :=
+    ExecutionCorrect (commutingPolicy A) booleanMachine.toSpec trace :=
   conditions.executionsV trace run
 end Boolean
 
@@ -156,17 +123,12 @@ namespace Delta
 variable (delta : A → Int)
 abbrev D := SimpleEventPorts.Delta.D delta
 abbrev generation := SimpleEventPorts.Delta.generation delta
-def model : Model (D delta) := identity (D delta)
-
-theorem complete : (model delta).QueryComplete :=
-  identity_complete (D delta) () (fun _ _ h => h)
-
-theorem compatible : SpecificationCompatibility (model delta) (deltaMachine delta).toSpec :=
+theorem compatible : CommutationCompatibility (D delta) id (deltaMachine delta).toSpec :=
   fun a b _ => SimpleEventPorts.Delta.commutes delta a b
 
-def conditions : VCConditions (model delta) (commutingPolicy A)
+def conditions : VCConditions (commutingPolicy A)
     (deltaMachine delta).toSpec (generation delta) where
-  toVCReplayConditions := CommutingPort.vcReplayConditions (model delta) (complete delta)
+  toVCReplayConditions := CommutingPort.vcReplayConditions
     (Instances.FlatCounters.all_comm delta) (Instances.FlatCounters.mergeLaws delta)
     (Instances.FlatCounters.deltaLaws delta) (Instances.FlatCounters.commutingPeelLaw delta)
     (generation delta)
@@ -177,22 +139,22 @@ abbrev certificate := (conditions delta).toCertificate
 
 theorem versions {C : Configuration (D delta)}
     (reach : MintCertifiedReach (D delta) (generation delta) C) :
-    VersionsRALinearizable (model delta) (commutingPolicy A) (deltaMachine delta).toSpec C :=
-  (certificate delta).versions reach
+    VersionsWitness (commutingPolicy A) (deltaMachine delta).toSpec C :=
+  (certificate delta).versions (.ordinary reach)
 
 theorem versionsV {C : Configuration (D delta)}
     (reach : MintCertifiedReachV (D delta) (canonicalVirtualMergeBase (D delta)) (generation delta) C) :
-    VersionsRALinearizable (model delta) (commutingPolicy A) (deltaMachine delta).toSpec C :=
+    VersionsWitness (commutingPolicy A) (deltaMachine delta).toSpec C :=
   (certificate delta).versionsV reach
 
 theorem executions (trace : List (Label (D delta) × Configuration (D delta)))
     (run : (certifiedTS (D delta) (generation delta)).Execution (initConfig (D delta)) trace) :
-    ExecutionCorrect (model delta) (commutingPolicy A) (deltaMachine delta).toSpec trace :=
+    ExecutionCorrect (commutingPolicy A) (deltaMachine delta).toSpec trace :=
   (conditions delta).executions trace run
 
 theorem executionsV (trace : List (Label (D delta) × Configuration (D delta)))
     (run : (certifiedTSV (D delta) (generation delta)).Execution (initConfig (D delta)) trace) :
-    ExecutionCorrect (model delta) (commutingPolicy A) (deltaMachine delta).toSpec trace :=
+    ExecutionCorrect (commutingPolicy A) (deltaMachine delta).toSpec trace :=
   (conditions delta).executionsV trace run
 end Delta
 
@@ -248,7 +210,7 @@ abbrev booleanMapExecutions := Boolean.executions (A := Nat × Nat)
 abbrev booleanMapExecutionsV := Boolean.executionsV (A := Nat × Nat)
 
 /-- Existing hand-derived PASS+FAIL language controls are unchanged by the
-abstraction VC port; acceptance does not consult the chosen abstraction. -/
+concrete VC port; acceptance does not consult the implementation state. -/
 abbrev add_control := SimpleEventPorts.add_control
 abbrev finite_add_control := SimpleEventPorts.finite_add_control
 abbrev increment_control := SimpleEventPorts.increment_control
@@ -266,4 +228,4 @@ abbrev immutable_map_control := SimpleEventPorts.immutable_map_control
 #print axioms booleanMapConditions
 #print axioms pnExecutionsV
 end
-end Sal.MRDTs.Paper1.AbstractMRDT.SimplePorts
+end Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts

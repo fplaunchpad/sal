@@ -6,7 +6,7 @@ import Sal.MRDTs.Paper1.GuardedHistory
 Only event support, causal closure and a finite enumeration are required;
 no correctness theorem about stored or merged MVR states is used. -/
 namespace Sal.MRDTs.Paper1.CertifiedMVRHistory
-open Foundation AbstractMRDT Instances.MVRLive
+open Foundation ConcreteMRDT Instances.MVRLive
 open Classical
 abbrev policy := commutingPolicy D.AppOp
 abbrev language := GuardedHistory.language spec

@@ -1,5 +1,5 @@
-import Sal.MRDTs.Paper1.EfficientVCExecution
-import Sal.MRDTs.Paper1.GuardedRawModel
+import Sal.MRDTs.Paper1.ConcreteORSetRepresentation
+import Sal.MRDTs.Paper1.ConcreteHistoryBridge
 
 /-! Execution and recursive virtual-base preservation parameterized by a
 separately derived representation Join. No existing datatype Join is called. -/
@@ -8,8 +8,8 @@ open Foundation
 open Sal.MRDTs.Instances.EfficientORSet
 open Classical
 variable {α : Type} [DecidableEq α]
-open EfficientORSet.AbstractSpec
-variable (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α)))
+open EfficientORSet.ConcreteRep
+variable (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α)))
 local instance : ReplayPolicy (D α).toUpdateSig := rc
 
 theorem version_enumerated {C : Configuration (D α)} (good : CanonicalConfig C)
@@ -34,11 +34,11 @@ theorem union_enumerated {C : Configuration (D α)} (good : CanonicalConfig C)
 
 /-- Adapts the VC-derived represented Join to execution scratch states.
 Enumeration and support remain explicit, including for virtual-base folds. -/
-theorem vcHistoryMerge (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)} (good : CanonicalConfig C)
+theorem vcHistoryMerge (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)} (good : CanonicalConfig C)
     (E₁ E₂ : Set (Event α)) (l a b : State α)
     (enum₁ : ∃ π, listPermOf π E₁) (enum₂ : ∃ π, listPermOf π E₂)
-    (sup₁ : AbstractMRDT.Supported C.replayContext E₁)
-    (sup₂ : AbstractMRDT.Supported C.replayContext E₂)
+    (sup₁ : ConcreteMRDT.Supported C.replayContext E₁)
+    (sup₂ : ConcreteMRDT.Supported C.replayContext E₂)
     (closed₁ : ∀ x y, C.vis x y → y ∈ E₁ → x ∈ E₁)
     (closed₂ : ∀ x y, C.vis x y → y ∈ E₂ → x ∈ E₂)
     (base : Represents C.vis (E₁ ∩ E₂) l)
@@ -46,7 +46,7 @@ theorem vcHistoryMerge (rawJoin : AbstractMRDT.RepresentationJoin (representatio
     Represents C.vis (E₁ ∪ E₂) (merge l a b) := by
   obtain ⟨π,hp⟩ := enum₁
   obtain ⟨xs,hxs⟩ := enum₂
-  obtain ⟨intersection,hint⟩ := AbstractMRDT.enumeration_subset hp Set.inter_subset_left
+  obtain ⟨intersection,hint⟩ := ConcreteMRDT.enumeration_subset hp Set.inter_subset_left
   have trans : Transitive C.vis := fun _ _ _ h k => good.vis_trans h k
   have mono : ∀ x y, C.vis x y → x.time < y.time := fun _ _ h => C.causal_mono h
   have result := rawJoin C.replayContext E₁ E₂ l a b trans good.vis_irrefl sup₁ sup₂
@@ -62,8 +62,8 @@ open Sal.MRDTs.Foundation
 open Sal.MRDTs.Instances.EfficientORSet
 open Classical
 variable {α : Type} [DecidableEq α]
-open EfficientORSet.AbstractSpec
-variable (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α)))
+open EfficientORSet.ConcreteRep
+variable (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α)))
 local instance : ReplayPolicy (D α).toUpdateSig := rc
 
 def RepConfig (C : Configuration (D α)) : Prop :=
@@ -79,7 +79,7 @@ private def VCVRepAt (C : Configuration (D α)) (n : ℕ) : Prop :=
 
 /-- Each scratch state represents its union history. The outer induction
 supplies the sub-pair's intersection history for the three-way merge. -/
-private theorem vc_vfold_represents (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
+private theorem vc_vfold_represents (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
     (hSI : StoreInv C.ver C.parents) (hG : CanonicalConfig C) (hR : RepConfig C)
     {n : ℕ} (IH : ∀ k, k < n → VCVRepAt C k)
     {S₀ : Finset Version} {w₀ : Version} (hw₀ : (C.ver w₀).isSome)
@@ -126,7 +126,7 @@ private theorem vc_vfold_represents (rawJoin : AbstractMRDT.RepresentationJoin (
       rintro a b hab ⟨u, hu, su, Eu, hu', hb⟩
       exact ⟨u, hu, su, Eu, hu', hG.version_events_causal u su Eu hu' a b hab hb⟩
     have enumAcc := union_enumerated hG accS (fun u hu => halloc u (haccS u hu))
-    have supAcc : AbstractMRDT.Supported C.replayContext (unionEvents C accS) := by
+    have supAcc : ConcreteMRDT.Supported C.replayContext (unionEvents C accS) := by
       rintro a ⟨u,hu,su,Eu,hu',ha⟩
       exact hG.version_events_supported u su Eu hu' a ha
     have hjoin := vcHistoryMerge rawJoin hG (unionEvents C accS) Em _ _ _
@@ -148,7 +148,7 @@ private theorem vc_vfold_represents (rawJoin : AbstractMRDT.RepresentationJoin (
     exact hstep
 
 /-- The history characterization at every support size, by strong induction. -/
-private theorem vc_virtualBaseAux_represents_at (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
+private theorem vc_virtualBaseAux_represents_at (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
     (hSI : StoreInv C.ver C.parents) (hG : CanonicalConfig C) (hR : RepConfig C) :
     ∀ n, VCVRepAt C n := by
   intro n
@@ -213,7 +213,7 @@ private theorem vc_virtualBaseAux_represents_at (rawJoin : AbstractMRDT.Represen
 
 /-- Recursive antichain merge represents the pair's event-set intersection.
 This uses history-compatible states, not arbitrary canonical replays. -/
-theorem vcVirtualMergeBaseStateRepresents (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
+theorem vcVirtualMergeBaseStateRepresents (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
     (hSI : StoreInv C.ver C.parents) (hG : CanonicalConfig C)
     (hR : RepConfig C)
     {v₁ v₂ : Version} {s₁ s₂ : State α} {ev₁ ev₂ : Set (Event α)}
@@ -233,11 +233,11 @@ namespace Sal.MRDTs.Paper1.EfficientORSet.RawExecution
 open Foundation
 open Sal.MRDTs.Instances.EfficientORSet
 variable {α : Type} [DecidableEq α]
-open EfficientORSet.AbstractSpec
-variable (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α)))
+open EfficientORSet.ConcreteRep
+variable (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α)))
 local instance : ReplayPolicy (D α).toUpdateSig := rc
 
-theorem vcRepresentedConfig (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
+theorem vcRepresentedConfig (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
     (reach : MintCertifiedReachV (D α) (canonicalVirtualMergeBase (D α)) issuance C) :
     StoreInv C.ver C.parents ∧ CanonicalConfig C ∧ RepConfig C := by
   induction reach with
@@ -279,7 +279,7 @@ theorem vcRepresentedConfig (rawJoin : AbstractMRDT.RepresentationJoin (represen
       exact ⟨canonicalConfig_merge_result hh₁ hv₁ hv₂ hL hvis hver hG
         (canonical_union hG hv₁ hv₂ hm),repConfig_store hvis hver hR hm⟩
 
-theorem vcRepresentedVersions (rawJoin : AbstractMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
+theorem vcRepresentedVersions (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
     (reach : MintCertifiedReachV (D α) (canonicalVirtualMergeBase (D α)) issuance C) :
     ∀ v s E, C.ver v = some (s,E) → representation C.replayContext E s := by
   obtain ⟨_,good,represented⟩ := vcRepresentedConfig rawJoin reach

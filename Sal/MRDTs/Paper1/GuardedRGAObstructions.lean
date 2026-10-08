@@ -1,21 +1,20 @@
-import Sal.MRDTs.Paper1.ObservationalObstructionsRGA
-import Sal.MRDTs.Paper1.GuardedAbstraction
+import Sal.MRDTs.Paper1.ConcreteObstructions
 
 /-! The six embedded production signatures still refute the corrected guarded
 laws. Coordinate ties use distinct timestamps and different replicas. The
-claims quantify over every sound model; they do not strengthen the issuer. -/
+claims concern globally quantified concrete laws; they do not strengthen the issuer. -/
 namespace Sal.MRDTs.Paper1.GuardedRGAObstructions
-open Foundation AbstractMRDT Sal.EmbedRGA
-open ObservationalObstructions
+open Foundation Sal.EmbedRGA
+open ConcreteObstructions
 
-theorem no_guarded_laws_triangle {D : MRDTSig} (A : Model D)
+theorem no_guarded_laws_triangle {D : MRDTSig}
     (a b c : Op D.AppOp)
     (dab : distinctOps (D := D.toUpdateSig) a b)
     (dbc : distinctOps (D := D.toUpdateSig) b c)
     (dac : distinctOps (D := D.toUpdateSig) a c)
     (rab : a.rep ≠ b.rep) (rbc : b.rep ≠ c.rep) (rac : a.rep ≠ c.rep)
-    (ab : ¬ Commutes A a b) (bc : ¬ Commutes A b c) (ac : ¬ Commutes A a c) :
-    ¬ ∃ P : OperationPolicy D.AppOp, Guarded.Laws A P := by
+    (ab : ¬ D.toUpdateSig.commutes a b) (bc : ¬ D.toUpdateSig.commutes b c) (ac : ¬ D.toUpdateSig.commutes a c) :
+    ¬ ∃ P : OperationPolicy D.AppOp, GuardedReplay.Laws D.toUpdateSig P := by
   rintro ⟨P,laws⟩
   have hab := (laws.noncomm_exact a b dab rab).mp ab
   have hbc := (laws.noncomm_exact b c dbc rbc).mp bc
@@ -37,61 +36,61 @@ namespace Embedded
 open Instances.EmbedRGA
 variable {α : Type} [DecidableEq α] [Inhabited α]
 def event (ts : Nat) (x : α) : Op (EOp α) := (ts,ts,.ins x [] 3)
-theorem noncommute (Γ : OrderedPrefixCode) (A : Model (E Γ α))
+theorem noncommute (Γ : OrderedPrefixCode)
     (i j : Nat) (x y : α) (hi : i ≤ 3) (hj : j ≤ 3) (different : i ≠ j) (values : x ≠ y) :
-    ¬ Commutes A (event i x) (event j y) := by
-  apply not_commutes_of_query A _ _ [] ()
-  change (E Γ α).query ((E Γ α).update ((E Γ α).update [] (ObservationalObstructions.Embedded.tied i x))
-      (ObservationalObstructions.Embedded.tied j y)) () ≠
-    (E Γ α).query ((E Γ α).update ((E Γ α).update [] (ObservationalObstructions.Embedded.tied j y))
-      (ObservationalObstructions.Embedded.tied i x)) ()
-  rw [(ObservationalObstructions.Embedded.query_orders Γ i j x y hi hj different).1,
-    (ObservationalObstructions.Embedded.query_orders Γ i j x y hi hj different).2]
+    ¬ (E Γ α).toUpdateSig.commutes (event i x) (event j y) := by
+  apply not_commutes_of_query (D := E Γ α) _ _ [] ()
+  change (E Γ α).query ((E Γ α).update ((E Γ α).update [] (ConcreteObstructions.Embedded.tied i x))
+      (ConcreteObstructions.Embedded.tied j y)) () ≠
+    (E Γ α).query ((E Γ α).update ((E Γ α).update [] (ConcreteObstructions.Embedded.tied j y))
+      (ConcreteObstructions.Embedded.tied i x)) ()
+  rw [(ConcreteObstructions.Embedded.query_orders Γ i j x y hi hj different).1,
+    (ConcreteObstructions.Embedded.query_orders Γ i j x y hi hj different).2]
   exact fun h => values (List.cons.inj h).1
 
-theorem no_laws_three_values (Γ : OrderedPrefixCode) (A : Model (E Γ α))
+theorem no_laws_three_values (Γ : OrderedPrefixCode)
     (x y z : α) (xy : x ≠ y) (yz : y ≠ z) (xz : x ≠ z) :
-    ¬ ∃ P : OperationPolicy (EOp α), Guarded.Laws A P := by
-  apply no_guarded_laws_triangle A (event 1 x) (event 2 y) (event 3 z)
+    ¬ ∃ P : OperationPolicy (EOp α), GuardedReplay.Laws (E Γ α).toUpdateSig P := by
+  apply no_guarded_laws_triangle (D := E Γ α) (event 1 x) (event 2 y) (event 3 z)
   all_goals first
-    | exact noncommute Γ A 1 2 x y (by omega) (by omega) (by omega) xy
-    | exact noncommute Γ A 2 3 y z (by omega) (by omega) (by omega) yz
-    | exact noncommute Γ A 1 3 x z (by omega) (by omega) (by omega) xz
+    | exact noncommute Γ 1 2 x y (by omega) (by omega) (by omega) xy
+    | exact noncommute Γ 2 3 y z (by omega) (by omega) (by omega) yz
+    | exact noncommute Γ 1 3 x z (by omega) (by omega) (by omega) xz
     | simp [distinctOps, Op.time, Op.rep, event]
 end Embedded
 
 namespace Sided
 open Instances.SidedEmbedRGA
 def event (ts x : Nat) : Op SOp := (ts,ts,.ins x [] 3 .R)
-theorem noncommute (Γ : OrderedPrefixCode) (A : Model (S Γ))
+theorem noncommute (Γ : OrderedPrefixCode)
     (i j x y : Nat) (hi : i ≤ 3) (hj : j ≤ 3) (different : i ≠ j) (values : x ≠ y) :
-    ¬ Commutes A (event i x) (event j y) := by
-  apply not_commutes_of_query A _ _ [] ()
-  change (S Γ).query ((S Γ).update ((S Γ).update [] (ObservationalObstructions.Sided.tied i x))
-      (ObservationalObstructions.Sided.tied j y)) () ≠
-    (S Γ).query ((S Γ).update ((S Γ).update [] (ObservationalObstructions.Sided.tied j y))
-      (ObservationalObstructions.Sided.tied i x)) ()
-  rw [(ObservationalObstructions.Sided.query_orders Γ i j x y hi hj different).1,
-    (ObservationalObstructions.Sided.query_orders Γ i j x y hi hj different).2]
+    ¬ (S Γ).toUpdateSig.commutes (event i x) (event j y) := by
+  apply not_commutes_of_query (D := S Γ) _ _ [] ()
+  change (S Γ).query ((S Γ).update ((S Γ).update [] (ConcreteObstructions.Sided.tied i x))
+      (ConcreteObstructions.Sided.tied j y)) () ≠
+    (S Γ).query ((S Γ).update ((S Γ).update [] (ConcreteObstructions.Sided.tied j y))
+      (ConcreteObstructions.Sided.tied i x)) ()
+  rw [(ConcreteObstructions.Sided.query_orders Γ i j x y hi hj different).1,
+    (ConcreteObstructions.Sided.query_orders Γ i j x y hi hj different).2]
   exact fun h => values (List.cons.inj h).1
 
-theorem no_laws (Γ : OrderedPrefixCode) (A : Model (S Γ)) :
-    ¬ ∃ P : OperationPolicy SOp, Guarded.Laws A P := by
-  apply no_guarded_laws_triangle A (event 1 10) (event 2 20) (event 3 30)
+theorem no_laws (Γ : OrderedPrefixCode) :
+    ¬ ∃ P : OperationPolicy SOp, GuardedReplay.Laws (S Γ).toUpdateSig P := by
+  apply no_guarded_laws_triangle (D := S Γ) (event 1 10) (event 2 20) (event 3 30)
   all_goals first
-    | exact noncommute Γ A 1 2 10 20 (by omega) (by omega) (by omega) (by decide)
-    | exact noncommute Γ A 2 3 20 30 (by omega) (by omega) (by omega) (by decide)
-    | exact noncommute Γ A 1 3 10 30 (by omega) (by omega) (by omega) (by decide)
+    | exact noncommute Γ 1 2 10 20 (by omega) (by omega) (by omega) (by decide)
+    | exact noncommute Γ 2 3 20 30 (by omega) (by omega) (by omega) (by decide)
+    | exact noncommute Γ 1 3 10 30 (by omega) (by omega) (by omega) (by decide)
     | simp [distinctOps, Op.time, Op.rep, event]
 end Sided
 
-theorem embedded_no_laws (Γ : OrderedPrefixCode) (A : Model (Instances.EmbedRGA.E Γ Nat)) :
-    ¬ ∃ P, Guarded.Laws A P :=
-  Embedded.no_laws_three_values Γ A 10 20 30 (by decide) (by decide) (by decide)
+theorem embedded_no_laws (Γ : OrderedPrefixCode) :
+    ¬ ∃ P, GuardedReplay.Laws (Instances.EmbedRGA.E Γ Nat).toUpdateSig P :=
+  Embedded.no_laws_three_values Γ 10 20 30 (by decide) (by decide) (by decide)
 
-theorem peritext_no_laws (Γ : OrderedPrefixCode) (A : Model (Instances.Peritext.D Γ)) :
-    ¬ ∃ P, Guarded.Laws A P :=
-  Embedded.no_laws_three_values Γ A (.char 10) (.char 20) (.char 30)
+theorem peritext_no_laws (Γ : OrderedPrefixCode) :
+    ¬ ∃ P, GuardedReplay.Laws (Instances.Peritext.D Γ).toUpdateSig P :=
+  Embedded.no_laws_three_values Γ (.char 10) (.char 20) (.char 30)
     (by decide) (by decide) (by decide)
 
 namespace SidedPeritext
@@ -100,70 +99,70 @@ open Instances.SidedEmbedRGA Instances.SidedPeritext
 def event (ts x : Nat) : Op (Core Γ).AppOp :=
   inlOp (A₂ := Nat ⊕ MarkEvent) (Sided.event ts x)
 
-theorem core_noncommute (Γ : OrderedPrefixCode) (A : Model (Core Γ))
+theorem core_noncommute (Γ : OrderedPrefixCode)
     (i j x y : Nat) (hi : i ≤ 3) (hj : j ≤ 3) (different : i ≠ j) (values : x ≠ y) :
-    ¬ Commutes A (event i x) (event j y) := by
-  apply not_commutes_of_query A _ _ (Core Γ).init (.inl ())
+    ¬ (Core Γ).toUpdateSig.commutes (event i x) (event j y) := by
+  apply not_commutes_of_query (D := Core Γ) _ _ (Core Γ).init (.inl ())
   change (Core Γ).query ((Core Γ).update ((Core Γ).update (Core Γ).init
-    (ObservationalObstructions.SidedPeritext.tied i x))
-    (ObservationalObstructions.SidedPeritext.tied j y)) (.inl ()) ≠
+    (ConcreteObstructions.SidedPeritext.tied i x))
+    (ConcreteObstructions.SidedPeritext.tied j y)) (.inl ()) ≠
     (Core Γ).query ((Core Γ).update ((Core Γ).update (Core Γ).init
-    (ObservationalObstructions.SidedPeritext.tied j y))
-    (ObservationalObstructions.SidedPeritext.tied i x)) (.inl ())
-  rw [(ObservationalObstructions.SidedPeritext.core_query_orders Γ i j x y hi hj different).1,
-    (ObservationalObstructions.SidedPeritext.core_query_orders Γ i j x y hi hj different).2]
+    (ConcreteObstructions.SidedPeritext.tied j y))
+    (ConcreteObstructions.SidedPeritext.tied i x)) (.inl ())
+  rw [(ConcreteObstructions.SidedPeritext.core_query_orders Γ i j x y hi hj different).1,
+    (ConcreteObstructions.SidedPeritext.core_query_orders Γ i j x y hi hj different).2]
   exact fun h => values (List.cons.inj (Sum.inl.inj h)).1
 
-theorem core_no_laws (Γ : OrderedPrefixCode) (A : Model (Core Γ)) :
-    ¬ ∃ P, Guarded.Laws A P := by
-  apply no_guarded_laws_triangle A (event 1 10) (event 2 20) (event 3 30)
+theorem core_no_laws (Γ : OrderedPrefixCode) :
+    ¬ ∃ P, GuardedReplay.Laws (Core Γ).toUpdateSig P := by
+  apply no_guarded_laws_triangle (D := Core Γ) (event 1 10) (event 2 20) (event 3 30)
   all_goals first
-    | exact core_noncommute Γ A 1 2 10 20 (by omega) (by omega) (by omega) (by decide)
-    | exact core_noncommute Γ A 2 3 20 30 (by omega) (by omega) (by omega) (by decide)
-    | exact core_noncommute Γ A 1 3 10 30 (by omega) (by omega) (by omega) (by decide)
+    | exact core_noncommute Γ 1 2 10 20 (by omega) (by omega) (by omega) (by decide)
+    | exact core_noncommute Γ 2 3 20 30 (by omega) (by omega) (by omega) (by decide)
+    | exact core_noncommute Γ 1 3 10 30 (by omega) (by omega) (by omega) (by decide)
     | simp [distinctOps, Op.time, Op.rep, event, inlOp, Sided.event]
 
-theorem rich_noncommute (Γ : OrderedPrefixCode) (A : Model (RichCore Γ))
+theorem rich_noncommute (Γ : OrderedPrefixCode)
     (i j x y : Nat) (hi : i ≤ 3) (hj : j ≤ 3) (different : i ≠ j) (values : x ≠ y) :
-    ¬ Commutes A (event i x) (event j y) := by
-  apply not_commutes_of_query A _ _ (RichCore Γ).init (.bold)
+    ¬ (RichCore Γ).toUpdateSig.commutes (event i x) (event j y) := by
+  apply not_commutes_of_query (D := RichCore Γ) _ _ (RichCore Γ).init (.bold)
   change (RichCore Γ).query ((RichCore Γ).update ((RichCore Γ).update (RichCore Γ).init
-    (ObservationalObstructions.SidedPeritext.tied i x))
-    (ObservationalObstructions.SidedPeritext.tied j y)) (.bold) ≠
+    (ConcreteObstructions.SidedPeritext.tied i x))
+    (ConcreteObstructions.SidedPeritext.tied j y)) (.bold) ≠
     (RichCore Γ).query ((RichCore Γ).update ((RichCore Γ).update (RichCore Γ).init
-    (ObservationalObstructions.SidedPeritext.tied j y))
-    (ObservationalObstructions.SidedPeritext.tied i x)) (.bold)
-  rw [(ObservationalObstructions.SidedPeritext.rich_query_orders Γ i j x y hi hj different).1,
-    (ObservationalObstructions.SidedPeritext.rich_query_orders Γ i j x y hi hj different).2]
+    (ConcreteObstructions.SidedPeritext.tied j y))
+    (ConcreteObstructions.SidedPeritext.tied i x)) (.bold)
+  rw [(ConcreteObstructions.SidedPeritext.rich_query_orders Γ i j x y hi hj different).1,
+    (ConcreteObstructions.SidedPeritext.rich_query_orders Γ i j x y hi hj different).2]
   exact fun h => values (congrArg Prod.fst (List.cons.inj h).1)
 
-theorem rich_no_laws (Γ : OrderedPrefixCode) (A : Model (RichCore Γ)) :
-    ¬ ∃ P, Guarded.Laws A P := by
-  apply no_guarded_laws_triangle A (event 1 10) (event 2 20) (event 3 30)
+theorem rich_no_laws (Γ : OrderedPrefixCode) :
+    ¬ ∃ P, GuardedReplay.Laws (RichCore Γ).toUpdateSig P := by
+  apply no_guarded_laws_triangle (D := RichCore Γ) (event 1 10) (event 2 20) (event 3 30)
   all_goals first
-    | exact rich_noncommute Γ A 1 2 10 20 (by omega) (by omega) (by omega) (by decide)
-    | exact rich_noncommute Γ A 2 3 20 30 (by omega) (by omega) (by omega) (by decide)
-    | exact rich_noncommute Γ A 1 3 10 30 (by omega) (by omega) (by omega) (by decide)
+    | exact rich_noncommute Γ 1 2 10 20 (by omega) (by omega) (by omega) (by decide)
+    | exact rich_noncommute Γ 2 3 20 30 (by omega) (by omega) (by omega) (by decide)
+    | exact rich_noncommute Γ 1 3 10 30 (by omega) (by omega) (by omega) (by decide)
     | simp [distinctOps, Op.time, Op.rep, event, inlOp, Sided.event]
 end SidedPeritext
 
 namespace RegisteredFugueMax
 open Instances.SidedEmbedRGA.FugueMax
-def event (ts : Nat) : Op Payload := (ts,ts,ObservationalObstructions.RegisteredFugueMax.tiedPayload)
+def event (ts : Nat) : Op Payload := (ts,ts,ConcreteObstructions.RegisteredFugueMax.tiedPayload)
 theorem query_control (Γ : OrderedPrefixCode) :
     (datatype Γ).query ((datatype Γ).update ((datatype Γ).update (datatype Γ).init (event 1)) (event 2)) () = [1,2] ∧
     (datatype Γ).query ((datatype Γ).update ((datatype Γ).update (datatype Γ).init (event 2)) (event 1)) () = [2,1] ∧
     (datatype Γ).query ((datatype Γ).update ((datatype Γ).update (datatype Γ).init (event 1)) (event 2)) () ≠
       (datatype Γ).query ((datatype Γ).update ((datatype Γ).update (datatype Γ).init (event 2)) (event 1)) () := by
   simp [datatype, rawUpdate, recordOf, event,
-    ObservationalObstructions.RegisteredFugueMax.tiedPayload, Instances.SidedEmbedRGA.mStep,
+    ConcreteObstructions.RegisteredFugueMax.tiedPayload, Instances.SidedEmbedRGA.mStep,
     Instances.SidedEmbedRGA.sIds, Instances.SidedEmbedRGA.sInsert, keyLt_irrefl]
 
-theorem no_laws (Γ : OrderedPrefixCode) (A : Model (datatype Γ)) :
-    ¬ ∃ P, Guarded.Laws A P := by
+theorem no_laws (Γ : OrderedPrefixCode) :
+    ¬ ∃ P, GuardedReplay.Laws (datatype Γ).toUpdateSig P := by
   rintro ⟨P,laws⟩
-  have nc : ¬ Commutes A (event 1) (event 2) :=
-    not_commutes_of_query A _ _ (datatype Γ).init () (query_control Γ).2.2
+  have nc : ¬ (datatype Γ).toUpdateSig.commutes (event 1) (event 2) :=
+    not_commutes_of_query (D := datatype Γ) _ _ (datatype Γ).init () (query_control Γ).2.2
   have covered := (laws.noncomm_exact (event 1) (event 2) (by simp [distinctOps,Op.time,event]) (by simp [Op.rep,event])).mp nc
   have self : P.before (event 1).op (event 1).op := by
     simpa only [event,Op.op,or_self] using covered
@@ -202,11 +201,11 @@ theorem embedded_guarded_control (Γ : OrderedPrefixCode)
     Instances.EmbedRGA.eApplicable (4,4,.ins 40 [] 0) s ∧
     (∀ ts ∈ [1,2,3], ¬ Instances.EmbedRGA.eApplicable (Embedded.event ts 10) s) := by
   refine ⟨by simp [distinctOps,Op.time,Embedded.event],by simp [Op.rep,Embedded.event],?_,?_,by simp [Instances.EmbedRGA.eApplicable],?_⟩
-  · exact (ObservationalObstructions.Embedded.query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).1
+  · exact (ConcreteObstructions.Embedded.query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).1
   · change (Instances.EmbedRGA.E Γ Nat).query
-      ((Instances.EmbedRGA.E Γ Nat).update ((Instances.EmbedRGA.E Γ Nat).update [] (ObservationalObstructions.Embedded.tied 2 20))
-        (ObservationalObstructions.Embedded.tied 1 10)) () ≠ [10,20]
-    rw [(ObservationalObstructions.Embedded.query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).2]
+      ((Instances.EmbedRGA.E Γ Nat).update ((Instances.EmbedRGA.E Γ Nat).update [] (ConcreteObstructions.Embedded.tied 2 20))
+        (ConcreteObstructions.Embedded.tied 1 10)) () ≠ [10,20]
+    rw [(ConcreteObstructions.Embedded.query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).2]
     change ([20,10] : List Nat) ≠ [10,20]
     decide
   · intro ts mem
@@ -228,11 +227,11 @@ theorem sided_guarded_control (Γ : OrderedPrefixCode)
     Instances.SidedEmbedRGA.sApplicable (4,4,.ins 40 [] 0 .R) s ∧
     (∀ ts ∈ [1,2,3], ¬ Instances.SidedEmbedRGA.sApplicable (Sided.event ts 10) s) := by
   refine ⟨by simp [distinctOps,Op.time,Sided.event],by simp [Op.rep,Sided.event],?_,?_,by simp [Instances.SidedEmbedRGA.sApplicable],?_⟩
-  · exact (ObservationalObstructions.Sided.query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).1
+  · exact (ConcreteObstructions.Sided.query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).1
   · change (Instances.SidedEmbedRGA.S Γ).query
-      ((Instances.SidedEmbedRGA.S Γ).update ((Instances.SidedEmbedRGA.S Γ).update [] (ObservationalObstructions.Sided.tied 2 20))
-        (ObservationalObstructions.Sided.tied 1 10)) () ≠ [10,20]
-    rw [(ObservationalObstructions.Sided.query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).2]
+      ((Instances.SidedEmbedRGA.S Γ).update ((Instances.SidedEmbedRGA.S Γ).update [] (ConcreteObstructions.Sided.tied 2 20))
+        (ConcreteObstructions.Sided.tied 1 10)) () ≠ [10,20]
+    rw [(ConcreteObstructions.Sided.query_orders Γ 1 2 10 20 (by omega) (by omega) (by omega)).2]
     change ([20,10] : List Nat) ≠ [10,20]
     decide
   · intro ts mem
@@ -289,7 +288,7 @@ theorem never_issuable (Γ : OrderedPrefixCode) (ts : Nat) (s : State) :
   have hi : mIsIns (recordOf (event ts)) = true := rfl
   obtain ⟨_,_,i,eq⟩ := (canIssue_insert_iff Γ ⟨s.live,births⟩ (recordOf (event ts)) hi).mp issued
   have chain := congrArg MRec.chain eq
-  simp only [recordOf,event,ObservationalObstructions.RegisteredFugueMax.tiedPayload] at chain
+  simp only [recordOf,event,ConcreteObstructions.RegisteredFugueMax.tiedPayload] at chain
   unfold prepareInsert mGenInsAfter at chain
   split at chain <;> simp at chain
 /-- PASS+FAIL: the witness stores the hand-chosen empty chain; every genuine

@@ -9,14 +9,13 @@ open Foundation Sal.EmbedRGA Instances.Peritext
 abbrev representation (Γ : OrderedPrefixCode) :=
   CertifiedRGAVCReplay.Embedded.representation (α := Element) Γ
 
-theorem mergeVCs (Γ : OrderedPrefixCode) : AbstractMRDT.Raw.MergeVCs
-    (CertifiedRGAVCReplay.Embedded.model (α := Element) Γ)
+theorem mergeVCs (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.MergeVCs
     CertifiedRGAVCReplay.Embedded.policy (representation Γ)
     (CertifiedRGAVCReplay.Embedded.scheme Γ) :=
   CertifiedRGAVC.Embedded.mergeVCs Γ
 
 theorem representationJoin (Γ : OrderedPrefixCode) :
-    AbstractMRDT.RepresentationJoin (representation Γ) :=
+    ConcreteMRDT.RepresentationJoin (representation Γ) :=
   CertifiedRGAVC.Embedded.representationJoin Γ
 
 #print axioms representationJoin

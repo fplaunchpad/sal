@@ -1,5 +1,4 @@
-import Sal.MRDTs.Paper1.GuardedRawModel
-import Sal.MRDTs.Paper1.AbstractMerge
+import Sal.MRDTs.Paper1.ConcreteHistoryBridge
 
 /-! The history witness can be transported through a concrete representation
 whose uniqueness is justified only in certified contexts. This bridge does not
@@ -7,7 +6,7 @@ assume the global guarded-law contract, and does not claim to discharge VCs.
 Its conclusion is explicitly `VersionsWitness`; callers must separately expose
 and prove their scoped algebraic assumptions. -/
 namespace Sal.MRDTs.Paper1.CertifiedHistory
-open Foundation AbstractMRDT
+open Foundation ConcreteMRDT
 variable {D : MRDTSig}
 
 /-- An admitted replay with representation evidence. The query in this premise
@@ -34,7 +33,7 @@ theorem versions_of_representation {R : Representation D}
     (unique : CertifiedUnique R I) (history : RepresentedHistory R P S I)
     {C : Configuration D} (execution : CertifiedExecution D I C)
     (represented : ∀ v s E, C.ver v = some (s,E) → R C.replayContext E s) :
-    VersionsWitness (Raw.model D) P S C := by
+    VersionsWitness P S C := by
   intro v s E hv q
   obtain ⟨π,hp,ho,hs,hr,accepted⟩ := history C execution v s E hv q
   have same := unique C execution v s E hv _ _ hr (represented v s E hv)
@@ -60,7 +59,7 @@ is proved. This adapter leaves that preservation obligation visible. -/
 theorem representedHistory_of_adequacy {R : Representation D}
     {P : OperationPolicy D.AppOp}
     {S : HistorySpec (Op D.AppOp) D.Query D.Value} {I : Issuance D}
-    (history : ExecutionHistoryAdequacy (Raw.model D) P S I)
+    (history : ExecutionHistoryAdequacy P S I)
     (replay : ∀ C, CertifiedExecution D I C → ∀ v s E,
       C.ver v = some (s,E) → ∀ π, listPermOf π E →
       respects π (paperOrder P C.replayContext E) →

@@ -6,6 +6,21 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: remove semantic abstraction from paper1
+
+- [x] Replace semantic models and quotients with concrete replay, metadata,
+  merge VC and history interfaces; preserve invariant-scoped commutation.
+- [x] Port all retained positive packages, exact and efficient OR-set,
+  certified sequence variants and anchored Queue without losing VC proof routes.
+- [x] Retire superseded abstraction experiments, migrate coverage and ledger
+  checks, and keep independent sequential-specification refinement.
+- [x] Update the paper reference and reconciliation note, audit imports and
+  assumptions, run both gates, and publish the cleanup.
+
+Validation: both repository gates pass; 187 runtime tests and 569 benchmark
+records pass validation. The reference resolves 94 Lean declarations and its
+21 rendered pages have been checked. Retired experiments remain in Git history.
+
 ### Checked: manuscript reconciliation and formal reference
 
 - [x] Pull Overleaf snapshot `0450d48` (8 October), rebuild the manuscript PDF,
@@ -326,7 +341,7 @@ do **not** classify those datatypes under this corrected contract.
 - **Falsifier:** same-replica updates can fail to commute even when their payload
   policy is empty; consequently the old transport to policy-based `loOn` fails.
 - **Formal oracle:** direct Lean proofs of convergence, order existence, and
-  canonical uniqueness, followed by the observational and execution bridges.
+  canonical uniqueness, followed by concrete execution and independent-history bridges.
 - **Reality oracle:** Neem's F* interface and the manuscript's order definition.
   F* conditional commutation uses policy conflict, whereas the semantic order
   uses actual noncommutation for absorbers. Their equivalence outside the
@@ -339,7 +354,9 @@ Tasks for this correction:
 - [x] Check direct guarded replay convergence and finite order existence.
 - [x] Define canonical states directly using the semantic order; prove
   uniqueness without `paperOrder_iff_loOn`.
-- [x] Transport the guarded metatheory through the observational abstraction.
+- [x] Prove concrete guarded canonical uniqueness and existence directly.
+  The earlier observational transport was an intermediate experiment, retired
+  by the concrete cleanup below.
 - [x] Migrate the generic ordinary/virtual execution and sequential-history
   bridges to the guarded canonical interface; close the exact and efficient
   OR-set certificates through raw equality VCs and derived stored canonicality.
@@ -352,7 +369,7 @@ Tasks for this correction:
 
 Checked core evidence: `GuardedReplay.Laws`, `convergence_on_guarded`,
 `GuardedReplay.exists_paperOrder_enumeration`, and
-`AbstractMRDT.Guarded.canonical_exists` / `canonical_equivalent`.
+`ConcreteMRDT.canonical_exists` / `canonical_unique` in `ConcreteReplay.lean`.
 `GuardedPolicyControls` checks cross-replica exactness and rejects its unguarded
 extension; a supported same-replica example has a semantic causal edge absent
 from policy-based `loOn`. The conditional law follows Neem's manuscript's
@@ -364,6 +381,26 @@ adding this core. Its recursive dependency audit checks that guarded canonical
 uniqueness does not use the uniform replay/order transport. This validates the
 new core alongside existing certificates. The subsequent raw OR-set campaign
 completes the bridge migration for both sets, as recorded below.
+
+### Concrete cleanup interface map (8 October)
+
+`ConcreteFormalism` defines exact concrete canonical replay and indexed
+representation. `ConcreteReplay` proves guarded replay equality and canonical
+uniqueness/existence. `ConcreteMetadata` and `ConcreteJoin` retain metadata
+reconstruction and the five concrete merge VCs; Join follows by finite-event
+induction. `ConcreteHistoryBridge` keeps the independent full-event sequential
+language and specification visibility separate from implementation equality.
+`ConcreteVCExecution` retains the VC dependency gate for positive ports.
+
+The twelve commuting positive ports are `SimpleConcretePorts`,
+`IssuedConcretePorts`, and `RGAConcretePort`, packaged by
+`ConcreteSimplePorts`. Exact and efficient OR-set execution certificates keep
+their `ORSet.RawExecution` and `EfficientORSet.RawCertificate` public names,
+with concrete representation helpers and the new concrete Join induction.
+Invariant-scoped sequence and Queue proofs retain `InvariantOrder` and
+`InvariantReplay`; changing the concrete state domain does not introduce a
+semantic abstraction. The active checklist above covers final integration,
+repository gates and publication of this cleanup.
 
 ### Registry evidence and remaining research boundary
 
@@ -377,7 +414,7 @@ Positive entries: grow-only-set, add-store, finite-add-store, counter,
 increment-only-counter, pn-counter, flat-grow-only-set, flat-grow-only-map,
 bounded-counter, LWW register, plain RGA, TreeMove, AegisSheet, efficient OR-set.
 
-The other eight carry `∀ A, ¬ ∃ P, Guarded.Laws A P` proofs in
+The other eight carry concrete `¬ ∃ P, GuardedReplay.Laws D.toUpdateSig P` proofs in
 `GuardedQueueMVR` and `GuardedRGAObstructions`: Queue, MVR, embedded RGA,
 sided embedded RGA, Peritext embedded RGA, sided Peritext core, sided Peritext
 rich core, and registered FugueMax. These are checked limits of the global law
@@ -400,8 +437,8 @@ stored canonicality for every positive entry. `git diff --check` passes.
 
 ### Guarded equality checkpoint
 
-The exact and efficient OR-sets now instantiate `AbstractMRDT.Raw.MergeVCs`.
-`GuardedRawJoin` derives representation Join by strict finite-history induction
+The exact and efficient OR-sets instantiate `ConcreteMRDT.Raw.MergeVCs`.
+`ConcreteJoin` derives representation Join by strict finite-history induction
 from the five raw equations and proved replay/peel evidence. The exact
 `ORSet.RawExecution.certificate` and efficient
 `EfficientORSet.RawCertificate.certificate` derive stored canonicality and prove
@@ -413,11 +450,15 @@ state equality). Join and stored canonicality are not outstanding assumptions.
 Concrete equality therefore suffices for both OR-sets. Metadata guards remain
 essential: `GuardedEqualityVC` refutes freshness-only causal add and incoherent
 local redistribution, while `GuardedRawORSetVC` derives the needed coverage from
-histories. The raw certificates still reuse some proved observational
-reconstruction helpers, so removing all abstraction infrastructure is not part
-of this result. The ledger forbids the old direct and observational Join proofs
-in the new execution conclusions. This OR-set checkpoint preceded the complete
-registry campaign above; manuscript edits remain separate.
+histories. The concrete cleanup replaces the earlier observational reconstruction
+helpers with `ConcreteORSetRepresentation`, `ConcreteORSetMetadata`,
+`ConcreteORSetSorting`, and `ConcreteORSetAlgebra`. The retained certificates
+use `ConcreteMRDT.ScopedCertificate`; no identity semantic model or quotient
+is part of their interfaces. `ORSet.GuardedRawVC.representationJoin` and
+`EfficientORSet.GuardedRawVC.representationJoin` use the new concrete induction.
+The ledger forbids the old direct and observational Join proofs in these
+execution conclusions. The checkpoint validation below records the earlier
+campaign; the active cleanup checklist records validation of the migration.
 Checkpoint validation: the `scripts/check-paper1.sh` gate passes with 3,471 build
 jobs, including all four ordinary/virtual raw execution dependency checks;
 `git diff --check` passes.
@@ -860,8 +901,9 @@ Correction from the 2026-10-07 source audit: the manuscript's definition
 explicitly requires rc-non-comm and cond-comm before the witness clauses.
 The earlier Lean witness predicates did not include those prerequisites;
 efficient OR-set's direct proof therefore does not establish the full original
-definition. Its abstraction-first certificate below establishes the full
-revised definition with observable replay prerequisites included.
+definition. An abstraction-first experiment subsequently established an observable
+variant. That experiment is now retired; the current guarded concrete
+certificate is recorded in the guarded equality checkpoint above.
 
 Migration inventory (targeted instance proofs and typed coverage are checked):
 
@@ -889,7 +931,13 @@ BoundedCounter demonstrates why global commutation compatibility remains an
 optional sufficient route: its guarded abstract language fails that VC while
 issued causal witnesses establish the stronger criterion.
 
-## Query-relative implementation replay (2026-10-07)
+## Retired experiment: query-relative implementation replay (2026-10-07)
+
+Retired by the 8 October concrete cleanup. This section records the research
+experiment and checks performed at that checkpoint. Its quotient replay and
+`abs` interfaces are removed from the current Lean development; the historical
+names below are provenance, not current infrastructure. Independent abstract
+machines used to specify sequential histories remain supported.
 
 KC authorized changing implementation replay to query-relative reasoning.
 The research question is whether metadata-sensitive concrete noncommutation
@@ -911,16 +959,25 @@ is a necessary restriction, or an artifact of the chosen replay equality.
 - [x] Check the merge boundary: element equality is not a merge congruence.
   Hidden tags and execution/representation evidence remain necessary for
   establishing canonicality of merged versions. No quotient merge is assumed.
-- [ ] Reassess the remaining old state-equality policy obstructions under
-  observable equality before claiming new migration counts. The earlier
-  12/9/1 inventory is a classification of the concrete replay route only.
+- Deferred at that checkpoint: reassess state-equality policy obstructions
+  under observable equality before claiming new migration counts. The later
+  abstraction experiment records that investigation; the current concrete
+  classification is in the guarded registry campaign above.
 
 Validation: `scripts/check-paper1.sh` passes (3,413 build jobs), including
 standard-axiom audits for both observable certified theorems, replay
 uniqueness, the generic history bridge, and the merge-congruence counterexample.
 No manuscript changes or commits were made for this revision.
 
-## Abstraction-first formalism (2026-10-07)
+## Retired experiment: abstraction-first formalism (2026-10-07)
+
+Retired by the 8 October concrete cleanup. The checkmarks, theorem names,
+classification table and measurements below record the experiment as it stood
+on 7 October. Semantic `Model`, `Equivalent`, observational quotient replay,
+and their adapters are removed from the current Lean tree. These paragraphs
+do not describe the active interface. The retained positive ports use concrete
+equality and preserve their five-VC proof routes; their independent sequential
+specifications and refinement proofs remain in use.
 
 KC authorized attempting a full paper-facing abstraction/equivalence revision.
 The research question is which representation-sensitive merge assumptions
@@ -958,7 +1015,7 @@ make observable replay sound without an unrestricted quotient merge.
   the replica guard. This is a scope discrepancy, not an audit of the entire
   bottom-up theorem or a new F★ verification run.
 - [x] **Derive and validate representation Join from observational merge VCs.**
-  The active abstraction-based sufficient-condition goal is completed on
+  The experiment's abstraction-based sufficient-condition goal was completed on
   2026-10-07 for both exact and efficient OR-sets, including issuance-certified
   ordinary and virtual executions.
   - `MetadataJoin.representationJoin_of_vcs` derives Join by strong induction
@@ -1012,7 +1069,7 @@ make observable replay sound without an unrestricted quotient merge.
 - [x] Port/reassess the remaining MRDTs against this primary formalism. The
   earlier concrete-policy inventory and theorem names are retained for audit;
   they are not a new abstract-policy incompatibility classification.
-  Active goal (2026-10-07): port the remaining paper1 MRDTs to the
+  The goal at that checkpoint (2026-10-07) was to port the remaining MRDTs to the
   abstraction-based sufficient-condition theorem, reusing existing proofs;
   prioritize RGA's full-input sequential-history bridge and report each
   datatype as proved, counterexample-blocked, or needing an explicit assumption.

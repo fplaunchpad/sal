@@ -1,4 +1,7 @@
-import Sal.MRDTs.Paper1.GuardedSimplePorts
+import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
+import Sal.MRDTs.Paper1.ConcreteHistoryBridge
+import Sal.MRDTs.Paper1.ConcreteReplay
+import Sal.MRDTs.Paper1.GuardedHistory
 import Sal.MRDTs.Instances.LWWRegister
 
 /-! LWW admits the empty operation policy while preserving its max update,
@@ -6,10 +9,9 @@ merge, query, true issuance and independent ordinary overwrite specification.
 A chronological full-event replay explains the stored maximum. This is a
 scoped history bridge; the two specification writes need not commute. -/
 namespace Sal.MRDTs.Paper1.LWW.GuardedPort
-open Foundation AbstractMRDT
+open Foundation ConcreteMRDT
 open Instances.LWWRegister
 
-abbrev model := Raw.model D
 abbrev policy := commutingPolicy LWWOp
 abbrev language := GuardedHistory.language spec
 
@@ -43,7 +45,7 @@ theorem chronological_respects_vis (C : Configuration D) (ops : List (Op LWWOp))
 LWW Join theorem and its timestamp replay resolver. -/
 theorem history : EventExecutionHistoryAdequacy D policy language issuance := by
   intro C execution v s E hv q
-  have good := CommutingPort.vcCanonicalConfig model all_comm emptyMergeLaws deltaLaws
+  have good := CommutingPort.vcCanonicalConfig all_comm emptyMergeLaws deltaLaws
     commutingPeelLaw (virtual_reach execution)
   obtain ⟨ops,hp,_,_⟩ := good.canonical v s E hv
   have perm : listPermOf (canonical ops) E :=
@@ -61,24 +63,39 @@ theorem history : EventExecutionHistoryAdequacy D policy language issuance := by
     rw [answer]
     exact accepted
 
-def certificate : Guarded.ScopedCertificate model policy language issuance :=
-  Guarded.Positive.rawCommutingScoped all_comm emptyMergeLaws deltaLaws commutingPeelLaw issuance history
+def certificate : ScopedCertificate policy language issuance where
+  laws := GuardedReplay.ofUniform (restricted_of_all_commute all_comm)
+  unique := by
+    intro C E supported s t hs ht
+    exact canonical_unique (GuardedReplay.ofUniform (restricted_of_all_commute all_comm))
+      C E supported hs ht
+  supportedVersions := by
+    intro C execution v s E hv
+    exact (CommutingPort.vcCanonicalConfig all_comm emptyMergeLaws deltaLaws
+      commutingPeelLaw (virtual_reach execution)).version_events_supported v s E hv
+  canonicalVersions := by
+    intro C execution v s E hv
+    obtain ⟨π,hp,_,hf⟩ := (CommutingPort.vcCanonicalConfig all_comm emptyMergeLaws deltaLaws
+      commutingPeelLaw (virtual_reach execution)).canonical v s E hv
+    exact ⟨π,hp,hp.1.imp (fun {_ _} _ =>
+      paperOrder_false_of_all_commute all_comm C.replayContext E _ _),hf⟩
+  history := history
 
 theorem versions {C : Configuration D} (reach : MintCertifiedReach D issuance C) :
-    Guarded.VersionsRALinearizable model policy language C :=
+    VersionsWitness policy language C :=
   certificate.versions (.ordinary reach)
 
 theorem versionsV {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) issuance C) :
-    Guarded.VersionsRALinearizable model policy language C := certificate.versionsV reach
+    VersionsWitness policy language C := certificate.versionsV reach
 
 theorem executions (trace : List (Label D × Configuration D))
     (execution : (certifiedTS D issuance).Execution (initConfig D) trace) :
-    Guarded.ExecutionCorrect model policy language trace := certificate.executions trace execution
+    ExecutionCorrect policy language trace := certificate.executions trace execution
 
 theorem executionsV (trace : List (Label D × Configuration D))
     (execution : (certifiedTSV D issuance).Execution (initConfig D) trace) :
-    Guarded.ExecutionCorrect model policy language trace := certificate.executionsV trace execution
+    ExecutionCorrect policy language trace := certificate.executionsV trace execution
 
 theorem convergence {C : Configuration D} (execution : CertifiedExecution D issuance C)
     {v w : Version} {s t : D.State} {E : Set (Op LWWOp)}

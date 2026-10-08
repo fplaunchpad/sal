@@ -42,3 +42,5 @@ thm:scoped-replay	Sal.MRDTs.Paper1.InvariantReplay	Sal.MRDTs.Paper1.InvariantRep
 thm:scoped-replay	Sal.MRDTs.Paper1.InvariantReplay	Sal.MRDTs.Paper1.InvariantReplay.canonical_unique
 def:ra	Sal.MRDTs.Paper1.RALinearizability	Sal.MRDTs.Paper1.RAExecution
 def:ra	Sal.MRDTs.Paper1.RALinearizability	Sal.MRDTs.Paper1.RAImplementation
+thm:scoped-replay	Sal.MRDTs.Paper1.ConcreteReplay	Sal.MRDTs.Paper1.ConcreteMRDT.canonical_unique
+thm:scoped-replay	Sal.MRDTs.Paper1.ConcreteFormalism	Sal.MRDTs.Paper1.ConcreteMRDT.Canonical

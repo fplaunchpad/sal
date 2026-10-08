@@ -6,8 +6,8 @@ canonical virtual merge bases, and garbage collection.
 
 On branch `paper1`, [`Sal/MRDTs/Paper1`](Sal/MRDTs/Paper1) mechanizes the
 submission's prefix-closed history specifications and explicit per-query
-RA-linearizability criterion. The original state-equality replay route requires
-exact concrete noncommutation and no length-two conflict chain. Soundness retains issuance and
+RA-linearizability criterion. Implementation replay, merge VCs, and canonical
+state reconstruction use concrete equality. Soundness retains issuance and
 execution evidence, with local sequential simulations or suitable-history
 proofs supplying the bridge to specification acceptance. The exact paper
 OR-set retains every addition tag and has an ancestor-aware Join proof.
@@ -22,8 +22,8 @@ assumptions at that lifting step.
 
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay
-in `GuardedConvergence` and `GuardedOrder`, and the full-event criterion in
-`GuardedHistoryBridge`. The typed
+in `GuardedConvergence`, `GuardedOrder`, and `ConcreteReplay`, and the full-event
+history bridge in `ConcreteHistoryBridge`. The typed
 [`GuardedCoverage.lean`](Sal/MRDTs/Paper1/GuardedCoverage.lean) matches all 22
 production packages: **14 have ordinary and virtual execution certificates,
 all using concrete equality; eight have checked global-contract obstructions**.
@@ -112,168 +112,61 @@ concrete equality. PASS+FAIL controls include actual public certified execution
 and the requested concurrency cases. This additional variant does not change
 the original Queue or the 20-of-22 production count; it has no JavaScript port.
 
-The abstraction development below remains useful proof infrastructure and an
-optional generalization. `AbstractFormalism` retains the earlier uniform-law
-adapter. Its nontrivial observational models are no longer required by any
-positive entry in the corrected registry. The final certificates use identity
-models and do not require query completeness; specification refinement remains
-separate from implementation-state equality.
+The implementation metatheory is concrete throughout.
+[`ConcreteFormalism.lean`](Sal/MRDTs/Paper1/ConcreteFormalism.lean) defines
+history-indexed representation and exact canonical replay.
+[`ConcreteMetadata.lean`](Sal/MRDTs/Paper1/ConcreteMetadata.lean) records causal
+metadata dependencies, which may include commuting predecessors needed to
+reconstruct identifiers or anchors.
+[`ConcreteJoin.lean`](Sal/MRDTs/Paper1/ConcreteJoin.lean) derives representation
+Join by strict event-set induction from five concrete merge equations,
+representation uniqueness, finite replay supply, and a represented peel witness.
+Semantic and metadata maximality are separate obligations. The proof does not
+replace concrete equality with equality of query answers.
 
-[`AbstractMerge.lean`](Sal/MRDTs/Paper1/AbstractMerge.lean) states the five
-merge VCs with observational conclusions and explicit history-indexed metadata
-representation premises. Representation-preserving Join proves merged
-canonicality and equivalence of merge results for represented inputs from the
-same histories. [`AbstractSoundness.lean`](Sal/MRDTs/Paper1/AbstractSoundness.lean)
-packages the assumptions and proves ordinary/virtual finite-execution
-correctness and observable convergence. Both OR-sets have checked
-`AbstractSpec.certificate` inhabitants and representation Join proofs.
-The five-VC-to-Join derivation includes explicit representation-preserving
-substitutions and decompositions. Replacing equalities with equivalence alone
-does not suffice.
-`MetadataSubstitution` proves the guarded substitution obligation for both
-sets independently of Join, and `MetadataInduction` closes the empty-side
-case. The nonempty case must distinguish observable conflicts from metadata
-dependencies: two same-replica adds commute observationally, but the newer
-add's reconstruction needs the older tag in its causal base.
-`MetadataPeelControl` checks that omitting it gives the correct membership
-while leaving an obsolete tag. `MetadataMaximal` supplies a common semantic
-and metadata maximum for both OR-sets. `MetadataReconstruction` proves closure
-of metadata pasts and a represented reconstruction choice for the exact set,
-without Join. `MetadataRewrite` closes the generic causal reconstruction case
-from the observational VC and a directed metadata-preservation obligation.
-`EfficientMetadataReconstruction` provides the efficient set's represented
-peel choice using both maxima. `EfficientMetadataCausal` discharges its causal
-metadata companion by concrete set algebra: every live record killed by the
-step is present in the metadata past. Neither proof invokes Join.
-`MetadataCausalFrame` checks substitution of a represented smaller-history
-result into causal reconstruction. `MetadataRedistribution` proves the generic
-local/shared steps from their recursive premises and directed metadata
-companions. `MetadataDecomposition` supplies side reconstruction from strictly
-smaller Join instances, treating a side equal to the whole union by causal
-framing. Both sets discharge the metadata companion for branch symmetry.
-`MetadataJoin.representationJoin_of_vcs` now derives representation Join by
-strong induction from the observational VCs, directed metadata companions,
-and explicit replay supplies. `MetadataSupply` constructs those replay
-supplies for both sets without Join. `ORSetRedistribution` discharges both
-shared metadata companions by the same unconditional finite-set identity.
-`ORSetLocalMetadata` discharges both local metadata companions from tag/history
-invariants. `ORSetVCJoin` now supplies the exact set's complete observational
-VC package, derived Join, and ordinary/virtual issuance-certified execution
-correctness through `vcCertificate`. Its stored-version invariant uses the
-VC-derived Join rather than the existing direct proof.
-`EfficientORSetVCJoin` now discharges the efficient set's complete observational
-VC package and derives its representation Join by the same induction. Add VCs
-use observational equality; remove VCs admit concrete equality.
-`EfficientVCHistoryMerge`, `EfficientVCVirtual`, and `EfficientVCExecution`
-carry this derived Join through stored-version updates and every recursive
-virtual-base merge. Both sets' `vcCertificate` inhabitants prove ordinary and
-virtual issuance-certified execution correctness through the new route.
-`VCExecutionContract.VCConditions` states the complete sufficient conditions
-with no assumed Join field; its generic ordinary/virtual execution theorems
-apply to both checked `vcConditions` instances. Stored-version evidence and
-sequential-history adequacy remain separate, explicit obligations.
-`VCReplayConditions` separates those replay and metadata obligations from the
-choice of sequential-history bridge. `ScopedHistoryBridge` supplies an
-execution-scoped alternative for guarded specifications: an independently
-accepted merge-free history explains a stored state using observable
-canonical uniqueness. `FutureModel` supplies a general future-query quotient,
-and `CommutingVCReplay` adapts existing concrete VC equations to the new
-observational induction without assuming the old datatype Join theorem.
-The earlier uniform-law production ports and observational reassessment are
-implemented in `SimpleAbstractPorts`, `GuardedAbstractPorts`, `RGAAbstractPort`,
-and `ObservationalObstructions{,RGA}`. The historical uniform inventory `AbstractCoverage`
-records 13 proved production entries, eight global-law obstructions, and the
-then-excluded LWW register. `GuardedCoverage` supersedes that classification.
-The exact paper OR-set is an additional
-proved datatype outside that registry. Each positive entry carries a total or
-execution-scoped VC sufficient-condition instance with the original issuer.
+[`ConcreteVCExecution.lean`](Sal/MRDTs/Paper1/ConcreteVCExecution.lean) packages
+these VC obligations with stored-version representation evidence. Join is
+derived rather than supplied as a field. `ConcreteCommutingVCReplay` adapts
+commuting datatype equations to this induction; `SimpleConcretePorts`,
+`IssuedConcretePorts`, and `RGAConcretePort` preserve the existing production
+issuers and independent history languages. Exact and efficient OR-set
+representation, replay construction, metadata, and algebra are developed in
+`ConcreteORSetRepresentation`, `ConcreteORSetSorting`, `ConcreteORSetMetadata`,
+and `ConcreteORSetAlgebra`.
 
-Plain RGA retains the independent strict list/registry specification and exact
-timestamp/replica inputs. Its global implementation/specification commutation
-compatibility is proved impossible; the execution-scoped bridge uses unique
-births, causal support, and live-anchor issuance facts to select an accepted
-history. The guarded counter, TreeMove, and AegisSheet likewise preserve their
-independent guarded languages. Their merge proofs and stored-version invariants
-derive from the new VC induction.
+[`ConcreteHistoryBridge.lean`](Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean)
+connects exact stored canonicality to an independent sequential specification.
+Its total route requires merge-free fold soundness and commutation
+compatibility; its scoped route chooses one admitted history preserving both
+implementation order and specification visibility, then transports its answer
+by concrete replay uniqueness. `CertifiedHistoryBridge` instead transports an
+admitted represented replay by exact representation uniqueness in certified
+contexts. `ExecutionTrace` supplies the model-free finite-trace induction.
+Independent sequential simulations and specification abstraction functions
+remain proof tools relating the implementation to a separate specification;
+they do not redefine implementation equality or merge commutation.
 
-These eight obstructions concern the earlier **unguarded, uniform** laws.
-They do not establish incompatibility with the intended Neem-style contract:
-the user supplies payload-only `rc`, while event exactness is required only
-for distinct timestamps and different replicas. The corrected contract now has its own metatheory and coverage; the old
-transport to policy-based `loOn` cannot justify the guarded case.
+`GuardedReplay`, `GuardedConvergence`, and `GuardedOrder` establish direct
+semantic-order convergence and finite enumeration. The event guards retain
+distinct timestamps and, for noncommutation exactness, distinct replicas.
+The conditional law uses actual noncommutation; Neem's guarded F* obligations
+alone do not supply it. `GuardedPolicyControls` checks this boundary and the
+failure of the earlier uniform-policy order transport.
 
-`GuardedReplay`, `GuardedConvergence`, and `GuardedOrder` now establish direct
-semantic-order convergence and finite enumeration. `GuardedAbstraction` carries
-these results to observational equality and proves canonical existence and
-uniqueness. The conditional law explicitly uses the manuscript's actual
-noncommutation premise; Neem's guarded F* obligations alone do not supply it.
-`GuardedPolicyControls` checks the guard boundary and the failure of the old
-order transport.
+Both OR-sets have five-VC-derived ordinary and recursive-virtual execution
+certificates in `ORSet.RawExecution` and `EfficientORSet.RawCertificate`.
+Their independent ordinary-set specifications retain full event inputs and
+specification visibility. `storedCanonical` gives exact replay equality and
+`convergence` gives equality of concrete stored states. The certificates derive
+Join and stored canonicality. Ledger dependency checks require the concrete
+Join induction and datatype VC obligations, and reject the earlier direct
+Join and history-merge shortcuts.
 
-`GuardedRawJoin` now derives Join from five guarded concrete-equality equations
-and finite replay reconstruction. Both OR-sets instantiate this route:
-`ORSet.RawExecution` and `EfficientORSet.RawCertificate` prove ordinary and
-recursive virtual execution correctness against the independent ordinary-set
-specification, including specification visibility and full event inputs.
-Their `storedCanonical` theorems give raw replay equality, and `convergence`
-gives equality of concrete stored states. Neither certificate assumes Join or
-stored canonicality. Recursive ledger checks reject the previous direct and
-observational Join routes in these conclusions. Some replay construction still
-reuses proved observational helpers; the core interface uses identity abstraction.
-See [the manuscript reconciliation note](docs/paper1-formalism-reconciliation.md)
-for the equality decision and required paper changes. The complete guarded registry classification is recorded above.
-
-The eight earlier uniform obstructions have now been re-proved with the
-corrected event guards in `GuardedQueueMVR` and `GuardedRGAObstructions`.
-Observational equality cannot remove these global-contract obstructions.
-Queue, compact MVR, and registered FugueMax expose operation-label exactness
-failures in their queries. Embedded RGA, sided embedded RGA, Peritext embedded
-RGA, and the two sided Peritext cores expose an observable three-operation
-conflict triangle incompatible with no-chain. The impossibility proofs cover
-every sound abstraction of the unchanged signatures. Their raw tied-coordinate
-inputs need not be issuable: these results refute globally quantified laws,
-and do not assert failure of certified executions. All datatype verdicts and
-the evidence needed for their history bridges are recorded in the canonical
-task list.
-The joint paper1 gate passes (3,477 build jobs), including guarded-core and raw-VC
-dependency checks, standard-axiom,
-registry-coverage, and proof-route dependency checks for the completed ports.
-The ledger audits the proof dependency graph: these results must use the new
-Join induction and datatype VC/metadata obligations, and may not use the
-earlier direct Join or direct history merge proofs.
-`MetadataDependencies` makes that distinction explicit: metadata edges are
-causal and cover observable conflicts; their reconstruction past can retain
-additional commuting predecessors. The merge VCs now parameterize this past.
-
-The checked `EfficientORSet.AbstractControls.canonical_only_join_fails`
-explains why the metadata premise matters: a fresh-tag state is abstract
-canonical for a history containing only an older add, but using that fresh tag
-as a merge input can incorrectly survive a causally observed removal.
-Abstract canonicality alone therefore cannot serve as representation evidence.
-
-The earlier implementation replay adapter is query-relative throughout:
-[`QueryReplay.lean`](Sal/MRDTs/Paper1/QueryReplay.lean) identifies states when
-every future update sequence and query gives the same result. Its quotient
-algebra uses observational equality for commutation, conditional absorption,
-canonical replay, and replay uniqueness. An explicit `Abstraction` interface
-can present this equality as `abs s = abs t`. Both the exact and efficient
-OR-sets use element membership as their abstraction and the same generic
-canonical-history bridge to prove ordinary/virtual certified correctness for
-every stored version (`ORSet.QuerySpec`, `EfficientORSet.QuerySpec`).
-Efficient OR-set now satisfies operation-level exactness and no-chain for this
-observable algebra; same-element adds commute despite different tags.
-`QueryReplay.order` uses observable noncommutation in both visibility and
-absorber clauses. These results use the specification-visible criterion and
-retain full event inputs and independent ordinary-set histories.
-
-Merge still operates on concrete tags. The checked
-`EfficientORSet.QuerySpec.merge_congruence_fails` shows that identical element
-sets can behave differently when merged against an ancestor and a removal.
-Consequently, concrete execution/representation invariants establish
-observable canonicality after merge; no tag-erasing merge operation is assumed.
-The older state-equality results below remain available as stronger proof
-tools. The other production instances have not yet been reclassified under
-the new observable algebra.
+`GuardedQueueMVR` and `GuardedRGAObstructions` state the eight global-contract
+obstructions using concrete equality. Their raw inputs need not be issuable;
+these results refute globally quantified laws and do not assert failure of
+certified executions. The certified and invariant-scoped results described
+above retain their own execution domains and witness orders.
 
 The agreed sequential update interface retains the full
 `(timestamp, replica, application operation)` input supplied to MRDT updates.
@@ -305,25 +198,6 @@ negative and positive criteria on the same reachable read `[5,4,8,7]`.
 These paper-facing results do not assert a migration of every
 production package to the restricted policy.
 
-The earlier state-equality full-input migration is checked against the complete 22-entry production
-registry in `Paper1.MigrationCoverage`: twelve entries have independent
-history-language specifications and ordinary/virtual certified guarantees for
-every allocated version, nine have proofs that the paper's operation-only
-exact/noncommutation plus no-chain assumptions cannot hold on their unchanged
-carriers, and LWW is explicitly excluded. The compatible entries are the three
-add/set stores, three flat counters, two flat grow-only stores, bounded counter,
-plain RGA, TreeMove, and AegisSheet. Coverage retains each original signature
-and issuer and proves equality with the original registry, not just its names.
-The exact paper OR-set is an additional checked instance outside that registry.
-Including efficient OR-set's direct proof, thirteen of the original twenty-two
-entries have the earlier specification-visible history witness clauses proved. Eight
-retain their original production verification without that new proof; LWW
-remains excluded from this migration.
-Those earlier witness predicates did not bundle the manuscript definition's
-datatype-side prerequisites. In particular, efficient OR-set's direct concrete
-proof does not establish the full original definition: concrete rc-non-comm
-fails. Its new abstraction-first certificate proves the full revised criterion.
-
 `Paper1.EventBridge` exposes full-input simulations, independent fold-history
 acceptance, mint-sensitive and execution-sensitive chosen-history premises,
 Join/five-VC soundness, and finite-trace guarantees. TreeMove and AegisSheet use
@@ -331,16 +205,6 @@ Join/five-VC soundness, and finite-trace guarantees. TreeMove and AegisSheet use
 legality. BoundedCounter retains nonnegative account guards; its global
 commutation-compatibility VC fails, while its honest causal witnesses prove
 specification-visible correctness.
-
-The nine exceptions to that state-equality route are efficient OR-set, queue, compact MVR, and six embedded
-RGA/editor registry entries. These are obstructions to all-state concrete replay
-assumptions, not failures of the sequential specifications or the existing
-production certificates. Efficient OR-set additionally has a direct full-input
-ordinary-set history proof under its retained policy. `main` already proves
-that its all-state replay laws are unavailable; `paper1` strengthens that result
-to impossibility for any operation-only exact policy under concrete equality.
-That obstruction does not apply to the new observable replay laws. The embedded RGA
-obstructions use raw event pairs that need not satisfy honest issuance.
 
 The local Neem F★ interface requires distinct timestamps and different replica
 IDs in `rc_non_comm` (`_references/neem_fstar_repo/code/interface/App_mrdt.fsti:64`).
