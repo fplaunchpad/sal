@@ -28,6 +28,29 @@ def forbidden_dependency(name):
         'mergeVCs', 'representationJoin', 'join_at_sizes', 'causal_replay_eq',
         'local_replay_eq', 'shared_replay_eq', 'ORSet.join', 'ORSet.live_join')):
         return True
+    # Certified expansions must derive history evidence afresh. Raw one-step
+    # collection/list algebra remains permitted; old fold invariants do not.
+    if any(part in name for part in (
+        '.s_fold_mem', '.s_fold_rec_sub', '.s_fold_sorted', '.s_keys_inj_events',
+        '.wellformed_supported', '.e_fold_mem', '.e_fold_rec_sub', '.e_fold_sorted')):
+        return True
+    if '.CertifiedRGAVCAlgebra.' in name and any(part in name for part in (
+        '.provenance', '.fresh_id', '.compatible', '.sorted', '.merge_toFinset',
+        '.update_toFinset')):
+        return True
+    if any(part in name for part in (
+        '.invariants_of_mint', '.event_chain_of_mint', '.delete_birth_of_mint',
+        '.CertifiedFugueVCAlgebra.', '.CertifiedFugueInvariant.',
+        '.CertifiedRGACoreVC.text_membership', '.CertifiedRGACoreVC.text_mono',
+        '.CertifiedRGACoreVC.normalize')):
+        return True
+    if any(part in name for part in (
+        '.noninterleaving_of_mint', '.rawFold_records', '.projected_wf',
+        '.liveFold_project', '.f_fold_mem', '.f_fold_canon', '.f_fold_sorted',
+        '.CertifiedRGAFugue.unique', '.CertifiedRGAFugue.laws',
+        '.CertifiedFugueVCReplay.respects_lo', '.CertifiedFugueVCReplay.unique',
+        '.CertifiedFugueVCReplay.peel', '.CertifiedFugueVCReplay.replaySupply')):
+        return True
     # The new route forbids datatype-specific representation invariants too.
     datatype = '.ORSet.' in name or '.EfficientORSet.' in name
     return datatype and any(part in name for part in (

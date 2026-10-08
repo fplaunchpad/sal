@@ -22,25 +22,20 @@ assumptions at that lifting step.
 
 The [correctness audit](docs/paper1-correctness-audit.md) traces both obligations:
 five-VC implementation correctness, then the independent sequential-specification
-bridge. The exact OR-set has unrestricted payload correctness through the new
+bridge. The ordinary OR-set has unrestricted payload correctness through the new
 VC route; Embedded RGA uses that merge route with certified representation and
 an exact selected-history bridge. A [reviewable manuscript patch](docs/paper1-manuscript-reconciliation.patch)
 provides the corresponding revisions against Overleaf `0450d48`.
 
-An isolated [five-VC automation experiment](experiments/vc-automation/README.md)
-compares native Lean tactics, Lean-auto/Duper, lean-smt/cvc5 and Z3-based routes
-on unchanged exact/efficient OR-set and Embedded RGA obligations. It separates
-solver verdicts from kernel-checked proofs, records explicit preprocessing and
-helper premises, and preserves the production proof bundles. Its reusable
-native normalization closes the commutativity, initialization and shared-event
-VCs for both OR-sets without external solver dependencies.
-That matrix tested unexpanded obligations. The follow-up now proves **all five
-unchanged VCs for both OR-sets** through equation-based history induction and
-new finite kernels. An independent rebuild and dependency audit found no reused
-VC, Join or datatype state/history invariant proofs. Native Lean checked all
-30 benchmarked Sal local/causal equations; deriving the expansion and its coverage
-remains manual. Production certificates are unchanged; issuance-certified
-RGA/queue automation is still deferred.
+The [five-VC automation experiment](experiments/vc-automation/README.md) now
+checks all five unchanged VCs for the ten production entries without
+state-dependent issuance, the ordinary OR-set example, and the RGA family,
+including current Queue (anchored enqueue) and FugueMax. The combined audit
+covers 19 named instances including aliases. Finite equations close with Lean
+automation; history expansion and evidence adapters were developed manually.
+The audit excludes old datatype VC, Join and history-invariant proof reuse.
+Production certificates remain unchanged. Fugue's merge VC proof does not
+resolve its separate sequential-specification obstruction.
 
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay
@@ -49,7 +44,7 @@ history bridge in `ConcreteHistoryBridge`. The typed
 [`GuardedCoverage.lean`](Sal/MRDTs/Paper1/GuardedCoverage.lean) matches all 22
 production packages: **14 have ordinary and virtual execution certificates,
 all using concrete equality; eight have checked global-contract obstructions**.
-The exact paper OR-set is an additional positive result outside that registry.
+The ordinary paper OR-set is an additional positive result outside that registry.
 Every positive retains its original public datatype and issuance discipline,
 with independent sequential histories and specification-conflict visibility.
 
@@ -110,7 +105,7 @@ policy**, using specification visibility alone. The relevant effectors now
 commute on valid implementation states, so this is a distinct obstruction.
 
 Across the retained and new certificate routes, **20 of 22 production packages
-have positive certificates**; exact paper OR-set is additional. The remaining
+have positive certificates**; ordinary paper OR-set is additional. The remaining
 cases are Fugue's specification-visibility obstruction and Queue's policy
 obstruction. This count does not reclassify the retained raw-order registry.
 
@@ -151,7 +146,7 @@ these VC obligations with stored-version representation evidence. Join is
 derived rather than supplied as a field. `ConcreteCommutingVCReplay` adapts
 commuting datatype equations to this induction; `SimpleConcretePorts`,
 `IssuedConcretePorts`, and `RGAConcretePort` preserve the existing production
-issuers and independent history languages. Exact and efficient OR-set
+issuers and independent history languages. Ordinary and efficient OR-set
 representation, replay construction, metadata, and algebra are developed in
 `ConcreteORSetRepresentation`, `ConcreteORSetSorting`, `ConcreteORSetMetadata`,
 and `ConcreteORSetAlgebra`.
@@ -242,7 +237,7 @@ independent history language. This is the contrapositive of the existing
 specification-conflict coverage premise. It makes specification-conflict
 visibility follow from the replay order, supports full event inputs, and
 combines with the five merge VCs and history acceptance to prove the stronger
-criterion. The exact OR-set satisfies it; the no-op-removal mutant fails it.
+criterion. The ordinary OR-set satisfies it; the no-op-removal mutant fails it.
 This is a sufficient route, not a requirement on every datatype: certified RGA
 continues to use its issuance-based chosen-history proof. The VC does not
 silently change the literal RA definition. `appendix_soundness.tex` is excluded

@@ -1,0 +1,387 @@
+{
+  "schemaVersion": 1,
+  "scope": "All 22 production registry entries, the ordinary OR-set paper example, and the distinct anchored-queue paper variant.",
+  "counts": {
+    "registry_entries": 22,
+    "registry_without_state_dependent_issuance": 10,
+    "registry_with_state_dependent_issuance": 12,
+    "paper_examples_outside_registry": 2
+  },
+  "entries": [
+    {
+      "id": "grow-only-set",
+      "implementation": "Instances.GSet.D",
+      "issuance": "Instances.GSet.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/AddStore.lean",
+        "declaration": "generation",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Add.conditions",
+      "transfer_theorem": "NeemExpansion.TransferSimple.gset",
+      "status": "checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "add-store",
+      "implementation": "Instances.AddStore.D Nat",
+      "issuance": "Instances.AddStore.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/AddStore.lean",
+        "declaration": "generation",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Add.conditions",
+      "transfer_theorem": "NeemExpansion.TransferSimple.addStore",
+      "status": "checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "finite-add-store",
+      "implementation": "Instances.FinsetStore.D Nat",
+      "issuance": "Instances.FinsetStore.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/FinsetStore.lean",
+        "declaration": "generation",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Finite.conditions",
+      "transfer_theorem": "NeemExpansion.TransferSimple.finiteAdd",
+      "status": "checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "counter",
+      "implementation": "Instances.FlatCounters.Counter",
+      "issuance": "Instances.FlatCounters.generation (fun _ => 1)",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/FlatCounters.lean",
+        "declaration": "generation",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Delta.conditions",
+      "transfer_theorem": "NeemExpansion.TransferSimple.counter",
+      "status": "checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "increment-only-counter",
+      "implementation": "Instances.FlatCounters.IOC",
+      "issuance": "Instances.FlatCounters.generation (fun _ => 1)",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/FlatCounters.lean",
+        "declaration": "generation",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Delta.conditions",
+      "transfer_theorem": "NeemExpansion.TransferSimple.ioc",
+      "status": "checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "pn-counter",
+      "implementation": "Instances.FlatCounters.PN",
+      "issuance": "Instances.FlatCounters.generation Instances.FlatCounters.pnDelta",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/FlatCounters.lean",
+        "declaration": "generation",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Delta.conditions",
+      "transfer_theorem": "NeemExpansion.TransferSimple.pn",
+      "status": "checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "flat-grow-only-set",
+      "implementation": "Instances.FlatGrowOnly.GOSet",
+      "issuance": "Instances.FlatGrowOnly.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/FlatGrowOnly.lean",
+        "declaration": "generation",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Boolean.conditions",
+      "transfer_theorem": "NeemExpansion.TransferSimple.booleanSet",
+      "status": "checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "flat-grow-only-map",
+      "implementation": "Instances.FlatGrowOnly.GOMap",
+      "issuance": "Instances.FlatGrowOnly.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/FlatGrowOnly.lean",
+        "declaration": "generation",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Boolean.conditions",
+      "transfer_theorem": "NeemExpansion.TransferSimple.booleanMap",
+      "status": "checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "bounded-counter",
+      "implementation": "Instances.BoundedCounter.BC",
+      "issuance": "Instances.BoundedCounter.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/BoundedCounter.lean",
+        "declaration": "bcApplicable",
+        "state_dependency": "decrement requires the issuing replica balance to cover one decrement"
+      },
+      "selected_existing_vc_route": "CommutingPort.mergeVCs instantiated by GuardedPorts.Bounded.conditions",
+      "status": "excluded-track-a"
+    },
+    {
+      "id": "lww-register",
+      "implementation": "Instances.LWWRegister.D",
+      "issuance": "Instances.LWWRegister.issuance",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/LWWRegister.lean",
+        "declaration": "issuance",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "LWW.GuardedPort: CommutingPort representation/scheme with empty policy",
+      "transfer_theorem": "NeemExpansion.TransferLWW.expanded_vcs",
+      "status": "checked-transfer",
+      "scope_note": "Existing paper1 empty policy, not production timestamp policy; implementation, representation and metadata scheme unchanged.",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "rga",
+      "implementation": "Instances.RGA.RGAM",
+      "issuance": "Instances.RGA.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/RGA.lean",
+        "declaration": "applicable",
+        "state_dependency": "anchor/birth/grave membership and fresh ID checks"
+      },
+      "selected_existing_vc_route": "CommutingPort.mergeVCs instantiated by RGA.ConcretePort",
+      "status": "excluded-track-a",
+      "transfer_theorem": "NeemExpansion.TransferProduct.NativeRGA.expanded_vcs",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "embed-rga",
+      "implementation": "Instances.EmbedRGA.E unaryCode Nat",
+      "issuance": "Instances.EmbedRGA.generation unaryCode",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/EmbedRGA.lean",
+        "declaration": "eApplicable",
+        "state_dependency": "insertion anchor record and deletion ID membership"
+      },
+      "selected_existing_vc_route": "CertifiedRGAVC.Embedded.mergeVCs",
+      "status": "excluded-track-a",
+      "transfer_theorem": "NeemExpansion.CertifiedEmbedded.expanded_vcs",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "sided-embed-rga",
+      "implementation": "Instances.SidedEmbedRGA.S unaryCode",
+      "issuance": "Instances.SidedEmbedRGA.generation unaryCode",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+        "declaration": "sApplicable",
+        "state_dependency": "insertion anchor record and deletion ID membership"
+      },
+      "selected_existing_vc_route": "CertifiedRGAVC.Sided.mergeVCs",
+      "status": "excluded-track-a",
+      "transfer_theorem": "NeemExpansion.CertifiedRGA.expanded_vcs",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "peritext-embed-rga",
+      "implementation": "Instances.Peritext.D unaryCode",
+      "issuance": "Instances.EmbedRGA.generation unaryCode",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/EmbedRGA.lean",
+        "declaration": "eApplicable",
+        "state_dependency": "inherits embedded RGA anchor and deletion membership guard"
+      },
+      "selected_existing_vc_route": "CertifiedPeritextVC.mergeVCs",
+      "status": "excluded-track-a",
+      "transfer_theorem": "NeemExpansion.CertifiedEmbeddedTransfers.peritext",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "sided-peritext-core",
+      "implementation": "Instances.SidedPeritext.Core unaryCode",
+      "issuance": "Instances.SidedPeritext.generation unaryCode",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/SidedPeritext.lean",
+        "declaration": "coreGuard",
+        "state_dependency": "text-anchor, live deletion and mark endpoint membership checks"
+      },
+      "selected_existing_vc_route": "CertifiedRGACoreMergeVC.mergeVCs",
+      "status": "excluded-track-a",
+      "transfer_theorem": "NeemExpansion.CertifiedCore.expanded_vcs",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "sided-peritext-rich-core",
+      "implementation": "Instances.SidedPeritext.RichCore unaryCode",
+      "issuance": "Instances.SidedPeritext.richGeneration unaryCode",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/SidedPeritext.lean",
+        "declaration": "coreGuard",
+        "state_dependency": "same Core guard over raw state; richGeneration uses coreGuard"
+      },
+      "selected_existing_vc_route": "CertifiedRGARichVC.mergeVCs",
+      "status": "excluded-track-a",
+      "transfer_theorem": "NeemExpansion.CertifiedCore.rich_expanded_vcs",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "tree-move",
+      "implementation": "Instances.TreeMove.D",
+      "issuance": "Instances.TreeMove.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/TreeMove.lean",
+        "declaration": "applicable",
+        "state_dependency": "visible parent, known/visible child and state-local event freshness"
+      },
+      "selected_existing_vc_route": "CommutingPort.mergeVCs instantiated by GuardedPorts.Tree.conditions",
+      "status": "excluded-track-a"
+    },
+    {
+      "id": "aegis-sheet",
+      "implementation": "Instances.AegisSheet.D",
+      "issuance": "Instances.AegisSheet.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/AegisSheet.lean",
+        "declaration": "applicable",
+        "state_dependency": "applicableB depends on causal-origin contents; ClockedAt depends on event times"
+      },
+      "selected_existing_vc_route": "CommutingPort.mergeVCs instantiated by GuardedPorts.Sheet.conditions",
+      "status": "excluded-track-a"
+    },
+    {
+      "id": "efficient-or-set",
+      "implementation": "Instances.EfficientORSet.D Nat",
+      "issuance": "Instances.EfficientORSet.issuance",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/EfficientORSet.lean",
+        "declaration": "issuance",
+        "predicate": "CanIssue _ _ := True"
+      },
+      "selected_existing_vc_route": "EfficientORSet.GuardedRawVC.mergeVCs",
+      "transfer_theorem": "NeemExpansion.Efficient.expanded_vcs",
+      "status": "previously-checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "queue",
+      "implementation": "Instances.Queue.Q",
+      "issuance": "Instances.Queue.generation",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/QueueCertificates.lean",
+        "declaration": "qApplicable",
+        "state_dependency": "dequeue requires named current head; enqueue requires fresh tag"
+      },
+      "selected_existing_vc_route": null,
+      "status": "excluded-track-a",
+      "scope_note": "Historical registry carrier, retained for provenance. Current Queue means the separate anchored-enqueue implementation; its operation signature/specification differs.",
+      "preferred_name": "historical unanchored Queue"
+    },
+    {
+      "id": "mvr",
+      "implementation": "Instances.MVRLive.D",
+      "issuance": "Instances.MVRLive.issuance",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/MVRLive.lean",
+        "declaration": "canIssue",
+        "state_dependency": "overwrites set must exactly equal current state IDs and timestamp must be fresh"
+      },
+      "selected_existing_vc_route": "CertifiedQueueMVR.MVR.RawVC.mergeVCs",
+      "status": "excluded-track-a",
+      "scope_note": "Exact Instances.MVRLive.D; representation carries CertifiedExecution and Represents event/state evidence."
+    },
+    {
+      "id": "fugue-max",
+      "implementation": "Instances.SidedEmbedRGA.FugueMax.datatype unaryCode",
+      "issuance": "Instances.SidedEmbedRGA.FugueMax.generation unaryCode",
+      "registry": "public-contracts.json",
+      "state_dependent_issuance": true,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Instances/FugueMaxImplementation.lean",
+        "declaration": "applicable",
+        "state_dependency": "guard reads stored births and live list via canIssue"
+      },
+      "selected_existing_vc_route": "CertifiedFugueVC.mergeVCs",
+      "status": "excluded-track-a",
+      "scope_note": "Merge VC proof only. The existing sequential-specification visibility obstruction remains unchanged.",
+      "transfer_theorem": "NeemExpansion.CertifiedFugueVCExpansion.expanded_vcs",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "ordinary-or-set-paper-example",
+      "registry": null,
+      "implementation": "Paper1.ORSet.D \u03b1",
+      "issuance": "Paper1.ORSet.issuance \u03b1",
+      "state_dependent_issuance": false,
+      "issuer_evidence": {
+        "path": "Sal/MRDTs/Paper1/ORSetVerified.lean",
+        "declaration": "issuance",
+        "predicate": "CanIssue := fun _ _ => True"
+      },
+      "selected_existing_vc_route": "ORSet.GuardedRawVC.mergeVCs",
+      "transfer_theorem": "NeemExpansion.Exact.expanded_vcs",
+      "status": "previously-checked-transfer",
+      "transfer_status": "independently-checked"
+    },
+    {
+      "id": "anchored-queue-paper-variant",
+      "registry": null,
+      "implementation": "Paper1.AnchoredQueue.Q",
+      "issuance": "Paper1.AnchoredQueue.issuance",
+      "state_dependent_issuance": true,
+      "selected_existing_vc_route": "AnchoredQueue.mergeVCs",
+      "transfer_theorem": "NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue",
+      "transfer_status": "independently-checked",
+      "scope_note": "Q is Embedded E unaryCode Nat. This is not Instances.Queue.Q.",
+      "preferred_name": "Queue (current anchored-enqueue implementation)"
+    }
+  ]
+}

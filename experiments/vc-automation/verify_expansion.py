@@ -6,6 +6,7 @@ No old datatype VC, Join, or state/history invariant proof is permitted in the
 transitive theorem dependency closure, even if its module is imported.
 """
 from pathlib import Path
+import argparse
 import hashlib
 import json
 import re
@@ -20,6 +21,12 @@ OUT = HERE / 'results'
 LIB = ROOT / '.lake/build/lib/lean'
 order = []
 seen = set()
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--transfer', action='store_true', help='Check all Track A instances')
+parser.add_argument('--certified', action='store_true', help='Also check the certified sided RGA route')
+args = parser.parse_args()
+module = 'TransferVCs' if args.transfer else 'ExpandedVCs'
+prefix = 'certified' if args.certified else 'transfer' if args.transfer else 'expansion'
 
 
 def visit(name):
@@ -33,7 +40,13 @@ def visit(name):
     order.append(name)
 
 
-visit('ExpandedVCs')
+visit(module)
+if args.certified:
+    visit('CertifiedRGAExpansion')
+    visit('CertifiedExpansionControls')
+    visit('CertifiedCoreExpansion')
+    visit('CertifiedEmbeddedExpansion')
+    visit('CertifiedFugueVCExpansion')
 OUT.mkdir(exist_ok=True)
 build_log = []
 for name in order:
@@ -43,12 +56,26 @@ for name in order:
          str(HERE / (name + '.lean'))], cwd=ROOT, text=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     build_log.append(f'## {name}\n{result.stdout}')
-    (OUT / 'expansion-build.log').write_text('\n'.join(build_log))
+    (OUT / (prefix + '-build.log')).write_text('\n'.join(build_log))
     if result.returncode:
         raise SystemExit(result.stdout)
 
 theorems = ['NeemExpansion.Exact.expanded_vcs', 'NeemExpansion.Efficient.expanded_vcs']
-audit = 'import ExpandedVCs\n' + (HERE / 'Audit.lean').read_text()
+if args.transfer:
+    theorems += ['NeemExpansion.TransferSimple.' + name for name in
+                 ['gset', 'addStore', 'finiteAdd', 'counter', 'ioc', 'pn', 'booleanSet', 'booleanMap']]
+    theorems += ['NeemExpansion.TransferLWW.expanded_vcs']
+audit = 'import ' + module + '\n' + (HERE / 'Audit.lean').read_text()
+if args.certified:
+    audit = 'import CertifiedRGAExpansion\nimport CertifiedCoreExpansion\nimport CertifiedEmbeddedExpansion\nimport CertifiedFugueVCExpansion\n' + audit
+    theorems += ['NeemExpansion.CertifiedRGA.expanded_vcs',
+                 'NeemExpansion.TransferProduct.NativeRGA.expanded_vcs',
+                 'NeemExpansion.CertifiedCore.expanded_vcs',
+                 'NeemExpansion.CertifiedCore.rich_expanded_vcs',
+                 'NeemExpansion.CertifiedEmbedded.expanded_vcs',
+                 'NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue',
+                 'NeemExpansion.CertifiedEmbeddedTransfers.peritext',
+                 'NeemExpansion.CertifiedFugueVCExpansion.expanded_vcs']
 audit += '\n' + '\n'.join('audit_vc ' + t for t in theorems) + '\n'
 with tempfile.TemporaryDirectory(prefix='sal-expansion-audit-') as tmp:
     path = Path(tmp) / 'AuditExpansion.lean'
@@ -56,7 +83,7 @@ with tempfile.TemporaryDirectory(prefix='sal-expansion-audit-') as tmp:
     result = subprocess.run(['lake', 'env', 'lean', str(path)], cwd=ROOT,
                             text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 log = result.stdout
-(OUT / 'expansion-audit.log').write_text(log)
+(OUT / (prefix + '-audit.log')).write_text(log)
 assert result.returncode == 0, log
 assert log.count('VC_AUDIT_COMPLETE') == len(theorems), log
 axiom_groups = re.findall(r'VC_AXIOMS \[(.*?)\]', log)
@@ -73,6 +100,6 @@ report = {
     'dependencies': deps,
     'forbidden_dependencies': forbidden,
 }
-(OUT / 'expansion-audit.json').write_text(json.dumps(report, indent=2) + '\n')
+(OUT / (prefix + '-audit.json')).write_text(json.dumps(report, indent=2) + '\n')
 assert not forbidden, forbidden
-print('Both unchanged five-VC bundles rebuilt and dependency-audited.', flush=True)
+print(f'{len(theorems)} unchanged five-VC instances rebuilt and dependency-audited.', flush=True)

@@ -1,15 +1,35 @@
 # Automating Sal’s five merge VCs
 
-**All five merge VCs are proved for both exact and efficient OR-set.**
-The new proofs use the existing implementations and VC statements. Lean checks
-both complete proofs, without reusing their previous VC or Join proofs or
-supplying extra datatype state/history invariants.
+The experiment proves Sal’s **five unchanged merge VCs** from finite equations
+and checked history-expansion arguments. Implementations, issuers, policies and
+representations stay unchanged. No previous datatype VC/Join proof or additional
+datatype state/history invariant is supplied.
+
+## Coverage
+
+| RDTs | New expansion route |
+|---|---|
+| Ordinary and efficient OR-set | All five VCs checked |
+| Eight simple set/counter/map registry entries | All five VCs checked |
+| LWW, using its existing empty-policy port | All five VCs checked |
+| Native, Embedded and Sided RGA | All five VCs checked |
+| Peritext, Sided Core and RichCore | All five VCs checked |
+| Queue (anchored enqueue) | All five VCs checked |
+| FugueMax | All five VCs checked; sequential bridge still obstructed |
+
+The certified audit covers **19 named instances**, including aliases. A five-VC
+proof is not by itself an RA-linearizability certificate: the separate sequential
+bridge is still required. In particular, Fugue has a known specification
+obstruction. Queue here means the current anchored-enqueue implementation. The earlier
+unanchored queue is retained only as a historical note in the task list.
+Core/RichCore retain their existing native-insert-only premise.
 
 ## How much is automated?
 
 We manually developed an induction that reduces histories of arbitrary length
 to finite equations. After unfolding the datatype definitions and preparing
-those equations, **Lean’s built-in `simp` and `grind` tactics solve them**.
+those equations, **Lean’s built-in tactics (`simp`, `grind`, `tauto`, and arithmetic automation)
+solve them**.
 They produce proofs checked by Lean’s kernel; no external solver is needed.
 
 The induction and its coverage argument are also proved in Lean, but were
@@ -38,29 +58,30 @@ These 30 equations are a benchmark, not the five VCs themselves or a minimal
 list of proof obligations. Some exploratory equations are unused by the final
 proof. The complete five-VC proofs were checked separately.
 
-## Check the result
+## Certified histories
 
-The two complete proofs are in [ExpandedVCs.lean](ExpandedVCs.lean).
-The local and causal induction bridges are in
-[LocalAssembly.lean](LocalAssembly.lean) and
-[CausalCoverage.lean](CausalCoverage.lean).
+The certified extension derives record provenance, freshness and deletion
+coverage from the existing representation and issuance evidence. A generic
+fold proof works for any supported, duplicate-free, causally ordered replay;
+it does not reissue operations in reordered states. Finite membership equations
+then prove the merge VCs. List ordering and product-store adapters are checked
+separately. These evidence adapters required manual proof development.
 
-From the repository root, with the production Lean dependencies built, run:
+## Reproduce
+
+From the repository root, with production Lean dependencies built, run:
 
 ```sh
-python3 experiments/vc-automation/verify_expansion.py
+python3 experiments/vc-automation/verify_expansion.py --transfer --certified
 ```
 
-This rebuilds all 15 experiment modules and audits both proofs. The
-[audit](results/expansion-audit.json) confirms standard Lean axioms only and no
-reuse of previous datatype invariant, VC or Join proofs. Benchmark results are
-recorded in [local trials](results/local-campaign.json) and
+This rebuilds the experiment modules and audits every named five-VC instance.
+The [certified audit](results/certified-audit.json) records source hashes,
+standard Lean axioms and transitive proof dependencies. See the
+[scope inventory](transfer-inventory.json) for individual theorem names.
+Benchmark details are in [local trials](results/local-campaign.json) and
 [causal trials](results/causal-campaign.json).
 
-## What remains
-
-These proofs are experimental; the production proof bundles still use their
-existing proofs. The next extension is to other RDTs. Issuance-certified RDTs
-also need the expansion to preserve their issuance and reachability evidence.
-Automation of the separate sequential-specification bridge is outside this
-experiment.
+The production proof bundles
+still use their existing proofs. Sequential-specification bridge automation
+is outside this experiment.

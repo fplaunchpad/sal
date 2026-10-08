@@ -6,6 +6,66 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Active: finish the four remaining VC automation routes
+
+Goal: obtain the unchanged five-VC bundles for Bounded Counter, TreeMove,
+AegisSheet and MVR, bringing the current named-case inventory to 23/23.
+Candidate: the commuting specialization covers the first three, and generic
+certified finite membership expansion covers MVR. A failed expanded leaf is
+not itself a counterexample to the original VC. Oracle: the actual existing
+`Raw.MergeVCs` statements, source-preserving builds and dependency audits.
+
+- [ ] Bounded Counter and TreeMove: instantiate finite commuting kernels.
+- [ ] AegisSheet: instantiate finite commuting kernels.
+- [ ] MVR: derive required overwrite evidence from existing execution premises
+  and discharge the certified finite kernels without old VC/Join/invariant reuse.
+- [ ] Independently rebuild/audit all four and the combined 23-case suite.
+- [ ] Update concise README and inventory; retain the current Queue designation.
+
+### Checked: transfer finite VC expansion across RDTs
+
+Research question: how far does the checked expansion transfer without new
+state/history invariants, and which evidence must certified histories retain?
+Candidate claim: existing finite equations (or evidence-guarded extensions)
+imply each unchanged five-VC bundle. A failed finite equation refutes that
+expansion instance, not automatically the original VC. The formal oracle is
+the existing `Raw.MergeVCs` type and a transitive proof-dependency audit; the
+scope oracle is the production registry and existing issuer/representation.
+
+- [x] Track A: audit all 22 registry entries. Ten have state-independent
+  issuance: eight simple entries, LWW's existing empty-policy port and efficient
+  OR-set. All ten plus the ordinary OR-set paper example now have checked
+  unchanged five-VC instances. Root independently rebuilt all 18 experiment
+  modules and audited all eleven named instances; no old VC/Join/invariant
+  theorem dependency. See `results/transfer-audit.json` and
+  `transfer-inventory.json`; reproduce with `verify_expansion.py --transfer`.
+- [x] Track B: SidedEmbedRGA now has an evidence-guarded finite expansion into
+  its unchanged five VCs. Generic replay provenance/alive induction derives
+  freshness and deletion coverage from the existing ambient honesty and
+  causal-order premises. Root rebuilt/audited the complete route and PASS+FAIL
+  finite evidence controls; no old VC/Join/history-invariant proof reused.
+- [x] Transfer checked for Native, Embedded, Sided Core/RichCore, Peritext,
+  current Queue (anchored enqueue), and FugueMax. Fugue's insertion-chain and
+  deletion evidence is derived afresh by timestamp induction from its actual
+  issuer, without the old invariant bundle.
+- [x] Root independently rebuilt 30 modules and audited all 19 named five-VC
+  instances: standard Lean axioms only; no old VC/Join/history-invariant proof
+  dependencies. PASS+FAIL controls check the finite evidence conditions.
+  Reproduce with `verify_expansion.py --transfer --certified`.
+- [x] Updated the concise experiment README and machine-readable inventory.
+  Finite equations automate; induction, normalization and evidence adapters
+  remain manually developed. Sequential-bridge automation remains deferred.
+
+Terminology: Queue means the current anchored-enqueue implementation. The
+original unanchored registry Queue is a historical variant with a different
+signature/specification and a checked policy obstruction; its public registry
+entry is unchanged. Do not silently transfer claims between the two carriers.
+Fugue now has a new expansion proof of its five VCs but still has the existing
+sequential-specification obstruction. Before proposing a fix, compare the original Fugue operation semantics with
+our issuer, operation labels and sequential specification. Retaining deleted
+IDs as anchors is only an unvalidated candidate; no specification change is
+justified merely to make the proof pass.
+
 ### Checked: Neem-style inductive expansion of the five merge VCs
 
 Research question: can equation-shaped induction hypotheses replace separately
