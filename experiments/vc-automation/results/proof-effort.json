@@ -1,0 +1,1917 @@
+{
+  "method": "Approximate physical nonblank noncomment theorem-body lines after the top-level :=, including by and tactic scaffolding. Only experiment datatype-specific theorem declarations reachable from each final bundle are included. Generic framework theorems, definitions, theorem statements, unused experiments, production helper proofs and sequential bridges are excluded. Full dependency totals share proof code and must not be summed. README marginal estimates assign shared family proofs once; abbrev specializations cost one binding line.",
+  "source_sha256": {
+    "InductiveLeaves.lean": "86df5a939cff88762debc89c28639e8b3711822c8a7c0568f8e7c5103521a7fb",
+    "LocalExpansion.lean": "9155c5a8dfb3b7fb9652f44b93c6ad6b1a4b78a71643c246b37dc08565f411c9",
+    "LocalSingleton.lean": "d89ba220851daff7627c4f13c9329676981230d8cfe52f2482042f40f6e0371f",
+    "InductivePolicy.lean": "2e67c5d66c99fd819e7d0f431e50c295a8f0b55733acba08784c14358880d854",
+    "ExpandedPolicy.lean": "ccef67c3599a9310500b6c5b2131820dbdab667ab4566228094931d8d97ecb9d",
+    "InductiveMask.lean": "6d622c6eec1525b0750de2efd05b426bae0b2d468688d6aefc12c134c9547a66",
+    "EfficientReplayAdapter.lean": "4bd6a15b9f3e91a1b56952fcaee7398aab630b08f6511e3aae351db9838404cb",
+    "LocalCoverage.lean": "94d7ee3c5d0d85501230b715155875cf32d82fd67f69dcdddb79aeabdf46e296",
+    "LocalAssembly.lean": "f58f8523738491fe70f2fe1000bc2af4fd133fab16b406a56129b393ba2995e9",
+    "SharedExpansion.lean": "f34d224e46cdda9ee35a821c618116d849618235ffeaad77b54a1bea88111d56",
+    "InductiveSupplement.lean": "12863e8b106b2a93299d6bafbe8d49dc3b6509bd59069f503e2381c51f29e4ec",
+    "CausalExpansion.lean": "b4eb3bf7f04961e2795b8af795a9cb356ca16f8cd6e913bcbdcb19cf817e6a51",
+    "CausalEventClassification.lean": "30fd54f3e603d654197f5d3306d5ffc5a1bd0c3de09528d141e3873d056e33aa",
+    "CausalCoverage.lean": "24e991c82d10d027f2c842e8b103d3fe4991fade6a07b2a8f8731cd4712e7c20",
+    "ExpandedVCs.lean": "8253f0648d65e37f5971cce5b2a9410a6f99b381023e48859f190f01965fc2e3",
+    "TransferSimple.lean": "f97fe78ca9da7ade2dffc5b184f8b49d01d2e585aad2719123ed487005582739",
+    "TransferLWW.lean": "a32e58f9b92f7ce8ea899f1ff59495cae2c51e8129d46e461115f93aba631628",
+    "TransferVCs.lean": "c20617623635978cc8fe774f1a142c88d1b0398b22e400bf7da694cec4c18116",
+    "CertifiedExpansion.lean": "ed737c665cdb9d8a276fc63a1c43c78de7505ee993b43a415196677309aee62d",
+    "CertifiedReplayExpansion.lean": "c2f3b2607a92abb24752cb24c64823cdc0516cbe7d62358aec6ccf388b6ea2f1",
+    "CertifiedRGAExpansion.lean": "a19fe50e0b7429b52956a1ad8913f0e0341a17b4dbf79b4cdd1e89fb5149e7f2",
+    "CertifiedExpansionControls.lean": "de75cbb4bf8f88ca4b7c69d4ccf41fb9075f220118e6fb647083c8d36f81a6b5",
+    "TransferProductExpansion.lean": "ce4dbbe442e2e16f7abe0cdddd87fc20bd514c4b93ebb31d29898c49a1f76580",
+    "CertifiedCoreExpansion.lean": "fa6789e9eea4f0bc24d9aaaf858b5377abad148dfa0fd5660064aac2dd16293f",
+    "CertifiedEmbeddedReplay.lean": "b1cadf0f6f818b81490d9bd642f588997d32ef24773003c2a228a1e744d8528d",
+    "CertifiedEmbeddedExpansion.lean": "a2d068a469ad2409ca4dbfc2a7019d86098eec4c32f214d48a242dade62f6ba1",
+    "CertifiedFugueExpansion.lean": "1c6a1eee94ef94c833993d0e89dd7a1623e2a2fc38ead298a02c2f0bd0f1387e",
+    "CertifiedFugueNormalization.lean": "e5ad39f303338e93fd2623eacaa5e608811c7c09a40693841493fc07cb192ce8",
+    "CertifiedFugueEvidence.lean": "c8072fc345791a142949ae1f3571ddd0be804b7c69ca2552d4d883c32ef6facf",
+    "CertifiedFugueVCExpansion.lean": "57b73d9df73a6f9a86e6871335fe4a6e2dd21ca02f1006763435cfaec6b868bb",
+    "TransferGuardedCommuting.lean": "4dd40a20d5cad2cfe6bd370aa9c98b8d8acfd63e85af05702a34b528a39e4d9b",
+    "TransferAegisSheet.lean": "eb5cd3a93cf0de2046aaddb586d5e042788b16d0edd641025310945a8ad078fe",
+    "CertifiedMVRExpansion.lean": "f3d551b173faf55eadcf118264acd74e0e8a3a0f26ad5acfd3d1a5ee4022c5ca"
+  },
+  "bundles": [
+    {
+      "theorem": "NeemExpansion.Exact.expanded_vcs",
+      "body_lines": 226,
+      "declaration_lines": 269,
+      "proofs": {
+        "NeemExpansion.Exact.diagonal": {
+          "file": "InductiveLeaves.lean",
+          "line": 115,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.Exact.comm": {
+          "file": "InductiveLeaves.lean",
+          "line": 146,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.Exact.local_common_opposite": {
+          "file": "LocalExpansion.lean",
+          "line": 82,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Exact.fresh_base": {
+          "file": "LocalExpansion.lean",
+          "line": 109,
+          "declaration_lines": 5,
+          "body_lines": 5
+        },
+        "NeemExpansion.Exact.fresh_step": {
+          "file": "LocalExpansion.lean",
+          "line": 115,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Exact.local_opposite_fresh": {
+          "file": "LocalExpansion.lean",
+          "line": 133,
+          "declaration_lines": 9,
+          "body_lines": 9
+        },
+        "NeemExpansion.Exact.local_empty_past": {
+          "file": "LocalExpansion.lean",
+          "line": 143,
+          "declaration_lines": 6,
+          "body_lines": 6
+        },
+        "NeemExpansion.Exact.local_past_singleton": {
+          "file": "LocalExpansion.lean",
+          "line": 150,
+          "declaration_lines": 10,
+          "body_lines": 10
+        },
+        "NeemExpansion.Exact.local_empty_sides": {
+          "file": "LocalSingleton.lean",
+          "line": 52,
+          "declaration_lines": 2,
+          "body_lines": 1
+        },
+        "NeemExpansion.Exact.kernelStable": {
+          "file": "InductivePolicy.lean",
+          "line": 40,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Exact.conditionalBase": {
+          "file": "InductivePolicy.lean",
+          "line": 48,
+          "declaration_lines": 30,
+          "body_lines": 30
+        },
+        "NeemExpansion.Exact.expandedUniform": {
+          "file": "ExpandedPolicy.lean",
+          "line": 11,
+          "declaration_lines": 17,
+          "body_lines": 17
+        },
+        "NeemExpansion.Exact.expandedLaws": {
+          "file": "ExpandedPolicy.lean",
+          "line": 29,
+          "declaration_lines": 2,
+          "body_lines": 1
+        },
+        "NeemExpansion.Exact.local_kernels": {
+          "file": "LocalAssembly.lean",
+          "line": 200,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.Exact.representation_canonical": {
+          "file": "LocalAssembly.lean",
+          "line": 218,
+          "declaration_lines": 18,
+          "body_lines": 15
+        },
+        "NeemExpansion.Exact.no_chain": {
+          "file": "LocalAssembly.lean",
+          "line": 237,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.Exact.raw_local": {
+          "file": "LocalAssembly.lean",
+          "line": 245,
+          "declaration_lines": 17,
+          "body_lines": 5
+        },
+        "NeemExpansion.Exact.shared_nested": {
+          "file": "SharedExpansion.lean",
+          "line": 29,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.Exact.causal_common_kernel": {
+          "file": "InductiveSupplement.lean",
+          "line": 61,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Exact.causal_commuting_kernel": {
+          "file": "InductiveSupplement.lean",
+          "line": 69,
+          "declaration_lines": 9,
+          "body_lines": 9
+        },
+        "NeemExpansion.Exact.causal_absorber_kernel": {
+          "file": "InductiveSupplement.lean",
+          "line": 79,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Exact.causal_strict_kernel": {
+          "file": "CausalExpansion.lean",
+          "line": 137,
+          "declaration_lines": 8,
+          "body_lines": 8
+        },
+        "CausalEventClassification.Exact.commute_distinct_elements": {
+          "file": "CausalEventClassification.lean",
+          "line": 16,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "CausalEventClassification.Exact.conflict_classification": {
+          "file": "CausalEventClassification.lean",
+          "line": 22,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "CausalEventClassification.Exact.remove_add_noncomm": {
+          "file": "CausalEventClassification.lean",
+          "line": 31,
+          "declaration_lines": 6,
+          "body_lines": 5
+        },
+        "CausalEventClassification.Exact.absorber_classification": {
+          "file": "CausalEventClassification.lean",
+          "line": 38,
+          "declaration_lines": 19,
+          "body_lines": 15
+        },
+        "CausalEventClassification.Exact.strict_asymmetric": {
+          "file": "CausalEventClassification.lean",
+          "line": 58,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.Exact.causal_event_certificate": {
+          "file": "CausalCoverage.lean",
+          "line": 194,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.Exact.causal_kernels": {
+          "file": "CausalCoverage.lean",
+          "line": 199,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.Exact.policy_order": {
+          "file": "CausalCoverage.lean",
+          "line": 203,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.Exact.raw_causal": {
+          "file": "CausalCoverage.lean",
+          "line": 209,
+          "declaration_lines": 15,
+          "body_lines": 5
+        },
+        "NeemExpansion.Exact.native_initial": {
+          "file": "ExpandedVCs.lean",
+          "line": 13,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.Exact.expanded_vcs": {
+          "file": "ExpandedVCs.lean",
+          "line": 37,
+          "declaration_lines": 14,
+          "body_lines": 13
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.Efficient.expanded_vcs",
+      "body_lines": 297,
+      "declaration_lines": 353,
+      "proofs": {
+        "NeemExpansion.Efficient.diagonal": {
+          "file": "InductiveLeaves.lean",
+          "line": 368,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.Efficient.comm": {
+          "file": "InductiveLeaves.lean",
+          "line": 399,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.Efficient.local_common_opposite": {
+          "file": "LocalExpansion.lean",
+          "line": 183,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Efficient.fresh_base": {
+          "file": "LocalExpansion.lean",
+          "line": 210,
+          "declaration_lines": 5,
+          "body_lines": 5
+        },
+        "NeemExpansion.Efficient.fresh_step": {
+          "file": "LocalExpansion.lean",
+          "line": 216,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Efficient.local_opposite_fresh": {
+          "file": "LocalExpansion.lean",
+          "line": 234,
+          "declaration_lines": 9,
+          "body_lines": 9
+        },
+        "NeemExpansion.Efficient.local_empty_past": {
+          "file": "LocalExpansion.lean",
+          "line": 244,
+          "declaration_lines": 6,
+          "body_lines": 6
+        },
+        "NeemExpansion.Efficient.local_past_singleton": {
+          "file": "LocalExpansion.lean",
+          "line": 251,
+          "declaration_lines": 10,
+          "body_lines": 10
+        },
+        "NeemExpansion.Efficient.local_empty_sides": {
+          "file": "LocalSingleton.lean",
+          "line": 58,
+          "declaration_lines": 2,
+          "body_lines": 1
+        },
+        "NeemExpansion.Efficient.kernelStable": {
+          "file": "InductivePolicy.lean",
+          "line": 85,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Efficient.conditionalBase": {
+          "file": "InductivePolicy.lean",
+          "line": 93,
+          "declaration_lines": 35,
+          "body_lines": 35
+        },
+        "NeemExpansion.Efficient.expandedLaws": {
+          "file": "ExpandedPolicy.lean",
+          "line": 38,
+          "declaration_lines": 18,
+          "body_lines": 17
+        },
+        "EfficientReplayAdapter.update_certificate": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 20,
+          "declaration_lines": 7,
+          "body_lines": 6
+        },
+        "EfficientReplayAdapter.commutes_of_not_kill": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 28,
+          "declaration_lines": 8,
+          "body_lines": 7
+        },
+        "EfficientReplayAdapter.noncomm_of_kill": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 37,
+          "declaration_lines": 10,
+          "body_lines": 8
+        },
+        "EfficientReplayAdapter.supported_distinct": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 55,
+          "declaration_lines": 6,
+          "body_lines": 4
+        },
+        "EfficientReplayAdapter.order_certificate": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 64,
+          "declaration_lines": 40,
+          "body_lines": 35
+        },
+        "EfficientReplayAdapter.representation_canonical": {
+          "file": "EfficientReplayAdapter.lean",
+          "line": 108,
+          "declaration_lines": 28,
+          "body_lines": 25
+        },
+        "NeemExpansion.Efficient.local_kernels": {
+          "file": "LocalAssembly.lean",
+          "line": 207,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.Efficient.raw_local": {
+          "file": "LocalAssembly.lean",
+          "line": 272,
+          "declaration_lines": 20,
+          "body_lines": 5
+        },
+        "NeemExpansion.Efficient.shared_nested": {
+          "file": "SharedExpansion.lean",
+          "line": 36,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.Efficient.causal_common_kernel": {
+          "file": "InductiveSupplement.lean",
+          "line": 115,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Efficient.causal_commuting_kernel": {
+          "file": "InductiveSupplement.lean",
+          "line": 123,
+          "declaration_lines": 9,
+          "body_lines": 9
+        },
+        "NeemExpansion.Efficient.causal_absorber_kernel": {
+          "file": "InductiveSupplement.lean",
+          "line": 133,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.Efficient.causal_strict_kernel": {
+          "file": "CausalExpansion.lean",
+          "line": 152,
+          "declaration_lines": 8,
+          "body_lines": 8
+        },
+        "CausalEventClassification.Efficient.commute_distinct_elements": {
+          "file": "CausalEventClassification.lean",
+          "line": 70,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "CausalEventClassification.Efficient.conflict_classification": {
+          "file": "CausalEventClassification.lean",
+          "line": 76,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "CausalEventClassification.Efficient.remove_add_noncomm": {
+          "file": "CausalEventClassification.lean",
+          "line": 85,
+          "declaration_lines": 6,
+          "body_lines": 5
+        },
+        "CausalEventClassification.Efficient.absorber_classification": {
+          "file": "CausalEventClassification.lean",
+          "line": 92,
+          "declaration_lines": 19,
+          "body_lines": 15
+        },
+        "CausalEventClassification.Efficient.strict_asymmetric": {
+          "file": "CausalEventClassification.lean",
+          "line": 112,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.Efficient.causal_event_certificate": {
+          "file": "CausalCoverage.lean",
+          "line": 231,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.Efficient.causal_kernels": {
+          "file": "CausalCoverage.lean",
+          "line": 236,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.Efficient.policy_order": {
+          "file": "CausalCoverage.lean",
+          "line": 240,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.Efficient.raw_causal": {
+          "file": "CausalCoverage.lean",
+          "line": 246,
+          "declaration_lines": 15,
+          "body_lines": 5
+        },
+        "NeemExpansion.Efficient.native_initial": {
+          "file": "ExpandedVCs.lean",
+          "line": 25,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.Efficient.expanded_vcs": {
+          "file": "ExpandedVCs.lean",
+          "line": 60,
+          "declaration_lines": 15,
+          "body_lines": 13
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferSimple.gset",
+      "body_lines": 8,
+      "declaration_lines": 10,
+      "proofs": {
+        "NeemExpansion.TransferSimple.Add.kernels": {
+          "file": "TransferSimple.lean",
+          "line": 51,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.TransferSimple.Add.expanded_vcs": {
+          "file": "TransferSimple.lean",
+          "line": 58,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferSimple.addStore",
+      "body_lines": 8,
+      "declaration_lines": 10,
+      "proofs": {
+        "NeemExpansion.TransferSimple.Add.kernels": {
+          "file": "TransferSimple.lean",
+          "line": 51,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.TransferSimple.Add.expanded_vcs": {
+          "file": "TransferSimple.lean",
+          "line": 58,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferSimple.finiteAdd",
+      "body_lines": 8,
+      "declaration_lines": 10,
+      "proofs": {
+        "NeemExpansion.TransferSimple.Finite.kernels": {
+          "file": "TransferSimple.lean",
+          "line": 65,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.TransferSimple.Finite.expanded_vcs": {
+          "file": "TransferSimple.lean",
+          "line": 72,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferSimple.counter",
+      "body_lines": 3,
+      "declaration_lines": 5,
+      "proofs": {
+        "NeemExpansion.TransferSimple.Delta.kernels": {
+          "file": "TransferSimple.lean",
+          "line": 79,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.TransferSimple.Delta.expanded_vcs": {
+          "file": "TransferSimple.lean",
+          "line": 81,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferSimple.ioc",
+      "body_lines": 3,
+      "declaration_lines": 5,
+      "proofs": {
+        "NeemExpansion.TransferSimple.Delta.kernels": {
+          "file": "TransferSimple.lean",
+          "line": 79,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.TransferSimple.Delta.expanded_vcs": {
+          "file": "TransferSimple.lean",
+          "line": 81,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferSimple.pn",
+      "body_lines": 3,
+      "declaration_lines": 5,
+      "proofs": {
+        "NeemExpansion.TransferSimple.Delta.kernels": {
+          "file": "TransferSimple.lean",
+          "line": 79,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.TransferSimple.Delta.expanded_vcs": {
+          "file": "TransferSimple.lean",
+          "line": 81,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferSimple.booleanSet",
+      "body_lines": 5,
+      "declaration_lines": 7,
+      "proofs": {
+        "NeemExpansion.TransferSimple.Boolean.or_idem": {
+          "file": "TransferSimple.lean",
+          "line": 87,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.TransferSimple.Boolean.kernels": {
+          "file": "TransferSimple.lean",
+          "line": 89,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.TransferSimple.Boolean.expanded_vcs": {
+          "file": "TransferSimple.lean",
+          "line": 92,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferSimple.booleanMap",
+      "body_lines": 5,
+      "declaration_lines": 7,
+      "proofs": {
+        "NeemExpansion.TransferSimple.Boolean.or_idem": {
+          "file": "TransferSimple.lean",
+          "line": 87,
+          "declaration_lines": 1,
+          "body_lines": 1
+        },
+        "NeemExpansion.TransferSimple.Boolean.kernels": {
+          "file": "TransferSimple.lean",
+          "line": 89,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.TransferSimple.Boolean.expanded_vcs": {
+          "file": "TransferSimple.lean",
+          "line": 92,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferLWW.expanded_vcs",
+      "body_lines": 4,
+      "declaration_lines": 6,
+      "proofs": {
+        "NeemExpansion.TransferLWW.kernels": {
+          "file": "TransferLWW.lean",
+          "line": 10,
+          "declaration_lines": 3,
+          "body_lines": 3
+        },
+        "NeemExpansion.TransferLWW.expanded_vcs": {
+          "file": "TransferLWW.lean",
+          "line": 14,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.CertifiedRGA.expanded_vcs",
+      "body_lines": 256,
+      "declaration_lines": 312,
+      "proofs": {
+        "NeemExpansion.CertifiedSidedReplay.update_provenance": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 73,
+          "declaration_lines": 14,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedSidedReplay.provenance": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 88,
+          "declaration_lines": 4,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedSidedReplay.step_membership": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 93,
+          "declaration_lines": 10,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedSidedReplay.membership": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 104,
+          "declaration_lines": 30,
+          "body_lines": 27
+        },
+        "NeemExpansion.CertifiedRGA.replay_membership": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 14,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedRGA.provenance": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 29,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedRGA.compatible": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 34,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.merge_toFinset": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 45,
+          "declaration_lines": 11,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.fresh_id": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 57,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "NeemExpansion.CertifiedRGA.update_toFinset": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 66,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.keys_distinct": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 77,
+          "declaration_lines": 16,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedRGA.raw_provenance": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 96,
+          "declaration_lines": 15,
+          "body_lines": 14
+        },
+        "NeemExpansion.CertifiedRGA.replay_sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 112,
+          "declaration_lines": 26,
+          "body_lines": 24
+        },
+        "NeemExpansion.CertifiedRGA.sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 139,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedRGA.keys_compatible": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 145,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedRGA.merge_sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 159,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedRGA.birth_fresh": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 165,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.delta_evidence": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 178,
+          "declaration_lines": 27,
+          "body_lines": 22
+        },
+        "NeemExpansion.CertifiedRGA.local_evidence": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 208,
+          "declaration_lines": 26,
+          "body_lines": 19
+        },
+        "NeemExpansion.CertifiedRGA.finite_merge": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 237,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedRGA.expanded_vcs": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 242,
+          "declaration_lines": 53,
+          "body_lines": 52
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferProduct.NativeRGA.expanded_vcs",
+      "body_lines": 19,
+      "declaration_lines": 21,
+      "proofs": {
+        "NeemExpansion.TransferProduct.NativeRGA.kernels": {
+          "file": "TransferProductExpansion.lean",
+          "line": 56,
+          "declaration_lines": 18,
+          "body_lines": 18
+        },
+        "NeemExpansion.TransferProduct.NativeRGA.expanded_vcs": {
+          "file": "TransferProductExpansion.lean",
+          "line": 75,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.CertifiedCore.expanded_vcs",
+      "body_lines": 311,
+      "declaration_lines": 393,
+      "proofs": {
+        "NeemExpansion.CertifiedSidedReplay.update_provenance": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 73,
+          "declaration_lines": 14,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedSidedReplay.provenance": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 88,
+          "declaration_lines": 4,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedSidedReplay.step_membership": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 93,
+          "declaration_lines": 10,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedSidedReplay.membership": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 104,
+          "declaration_lines": 30,
+          "body_lines": 27
+        },
+        "NeemExpansion.CertifiedRGA.replay_membership": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 14,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedRGA.provenance": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 29,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedRGA.compatible": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 34,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.merge_toFinset": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 45,
+          "declaration_lines": 11,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.fresh_id": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 57,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "NeemExpansion.CertifiedRGA.update_toFinset": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 66,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.keys_distinct": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 77,
+          "declaration_lines": 16,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedRGA.raw_provenance": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 96,
+          "declaration_lines": 15,
+          "body_lines": 14
+        },
+        "NeemExpansion.CertifiedRGA.replay_sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 112,
+          "declaration_lines": 26,
+          "body_lines": 24
+        },
+        "NeemExpansion.CertifiedRGA.sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 139,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedRGA.keys_compatible": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 145,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedRGA.merge_sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 159,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.represented_text": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 14,
+          "declaration_lines": 14,
+          "body_lines": 12
+        },
+        "NeemExpansion.CertifiedCore.text_membership": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 29,
+          "declaration_lines": 11,
+          "body_lines": 9
+        },
+        "NeemExpansion.CertifiedCore.text_mono": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 41,
+          "declaration_lines": 7,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedCore.text_merge_union": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 51,
+          "declaration_lines": 15,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedCore.delete_store_membership": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 89,
+          "declaration_lines": 11,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedCore.mark_store_membership": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 101,
+          "declaration_lines": 11,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedCore.normalize_merge": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 119,
+          "declaration_lines": 8,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedCore.eq_of_normalize": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 128,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedCore.normalized_mono": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 134,
+          "declaration_lines": 14,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedCore.normalize_update": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 155,
+          "declaration_lines": 11,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedCore.step_union": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 167,
+          "declaration_lines": 32,
+          "body_lines": 29
+        },
+        "NeemExpansion.CertifiedCore.initial": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 200,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.sorted": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 205,
+          "declaration_lines": 3,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.merge_sorted": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 209,
+          "declaration_lines": 6,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedCore.expanded_vcs": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 216,
+          "declaration_lines": 48,
+          "body_lines": 47
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.CertifiedCore.rich_expanded_vcs",
+      "body_lines": 320,
+      "declaration_lines": 404,
+      "proofs": {
+        "NeemExpansion.CertifiedSidedReplay.update_provenance": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 73,
+          "declaration_lines": 14,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedSidedReplay.provenance": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 88,
+          "declaration_lines": 4,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedSidedReplay.step_membership": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 93,
+          "declaration_lines": 10,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedSidedReplay.membership": {
+          "file": "CertifiedReplayExpansion.lean",
+          "line": 104,
+          "declaration_lines": 30,
+          "body_lines": 27
+        },
+        "NeemExpansion.CertifiedRGA.replay_membership": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 14,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedRGA.provenance": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 29,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedRGA.compatible": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 34,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.merge_toFinset": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 45,
+          "declaration_lines": 11,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.fresh_id": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 57,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "NeemExpansion.CertifiedRGA.update_toFinset": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 66,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedRGA.keys_distinct": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 77,
+          "declaration_lines": 16,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedRGA.raw_provenance": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 96,
+          "declaration_lines": 15,
+          "body_lines": 14
+        },
+        "NeemExpansion.CertifiedRGA.replay_sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 112,
+          "declaration_lines": 26,
+          "body_lines": 24
+        },
+        "NeemExpansion.CertifiedRGA.sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 139,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedRGA.keys_compatible": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 145,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedRGA.merge_sorted": {
+          "file": "CertifiedRGAExpansion.lean",
+          "line": 159,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.represented_text": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 14,
+          "declaration_lines": 14,
+          "body_lines": 12
+        },
+        "NeemExpansion.CertifiedCore.text_membership": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 29,
+          "declaration_lines": 11,
+          "body_lines": 9
+        },
+        "NeemExpansion.CertifiedCore.text_mono": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 41,
+          "declaration_lines": 7,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedCore.text_merge_union": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 51,
+          "declaration_lines": 15,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedCore.delete_store_membership": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 89,
+          "declaration_lines": 11,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedCore.mark_store_membership": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 101,
+          "declaration_lines": 11,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedCore.normalize_merge": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 119,
+          "declaration_lines": 8,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedCore.eq_of_normalize": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 128,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedCore.normalized_mono": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 134,
+          "declaration_lines": 14,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedCore.normalize_update": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 155,
+          "declaration_lines": 11,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedCore.step_union": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 167,
+          "declaration_lines": 32,
+          "body_lines": 29
+        },
+        "NeemExpansion.CertifiedCore.initial": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 200,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.sorted": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 205,
+          "declaration_lines": 3,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedCore.merge_sorted": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 209,
+          "declaration_lines": 6,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedCore.expanded_vcs": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 216,
+          "declaration_lines": 48,
+          "body_lines": 47
+        },
+        "NeemExpansion.CertifiedCore.rich_expanded_vcs": {
+          "file": "CertifiedCoreExpansion.lean",
+          "line": 266,
+          "declaration_lines": 11,
+          "body_lines": 9
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.CertifiedEmbedded.expanded_vcs",
+      "body_lines": 256,
+      "declaration_lines": 312,
+      "proofs": {
+        "NeemExpansion.CertifiedEmbeddedReplay.update_provenance": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 11,
+          "declaration_lines": 14,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.provenance": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 26,
+          "declaration_lines": 4,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.step_membership": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 31,
+          "declaration_lines": 10,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.membership": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 42,
+          "declaration_lines": 30,
+          "body_lines": 27
+        },
+        "NeemExpansion.CertifiedEmbedded.replay_membership": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 17,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedEmbedded.provenance": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 32,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedEmbedded.compatible": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 37,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.merge_toFinset": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 48,
+          "declaration_lines": 11,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.fresh_id": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 60,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "NeemExpansion.CertifiedEmbedded.update_toFinset": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 69,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.keys_distinct": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 80,
+          "declaration_lines": 16,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedEmbedded.raw_provenance": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 99,
+          "declaration_lines": 15,
+          "body_lines": 14
+        },
+        "NeemExpansion.CertifiedEmbedded.replay_sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 115,
+          "declaration_lines": 26,
+          "body_lines": 24
+        },
+        "NeemExpansion.CertifiedEmbedded.sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 142,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedEmbedded.keys_compatible": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 148,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedEmbedded.merge_sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 162,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedEmbedded.birth_fresh": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 168,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.delta_evidence": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 181,
+          "declaration_lines": 27,
+          "body_lines": 22
+        },
+        "NeemExpansion.CertifiedEmbedded.local_evidence": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 211,
+          "declaration_lines": 26,
+          "body_lines": 19
+        },
+        "NeemExpansion.CertifiedEmbedded.finite_merge": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 240,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedEmbedded.expanded_vcs": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 245,
+          "declaration_lines": 53,
+          "body_lines": 52
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue",
+      "body_lines": 257,
+      "declaration_lines": 317,
+      "proofs": {
+        "NeemExpansion.CertifiedEmbeddedReplay.update_provenance": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 11,
+          "declaration_lines": 14,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.provenance": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 26,
+          "declaration_lines": 4,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.step_membership": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 31,
+          "declaration_lines": 10,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.membership": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 42,
+          "declaration_lines": 30,
+          "body_lines": 27
+        },
+        "NeemExpansion.CertifiedEmbedded.replay_membership": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 17,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedEmbedded.provenance": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 32,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedEmbedded.compatible": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 37,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.merge_toFinset": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 48,
+          "declaration_lines": 11,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.fresh_id": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 60,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "NeemExpansion.CertifiedEmbedded.update_toFinset": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 69,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.keys_distinct": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 80,
+          "declaration_lines": 16,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedEmbedded.raw_provenance": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 99,
+          "declaration_lines": 15,
+          "body_lines": 14
+        },
+        "NeemExpansion.CertifiedEmbedded.replay_sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 115,
+          "declaration_lines": 26,
+          "body_lines": 24
+        },
+        "NeemExpansion.CertifiedEmbedded.sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 142,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedEmbedded.keys_compatible": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 148,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedEmbedded.merge_sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 162,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedEmbedded.birth_fresh": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 168,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.delta_evidence": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 181,
+          "declaration_lines": 27,
+          "body_lines": 22
+        },
+        "NeemExpansion.CertifiedEmbedded.local_evidence": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 211,
+          "declaration_lines": 26,
+          "body_lines": 19
+        },
+        "NeemExpansion.CertifiedEmbedded.finite_merge": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 240,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedEmbedded.expanded_vcs": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 245,
+          "declaration_lines": 53,
+          "body_lines": 52
+        },
+        "NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 308,
+          "declaration_lines": 5,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.CertifiedEmbeddedTransfers.peritext",
+      "body_lines": 257,
+      "declaration_lines": 316,
+      "proofs": {
+        "NeemExpansion.CertifiedEmbeddedReplay.update_provenance": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 11,
+          "declaration_lines": 14,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.provenance": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 26,
+          "declaration_lines": 4,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.step_membership": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 31,
+          "declaration_lines": 10,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedEmbeddedReplay.membership": {
+          "file": "CertifiedEmbeddedReplay.lean",
+          "line": 42,
+          "declaration_lines": 30,
+          "body_lines": 27
+        },
+        "NeemExpansion.CertifiedEmbedded.replay_membership": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 17,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedEmbedded.provenance": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 32,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedEmbedded.compatible": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 37,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.merge_toFinset": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 48,
+          "declaration_lines": 11,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.fresh_id": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 60,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "NeemExpansion.CertifiedEmbedded.update_toFinset": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 69,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.keys_distinct": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 80,
+          "declaration_lines": 16,
+          "body_lines": 13
+        },
+        "NeemExpansion.CertifiedEmbedded.raw_provenance": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 99,
+          "declaration_lines": 15,
+          "body_lines": 14
+        },
+        "NeemExpansion.CertifiedEmbedded.replay_sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 115,
+          "declaration_lines": 26,
+          "body_lines": 24
+        },
+        "NeemExpansion.CertifiedEmbedded.sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 142,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedEmbedded.keys_compatible": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 148,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedEmbedded.merge_sorted": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 162,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedEmbedded.birth_fresh": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 168,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedEmbedded.delta_evidence": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 181,
+          "declaration_lines": 27,
+          "body_lines": 22
+        },
+        "NeemExpansion.CertifiedEmbedded.local_evidence": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 211,
+          "declaration_lines": 26,
+          "body_lines": 19
+        },
+        "NeemExpansion.CertifiedEmbedded.finite_merge": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 240,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedEmbedded.expanded_vcs": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 245,
+          "declaration_lines": 53,
+          "body_lines": 52
+        },
+        "NeemExpansion.CertifiedEmbeddedTransfers.peritext": {
+          "file": "CertifiedEmbeddedExpansion.lean",
+          "line": 316,
+          "declaration_lines": 4,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.CertifiedFugueVCExpansion.expanded_vcs",
+      "body_lines": 449,
+      "declaration_lines": 534,
+      "proofs": {
+        "NeemExpansion.CertifiedFugue.update_provenance": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 14,
+          "declaration_lines": 12,
+          "body_lines": 11
+        },
+        "NeemExpansion.CertifiedFugue.provenance": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 27,
+          "declaration_lines": 4,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedFugue.births": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 32,
+          "declaration_lines": 27,
+          "body_lines": 25
+        },
+        "NeemExpansion.CertifiedFugue.represented_births": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 60,
+          "declaration_lines": 8,
+          "body_lines": 6
+        },
+        "NeemExpansion.CertifiedFugue.lookup_chain": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 85,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedFugue.generated_chain": {
+          "file": "CertifiedFugueExpansion.lean",
+          "line": 96,
+          "declaration_lines": 66,
+          "body_lines": 63
+        },
+        "NeemExpansion.CertifiedFugue.step_membership": {
+          "file": "CertifiedFugueNormalization.lean",
+          "line": 13,
+          "declaration_lines": 10,
+          "body_lines": 8
+        },
+        "NeemExpansion.CertifiedFugue.replay_alive": {
+          "file": "CertifiedFugueNormalization.lean",
+          "line": 24,
+          "declaration_lines": 32,
+          "body_lines": 28
+        },
+        "NeemExpansion.CertifiedFugue.replay_membership": {
+          "file": "CertifiedFugueNormalization.lean",
+          "line": 57,
+          "declaration_lines": 9,
+          "body_lines": 6
+        },
+        "NeemExpansion.CertifiedFugue.keys_distinct": {
+          "file": "CertifiedFugueNormalization.lean",
+          "line": 67,
+          "declaration_lines": 13,
+          "body_lines": 10
+        },
+        "NeemExpansion.CertifiedFugue.replay_sorted": {
+          "file": "CertifiedFugueNormalization.lean",
+          "line": 81,
+          "declaration_lines": 25,
+          "body_lines": 23
+        },
+        "NeemExpansion.CertifiedFugue.sorted": {
+          "file": "CertifiedFugueNormalization.lean",
+          "line": 107,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedFugue.chain_of_mint": {
+          "file": "CertifiedFugueEvidence.lean",
+          "line": 7,
+          "declaration_lines": 51,
+          "body_lines": 48
+        },
+        "NeemExpansion.CertifiedFugue.delete_birth_of_mint": {
+          "file": "CertifiedFugueEvidence.lean",
+          "line": 59,
+          "declaration_lines": 27,
+          "body_lines": 23
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.evidence": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 12,
+          "declaration_lines": 6,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.membership": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 19,
+          "declaration_lines": 4,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.sorted": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 24,
+          "declaration_lines": 3,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.compatible": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 27,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.merge_toFinset": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 38,
+          "declaration_lines": 12,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.keys_compatible": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 51,
+          "declaration_lines": 14,
+          "body_lines": 11
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.merge_sorted": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 66,
+          "declaration_lines": 6,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.fresh_id": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 72,
+          "declaration_lines": 9,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.recordStep_mem": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 93,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.update_toFinset": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 98,
+          "declaration_lines": 10,
+          "body_lines": 7
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.killed_covered": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 110,
+          "declaration_lines": 25,
+          "body_lines": 20
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.fresh_born": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 135,
+          "declaration_lines": 7,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.eq_of_toFinset": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 143,
+          "declaration_lines": 6,
+          "body_lines": 5
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.finite_causal": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 150,
+          "declaration_lines": 5,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.finite_local": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 156,
+          "declaration_lines": 5,
+          "body_lines": 1
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.common_record": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 162,
+          "declaration_lines": 16,
+          "body_lines": 11
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.state_ext": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 179,
+          "declaration_lines": 2,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedFugueVCExpansion.expanded_vcs": {
+          "file": "CertifiedFugueVCExpansion.lean",
+          "line": 182,
+          "declaration_lines": 91,
+          "body_lines": 90
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferGuardedCommuting.Bounded.expanded_vcs",
+      "body_lines": 19,
+      "declaration_lines": 21,
+      "proofs": {
+        "NeemExpansion.TransferGuardedCommuting.Bounded.kernels": {
+          "file": "TransferGuardedCommuting.lean",
+          "line": 13,
+          "declaration_lines": 18,
+          "body_lines": 18
+        },
+        "NeemExpansion.TransferGuardedCommuting.Bounded.expanded_vcs": {
+          "file": "TransferGuardedCommuting.lean",
+          "line": 33,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferGuardedCommuting.Tree.expanded_vcs",
+      "body_lines": 8,
+      "declaration_lines": 10,
+      "proofs": {
+        "NeemExpansion.TransferGuardedCommuting.Tree.kernels": {
+          "file": "TransferGuardedCommuting.lean",
+          "line": 41,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.TransferGuardedCommuting.Tree.expanded_vcs": {
+          "file": "TransferGuardedCommuting.lean",
+          "line": 50,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.TransferAegisSheet.expanded_vcs",
+      "body_lines": 8,
+      "declaration_lines": 10,
+      "proofs": {
+        "NeemExpansion.TransferAegisSheet.kernels": {
+          "file": "TransferAegisSheet.lean",
+          "line": 12,
+          "declaration_lines": 7,
+          "body_lines": 7
+        },
+        "NeemExpansion.TransferAegisSheet.expanded_vcs": {
+          "file": "TransferAegisSheet.lean",
+          "line": 23,
+          "declaration_lines": 3,
+          "body_lines": 1
+        }
+      }
+    },
+    {
+      "theorem": "NeemExpansion.CertifiedMVR.expanded_vcs",
+      "body_lines": 84,
+      "declaration_lines": 98,
+      "proofs": {
+        "NeemExpansion.CertifiedMVR.update_cell": {
+          "file": "CertifiedMVRExpansion.lean",
+          "line": 22,
+          "declaration_lines": 3,
+          "body_lines": 2
+        },
+        "NeemExpansion.CertifiedMVR.fold_provenance": {
+          "file": "CertifiedMVRExpansion.lean",
+          "line": 26,
+          "declaration_lines": 5,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedMVR.issued_birth": {
+          "file": "CertifiedMVRExpansion.lean",
+          "line": 34,
+          "declaration_lines": 12,
+          "body_lines": 9
+        },
+        "NeemExpansion.CertifiedMVR.overwrite_visible": {
+          "file": "CertifiedMVRExpansion.lean",
+          "line": 47,
+          "declaration_lines": 7,
+          "body_lines": 4
+        },
+        "NeemExpansion.CertifiedMVR.represented": {
+          "file": "CertifiedMVRExpansion.lean",
+          "line": 55,
+          "declaration_lines": 4,
+          "body_lines": 3
+        },
+        "NeemExpansion.CertifiedMVR.birth_fresh": {
+          "file": "CertifiedMVRExpansion.lean",
+          "line": 60,
+          "declaration_lines": 7,
+          "body_lines": 5
+        },
+        "NeemExpansion.CertifiedMVR.survive_subset": {
+          "file": "CertifiedMVRExpansion.lean",
+          "line": 70,
+          "declaration_lines": 8,
+          "body_lines": 5
+        },
+        "NeemExpansion.CertifiedMVR.expanded_vcs": {
+          "file": "CertifiedMVRExpansion.lean",
+          "line": 79,
+          "declaration_lines": 52,
+          "body_lines": 52
+        }
+      }
+    }
+  ]
+}

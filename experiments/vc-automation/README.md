@@ -5,41 +5,81 @@ and checked history-expansion arguments. Implementations, issuers, policies and
 representations stay unchanged. No previous datatype VC/Join proof or additional
 datatype state/history invariant is supplied.
 
-## Coverage
+**All 23 current named instances have kernel-checked five-VC proofs.** The finite
+VC templates are discharged with Lean’s built-in tactics; no external SMT
+solver is needed for the final proofs. Some instances also require the
+RDT-specific adapter proofs listed below.
 
-| RDTs | New expansion route |
-|---|---|
-| Ordinary and efficient OR-set | All five VCs checked |
-| Eight simple set/counter/map registry entries | All five VCs checked |
-| Bounded Counter, TreeMove and AegisSheet | All five VCs checked |
-| MVR | All five VCs checked |
-| LWW, using its existing empty-policy port | All five VCs checked |
-| Native, Embedded and Sided RGA | All five VCs checked |
-| Peritext, Sided Core and RichCore | All five VCs checked |
-| Queue (anchored enqueue) | All five VCs checked |
-| FugueMax | All five VCs checked; sequential bridge still obstructed |
+## What does the RDT author currently write?
 
-The certified audit covers **23/23 current named instances**, including aliases. A five-VC
-proof is not by itself an RA-linearizability certificate: the separate sequential
-bridge is still required. In particular, Fugue has a known specification
-obstruction. Queue here means the current anchored-enqueue implementation. The earlier
-unanchored queue is retained only as a historical note in the task list.
-Core/RichCore retain their existing native-insert-only premise.
+Shared induction templates, coverage proofs and VC-to-Join soundness theorems
+are **framework work**, not work to repeat for each RDT. The relevant remaining
+cost is instantiating those templates and connecting an RDT’s definitions and
+existing certification premises to them.
 
-## How much is automated?
+The table estimates **additional proof-body lines in the current experiment**,
+with shared datatype proofs charged once. It excludes RDT descriptions and
+generic framework proofs. Small counts include routine unfolding, extensionality,
+case splits and calls to `simp`, `grind`, `tauto` or `omega`. Larger counts also
+include explicit intermediate arguments and datatype-specific inductions.
 
-We manually developed an induction that reduces histories of arbitrary length
-to finite equations. After unfolding the datatype definitions and preparing
-those equations, **Lean’s built-in tactics (`simp`, `grind`, `tauto`, and arithmetic automation)
-solve them**.
-They produce proofs checked by Lean’s kernel; no external solver is needed.
+| Instance | Approx. additional proof lines | Current datatype-specific work |
+|---|---:|---|
+| Grow-only set | 10 | Instantiate commuting template; set extensionality and simplification. |
+| Add-store | 1 | Reuse the same generic Add-store proof as grow-only set. |
+| Finite add-store | 10 | Finite-set extensionality and simplification. |
+| Counter | 5 | Generic additive-counter equations, unfolding and `omega`. |
+| Increment-only counter | 1 | Specialize the additive-counter proof. |
+| PN-counter | 1 | Specialize the same proof to signed increments. |
+| Flat grow-only set | 5 | Pointwise Boolean equations and simplification. |
+| Flat grow-only map | 1 | Specialize the Boolean-store proof to key/value pairs. |
+| Bounded Counter | 20 | Component decomposition, operation cases and `omega`; no new history proof. |
+| LWW register | 5 | Maximum algebra, using its existing empty-policy port. |
+| Native RGA | 20 | Component decomposition and finite membership equations; no new history induction. |
+| TreeMove | 10 | Commuting template, insertion/union unfolding and simplification. |
+| AegisSheet | 10 | Commuting template, insertion/union unfolding and simplification. |
+| Ordinary OR-set | 230 | Finite equations and policy facts; connect replay and ordering to generic coverage. |
+| Efficient OR-set | 300 | Finite equations; update/order certificates and semantic-representation-to-replay adapter. |
+| MVR | 85 | One-step membership; issuer overwrite equality to visible-birth evidence; freshness and coverage. Uses generic provenance induction. |
+| Embedded RGA | 260 | Generic membership/provenance instantiation; freshness/deletion evidence; list-to-set correspondence and sortedness induction. |
+| Sided Embedded RGA | 260 | Corresponding evidence, list normalization and sortedness proofs for sided records. |
+| Peritext Embedded RGA | 1 | Specialize the Embedded RGA proof to its payload type. |
+| Queue (anchored enqueue) | 1 | Specialize the Embedded RGA proof to its carrier. |
+| Sided Peritext Core | 160 | Reuse Sided RGA; text projection, store membership, component normalization and update/merge correspondence. |
+| Sided Peritext RichCore | 10 | Reuse Core and adapt context fields. |
+| FugueMax | 450 | Birth-store and list adapters, generator branch lemmas, and timestamp induction deriving insertion-chain evidence from issuance. |
 
-The induction and its coverage argument are also proved in Lean, but were
-written manually. Automatically discovering this expansion remains future work.
+These are estimates of the **present marginal proof code**, not lower bounds
+on user effort or a prediction for a new RDT from scratch. Reuse rows assume
+the named parent proof already exists. Counts also assume the existing library
+of raw datatype/collection helper lemmas; they do not include developing those
+helpers, existing policy/issuance certification, or sequential bridges.
 
-The checked metatheory connects the expanded obligations to Sal’s original
-five merge VCs, which feed into the existing Join theorem. Obtaining
-RA-linearizability also requires the separate sequential-specification bridge.
+For example, MVR’s visible-birth argument uses a generic history induction:
+its remaining code connects the one-step update and issuer definitions to that
+induction. Further templates could remove such per-RDT proof work. We have not
+established that any listed adapter must remain user-written.
+
+Counting method: nonblank, noncomment lines in reachable datatype-specific
+**theorem bodies**, including tactic setup and assembly. Theorem statements,
+definitions, shared framework proofs and unused experimental lemmas are
+excluded. Counts are rounded; one-line aliases count as one line. The
+[source-count inventory](results/proof-effort.json) records declarations,
+source locations, hashes and unrounded dependency totals. Shared totals must
+not be added together. Core’s generic store-fold induction is framework work;
+its datatype-specific instantiations are counted.
+
+## Scope of the result
+
+The 23 cases include aliases and specializations. Core/RichCore retain their
+existing native-insert-only premise. Queue means anchored enqueue; the earlier
+unanchored queue is historical and excluded from this count.
+
+The checked metatheory connects the expanded obligations to the five merge VCs
+and the existing Join theorem. Full RA-linearizability additionally requires
+the sequential-specification bridge. Fugue’s five-VC proof does not resolve its
+known sequential-specification obstruction. Sequential-bridge automation is
+outside this experiment, and production bundles still use their existing proofs.
 
 ## Solver comparison
 
@@ -60,17 +100,6 @@ These 30 equations are a benchmark, not the five VCs themselves or a minimal
 list of proof obligations. Some exploratory equations are unused by the final
 proof. The complete five-VC proofs were checked separately.
 
-## Certified histories
-
-The certified extension derives record provenance, freshness and deletion
-coverage from the existing representation and issuance evidence. A generic
-fold proof works for any supported, duplicate-free, causally ordered replay;
-it does not reissue operations in reordered states. Finite membership equations
-then prove the merge VCs. List ordering and product-store adapters are checked
-separately. MVR derives overwrite coverage from the existing issuer; Bounded
-Counter, TreeMove and AegisSheet use the commuting specialization. These
-evidence adapters required manual proof development.
-
 ## Reproduce
 
 From the repository root, with production Lean dependencies built, run:
@@ -85,7 +114,3 @@ standard Lean axioms and transitive proof dependencies. See the
 [scope inventory](transfer-inventory.json) for individual theorem names.
 Benchmark details are in [local trials](results/local-campaign.json) and
 [causal trials](results/causal-campaign.json).
-
-The production proof bundles
-still use their existing proofs. Sequential-specification bridge automation
-is outside this experiment.
