@@ -24,9 +24,12 @@ seen = set()
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--transfer', action='store_true', help='Check all Track A instances')
 parser.add_argument('--certified', action='store_true', help='Also check the certified sided RGA route')
+parser.add_argument('--all', action='store_true', help='Check all 23 current named cases')
 args = parser.parse_args()
+if args.all:
+    args.transfer = args.certified = True
 module = 'TransferVCs' if args.transfer else 'ExpandedVCs'
-prefix = 'certified' if args.certified else 'transfer' if args.transfer else 'expansion'
+prefix = 'all' if args.all else 'certified' if args.certified else 'transfer' if args.transfer else 'expansion'
 
 
 def visit(name):
@@ -47,6 +50,10 @@ if args.certified:
     visit('CertifiedCoreExpansion')
     visit('CertifiedEmbeddedExpansion')
     visit('CertifiedFugueVCExpansion')
+if args.all:
+    visit('TransferGuardedCommuting')
+    visit('TransferAegisSheet')
+    visit('CertifiedMVRExpansion')
 OUT.mkdir(exist_ok=True)
 build_log = []
 for name in order:
@@ -76,6 +83,12 @@ if args.certified:
                  'NeemExpansion.CertifiedEmbeddedTransfers.anchored_queue',
                  'NeemExpansion.CertifiedEmbeddedTransfers.peritext',
                  'NeemExpansion.CertifiedFugueVCExpansion.expanded_vcs']
+if args.all:
+    audit = 'import TransferGuardedCommuting\nimport TransferAegisSheet\nimport CertifiedMVRExpansion\n' + audit
+    theorems += ['NeemExpansion.TransferGuardedCommuting.Bounded.expanded_vcs',
+                 'NeemExpansion.TransferGuardedCommuting.Tree.expanded_vcs',
+                 'NeemExpansion.TransferAegisSheet.expanded_vcs',
+                 'NeemExpansion.CertifiedMVR.expanded_vcs']
 audit += '\n' + '\n'.join('audit_vc ' + t for t in theorems) + '\n'
 with tempfile.TemporaryDirectory(prefix='sal-expansion-audit-') as tmp:
     path = Path(tmp) / 'AuditExpansion.lean'

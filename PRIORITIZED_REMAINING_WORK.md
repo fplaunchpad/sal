@@ -6,7 +6,7 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
-### Active: finish the four remaining VC automation routes
+### Checked: four remaining VC automation routes
 
 Goal: obtain the unchanged five-VC bundles for Bounded Counter, TreeMove,
 AegisSheet and MVR, bringing the current named-case inventory to 23/23.
@@ -15,12 +15,18 @@ certified finite membership expansion covers MVR. A failed expanded leaf is
 not itself a counterexample to the original VC. Oracle: the actual existing
 `Raw.MergeVCs` statements, source-preserving builds and dependency audits.
 
-- [ ] Bounded Counter and TreeMove: instantiate finite commuting kernels.
-- [ ] AegisSheet: instantiate finite commuting kernels.
-- [ ] MVR: derive required overwrite evidence from existing execution premises
+- [x] Bounded Counter and TreeMove: instantiate finite commuting kernels.
+- [x] AegisSheet: instantiate finite commuting kernels.
+- [x] MVR: derive required overwrite evidence from existing execution premises
   and discharge the certified finite kernels without old VC/Join/invariant reuse.
-- [ ] Independently rebuild/audit all four and the combined 23-case suite.
-- [ ] Update concise README and inventory; retain the current Queue designation.
+- [x] Independently rebuild/audit all four and the combined 23-case suite.
+- [x] Update concise README and inventory; retain the current Queue designation.
+
+Independent verification: all four rebuilt from source and passed transitive
+proof-dependency and axiom audits. The combined 23-case audit rebuilds 33
+modules; reproduce with `verify_expansion.py --all`. No production
+implementation, issuer, representation, policy or VC statement changed.
+Sequential-bridge automation remains deferred.
 
 ### Checked: transfer finite VC expansion across RDTs
 

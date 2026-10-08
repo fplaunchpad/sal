@@ -30,8 +30,9 @@ provides the corresponding revisions against Overleaf `0450d48`.
 The [five-VC automation experiment](experiments/vc-automation/README.md) now
 checks all five unchanged VCs for the ten production entries without
 state-dependent issuance, the ordinary OR-set example, and the RGA family,
-including current Queue (anchored enqueue) and FugueMax. The combined audit
-covers 19 named instances including aliases. Finite equations close with Lean
+including current Queue (anchored enqueue) and FugueMax, plus Bounded Counter,
+TreeMove, AegisSheet and MVR. The combined audit covers all 23 current named
+instances including aliases. Finite equations close with Lean
 automation; history expansion and evidence adapters were developed manually.
 The audit excludes old datatype VC, Join and history-invariant proof reuse.
 Production certificates remain unchanged. Fugue's merge VC proof does not

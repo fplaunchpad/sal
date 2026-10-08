@@ -5,7 +5,8 @@
     "registry_entries": 22,
     "registry_without_state_dependent_issuance": 10,
     "registry_with_state_dependent_issuance": 12,
-    "paper_examples_outside_registry": 2
+    "paper_examples_outside_registry": 2,
+    "current_named_cases": 23
   },
   "entries": [
     {
@@ -148,7 +149,9 @@
         "state_dependency": "decrement requires the issuing replica balance to cover one decrement"
       },
       "selected_existing_vc_route": "CommutingPort.mergeVCs instantiated by GuardedPorts.Bounded.conditions",
-      "status": "excluded-track-a"
+      "status": "checked-transfer",
+      "transfer_theorem": "NeemExpansion.TransferGuardedCommuting.Bounded.expanded_vcs",
+      "transfer_status": "independently-checked"
     },
     {
       "id": "lww-register",
@@ -275,7 +278,9 @@
         "state_dependency": "visible parent, known/visible child and state-local event freshness"
       },
       "selected_existing_vc_route": "CommutingPort.mergeVCs instantiated by GuardedPorts.Tree.conditions",
-      "status": "excluded-track-a"
+      "status": "checked-transfer",
+      "transfer_theorem": "NeemExpansion.TransferGuardedCommuting.Tree.expanded_vcs",
+      "transfer_status": "independently-checked"
     },
     {
       "id": "aegis-sheet",
@@ -289,7 +294,9 @@
         "state_dependency": "applicableB depends on causal-origin contents; ClockedAt depends on event times"
       },
       "selected_existing_vc_route": "CommutingPort.mergeVCs instantiated by GuardedPorts.Sheet.conditions",
-      "status": "excluded-track-a"
+      "status": "checked-transfer",
+      "transfer_theorem": "NeemExpansion.TransferAegisSheet.expanded_vcs",
+      "transfer_status": "independently-checked"
     },
     {
       "id": "efficient-or-set",
@@ -335,8 +342,10 @@
         "state_dependency": "overwrites set must exactly equal current state IDs and timestamp must be fresh"
       },
       "selected_existing_vc_route": "CertifiedQueueMVR.MVR.RawVC.mergeVCs",
-      "status": "excluded-track-a",
-      "scope_note": "Exact Instances.MVRLive.D; representation carries CertifiedExecution and Represents event/state evidence."
+      "status": "checked-transfer",
+      "scope_note": "Exact Instances.MVRLive.D; representation carries CertifiedExecution and Represents event/state evidence.",
+      "transfer_theorem": "NeemExpansion.CertifiedMVR.expanded_vcs",
+      "transfer_status": "independently-checked"
     },
     {
       "id": "fugue-max",

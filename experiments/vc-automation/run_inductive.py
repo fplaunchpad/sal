@@ -51,6 +51,8 @@ def forbidden_dependency(name):
         '.CertifiedFugueVCReplay.respects_lo', '.CertifiedFugueVCReplay.unique',
         '.CertifiedFugueVCReplay.peel', '.CertifiedFugueVCReplay.replaySupply')):
         return True
+    if '.Instances.MVRLive.' in name or '.CertifiedQueueMVR.MVR.' in name:
+        return True
     # The new route forbids datatype-specific representation invariants too.
     datatype = '.ORSet.' in name or '.EfficientORSet.' in name
     return datatype and any(part in name for part in (

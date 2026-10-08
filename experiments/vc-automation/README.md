@@ -11,13 +11,15 @@ datatype state/history invariant is supplied.
 |---|---|
 | Ordinary and efficient OR-set | All five VCs checked |
 | Eight simple set/counter/map registry entries | All five VCs checked |
+| Bounded Counter, TreeMove and AegisSheet | All five VCs checked |
+| MVR | All five VCs checked |
 | LWW, using its existing empty-policy port | All five VCs checked |
 | Native, Embedded and Sided RGA | All five VCs checked |
 | Peritext, Sided Core and RichCore | All five VCs checked |
 | Queue (anchored enqueue) | All five VCs checked |
 | FugueMax | All five VCs checked; sequential bridge still obstructed |
 
-The certified audit covers **19 named instances**, including aliases. A five-VC
+The certified audit covers **23/23 current named instances**, including aliases. A five-VC
 proof is not by itself an RA-linearizability certificate: the separate sequential
 bridge is still required. In particular, Fugue has a known specification
 obstruction. Queue here means the current anchored-enqueue implementation. The earlier
@@ -65,18 +67,20 @@ coverage from the existing representation and issuance evidence. A generic
 fold proof works for any supported, duplicate-free, causally ordered replay;
 it does not reissue operations in reordered states. Finite membership equations
 then prove the merge VCs. List ordering and product-store adapters are checked
-separately. These evidence adapters required manual proof development.
+separately. MVR derives overwrite coverage from the existing issuer; Bounded
+Counter, TreeMove and AegisSheet use the commuting specialization. These
+evidence adapters required manual proof development.
 
 ## Reproduce
 
 From the repository root, with production Lean dependencies built, run:
 
 ```sh
-python3 experiments/vc-automation/verify_expansion.py --transfer --certified
+python3 experiments/vc-automation/verify_expansion.py --all
 ```
 
 This rebuilds the experiment modules and audits every named five-VC instance.
-The [certified audit](results/certified-audit.json) records source hashes,
+The [combined audit](results/all-audit.json) records source hashes,
 standard Lean axioms and transitive proof dependencies. See the
 [scope inventory](transfer-inventory.json) for individual theorem names.
 Benchmark details are in [local trials](results/local-campaign.json) and
