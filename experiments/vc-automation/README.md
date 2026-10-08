@@ -6,7 +6,129 @@ necessary? This experiment preserves the original polymorphic propositions,
 implementations, representation relations, and production proofs. It does not
 attempt invariant discovery or the sequential-specification bridge.
 
-## Measured result and recommendation
+**Scope correction:** the older matrix below tested unexpanded whole VCs.
+The current campaign expands histories into finite equations, following Neem's
+frozen-event and equation-shaped induction method. It targets Sal's actual five
+indexed equations, whose nested local equation needs additional rules.
+
+## Inductive expansion: current evidence
+
+**Both OR-sets now obtain all five unchanged merge VCs through a kernel-checked
+inductive-expansion route.** `ExpandedVCs.lean` exports
+`NeemExpansion.Exact.expanded_vcs` and `NeemExpansion.Efficient.expanded_vcs`,
+whose types use the existing production `Raw.MergeVCs`, representation and
+metadata scheme. The production bundles have not been replaced.
+
+The root independently rebuilt all 15 modules in this route and audited both
+complete theorem dependency closures. Only standard Lean axioms occur
+(`propext`, `Quot.sound`, `Classical.choice`); no old VC, Join or datatype
+state/history invariant proof occurs. Existing finite event-policy facts and
+generic replay/order theorems are reused. `ExpandedPolicy.lean` obtains the
+conditional-commutation law from the new equation induction, avoiding the old
+invariant-based policy proofs. Evidence: `results/expansion-audit.json`,
+`results/expansion-audit.log`, and `results/expansion-build.log`.
+
+The local proof strengthens its induction hypothesis to quantify over the
+intermediate state. It jointly replays only the nested common/opposite scopes,
+whose combined order is proved acyclic in `LocalCoverage.lean`. Singleton
+causal-past equations then permit an independent replay of the causal past.
+This preserves the original nested merge and avoids requiring incompatible
+side histories to share a linearization. Freshness is itself an equation
+propagated by finite base/step rules, not a supplied state invariant.
+
+The causal proof keeps the final event frozen. Common steps, commuting local
+steps and strict policy predecessors preserve the equation. A later absorber
+resets it after the last conflicting local event; `CausalCoverage.lean` derives
+that event from the original maximality and metadata premises.
+
+The efficient representation already uses a semantic live/dead predicate.
+`EfficientReplayAdapter.lean` derives canonical replay from this **existing
+representation**, using newly proved finite update/event certificates and the
+generic collection induction in `InductiveMask.lean`. No extra datatype
+state/history invariant or previous representation-invariant theorem is supplied.
+The merge-VC inductions themselves use equation-shaped hypotheses.
+
+### Reproduce and interpret the result
+
+With production imports already built, run:
+
+```sh
+python3 experiments/vc-automation/verify_expansion.py
+```
+
+This rebuilds the experimental dependency graph, checks both original five-field
+bundle types and rejects unexpected axioms or forbidden transitive proof
+references. The experiment needs neither an external SMT solver nor a solver
+axiom for its successful complete route.
+
+The generic soundness components are `LocalAssembly.raw_local_redistribute` and
+`CausalCoverage.raw_causal_delta`; the other three fields follow from finite
+merge algebra. The full bundles assemble these components without an assumed
+Join theorem. The local bridge uses seven kernel fields (including a seed
+obtained from merge algebra); several additional local kernels were measured
+but are not required by the final route. The original 21 F* leaves are retained
+as a faithful comparison, not presented as sufficient for Sal's nested VC.
+
+Automatic: finite collection equations after explicit unfolding, operation
+case splits and pointwise specialization of equality hypotheses. Manual:
+choosing the stronger equation hypotheses, proving nested-scope enumeration,
+last-conflict/absorber coverage, and assembling representation adapters. There
+is no automatic invariant discovery or generic VC-expansion generator here.
+
+### Backend comparisons
+
+`InductiveLeaves.lean` translates all **21 F* merge obligations** for each
+OR-set: 42 kernel-checked proofs. These retain frozen final events, insertion
+positions, timestamp/replica guards and equation hypotheses. The source map is
+`inductive-source-map.json`; fourteen larger schemata are reproducibly translated
+by `translate_neem_leaves.py`. The [source audit](neem-induction-audit.md)
+distinguishes the F* inventory from the paper's printed table.
+
+| Obligation family | Native checked | lean-smt checked | Lean-auto/Z3 checked | Z3 solver-only |
+|---|---:|---:|---:|---:|
+| Original F* merge leaves, both sets (42) | 42 | 24 | 4 | 32 |
+| Additional local/freshness leaves, both sets (22) | 22 | 20 | 4 | 18 |
+| Causal-delta step kernels, both sets (8) | 8 | 4 | 0 | 8 |
+
+The original-leaf campaign contains 126 trials; the local campaign contains 66,
+and the causal campaign contains 24.
+Lean-auto's checked cases close through internal simplification, not checked
+external-solver reconstruction. Original-leaf failures were translation or
+incomplete solver responses; the two local lean-smt failures were incomplete
+solver responses. Four causal lean-smt trials also returned incomplete responses.
+Native Lean checked every finite equation in these campaigns.
+
+Each backend gets identical explicit preparation: destruct operations, unfold
+implementation definitions, specialize equality hypotheses at an arbitrary set
+member, and normalize collection membership. The remaining solver receives no
+datatype correctness lemmas. This is automation **after explicit expansion and
+preparation**, not automatic discovery of the induction or its coverage proof.
+`run_inductive.py` records backend calls, standard versus solver axioms,
+dependencies, template/source hashes, timings and failure stages.
+
+The root independently verified all 216 trial source/template hashes, coverage
+and forbidden-dependency checks. Results and generated sources are archived in
+`results/inductive-campaign.{json,tar.gz}` and
+`results/local-campaign.{json,tar.gz}` and `results/causal-campaign.{json,tar.gz}`.
+Six initial causal trials failed because a local `.olean` was missing; those
+setup failures are archived separately in `causal-setup-failures.tar.gz`. The
+table uses the reruns after building that dependency.
+Native leaf audits are in `results/inductive-native-audit.json` and
+`results/local-native-audit.json`.
+
+The defeater/ghost examples are regression evidence for the **already known**
+gap between Neem's original obligations and Sal's nested local VC. They are not
+a new obstacle or the campaign's result. The current bridge proves additional
+finite equations for that VC. Earlier exploratory modules (`InductiveBridge`,
+`InductiveCoupled`, `InductiveResidual`, `InductiveCycleResidual`, and the ghost
+countermodel modules) retain the derivation history; they are not needed to
+assume any desired Join theorem.
+
+Issuance-certified RGA and queue automation remains outside this campaign.
+Their existing correctness proofs are unaffected; transferring this method
+will require guarded expansion and preservation of issuance/reachability evidence.
+
+## Earlier experiment: unexpanded whole VCs
 
 The pilot closes **6 of the 10 OR-set VCs** with common finite-set normalization
 and native `grind only`. They are commutativity, initialization and shared-event
@@ -44,13 +166,12 @@ additional VC coverage to justify making it a production dependency. Blaster
 is useful for solver experiments, not production proof completion at its
 current trust boundary. No solver speed ranking is claimed.
 
-The next useful automation work is a checked transformation from represented
-states to pointwise freshness/coverage facts, followed by collection algebra.
-For RGA it also needs the sorted-list/toFinset conversion. The existing
-representations and issuance invariants are supplied; this is invariant
-exploitation, not invariant discovery. The [residual map](notes-cases.md)
-identifies the exact missing facts and compares these whole obligations with
-Neem's smaller generated induction VCs.
+The next experiment instead constructs the finite base/step obligations of
+Neem-style history induction, retaining frozen events and the merge equations
+as induction hypotheses. It must prove these leaves imply the current five
+VCs; merely porting F* signatures does not establish that bridge. The old
+[residual map](notes-cases.md) identifies facts used by the existing direct
+proofs, not invariants that the new experiment may supply to its leaf solvers.
 
 A deliberately manually structured RGA commutativity control does close using
 whitelisted sortedness/toFinset lemmas and `grind only`; it is retained in

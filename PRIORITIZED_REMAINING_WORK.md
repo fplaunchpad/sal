@@ -6,7 +6,46 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
-### Checked: automate the five merge VCs
+### Checked: Neem-style inductive expansion of the five merge VCs
+
+Research question: can equation-shaped induction hypotheses replace separately
+supplied datatype state/history invariants and make the existing five VCs
+automatically provable for both OR-sets?
+
+- [x] Inspect Neem's paper and F* base/step obligations, recording frozen events,
+  insertion positions, guards, extra hypotheses and source discrepancies in
+  [the audit](experiments/vc-automation/neem-induction-audit.md).
+- [x] Mechanize the generic bridge from expanded obligations to the unchanged
+  five indexed VCs, without assuming Join or reusing datatype VC proofs.
+- [x] Automatically discharge all 21 translated F* merge leaves for each of
+  exact and efficient OR-set using definitions and generic collection reasoning.
+  Independently rebuilt and audited all 42 proofs: standard axioms only, no
+  prior datatype correctness or invariant theorems. The complete route also
+  needs the additional Sal-specific kernels and generic coverage proofs below.
+- [x] Compare native Lean, lean-smt and solver-only backends on expanded leaves,
+  auditing proof dependencies and distinguishing checked from unchecked results.
+  Full 126-trial comparison: native 42 checked; lean-smt 24 checked; Lean-auto/Z3
+  4 internally checked and 32 solver-only. Remaining failures are translation
+  or incomplete solver responses; evidence archived and independently checked.
+- [x] Prove additional local/freshness kernels (22 across both sets) and the
+  generic nested-scope order/replay bridge; assemble both unchanged local fields.
+  Independent local benchmark: native 22 checked, lean-smt 20 checked,
+  Lean-auto/Z3 4 internally checked and 18 solver-only (66 trials).
+- [x] Finish both causal adapters and audit integrated dependency closures,
+  replacing inherited policy-law datatype invariants with equation induction.
+  Causal-kernel benchmark: native 8 checked, lean-smt 4 checked, Z3 8 solver-only.
+- [x] Verify both complete five-VC routes: `ExpandedVCs.lean` proves all ten
+  original fields over unchanged representations and schemes. Root rebuilt
+  15 modules and audited both theorem closures: standard axioms only, no old
+  invariant, VC or Join proof dependencies. Reproduce with
+  `python3 experiments/vc-automation/verify_expansion.py`.
+
+This campaign establishes finite-leaf automation after manually derived history
+expansion and coverage, not an automatic expansion generator. Production proof
+bundles remain unchanged. Issuance-certified RGA/queue transfer is deferred;
+it requires carrying and preserving issuance/reachability evidence.
+
+### Checked: benchmark automation on unexpanded merge VCs
 
 - [x] Freeze unchanged exact/efficient OR-set and Embedded RGA VC statements,
   controlled premise tiers, resource limits and positive/negative controls.
@@ -29,8 +68,9 @@ Measured outcome: 324 controlled attempts; generic normalization gives checked
 proofs for six of ten OR-set VCs. The other four and the five Embedded RGA VCs
 remain unsolved by the tested configurations. A reusable native tactic and all
 logs/pins are retained in [the experiment](experiments/vc-automation/README.md).
-The next research step is representation-to-membership normalization, rather
-than invariant discovery or a claim of complete five-VC automation.
+These results concern unexpanded obligations. They do not evaluate Neem's
+equation-as-induction-hypothesis method; the active task above corrects that
+experimental omission.
 
 ### Checked: audit the manuscript's complete correctness claim
 

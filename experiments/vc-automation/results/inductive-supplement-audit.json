@@ -1,0 +1,38 @@
+[
+  {
+    "file": "InductivePolicy.lean",
+    "source_sha256": "2e67c5d66c99fd819e7d0f431e50c295a8f0b55733acba08784c14358880d854",
+    "checked_theorems": 5,
+    "axiom_sets": [
+      "[propext, Quot.sound, Classical.choice]",
+      "[propext, Quot.sound]"
+    ],
+    "transitive_sal_theorem_dependencies": [
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_1",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_2",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_3",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_4",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_5",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_6"
+    ],
+    "exit_code": 0
+  },
+  {
+    "file": "InductiveSupplement.lean",
+    "source_sha256": "4d437719075b31961c103118143b877972d2181b910b13f03f0895eca749fe1a",
+    "checked_theorems": 5,
+    "axiom_sets": [
+      "[propext, Quot.sound, Classical.choice]",
+      "[propext, Quot.sound]"
+    ],
+    "transitive_sal_theorem_dependencies": [
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_1",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_2",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_3",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_4",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_5",
+      "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_6"
+    ],
+    "exit_code": 0
+  }
+]

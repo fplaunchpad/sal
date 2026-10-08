@@ -1,0 +1,58 @@
+## InductiveLeaves
+
+## LocalExpansion
+
+## LocalSingleton
+'NeemExpansion.Signature.local_singleton_restrictedReplay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.local_empty_sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.local_empty_sides' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## InductivePolicy
+
+## ExpandedPolicy
+
+## InductiveMask
+'InductiveMask.membership_iff_suffix' depends on axioms: [propext, Quot.sound]
+'InductiveMask.suffix_iff_alive' depends on axioms: [propext, Classical.choice, Quot.sound]
+'InductiveMask.replay_iff_alive' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## EfficientReplayAdapter
+
+## LocalCoverage
+
+## LocalAssembly
+
+## SharedExpansion
+
+## InductiveSupplement
+
+## CausalExpansion
+'NeemExpansion.Signature.causal_restrictedReplay' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.causal_strict_kernel' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.causal_strict_kernel' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## CausalEventClassification
+/Users/kc/repos/sal/experiments/vc-automation/CausalEventClassification.lean:20:58: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵step, ̲element] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/Users/kc/repos/sal/experiments/vc-automation/CausalEventClassification.lean:74:58: warning: This simp argument is unused:
+  D
+
+Hint: Omit it from the simp argument list.
+  simp [D̵,̵update, ̲element] at *
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+
+## CausalCoverage
+'NeemExpansion.CausalCoverage.reset_of_context' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.CausalCoverage.raw_causal_delta' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Exact.raw_causal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.raw_causal' depends on axioms: [propext, Classical.choice, Quot.sound]
+
+## ExpandedVCs
+'NeemExpansion.Exact.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NeemExpansion.Efficient.expanded_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]

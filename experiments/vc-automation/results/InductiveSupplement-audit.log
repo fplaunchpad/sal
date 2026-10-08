@@ -1,0 +1,72 @@
+VC_AXIOMS [propext, Quot.sound, Classical.choice]
+VC_DIRECT Sal.MRDTs.Foundation.Op
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.State
+VC_DIRECT Sal.MRDTs.Foundation.Timestamp
+VC_DIRECT Sal.MRDTs.Foundation.Replica
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.Update.casesOn
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.Update
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.Update.add
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.merge
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.step
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.Update.remove
+VC_AUDIT_COMPLETE
+VC_AXIOMS [propext, Quot.sound, Classical.choice]
+VC_DIRECT Sal.MRDTs.Foundation.Op
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.State
+VC_DIRECT Sal.MRDTs.Foundation.Timestamp
+VC_DIRECT Sal.MRDTs.Foundation.Replica
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.merge
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.step
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.Update.casesOn
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.Update
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.Update.add
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.order
+VC_DIRECT Sal.MRDTs.Paper1.ORSet.Update.remove
+VC_AUDIT_COMPLETE
+VC_AXIOMS [propext, Quot.sound, Classical.choice]
+VC_DIRECT Sal.MRDTs.Foundation.Op
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.State
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.Record
+VC_DIRECT Sal.MRDTs.Foundation.Timestamp
+VC_DIRECT Sal.MRDTs.Foundation.Replica
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.SetOp.casesOn
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.SetOp
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.SetOp.add
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.merge
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.update
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.SetOp.remove
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_5
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_4
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_3
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_1
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_2
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_6
+VC_AUDIT_COMPLETE
+VC_AXIOMS [propext, Quot.sound, Classical.choice]
+VC_DIRECT Sal.MRDTs.Foundation.Op
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.State
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.Record
+VC_DIRECT Sal.MRDTs.Foundation.Timestamp
+VC_DIRECT Sal.MRDTs.Foundation.Replica
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.merge
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.update
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.SetOp.casesOn
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.SetOp
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.SetOp.add
+VC_DIRECT Sal.MRDTs.Foundation.ReplayPolicy.order
+VC_DIRECT Sal.MRDTs.MRDTSig.toUpdateSig
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.D
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.rc
+VC_DIRECT Sal.MRDTs.Instances.EfficientORSet.SetOp.remove
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_5
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_4
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_3
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_1
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_2
+VC_DEP Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_6
+VC_AUDIT_COMPLETE
+VC_AXIOMS [propext, Quot.sound]
+VC_DIRECT Sal.MRDTs.Foundation.Op
+VC_DIRECT Sal.MRDTs.Foundation.Timestamp
+VC_DIRECT Sal.MRDTs.Foundation.Replica
+VC_AUDIT_COMPLETE

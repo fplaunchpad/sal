@@ -1,0 +1,20 @@
+{
+  "source_sha256": "86df5a939cff88762debc89c28639e8b3711822c8a7c0568f8e7c5103521a7fb",
+  "checked_theorems": 44,
+  "leaf_theorems": 42,
+  "generic_diagonal_helpers": 2,
+  "axiom_sets": [
+    "[propext, Quot.sound, Classical.choice]"
+  ],
+  "transitive_sal_theorem_dependencies": [
+    "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_1",
+    "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_2",
+    "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_3",
+    "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_4",
+    "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_5",
+    "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_6"
+  ],
+  "generated_fourteen_signatures_match": true,
+  "command": "lake env lean /tmp/sal-inductive-native-audit.lean",
+  "exit_code": 0
+}

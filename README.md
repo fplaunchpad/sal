@@ -34,6 +34,13 @@ solver verdicts from kernel-checked proofs, records explicit preprocessing and
 helper premises, and preserves the production proof bundles. Its reusable
 native normalization closes the commutativity, initialization and shared-event
 VCs for both OR-sets without external solver dependencies.
+That matrix tested unexpanded obligations. The follow-up now proves **all five
+unchanged VCs for both OR-sets** through equation-based history induction and
+new finite kernels. An independent rebuild and dependency audit found no reused
+VC, Join or datatype state/history invariant proofs. Native Lean checked all
+72 benchmarked finite obligations; deriving the expansion and its coverage
+remains manual. Production certificates are unchanged; issuance-certified
+RGA/queue automation is still deferred.
 
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay

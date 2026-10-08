@@ -1,0 +1,116 @@
+{
+  "source": "_references/neem_fstar_repo/code/interface/App_mrdt.fsti",
+  "mapping": [
+    {
+      "lean": "NeemExpansion.Signature.comm",
+      "fstar": "merge_comm",
+      "line": 85
+    },
+    {
+      "lean": "NeemExpansion.Signature.idem",
+      "fstar": "merge_idem",
+      "line": 88
+    },
+    {
+      "lean": "NeemExpansion.Signature.base1",
+      "fstar": "base_1op",
+      "line": 159
+    },
+    {
+      "lean": "NeemExpansion.Signature.base2",
+      "fstar": "base_2op",
+      "line": 93
+    },
+    {
+      "lean": "NeemExpansion.Signature.common1",
+      "fstar": "ind_lca_1op",
+      "line": 162
+    },
+    {
+      "lean": "NeemExpansion.Signature.common2",
+      "fstar": "ind_lca_2op",
+      "line": 98
+    },
+    {
+      "lean": "NeemExpansion.Signature.zero",
+      "fstar": "lem_0op",
+      "line": 220
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_right_base_2op",
+      "fstar": "inter_right_base_2op",
+      "line": 105
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_left_base_2op",
+      "fstar": "inter_left_base_2op",
+      "line": 113
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_right_2op",
+      "fstar": "inter_right_2op",
+      "line": 119
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_left_2op",
+      "fstar": "inter_left_2op",
+      "line": 128
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_lca_2op",
+      "fstar": "inter_lca_2op",
+      "line": 137
+    },
+    {
+      "lean": "NeemExpansion.Signature.ind_right_2op",
+      "fstar": "ind_right_2op",
+      "line": 145
+    },
+    {
+      "lean": "NeemExpansion.Signature.ind_left_2op",
+      "fstar": "ind_left_2op",
+      "line": 151
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_right_base_1op",
+      "fstar": "inter_right_base_1op",
+      "line": 168
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_left_base_1op",
+      "fstar": "inter_left_base_1op",
+      "line": 175
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_right_1op",
+      "fstar": "inter_right_1op",
+      "line": 181
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_left_1op",
+      "fstar": "inter_left_1op",
+      "line": 189
+    },
+    {
+      "lean": "NeemExpansion.Signature.inter_lca_1op",
+      "fstar": "inter_lca_1op",
+      "line": 197
+    },
+    {
+      "lean": "NeemExpansion.Signature.ind_left_1op",
+      "fstar": "ind_left_1op",
+      "line": 206
+    },
+    {
+      "lean": "NeemExpansion.Signature.ind_right_1op",
+      "fstar": "ind_right_1op",
+      "line": 211
+    }
+  ],
+  "conventions": [
+    "F* positive timestamps embedded in Sal natural Timestamp; checked leaves need only stated distinctness/order guards.",
+    "distinct_ops is timestamp inequality, not triple inequality.",
+    "F* equality is actual state equality for both ORsets.",
+    "All operational definitions are existing Sal implementations, unchanged."
+  ]
+}

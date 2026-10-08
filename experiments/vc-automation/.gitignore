@@ -1,5 +1,6 @@
 .lake/
 **/.lake/
 __pycache__/
+*.olean
 
 results/*/
