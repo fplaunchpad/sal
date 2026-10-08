@@ -38,3 +38,7 @@ def:ra	Sal.MRDTs.Paper1.EventBridge	Sal.MRDTs.Paper1.EventVersionsSpecificationR
 def:ra	Sal.MRDTs.Paper1.EventBridge	Sal.MRDTs.Paper1.EventSequentialSimulation
 def:ra	Sal.MRDTs.Paper1.ProjectedCriterion	Sal.MRDTs.Paper1.ProjectedSpecificationRALinearizable
 def:ra	Sal.MRDTs.Paper1.RALinearizability	Sal.MRDTs.Paper1.RALinearizable
+thm:scoped-replay	Sal.MRDTs.Paper1.InvariantReplay	Sal.MRDTs.Paper1.InvariantReplay.Canonical
+thm:scoped-replay	Sal.MRDTs.Paper1.InvariantReplay	Sal.MRDTs.Paper1.InvariantReplay.canonical_unique
+def:ra	Sal.MRDTs.Paper1.RALinearizability	Sal.MRDTs.Paper1.RAExecution
+def:ra	Sal.MRDTs.Paper1.RALinearizability	Sal.MRDTs.Paper1.RAImplementation

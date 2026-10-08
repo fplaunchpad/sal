@@ -8,12 +8,15 @@ anonymous long-form working papers under `docs/`.
 
 ### Checked: manuscript reconciliation and formal reference
 
-- [x] Compare the Overleaf snapshot `f3afb8c` with the checked framework;
-  rebuild its manuscript PDF and preserve the GitHub manuscript branch.
-- [x] Write a self-contained paper1 formal reference and a revision note
-  identifying manuscript locations, reasons and numbered replacement definitions.
-  All 85 declaration anchors were checked with Lean; both PDFs were visually
-  reviewed. No implementation or theorem changes were needed.
+- [x] Pull Overleaf snapshot `0450d48` (8 October), rebuild the manuscript PDF,
+  and compare its revised motivation and unchanged formal sections.
+- [x] Rewrite the reference to follow the paper's Sections 3–6, notation and
+  terminology; map manuscript statements to reference statements to Lean.
+- [x] Add a direct paper-order sequential lifting theorem, avoiding an extra
+  replay-law premise once exact witnesses are supplied. Existing semantics
+  and implementation guarantees remain unchanged.
+- [x] Update Vimala's revision note with manuscript locations, reasons and new
+  PDF references; audit declarations, proofs, rendered pages and repository gates.
 
 ### Checked: anchored-enqueue Queue
 

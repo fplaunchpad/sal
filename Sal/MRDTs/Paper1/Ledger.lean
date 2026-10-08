@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.PaperPresentation
 import Sal.MRDTs.Paper1.AnchoredQueueCertificate
 import Sal.MRDTs.Paper1.AnchoredQueuePublicControls
 import Sal.MRDTs.Paper1.AnchoredQueueHistoryControls
@@ -1108,5 +1109,7 @@ assert_paper_axioms AnchoredQueue.HistoryControls.duplicate_removal
 assert_paper_axioms AnchoredQueue.HistoryControls.fresh_births
 assert_paper_axioms AnchoredQueue.HistoryControls.named_head
 assert_paper_axioms AnchoredQueue.HistoryControls.removed_anchor_ignored
+
+assert_paper_axioms PaperPresentation.uniform_versionsRA_of_paperOrder_witness
 
 end Sal.MRDTs.Paper1

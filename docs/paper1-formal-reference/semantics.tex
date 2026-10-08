@@ -1,79 +1,67 @@
-\section{Semantic interfaces and the certified criterion}
+\section{A New Definition of RA-Linearizability}
 \label{sec:semantics}
 
-The reference question is whether a merged implementation state has an
-explanation in an independently defined sequential language, using exactly
-its original events. Agreement of implementation replays alone does not answer
-this question. The definitions below describe the checked concrete and
-invariant-scoped interfaces. They distinguish the globally guarded sufficient
-class from the certified, represented-prefix class. An implementation need
-not inhabit the former to have a certificate in the latter.
+RA-linearizability explains each query by a sequential execution of exactly
+the updates visible at the queried version. Following the paper, we first
+define the order that this execution must respect, relative to the event set
+of that version, and then give its sequential specification. The formal
+reference retains the paper's configuration predicate and also gives the
+stronger full-event criterion used by the certified results.
+
+\paragraph{Notation.}
+For an event $e=(t,r,o)$, write $\doop(\sigma,e)$ for
+$\doop(\sigma,t,r,o)$, and
+$\pi(\sigma)$ for replaying a list.
+The relation $\rcrel$ chooses the order of conflicting payloads;
+$\visw$ records visibility in configuration $C$.
 
 \begin{definition}[Events, effects, and payload policy]
 \label{def:events}
-An implementation has a concrete state space $\Sigma$, initial state
-$\sigma_0$, operations $O$, queries $Q$, answers $V$, a total effector
-$u:\Sigma\times(\mathbb N\times\mathbb N\times O)\to\Sigma$, a query
-$\operatorname{read}:\Sigma\times Q\to V$, and a three-way merge
-$m:\Sigma^3\to\Sigma$. An event is $e=(t,r,o)$, with projections
-$e.t,e.r,e.o$. For a list $\pi$, $u^*(s,\pi)$ is its left fold from $s$.
-A payload policy is a relation $P\subseteq O\times O$; write
-$a\mathrel{P}b$ for $P(a.o,b.o)$. It does not inspect the events' external
+Recall the MRDT signature $\mathcal D_\tau$ of the operational semantics:
+its concrete states are $\Sigma$, its initial state is $\sigma_0$, and its
+updates, queries, and answers are $O_\tau$, $Q_\tau$, and $Val_\tau$.
+An event $e=(t,r,o)$ retains its timestamp and replica identifier.
+Applying it is the total effector $\doop(\sigma,e)$; $\pi(\sigma)$ is
+its left-fold extension to a list.
+A payload policy is a relation $\rcrel\subseteq O_\tau\times O_\tau$; write
+$a\xrightarrow{\rcrel}b$ for $\rcrel(a.o,b.o)$. It does not inspect the events' external
 timestamps or replica identifiers.
-A replay context supplies eligible events $\mathcal E_C$ and visibility
-$\mathord{\prec_C}$. Set
+A configuration supplies the event set $\mathcal E_C$ and visibility $\visw$ (with $C$ understood). Set
 \[
- a\parallel_C b\ \Longleftrightarrow\
- \neg(a\prec_C b)\land\neg(b\prec_C a),\qquad
+ a\conc b\ \Longleftrightarrow\
+ \neg(a\vis b)\land\neg(b\vis a),\qquad
  \operatorname{distinct}(a,b)\ \Longleftrightarrow\ a.t\ne b.t.
 \]
 Concrete raw commutation is
 \[
- a\mathrel{\bowtie}b\quad\Longleftrightarrow\quad
- \forall s\in\Sigma,\quad u(u(s,a),b)=u(u(s,b),a).
+ a\comm b\quad\Longleftrightarrow\quad
+ \forall s\in\Sigma,\quad \doop(\doop(s,a),b)=\doop(\doop(s,b),a).
 \]
 \end{definition}
-These are relations on full events, even though $P$ acts on payloads.
+These are relations on full events, even though $\rcrel$ acts on payloads.
 
-\begin{definition}[Globally guarded replay laws]
-\label{def:guards}
-The global guarded sufficient class requires the following, for full events:
-\begin{align*}
-&a.t\ne b.t\ \land\ a.r\ne b.r
- \quad\Longrightarrow\quad
- (\neg(a\bowtie b)\ \Longleftrightarrow\ aPb\lor bPa),\\
-&a.t\ne b.t\ \land\ b.t\ne c.t
- \quad\Longrightarrow\quad \neg(aPb\land bPc).
-\end{align*}
-For every $s\in\Sigma$, intervening event list $\beta$, and $a,b,c$ with
-pairwise distinct timestamps, it also requires
-\[
- aPb\land\neg(b\bowtie c)\quad\Longrightarrow\quad
- u\bigl(u^*(u(u(s,b),a),\beta),c\bigr)
- =u\bigl(u^*(u(u(s,a),b),\beta),c\bigr).
-\]
-There is no different-replica guard on the last equation. Its absorber premise
-is actual noncommutation, rather than the policy edge $bPc$.
-\end{definition}
-The no-chain clause allows $a=c$ when the two adjacent timestamp guards hold;
-therefore a payload self-edge is not rescued by external event freshness.
-These global equations quantify over arbitrary concrete scratch states and
-intervening lists. They are not the scoped laws below.
+
+\subsection{RA-Linearizability for MRDTs}
+An absorber removes a concurrent $\rcrel$ edge only when it belongs
+to the event set being ordered. This is the paper's version-local change to
+the linearization relation. The invariant parameter below records a further
+choice in the formalization: the concrete state domain on which commutation
+is tested.
 
 \begin{definition}[Invariant-scoped concrete commutation and closure]
 \label{def:invariant}
 For a fixed concrete state predicate $I:\Sigma\to\mathrm{Prop}$, define
 \[
- a\mathrel{\bowtie_I}b\quad\Longleftrightarrow\quad
+ a\mathrel{\comm_I}b\quad\Longleftrightarrow\quad
  \forall s\in\Sigma,\ I(s)\Longrightarrow
- u(u(s,a),b)=u(u(s,b),a).
+ \doop(\doop(s,a),b)=\doop(\doop(s,b),a).
 \]
 An invariant closure certificate at $C$ supplies
 \begin{align*}
 &I(\sigma_0),\\
-&\forall s,e,\quad I(s)\land e\in\mathcal E_C\Longrightarrow I(u(s,e)),\\
+&\forall s,e,\quad I(s)\land e\in\mathcal E_C\Longrightarrow I(\doop(s,e)),\\
 &\forall l,a,b,\quad I(l)\land I(a)\land I(b)
- \Longrightarrow I(m(l,a,b)).
+ \Longrightarrow I(\F{merge}(l,a,b)).
 \end{align*}
 \end{definition}
 Commutation here has no simultaneous-readiness or reissuability premise.
@@ -81,27 +69,156 @@ Closure includes replaying an already issued event out of causal order and
 repeating it. A port must independently justify the predicate and its closure;
 it cannot exclude a reachable state merely because that state refutes an equation.
 
-\begin{definition}[Version-local invariant order]
+
+\begin{definition}[Linearization relation and linear extension]
 \label{def:order}
-For $E\subseteq\mathcal E_C$, use the \emph{same} predicate $I$ in both
+Fix a predicate $I:\Sigma\to\mathrm{Prop}$ and write $a\mathrel{\comm_I} b$ for
+commutation on states satisfying $I$, as defined above.
+For $E\subseteq\mathcal E_C$, use this \emph{same} predicate in both
 noncommutation tests:
 \begin{align*}
- a\mathrel{\operatorname{lo}^{I}_{C,E}}b\quad\Longleftrightarrow\quad
- &\bigl(a\prec_C b\land\neg(a\bowtie_I b)\bigr)\\
- {}\lor{}&\bigl(a\parallel_C b\land aPb\land
- \neg\exists c\in E.\ b\prec_C c\land\neg(b\bowtie_I c)\bigr).
+ a\mathrel{\operatorname{lo}^{C,I}_{E}}b\quad\Longleftrightarrow\quad
+ &\bigl(a\vis b\land\neg(a\mathrel{\comm_I} b)\bigr)\\
+ {}\lor{}&\bigl(a\conc b\land a\xrightarrow{\rcrel}b\land
+ \neg\exists c\in E.\ b\vis c\land\neg(b\mathrel{\comm_I} c)\bigr).
 \end{align*}
 Only events in $E$ can suppress a concurrent policy edge as absorbers.
 For $I(s)\equiv\mathrm{True}$ this is the raw order
-$\operatorname{lo}_{C,E}$, using $\bowtie$ throughout.
-A list enumerates $E$ when it has no duplicates and its membership is exactly
-$E$. It respects a relation when every related pair in the list appears in
-that relation's direction.
+$\loOn{E}$, using $\comm$ throughout.
+A list $\pi$ is a \emph{linear extension} of $(E,R)$ when it lists each event
+of $E$ exactly once, lists no other event, and places $a$ before $b$ whenever
+$a,b\in E$ are distinct and $aRb$. We also say that $\pi$ enumerates $E$ and respects $R$.
 \end{definition}
+For an irreflexive relation this is the paper's linear-extension definition.
+The checked list-order predicate compares distinct positions; it does not
+reject a diagonal edge by itself. Therefore use the paper's usual definition
+only after excluding such edges. The guarded no-chain law excludes payload
+self-edges, and visibility is irreflexive. The direct lifting theorem states
+order irreflexivity explicitly rather than requiring replay laws.
 Neither order is the full visibility relation. In particular,
 causal implementation-commuting events may be reordered by this order.
 Readiness adds causal constraints to implementation replay; it does not
 silently redefine the public semantic order.
+
+\begin{definition}[Sequential specification and specification conflict]
+\label{def:history}
+For an explicitly chosen update alphabet $U$, let labels be
+$\operatorname{upd}(x)$, $x\in U$, and $(q\Rightarrow v)$.
+A history specification $\Spec$ is a prefix-closed set of finite label lists
+containing the empty list. As in the paper, a labelled transition system
+$\Spec=\langle L,\Phi,\phi_0,\longrightarrow\rangle$ gives such a
+language: $\rho=\ell_1\cdots\ell_n$ is admitted when there are abstract states
+$\phi_1,\ldots,\phi_n$ with $\phi_{i-1}\xrightarrow{\ell_i}\phi_i$.
+Every finite run is admitted, so the language is prefix closed.
+The formal interface does not assume determinism or totality; admission need
+not determine a unique final abstract state.
+Define contextual specification commutation by
+\begin{align*}
+ x\mathrel{\commS}y\quad\Longleftrightarrow\quad
+ \forall\rho,\tau,\quad
+ &\rho\cdot[\operatorname{upd}(x),\operatorname{upd}(y)]\cdot\tau\in\Spec\\
+ &\Longleftrightarrow
+ \rho\cdot[\operatorname{upd}(y),\operatorname{upd}(x)]\cdot\tau\in\Spec.
+\end{align*}
+For a fixed label projection $f:(\mathbb N\times\mathbb N\times O_\tau)\to U$,
+let $\F{ops}_f(\pi)$ retain the original event order while
+mapping each update through $f$. The independent specification visibility
+relation is
+\[
+ a\mathrel{\operatorname{sv}^{f,\Spec}_C}b
+ \quad\Longleftrightarrow\quad
+ a\vis b\land\neg\bigl(f(a)\commS f(b)\bigr).
+\]
+\end{definition}
+Full-input specifications use $f=\mathrm{id}$.
+Payload projection $f(e)=e.o$ is an explicit interface choice. It cannot be
+assumed adequate for specifications that distinguish original enqueue or
+insertion identities.
+
+\begin{definition}[Globally guarded replay laws]
+\label{def:guards}
+The paper calls its three replay assumptions \textsc{rc-non-comm},
+\textsc{no-rc-chain}, and \textsc{cond-comm}. The checked guarded
+full-event counterpart requires:
+\begin{align*}
+&a.t\ne b.t\ \land\ a.r\ne b.r
+ \quad\Longrightarrow\quad
+ (\neg(a\comm b)\ \Longleftrightarrow\ a\xrightarrow{\rcrel}b\lor b\xrightarrow{\rcrel}a),\\
+&a.t\ne b.t\ \land\ b.t\ne c.t
+ \quad\Longrightarrow\quad \neg(a\xrightarrow{\rcrel}b\land b\xrightarrow{\rcrel}c).
+\end{align*}
+For every $s\in\Sigma$, intervening event list $\beta$, and $a,b,c$ with
+pairwise distinct timestamps, it also requires
+\[
+ a\xrightarrow{\rcrel}b\land\neg(b\comm c)\quad\Longrightarrow\quad
+ \doop\bigl(\beta(\doop(\doop(s,b),a)),c\bigr)
+ =\doop\bigl(\beta(\doop(\doop(s,a),b)),c\bigr).
+\]
+There is no different-replica guard on the last equation. Its absorber premise
+is actual noncommutation, rather than the policy edge $b\xrightarrow{\rcrel}c$.
+\end{definition}
+The no-chain clause allows $a=c$ when the two adjacent timestamp guards hold;
+therefore a payload self-edge is not rescued by external event freshness.
+These global equations quantify over arbitrary concrete scratch states and
+intervening lists. They are not the scoped laws below.
+
+\paragraph{The paper's criterion.}
+Let an active replica $r$ have head record $(\sigma,E)$ and let
+$b=\F{query}(\sigma,q)$. The paper's Definition
+``RA-linearizability'' requires, for every such $r$ and $q$, a list $\pi$ with
+\[
+ \pi\text{ a linear extension of }(E,\loOn{E}),\qquad
+ \F{ops}(\pi)\cdot(q\Rightarrow b)\in\Spec,
+\]
+where $\F{ops}(\pi)=e_1.o\cdots e_n.o$. Executions satisfy this at every
+configuration, and implementations at every execution. The global replay laws are assumptions of the paper's correctness argument,
+rather than fields of the configuration predicate.
+
+The certified full-event interface strengthens this witness as follows.
+\begin{definition}[The full-event invariant criterion]
+\label{def:ra}
+For every allocated version $v$ with stored record $(s,E)$ and every query $q$,
+there must exist \emph{one} list $\pi$ such that
+\begin{enumerate}[nosep]
+\item $\pi$ enumerates exactly $E$;
+\item $\pi$ respects $\operatorname{lo}^{C,I}_{E}$;
+\item $\pi$ respects $\operatorname{sv}^{\mathrm{id},\Spec}_C$;
+\item $\F{ops}_{\mathrm{id}}(\pi)\cdot
+ [q\Rightarrow\F{query}(s,q)]\in\Spec$.
+\end{enumerate}
+\end{definition}
+The universal invariant $I(s)\equiv\mathrm{True}$ recovers the raw
+full-event criterion, including specification visibility. Checking every
+allocated version implies the corresponding guarantee for current replica
+heads. A projected criterion replaces the specification alphabet through $f$;
+it still preserves the specification conflicts of those projected labels.
+The paper's Definition ``RA-linearizability'' instead checks active heads,
+uses $\F{ops}(\pi)=e_1.o\cdots e_n.o$, and omits item~3.
+The full-event invariant criterion retains original update identities.
+For a fixed label projection, requiring the same witness to preserve
+specification conflicts strengthens its order obligation. These are different
+criteria, and changing the label alphabet is an explicit interface choice.
+
+An independent sequential simulation may use a relation, or an abstraction
+function $\alpha:\Sigma\to\Phi$, to relate implementation states to the
+\emph{specification's} states. This does not replace concrete equality in the
+merge VCs, diamonds, or Definition~\ref{def:invariant}. Universal fold soundness
+is one sufficient bridge. Certified Queue and RGA results instead establish
+appropriate original-event witnesses for represented histories. Neither
+implementation replay equality nor existence of an implementation fold alone
+establishes item~4, and a specification-legal witness must also satisfy item~3.
+
+\subsection{Canonical States and Certified Replay}
+The paper's ``Uniqueness of the replayed state'' asserts both existence of a
+linear extension and equality of the folds of \emph{all} linear extensions
+for a supported, causally closed event set $E$
+of its order under the three global replay assumptions. Its ``Canonical
+state'' uses that assertion to define $\mathsf{can}_C(E)$, and ``Canonical
+correctness'' requires every allocated version to store this state.
+The checked scoped result below has a different domain: it compares legal,
+visibility-respecting replays at represented prefixes. It supplies uniqueness
+on that domain, rather than existence or uniqueness over all public-order
+linear extensions.
 
 \begin{definition}[Original issuance, certified executions, and readiness]
 \label{def:issuance}
@@ -109,8 +226,8 @@ An issuance discipline is a predicate $G(e,s)$ checked at the materialized
 replica head from which $e$ was minted. Mint honesty at $C$ requires, for every
 $e\in\mathcal E_C$, a list $\pi_e$ satisfying
 \[
- \pi_e\text{ enumerates }\{p\in\mathcal E_C\mid p\prec_C e\},\qquad
- \pi_e\text{ respects }\prec_C,\qquad G(e,u^*(\sigma_0,\pi_e)).
+ \pi_e\text{ enumerates }\{p\in\mathcal E_C\mid p\vis e\},\qquad
+ \pi_e\text{ respects }\visw,\qquad G(e,\pi_e(\sigma_0)).
 \]
 An issued application is an actual raw store application with its original
 head/version evidence and $G(e,s)$; non-application steps preserve the raw
@@ -125,7 +242,7 @@ $R(H,s)$ records representation of the already replayed prefix $H$. Define
 \[
  \operatorname{Ready}(H,e)\quad\Longleftrightarrow\quad
  e\in F\land e\notin H\land
- \forall p\in F,\ p\prec_C e\Longrightarrow p\in H.
+ \forall p\in F,\ p\vis e\Longrightarrow p\in H.
 \]
 A replay is legal from $H$ by the inductive rules
 \[
@@ -144,15 +261,15 @@ The invariant replay laws require
 \[
  R(H,s)\Longrightarrow I(s),\qquad
  R(H,s)\land\operatorname{Ready}(H,e)
- \Longrightarrow R(H\cup\{e\},u(s,e)).
+ \Longrightarrow R(H\cup\{e\},\doop(s,e)).
 \]
 They also require the concrete diamond
-$u(u(s,a),b)=u(u(s,b),a)$ whenever $R(H,s)$, both events are ready,
-$a\parallel_C b$, and neither direction of
-$\operatorname{lo}^{I}_{C,F}$ orders them.
+$\doop(\doop(s,a),b)=\doop(\doop(s,b),a)$ whenever $R(H,s)$, both events are ready,
+$a\conc b$, and neither direction of
+$\operatorname{lo}^{C,I}_{F}$ orders them.
 The accompanying policy laws require
 \[
- \neg(a\bowtie_I b)\Longleftrightarrow aPb\lor bPa
+ \neg(a\mathrel{\comm_I} b)\Longleftrightarrow a\xrightarrow{\rcrel}b\lor b\xrightarrow{\rcrel}a
 \]
 only for $a,b\in F$ that are concurrent, have distinct timestamps, and come
 from different replicas. No-chain is required for $a,b,c\in F$ with
@@ -161,81 +278,37 @@ The package consists of both replay laws and policy laws.
 \end{definition}
 An alternative represented-prefix commutation test instead quantifies over represented
 prefixes where both events are ready. That definition is distinct from
-$\bowtie_I$; replacing the latter by readiness would make causal-pair tests
+$\mathrel{\comm_I}$; replacing the latter by readiness would make causal-pair tests
 potentially vacuous.
 
 \begin{theorem}[Scoped implementation replay equality]
 \label{thm:scoped-replay}
 Suppose the replay laws of Definition~\ref{def:scoped-laws} hold,
 $R(H,s)$, and $\pi_1,\pi_2$ enumerate the same event set $A$. If both lists are
-legal from $H$ and each respects both $\prec_C$ and
-$\operatorname{lo}^{I}_{C,F}$, then
+legal from $H$ and each respects both $\visw$ and
+$\operatorname{lo}^{C,I}_{F}$, then
 \[
- u^*(s,\pi_1)=u^*(s,\pi_2).
+ \pi_1(s)=\pi_2(s).
 \]
 \end{theorem}
 Its hypotheses are scoped replay laws, not the global class of
 Definition~\ref{def:guards}. This theorem proves concrete implementation
 agreement. Independent sequential legality is a further obligation.
 
-\begin{definition}[Independent history language and contextual conflict]
-\label{def:history}
-For an explicitly chosen update alphabet $U$, let labels be
-$\operatorname{upd}(x)$, $x\in U$, and $\operatorname{qry}(q,v)$.
-A history specification $S$ is a prefix-closed set of finite label lists
-containing the empty list. A labelled transition system defines such a language
-by accepting every finite run from its initial state; no determinism or totality
-is assumed. Thus acceptance is a proposition, not a uniquely determined
-resulting state.
-Define contextual specification commutation by
-\begin{align*}
- x\mathrel{\bowtie_S}y\quad\Longleftrightarrow\quad
- \forall\rho,\tau,\quad
- &\rho\cdot[\operatorname{upd}(x),\operatorname{upd}(y)]\cdot\tau\in S\\
- &\Longleftrightarrow
- \rho\cdot[\operatorname{upd}(y),\operatorname{upd}(x)]\cdot\tau\in S.
-\end{align*}
-For a fixed label projection $f:(\mathbb N\times\mathbb N\times O)\to U$,
-let $\operatorname{labels}_f(\pi)$ retain the original event order while
-mapping each update through $f$. The independent specification visibility
-relation is
+
+\paragraph{Scoped canonical state.}
+For a scope $(C,F,R)$, say that $\sigma$ is canonical from $\sigma_0$ when
+there is a list $\pi$ enumerating $F$ such that
 \[
- a\mathrel{\operatorname{sv}^{f,S}_C}b
- \quad\Longleftrightarrow\quad
- a\prec_C b\land\neg\bigl(f(a)\bowtie_S f(b)\bigr).
+ \operatorname{Legal}(\emptyset,\pi),\qquad
+ \pi\text{ respects }\visw
+ \text{ and }\operatorname{lo}^{C,I}_{F},\qquad
+ \pi(\sigma_0)=\sigma.
 \]
-\end{definition}
-Full-input specifications use $f=\mathrm{id}$.
-Payload projection $f(e)=e.o$ is an explicit interface choice. It cannot be
-assumed adequate for specifications that distinguish original enqueue or
-insertion identities.
-
-\begin{definition}[The full-event invariant criterion]
-\label{def:ra}
-For every allocated version $v$ with stored record $(s,E)$ and every query $q$,
-there must exist \emph{one} list $\pi$ such that
-\begin{enumerate}[nosep]
-\item $\pi$ enumerates exactly $E$;
-\item $\pi$ respects $\operatorname{lo}^{I}_{C,E}$;
-\item $\pi$ respects $\operatorname{sv}^{\mathrm{id},S}_C$;
-\item $\operatorname{labels}_{\mathrm{id}}(\pi)\cdot
- [\operatorname{qry}(q,\operatorname{read}(s,q))]\in S$.
-\end{enumerate}
-\end{definition}
-The universal invariant $I(s)\equiv\mathrm{True}$ recovers the raw
-full-event criterion, including specification visibility. Checking every
-allocated version implies the corresponding guarantee for current replica
-heads. A projected criterion replaces the specification alphabet through $f$;
-it still preserves the specification conflicts of those projected labels.
-The manuscript's literal criterion omits item~3 and uses payload labels.
-These are distinct criteria, rather than alternate notations for the same
-proposition.
-
-An independent sequential simulation may use a relation, or an abstraction
-function $\alpha:\Sigma\to\Phi$, to relate implementation states to the
-\emph{specification's} states. This does not replace concrete equality in the
-merge VCs, diamonds, or Definition~\ref{def:invariant}. Universal fold soundness
-is one sufficient bridge. Certified Queue and RGA results instead establish
-appropriate original-event witnesses for represented histories. Neither
-implementation replay equality nor existence of an implementation fold alone
-establishes item~4, and a specification-legal witness must also satisfy item~3.
+Under the replay laws and $R(\emptyset,\sigma_0)$, any two such states
+are equal by Theorem~\ref{thm:scoped-replay}. Existence remains a witness
+obligation.
+This is the certified counterpart of the paper's canonical state; canonical
+correctness still means concrete equality with a replay of the version's
+own events. A separate bridge must show that the witness is admitted by
+$\Spec$ and preserves its conflicts.

@@ -18,3 +18,6 @@ ex:fugue	Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction	Sal.MRDTs.Paper1.Ce
 ex:fugue	Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction	Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction.implementation_spec_separation
 ex:queue	Sal.MRDTs.Instances.EmbedRGA	Sal.MRDTs.Instances.EmbedRGA.eCoord
 ex:queue	Sal.MRDTs.Instances.RGAKernel.Code	Sal.EmbedRGA.unaryEnc
+thm:sequential-lift	Sal.MRDTs.Paper1.PaperPresentation	Sal.MRDTs.Paper1.PaperPresentation.uniform_versionsRA_of_paperOrder_witness
+eq:commutation-compatibility	Sal.MRDTs.Paper1.CommutationBridge	Sal.MRDTs.Paper1.specificationRA_of_fiveVCs_compatible
+eq:total-fold-sound	Sal.MRDTs.Paper1.SequentialSimulation	Sal.MRDTs.Paper1.SequentialSimulation

@@ -15,6 +15,10 @@ OR-set retains every addition tag and has an ancestor-aware Join proof.
 The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
 changes against the current Overleaf manuscript, with numbered references to a
 [self-contained formal reference PDF](docs/paper1-formal-reference/main.pdf).
+The reference follows the paper’s Sections 3–6 and notation, with an explicit
+manuscript-to-reference-to-Lean map. Its direct sequential lifting theorem
+uses the same public-order witness as the paper, without extra replay-law
+assumptions at that lifting step.
 
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay

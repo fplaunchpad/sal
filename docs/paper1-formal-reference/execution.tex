@@ -1,60 +1,79 @@
-\section{The execution model and recursive merge bases}
+\section{Operational Semantics}
 \label{sec:execution}
 
-This section specifies the store underlying certified execution in
-Definition~\ref{def:issuance}. A merge base is a property of the version graph;
-its state is then used by the datatype's three-way merge.
+As in the paper's Section 3, the store is a labelled transition system
+$\mathcal S_{\mathcal D}=(\mathcal C,\longrightarrow)$, parameterized by
+\[
+ \mathcal D_\tau=\langle\Sigma,\sigma_0,\F{do},\F{merge},\F{query},\rcrel\rangle,
+ \qquad \tau=\langle O_\tau,Q_\tau,Val_\tau\rangle.
+\]
+Here $\F{do}(\sigma,t,r,o)$ applies an update, $\F{merge}$ takes an ancestor
+state and two descendant states, and $\F{query}(\sigma,q)$ returns an answer.
+The policy $\rcrel\subseteq O_\tau\times O_\tau$ is supplied on operations.
+An event is $e=(t,r,o)\in\mathcal T\times\mathcal R\times O_\tau$; write
+$\F{do}(\sigma,e)$ for $\F{do}(\sigma,t,r,o)$, and $e.t,e.r,e.o$ for its
+components. The policy has no role in the transition rules; Section 4 uses it
+to order events.
 
-\begin{definition}[Ranked store and ordinary execution]
+\begin{definition}[Configuration and execution]
 \label{def:execution}
-A configuration is $C=(S,h,\operatorname{par},\prec_C)$, where
-$S(v)=(s_v,E_v)$ is a partial store, $h(r)$ is an active replica's allocated
-head, and $\operatorname{par}(v)$ lists its parents. Version ranks are natural
-numbers and each parent has smaller rank. Version $0$ stores
-$(\sigma_0,\varnothing)$. Visibility endpoints belong to the events represented
-at active heads. Visible predecessors of a head's events belong to that head,
-distinct events have distinct timestamps, and
-\[
- a\prec_C b\Longrightarrow a.t<b.t.
-\]
-Distinct events from the same replica are visibility-comparable. Reachable
-stores additionally have transitive visibility and causally closed stored
-histories. Write $v\preceq w$ for the reflexive transitive closure of parent
-edges directed from parent to child.
+A configuration is $C=\langle S,H,P,\visw\rangle$, where
+\begin{itemize}
+\item $S$ maps allocated versions to pairs $(\sigma,E)$ of a concrete state
+and an event set. Write $\sigma_v$ and $E(v)$ for these components.
+\item $H$ maps active replicas to their head versions.
+\item $P(v)$ lists the parents of $v$. Versions have natural-number ranks,
+and each parent has smaller rank. Write $v\preceq w$ for reachability from
+$v$ to $w$, including equality.
+\item $\visw$ is event visibility; write $a\vis b$ when $a$ was visible to $b$.
+\end{itemize}
+Heads are allocated. Version $0$ stores $(\sigma_0,\varnothing)$.
+Visibility endpoints occur in the union $\mathcal E_C$ of head event sets,
+and each head contains the visible predecessors of its events. Distinct events
+have distinct timestamps, $a\vis b$ implies $a.t<b.t$, and distinct events
+from the same replica are visibility-comparable. Reachable stores additionally
+have transitive visibility and causally closed histories at every allocated
+version. The common-ancestor coherence property is justified below.
 
-All steps preserve the store except at the explicitly fresh version, preserve
-other heads, and leave visibility unchanged unless stated otherwise:
-\begin{enumerate}
-\item \textbf{Fork.} For a fresh replica $r'$ and existing head $h(r)=v$,
-allocate $v'>v$ with $S(v')=S(v)$, $\operatorname{par}(v')=[v]$, and
-$h(r')=v'$. The source head is unchanged.
-\item \textbf{Apply.} For $h(r)=v$, $S(v)=(s,E)$, and $e=(t,r,o)$,
-allocate $v'>v$ with
+All rules preserve unmentioned components and map entries. In the following
+rules $v$ is fresh, and its rank is larger than the rank of each listed parent.
+The source and target must both satisfy the configuration conditions above.
 \[
- S(v')=(u(s,e),E\cup\{e\}),\qquad
- \operatorname{par}(v')=[v],\qquad h(r)=v'.
+\inferrule*[left=\textsc{Apply}]{
+ e=(t,r,o) \\ S(H(r))=(\sigma,E) \\
+ t\text{ is fresh in }\mathcal E_C\text{ and every stored history} \\
+ S'=S[v\mapsto(\F{do}(\sigma,t,r,o),E\cup\{e\})] \\
+ H'=H[r\mapsto v] \\ P'=P[v\mapsto[H(r)]] \\
+ \visw'=\visw\cup(E\times\{e\})
+}{\langle S,H,P,\visw\rangle\xrightarrow{\F{apply}(t,r,o)}
+  \langle S',H',P',\visw'\rangle}
 \]
-Replace visibility by $\prec_C\ \cup\ (E\times\{e\})$.
-The timestamp is fresh against all events in the registry and every stored
-history. The target configuration must satisfy the clock condition above,
-so $p.t<t$ for every $p\in E$. Raw apply has no client guard; certified apply
-adds $G(e,s)$ from Definition~\ref{def:issuance}.
-\item \textbf{Ordinary merge.} For heads $v_1,v_2$ with stored states
-$s_1,s_2$, choose an allocated greatest common ancestor $g$ as defined below.
-Allocate $v'>v_1,v_2$ with
 \[
- S(v')=(m(s_g,s_1,s_2),E_{v_1}\cup E_{v_2}),\qquad
- \operatorname{par}(v')=[v_1,v_2].
+\inferrule*[left=\textsc{Merge}]{
+ S(H(r_1))=(\sigma_1,E_1) \\ S(H(r_2))=(\sigma_2,E_2) \\
+ v_\top\text{ is a greatest common ancestor of }H(r_1),H(r_2) \\
+ S(v_\top)=(\sigma_\top,E_\top) \\
+ S'=S[v\mapsto(\F{merge}(\sigma_\top,\sigma_1,\sigma_2),E_1\cup E_2)] \\
+ H'=H[r_1\mapsto v] \\ P'=P[v\mapsto[H(r_1),H(r_2)]]
+}{\langle S,H,P,\visw\rangle\xrightarrow{\F{merge}(r_1,r_2)}
+  \langle S',H',P',\visw\rangle}
 \]
-Update the receiving replica's head to $v'$.
-\item \textbf{Query.} Return $\operatorname{read}(s_{h(r)},q)$ without
-changing the configuration.
-\end{enumerate}
-The initial store has just version $0$ and one replica pointing to it.
-Executions are finite sequences of these steps. The certified relation also
-retains the original-mint evidence described in Definition~\ref{def:issuance}.
+\textsc{Fork} takes an active source $r$ and fresh destination $r'$, creates a
+fresh child $v$ of $H(r)$ with $S(v)=S(H(r))$, and sets $H(r')=v$.
+The source head is unchanged. \textsc{Query} at $r$ returns
+$\F{query}(\sigma_{H(r)},q)$ and leaves $C$ unchanged.
+
+Initially only version $0$ and replica $0$ are allocated, $H(0)=0$, and
+visibility and parent lists are empty. An execution is a finite sequence of
+these transitions starting at this configuration.
 \end{definition}
-% Sources: Framework.Execution.Configuration, Step; Framework.Certificates.
+\paragraph{Changes to the paper's rules.}
+Fresh timestamps must increase along visibility, not merely be distinct.
+Fork allocates a child version holding the source snapshot. The ordinary merge
+uses a greatest common ancestor in the precise sense below. Certified execution
+adds an original-issuer premise $G(e,\sigma)$ to \textsc{Apply} and retains
+evidence about the state at issuance (Definition~\ref{def:issuance}); the
+unrestricted rule itself has no client guard.
 
 \begin{definition}[Greatest common ancestor]
 \label{def:gca}
@@ -66,17 +85,17 @@ A greatest common ancestor $g$ of $v_1,v_2$ satisfies
 A maximal common ancestor need only have no strictly later common ancestor;
 there may be several incomparable maximal common ancestors and no greatest one.
 The store model carries the coherence property
-$E_g=E_{v_1}\cap E_{v_2}$ whenever an allocated greatest common ancestor exists.
+$E(g)=E(v_1)\cap E(v_2)$ whenever an allocated greatest common ancestor exists.
 \end{definition}
 
-\begin{theorem}[Intersection from event origins]
+\begin{theorem}[Common-ancestor intersection; paper Lemma 3.1]
 \label{thm:gca-intersection}
 Suppose parents are allocated, histories grow along parent edges, and every
 event has an allocated origin version containing it which is an ancestor of
 \emph{every} version containing that event. Then for allocated $g,v_1,v_2$
 with $g$ their greatest common ancestor,
 \[
- E_g=E_{v_1}\cap E_{v_2}.
+ E(g)=E(v_1)\cap E(v_2).
 \]
 \end{theorem}
 The forward inclusion follows from history monotonicity. For a shared event,
@@ -86,6 +105,11 @@ the coherence field of Definition~\ref{def:gca}; it is not a statement about
 arbitrary event labels attached to an arbitrary DAG.
 % Source: Metatheory.StoreInvariant.gca_events_of_storeInv.
 
+\subsection{Multiple Merge Bases}
+
+The ordinary rule does not cover a pair with several incomparable maximal
+common ancestors. The following extension supplies a base for that case.
+
 \begin{definition}[Recursive virtual merge base]
 \label{def:virtual}
 For a finite set of versions $T$ and a version $w$, let $M(T,w)$ be the list,
@@ -93,20 +117,20 @@ in increasing rank, of maximal elements of
 \[
  \{x\mid x\preceq w\land\exists v\in T,\ x\preceq v\}.
 \]
-Write $s_v$ for the stored state at $v$, using $\sigma_0$ as the total-function
+Write $\sigma_v$ for the stored state at $v$, using $\sigma_0$ as the total-function
 default when unallocated; correctness uses allocated supports. Define the
 base $B$ and scratch fold $F$ by
 \begin{align*}
  B(T,w)&=
  \begin{cases}
  \sigma_0,&M(T,w)=[],\\
- F(\{v\},s_v,\eta),&M(T,w)=v::\eta,
+ F(\{v\},\sigma_v,\eta),&M(T,w)=v::\eta,
  \end{cases}\\
- F(T,s,[])&=s,\\
- F(T,s,v::\eta)&=F(T\cup\{v\},m(B(T,v),s,s_v),\eta).
+ F(T,\sigma,[])&=\sigma,\\
+ F(T,\sigma,v::\eta)&=F(T\cup\{v\},\F{merge}(B(T,v),\sigma,\sigma_v),\eta).
 \end{align*}
 The virtual base of $v_1,v_2$ is $B(\{v_1\},v_2)$.
-The widened merge step uses this state in place of $s_g$ in
+The widened merge step uses this state in place of $\sigma_g$ in
 Definition~\ref{def:execution}, without requiring a greatest common ancestor.
 Only the final merged version is allocated. The scratch folds do not create
 replicas, events, or intermediate stored versions.

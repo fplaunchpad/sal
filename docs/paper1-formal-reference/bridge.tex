@@ -1,104 +1,143 @@
-\section{Independent specification and history bridges}
+\section{Correctness Against a Sequential Specification}
 \label{sec:history-bridge}
 
-Representation correctness answers whether a stored state is explained by the
-issued event set. The independent specification answers whether that explanation
-is a permitted sequential history. These are separate obligations. In particular,
-convergence of implementation replays of the same history does not establish that
-any of their query answers belongs to the intended datatype.
+Canonical correctness explains each stored state by a fold through the
+implementation's own $\doop$. Together with replay determinacy it gives
+convergence. To check the answers against a sequential specification, that same
+sequence must also be admitted by the independent language $\Spec$ of
+Definition~\ref{def:history}. This section states the paper's sequential lifting
+theorem, distinguishes its literal RA criterion from the criterion retaining
+specification conflicts, and gives an additional route for guarded operations.
+Write $\pi(\sigma_0)$ for the merge-free fold of $\doop$ along $\pi$,
+$\F{ops}_f(\pi)$ for its projected update labels, and $\loOn{E}$
+for the raw implementation order of Definition~\ref{def:order}. In the scoped
+extension below, $L_{C,E}$ denotes a separately fixed replay order: the raw
+$\loOn{E}$ or the invariant order $\F{lo}^{C,I}_E$. Any uniqueness premise
+must be established for that particular order.
 
-Use the independent history language and projection of Definition~\ref{def:history}.
-Write $S$ for that language, retain its projection $f$, and abbreviate
+\begin{example}[A convergent implementation which is not a set]
+\label{ex:broken-set}
+Take a one-element observed-remove set, represented by addition timestamps,
+and change removal to the identity. Addition inserts its timestamp, and the
+query reports whether the timestamp set is nonempty. Keep the merge
 \[
- F(\pi)=u^*(\sigma_0,\pi).
+ \F{merge}(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l).
 \]
-This expression contains no merges. Write $L_{C,E}$ for the implementation order
-chosen for context $C$ and endpoint event set $E$: the raw order of
-Definition~\ref{def:order}, or its separately justified invariant-scoped
-replacement. Its separate specification-visibility obligation
-uses $\operatorname{sv}^{f,S}_C$ from Definition~\ref{def:history}. Event identities remain
-in the witness even when the independent specification ignores their metadata.
+Every pair of implementation updates commutes. With empty $\rcrel$,
+$\loOn{E}$ is empty; replicas with the same events converge.
+At one replica, perform
+\[
+ \mathsf{add}\ ;\ \mathsf{rem}\ ;\
+ (\mathsf{rd}\Rightarrow\mathsf{true}).
+\]
+The implementation retains the addition timestamp, while the ordinary set
+specification admits only $\mathsf{rd}\Rightarrow\mathsf{false}$ after this
+sequence. It therefore fails the unrestricted sequential premise below.
 
-\subsection{A sufficient global route}
+There is a further distinction concerning the paper's literal RA definition.
+The word $[\mathsf{rem},\mathsf{add}]$ enumerates the same events, respects the
+empty implementation order, and explains the returned answer in the set
+language. In fact this implementation satisfies the literal criterion on every
+raw ordinary execution. In the set specification, addition and removal do not
+contextually commute. Specification visibility requires the causal
+addition-before-removal order, so the strengthened criterion rejects this
+execution. The example refutes an identification of the two criteria; it does
+not refute a lifting theorem with an unrestricted sequential premise.
+\end{example}
+% CriterionCounterexample.lean: mutant_join; mutant_rawRA;
+% criteria_differ_on_reachable_mutation.
 
-A local simulation into an independent deterministic sequential machine $M$
-for payload labels consists of a relation $R_{\mathrm{seq}}$, initial machine state $m_0$,
-machine update $w$ and query $\operatorname{read}_M$, with these properties:
-\begin{align*}
- &R_{\mathrm{seq}}(\sigma_0,m_0),\\
- &R_{\mathrm{seq}}(s,m)\Longrightarrow
-   R_{\mathrm{seq}}(u(s,e),w(m,e.o))
-   &&\text{for every event }e,\\
- &R_{\mathrm{seq}}(s,m)\Longrightarrow
-   \operatorname{read}(s,q)=\operatorname{read}_M(m,q)
-   &&\text{for every query }q.
-\end{align*}
-There is no issuance, freshness or invariant premise on the update clause.
-For $f(e)=e.o$, induction establishes the unrestricted sequential-history premise
+\subsection{The paper's sequential lifting theorem}
+
+\begin{theorem}[Lifting canonical correctness to literal RA]
+\label{thm:sequential-lift}
+Assume $\loOn{E}$ has no diagonal edge on each stored event set $E$.
+Let every stored
+version $(s,E)$ of $C$ have an exact canonical witness: a list $\pi$ enumerating
+$E$, respecting $\loOn{E}$, with $\pi(\sigma_0)=s$.
+Suppose also that, for every event list $\pi$ and every query $q$,
 \begin{equation}
- \forall\pi,q,\qquad
- \operatorname{labels}_f(\pi)\cdot
- [\operatorname{qry}\bigl(q,\operatorname{read}(F(\pi),q)\bigr)]\in S.
+ \F{ops}_f(\pi)\cdot
+ [q\Rightarrow\F{query}(\pi(\sigma_0),q)]\in\Spec,
+ \qquad f(e)=e.o.
  \label{eq:total-fold-sound}
 \end{equation}
-% SequentialSimulation.lean: SequentialSimulation; SequentialSimulation.sound.
-% RALinearizability.lean: FoldHistorySound; uniform_ra_of_replay_total;
-% ra_of_canonical_total; certifiedRA_of_join_total.
-Together with a stored replay witness and the replay laws, this suffices for the
-literal criterion: choose the replay word and substitute its equality with the
-stored state. The unrestricted premise concerns \emph{merge-free folds}; it does
-not assert that every permutation respects $L_{C,E}$ or is an admissible
-linearization.
+Then every stored version, hence every replica head, satisfies the paper's
+literal RA criterion with respect to $\Spec$.
+\end{theorem}
+This corresponds to Theorem 6.1 of the manuscript. Exact canonical witnesses
+already respect the displayed raw order, so the lifting step needs no additional
+replay laws. The conclusion here omits the extra specification visibility
+clause in Definition~\ref{def:ra}.
+% PaperPresentation.lean: uniform_versionsRA_of_paperOrder_witness.
 
-For the stronger criterion, the global bridge additionally records
-commutation compatibility:
+\noindent\emph{Proof.}
+Choose the exact canonical witness of the stored version. Substitute
+$\pi(\sigma_0)=s$ into Equation~\eqref{eq:total-fold-sound}. The same word
+provides the enumeration, implementation order, and admitted query answer.
+The chosen word works for every query.\hfill$\square$
+
+The premise ranges over arbitrary event lists, independently of any execution
+or version. It compares two sequential machines and does not mention
+$\F{merge}$. It does not claim that every permutation respects
+$\loOn{E}$.
+
+\paragraph{Discharging the premise.}
+For a deterministic sequential specification with total updates and total
+queries that leave the abstract state unchanged,
+$\Spec=\langle L,\Phi,\phi_0,\rightarrow\rangle$, an abstraction
+function $\alpha:\Sigma\to\Phi$ suffices if it satisfies
+\begin{align*}
+ &\alpha(\sigma_0)=\phi_0,\\
+ &\alpha(\sigma)\xrightarrow{\ e.o\ }\phi'
+   \quad\Longrightarrow\quad
+   \alpha(\doop(\sigma,e.t,e.r,e.o))=\phi',\\
+ &\alpha(\sigma)\xrightarrow{\ q\Rightarrow b\ }\alpha(\sigma)
+   \quad\Longrightarrow\quad \F{query}(\sigma,q)=b.
+\end{align*}
+The last two clauses quantify over every concrete state, event, and query.
+Totality supplies the displayed transitions; determinism fixes their targets
+and answers. There is no issuance, freshness, or invariant premise.
+Induction on $\pi$ relates its implementation fold to the abstract state reached
+by $\F{ops}_f(\pi)$, and the query clause proves
+Equation~\eqref{eq:total-fold-sound}. The checked simulation permits a relation
+$R\subseteq\Sigma\times\Phi$ in place of a function: initially
+$R(\sigma_0,\phi_0)$, each event preserves $R$, and related states agree on all
+queries. The functional case takes $R(\sigma,\phi)$ to mean
+$\alpha(\sigma)=\phi$.
+% SequentialSimulation.lean: SequentialSimulation; SequentialSimulation.sound.
+
+For an observed-remove set take
+$\alpha(\sigma)=\{a\mid\exists t.\ (a,t)\in\sigma\}$.
+Addition gains $a$, removal loses $a$, and membership queries agree.
+For the implementation of Example~\ref{ex:broken-set}, removal leaves a
+nonempty state unchanged while the abstract transition removes its element.
+No abstraction function can satisfy these clauses: initialization and addition
+force the resulting state to abstract to presence, while removal of that same
+unchanged state forces it to abstract to absence. This contradiction explains
+the failure of the sequential premise.
+
+\paragraph{Retaining specification conflicts.}
+For the stronger criterion of Definition~\ref{def:ra}, additionally require
 \begin{equation}
- \operatorname{Commutes}_{\mathrm{impl}}(a,b)
- \Longrightarrow f(a)\bowtie_S f(b).
+ a\comm b
+ \quad\Longrightarrow\quad
+ f(a)\commS f(b).
  \label{eq:commutation-compatibility}
 \end{equation}
-Here implementation commutation must be the commutation notion used in the
-chosen order. By contraposition, every specification-conflicting visibility
-edge is then an implementation-conflicting visibility edge. The same replay
-word respects both relations. Equation~\eqref{eq:total-fold-sound} still supplies
-history admission; compatibility alone cannot supply it.
+Here $\comm$ is raw concrete commutation, as used in $\loOn{E}$; the right-hand relation is contextual language commutation.
+By contraposition, every specification-conflicting visibility edge is an
+implementation-conflicting visibility edge. Thus the same canonical word also
+respects specification visibility. Equation~\eqref{eq:total-fold-sound} supplies
+admission; compatibility supplies only the additional order obligation.
+For an invariant-order variant, require the same implication with $\comm_I$
+in place of raw commutation; raw compatibility alone does not discharge that
+stronger premise. For full-event specifications take $f=\mathrm{id}$ and require the corresponding
+full-event fold premise. Erasing event metadata is an explicit specification
+choice, rather than a consequence of the bridge.
 % CommutationBridge.lean: CommutationCompatibility;
-% projectedSpecVisibility_sub_paperOrder; eventSpecificationRA_of_compatibility.
+% projectedSpecVisibility_sub_paperOrder; specificationRA_of_fiveVCs_compatible.
 % GuardedHistoryBridge.lean: of_canonical; ScopedCertificate.ofTotal.
-
-\begin{example}[A convergent set with a no-op remove]\label{ex:broken-set}
-Consider a one-element set implemented by a finite set of addition timestamps, initially empty.
-An add inserts its timestamp; a remove leaves the state unchanged; the query
-returns whether the timestamp set is nonempty. Retain the ordinary observed-remove
-three-way merge
-\[
- m(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l).
-\] Let the independent sequential machine instead implement add
-as setting presence to true and remove as setting it to false.
-
-The real, single-replica execution is
-\[
- \operatorname{add}\ ;\ \operatorname{remove}\ ;\
- \operatorname{query}(\mathrm{true}).
-\]
-All implementation updates commute, so with an empty arbitration policy the
-literal implementation order is empty. The witness
-$[\operatorname{remove},\operatorname{add}]$ explains the wrong answer in the
-independent language and satisfies the literal criterion. Indeed, this mutant
-converges and satisfies the literal criterion on every raw ordinary execution;
-it does not satisfy unrestricted fold soundness.
-
-In the independent set language, add and remove do not contextually commute.
-Their causal order is therefore required by $\operatorname{sv}^{f,S}_C$. The only respecting
-witness is add before remove, whose query answer is false. The stronger
-criterion rejects the displayed execution. This is a certified counterexample
-to identifying literal RA with preservation of sequential specification
-conflicts; it is not a counterexample to a theorem that assumes
-Equation~\eqref{eq:total-fold-sound}.
-\end{example}
-% CriterionCounterexample.lean: all_commute; mutant_join; mutant_rawRA;
-% wrong_answer_ra_linearizable; causal_history_rejects_true;
-% wrong_answer_not_specification_ra; criteria_differ_on_reachable_mutation.
 
 \subsection{Choosing a permitted history within a certified execution}
 
@@ -111,14 +150,14 @@ causally closed event sets of certified executions.
 
 \begin{definition}[Execution-scoped history adequacy]\label{def:history-adequacy}
 Fix an issuance discipline $G$, an implementation order $L$, and an independent
-language $S$. They satisfy execution-scoped history adequacy when, for every
+full-event language $\Spec$; take $f=\mathrm{id}$. They satisfy execution-scoped history adequacy when, for every
 $G$-certified configuration $C$, every stored version $(s,E)$ and every query $q$,
 there is a word $\pi$ such that
 \begin{align*}
  &\pi\text{ enumerates }E\text{ exactly once},\\
- &\pi\text{ respects }L_{C,E}\text{ and }\operatorname{sv}^{f,S}_C,\\
- &\operatorname{labels}_f(\pi)\cdot
-   [\operatorname{qry}\bigl(q,\operatorname{read}(F(\pi),q)\bigr)]\in S.
+ &\pi\text{ respects }L_{C,E}\text{ and }\operatorname{sv}^{f,\Spec}_C,\\
+ &\F{ops}_f(\pi)\cdot
+   [q\Rightarrow\F{query}(\pi(\sigma_0),q)]\in\Spec.
 \end{align*}
 The quantifier order is $\forall q\,\exists\pi$. The accepted answer describes the
 merge-free fold, rather than the stored state $s$. Both order obligations and
@@ -134,9 +173,11 @@ implementation replay order. Define exact concrete canonicality by
 \[
  \operatorname{Can}_{C,E}(s)\quad\Longleftrightarrow\quad
  \exists\pi.\ \pi\text{ enumerates }E\ \land\
- \pi\text{ respects }L_{C,E}\ \land\ F(\pi)=s.
+ \pi\text{ respects }L_{C,E}\ \land\ \pi(\sigma_0)=s.
 \]
-The concrete specialization of the history bridge has these assumptions:
+This is an additional history-selection route, rather than a replacement for
+the manuscript's unrestricted lifting premise. The concrete specialization
+of the checked bridge has these assumptions:
 \begin{enumerate}[nosep]
  \item the chosen replay order has a proved uniqueness property: any two
        exact canonical states for the same supported event set agree on all queries;
@@ -147,7 +188,7 @@ The concrete specialization of the history bridge has these assumptions:
 \end{enumerate}
 Then every stored version satisfies the criterion with independent
 specification visibility: one word enumerates its original events, respects
-both required relations, and explains its stored query answer in $S$.
+both required relations, and explains its stored query answer in $\Spec$.
 Consequently all active heads satisfy that criterion. If the assumptions are
 established at every configuration of a finite certified execution, the result
 holds throughout that execution, including executions with recursively

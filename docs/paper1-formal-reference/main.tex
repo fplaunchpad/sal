@@ -1,7 +1,7 @@
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
-\usepackage{array,booktabs,longtable,tabularx,enumitem,microtype,xcolor}
+\usepackage{array,booktabs,longtable,tabularx,enumitem,microtype,xcolor,mathpartir}
 \usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -12,47 +12,69 @@
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 \newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+% Shared notation follows the manuscript's opsem.tex and ralin.tex.
+\newcommand{\F}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\rcrel}{\F{rc}}
+\newcommand{\vis}{\mathrel{\xrightarrow{\F{vis}}}}
+\newcommand{\visw}{\F{vis}}
+\newcommand{\comm}{\leftrightarrow}
+\newcommand{\conc}{\mathbin{\|}}
+\newcommand{\Spec}{\F{Spec}}
+\newcommand{\can}[1]{\F{can}_{C}(#1)}
+\newcommand{\loOn}[1]{\F{lo}^{C}_{#1}}
+\newcommand{\doop}{\F{do}}
+\newcommand{\commS}{\mathrel{\leftrightarrow_{S}}}
+\newcommand{\visS}{\mathrel{\rightsquigarrow_{S}}}
 \setlist{nosep,leftmargin=*}
 \setlength{\emergencystretch}{2em}
 \title{Sal: Formal Reference for the Paper Revision\\
-\large Concrete Equality, Certified Executions, and Independent Histories}
+\large Operational Semantics, RA-Linearizability, and Proof Strategy}
 \author{FP Launchpad}
-\date{7 October 2026}
+\date{8 October 2026}
 \hypersetup{pdftitle={Sal: Formal Reference for the Paper Revision},
  pdfauthor={FP Launchpad},bookmarksopen=true,bookmarksnumbered=true}
 \begin{document}
 \maketitle
 \begin{abstract}
-This reference states the formal objects needed to revise the Sal paper:
-operation policies and event guards, commutation on valid concrete states,
-issuance-certified execution, represented merge conditions, and an independent
-sequential-history criterion. It is written for readers of the paper and does
-not require knowledge of Lean. A query must be explained by one history that
-contains exactly the original events, respects the required implementation
-and specification orders, and is admitted by the sequential specification.
-The merge theorem and the specification bridge are separate obligations.
+This reference accompanies \emph{Convergence Is Not Correctness: Verifying
+Mergeable Replicated Data Types}. It follows the paper's operational semantics,
+definition of RA-linearizability, merge proof, and sequential-specification
+argument, using the same notation. It states the additional hypotheses needed
+by the checked development: a justified state invariant, evidence from the
+original issuer, and visibility between updates that conflict in the sequential
+specification. These additions are identified where they enter the definitions.
+Implementation equations retain concrete state equality.
 \end{abstract}
-\paragraph{Status and reading guide.}
-The generic metatheory described here is machine-checked under its stated
-premises. Those premises remain obligations of each datatype; the theorem is
-not a claim that every MRDT satisfies them. The broken-remove example explains
-why specification visibility changes the paper's literal criterion. The
-anchored queue and Fugue examples delimit the successful and unsuccessful
-applications of the stronger criterion.
+\paragraph{How to read this reference.}
+Sections 3--6 have the same titles and order as the paper's formal sections.
+The motivation and literature discussion in Sections 1--2 of the paper are not
+repeated. Definition and theorem numbers within sections are specific to this
+reference because it makes additional premises explicit. Each main result names
+its manuscript counterpart; Appendix~\ref{app:correspondence} gives a compact
+cross-reference, followed by the optional Lean declaration map in
+Appendix~\ref{app:traceability}. Reading the main text requires no Lean knowledge.
 
-The reference corresponds to the formalization on Sal branch \texttt{paper1},
-commit \texttt{07fe525}, and was compared with the Overleaf manuscript snapshot
-\texttt{f3afb8c} of 7 October 2026. It does not certify physical networking or
-an implementation outside the stated mathematical machine. Numbered definitions
-and results are the targets of the separate manuscript-reconciliation note;
-Appendix~\ref{app:traceability} supplies optional mechanization traceability.
-Concrete equality is used throughout implementation reasoning. A specification
-simulation function, when used, has a separate purpose.
+\paragraph{Status.}
+The existing results use Sal \texttt{paper1}, commit \texttt{07fe525}, with
+an additional direct lifting lemma supplied alongside this revision; the paper
+baseline is Overleaf \texttt{0450d48} (8 October 2026). The generic results are
+machine-checked under the stated premises, which remain obligations of each
+datatype. The reference distinguishes the paper's unrestricted sufficient class
+from its extension to certified executions. In particular, convergence of
+causally ready replays does not establish uniqueness for every linear extension
+of the public order. The broken-set example and the anchored Queue and Fugue
+case studies expose the scope of the sequential-specification result. The
+claims concern the mathematical execution model, not an external networked
+implementation.
+\setcounter{tocdepth}{1}
 \tableofcontents
-\input{semantics}
+\clearpage
+\setcounter{section}{2}
 \input{execution}
+\input{semantics}
 \input{merge}
 \input{bridge}
 \appendix
+\input{correspondence}
 \input{traceability}
 \end{document}

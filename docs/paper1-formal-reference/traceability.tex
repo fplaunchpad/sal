@@ -1,13 +1,36 @@
-\section{Mechanization traceability}
+\section{Mechanization Traceability}
 \label{app:traceability}
-This appendix is optional. The main definitions and statements can be read
-without knowledge of Lean. These links identify checked source declarations
-at the reference commit. Some displays group related declarations or specialize
-a generic interface to concrete equality. All listed declaration names were
-checked against the built environment. The final certificate roots are audited
-in the theorem ledger for standard Lean axioms.
+The main text can be read without Lean. This appendix maps each numbered
+statement to its checked declarations. Some statements group declarations
+or specialize a generic interface to concrete equality. Existing source
+links use the proof baseline; the new direct sequential lifting lemma
+links to the accompanying file on \texttt{paper1}. The declaration-check
+script supplied with this reference checks that every name resolves.
+The theorem ledger separately audits final roots for permitted axioms.
 
-\paragraph{Reference~\ref{def:events}.}
+\medskip\noindent\textbf{Reference~\ref{def:execution}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Execution.lean}{Execution.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Configuration}}\par
+{\small\nolinkurl{Sal.MRDTs.Step}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Signature.lean}{Signature.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.MRDTSig}}\par
+
+\medskip\noindent\textbf{Reference~\ref{def:gca}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Execution.lean}{Execution.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.IsGCA}}\par
+
+\medskip\noindent\textbf{Reference~\ref{thm:gca-intersection}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Metatheory/StoreInvariant.lean}{StoreInvariant.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.gca_events_of_storeInv}}\par
+
+\medskip\noindent\textbf{Reference~\ref{def:virtual}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Metatheory/VirtualMergeBase.lean}{VirtualMergeBase.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.virtualMergeBaseState}}\par
+{\small\nolinkurl{Sal.MRDTs.vfoldAux}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Execution.lean}{Execution.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.StepV}}\par
+
+\medskip\noindent\textbf{Reference~\ref{def:events}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Base/UpdateSignature.lean}{UpdateSignature.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Foundation.Op}}\par
 {\small\nolinkurl{Sal.MRDTs.Foundation.UpdateSig.commutes}}\par
@@ -17,16 +40,12 @@ in the theorem ledger for standard Lean axioms.
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Metatheory/Join/HistoricalReplay.lean}{HistoricalReplay.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Foundation.distinctOps}}\par
 
-\paragraph{Reference~\ref{def:guards}.}
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedReplay.lean}{GuardedReplay.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.GuardedReplay.Laws}}\par
-
-\paragraph{Reference~\ref{def:invariant}.}
+\medskip\noindent\textbf{Reference~\ref{def:invariant}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/InvariantOrder.lean}{InvariantOrder.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantOrder.Commutes}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantOrder.Closed}}\par
 
-\paragraph{Reference~\ref{def:order}.}
+\medskip\noindent\textbf{Reference~\ref{def:order}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/InvariantOrder.lean}{InvariantOrder.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantOrder.order}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantOrder.order_universal}}\par
@@ -36,7 +55,36 @@ in the theorem ledger for standard Lean axioms.
 {\small\nolinkurl{Sal.MRDTs.Foundation.listPermOf}}\par
 {\small\nolinkurl{Sal.MRDTs.Foundation.respects}}\par
 
-\paragraph{Reference~\ref{def:issuance}.}
+\medskip\noindent\textbf{Reference~\ref{def:history}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/HistorySpec.lean}{HistorySpec.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.HistorySpec}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.HistoryMachine.toSpec}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/SpecificationVisibility.lean}{SpecificationVisibility.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.HistorySpec.Commutes}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/ProjectedCriterion.lean}{ProjectedCriterion.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.projectedLabels}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.projectedSpecVisibility}}\par
+
+\medskip\noindent\textbf{Reference~\ref{def:guards}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedReplay.lean}{GuardedReplay.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.GuardedReplay.Laws}}\par
+
+\medskip\noindent\textbf{Reference~\ref{def:ra}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/InvariantOrder.lean}{InvariantOrder.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.InvariantOrder.VersionsRA}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.InvariantOrder.versions_universal}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/EventBridge.lean}{EventBridge.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.EventVersionsSpecificationRA}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.EventVersionsSpecificationRA.heads}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.EventSequentialSimulation}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/ProjectedCriterion.lean}{ProjectedCriterion.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.ProjectedSpecificationRALinearizable}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/RALinearizability.lean}{RALinearizability.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.RALinearizable}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.RAExecution}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.RAImplementation}}\par
+
+\medskip\noindent\textbf{Reference~\ref{def:issuance}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Certificates.lean}{Certificates.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.MintHonest}}\par
 {\small\nolinkurl{Sal.MRDTs.Issuance}}\par
@@ -50,7 +98,7 @@ in the theorem ledger for standard Lean axioms.
 {\small\nolinkurl{Sal.MRDTs.Paper1.CertifiedReplay.Ready}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.CertifiedReplay.Legal}}\par
 
-\paragraph{Reference~\ref{def:scoped-laws}.}
+\medskip\noindent\textbf{Reference~\ref{def:scoped-laws}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/InvariantReplay.lean}{InvariantReplay.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantReplay.Laws}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantReplay.PolicyLaws}}\par
@@ -58,84 +106,46 @@ in the theorem ledger for standard Lean axioms.
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/CertifiedPolicy.lean}{CertifiedPolicy.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.CertifiedReplay.Commutes}}\par
 
-\paragraph{Reference~\ref{thm:scoped-replay}.}
+\medskip\noindent\textbf{Reference~\ref{thm:scoped-replay}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/InvariantReplay.lean}{InvariantReplay.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.InvariantReplay.convergence_on}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.InvariantReplay.Canonical}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.InvariantReplay.canonical_unique}}\par
 
-\paragraph{Reference~\ref{def:history}.}
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/HistorySpec.lean}{HistorySpec.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.HistorySpec}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.HistoryMachine.toSpec}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/SpecificationVisibility.lean}{SpecificationVisibility.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.HistorySpec.Commutes}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/ProjectedCriterion.lean}{ProjectedCriterion.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.projectedLabels}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.projectedSpecVisibility}}\par
-
-\paragraph{Reference~\ref{def:ra}.}
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/InvariantOrder.lean}{InvariantOrder.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.InvariantOrder.VersionsRA}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.InvariantOrder.versions_universal}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/EventBridge.lean}{EventBridge.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.EventVersionsSpecificationRA}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.EventVersionsSpecificationRA.heads}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.EventSequentialSimulation}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/ProjectedCriterion.lean}{ProjectedCriterion.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.ProjectedSpecificationRALinearizable}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/RALinearizability.lean}{RALinearizability.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.RALinearizable}}\par
-
-\paragraph{Reference~\ref{def:execution}.}
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Execution.lean}{Execution.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Configuration}}\par
-{\small\nolinkurl{Sal.MRDTs.Step}}\par
-
-\paragraph{Reference~\ref{def:gca}.}
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Execution.lean}{Execution.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.IsGCA}}\par
-
-\paragraph{Reference~\ref{thm:gca-intersection}.}
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Metatheory/StoreInvariant.lean}{StoreInvariant.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.gca_events_of_storeInv}}\par
-
-\paragraph{Reference~\ref{def:virtual}.}
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Metatheory/VirtualMergeBase.lean}{VirtualMergeBase.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.virtualMergeBaseState}}\par
-{\small\nolinkurl{Sal.MRDTs.vfoldAux}}\par
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Framework/Execution.lean}{Execution.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.StepV}}\par
-
-\paragraph{Reference~\ref{def:representation}.}
+\medskip\noindent\textbf{Reference~\ref{def:representation}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AbstractMerge.lean}{AbstractMerge.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Representation}}\par
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedRawJoin.lean}{GuardedRawJoin.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.Unique}}\par
 
-\paragraph{Reference~\ref{def:metadata}.}
+\medskip\noindent\textbf{Reference~\ref{def:metadata}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/MetadataDependencies.lean}{MetadataDependencies.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.MetadataDependencies}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.MetadataDependencies.Closed}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.MetadataDependencies.Past}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.MetadataDependencies.closed_diff_of_max}}\par
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AbstractFormalism.lean}{AbstractFormalism.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Model}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Commutes}}\par
 
-\paragraph{Reference~\ref{def:merge-vcs}.}
+\medskip\noindent\textbf{Reference~\ref{def:merge-vcs}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedRawJoin.lean}{GuardedRawJoin.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.Context}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.MergeVCs}}\par
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/RestrictedReplay.lean}{RestrictedReplay.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.paperOrder}}\par
 
-\paragraph{Reference~\ref{def:replay-supply}.}
+\medskip\noindent\textbf{Reference~\ref{def:replay-supply}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedRawJoin.lean}{GuardedRawJoin.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.PeelChoice}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.ReplaySupply}}\par
 
-\paragraph{Reference~\ref{thm:join}.}
+\medskip\noindent\textbf{Reference~\ref{thm:join}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedRawJoin.lean}{GuardedRawJoin.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.join_at_sizes}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Raw.representationJoin_of_vcs}}\par
 
-\paragraph{Reference~\ref{thm:execution}.}
+\medskip\noindent\textbf{Reference~\ref{thm:execution}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/CertifiedClosedExecution.lean}{CertifiedClosedExecution.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.CertifiedClosedExecution.ClosedJoinAt}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_execution}}\par
@@ -148,34 +158,40 @@ in the theorem ledger for standard Lean axioms.
 {\small\nolinkurl{Sal.MRDTs.Foundation.loOn}}\par
 {\small\nolinkurl{Sal.MRDTs.Foundation.IsCanonicalState}}\par
 
-\paragraph{Reference~\ref{eq:total-fold-sound}.}
+\medskip\noindent\textbf{Reference~\ref{ex:broken-set}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/CriterionCounterexample.lean}{CriterionCounterexample.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.CriterionCounterexample.mutant_rawRA}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.CriterionCounterexample.criteria_differ_on_reachable_mutation}}\par
+
+\medskip\noindent\textbf{Reference~\ref{thm:sequential-lift}.}\par\nobreak
+\noindent\href{https://github.com/fplaunchpad/sal/blob/paper1/Sal/MRDTs/Paper1/PaperPresentation.lean}{PaperPresentation.lean}:\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.PaperPresentation.uniform_versionsRA_of_paperOrder_witness}}\par
+
+\medskip\noindent\textbf{Reference~\ref{eq:total-fold-sound}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/SequentialSimulation.lean}{SequentialSimulation.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.SequentialSimulation.sound}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.SequentialSimulation}}\par
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/RALinearizability.lean}{RALinearizability.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.ra_of_canonical_total}}\par
 
-\paragraph{Reference~\ref{eq:commutation-compatibility}.}
+\medskip\noindent\textbf{Reference~\ref{eq:commutation-compatibility}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/CommutationBridge.lean}{CommutationBridge.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.CommutationCompatibility}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.projectedSpecVisibility_sub_paperOrder}}\par
+{\small\nolinkurl{Sal.MRDTs.Paper1.specificationRA_of_fiveVCs_compatible}}\par
 
-\paragraph{Reference~\ref{def:history-adequacy}.}
+\medskip\noindent\textbf{Reference~\ref{def:history-adequacy}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/ScopedHistoryBridge.lean}{ScopedHistoryBridge.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.ExecutionHistoryAdequacy}}\par
 
-\paragraph{Reference~\ref{thm:history-bridge}.}
+\medskip\noindent\textbf{Reference~\ref{thm:history-bridge}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/ScopedHistoryBridge.lean}{ScopedHistoryBridge.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.versions_of_scoped_history}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.ScopedVCConditions.executionsV}}\par
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/GuardedHistoryBridge.lean}{GuardedHistoryBridge.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AbstractMRDT.Guarded.versions_of_scoped_history}}\par
 
-\paragraph{Reference~\ref{ex:broken-set}.}
-\noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/CriterionCounterexample.lean}{CriterionCounterexample.lean}:\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.CriterionCounterexample.mutant_rawRA}}\par
-{\small\nolinkurl{Sal.MRDTs.Paper1.CriterionCounterexample.criteria_differ_on_reachable_mutation}}\par
-
-\paragraph{Reference~\ref{ex:queue}.}
+\medskip\noindent\textbf{Reference~\ref{ex:queue}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AnchoredQueueCausality.lean}{AnchoredQueueCausality.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.AnchoredQueue.removed_births_causal_downset}}\par
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean}{AnchoredQueueCertificate.lean}:\par
@@ -189,7 +205,7 @@ in the theorem ledger for standard Lean axioms.
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Instances/RGAKernel/Code.lean}{Code.lean}:\par
 {\small\nolinkurl{Sal.EmbedRGA.unaryEnc}}\par
 
-\paragraph{Reference~\ref{ex:fugue}.}
+\medskip\noindent\textbf{Reference~\ref{ex:fugue}.}\par\nobreak
 \noindent\href{https://github.com/fplaunchpad/sal/blob/07fe525/Sal/MRDTs/Paper1/CertifiedFugueInvariantObstruction.lean}{CertifiedFugueInvariantObstruction.lean}:\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction.certified_failure}}\par
 {\small\nolinkurl{Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction.implementation_spec_separation}}\par

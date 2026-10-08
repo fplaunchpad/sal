@@ -20,3 +20,5 @@ thm:execution	Sal.MRDTs.Paper1.CertifiedRGAExecution	Sal.MRDTs.Paper1.CertifiedR
 thm:execution	Sal.MRDTs.Paper1.CertifiedRGAExecution	Sal.MRDTs.Paper1.CertifiedRGAExecution.Embedded.closedJoinAt
 thm:execution	Sal.MRDTs.Metatheory.Join.SetRelativeReplay	Sal.MRDTs.Foundation.loOn
 thm:execution	Sal.MRDTs.Metatheory.Join.SetRelativeReplay	Sal.MRDTs.Foundation.IsCanonicalState
+def:metadata	Sal.MRDTs.Paper1.AbstractFormalism	Sal.MRDTs.Paper1.AbstractMRDT.Model
+def:metadata	Sal.MRDTs.Paper1.AbstractFormalism	Sal.MRDTs.Paper1.AbstractMRDT.Commutes

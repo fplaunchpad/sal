@@ -6,3 +6,4 @@ thm:gca-intersection	Sal.MRDTs.Metatheory.StoreInvariant	Sal.MRDTs.gca_events_of
 def:virtual	Sal.MRDTs.Metatheory.VirtualMergeBase	Sal.MRDTs.virtualMergeBaseState
 def:virtual	Sal.MRDTs.Metatheory.VirtualMergeBase	Sal.MRDTs.vfoldAux
 def:virtual	Sal.MRDTs.Framework.Execution	Sal.MRDTs.StepV
+def:execution	Sal.MRDTs.Framework.Signature	Sal.MRDTs.MRDTSig
