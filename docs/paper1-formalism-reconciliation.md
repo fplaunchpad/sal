@@ -1,7 +1,7 @@
 # Changes to the Sal paper
 
 This note is for revising the paper, not navigating the Lean development.
-It compares the **Overleaf snapshot `f3afb8c` (7 October 2026)** with the
+It compares the **Overleaf snapshot `0450d48` (8 October 2026)** with the
 completed metatheory. Section and definition numbers below are from the
 18-page PDF rebuilt from that snapshot; source line numbers refer to its `.tex`
 files. The earlier GitHub manuscript is no longer the comparison baseline.
@@ -11,6 +11,30 @@ gives self-contained replacement definitions and theorem statements. Its main
 text requires no Lean knowledge; source declarations appear only in an optional
 appendix. The metatheory is complete under the assumptions stated there.
 The work below aligns the manuscript with those assumptions and conclusions.
+
+## Latest Overleaf update: motivation
+
+The latest update changes only `motivation.tex`; all seven formal changes below
+remain outstanding, and their source locations and reference numbers still apply.
+The formal reference PDF remains based on the unchanged formal sections of the
+7 October snapshot.
+
+In §2.3, “The specification changes with the implementation”
+(`motivation.tex`, lines 227–252), make the observation witnessing the mismatch
+explicit. Under the displayed transitions, the update-only word
+`add(a,k1); add(a,k2); rem({(a,k2)})` is legal: it leaves `(a,k1)` behind.
+To demonstrate rejection, include either the preceding
+`readIds(a) => {(a,k2)}` (the specification would return both tags), or the
+following `rd_a => false` (the specification would return true). Write the
+removal argument as a singleton set, consistently with `rem(S)`.
+This is a check of the transitions displayed in the manuscript, not a new claim
+about the cited work's full formalism.
+
+In the following global-order example (`motivation.tex`, lines 346–378),
+complete the unfinished sentence at line 371 and state the distinction precisely:
+individual versions have explaining histories, but no single global history has
+projections explaining all versions. Avoid saying simply that no linearization
+exists.
 
 ## 1. Make specification visibility part of RA-linearizability
 
