@@ -6,6 +6,21 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: audit the manuscript's complete correctness claim
+
+- [x] Fetch the current Overleaf source and identify the included claims and case studies.
+- [x] Trace the unrestricted replay/merge/sequential theorem and the certified
+  invariant/history route through actual OR-set and RGA certificates.
+- [x] Supply precise manuscript replacements for every mismatch in that chain,
+  including scope, event labels, execution premises and witness quantifiers.
+- [x] Check the proposed statements against Lean, independently review the
+  replacements, and update the concise reconciliation note with the outcome.
+
+Validation: both repository gates pass, including 187 runtime tests and 569
+benchmark records. The seven-file manuscript patch applies to Overleaf
+`0450d48`, compiles to 25 pages, and has been visually reviewed. The live
+Overleaf manuscript is unchanged. See the [claim audit](docs/paper1-correctness-audit.md).
+
 ### Checked: remove semantic abstraction from paper1
 
 - [x] Replace semantic models and quotients with concrete replay, metadata,

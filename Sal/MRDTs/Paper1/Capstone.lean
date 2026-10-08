@@ -26,7 +26,7 @@ theorem rawUniformRA {C : Configuration (D α)}
   exact uniform_ra_of_replay_total restrictedLaws
     (replayWitness_of_join hjoin C reach) foldHistorySound
 
-/-- The appendix candidate also holds at every raw reachable configuration. -/
+/-- The specification-visible criterion also holds at every raw reachable configuration. -/
 theorem rawSpecificationRA {C : Configuration (D α)}
     (reach : (labeledTS (D α)).ReachableFrom (initConfig (D α)) C) :
     SpecificationRALinearizable (D α) (conflict α) (spec α).toSpec C := by

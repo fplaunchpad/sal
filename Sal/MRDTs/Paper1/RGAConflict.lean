@@ -10,7 +10,7 @@ the two labels fail global contextual commutation, even when the particular
 implementation insertion chooses an unrelated identifier. The checked contexts
 below contain query labels which pin allocation choices independently.
 
-Concrete grow-only RGA updates all commute. Consequently the appendix's
+Concrete grow-only RGA updates all commute. Consequently the specification-visible criterion's
 `SpecificationConflictsCovered` premise fails for this allocating language.
 This does not by itself refute its stronger configuration criterion.
 -/
@@ -105,7 +105,7 @@ theorem anchor_one_insert_remove_two_not_commute :
     [.update (.addAfter 0), .query () [1], .update (.addAfter 1)]
     2 [1, 2] accepted (by decide)
 
-/-- The appendix's conflict-coverage premise is incompatible with the current
+/-- The specification-visible criterion's conflict-coverage premise is incompatible with the current
 commuting implementation and this independent allocating history language. -/
 theorem specification_conflicts_not_covered :
     ¬ SpecificationConflictsCovered RGAM listHistorySpec := by

@@ -20,6 +20,13 @@ manuscript-to-reference-to-Lean map. Its direct sequential lifting theorem
 uses the same public-order witness as the paper, without extra replay-law
 assumptions at that lifting step.
 
+The [correctness audit](docs/paper1-correctness-audit.md) traces both obligations:
+five-VC implementation correctness, then the independent sequential-specification
+bridge. The exact OR-set has unrestricted payload correctness through the new
+VC route; Embedded RGA uses that merge route with certified representation and
+an exact selected-history bridge. A [reviewable manuscript patch](docs/paper1-manuscript-reconciliation.patch)
+provides the corresponding revisions against Overleaf `0450d48`.
+
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay
 in `GuardedConvergence`, `GuardedOrder`, and `ConcreteReplay`, and the full-event

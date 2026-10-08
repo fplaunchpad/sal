@@ -1,7 +1,7 @@
 import Sal.MRDTs.Paper1.ORSetVerified
 import Sal.MRDTs.Paper1.SpecificationVisibility
 
-/-! Positive comparison for the separately stated appendix candidate.
+/-! Positive comparison for the separately stated specification-visible criterion.
 The exact paper OR-set preserves conflicts observable in the ordinary-set
 history language, in addition to satisfying the active literal criterion. -/
 namespace Sal.MRDTs.Paper1.ORSet
@@ -24,7 +24,7 @@ theorem language_commutes_of_concrete (a b : Op (Update α))
   change view (step (step repr a) b) = view (step (step repr b) a) at h
   simpa only [view_step, hv] using h
 
-/-- The appendix's additional sequential premise holds for the exact OR-set. -/
+/-- The specification-visible criterion's additional sequential premise holds for the exact OR-set. -/
 theorem specificationConflictsCovered :
     SpecificationConflictsCovered (D α) (spec α).toSpec := by
   intro a b hn hc
@@ -48,7 +48,7 @@ theorem natural_add_remove_conflict (x : α) :
     (h [] [.query x false]).mp (by simpa [DeterministicSpec.updateLabels] using accepted)
 
 /-- Virtual and ordinary certified reachability both satisfy the separate
-appendix candidate. This theorem does not redefine the active criterion. -/
+specification-visible criterion. This theorem does not redefine the active criterion. -/
 theorem specificationCertifiedRAV :
     ∀ C, MintCertifiedReachV (D α) (canonicalVirtualMergeBase (D α)) (issuance α) C →
       SpecificationRALinearizable (D α) (conflict α) (spec α).toSpec C := by

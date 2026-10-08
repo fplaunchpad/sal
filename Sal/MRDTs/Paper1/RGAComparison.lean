@@ -4,7 +4,7 @@ import Sal.MRDTs.Paper1.RGAAllocatingCounterexample
 
 /-! A reachable nonvacuity comparison. The concrete datatype, issuer, execution,
 and returned list are identical. Application insertion identities are made
-explicit only by `Identified.project`; the appendix criterion is retained. -/
+explicit only by `Identified.project`; the specification-visible criterion is retained. -/
 namespace Sal.MRDTs.Paper1.RGA.Comparison
 open Foundation
 open Sal.MRDTs.Instances.RGA

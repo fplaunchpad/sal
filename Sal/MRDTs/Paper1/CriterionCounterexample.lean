@@ -644,7 +644,7 @@ theorem specification_conflicts_coverage_fails : ¬ SpecificationConflictsCovere
     spec_add_remove_do_not_commute
   exact covered addEvent removeEvent conflict (all_commute addEvent removeEvent)
 
-/-- The appendix candidate rejects the same reachable wrong answer. -/
+/-- The specification-visible criterion rejects the same reachable wrong answer. -/
 theorem wrong_answer_not_specification_ra :
     ¬ SpecificationRALinearizable D emptyPolicy spec afterRemove := by
   intro h

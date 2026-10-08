@@ -2,6 +2,7 @@ import Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory
 import Sal.MRDTs.Paper1.CertifiedRGAExecution
 import Sal.MRDTs.Paper1.ExecutionTrace
 import Sal.MRDTs.Paper1.CertifiedRGAInvariantReplay
+import Sal.MRDTs.Paper1.PaperPresentation
 
 namespace Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate
 open Foundation Sal.EmbedRGA
@@ -29,13 +30,20 @@ theorem stored_valid (Γ : OrderedPrefixCode) {C : Configuration (E Γ α)}
 theorem versions (Γ : OrderedPrefixCode) {C : Configuration (E Γ α)}
     (execution : CertifiedExecution (E Γ α) (generation Γ) C) :
     InvariantOrder.VersionsRA (E Γ α) (invariant Γ C) policy (language Γ) C := by
-  intro v s H stored q
   have good := CertifiedRGAExecution.Embedded.canonicalConfig Γ execution
+  apply PaperPresentation.invariant_versions_of_exact_histories
+  · intro v s H stored e member edge
+    rcases edge with ⟨vis,_⟩ | ⟨_,_,before,_⟩
+    · exact good.vis_irrefl e vis
+    · exact before
+  intro v s H stored q
   have rep := CertifiedRGAExecution.Embedded.representedVersions Γ execution stored
   obtain ⟨ops,perm,ordered,fold⟩ := rep.2.2.2.2
-  obtain ⟨can,order,_,spec,admitted⟩ :=
+  obtain ⟨can,order,state,spec,admitted⟩ :=
     CertifiedRGAInvariantHistory.canonical_valid_history execution good stored perm ordered fold q
-  exact ⟨EmbedWitness.canonical ops,can,order,spec,admitted⟩
+  refine ⟨EmbedWitness.canonical ops,can,order,spec,state,?_⟩
+  simpa only [show applySeq (E Γ α).toUpdateSig (E Γ α).init
+    (EmbedWitness.canonical ops) = s from state] using admitted
 
 /-- The recursively synthesized merge base is valid, not merely stored states. -/
 theorem virtual_base_valid (Γ : OrderedPrefixCode) {C : Configuration (E Γ α)}
