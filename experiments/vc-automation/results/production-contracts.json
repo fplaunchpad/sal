@@ -3,6 +3,18 @@
   "evidence": "source-header/body preservation; not kernel type equality",
   "files": [
     {
+      "path": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
+      "checked": 7,
+      "moved": [],
+      "proof_changes": [
+        "Sal.EmbedRGA.unaryEnc_mono",
+        "Sal.EmbedRGA.unaryEnc_not_prefix"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Paper1/CertifiedFugueVC.lean",
       "checked": 3,
       "moved": [],
@@ -252,6 +264,6 @@
     "Sal/MRDTs/Paper1/CertifiedMVRVCContract.lean",
     "Sal/MRDTs/Paper1/CertifiedRGARichContract.lean"
   ],
-  "checked_declarations": 227,
+  "checked_declarations": 234,
   "status": "pass"
 }

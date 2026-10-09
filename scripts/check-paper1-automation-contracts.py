@@ -42,6 +42,24 @@ ORSET_PROOFS = {
     'Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input',
     'Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input',
 }
+ORDERED_KIT = 'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.kit'
+ORDERED_DESCRIPTION = 'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.description'
+ORDERED_DATA_FIELDS = ('carrier', 'id', 'Key', 'key', 'insertion', 'written', 'target', 'ordered')
+ORDERED_PROOFS = {
+    'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.issuer',
+    'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.input',
+}
+
+def ordered_data(body):
+    """Extract precisely the eight source data assignments, not proof fields."""
+    result = {}
+    for field in ORDERED_DATA_FIELDS:
+        match = re.search(r'\b' + field + r' := (.*?)(?= \w+ :=|$)', body)
+        if not match:
+            return None
+        result[field] = match[1].strip()
+    return result
+
 MASK_KIT = 'Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit'
 MASK_DESCRIPTION = 'Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskDescription'
 DECL = re.compile(r'^ ?(?:(?:private|protected|noncomputable|unsafe|opaque)\s+)*'
@@ -122,7 +140,7 @@ def declarations(text):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--baseline', choices=(BASELINE, '7880732'), default=BASELINE,
+    parser.add_argument('--baseline', choices=(BASELINE, '7880732', 'ffec6e9'), default=BASELINE,
                         help='Fixed production migration or OR-set derivation baseline.')
     parser.add_argument('--output', type=Path,
                         default=ROOT / 'experiments/vc-automation/results/production-contracts.json')
@@ -158,8 +176,16 @@ def main():
             elif before['body'] != after['body']:
                 if before['kind'] in ('theorem', 'lemma'):
                     record['proof_changes'].append(name)
-                elif baseline == '7880732' and name in ORSET_PROOFS:
+                elif (baseline == '7880732' and name in ORSET_PROOFS) or (baseline in ('7880732', 'ffec6e9') and name in ORDERED_PROOFS):
                     record['proof_definition_changes'].append(name)
+                elif baseline in ('7880732', 'ffec6e9') and name == ORDERED_KIT:
+                    description = current.get(ORDERED_DESCRIPTION)
+                    old_data = ordered_data(before['body'])
+                    new_data = ordered_data(description['body']) if description else None
+                    if old_data is None or old_data != new_data:
+                        reason = 'changed ordered carrier/id/Key/key/insertion/written/target/ordered data'
+                    else:
+                        record['preserved_data_descriptions'].append(name)
                 elif baseline == '7880732' and name == MASK_KIT:
                     description = current.get(MASK_DESCRIPTION)
                     old_data = before['body'].split(' where ', 1)[-1].split(' injective :=', 1)[0]

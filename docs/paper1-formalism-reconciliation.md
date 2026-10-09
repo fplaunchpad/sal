@@ -40,7 +40,11 @@ That history proof supplements the VCs; it does not replace them.
   supplies implementation maps and the required representation, metadata and
   issuer/replay evidence. For both OR-sets, proof-free comparison/mask
   annotations select a template whose universally quantified finite laws are
-  constructed and discharged automatically; other families retain explicit
+  constructed and discharged automatically. Embedded RGA supplies eight
+  ordered-record maps, raw-equation annotations and chain/code mappings; generic
+  list, comparator and prefix-code laws construct
+  its finite kit from checked raw equations and project existing evidence.
+  Anchored Queue and Peritext reuse this route. Other families retain explicit
   laws and evidence projections.
   The command applies the generic proof; it does not take a completed datatype
   VC theorem as an input. Keep uniqueness, finite replay supply and the

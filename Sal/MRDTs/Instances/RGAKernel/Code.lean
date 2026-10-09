@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.Automation.GenericPrefixCodes
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Lex
 import Mathlib.Order.Basic
@@ -64,39 +65,13 @@ code's arithmetic is done separately.
 def unaryEnc (d : ℕ) : List Bool := List.replicate d true ++ [false]
 
 theorem unaryEnc_mono {d e : ℕ} (h : d < e) : bitLt (unaryEnc d) (unaryEnc e) := by
-  induction d generalizing e with
-  | zero =>
-      obtain ⟨e', rfl⟩ : ∃ e', e = e' + 1 := ⟨e - 1, (Nat.succ_pred_eq_of_pos h).symm⟩
-      simpa [unaryEnc, List.replicate_succ] using
-        List.Lex.rel (by decide : (false : Bool) < true)
-  | succ d ih =>
-      obtain ⟨e', rfl⟩ : ∃ e', e = e' + 1 :=
-        ⟨e - 1, (Nat.succ_pred_eq_of_pos (Nat.lt_of_le_of_lt (Nat.zero_le _) h)).symm⟩
-      have h' : d < e' := Nat.lt_of_succ_lt_succ h
-      simpa [unaryEnc, List.replicate_succ] using List.Lex.cons (ih h')
+  exact Sal.MRDTs.Paper1.Automation.PrefixCodes.delimiter_mono
+    (· < ·) true false (by decide) h
 
 theorem unaryEnc_not_prefix {d e : ℕ} (hne : d ≠ e) :
     ¬ (unaryEnc d <+: unaryEnc e) := by
-  induction d generalizing e with
-  | zero =>
-      cases e with
-      | zero => exact absurd rfl hne
-      | succ e' =>
-          intro hpre
-          simp [unaryEnc, List.replicate_succ] at hpre
-  | succ d ih =>
-      cases e with
-      | zero =>
-          intro hpre
-          simp [unaryEnc, List.replicate_succ] at hpre
-      | succ e' =>
-          intro hpre
-          have hne' : d ≠ e' := fun h => hne (by simp [h])
-          have : (true :: (List.replicate d true ++ [false])) <+:
-                 (true :: (List.replicate e' true ++ [false])) := by
-            simpa [unaryEnc, List.replicate_succ] using hpre
-          rcases List.cons_prefix_cons.mp this with ⟨-, htail⟩
-          exact ih hne' (by simpa [unaryEnc] using htail)
+  exact Sal.MRDTs.Paper1.Automation.PrefixCodes.delimiter_prefixFree
+    true false (by decide) hne
 
 /-- The unary code, packaged. -/
 def unaryCode : OrderedPrefixCode where

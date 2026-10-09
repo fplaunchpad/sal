@@ -154,7 +154,8 @@ elab "audit_production_vc_evidence " n:ident : command => do
 def audit_imports():
     """Inspect the actual repository import graph before invoking the kernel."""
     roots = ['Sal.MRDTs.Paper1.Ledger', 'Sal.MRDTs.Paper1.Automation.Controls',
-             'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls']
+             'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls',
+             'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls']
     pending = list(roots)
     local = {}
     external = set()
@@ -216,19 +217,52 @@ def audit_orset_author_interface(evidence):
                               cached_proof_dependencies=[])
     return report
 
+def audit_ordered_author_interface(evidence):
+    """Inspect submitted ordered evidence, rather than only facade ancestry."""
+    prefix = P + 'Automation.AutomatedRGA.Embedded.'
+    eliminated = {prefix + n for n in
+                  ('provenance_step', 'membership_step', 'ordered_step', 'merge_cell', 'adapter')}
+    primitive_prefix = 'Sal.MRDTs.Instances.EmbedRGA.'
+    eliminated.update(primitive_prefix + n for n in
+                      ('mem_eInsert', 'mem_eMerge2', 'eInsert_sorted', 'eMerge2_sorted', 'eMerge_sorted', 'esorted_ext'))
+    eliminated.update('Sal.EmbedRGA.' + n for n in
+                      ('keyLt_irrefl', 'keyLt_asymm', 'keyLt_trans', 'keyLt_total',
+                       'key_inj', 'coordOf_inj', 'enc_ne_nil'))
+    report = {}
+    for c in CASES:
+        if c['id'] not in {'embed-rga', 'anchored-queue-paper-variant', 'peritext-embed-rga'}:
+            continue
+        dependencies = set().union(*(set(evidence[root]['dependencies']) for root in c['vc_roots']))
+        bad = dependencies & eliminated
+        bad.update(d for d in dependencies if 'Automation.AutomatedRGA.' in d and d.endswith('.id_mem'))
+        assert not bad, (c['id'], 'eliminated ordered compatibility proof reused', sorted(bad))
+        assert P + 'Automation.OrderedRecords.ChainMapping.unique_keys' in dependencies, (c['id'], 'missing generic issuance derivation')
+        author = sorted(d for d in dependencies if prefix in d)
+        report[c['id']] = dict(status='pass', datatype_author_dependencies=author,
+            eliminated_compatibility_proofs=sorted(eliminated),
+            residual_boundary='Generic comparator, sorted-list and prefix-code laws derive correctness from kernel-checked raw recursive equations and datatype data mappings.')
+    return report
+
 def main():
     OUT.mkdir(exist_ok=True)
     import_audit = audit_imports()
+    imported_hashes = {entry['file']: hashlib.sha256((ROOT / entry['file']).read_bytes()).hexdigest()
+                       for entry in import_audit['local_modules'].values()}
     print('Building production Ledger and automation controls', flush=True)
     run(['lake', 'build', 'Sal.MRDTs.Paper1.Ledger', 'Sal.MRDTs.Paper1.Automation.Controls',
-         'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls'], 'production-build.log')
+         'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls',
+             'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls'], 'production-build.log')
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py'], 'production-source-contracts.log')
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py', '--baseline', '7880732',
          '--output', str(OUT / 'orset-derivation-contracts.json')], 'orset-derivation-source-contracts.log')
+    run([sys.executable, 'scripts/check-paper1-automation-contracts.py', '--baseline', 'ffec6e9',
+         '--output', str(OUT / 'ordered-derivation-contracts.json')], 'ordered-derivation-source-contracts.log')
+    run([sys.executable, 'experiments/vc-automation/test_ordered_contract_source.py'], 'ordered-source-controls.log')
     run([sys.executable, 'experiments/vc-automation/test_contract_audit.py'], 'production-contract-controls.log')
     roots = sorted({name for c in CASES for key in ('endpoints', 'vc_roots', 'controls') for name in c.get(key, [])})
     program = ('import Sal.MRDTs.Paper1.Ledger\nimport Sal.MRDTs.Paper1.Automation.Controls\n'
-               'import Sal.MRDTs.Paper1.Automation.ORSetAutomationControls\n' + LEAN_AUDIT)
+               'import Sal.MRDTs.Paper1.Automation.ORSetAutomationControls\n'
+               'import Sal.MRDTs.Paper1.Automation.OrderedAutomationControls\n' + LEAN_AUDIT)
     program += '\n'.join('audit_production ' + name for name in roots) + '\n'
     vc_roots = sorted({name for c in CASES for name in c['vc_roots']})
     program += '\n'.join('audit_production_vc_evidence ' + name for name in vc_roots) + '\n'
@@ -276,15 +310,20 @@ def main():
         data['dependencies'] = sorted(set(data['dependencies']))
         data['source_verification_declarations'] = sorted(set(data['source_verification_declarations']))
     orset_author_interface = audit_orset_author_interface(evidence)
-    files = sorted({d['file'] for d in declarations.values()})
+    ordered_author_interface = audit_ordered_author_interface(evidence)
+    files = sorted({d['file'] for d in declarations.values()} | set(imported_hashes))
+    source_hashes = {file: hashlib.sha256((ROOT / file).read_bytes()).hexdigest() for file in files}
+    assert all(source_hashes[file] == digest for file, digest in imported_hashes.items()), 'Source changed during production audit'
     report = dict(schema_version=1, status='pass', named_case_count=23,
         unique_endpoint_count=len({n for c in CASES for n in c['endpoints']}),
         counting_note=__doc__, cases=CASES, roots=audited,
         declaration_sources=declarations, vc_evidence_closures=evidence,
-        orset_author_interface=orset_author_interface,
-        source_sha256={file: hashlib.sha256((ROOT / file).read_bytes()).hexdigest() for file in files},
+        orset_author_interface=orset_author_interface, ordered_author_interface=ordered_author_interface,
+        source_sha256=source_hashes,
         controls=['Sal/MRDTs/Paper1/Automation/Controls.lean',
                   'Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean',
+                  'Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean',
+                  'experiments/vc-automation/test_ordered_contract_source.py',
                   'experiments/vc-automation/test_contract_audit.py',
                   'scripts/check-paper1-automation-contracts.py'],
         forbidden_dependencies=sorted(FORBIDDEN),

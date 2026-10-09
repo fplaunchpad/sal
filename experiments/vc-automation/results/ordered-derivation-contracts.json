@@ -1,0 +1,56 @@
+{
+  "baseline": "ffec6e9",
+  "evidence": "source-header/body preservation; not kernel type equality",
+  "files": [
+    {
+      "path": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
+      "checked": 7,
+      "moved": [],
+      "proof_changes": [
+        "Sal.EmbedRGA.unaryEnc_mono",
+        "Sal.EmbedRGA.unaryEnc_not_prefix"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+      "checked": 23,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.adapter"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.issuer",
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.input"
+      ],
+      "preserved_data_descriptions": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.kit"
+      ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+      "checked": 1,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/OrderedRecordRules.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    }
+  ],
+  "failures": [],
+  "added_files": [],
+  "checked_declarations": 31,
+  "status": "pass"
+}

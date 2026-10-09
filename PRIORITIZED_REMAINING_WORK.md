@@ -6,6 +6,42 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: derive Embedded RGA and anchored Queue certificates
+
+Research question: can implementation descriptions and existing certified
+contracts suffice to derive the ordered-record laws and evidence projections,
+including the insertion, merge, membership and coordinate helpers?
+
+- [x] Construct ordered-record templates and discharge finite laws through
+  shared automation for Embedded RGA and anchored Queue.
+- [x] Derive recurring list, ordering and coordinate facts generically;
+  minimize all required datatype-specific proofs without hiding old proofs.
+- [x] Derive evidence projections from unchanged issuance/execution contracts;
+  preserve implementations, policies, specifications, theorem statements and
+  sequential bridges, and connect to production five-VC and RA certificates.
+- [x] Independently audit preservation/dependencies and failure diagnostics;
+  count required descriptions, annotations and every retained helper.
+- [x] Update documentation with comparable before/after counts and residual
+  manual obligations; run both repository gates, then commit and push.
+
+Verified against `ffec6e9`: Embedded RGA falls from 378 to 60 author/helper
+lines and anchored Queue from 413 to 69. The comparable baseline includes four
+previously omitted registration lines and, for Queue, two code-law packaging
+lines; the earlier published totals were 374 and 407. Shared generic list,
+lexicographic order and prefix-code laws replace the old helper dependencies.
+The datatype still supplies mappings, raw-equation annotations and small
+coordinate-code specializations; no per-VC proof script or history induction
+is required on this route.
+
+The production audit passes all 23 cases, 69 endpoints and 95 proof roots;
+the new ordered route excludes the old finite and coordinate helper proofs.
+Preservation checks pass 234 earlier contracts and 31 declarations changed
+since this campaign's baseline. Positive and negative controls check the
+finite derivation, metadata maps and code assumptions without accepting
+resource exhaustion as rejection. Both repository gates pass, including
+187 runtime tests and 569 benchmark records. The formal reference's 99 source
+declarations check, and the updated PDF is visually verified.
+
 ### Checked: derive both OR-set templates and finite proofs automatically
 
 Research question: how much OR-set proof code can be derived from unchanged

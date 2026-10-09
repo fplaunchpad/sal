@@ -1,3 +1,5 @@
+import Sal.MRDTs.Paper1.Automation.OrderedInputDerivation
+import Sal.MRDTs.Paper1.Automation.OrderedKitAutomation
 import Sal.MRDTs.Paper1.Automation.CommonVerification
 import Sal.MRDTs.Paper1.CertifiedRGAVCReplay
 import Mathlib.Tactic
@@ -132,7 +134,8 @@ open Sal.MRDTs Sal.MRDTs.Foundation Sal.MRDTs.Paper1 Sal.EmbedRGA
 open Instances.EmbedRGA
 open Sal.MRDTs.Paper1.Automation.OrderedRecords
 variable {α : Type} [DecidableEq α] [Inhabited α]
-def kit (Γ : OrderedPrefixCode) : Kit (E Γ α) (ERec α) where
+/-- The author supplies only the implementation's finite data projections. -/
+def description (Γ : OrderedPrefixCode) : Description (E Γ α) (ERec α) where
   carrier := List.toFinset
   id := Prod.fst
   Key := List Nat
@@ -141,57 +144,35 @@ def kit (Γ : OrderedPrefixCode) : Kit (E Γ α) (ERec α) where
   written := eRecOf Γ
   target := fun e n => e.2.2 = .del n
   ordered := ESorted
-  init_carrier := rfl
-  init_ordered := List.Pairwise.nil
-  written_id := fun _ => rfl
-  update_provenance := by
-    intro s e p hp
-    simpa only [List.mem_toFinset,Born] using provenance_step Γ s e p (List.mem_toFinset.mp hp)
-  update_mem := by
-    intro s e fresh p
-    simpa only [List.mem_toFinset,Born,Kill] using membership_step Γ s e
-      (fun p hp => fresh p (List.mem_toFinset.mpr hp)) p
-  update_ordered := by
-    intro s e hs keys
-    exact ordered_step Γ s e hs (fun p hp => keys p (List.mem_toFinset.mpr hp))
-  birth_not_killed := by
-    rintro ⟨t,r,op⟩ ins
-    cases op <;> simp_all [eIsIns]
-  merge_mem := by
-    intro l a b al bl ab ba p
-    simpa only [List.mem_toFinset,Certified.cell] using merge_cell l a b
-      (fun p hp q hq => al p (List.mem_toFinset.mpr hp) q (List.mem_toFinset.mpr hq))
-      (fun p hp q hq => bl p (List.mem_toFinset.mpr hp) q (List.mem_toFinset.mpr hq))
-      (fun p hp q hq => ab p (List.mem_toFinset.mpr hp) q (List.mem_toFinset.mpr hq))
-      (fun p hp q hq => ba p (List.mem_toFinset.mpr hp) q (List.mem_toFinset.mpr hq)) p
-  merge_ordered := by
-    intro l a b ha hb coherent
-    change ESorted (eMerge l a b)
-    ordered_record
-  ext := by
-    intro s t hs ht same
-    change @Eq (EState α) s t
-    ordered_record
+
+def kit (Γ : OrderedPrefixCode) : Kit (E Γ α) (ERec α) := by
+  derive_ordered_kit (description Γ) unfolding
+    [description, E, eUpdate, eIds, eIsIns, eRecOf, eCoord, ESorted, eMerge]
+
+/-- Chain and key data specialize the generic prefix-code decoder. -/
+def chainMapping (Γ : OrderedPrefixCode) : ChainMapping (List Nat) (List Bool) (List Nat) where
+  valid := PosChain
+  coordinate := coordOf Γ
+  key := key
+  stamp := List.sum
+  injective := by
+    intro a b va vb equal
+    have symbols : Function.Injective (fun b : Bool => if b then (2 : Nat) else 1) := by
+      intro x y; cases x <;> cases y <;> simp
+    have coordinates := PrefixCodes.map_suffix_injective _ symbols [3] equal
+    have code : PrefixCodes.Code (fun d : Nat => 1 ≤ d) Γ.enc := {
+      nonempty := PrefixCodes.nonempty_of_prefixFree _ _
+        (fun _ _ hd he ne => Γ.prefixFree hd he ne)
+        (by intro d hd; exact ⟨d + 1, by omega, by omega⟩)
+      prefixFree := fun _ _ hd he ne => Γ.prefixFree hd he ne }
+    have equations := PrefixCodes.encode_eq Γ.enc (coordOf Γ) rfl (by intros; rfl)
+    exact PrefixCodes.encode_injective code a b va vb
+      (by simpa only [equations] using coordinates)
 
 def issuer (Γ : OrderedPrefixCode) (C : ReplayContext (E Γ α).toUpdateSig)
     (honest : EHonestCore Γ C) : IssuerEvidence (kit Γ) C := by
-  refine ⟨?_,?_⟩
-  · intro d hd n target
-    obtain ⟨a,ha,vis,time,ins⟩ := honest.del_has_ins d hd n target
-    exact ⟨a,ha,vis,ins,time⟩
-  · obtain ⟨chainOf,generated⟩ := honest.chain_gen
-    apply ChainCertificate.key_unique (Chain := List Nat)
-    refine ⟨PosChain,fun c => key (coordOf Γ c),fun c => c.sum,?_,?_⟩
-    · intro a b va vb equal
-      exact coordOf_inj Γ va vb (key_inj equal)
-    · intro e he ins
-      obtain ⟨valid,shape,sum⟩ := generated e he ins
-      refine ⟨chainOf e.1,valid,?_,sum⟩
-      change key (eRecOf Γ e).2.2 = _
-      have written : (eRecOf Γ e).2.2 = eCoord Γ e := by
-        rcases e with ⟨t,r,op⟩
-        cases op <;> simp_all [eIsIns,eRecOf,eCoord]
-      rw [written,shape]
+  derive_ordered_issuer (chainMapping Γ) at (eCoord Γ)
+    using honest.del_has_ins, honest.chain_gen
 end Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded
 
 namespace Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided
@@ -268,11 +249,11 @@ theorem adapter (Γ : OrderedPrefixCode) (C : ReplayContext (E Γ α).toUpdateSi
     (H : Set (Op (E Γ α).AppOp)) (s : (E Γ α).State)
     (rep : CertifiedRGAVCReplay.Embedded.representation (α := α) Γ C H s) :
     IssuerEvidence (kit Γ) C ∧ ReplayEvidence C H s :=
-  ⟨issuer Γ C rep.1,rep.2.2.2.1,rep.2.2.2.2⟩
+  by derive_ordered_adapter rep with (issuer Γ C) unfolding [CertifiedRGAVCReplay.Embedded.representation, eFold, E]
 
 def input (Γ : OrderedPrefixCode) : Sal.MRDTs.Paper1.Automation.CommonVerification.Input (E Γ α)
     CertifiedRGAVCReplay.Embedded.policy (CertifiedRGAVCReplay.Embedded.representation (α := α) Γ) (CertifiedRGAVCReplay.Embedded.scheme Γ) :=
-  .ordered (kit Γ) (fun _ _ _ => Iff.rfl) (adapter Γ)
+  by derive_ordered_input (kit Γ) with (issuer Γ) unfolding [CertifiedRGAVCReplay.Embedded.representation, eFold, E]
 register_mrdt_input input
 
 theorem automated_vcs (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.MergeVCs

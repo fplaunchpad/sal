@@ -1,8 +1,8 @@
-⚠ [3107/3581] Replayed Sal.MRDTs.Metatheory.Join.ReplayOrderBasics
+⚠ [3107/3588] Replayed Sal.MRDTs.Metatheory.Join.ReplayOrderBasics
 warning: Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:47:32: unused variable `h_mem`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-⚠ [3109/3581] Replayed Sal.MRDTs.Metatheory.Join.SetRelativeReplay
+⚠ [3109/3588] Replayed Sal.MRDTs.Metatheory.Join.SetRelativeReplay
 warning: Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean:124:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.Foundation.applySeq_swap_via_cond_comm_lift_core`:
   [ReplayPolicy D]
 consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
@@ -184,7 +184,7 @@ Note: This linter can be disabled with `set_option linter.unusedVariables false`
 warning: Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean:1636:5: unused variable `hne`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-⚠ [3113/3581] Replayed Sal.MRDTs.Framework.ReplayLaws
+⚠ [3113/3588] Replayed Sal.MRDTs.Framework.ReplayLaws
 warning: Sal/MRDTs/Framework/ReplayLaws.lean:560:5: unused variable `h_comm`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
@@ -203,7 +203,7 @@ consider restructuring your `variable` declarations so that the variables are no
   omit [ReplayPolicy D] in theorem ...
 
 Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
-⚠ [3114/3581] Replayed Sal.MRDTs.Metatheory.Join.Convergence_CounterModel
+⚠ [3114/3588] Replayed Sal.MRDTs.Metatheory.Join.Convergence_CounterModel
 warning: Sal/MRDTs/Metatheory/Join/Convergence_CounterModel.lean:171:71: this tactic is never executed
 
 Note: This linter can be disabled with `set_option linter.unreachableTactic false`
@@ -237,7 +237,7 @@ Hint: Omit it from the simp argument list.
   ̵ ̵ ̵ ̵ ̵A̵W̵S̵e̵t̵_̵n̵o̵t̵_̵c̵o̵m̵m̵_̵a̵d̵d̵_̵r̵e̵m̵]̵a̲w̲R̲c̲_̲e̲q̲]̲
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3115/3581] Replayed Sal.MRDTs.Metatheory.Join.Assoc_CounterModel
+⚠ [3115/3588] Replayed Sal.MRDTs.Metatheory.Join.Assoc_CounterModel
 warning: Sal/MRDTs/Metatheory/Join/Assoc_CounterModel.lean:214:64: this tactic is never executed
 
 Note: This linter can be disabled with `set_option linter.unreachableTactic false`
@@ -250,7 +250,7 @@ Note: This linter can be disabled with `set_option linter.unusedTactic false`
 warning: Sal/MRDTs/Metatheory/Join/Assoc_CounterModel.lean:224:64: 'decide' tactic does nothing
 
 Note: This linter can be disabled with `set_option linter.unusedTactic false`
-⚠ [3116/3581] Replayed Sal.MRDTs.Metatheory.Join.BinaryJoin
+⚠ [3116/3588] Replayed Sal.MRDTs.Metatheory.Join.BinaryJoin
 warning: Sal/MRDTs/Metatheory/Join/BinaryJoin.lean:143:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.Foundation.self_mem_downset`:
   [HistoricalBinaryMerge D]
 consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
@@ -275,7 +275,7 @@ consider restructuring your `variable` declarations so that the variables are no
   omit [HistoricalBinaryMerge D] in theorem ...
 
 Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
-⚠ [3120/3581] Replayed Sal.MRDTs.Metatheory.StoreInvariant
+⚠ [3120/3588] Replayed Sal.MRDTs.Metatheory.StoreInvariant
 warning: Sal/MRDTs/Metatheory/StoreInvariant.lean:289:32: This simp argument is unused:
   List.mem_singleton
 
@@ -290,7 +290,7 @@ Hint: Omit it from the simp argument list.
   simp only [List.mem_cons, L̵i̵s̵t̵.̵m̵e̵m̵_̵s̵i̵n̵g̵l̵e̵t̵o̵n̵,̵ ̵List.not_mem_nil, or_false] at hp
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3123/3581] Replayed Sal.MRDTs.Metatheory.VirtualAdequacy
+⚠ [3123/3588] Replayed Sal.MRDTs.Metatheory.VirtualAdequacy
 warning: Sal/MRDTs/Metatheory/VirtualAdequacy.lean:27:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.unionEvents_empty`:
   P
 consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
@@ -320,16 +320,16 @@ info: Sal/MRDTs/Metatheory/VirtualAdequacy.lean:587:0: 'Sal.MRDTs.virtualMergeBa
 info: Sal/MRDTs/Metatheory/VirtualAdequacy.lean:588:0: 'Sal.MRDTs.canonicalConfig_mergeVirtual_at' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Metatheory/VirtualAdequacy.lean:589:0: 'Sal.MRDTs.replayWitnessV_of_join' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Metatheory/VirtualAdequacy.lean:590:0: 'Sal.MRDTs.replayWitnessV_of_causalJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3125/3581] Replayed Sal.MRDTs.Metatheory.Safety
+⚠ [3125/3588] Replayed Sal.MRDTs.Metatheory.Safety
 warning: Sal/MRDTs/Metatheory/Safety.lean:310:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.countP_prefix_eq_causal_past`:
   [ReplayPolicy D.toUpdateSig]
 consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
   omit [ReplayPolicy D.toUpdateSig] in theorem ...
 
 Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
-⚠ [3132/3581] Replayed Sal.MRDTs.Paper1.HistoryInputs
+⚠ [3132/3588] Replayed Sal.MRDTs.Paper1.HistoryInputs
 warning: Sal/MRDTs/Paper1/HistoryInputs.lean:105:4: Try this: intro a b hab hnew
-⚠ [3134/3581] Replayed Sal.MRDTs.Paper1.ORSetCanonical
+⚠ [3134/3588] Replayed Sal.MRDTs.Paper1.ORSetCanonical
 warning: Sal/MRDTs/Paper1/ORSetCanonical.lean:76:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.Paper1.ORSet.not_edge_to_prefix`:
   [DecidableEq α]
 consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
@@ -342,17 +342,17 @@ consider restructuring your `variable` declarations so that the variables are no
   omit [DecidableEq α] in theorem ...
 
 Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
-ℹ [3135/3581] Replayed Sal.MRDTs.Paper1.ORSetVerified
+ℹ [3135/3588] Replayed Sal.MRDTs.Paper1.ORSetVerified
 info: Sal/MRDTs/Paper1/ORSetVerified.lean:75:0: 'Sal.MRDTs.Paper1.ORSet.restrictedLaws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetVerified.lean:76:0: 'Sal.MRDTs.Paper1.ORSet.join' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetVerified.lean:77:0: 'Sal.MRDTs.Paper1.ORSet.certifiedRAV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetVerified.lean:78:0: 'Sal.MRDTs.Paper1.ORSet.certifiedRA' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3136/3581] Replayed Sal.MRDTs.Paper1.ORSetSpecification
+ℹ [3136/3588] Replayed Sal.MRDTs.Paper1.ORSetSpecification
 info: Sal/MRDTs/Paper1/ORSetSpecification.lean:71:0: 'Sal.MRDTs.Paper1.ORSet.specificationConflictsCovered' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetSpecification.lean:72:0: 'Sal.MRDTs.Paper1.ORSet.natural_add_remove_conflict' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetSpecification.lean:73:0: 'Sal.MRDTs.Paper1.ORSet.specificationCertifiedRAV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetSpecification.lean:74:0: 'Sal.MRDTs.Paper1.ORSet.specificationCertifiedRA' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3137/3581] Replayed Sal.MRDTs.Paper1.CriterionCounterexample
+ℹ [3137/3588] Replayed Sal.MRDTs.Paper1.CriterionCounterexample
 info: Sal/MRDTs/Paper1/CriterionCounterexample.lean:666:0: 'Sal.MRDTs.Paper1.CriterionCounterexample.mutant_rawRA' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CriterionCounterexample.lean:667:0: 'Sal.MRDTs.Paper1.CriterionCounterexample.raw_cross_store_convergence' depends on axioms: [propext,
  Classical.choice,
@@ -375,18 +375,18 @@ info: Sal/MRDTs/Paper1/CriterionCounterexample.lean:674:0: 'Sal.MRDTs.Paper1.Cri
 info: Sal/MRDTs/Paper1/CriterionCounterexample.lean:675:0: 'Sal.MRDTs.Paper1.CriterionCounterexample.criteria_differ_on_reachable_mutation' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3141/3581] Replayed Sal.MRDTs.Paper1.PaperPresentation
+ℹ [3141/3588] Replayed Sal.MRDTs.Paper1.PaperPresentation
 info: Sal/MRDTs/Paper1/PaperPresentation.lean:34:0: 'Sal.MRDTs.Paper1.PaperPresentation.uniform_versionsRA_of_paperOrder_witness' does not depend on any axioms
 info: Sal/MRDTs/Paper1/PaperPresentation.lean:64:0: 'Sal.MRDTs.Paper1.PaperPresentation.projected_versions_of_exact_total' does not depend on any axioms
 info: Sal/MRDTs/Paper1/PaperPresentation.lean:88:0: 'Sal.MRDTs.Paper1.PaperPresentation.invariant_versions_of_exact_histories' does not depend on any axioms
-⚠ [3149/3581] Replayed Sal.MRDTs.Paper1.ConcreteJoin
+⚠ [3149/3588] Replayed Sal.MRDTs.Paper1.ConcreteJoin
 warning: Sal/MRDTs/Paper1/ConcreteJoin.lean:93:16: unused variable `P`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-ℹ [3152/3581] Replayed Sal.MRDTs.Paper1.ConcreteReplay
+ℹ [3152/3588] Replayed Sal.MRDTs.Paper1.ConcreteReplay
 info: Sal/MRDTs/Paper1/ConcreteReplay.lean:52:0: 'Sal.MRDTs.Paper1.ConcreteMRDT.canonical_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ConcreteReplay.lean:53:0: 'Sal.MRDTs.Paper1.ConcreteMRDT.canonical_exists' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3153/3581] Replayed Sal.MRDTs.Paper1.ConcreteVCExecution
+⚠ [3153/3588] Replayed Sal.MRDTs.Paper1.ConcreteVCExecution
 warning: Sal/MRDTs/Paper1/ConcreteVCExecution.lean:53:17: unused variable `s`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
@@ -399,7 +399,7 @@ Note: This linter can be disabled with `set_option linter.unusedVariables false`
 warning: Sal/MRDTs/Paper1/ConcreteVCExecution.lean:62:26: unused variable `t`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-⚠ [3154/3581] Replayed Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
+⚠ [3154/3588] Replayed Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 warning: Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean:118:70: This simp argument is unused:
   UpdateSig.replayOrder
 
@@ -431,7 +431,7 @@ Hint: Omit it from the simp argument list.
   ̲ ̲ ̲ ̲ ̲R̲e̲p̲l̲a̲y̲P̲o̲l̲i̲c̲y̲.̲u̲n̲c̲o̲n̲s̲t̲r̲a̲i̲n̲e̲d̲]̲
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3155/3581] Replayed Sal.MRDTs.Framework.Product
+⚠ [3155/3588] Replayed Sal.MRDTs.Framework.Product
 warning: Sal/MRDTs/Framework/Product.lean:521:18: This simp argument is unused:
   hhead
 
@@ -475,7 +475,7 @@ Hint: Omit it from the simp argument list.
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Framework/Product.lean:739:0: 'Sal.MRDTs.joinAt_prod' depends on axioms: [propext, Quot.sound]
-⚠ [3156/3581] Replayed Sal.MRDTs.Instances.AddStore
+⚠ [3156/3588] Replayed Sal.MRDTs.Instances.AddStore
 warning: Sal/MRDTs/Instances/AddStore.lean:32:25: This simp argument is unused:
   or_comm
 
@@ -499,7 +499,7 @@ Hint: Omit it from the simp argument list.
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Instances/AddStore.lean:106:0: 'Sal.MRDTs.Instances.AddStore.join' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/AddStore.lean:107:0: 'Sal.MRDTs.Instances.AddStore.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3157/3581] Replayed Sal.MRDTs.Instances.FinsetStore
+⚠ [3157/3588] Replayed Sal.MRDTs.Instances.FinsetStore
 warning: Sal/MRDTs/Instances/FinsetStore.lean:52:13: This simp argument is unused:
   or_assoc
 
@@ -551,43 +551,43 @@ Hint: Omit it from the simp argument list.
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Instances/FinsetStore.lean:98:0: 'Sal.MRDTs.Instances.FinsetStore.join' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FinsetStore.lean:99:0: 'Sal.MRDTs.Instances.FinsetStore.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3158/3581] Replayed Sal.MRDTs.Instances.FlatCounters
+ℹ [3158/3588] Replayed Sal.MRDTs.Instances.FlatCounters
 info: Sal/MRDTs/Instances/FlatCounters.lean:138:0: 'Sal.MRDTs.Instances.FlatCounters.join' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FlatCounters.lean:139:0: 'Sal.MRDTs.Instances.FlatCounters.counterVerified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FlatCounters.lean:140:0: 'Sal.MRDTs.Instances.FlatCounters.iocVerified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FlatCounters.lean:141:0: 'Sal.MRDTs.Instances.FlatCounters.pnVerified' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3160/3581] Replayed Sal.MRDTs.Instances.FlatGrowOnly
+ℹ [3160/3588] Replayed Sal.MRDTs.Instances.FlatGrowOnly
 info: Sal/MRDTs/Instances/FlatGrowOnly.lean:117:0: 'Sal.MRDTs.Instances.FlatGrowOnly.join' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FlatGrowOnly.lean:118:0: 'Sal.MRDTs.Instances.FlatGrowOnly.gosetVerified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FlatGrowOnly.lean:119:0: 'Sal.MRDTs.Instances.FlatGrowOnly.gomapVerified' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3164/3581] Replayed Sal.MRDTs.Paper1.Automation.LocalSingleton
+ℹ [3164/3588] Replayed Sal.MRDTs.Paper1.Automation.LocalSingleton
 info: Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:51:0: 'Sal.MRDTs.Paper1.Automation.Signature.local_singleton_restrictedReplay' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3168/3581] Replayed Sal.MRDTs.Paper1.Automation.CausalExpansion
+ℹ [3168/3588] Replayed Sal.MRDTs.Paper1.Automation.CausalExpansion
 info: Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:133:0: 'Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3169/3581] Replayed Sal.MRDTs.Paper1.Automation.CausalCoverage
+ℹ [3169/3588] Replayed Sal.MRDTs.Paper1.Automation.CausalCoverage
 info: Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:184:0: 'Sal.MRDTs.Paper1.Automation.CausalCoverage.reset_of_context' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:185:0: 'Sal.MRDTs.Paper1.Automation.CausalCoverage.raw_causal_delta' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3171/3581] Replayed Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion
+ℹ [3171/3588] Replayed Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion
 info: Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:74:0: 'Sal.MRDTs.Paper1.Automation.PolicyExpansion.assemble' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:75:0: 'Sal.MRDTs.Paper1.Automation.PolicyExpansion.canonical_of_loWitness' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3172/3581] Replayed Sal.MRDTs.Paper1.Automation.InductiveMask
+ℹ [3172/3588] Replayed Sal.MRDTs.Paper1.Automation.InductiveMask
 info: Sal/MRDTs/Paper1/Automation/InductiveMask.lean:151:0: 'InductiveMask.membership_iff_suffix' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/Automation/InductiveMask.lean:152:0: 'InductiveMask.suffix_iff_alive' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/Automation/InductiveMask.lean:153:0: 'InductiveMask.replay_iff_alive' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3177/3581] Replayed Sal.MRDTs.Paper1.Automation.GenericOrderedRecords
+⚠ [3177/3588] Replayed Sal.MRDTs.Paper1.Automation.GenericOrderedRecords
 warning: Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean:152:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
 warning: Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean:162:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-⚠ [3305/3581] Replayed Blaster.Smt.Env
+⚠ [3305/3588] Replayed Blaster.Smt.Env
 warning: Blaster/Smt/Env.lean:48:45: `String.toSubstring` has been deprecated: Use `String.toRawSubstring` instead
 warning: Blaster/Smt/Env.lean:48:66: `String.toSubstring` has been deprecated: Use `String.toRawSubstring` instead
 warning: Blaster/Smt/Env.lean:74:37: `String.dropRight` has been deprecated: Use `String.dropEnd` instead
@@ -596,7 +596,7 @@ Note: The updated constant has a different type:
   String → Nat → String.Slice
 instead of
   String → Nat → String
-⚠ [3352/3581] Replayed Sal.Interfaces.Set_Extended
+⚠ [3352/3588] Replayed Sal.Interfaces.Set_Extended
 warning: Sal/Interfaces/Set_Extended.lean:17:50: unused variable `x`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
@@ -621,7 +621,7 @@ info: Sal/Interfaces/Set_Extended.lean:159:8: Try these:
   [apply] [grind! .] for pattern: [@remove #3 #2 #1 #0]
 info: Sal/Interfaces/Set_Extended.lean:163:8: Try this:
   [apply] [grind .] for pattern: [@mem #5 #4 #1 (@remove _ _ #3 #2)]
-ℹ [3353/3581] Replayed Sal.Interfaces.Map_Extended
+ℹ [3353/3588] Replayed Sal.Interfaces.Map_Extended
 info: Sal/Interfaces/Map_Extended.lean:7:0: map.domain {key : Type} [DecidableEq key] {value : Type} (self : map key value) : _root_.set key
 info: Sal/Interfaces/Map_Extended.lean:66:8: Try these:
   [apply] [grind =] for pattern: [@sel #5 #4 #3 (@upd _ _ _ #2 #1 #0) #1]
@@ -668,7 +668,7 @@ info: Sal/Interfaces/Map_Extended.lean:144:8: Try these:
   [apply] [grind! .] for pattern: [@upd #5 #4 #3 #2 #1 #0]
 info: Sal/Interfaces/Map_Extended.lean:152:8: Try this:
   [apply] [grind =_] for pattern: [@map_equal #4 #3 #2 #1 #0]
-⚠ [3361/3581] Replayed Sal.MRDTs.Instances.EmbedRGASequential
+⚠ [3362/3588] Replayed Sal.MRDTs.Instances.EmbedRGASequential
 warning: Sal/MRDTs/Instances/EmbedRGASequential.lean:217:2: Try this: intro r r' hk heq
 warning: Sal/MRDTs/Instances/EmbedRGASequential.lean:408:14: This simp argument is unused:
   List.filter_cons
@@ -684,12 +684,12 @@ Hint: Omit it from the simp argument list.
   simp [L̵i̵s̵t̵.̵f̵i̵l̵t̵e̵r̵_̵c̵o̵n̵s̵,̵ ̵h, eProj, ih]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-ℹ [3364/3581] Replayed Sal.MRDTs.Instances.SidedEmbedRGASequential
+ℹ [3365/3588] Replayed Sal.MRDTs.Instances.SidedEmbedRGASequential
 info: Sal/MRDTs/Instances/SidedEmbedRGASequential.lean:537:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.schainBefore_snocR_iff' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Instances/SidedEmbedRGASequential.lean:538:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.schainBefore_snocL_iff' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Instances/SidedEmbedRGASequential.lean:916:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.sided_seq_sound' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/SidedEmbedRGASequential.lean:943:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.sided_seq_read' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3365/3581] Replayed Sal.MRDTs.Instances.ProductionRGA
+⚠ [3366/3588] Replayed Sal.MRDTs.Instances.ProductionRGA
 warning: Sal/MRDTs/Instances/ProductionRGA.lean:32:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical_perm`:
   [DecidableEq α]
   [Inhabited α]
@@ -775,7 +775,7 @@ info: Sal/MRDTs/Instances/ProductionRGA.lean:1175:0: 'Sal.MRDTs.Instances.Produc
 info: Sal/MRDTs/Instances/ProductionRGA.lean:1176:0: 'Sal.MRDTs.Instances.ProductionRGA.embed' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/ProductionRGA.lean:1177:0: 'Sal.MRDTs.Instances.ProductionRGA.replaySided' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/ProductionRGA.lean:1178:0: 'Sal.MRDTs.Instances.ProductionRGA.sided' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3366/3581] Replayed Sal.MRDTs.Instances.PeritextRender
+ℹ [3367/3588] Replayed Sal.MRDTs.Instances.PeritextRender
 info: Sal/MRDTs/Instances/PeritextRender.lean:545:0: 'Sal.MRDTs.Instances.PeritextRender.doc_no_backward_leak' depends on axioms: [propext]
 info: Sal/MRDTs/Instances/PeritextRender.lean:546:0: 'Sal.MRDTs.Instances.PeritextRender.tree_backward_leak_refutes_noleak' depends on axioms: [propext,
  Lean.ofReduceBool,
@@ -825,7 +825,7 @@ info: Sal/MRDTs/Instances/PeritextRender.lean:557:0: 'Sal.MRDTs.Instances.Perite
  Lean.ofReduceBool,
  Lean.trustCompiler,
  Quot.sound]
-⚠ [3367/3581] Replayed Sal.MRDTs.Instances.SidedPeritext
+⚠ [3368/3588] Replayed Sal.MRDTs.Instances.SidedPeritext
 warning: Sal/MRDTs/Instances/SidedPeritext.lean:102:29: Try `simp at hg` instead of `simpa using hg`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -884,7 +884,7 @@ info: Sal/MRDTs/Instances/SidedPeritext.lean:970:0: 'Sal.MRDTs.Instances.SidedPe
 info: Sal/MRDTs/Instances/SidedPeritext.lean:971:0: 'Sal.MRDTs.Instances.SidedPeritext.richVerified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/SidedPeritext.lean:972:0: 'Sal.MRDTs.Instances.SidedPeritext.richReplayAdequate' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/SidedPeritext.lean:973:0: 'Sal.MRDTs.Instances.SidedPeritext.rich_sequentially_correct' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3368/3581] Replayed Sal.MRDTs.Instances.SidedEmbedRGA_Intent
+⚠ [3369/3588] Replayed Sal.MRDTs.Instances.SidedEmbedRGA_Intent
 warning: Sal/MRDTs/Instances/SidedEmbedRGA_Intent.lean:109:23: This simp argument is unused:
   List.filter_cons
 
@@ -894,7 +894,7 @@ Hint: Omit it from the simp argument list.
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Instances/SidedEmbedRGA_Intent.lean:150:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.sFold_liftOp' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/SidedEmbedRGA_Intent.lean:208:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.sided_fold_subtree_convex' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3369/3581] Replayed Sal.MRDTs.Instances.Fugue
+ℹ [3370/3588] Replayed Sal.MRDTs.Instances.Fugue
 info: Sal/MRDTs/Instances/Fugue.lean:690:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.fugueReach_inv' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/Fugue.lean:720:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.fugueReach_chain_gen' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/Fugue.lean:750:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.fugue_two_runs_no_interleave' depends on axioms: [propext,
@@ -933,14 +933,14 @@ info: Sal/MRDTs/Instances/Fugue.lean:1241:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.
  Lean.ofReduceBool,
  Lean.trustCompiler,
  Quot.sound]
-ℹ [3370/3581] Replayed Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex
+ℹ [3371/3588] Replayed Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex
 info: Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:973:0: 'Sal.EmbedRGA.fmdisplay_iff_fmChainBefore' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:974:0: 'Sal.EmbedRGA.fm_subtree_convex' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:975:0: 'Sal.EmbedRGA.fmCoordOf_inj' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:976:0: 'Sal.EmbedRGA.tagOK_key' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:1052:0: 'Sal.EmbedRGA.fm_ext_before_is_L' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:1053:0: 'Sal.EmbedRGA.fm_R_sibling_inv' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3371/3581] Replayed Sal.MRDTs.Instances.FugueMax
+ℹ [3372/3588] Replayed Sal.MRDTs.Instances.FugueMax
 info: Sal/MRDTs/Instances/FugueMax.lean:1410:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.maxReach_inv' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMax.lean:1584:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.fuguemax_same_origin_low_first' depends on axioms: [propext,
  Classical.choice,
@@ -960,11 +960,11 @@ info: Sal/MRDTs/Instances/FugueMax.lean:1850:0: 'Sal.MRDTs.Instances.SidedEmbedR
  Lean.ofReduceBool,
  Lean.trustCompiler,
  Quot.sound]
-ℹ [3372/3581] Replayed Sal.MRDTs.Instances.RGAKernel.SidedTraversal
+ℹ [3373/3588] Replayed Sal.MRDTs.Instances.RGAKernel.SidedTraversal
 info: Sal/MRDTs/Instances/RGAKernel/SidedTraversal.lean:131:0: 'Sal.EmbedRGA.schainBefore_append_strip' depends on axioms: [propext]
 info: Sal/MRDTs/Instances/RGAKernel/SidedTraversal.lean:132:0: 'Sal.EmbedRGA.schain_ext_side' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/RGAKernel/SidedTraversal.lean:133:0: 'Sal.EmbedRGA.schainBefore_trans' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3373/3581] Replayed Sal.MRDTs.Instances.FugueMaxNonInterleaving
+ℹ [3374/3588] Replayed Sal.MRDTs.Instances.FugueMaxNonInterleaving
 info: Sal/MRDTs/Instances/FugueMaxNonInterleaving.lean:287:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.maxReach_inv2' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxNonInterleaving.lean:437:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.lo_child_before' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxNonInterleaving.lean:521:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.fuguemax_forward_ni' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -979,7 +979,7 @@ info: Sal/MRDTs/Instances/FugueMaxNonInterleaving.lean:600:0: 'Sal.MRDTs.Instanc
  Lean.ofReduceBool,
  Lean.trustCompiler,
  Quot.sound]
-ℹ [3374/3581] Replayed Sal.MRDTs.Instances.FugueMaxBackward
+ℹ [3375/3588] Replayed Sal.MRDTs.Instances.FugueMaxBackward
 info: Sal/MRDTs/Instances/FugueMaxBackward.lean:809:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.maxReach_inv3' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxBackward.lean:1256:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.fuguemax_backward_ni' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxBackward.lean:1416:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.BackwardSPOT.fig7_del_witness' depends on axioms: [propext,
@@ -993,7 +993,7 @@ info: Sal/MRDTs/Instances/FugueMaxBackward.lean:1417:0: 'Sal.MRDTs.Instances.Sid
 info: Sal/MRDTs/Instances/FugueMaxBackward.lean:1433:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.fuguemax_maximally_noninterleaving' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3375/3581] Replayed Sal.MRDTs.Instances.FugueMaxReplay
+ℹ [3376/3588] Replayed Sal.MRDTs.Instances.FugueMaxReplay
 info: Sal/MRDTs/Instances/FugueMaxReplay.lean:1017:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.fuguemax_replay_witness' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxReplay.lean:1106:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.f_fold_canon' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxReplay.lean:1107:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.mFold_eq_fFold' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -1008,7 +1008,7 @@ info: Sal/MRDTs/Instances/FugueMaxReplay.lean:1202:0: 'Sal.MRDTs.Instances.Sided
  Lean.ofReduceBool,
  Lean.trustCompiler,
  Quot.sound]
-ℹ [3377/3581] Replayed Sal.MRDTs.Instances.FugueMaxIssuer
+ℹ [3378/3588] Replayed Sal.MRDTs.Instances.FugueMaxIssuer
 info: Sal/MRDTs/Instances/FugueMaxIssuer.lean:201:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.prepareInsert_exact' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxIssuer.lean:202:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.update_exact' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxIssuer.lean:203:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.minted_sync' depends on axioms: [propext]
@@ -1018,11 +1018,11 @@ info: Sal/MRDTs/Instances/FugueMaxIssuer.lean:204:0: 'Sal.MRDTs.Instances.SidedE
 info: Sal/MRDTs/Instances/FugueMaxIssuer.lean:205:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.canIssue_delete_exact' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3378/3581] Replayed Sal.MRDTs.Instances.FugueMaxIssuerSet
+ℹ [3379/3588] Replayed Sal.MRDTs.Instances.FugueMaxIssuerSet
 info: Sal/MRDTs/Instances/FugueMaxIssuerSet.lean:121:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.genAfter_eq_of_births' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3379/3581] Replayed Sal.MRDTs.Instances.FugueMaxImplementation
+ℹ [3380/3588] Replayed Sal.MRDTs.Instances.FugueMaxImplementation
 info: Sal/MRDTs/Instances/FugueMaxImplementation.lean:176:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.insertion_issuance_exact' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1034,20 +1034,20 @@ info: Sal/MRDTs/Instances/FugueMaxImplementation.lean:179:0: 'Sal.MRDTs.Instance
 info: Sal/MRDTs/Instances/FugueMaxImplementation.lean:180:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.issuer_merge_refines' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3380/3581] Replayed Sal.MRDTs.Instances.FugueMaxHonesty
+ℹ [3381/3588] Replayed Sal.MRDTs.Instances.FugueMaxHonesty
 info: Sal/MRDTs/Instances/FugueMaxHonesty.lean:164:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.invariants_of_mint' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxHonesty.lean:238:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.noninterleaving_of_mint' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3381/3581] Replayed Sal.MRDTs.Instances.FugueMaxReplayProof
+ℹ [3382/3588] Replayed Sal.MRDTs.Instances.FugueMaxReplayProof
 info: Sal/MRDTs/Instances/FugueMaxReplayProof.lean:161:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.projected_wf' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxReplayProof.lean:419:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.join_of_mint' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxReplayProof.lean:445:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.replay_noninterleaving' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3382/3581] Replayed Sal.MRDTs.Instances.FugueMaxSequential
+ℹ [3383/3588] Replayed Sal.MRDTs.Instances.FugueMaxSequential
 info: Sal/MRDTs/Instances/FugueMaxSequential.lean:217:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.fmChainBefore_snocR_iff' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxSequential.lean:218:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.fmChainBefore_snocL_iff' depends on axioms: [propext,
  Classical.choice,
@@ -1055,14 +1055,14 @@ info: Sal/MRDTs/Instances/FugueMaxSequential.lean:218:0: 'Sal.MRDTs.Instances.Si
 info: Sal/MRDTs/Instances/FugueMaxSequential.lean:219:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.exists_chain_construction' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3383/3581] Replayed Sal.MRDTs.Instances.FugueMaxListRefinement
+ℹ [3384/3588] Replayed Sal.MRDTs.Instances.FugueMaxListRefinement
 info: Sal/MRDTs/Instances/FugueMaxListRefinement.lean:322:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.splice_node' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxListRefinement.lean:323:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.births_refine' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3384/3581] Replayed Sal.MRDTs.Instances.FugueMaxContract
+ℹ [3385/3588] Replayed Sal.MRDTs.Instances.FugueMaxContract
 info: Sal/MRDTs/Instances/FugueMaxContract.lean:271:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.staged_legal' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxContract.lean:272:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/FugueMaxContract.lean:273:0: 'Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.correct' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3385/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAReplay
+ℹ [3386/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAReplay
 info: Sal/MRDTs/Paper1/CertifiedRGAReplay.lean:233:0: 'Sal.MRDTs.Paper1.CertifiedRGAReplay.Embedded.eligible_inserts_commute' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1071,15 +1071,15 @@ info: Sal/MRDTs/Paper1/CertifiedRGAReplay.lean:235:0: 'Sal.MRDTs.Paper1.Certifie
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAReplay.lean:236:0: 'Sal.MRDTs.Paper1.CertifiedRGAReplay.Sided.replay_equal' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3386/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAScope
+ℹ [3387/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAScope
 info: Sal/MRDTs/Paper1/CertifiedRGAScope.lean:194:0: 'Sal.MRDTs.Paper1.CertifiedRGAScope.Embedded.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAScope.lean:195:0: 'Sal.MRDTs.Paper1.CertifiedRGAScope.Sided.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3387/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAProducts
+ℹ [3388/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAProducts
 info: Sal/MRDTs/Paper1/CertifiedRGAProducts.lean:81:0: 'Sal.MRDTs.Paper1.CertifiedRGAProducts.SidedPeritext.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAProducts.lean:82:0: 'Sal.MRDTs.Paper1.CertifiedRGAProducts.SidedPeritext.rich_laws' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3388/3581] Replayed Sal.MRDTs.Paper1.Automation.GenericMonotoneProduct
+⚠ [3389/3588] Replayed Sal.MRDTs.Paper1.Automation.GenericMonotoneProduct
 warning: Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean:207:26: This simp argument is unused:
   product
 
@@ -1087,7 +1087,7 @@ Hint: Omit it from the simp argument list.
   simp [normalize, ̲unite, ̲produ̵c̵t̵,̵p̵r̵o̵d̵Sig, ̲Instances.FinsetStore.D, ̲K.init_carrier]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3389/3581] Replayed Sal.MRDTs.Paper1.Automation.GenericArchivedOrderedRecords
+⚠ [3390/3588] Replayed Sal.MRDTs.Paper1.Automation.GenericArchivedOrderedRecords
 warning: Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean:154:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1115,7 +1115,52 @@ Hint: Omit it from the simp argument list.
   simp ̵[̵a̵d̵d̵]̵
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3398/3581] Replayed Sal.MRDTs.Instances.EfficientORSet
+⚠ [3395/3588] Replayed Sal.MRDTs.Paper1.Automation.GenericSortedLists
+warning: Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:76:28: This simp argument is unused:
+  ↓reduceIte
+
+Hint: Omit it from the simp argument list.
+  simp only [insert, h,̵ ̵↓̵r̵e̵d̵u̵c̵e̵I̵t̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:89:55: This simp argument is unused:
+  Bool.false_eq_true
+
+Hint: Omit it from the simp argument list.
+  simp only [h, B̵o̵o̵l̵.̵f̵a̵l̵s̵e̵_̵e̵q̵_̵t̵r̵u̵e̵,̵ ̵↓reduceIte, List.mem_cons, ih]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:109:31: This simp argument is unused:
+  ↓reduceIte
+
+Hint: Omit it from the simp argument list.
+  simp only [h,̵ ̵↓̵r̵e̵d̵u̵c̵e̵I̵t̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3396/3588] Replayed Sal.MRDTs.Paper1.Automation.GenericLexOrder
+warning: Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:23:31: This simp argument is unused:
+  List.Lex.nil
+
+Hint: Omit it from the simp argument list.
+  simp [left,̵ ̵L̵i̵s̵t̵.̵L̵e̵x̵.̵n̵i̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3397/3588] Replayed Sal.MRDTs.Paper1.Automation.EmbeddedOrderedPrimitives
+warning: Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean:15:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.insertion`:
+  [DecidableEq α]
+  [Inhabited α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] [Inhabited α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+warning: Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean:21:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.merging`:
+  [DecidableEq α]
+  [Inhabited α]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq α] [Inhabited α] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+⚠ [3402/3588] Replayed Sal.MRDTs.Instances.EfficientORSet
 warning: Sal/MRDTs/Instances/EfficientORSet.lean:73:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.Instances.EfficientORSet.keyUnique_empty`:
   [DecidableEq α]
 consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
@@ -1132,7 +1177,7 @@ info: Sal/MRDTs/Instances/EfficientORSet.lean:227:0: 'Sal.MRDTs.Instances.Effici
 info: Sal/MRDTs/Instances/EfficientORSet.lean:228:0: 'Sal.MRDTs.Instances.EfficientORSet.SPOT.incompatible_replays_merge_not_a_fold' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3399/3581] Replayed Sal.MRDTs.Instances.EfficientORSetHistory
+⚠ [3403/3588] Replayed Sal.MRDTs.Instances.EfficientORSetHistory
 warning: Sal/MRDTs/Instances/EfficientORSetHistory.lean:32:0: automatically included section variable(s) unused in theorem `Sal.MRDTs.Instances.EfficientORSet.dead_union`:
   [DecidableEq α]
 consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
@@ -1197,13 +1242,13 @@ Note: This linter can be disabled with `set_option linter.unusedSectionVars fals
 info: Sal/MRDTs/Instances/EfficientORSetHistory.lean:384:0: 'Sal.MRDTs.Instances.EfficientORSet.represents_merge' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/EfficientORSetHistory.lean:385:0: 'Sal.MRDTs.Instances.EfficientORSet.canonical_of_represents' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/EfficientORSetHistory.lean:386:0: 'Sal.MRDTs.Instances.EfficientORSet.keyUnique_of_represents' depends on axioms: [propext, Quot.sound]
-ℹ [3402/3581] Replayed Sal.MRDTs.Instances.EfficientORSetCertified
+ℹ [3406/3588] Replayed Sal.MRDTs.Instances.EfficientORSetCertified
 info: Sal/MRDTs/Instances/EfficientORSetCertified.lean:137:0: 'Sal.MRDTs.Instances.EfficientORSet.represented_of_mintCertifiedV' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Instances/EfficientORSetCertified.lean:138:0: 'Sal.MRDTs.Instances.EfficientORSet.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/EfficientORSetCertified.lean:139:0: 'Sal.MRDTs.Instances.EfficientORSet.keyUnique_reachableV' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3403/3581] Replayed Sal.MRDTs.Paper1.EfficientORSetEventSpec
+⚠ [3407/3588] Replayed Sal.MRDTs.Paper1.EfficientORSetEventSpec
 warning: Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean:104:8: This simp argument is unused:
   D
 
@@ -1233,7 +1278,7 @@ info: Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean:277:0: 'Sal.MRDTs.Paper1.Eff
 info: Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean:278:0: 'Sal.MRDTs.Paper1.EfficientORSet.EventSpec.certifiedExecutionsV' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3404/3581] Replayed Sal.MRDTs.Paper1.NeemScope
+⚠ [3408/3588] Replayed Sal.MRDTs.Paper1.NeemScope
 warning: Sal/MRDTs/Paper1/NeemScope.lean:49:53: This simp argument is unused:
   Ne.symm h
 
@@ -1248,41 +1293,41 @@ Hint: Omit it from the simp argument list.
   simp [EventSpec.conflict, Op.op, commute, h̵,̵ ̵Ne.symm h]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3405/3581] Replayed Sal.MRDTs.Instances.RGA
+⚠ [3409/3588] Replayed Sal.MRDTs.Instances.RGA
 warning: Sal/MRDTs/Instances/RGA.lean:163:4: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
 info: Sal/MRDTs/Instances/RGA.lean:220:0: 'Sal.MRDTs.Instances.RGA.birthGraveSound' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3406/3581] Replayed Sal.MRDTs.Instances.RGASequential
+⚠ [3410/3588] Replayed Sal.MRDTs.Instances.RGASequential
 warning: Sal/MRDTs/Instances/RGASequential.lean:643:8: `List.eq_of_perm_of_sorted` has been deprecated: Use `List.Perm.eq_of_pairwise` instead
 
 Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.eq_of_perm_of_sorted` to `List.Perm.eq_of_pairwise x`).
 info: Sal/MRDTs/Instances/RGASequential.lean:870:0: 'Sal.MRDTs.Instances.RGA.rga_spec_linearizable' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/RGASequential.lean:871:0: 'Sal.MRDTs.Instances.RGA.rga_spec_linearizableV' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3407/3581] Replayed Sal.MRDTs.Paper1.RGA
+ℹ [3411/3588] Replayed Sal.MRDTs.Paper1.RGA
 info: Sal/MRDTs/Paper1/RGA.lean:272:0: 'Sal.MRDTs.Paper1.RGA.canonical_admitted' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGA.lean:273:0: 'Sal.MRDTs.Paper1.RGA.admitted_of_execution' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGA.lean:274:0: 'Sal.MRDTs.Paper1.RGA.old_list_run_does_not_factor' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3408/3581] Replayed Sal.MRDTs.Paper1.RGAActive
+ℹ [3412/3588] Replayed Sal.MRDTs.Paper1.RGAActive
 info: Sal/MRDTs/Paper1/RGAActive.lean:71:0: 'Sal.MRDTs.Paper1.RGA.restrictedLaws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAActive.lean:72:0: 'Sal.MRDTs.Paper1.RGA.policy_must_be_empty' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAActive.lean:73:0: 'Sal.MRDTs.Paper1.RGA.certifiedRA' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAActive.lean:74:0: 'Sal.MRDTs.Paper1.RGA.certifiedRAV' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3410/3581] Replayed Sal.MRDTs.Paper1.ORSetEventSpec
+ℹ [3414/3588] Replayed Sal.MRDTs.Paper1.ORSetEventSpec
 info: Sal/MRDTs/Paper1/ORSetEventSpec.lean:120:0: 'Sal.MRDTs.Paper1.ORSet.EventSpec.simulation' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetEventSpec.lean:121:0: 'Sal.MRDTs.Paper1.ORSet.EventSpec.certifiedVersionsRA' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetEventSpec.lean:122:0: 'Sal.MRDTs.Paper1.ORSet.EventSpec.certifiedVersionsRAV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetEventSpec.lean:123:0: 'Sal.MRDTs.Paper1.ORSet.EventSpec.certifiedRA' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetEventSpec.lean:124:0: 'Sal.MRDTs.Paper1.ORSet.EventSpec.certifiedRAV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetEventSpec.lean:125:0: 'Sal.MRDTs.Paper1.ORSet.EventSpec.rawRA' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3411/3581] Replayed Sal.MRDTs.Paper1.GuardedORSet
+ℹ [3415/3588] Replayed Sal.MRDTs.Paper1.GuardedORSet
 info: Sal/MRDTs/Paper1/GuardedORSet.lean:121:0: 'Sal.MRDTs.Paper1.EfficientORSet.Guarded.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedORSet.lean:122:0: 'Sal.MRDTs.Paper1.EfficientORSet.Guarded.conditional' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3414/3581] Replayed Sal.MRDTs.Paper1.ConcreteORSetMetadata
+⚠ [3418/3588] Replayed Sal.MRDTs.Paper1.ConcreteORSetMetadata
 warning: Sal/MRDTs/Paper1/ConcreteORSetMetadata.lean:80:4: Try `simp at old` instead of `simpa using old`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-ℹ [3415/3581] Replayed Sal.MRDTs.Paper1.GuardedRawORSetReplay
+ℹ [3419/3588] Replayed Sal.MRDTs.Paper1.GuardedRawORSetReplay
 info: Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean:128:0: 'Sal.MRDTs.Paper1.EfficientORSet.RawReplay.representsCanonical' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1290,7 +1335,7 @@ info: Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean:129:0: 'Sal.MRDTs.Paper1.Effic
 info: Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean:130:0: 'Sal.MRDTs.Paper1.EfficientORSet.RawReplay.replaySupply' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean:208:0: 'Sal.MRDTs.Paper1.ORSet.RawReplay.unique' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean:209:0: 'Sal.MRDTs.Paper1.ORSet.RawReplay.replaySupply' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3421/3581] Replayed Sal.MRDTs.Paper1.GuardedEqualityVC
+ℹ [3425/3588] Replayed Sal.MRDTs.Paper1.GuardedEqualityVC
 info: Sal/MRDTs/Paper1/GuardedEqualityVC.lean:59:0: 'Sal.MRDTs.Paper1.EfficientORSet.GuardedEqualityVC.causal_add_eq' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1303,7 +1348,7 @@ info: Sal/MRDTs/Paper1/GuardedEqualityVC.lean:61:0: 'Sal.MRDTs.Paper1.EfficientO
 info: Sal/MRDTs/Paper1/GuardedEqualityVC.lean:62:0: 'Sal.MRDTs.Paper1.EfficientORSet.GuardedEqualityVC.local_add_incoherent_base' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3423/3581] Replayed Sal.MRDTs.Paper1.GuardedRawORSetVC
+ℹ [3427/3588] Replayed Sal.MRDTs.Paper1.GuardedRawORSetVC
 info: Sal/MRDTs/Paper1/GuardedRawORSetVC.lean:126:0: 'Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.local_add_represented' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1311,28 +1356,28 @@ info: Sal/MRDTs/Paper1/GuardedRawORSetVC.lean:127:0: 'Sal.MRDTs.Paper1.Efficient
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedRawORSetVC.lean:128:0: 'Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.mergeVCs' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3424/3581] Replayed Sal.MRDTs.Paper1.GuardedRawORSetJoin
+ℹ [3428/3588] Replayed Sal.MRDTs.Paper1.GuardedRawORSetJoin
 info: Sal/MRDTs/Paper1/GuardedRawORSetJoin.lean:18:0: 'Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.representationJoin' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedRawORSetJoin.lean:35:0: 'Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedRawORSetJoin.lean:36:0: 'Sal.MRDTs.Paper1.ORSet.GuardedRawVC.representationJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3425/3581] Replayed Sal.MRDTs.Paper1.GuardedRawExactExecution
+ℹ [3429/3588] Replayed Sal.MRDTs.Paper1.GuardedRawExactExecution
 info: Sal/MRDTs/Paper1/GuardedRawExactExecution.lean:98:0: 'Sal.MRDTs.Paper1.ORSet.RawExecution.vcJoinAt' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedRawExactExecution.lean:99:0: 'Sal.MRDTs.Paper1.ORSet.RawExecution.certificate' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedRawExactExecution.lean:100:0: 'Sal.MRDTs.Paper1.ORSet.RawExecution.convergence' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedRawExactExecution.lean:101:0: 'Sal.MRDTs.Paper1.ORSet.RawExecution.executionsV' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3426/3581] Replayed Sal.MRDTs.Paper1.ORSetPaperContract
+ℹ [3430/3588] Replayed Sal.MRDTs.Paper1.ORSetPaperContract
 info: Sal/MRDTs/Paper1/ORSetPaperContract.lean:37:0: 'Sal.MRDTs.Paper1.ORSet.PaperContract.specificationRawRA' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetPaperContract.lean:38:0: 'Sal.MRDTs.Paper1.ORSet.PaperContract.specificationRawRAV' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3428/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAHistory
+⚠ [3432/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAHistory
 warning: Sal/MRDTs/Paper1/CertifiedRGAHistory.lean:170:18: Try `simp at hconflict` instead of `simpa using hconflict`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
 warning: Sal/MRDTs/Paper1/CertifiedRGAHistory.lean:178:18: Try `simp at hconflict` instead of `simpa using hconflict`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-⚠ [3430/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation
+⚠ [3434/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation
 warning: Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean:9:8: automatically included section variable(s) unused in theorem `_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_filter_splice`:
   [DecidableEq α]
   [Inhabited α]
@@ -1431,7 +1476,7 @@ Hint: Omit it from the simp argument list.
   simp [̵s̵i̵d̵e̵d̵C̵h̵e̵c̵k̵,̵L̵i̵s̵t̵.̵m̵e̵m̵_̵a̵p̵p̵e̵n̵d̵,̵i̵d̵_̵n̵e̵,̵N̵e̵.̵s̵y̵m̵m̵ ̵i̵d̵_̵n̵e̵,̵I̵n̵s̵t̵a̵n̵c̵e̵s̵.̵S̵i̵d̵e̵d̵E̵m̵b̵e̵d̵R̵G̵A̵.̵s̵I̵s̵I̵n̵s̵]̵[̲s̲i̲d̲e̲d̲C̲h̲e̲c̲k̲,̲ ̲L̲i̲s̲t̲.̲m̲e̲m̲_̲a̲p̲p̲e̲n̲d̲,̲ ̲N̲e̲.̲s̲y̲m̲m̲ ̲i̲d̲_̲n̲e̲,̲ ̲I̲n̲s̲t̲a̲n̲c̲e̲s̲.̲S̲i̲d̲e̲d̲E̲m̲b̲e̲d̲R̲G̲A̲.̲s̲I̲s̲I̲n̲s̲]̲
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3431/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAFugue
+⚠ [3435/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAFugue
 warning: Sal/MRDTs/Paper1/CertifiedRGAFugue.lean:53:15: This simp argument is unused:
   stateOf
 
@@ -1441,11 +1486,11 @@ Hint: Omit it from the simp argument list.
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Paper1/CertifiedRGAFugue.lean:69:0: 'Sal.MRDTs.Paper1.CertifiedRGAFugue.unique' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAFugue.lean:70:0: 'Sal.MRDTs.Paper1.CertifiedRGAFugue.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3432/3581] Replayed Sal.MRDTs.Instances.Peritext
+ℹ [3436/3588] Replayed Sal.MRDTs.Instances.Peritext
 info: Sal/MRDTs/Instances/Peritext.lean:71:0: 'Sal.MRDTs.Instances.Peritext.replayAdequate' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/Peritext.lean:72:0: 'Sal.MRDTs.Instances.Peritext.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/Peritext.lean:73:0: 'Sal.MRDTs.Instances.Peritext.render_sequentially_correct' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3433/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAIssuance
+ℹ [3437/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAIssuance
 info: Sal/MRDTs/Paper1/CertifiedRGAIssuance.lean:65:0: 'Sal.MRDTs.Paper1.CertifiedRGAIssuance.Embedded.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAIssuance.lean:66:0: 'Sal.MRDTs.Paper1.CertifiedRGAIssuance.Sided.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAIssuance.lean:67:0: 'Sal.MRDTs.Paper1.CertifiedRGAIssuance.Peritext.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -1454,10 +1499,10 @@ info: Sal/MRDTs/Paper1/CertifiedRGAIssuance.lean:69:0: 'Sal.MRDTs.Paper1.Certifi
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAIssuance.lean:70:0: 'Sal.MRDTs.Paper1.CertifiedRGAIssuance.FugueMax.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3434/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAVCReplay
+ℹ [3438/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAVCReplay
 info: Sal/MRDTs/Paper1/CertifiedRGAVCReplay.lean:312:0: 'Sal.MRDTs.Paper1.CertifiedRGAVCReplay.Embedded.replaySupply' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAVCReplay.lean:313:0: 'Sal.MRDTs.Paper1.CertifiedRGAVCReplay.Sided.replaySupply' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3435/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra
+⚠ [3439/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAVCAlgebra
 warning: Sal/MRDTs/Paper1/CertifiedRGAVCAlgebra.lean:31:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1485,7 +1530,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 warning: Sal/MRDTs/Paper1/CertifiedRGAVCAlgebra.lean:92:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-⚠ [3436/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAInvariant
+⚠ [3440/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAInvariant
 warning: Sal/MRDTs/Paper1/CertifiedRGAInvariant.lean:31:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1505,24 +1550,24 @@ info: Sal/MRDTs/Paper1/CertifiedRGAInvariant.lean:200:0: 'Sal.MRDTs.Paper1.Certi
 info: Sal/MRDTs/Paper1/CertifiedRGAInvariant.lean:201:0: 'Sal.MRDTs.Paper1.CertifiedRGAInvariant.commutes_iff_semantic' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3438/3581] Replayed Sal.MRDTs.Paper1.CertifiedClosedExecution
+ℹ [3442/3588] Replayed Sal.MRDTs.Paper1.CertifiedClosedExecution
 info: Sal/MRDTs/Paper1/CertifiedClosedExecution.lean:270:0: 'Sal.MRDTs.Paper1.CertifiedClosedExecution.virtualMergeBaseState_canonical' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedClosedExecution.lean:271:0: 'Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_mintCertifiedV' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3439/3581] Replayed Sal.MRDTs.Paper1.Automation.AutomatedRGA
-info: Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:282:0: 'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.automated_vcs' depends on axioms: [propext,
+ℹ [3445/3588] Replayed Sal.MRDTs.Paper1.Automation.AutomatedRGA
+info: Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:263:0: 'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.automated_vcs' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-info: Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:303:0: 'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.automated_vcs' depends on axioms: [propext,
+info: Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:284:0: 'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.automated_vcs' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3440/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAVC
+ℹ [3446/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAVC
 info: Sal/MRDTs/Paper1/CertifiedRGAVC.lean:23:0: 'Sal.MRDTs.Paper1.CertifiedRGAVC.Embedded.representationJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAVC.lean:24:0: 'Sal.MRDTs.Paper1.CertifiedRGAVC.Embedded.mergeVCs' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3441/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGASidedVCAlgebra
+⚠ [3447/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGASidedVCAlgebra
 warning: Sal/MRDTs/Paper1/CertifiedRGASidedVCAlgebra.lean:30:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1543,13 +1588,13 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 warning: Sal/MRDTs/Paper1/CertifiedRGASidedVCAlgebra.lean:91:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-ℹ [3442/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGASidedVC
+ℹ [3448/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGASidedVC
 info: Sal/MRDTs/Paper1/CertifiedRGASidedVC.lean:22:0: 'Sal.MRDTs.Paper1.CertifiedRGAVC.Sided.representationJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGASidedVC.lean:23:0: 'Sal.MRDTs.Paper1.CertifiedRGAVC.Sided.mergeVCs' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3445/3581] Replayed Sal.MRDTs.Paper1.InvariantReplay
+ℹ [3451/3588] Replayed Sal.MRDTs.Paper1.InvariantReplay
 info: Sal/MRDTs/Paper1/InvariantReplay.lean:309:0: 'Sal.MRDTs.Paper1.InvariantReplay.convergence_on' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/InvariantReplay.lean:310:0: 'Sal.MRDTs.Paper1.InvariantReplay.restrict_restrictedLaws' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3446/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAInvariantReplay
+ℹ [3452/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAInvariantReplay
 info: Sal/MRDTs/Paper1/CertifiedRGAInvariantReplay.lean:119:0: 'Sal.MRDTs.Paper1.CertifiedRGAInvariantReplay.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAInvariantReplay.lean:120:0: 'Sal.MRDTs.Paper1.CertifiedRGAInvariantReplay.storedCanonical' depends on axioms: [propext,
  Classical.choice,
@@ -1557,7 +1602,7 @@ info: Sal/MRDTs/Paper1/CertifiedRGAInvariantReplay.lean:120:0: 'Sal.MRDTs.Paper1
 info: Sal/MRDTs/Paper1/CertifiedRGAInvariantReplay.lean:121:0: 'Sal.MRDTs.Paper1.CertifiedRGAInvariantReplay.concurrent_commutes' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3447/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate
+ℹ [3453/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate
 info: Sal/MRDTs/Paper1/CertifiedRGAInvariantCertificate.lean:117:0: 'Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.implementation_replay_equal' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1566,21 +1611,21 @@ info: Sal/MRDTs/Paper1/CertifiedRGAInvariantCertificate.lean:118:0: 'Sal.MRDTs.P
  Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAInvariantCertificate.lean:119:0: 'Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.correct' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGAInvariantCertificate.lean:120:0: 'Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.correctV' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3448/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueue
+ℹ [3454/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueue
 info: Sal/MRDTs/Paper1/AnchoredQueue.lean:210:0: 'Sal.MRDTs.Paper1.AnchoredQueue.concurrent_commutes' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueue.lean:211:0: 'Sal.MRDTs.Paper1.AnchoredQueue.scoped_laws' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3449/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueHistory
+ℹ [3455/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueHistory
 info: Sal/MRDTs/Paper1/AnchoredQueueHistory.lean:116:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.check_iff_legal' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueHistory.lean:117:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.versions_of_witnesses' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3450/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueReadSide
+ℹ [3456/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueReadSide
 info: Sal/MRDTs/Paper1/AnchoredQueueReadSide.lean:40:0: 'Sal.MRDTs.Paper1.AnchoredQueue.fifoFold_ids_subset' depends on axioms: [propext, Quot.sound]
-ℹ [3451/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueuePublic
+ℹ [3457/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueuePublic
 info: Sal/MRDTs/Paper1/AnchoredQueuePublic.lean:157:0: 'Sal.MRDTs.Paper1.AnchoredQueue.Public.execution' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueuePublic.lean:158:0: 'Sal.MRDTs.Paper1.AnchoredQueue.Public.reach' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueuePublic.lean:159:0: 'Sal.MRDTs.Paper1.AnchoredQueue.Public.virtual_base' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3452/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueCommutation
+⚠ [3458/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueCommutation
 warning: Sal/MRDTs/Paper1/AnchoredQueueCommutation.lean:40:23: This simp argument is unused:
   List.append_nil
 
@@ -1657,13 +1702,13 @@ info: Sal/MRDTs/Paper1/AnchoredQueueCommutation.lean:193:0: 'Sal.MRDTs.Paper1.An
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueCommutation.lean:194:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.unrelated_steps' depends on axioms: [propext, Quot.sound]
-ℹ [3453/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueSchedule
+ℹ [3459/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueSchedule
 info: Sal/MRDTs/Paper1/AnchoredQueueSchedule.lean:379:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.deadWord_legal' depends on axioms: [propext, Quot.sound]
-ℹ [3454/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueSupport
+ℹ [3460/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueSupport
 info: Sal/MRDTs/Paper1/AnchoredQueueSupport.lean:226:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.schedule_listPermOf' depends on axioms: [propext, Quot.sound]
-ℹ [3455/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueCoordinates
+ℹ [3461/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueCoordinates
 info: Sal/MRDTs/Paper1/AnchoredQueueCoordinates.lean:120:0: 'Sal.MRDTs.Paper1.AnchoredQueue.issued_enqueue_after_live' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3456/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueCausality
+ℹ [3462/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueCausality
 info: Sal/MRDTs/Paper1/AnchoredQueueCausality.lean:45:0: 'Sal.MRDTs.Paper1.AnchoredQueue.mint_record_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueCausality.lean:119:0: 'Sal.MRDTs.Paper1.AnchoredQueue.causal_birth_delete_predecessor' depends on axioms: [propext,
  Classical.choice,
@@ -1674,7 +1719,7 @@ info: Sal/MRDTs/Paper1/AnchoredQueueCausality.lean:150:0: 'Sal.MRDTs.Paper1.Anch
 info: Sal/MRDTs/Paper1/AnchoredQueueCausality.lean:151:0: 'Sal.MRDTs.Paper1.AnchoredQueue.causal_birth_before_if_surviving' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3457/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueRanks
+ℹ [3463/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueRanks
 info: Sal/MRDTs/Paper1/AnchoredQueueRanks.lean:67:0: 'Sal.MRDTs.Paper1.AnchoredQueue.firstDeletion_causal' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueRanks.lean:175:0: 'Sal.MRDTs.Paper1.AnchoredQueue.deletion_birth_pair' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueRanks.lean:227:0: 'Sal.MRDTs.Paper1.AnchoredQueue.exists_deadEndpoint' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -1682,22 +1727,22 @@ info: Sal/MRDTs/Paper1/AnchoredQueueRanks.lean:307:0: 'Sal.MRDTs.Paper1.Anchored
 info: Sal/MRDTs/Paper1/AnchoredQueueRanks.lean:363:0: 'Sal.MRDTs.Paper1.AnchoredQueue.DeadEndpoint.no_survivor_predecessor' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3458/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueSurvivors
+ℹ [3464/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueSurvivors
 info: Sal/MRDTs/Paper1/AnchoredQueueSurvivors.lean:128:0: 'Sal.MRDTs.Paper1.AnchoredQueue.liveEndpoint' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3459/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueCertificate
+ℹ [3465/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueCertificate
 info: Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean:304:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.certificate' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean:305:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.correct' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean:306:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.correctV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean:307:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.executions' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean:308:0: 'Sal.MRDTs.Paper1.AnchoredQueue.History.executionsV' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3460/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueControls
+ℹ [3466/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueControls
 info: Sal/MRDTs/Paper1/AnchoredQueueControls.lean:86:0: 'Sal.MRDTs.Paper1.AnchoredQueue.Controls.concurrent_same_tail' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueControls.lean:87:0: 'Sal.MRDTs.Paper1.AnchoredQueue.Controls.postmerge_continuation' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3463/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGARawOrderObstruction
+⚠ [3469/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGARawOrderObstruction
 warning: Sal/MRDTs/Paper1/CertifiedRGARawOrderObstruction.lean:235:49: This simp argument is unused:
   RGAM
 
@@ -1716,12 +1761,12 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Paper1/CertifiedRGARawOrderObstruction.lean:687:0: 'Sal.MRDTs.Paper1.CertifiedRGARawOrderObstruction.certified_raw_criterion_failure' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3464/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueExecutionControls
+ℹ [3470/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueExecutionControls
 info: Sal/MRDTs/Paper1/AnchoredQueueExecutionControls.lean:69:0: 'Sal.MRDTs.Paper1.AnchoredQueue.ExecutionControls.certified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueExecutionControls.lean:70:0: 'Sal.MRDTs.Paper1.AnchoredQueue.ExecutionControls.certified_representation_control' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3465/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueuePublicControls
+ℹ [3471/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueuePublicControls
 info: Sal/MRDTs/Paper1/AnchoredQueuePublicControls.lean:95:0: 'Sal.MRDTs.Paper1.AnchoredQueue.PublicControls.certified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueuePublicControls.lean:96:0: 'Sal.MRDTs.Paper1.AnchoredQueue.PublicControls.public_certified_control' depends on axioms: [propext,
  Classical.choice,
@@ -1729,12 +1774,12 @@ info: Sal/MRDTs/Paper1/AnchoredQueuePublicControls.lean:96:0: 'Sal.MRDTs.Paper1.
 info: Sal/MRDTs/Paper1/AnchoredQueuePublicControls.lean:107:0: 'Sal.MRDTs.Paper1.AnchoredQueue.PublicControls.public_ra_control' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3466/3581] Replayed Sal.MRDTs.Paper1.AnchoredQueueHistoryControls
+ℹ [3472/3588] Replayed Sal.MRDTs.Paper1.AnchoredQueueHistoryControls
 info: Sal/MRDTs/Paper1/AnchoredQueueHistoryControls.lean:42:0: 'Sal.MRDTs.Paper1.AnchoredQueue.HistoryControls.duplicate_removal' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueHistoryControls.lean:43:0: 'Sal.MRDTs.Paper1.AnchoredQueue.HistoryControls.fresh_births' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueHistoryControls.lean:44:0: 'Sal.MRDTs.Paper1.AnchoredQueue.HistoryControls.named_head' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/AnchoredQueueHistoryControls.lean:45:0: 'Sal.MRDTs.Paper1.AnchoredQueue.HistoryControls.removed_anchor_ignored' depends on axioms: [propext, Quot.sound]
-⚠ [3467/3581] Replayed Sal.MRDTs.Paper1.CertifiedSidedInvariant
+⚠ [3473/3588] Replayed Sal.MRDTs.Paper1.CertifiedSidedInvariant
 warning: Sal/MRDTs/Paper1/CertifiedSidedInvariant.lean:30:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1754,7 +1799,7 @@ info: Sal/MRDTs/Paper1/CertifiedSidedInvariant.lean:199:0: 'Sal.MRDTs.Paper1.Cer
 info: Sal/MRDTs/Paper1/CertifiedSidedInvariant.lean:200:0: 'Sal.MRDTs.Paper1.CertifiedSidedInvariant.commutes_iff_semantic' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3469/3581] Replayed Sal.MRDTs.Paper1.CertifiedSidedInvariantReplay
+ℹ [3475/3588] Replayed Sal.MRDTs.Paper1.CertifiedSidedInvariantReplay
 info: Sal/MRDTs/Paper1/CertifiedSidedInvariantReplay.lean:118:0: 'Sal.MRDTs.Paper1.CertifiedSidedInvariantReplay.laws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedSidedInvariantReplay.lean:119:0: 'Sal.MRDTs.Paper1.CertifiedSidedInvariantReplay.storedCanonical' depends on axioms: [propext,
  Classical.choice,
@@ -1762,7 +1807,7 @@ info: Sal/MRDTs/Paper1/CertifiedSidedInvariantReplay.lean:119:0: 'Sal.MRDTs.Pape
 info: Sal/MRDTs/Paper1/CertifiedSidedInvariantReplay.lean:120:0: 'Sal.MRDTs.Paper1.CertifiedSidedInvariantReplay.concurrent_commutes' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3470/3581] Replayed Sal.MRDTs.Paper1.CertifiedSidedInvariantCertificate
+ℹ [3476/3588] Replayed Sal.MRDTs.Paper1.CertifiedSidedInvariantCertificate
 info: Sal/MRDTs/Paper1/CertifiedSidedInvariantCertificate.lean:108:0: 'Sal.MRDTs.Paper1.CertifiedSidedInvariantCertificate.implementation_replay_equal' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1773,7 +1818,7 @@ info: Sal/MRDTs/Paper1/CertifiedSidedInvariantCertificate.lean:110:0: 'Sal.MRDTs
 info: Sal/MRDTs/Paper1/CertifiedSidedInvariantCertificate.lean:111:0: 'Sal.MRDTs.Paper1.CertifiedSidedInvariantCertificate.correctV' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3471/3581] Replayed Sal.MRDTs.Paper1.CertifiedSidedRawOrderObstruction
+⚠ [3477/3588] Replayed Sal.MRDTs.Paper1.CertifiedSidedRawOrderObstruction
 warning: Sal/MRDTs/Paper1/CertifiedSidedRawOrderObstruction.lean:235:49: This simp argument is unused:
   RGAM
 
@@ -1792,16 +1837,16 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Paper1/CertifiedSidedRawOrderObstruction.lean:747:0: 'Sal.MRDTs.Paper1.CertifiedSidedRawOrderObstruction.certified_raw_criterion_failure' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3472/3581] Replayed Sal.MRDTs.Paper1.CertifiedSidedInvariantControls
+ℹ [3478/3588] Replayed Sal.MRDTs.Paper1.CertifiedSidedInvariantControls
 info: Sal/MRDTs/Paper1/CertifiedSidedInvariantControls.lean:48:0: 'Sal.MRDTs.Paper1.CertifiedSidedInvariantControls.certified_execution_comparison' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedSidedInvariantControls.lean:49:0: 'Sal.MRDTs.Paper1.CertifiedSidedInvariantControls.commutation_control' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3473/3581] Replayed Sal.MRDTs.Paper1.CertifiedPeritextVC
+ℹ [3479/3588] Replayed Sal.MRDTs.Paper1.CertifiedPeritextVC
 info: Sal/MRDTs/Paper1/CertifiedPeritextVC.lean:21:0: 'Sal.MRDTs.Paper1.CertifiedPeritextVC.representationJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3474/3581] Replayed Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate
+ℹ [3480/3588] Replayed Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate
 info: Sal/MRDTs/Paper1/CertifiedPeritextInvariantCertificate.lean:118:0: 'Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate.implementation_replay_equal' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1814,7 +1859,7 @@ info: Sal/MRDTs/Paper1/CertifiedPeritextInvariantCertificate.lean:120:0: 'Sal.MR
 info: Sal/MRDTs/Paper1/CertifiedPeritextInvariantCertificate.lean:121:0: 'Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate.correctV' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3475/3581] Replayed Sal.MRDTs.Paper1.CertifiedPeritextRawOrderObstruction
+⚠ [3481/3588] Replayed Sal.MRDTs.Paper1.CertifiedPeritextRawOrderObstruction
 warning: Sal/MRDTs/Paper1/CertifiedPeritextRawOrderObstruction.lean:237:49: This simp argument is unused:
   RGAM
 
@@ -1833,7 +1878,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Paper1/CertifiedPeritextRawOrderObstruction.lean:692:0: 'Sal.MRDTs.Paper1.CertifiedPeritextRawOrderObstruction.certified_raw_criterion_failure' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3476/3581] Replayed Sal.MRDTs.Paper1.CertifiedPeritextInvariantControls
+⚠ [3482/3588] Replayed Sal.MRDTs.Paper1.CertifiedPeritextInvariantControls
 warning: Sal/MRDTs/Paper1/CertifiedPeritextInvariantControls.lean:43:6: This simp argument is unused:
   List.mem_singleton
 
@@ -1858,7 +1903,7 @@ info: Sal/MRDTs/Paper1/CertifiedPeritextInvariantControls.lean:115:0: 'Sal.MRDTs
 info: Sal/MRDTs/Paper1/CertifiedPeritextInvariantControls.lean:116:0: 'Sal.MRDTs.Paper1.CertifiedPeritextInvariantControls.scratch_excluded' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3477/3581] Replayed Sal.MRDTs.Paper1.CertifiedFugueRawOrderObstruction
+⚠ [3483/3588] Replayed Sal.MRDTs.Paper1.CertifiedFugueRawOrderObstruction
 warning: Sal/MRDTs/Paper1/CertifiedFugueRawOrderObstruction.lean:224:49: This simp argument is unused:
   RGAM
 
@@ -1922,7 +1967,7 @@ info: Sal/MRDTs/Paper1/CertifiedFugueRawOrderObstruction.lean:663:0: 'Sal.MRDTs.
 info: Sal/MRDTs/Paper1/CertifiedFugueRawOrderObstruction.lean:664:0: 'Sal.MRDTs.Paper1.CertifiedFugueRawOrderObstruction.original_guards' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3480/3581] Replayed Sal.MRDTs.Paper1.Automation.AutomatedFugue
+⚠ [3486/3588] Replayed Sal.MRDTs.Paper1.Automation.AutomatedFugue
 warning: Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:190:58: This simp argument is unused:
   eq_comm
 
@@ -1931,7 +1976,7 @@ Hint: Omit it from the simp argument list.
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:276:0: 'Sal.MRDTs.Paper1.Automation.AutomatedFugue.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3481/3581] Replayed Sal.MRDTs.Paper1.CertifiedFugueVCAlgebra
+⚠ [3487/3588] Replayed Sal.MRDTs.Paper1.CertifiedFugueVCAlgebra
 warning: Sal/MRDTs/Paper1/CertifiedFugueVCAlgebra.lean:41:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1941,15 +1986,15 @@ Note: This linter can be disabled with `set_option linter.unnecessarySimpa false
 warning: Sal/MRDTs/Paper1/CertifiedFugueVCAlgebra.lean:140:6: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-ℹ [3482/3581] Replayed Sal.MRDTs.Paper1.CertifiedFugueVC
+ℹ [3488/3588] Replayed Sal.MRDTs.Paper1.CertifiedFugueVC
 info: Sal/MRDTs/Paper1/CertifiedFugueVC.lean:26:0: 'Sal.MRDTs.Paper1.CertifiedFugueVC.representationJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedFugueVC.lean:27:0: 'Sal.MRDTs.Paper1.CertifiedFugueVC.mergeVCs' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3483/3581] Replayed Sal.MRDTs.Paper1.CertifiedFugueVCExecution
+ℹ [3489/3588] Replayed Sal.MRDTs.Paper1.CertifiedFugueVCExecution
 info: Sal/MRDTs/Paper1/CertifiedFugueVCExecution.lean:90:0: 'Sal.MRDTs.Paper1.CertifiedFugueVCExecution.closedJoinAt' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedFugueVCExecution.lean:91:0: 'Sal.MRDTs.Paper1.CertifiedFugueVCExecution.representedVersions' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3484/3581] Replayed Sal.MRDTs.Paper1.CertifiedFugueInvariant
+⚠ [3490/3588] Replayed Sal.MRDTs.Paper1.CertifiedFugueInvariant
 warning: Sal/MRDTs/Paper1/CertifiedFugueInvariant.lean:39:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1958,7 +2003,7 @@ info: Sal/MRDTs/Paper1/CertifiedFugueInvariant.lean:240:0: 'Sal.MRDTs.Paper1.Cer
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedFugueInvariant.lean:241:0: 'Sal.MRDTs.Paper1.CertifiedFugueInvariant.stored_valid' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3485/3581] Replayed Sal.MRDTs.Paper1.CertifiedFugueInvariantReplay
+⚠ [3491/3588] Replayed Sal.MRDTs.Paper1.CertifiedFugueInvariantReplay
 warning: Sal/MRDTs/Paper1/CertifiedFugueInvariantReplay.lean:26:71: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1969,7 +2014,7 @@ info: Sal/MRDTs/Paper1/CertifiedFugueInvariantReplay.lean:83:0: 'Sal.MRDTs.Paper
 info: Sal/MRDTs/Paper1/CertifiedFugueInvariantReplay.lean:84:0: 'Sal.MRDTs.Paper1.CertifiedFugueInvariantReplay.storedCanonical' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3486/3581] Replayed Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction
+ℹ [3492/3588] Replayed Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction
 info: Sal/MRDTs/Paper1/CertifiedFugueInvariantObstruction.lean:148:0: 'Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction.domain_closed' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -1991,11 +2036,11 @@ info: Sal/MRDTs/Paper1/CertifiedFugueInvariantObstruction.lean:153:0: 'Sal.MRDTs
 info: Sal/MRDTs/Paper1/CertifiedFugueInvariantObstruction.lean:154:0: 'Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction.certified_failure' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3487/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAOrderComparison
+ℹ [3493/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAOrderComparison
 info: Sal/MRDTs/Paper1/CertifiedRGAOrderComparison.lean:105:0: 'Sal.MRDTs.Paper1.CertifiedRGAOrderComparison.contracts_differ' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3488/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGAInvariantControls
+⚠ [3494/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGAInvariantControls
 warning: Sal/MRDTs/Paper1/CertifiedRGAInvariantControls.lean:43:6: This simp argument is unused:
   List.mem_singleton
 
@@ -2020,7 +2065,7 @@ info: Sal/MRDTs/Paper1/CertifiedRGAInvariantControls.lean:101:0: 'Sal.MRDTs.Pape
 info: Sal/MRDTs/Paper1/CertifiedRGAInvariantControls.lean:102:0: 'Sal.MRDTs.Paper1.CertifiedRGAInvariantControls.scratch_excluded' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3489/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreVC
+⚠ [3495/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreVC
 warning: Sal/MRDTs/Paper1/CertifiedRGACoreVC.lean:21:2: Try `simp at guard` instead of `simpa using guard`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -2092,18 +2137,18 @@ info: Sal/MRDTs/Paper1/CertifiedRGACoreVC.lean:249:0: 'Sal.MRDTs.Paper1.Certifie
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGACoreVC.lean:250:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreVC.text_mono' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3490/3581] Replayed Sal.MRDTs.Paper1.Automation.AutomatedCore
+ℹ [3496/3588] Replayed Sal.MRDTs.Paper1.Automation.AutomatedCore
 info: Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:37:0: 'Sal.MRDTs.Paper1.Automation.AutomatedCore.automated_vcs' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3493/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreAlgebra
+ℹ [3499/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreAlgebra
 info: Sal/MRDTs/Paper1/CertifiedRGACoreAlgebra.lean:94:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreAlgebra.normalize_merge' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGACoreAlgebra.lean:95:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreAlgebra.normalize_update' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3494/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC
+ℹ [3500/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC
 info: Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean:28:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC.mergeVCs' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean:29:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC.representationJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3495/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGARichVC
+ℹ [3501/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGARichVC
 info: Sal/MRDTs/Paper1/CertifiedRGARichVC.lean:32:0: 'Sal.MRDTs.Paper1.CertifiedRGARichVC.mergeVCs' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGARichVC.lean:33:0: 'Sal.MRDTs.Paper1.CertifiedRGARichVC.representationJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3496/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreExecution
+ℹ [3502/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreExecution
 info: Sal/MRDTs/Paper1/CertifiedRGACoreExecution.lean:113:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreExecution.Rich.canonicalConfig' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -2111,19 +2156,19 @@ info: Sal/MRDTs/Paper1/CertifiedRGACoreExecution.lean:114:0: 'Sal.MRDTs.Paper1.C
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGACoreExecution.lean:117:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreExecution.canonicalConfig' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3500/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreCertificate
+ℹ [3506/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGACoreCertificate
 info: Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean:197:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.correct' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean:198:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.correctV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean:199:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.history' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean:200:0: 'Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.text_canonical' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3501/3581] Replayed Sal.MRDTs.Paper1.CertifiedRGARichCertificate
+ℹ [3507/3588] Replayed Sal.MRDTs.Paper1.CertifiedRGARichCertificate
 info: Sal/MRDTs/Paper1/CertifiedRGARichCertificate.lean:124:0: 'Sal.MRDTs.Paper1.CertifiedRGARichCertificate.correct' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGARichCertificate.lean:125:0: 'Sal.MRDTs.Paper1.CertifiedRGARichCertificate.correctV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedRGARichCertificate.lean:126:0: 'Sal.MRDTs.Paper1.CertifiedRGARichCertificate.history' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3502/3581] Replayed Sal.MRDTs.Instances.GSet
+ℹ [3508/3588] Replayed Sal.MRDTs.Instances.GSet
 info: Sal/MRDTs/Instances/GSet.lean:32:0: 'Sal.MRDTs.Instances.GSet.sequential' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/GSet.lean:33:0: 'Sal.MRDTs.Instances.GSet.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3503/3581] Replayed Sal.MRDTs.Instances.BoundedCounter
+⚠ [3509/3588] Replayed Sal.MRDTs.Instances.BoundedCounter
 warning: Sal/MRDTs/Instances/BoundedCounter.lean:200:8: 'push_cast' tactic does nothing
 
 Note: This linter can be disabled with `set_option linter.unusedTactic false`
@@ -2133,7 +2178,7 @@ Note: This linter can be disabled with `set_option linter.unusedTactic false`
 info: Sal/MRDTs/Instances/BoundedCounter.lean:445:0: 'Sal.MRDTs.Instances.BoundedCounter.versions_safe' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/BoundedCounter.lean:446:0: 'Sal.MRDTs.Instances.BoundedCounter.versions_safeV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/BoundedCounter.lean:447:0: 'Sal.MRDTs.Instances.BoundedCounter.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3504/3581] Replayed Sal.MRDTs.Instances.LWWRegister
+ℹ [3510/3588] Replayed Sal.MRDTs.Instances.LWWRegister
 info: Sal/MRDTs/Instances/LWWRegister.lean:315:0: 'Sal.MRDTs.Instances.LWWRegister.join' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/LWWRegister.lean:316:0: 'Sal.MRDTs.Instances.LWWRegister.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/LWWRegister.lean:317:0: 'Sal.MRDTs.Instances.LWWRegister.rc_order_acyclic' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -2150,7 +2195,7 @@ info: Sal/MRDTs/Instances/LWWRegister.lean:323:0: 'Sal.MRDTs.Instances.LWWRegist
 info: Sal/MRDTs/Instances/LWWRegister.lean:324:0: 'Sal.MRDTs.Instances.LWWRegister.reversed_assignments_wrong_winner' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3505/3581] Replayed Sal.MRDTs.Instances.TreeMove
+⚠ [3511/3588] Replayed Sal.MRDTs.Instances.TreeMove
 warning: Sal/MRDTs/Instances/TreeMove.lean:251:13: This simp argument is unused:
   or_assoc
 
@@ -2203,7 +2248,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Instances/TreeMove.lean:498:0: 'Sal.MRDTs.Instances.TreeMove.render_safe' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/TreeMove.lean:499:0: 'Sal.MRDTs.Instances.TreeMove.join' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/TreeMove.lean:500:0: 'Sal.MRDTs.Instances.TreeMove.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3506/3581] Replayed Sal.MRDTs.Instances.AegisSheet
+⚠ [3512/3588] Replayed Sal.MRDTs.Instances.AegisSheet
 warning: Sal/MRDTs/Instances/AegisSheet.lean:466:13: This simp argument is unused:
   or_assoc
 
@@ -2254,11 +2299,11 @@ Hint: Omit it from the simp argument list.
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Instances/AegisSheet.lean:967:0: 'Sal.MRDTs.Instances.AegisSheet.join' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3509/3581] Replayed Sal.MRDTs.GC.Distributed
+ℹ [3515/3588] Replayed Sal.MRDTs.GC.Distributed
 info: Sal/MRDTs/GC/Distributed.lean:307:0: 'Sal.MRDTs.GC.EvidenceSPOT.complete' depends on axioms: [propext]
 info: Sal/MRDTs/GC/Distributed.lean:308:0: 'Sal.MRDTs.GC.EvidenceSPOT.missing_author' depends on axioms: [propext]
 info: Sal/MRDTs/GC/Distributed.lean:309:0: 'Sal.MRDTs.GC.execution_refines_noGC' depends on axioms: [propext]
-⚠ [3510/3581] Replayed Sal.MRDTs.Instances.AegisSheetGC
+⚠ [3516/3588] Replayed Sal.MRDTs.Instances.AegisSheetGC
 warning: Sal/MRDTs/Instances/AegisSheetGC.lean:531:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -2280,7 +2325,7 @@ info: Sal/MRDTs/Instances/AegisSheetGC.lean:1061:0: 'Sal.MRDTs.Instances.AegisSh
 info: Sal/MRDTs/Instances/AegisSheetGC.lean:1062:0: 'Sal.MRDTs.Instances.AegisSheet.GC.marker_preserves_late_restore_fixture' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3511/3581] Replayed Sal.MRDTs.Instances.AegisSheetSequential
+⚠ [3517/3588] Replayed Sal.MRDTs.Instances.AegisSheetSequential
 warning: Sal/MRDTs/Instances/AegisSheetSequential.lean:278:8: This simp argument is unused:
   Bool.not_eq_true
 
@@ -2903,7 +2948,7 @@ info: Sal/MRDTs/Instances/AegisSheetSequential.lean:2855:0: 'Sal.MRDTs.Instances
 info: Sal/MRDTs/Instances/AegisSheetSequential.lean:2856:0: 'Sal.MRDTs.Instances.AegisSheet.spec_linearizableV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/AegisSheetSequential.lean:2857:0: 'Sal.MRDTs.Instances.AegisSheet.sequentially_correct' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/AegisSheetSequential.lean:2858:0: 'Sal.MRDTs.Instances.AegisSheet.observationally_correct' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3514/3581] Replayed Sal.MRDTs.Instances.QueueCertificates
+⚠ [3520/3588] Replayed Sal.MRDTs.Instances.QueueCertificates
 warning: Sal/MRDTs/Instances/QueueCertificates.lean:37:6: Try `simp at ht` instead of `simpa using ht`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -2911,20 +2956,20 @@ info: Sal/MRDTs/Instances/QueueCertificates.lean:150:0: 'Sal.MRDTs.Instances.Que
 info: Sal/MRDTs/Instances/QueueCertificates.lean:151:0: 'Sal.MRDTs.Instances.Queue.queue_replay_witness' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/QueueCertificates.lean:152:0: 'Sal.MRDTs.Instances.Queue.queue_seq_sound' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Instances/QueueCertificates.lean:153:0: 'Sal.MRDTs.Instances.Queue.replayAdequate' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3515/3581] Replayed Sal.MRDTs.Instances.QueueContract
+ℹ [3521/3588] Replayed Sal.MRDTs.Instances.QueueContract
 info: Sal/MRDTs/Instances/QueueContract.lean:174:0: 'Sal.MRDTs.Instances.Queue.issued_dequeue_no_visible_dequeue' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/QueueContract.lean:175:0: 'Sal.MRDTs.Instances.Queue.duplicate_dequeues_concurrent' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/QueueContract.lean:176:0: 'Sal.MRDTs.Instances.Queue.queue_version_contents' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/QueueContract.lean:177:0: 'Sal.MRDTs.Instances.Queue.client_linear_fifo' depends on axioms: [propext, Quot.sound]
-ℹ [3516/3581] Replayed Sal.MRDTs.Instances.QueueLegalization
+ℹ [3522/3588] Replayed Sal.MRDTs.Instances.QueueLegalization
 info: Sal/MRDTs/Instances/QueueLegalization.lean:550:0: 'Sal.MRDTs.Instances.Queue.queue_legal_witness' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/QueueLegalization.lean:551:0: 'Sal.MRDTs.Instances.Queue.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/QueueLegalization.lean:552:0: 'Sal.MRDTs.Instances.Queue.queue_spec_linearizable' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/QueueLegalization.lean:553:0: 'Sal.MRDTs.Instances.Queue.queue_spec_linearizableV' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3517/3581] Replayed Sal.MRDTs.Instances.QueueCorrectness
+ℹ [3523/3588] Replayed Sal.MRDTs.Instances.QueueCorrectness
 info: Sal/MRDTs/Instances/QueueCorrectness.lean:118:0: 'Sal.MRDTs.Instances.Queue.queue_versions_sorted' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/QueueCorrectness.lean:119:0: 'Sal.MRDTs.Instances.Queue.queue_correct' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3518/3581] Replayed Sal.MRDTs.Instances.MVR
+⚠ [3524/3588] Replayed Sal.MRDTs.Instances.MVR
 warning: Sal/MRDTs/Instances/MVR.lean:59:18: The namespace 'MVR' is duplicated in the declaration 'Sal.MRDTs.Instances.MVR.MVR'
 
 Note: This linter can be disabled with `set_option linter.dupNamespace false`
@@ -2933,24 +2978,24 @@ info: Sal/MRDTs/Instances/MVR.lean:553:0: 'Sal.MRDTs.Instances.MVR.replayAdequat
 info: Sal/MRDTs/Instances/MVR.lean:554:0: 'Sal.MRDTs.Instances.MVR.concurrentState_no_sequential_register' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3519/3581] Replayed Sal.MRDTs.Instances.MVRContract
+ℹ [3525/3588] Replayed Sal.MRDTs.Instances.MVRContract
 info: Sal/MRDTs/Instances/MVRContract.lean:151:0: 'Sal.MRDTs.Instances.MVR.version_maximal' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/MVRContract.lean:301:0: 'Sal.MRDTs.Instances.MVR.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/MVRContract.lean:302:0: 'Sal.MRDTs.Instances.MVR.mvr_correct' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/MVRContract.lean:303:0: 'Sal.MRDTs.Instances.MVR.linear_register' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3520/3581] Replayed Sal.MRDTs.Instances.MVRLive
+ℹ [3526/3588] Replayed Sal.MRDTs.Instances.MVRLive
 info: Sal/MRDTs/Instances/MVRLive.lean:199:0: 'Sal.MRDTs.Instances.MVRLive.merge_shared_history' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/MVRLive.lean:200:0: 'Sal.MRDTs.Instances.MVRLive.fold_live' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3524/3581] Replayed Sal.MRDTs.Instances.MVRLiveContract
+ℹ [3530/3588] Replayed Sal.MRDTs.Instances.MVRLiveContract
 info: Sal/MRDTs/Instances/MVRLiveContract.lean:150:0: 'Sal.MRDTs.Instances.MVRLive.verified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/MVRLiveContract.lean:151:0: 'Sal.MRDTs.Instances.MVRLive.mvr_correct' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Instances/MVRLiveContract.lean:152:0: 'Sal.MRDTs.Instances.MVRLive.linear_register' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3525/3581] Replayed Sal.MRDTs.Metatheory.ProductionLedger
+ℹ [3531/3588] Replayed Sal.MRDTs.Metatheory.ProductionLedger
 info: Sal/MRDTs/Metatheory/ProductionLedger.lean:70:0: Sal.MRDTs.Production.registry : List PackagedMRDT
 info: Sal/MRDTs/Metatheory/ProductionLedger.lean:71:0: Sal.MRDTs.Instances.LWWRegister.verified : VerifiedMRDT Instances.LWWRegister.D
 info: Sal/MRDTs/Metatheory/ProductionLedger.lean:72:0: Sal.MRDTs.Instances.EfficientORSet.verified {α : Type} [DecidableEq α] : VerifiedMRDT (Instances.EfficientORSet.D α)
 info: Sal/MRDTs/Metatheory/ProductionLedger.lean:73:0: Sal.MRDTs.Instances.AegisSheet.verified : VerifiedMRDT Instances.AegisSheet.D
-⚠ [3527/3581] Replayed Sal.MRDTs.Paper1.Automation.CommutingAssembly
+⚠ [3533/3588] Replayed Sal.MRDTs.Paper1.Automation.CommutingAssembly
 warning: Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean:25:66: This simp argument is unused:
   UpdateSig.replayOrder
 
@@ -2959,7 +3004,7 @@ Hint: Omit it from the simp argument list.
   ̲ ̲ ̲ ̲ ̲R̲e̲p̲l̲a̲y̲P̲o̲l̲i̲c̲y̲.̲u̲n̲c̲o̲n̲s̲t̲r̲a̲i̲n̲e̲d̲]̲
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3528/3581] Replayed Sal.MRDTs.Paper1.SimpleEventPorts
+⚠ [3534/3588] Replayed Sal.MRDTs.Paper1.SimpleEventPorts
 warning: Sal/MRDTs/Paper1/SimpleEventPorts.lean:58:46: This simp argument is unused:
   D
 
@@ -3014,7 +3059,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Paper1/SimpleEventPorts.lean:373:0: 'Sal.MRDTs.Paper1.SimpleEventPorts.gsetCertifiedV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/SimpleEventPorts.lean:374:0: 'Sal.MRDTs.Paper1.SimpleEventPorts.pnCertifiedV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/SimpleEventPorts.lean:375:0: 'Sal.MRDTs.Paper1.SimpleEventPorts.booleanMapCertifiedV' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3529/3581] Replayed Sal.MRDTs.Paper1.SimpleConcretePorts
+ℹ [3535/3588] Replayed Sal.MRDTs.Paper1.SimpleConcretePorts
 info: Sal/MRDTs/Paper1/SimpleConcretePorts.lean:221:0: 'Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.gsetConditions' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/SimpleConcretePorts.lean:222:0: 'Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.addStoreConditions' depends on axioms: [propext,
  Classical.choice,
@@ -3032,13 +3077,13 @@ info: Sal/MRDTs/Paper1/SimpleConcretePorts.lean:228:0: 'Sal.MRDTs.Paper1.Concret
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/SimpleConcretePorts.lean:229:0: 'Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.pnExecutionsV' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3535/3581] Replayed Sal.MRDTs.Paper1.BoundedCounterEvent
+⚠ [3541/3588] Replayed Sal.MRDTs.Paper1.BoundedCounterEvent
 warning: Sal/MRDTs/Paper1/BoundedCounterEvent.lean:93:4: Try this: intro a b h
 info: Sal/MRDTs/Paper1/BoundedCounterEvent.lean:153:0: 'Sal.MRDTs.Paper1.BoundedCounterEvent.certifiedV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/BoundedCounterEvent.lean:154:0: 'Sal.MRDTs.Paper1.BoundedCounterEvent.commutationCompatibility_fails' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3537/3581] Replayed Sal.MRDTs.Paper1.IssuedConcretePorts
+ℹ [3543/3588] Replayed Sal.MRDTs.Paper1.IssuedConcretePorts
 info: Sal/MRDTs/Paper1/IssuedConcretePorts.lean:246:0: 'Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Bounded.conditions' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -3051,17 +3096,17 @@ info: Sal/MRDTs/Paper1/IssuedConcretePorts.lean:250:0: 'Sal.MRDTs.Paper1.Concret
 info: Sal/MRDTs/Paper1/IssuedConcretePorts.lean:251:0: 'Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.executionsV' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3538/3581] Replayed Sal.MRDTs.Paper1.RGAIdentified
+ℹ [3544/3588] Replayed Sal.MRDTs.Paper1.RGAIdentified
 info: Sal/MRDTs/Paper1/RGAIdentified.lean:533:0: 'Sal.MRDTs.Paper1.RGA.Identified.certifiedStrictRA' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAIdentified.lean:534:0: 'Sal.MRDTs.Paper1.RGA.Identified.certifiedStrictRAV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAIdentified.lean:535:0: 'Sal.MRDTs.Paper1.RGA.Identified.certifiedMissingNoopRA' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAIdentified.lean:536:0: 'Sal.MRDTs.Paper1.RGA.Identified.certifiedMissingNoopRAV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAIdentified.lean:537:0: 'Sal.MRDTs.Paper1.RGA.Identified.certifiedStrictExecutions' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAIdentified.lean:538:0: 'Sal.MRDTs.Paper1.RGA.Identified.certifiedStrictExecutionsV' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3539/3581] Replayed Sal.MRDTs.Paper1.RGAStrict
+ℹ [3545/3588] Replayed Sal.MRDTs.Paper1.RGAStrict
 info: Sal/MRDTs/Paper1/RGAStrict.lean:280:0: 'Sal.MRDTs.Paper1.RGA.Strict.crossed_orders_stuck' does not depend on any axioms
 info: Sal/MRDTs/Paper1/RGAStrict.lean:281:0: 'Sal.MRDTs.Paper1.RGA.Strict.crossed_no_continuation' depends on axioms: [propext, Quot.sound]
-⚠ [3540/3581] Replayed Sal.MRDTs.Paper1.RGACrossedExecution
+⚠ [3546/3588] Replayed Sal.MRDTs.Paper1.RGACrossedExecution
 warning: Sal/MRDTs/Paper1/RGACrossedExecution.lean:480:47: This simp argument is unused:
   or_false
 
@@ -3072,11 +3117,11 @@ Hint: Omit it from the simp argument list.
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: Sal/MRDTs/Paper1/RGACrossedExecution.lean:593:0: 'Sal.MRDTs.Paper1.RGA.CrossedExecution.execution' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3541/3581] Replayed Sal.MRDTs.Paper1.RGAConflict
+ℹ [3547/3588] Replayed Sal.MRDTs.Paper1.RGAConflict
 info: Sal/MRDTs/Paper1/RGAConflict.lean:123:0: 'Sal.MRDTs.Paper1.RGA.root_insert_remove_not_commute' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAConflict.lean:124:0: 'Sal.MRDTs.Paper1.RGA.anchor_two_insert_remove_one_not_commute' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAConflict.lean:125:0: 'Sal.MRDTs.Paper1.RGA.specification_conflicts_not_covered' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3542/3581] Replayed Sal.MRDTs.Paper1.RGAStrictInvestigation
+⚠ [3548/3588] Replayed Sal.MRDTs.Paper1.RGAStrictInvestigation
 warning: Sal/MRDTs/Paper1/RGAStrictInvestigation.lean:249:8: This simp argument is unused:
   Trace.deleteOne
 
@@ -3100,7 +3145,7 @@ info: Sal/MRDTs/Paper1/RGAStrictInvestigation.lean:362:0: 'Sal.MRDTs.Paper1.RGA.
 info: Sal/MRDTs/Paper1/RGAStrictInvestigation.lean:363:0: 'Sal.MRDTs.Paper1.RGA.Strict.Investigation.crossed_not_specificationRA' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3543/3581] Replayed Sal.MRDTs.Paper1.RGACrossedEvidence
+ℹ [3549/3588] Replayed Sal.MRDTs.Paper1.RGACrossedEvidence
 info: Sal/MRDTs/Paper1/RGACrossedEvidence.lean:248:0: 'Sal.MRDTs.Paper1.RGA.CrossedExecution.Evidence.issuer_guard' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGACrossedEvidence.lean:249:0: 'Sal.MRDTs.Paper1.RGA.CrossedExecution.Evidence.mint_honest' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGACrossedEvidence.lean:250:0: 'Sal.MRDTs.Paper1.RGA.CrossedExecution.Evidence.mint_certified' depends on axioms: [propext,
@@ -3114,7 +3159,7 @@ info: Sal/MRDTs/Paper1/RGACrossedEvidence.lean:253:0: 'Sal.MRDTs.Paper1.RGA.Cros
 info: Sal/MRDTs/Paper1/RGACrossedEvidence.lean:254:0: 'Sal.MRDTs.Paper1.RGA.CrossedExecution.Evidence.certified_strict_counterexample' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-⚠ [3549/3581] Replayed Sal.MRDTs.Paper1.PolicyObstructions
+⚠ [3555/3588] Replayed Sal.MRDTs.Paper1.PolicyObstructions
 warning: Sal/MRDTs/Paper1/PolicyObstructions.lean:65:40: This simp argument is unused:
   or_assoc
 
@@ -3137,12 +3182,12 @@ info: Sal/MRDTs/Paper1/PolicyObstructions.lean:88:0: 'Sal.MRDTs.Paper1.PolicyObs
 info: Sal/MRDTs/Paper1/PolicyObstructions.lean:89:0: 'Sal.MRDTs.Paper1.PolicyObstructions.MVR.no_restricted_policy' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3551/3581] Replayed Sal.MRDTs.Paper1.GuardedQueueMVR
+ℹ [3557/3588] Replayed Sal.MRDTs.Paper1.GuardedQueueMVR
 info: Sal/MRDTs/Paper1/GuardedQueueMVR.lean:79:0: 'Sal.MRDTs.Paper1.GuardedQueueMVR.Queue.no_raw_laws' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedQueueMVR.lean:80:0: 'Sal.MRDTs.Paper1.GuardedQueueMVR.MVR.no_raw_laws' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedQueueMVR.lean:81:0: 'Sal.MRDTs.Paper1.GuardedQueueMVR.Queue.control' depends on axioms: [propext, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedQueueMVR.lean:82:0: 'Sal.MRDTs.Paper1.GuardedQueueMVR.MVR.origin_control' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3552/3581] Replayed Sal.MRDTs.Paper1.GuardedRGAObstructions
+ℹ [3558/3588] Replayed Sal.MRDTs.Paper1.GuardedRGAObstructions
 info: Sal/MRDTs/Paper1/GuardedRGAObstructions.lean:305:0: 'Sal.MRDTs.Paper1.GuardedRGAObstructions.embedded_guarded_control' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -3166,19 +3211,19 @@ info: Sal/MRDTs/Paper1/GuardedRGAObstructions.lean:315:0: 'Sal.MRDTs.Paper1.Guar
 info: Sal/MRDTs/Paper1/GuardedRGAObstructions.lean:316:0: 'Sal.MRDTs.Paper1.GuardedRGAObstructions.RegisteredFugueMax.no_laws' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3554/3581] Replayed Sal.MRDTs.Paper1.GuardedLWWPort
+ℹ [3560/3588] Replayed Sal.MRDTs.Paper1.GuardedLWWPort
 info: Sal/MRDTs/Paper1/GuardedLWWPort.lean:113:0: 'Sal.MRDTs.Paper1.LWW.GuardedPort.history' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedLWWPort.lean:114:0: 'Sal.MRDTs.Paper1.LWW.GuardedPort.certificate' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedLWWPort.lean:115:0: 'Sal.MRDTs.Paper1.LWW.GuardedPort.executionsV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/GuardedLWWPort.lean:116:0: 'Sal.MRDTs.Paper1.LWW.GuardedPort.convergence' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3561/3581] Replayed Sal.MRDTs.Paper1.CertifiedMVRVC
+⚠ [3567/3588] Replayed Sal.MRDTs.Paper1.CertifiedMVRVC
 warning: Sal/MRDTs/Paper1/CertifiedMVRVC.lean:91:58: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
 warning: Sal/MRDTs/Paper1/CertifiedMVRVC.lean:151:51: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-ℹ [3562/3581] Replayed Sal.MRDTs.Paper1.CertifiedMVRExecution
+ℹ [3568/3588] Replayed Sal.MRDTs.Paper1.CertifiedMVRExecution
 info: Sal/MRDTs/Paper1/CertifiedMVRExecution.lean:270:0: 'Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.Execution.vcVirtualMergeBaseStateRepresents' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -3188,16 +3233,16 @@ info: Sal/MRDTs/Paper1/CertifiedMVRExecution.lean:271:0: 'Sal.MRDTs.Paper1.Certi
 info: Sal/MRDTs/Paper1/CertifiedMVRExecution.lean:272:0: 'Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.Execution.representedVersions' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3565/3581] Replayed Sal.MRDTs.Paper1.CertifiedQueueMVRQueue
+ℹ [3571/3588] Replayed Sal.MRDTs.Paper1.CertifiedQueueMVRQueue
 info: Sal/MRDTs/Paper1/CertifiedQueueMVRQueue.lean:366:0: 'Sal.MRDTs.Paper1.CertifiedQueueMVR.Queue.certified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/CertifiedQueueMVRQueue.lean:367:0: 'Sal.MRDTs.Paper1.CertifiedQueueMVR.Queue.no_local_payload_policy' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3568/3581] Replayed Sal.MRDTs.Paper1.ORSetSPOT
+ℹ [3574/3588] Replayed Sal.MRDTs.Paper1.ORSetSPOT
 info: Sal/MRDTs/Paper1/ORSetSPOT.lean:63:0: 'Sal.MRDTs.Paper1.ORSet.SPOT.retains_all_adds' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetSPOT.lean:64:0: 'Sal.MRDTs.Paper1.ORSet.SPOT.removes_all_adds' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetSPOT.lean:65:0: 'Sal.MRDTs.Paper1.ORSet.SPOT.defeater_union' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3569/3581] Replayed Sal.MRDTs.Paper1.ORSetExecution
+⚠ [3575/3588] Replayed Sal.MRDTs.Paper1.ORSetExecution
 warning: Sal/MRDTs/Paper1/ORSetExecution.lean:529:38: this tactic is never executed
 
 Note: This linter can be disabled with `set_option linter.unreachableTactic false`
@@ -3228,7 +3273,7 @@ Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus fa
 info: Sal/MRDTs/Paper1/ORSetExecution.lean:737:0: 'Sal.MRDTs.Paper1.ORSet.Execution.defeater_execution' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetExecution.lean:738:0: 'Sal.MRDTs.Paper1.ORSet.Execution.defeater_ra_execution' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetExecution.lean:739:0: 'Sal.MRDTs.Paper1.ORSet.Execution.figure_states' depends on axioms: [propext, Classical.choice, Quot.sound]
-⚠ [3570/3581] Replayed Sal.MRDTs.Paper1.RGAAllocatingInvestigation
+⚠ [3576/3588] Replayed Sal.MRDTs.Paper1.RGAAllocatingInvestigation
 warning: Sal/MRDTs/Paper1/RGAAllocatingInvestigation.lean:156:77: 'grind' tactic does nothing
 
 Note: This linter can be disabled with `set_option linter.unusedTactic false`
@@ -3278,26 +3323,26 @@ Hint: Omit it from the simp argument list.
   simp [projection, mem_insert_exact, filtered_insert_length, hf, Bool.or_assoc, B̵o̵o̵l̵.̵o̵r̵_̵l̵e̵f̵t̵_̵c̵o̵m̵m̵,̵ ̵Bool.or_comm]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-ℹ [3571/3581] Replayed Sal.MRDTs.Paper1.RGAAllocatingCounterexample
+ℹ [3577/3588] Replayed Sal.MRDTs.Paper1.RGAAllocatingCounterexample
 info: Sal/MRDTs/Paper1/RGAAllocatingCounterexample.lean:114:0: 'Sal.MRDTs.Paper1.RGA.AllocatingCounterexample.not_specificationRA' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/RGAAllocatingCounterexample.lean:115:0: 'Sal.MRDTs.Paper1.RGA.AllocatingCounterexample.certified_counterexample' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3572/3581] Replayed Sal.MRDTs.Paper1.RGAComparison
+ℹ [3578/3588] Replayed Sal.MRDTs.Paper1.RGAComparison
 info: Sal/MRDTs/Paper1/RGAComparison.lean:41:0: 'Sal.MRDTs.Paper1.RGA.Comparison.strict_alphabet_comparison' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAComparison.lean:42:0: 'Sal.MRDTs.Paper1.RGA.Comparison.identified_missing_noop' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAComparison.lean:76:0: 'Sal.MRDTs.Paper1.RGA.Comparison.same_execution_comparison' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAComparison.lean:77:0: 'Sal.MRDTs.Paper1.RGA.Comparison.not_every_certified_allocating' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3573/3581] Replayed Sal.MRDTs.Paper1.RGAEventMigration
+ℹ [3579/3588] Replayed Sal.MRDTs.Paper1.RGAEventMigration
 info: Sal/MRDTs/Paper1/RGAEventMigration.lean:87:0: 'Sal.MRDTs.Paper1.RGA.EventMigration.certified' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAEventMigration.lean:88:0: 'Sal.MRDTs.Paper1.RGA.EventMigration.history' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAEventMigration.lean:89:0: 'Sal.MRDTs.Paper1.RGA.EventMigration.certifiedV' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/RGAEventMigration.lean:90:0: 'Sal.MRDTs.Paper1.RGA.EventMigration.crossed_control' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3574/3581] Replayed Sal.MRDTs.Paper1.RGAEmbeddingObstructions
+ℹ [3580/3588] Replayed Sal.MRDTs.Paper1.RGAEmbeddingObstructions
 info: Sal/MRDTs/Paper1/RGAEmbeddingObstructions.lean:201:0: 'Sal.MRDTs.Paper1.RGA.EmbeddingObstructions.Embedded.no_restricted_policy' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -3322,12 +3367,12 @@ info: Sal/MRDTs/Paper1/RGAEmbeddingObstructions.lean:207:0: 'Sal.MRDTs.Paper1.RG
 info: Sal/MRDTs/Paper1/RGAEmbeddingObstructions.lean:208:0: 'Sal.MRDTs.Paper1.RGA.EmbeddingObstructions.RegisteredFugueMax.no_restricted_policy' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
-ℹ [3575/3581] Replayed Sal.MRDTs.Paper1.MigrationCoverage
+ℹ [3581/3588] Replayed Sal.MRDTs.Paper1.MigrationCoverage
 info: Sal/MRDTs/Paper1/MigrationCoverage.lean:154:0: 'Sal.MRDTs.Paper1.MigrationCoverage.packages_eq_production' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/MigrationCoverage.lean:155:0: 'Sal.MRDTs.Paper1.MigrationCoverage.counts' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/MigrationCoverage.lean:156:0: 'Sal.MRDTs.Paper1.MigrationCoverage.exactORSet' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/MigrationCoverage.lean:157:0: 'Sal.MRDTs.Paper1.MigrationCoverage.efficient_direct' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3576/3581] Replayed Sal.MRDTs.Paper1.ORSetBridgeControls
+ℹ [3582/3588] Replayed Sal.MRDTs.Paper1.ORSetBridgeControls
 info: Sal/MRDTs/Paper1/ORSetBridgeControls.lean:73:0: 'Sal.MRDTs.Paper1.ORSetBridgeControls.exact_remove_control' depends on axioms: [propext, Classical.choice, Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetBridgeControls.lean:74:0: 'Sal.MRDTs.Paper1.ORSetBridgeControls.efficient_remove_control' depends on axioms: [propext,
  Classical.choice,
@@ -3337,7 +3382,7 @@ info: Sal/MRDTs/Paper1/ORSetBridgeControls.lean:76:0: 'Sal.MRDTs.Paper1.ORSetBri
  Classical.choice,
  Quot.sound]
 info: Sal/MRDTs/Paper1/ORSetBridgeControls.lean:77:0: 'Sal.MRDTs.Paper1.ORSetBridgeControls.compatibility_controls' depends on axioms: [propext, Classical.choice, Quot.sound]
-ℹ [3579/3581] Replayed Sal.MRDTs.Paper1.Ledger
+ℹ [3585/3588] Replayed Sal.MRDTs.Paper1.Ledger
 info: Sal/MRDTs/Paper1/Ledger.lean:75:0: Sal.MRDTs.Paper1.HistorySpec (Update Query Value : Type) : Type
 info: Sal/MRDTs/Paper1/Ledger.lean:76:0: Sal.MRDTs.Paper1.HistoryMachine.toSpec {U Q V : Type} (M : HistoryMachine U Q V) : HistorySpec U Q V
 info: Sal/MRDTs/Paper1/Ledger.lean:77:0: Sal.MRDTs.Paper1.OperationPolicy (Update : Type) : Type
@@ -3371,7 +3416,7 @@ info: Sal/MRDTs/Paper1/Ledger.lean:92:0: Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Merge
 info: Sal/MRDTs/Paper1/Ledger.lean:93:0: Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate {D : MRDTSig} (P : OperationPolicy D.AppOp)
   (S : HistorySpec (Foundation.Op D.AppOp) D.Query D.Value) (I : Issuance D) : Prop
 info: Sal/MRDTs/Paper1/Ledger.lean:94:0: Sal.MRDTs.Paper1.ConcreteMRDT.VCReplayConditions {D : MRDTSig} (P : OperationPolicy D.AppOp) (I : Issuance D) : Type
-⚠ [3580/3581] Replayed Sal.MRDTs.Paper1.Automation.ORSetAutomationControls
+⚠ [3587/3588] Replayed Sal.MRDTs.Paper1.Automation.ORSetAutomationControls
 warning: Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean:86:2: Try `simp at member` instead of `simpa using member`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -3392,5 +3437,114 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 warning: Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean:123:1: Try `simp at member` instead of `simpa using member`
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-✔ [3581/3581] Built Sal.MRDTs.Paper1.Automation.Controls (1.7s)
-Build completed successfully (3581 jobs).
+ℹ [3588/3588] Replayed Sal.MRDTs.Paper1.Automation.OrderedAutomationControls
+info: Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean:55:0: 'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls.freshKit' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean:69:2: ORDERED_REJECT internal exception #5
+info: Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean:78:2: ORDERED_REJECT Unknown identifier `missingOrderedDescription`
+info: Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean:117:2: ORDERED_REJECT `grind` failed
+case grind.1.1
+Γ : Sal.EmbedRGA.OrderedPrefixCode
+s : (Sal.MRDTs.Paper1.Automation.OrderedAutomationControls.brokenUpdate Γ).State
+p : Sal.MRDTs.Instances.EmbedRGA.ERec
+t : Sal.MRDTs.Foundation.Timestamp
+r : Sal.MRDTs.Foundation.Replica
+e : ℕ
+π : List Bool
+a : ℕ
+fresh : ∀ p ∈ s, p.1 ≠ t
+absent : t ∉ List.map Prod.fst s
+fst fst_1 : ℕ
+snd_1 : List Bool
+h_1 : (fst, fst_1, snd_1) = p
+h_2 : p = (t, e, π ++ Γ.enc (t - a))
+h_3 : -1 * ↑t + ↑a ≤ 0
+⊢ False
+[grind] Goal diagnostics
+  [facts] Asserted facts
+    [prop] ∀ p ∈ s, ¬p.1 = t
+    [prop] t ∉ List.map Prod.fst s
+    [prop] p = (t, e, π ++ Γ.enc (t - a)) ∨ p ∈ s
+    [prop] ↑(t - a) = if -1 * ↑t + ↑a ≤ 0 then ↑t + -1 * ↑a else 0
+    [prop] p ∈ s → ¬p.1 = t
+    [prop] (t ∈ List.map Prod.fst s) = ∃ a ∈ s, a.1 = t
+    [prop] ∀ p ∈ s, ¬p.1 = t
+    [prop] (fst, fst_1, snd_1) = p
+    [prop] p = (t, e, π ++ Γ.enc (t - a))
+    [prop] -1 * ↑t + ↑a ≤ 0
+  [eqc] True propositions
+    [prop] p = (t, e, π ++ Γ.enc (t - a)) ∨ p ∈ s
+    [prop] p = (t, e, π ++ Γ.enc (t - a))
+    [prop] -1 * ↑t + ↑a ≤ 0
+    [prop] ∀ p ∈ s, ¬p.1 = t
+    [prop] (t ∈ List.map Prod.fst s) = ∃ a ∈ s, a.1 = t
+    [prop] p.1 = t
+    [prop] p ∈ s → ¬p.1 = t
+  [eqc] False propositions
+    [prop] t ∈ List.map Prod.fst s
+    [prop] p ∈ s
+    [prop] ¬p.1 = t
+    [prop] ∃ a ∈ s, a.1 = t
+  [eqc] Equivalence classes
+    [eqc] {p, (t, e, π ++ Γ.enc (t - a)), (fst, fst_1, snd_1), (p.1, p.2)}
+    [eqc] {t, fst, p.1}
+      [eqc] {(t, e, π ++ Γ.enc (t - a)).1, (p.1, p.2).1}
+    [eqc] {e, fst_1, p.2.1, (t, e, π ++ Γ.enc (t - a)).2.1, (p.1, p.2).2.1}
+      [eqc] {(e, π ++ Γ.enc (t - a)).1, (p.2.1, p.2.2).1}
+    [eqc] {snd_1, p.2.2, (t, e, π ++ Γ.enc (t - a)).2.2, (p.1, p.2).2.2, π ++ Γ.enc (t - a)}
+      [eqc] {(e, π ++ Γ.enc (t - a)).2, (p.2.1, p.2.2).2}
+    [eqc] {p.2,
+        (e, π ++ Γ.enc (t - a)),
+        (fst_1, snd_1),
+        (p.2.1, p.2.2),
+        ((t, e, π ++ Γ.enc (t - a)).2.1, (t, e, π ++ Γ.enc (t - a)).2.2),
+        ((p.1, p.2).2.1, (p.1, p.2).2.2)}
+      [eqc] {(t, e, π ++ Γ.enc (t - a)).2, (p.1, p.2).2}
+    [eqc] others
+      [eqc] {↑(t - a), if -1 * ↑t + ↑a ≤ 0 then ↑t + -1 * ↑a else 0, ↑t + -1 * ↑a}
+  [cases] Case analyses
+    [cases] [1/1]: p
+      [cases] source: Initial goal
+    [cases] [1/2]: p = (t, e, π ++ Γ.enc (t - a)) ∨ p ∈ s
+      [cases] source: Initial goal
+    [cases] [1/2]: if -1 * ↑t + ↑a ≤ 0 then ↑t + -1 * ↑a else 0
+      [cases] source: Initial goal
+  [ematch] E-matching patterns
+    [thm] fresh: [@Membership.mem `[ℕ × ℕ × List Bool] `[List (ℕ × ℕ × List Bool)] `[List.instMembership] `[s] #1]
+    [thm] fresh: [@Ne `[ℕ] (@Prod.fst `[ℕ] `[ℕ × List Bool] #1) `[t]]
+    [thm] fresh: [@Prod.fst `[ℕ] `[ℕ × List Bool] #1]
+    [thm] fresh: [@Membership.mem `[ℕ × ℕ × List Bool] `[List (ℕ × ℕ × List Bool)] `[List.instMembership] `[s] #1]
+    [thm] List.mem_map: [@Membership.mem #3 (List _) _ (@List.map #4 _ #1 #0) #2]
+    [thm] List.map_map: [@List.map #5 #4 #2 (@List.map #3 _ #1 #0)]
+    [thm] List.map_append: [@List.map #4 #3 #2 (@HAppend.hAppend (List _) (List _) (List _) _ #1 #0)]
+    [thm] List.mem_append: [@Membership.mem #3 (List _) _ (@HAppend.hAppend (List _) (List _) (List _) _ #1 #0) #2]
+    [thm] List.append_assoc: [@HAppend.hAppend (List #3) (List _) (List _) _ #2 (@HAppend.hAppend (List _) (List _) (List _) _ #1 #0)]
+    [thm] List.append_assoc: [@HAppend.hAppend (List #3) (List _) (List _) _ (@HAppend.hAppend (List _) (List _) (List _) _ #2 #1) #0]
+    [thm] List.nil_append: [@HAppend.hAppend (List #1) (List _) (List _) _ (@List.nil _) #0]
+    [thm] List.append_nil: [@HAppend.hAppend (List #1) (List _) (List _) _ #0 (@List.nil _)]
+    [thm] List.map_nil: [@List.map #2 #1 #0 (@List.nil _)]
+    [thm] List.not_mem_nil: [@Membership.mem #1 (List _) _ (@List.nil _) #0]
+    [thm] Multiset.mem_add: [@Membership.mem #3 _ _ (@HAdd.hAdd _ _ _ _ #1 #0) #2]
+  [cutsat] Assignment satisfying linear constraints
+    [assign] t := 0
+    [assign] r := 2
+    [assign] e := 1
+    [assign] a := 0
+    [assign] fst := 0
+    [assign] fst_1 := 1
+    [assign] p.2.1 := 1
+    [assign] (t, e, π ++ Γ.enc (t - a)).2.1 := 1
+    [assign] (p.1, p.2).2.1 := 1
+    [assign] (e, π ++ Γ.enc (t - a)).1 := 1
+    [assign] (p.2.1, p.2.2).1 := 1
+    [assign] p.1 := 0
+    [assign] (t, e, π ++ Γ.enc (t - a)).1 := 0
+    [assign] (p.1, p.2).1 := 0
+[grind] Diagnostics
+  [thm] E-Matching instances
+    [thm] List.mem_map ↦ 1
+  [cases] Cases instances
+    [cases] Prod ↦ 1
+info: Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean:124:2: ORDERED_REJECT `simp` made no progress
+Build completed successfully (3588 jobs).

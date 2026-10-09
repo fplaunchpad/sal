@@ -444,7 +444,7 @@
     },
     "embed-rga": {
       "baseline_combined_lines": 726,
-      "current_combined_lines": 374,
+      "current_combined_lines": 60,
       "baseline_shared_framework_lines": 28,
       "declaration_keys": [
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
@@ -504,7 +504,7 @@
     },
     "sided-embed-rga": {
       "baseline_combined_lines": 773,
-      "current_combined_lines": 420,
+      "current_combined_lines": 424,
       "baseline_shared_framework_lines": 28,
       "declaration_keys": [
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
@@ -569,7 +569,7 @@
     },
     "peritext-embed-rga": {
       "baseline_combined_lines": 726,
-      "current_combined_lines": 374,
+      "current_combined_lines": 60,
       "baseline_shared_framework_lines": 32,
       "declaration_keys": [
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
@@ -630,7 +630,7 @@
     },
     "sided-peritext-core": {
       "baseline_combined_lines": 872,
-      "current_combined_lines": 426,
+      "current_combined_lines": 430,
       "baseline_shared_framework_lines": 113,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Product.lean:131:135",
@@ -719,7 +719,7 @@
     },
     "sided-peritext-rich-core": {
       "baseline_combined_lines": 882,
-      "current_combined_lines": 430,
+      "current_combined_lines": 434,
       "baseline_shared_framework_lines": 113,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Product.lean:131:135",
@@ -808,8 +808,8 @@
       "baseline_raw_root": "Sal.MRDTs.Paper1.CertifiedRGARichVC.mergeVCs"
     },
     "anchored-queue-paper-variant": {
-      "baseline_combined_lines": 759,
-      "current_combined_lines": 407,
+      "baseline_combined_lines": 761,
+      "current_combined_lines": 69,
       "baseline_shared_framework_lines": 33,
       "declaration_keys": [
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
@@ -830,6 +830,7 @@
         "Sal/MRDTs/Instances/EmbedRGA.lean:450:483",
         "Sal/MRDTs/Instances/EmbedRGA.lean:485:556",
         "Sal/MRDTs/Instances/EmbedRGA.lean:761:779",
+        "Sal/MRDTs/Instances/RGAKernel/Code.lean:101:105",
         "Sal/MRDTs/Instances/RGAKernel/Code.lean:66:76",
         "Sal/MRDTs/Instances/RGAKernel/Code.lean:78:99",
         "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:149:156",
@@ -872,7 +873,7 @@
     },
     "fugue-max": {
       "baseline_combined_lines": 3377,
-      "current_combined_lines": 953,
+      "current_combined_lines": 959,
       "baseline_shared_framework_lines": 28,
       "declaration_keys": [
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
@@ -1089,11 +1090,11 @@
     }
   },
   "unique_campaign": {
-    "baseline_combined_lines": 5921,
-    "baseline_datatype_proof_lines": 5894,
+    "baseline_combined_lines": 5923,
+    "baseline_datatype_proof_lines": 5896,
     "baseline_wrapper_call_lines": 27,
     "baseline_excluded_shared_framework_lines": 353,
-    "current_combined_lines": 1762
+    "current_combined_lines": 1502
   },
   "declarations": {
     "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean:1352:1360": {
@@ -8538,6 +8539,22 @@
         28
       ]
     },
+    "Sal/MRDTs/Instances/RGAKernel/Code.lean:101:105": {
+      "file": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
+      "start_line": 101,
+      "end_line": 105,
+      "category": "datatype_proof_packaging",
+      "constants": [
+        "Sal.EmbedRGA.unaryCode"
+      ],
+      "consumers": [
+        "anchored-queue-paper-variant"
+      ],
+      "code_lines": [
+        104,
+        105
+      ]
+    },
     "Sal/MRDTs/Instances/RGAKernel/Code.lean:66:76": {
       "file": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
       "start_line": 66,
@@ -14759,6 +14776,12 @@
       "CertifiedRGASidedVCAlgebra",
       "CertifiedRGAVCAlgebra"
     ],
+    "proof_packaging_fields": {
+      "Sal.EmbedRGA.unaryCode": [
+        "mono",
+        "prefixFree"
+      ]
+    },
     "excluded_contract_definition_names": [
       "NativeInsertOnly",
       "policy",
@@ -14772,5 +14795,5 @@
     "Named-case rows overlap; only campaign union is additive.",
     "Old commuting callers are measured from actual original call lines, while proof terms specialize their old law-bundle assembler."
   ],
-  "current_effort_sha256": "af6d57b82358e96a0e4f2063bc284922966f3c4f56447f184477f003c58ba15b"
+  "current_effort_sha256": "c3a54bcae5b3e77ad146e6e4255044502e3e96b9bc7f58cb77e168fd970b8943"
 }

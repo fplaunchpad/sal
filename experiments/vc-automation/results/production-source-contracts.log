@@ -1,1 +1,1 @@
-{"baseline": "e89cd6d", "evidence": "source-header/body preservation; not kernel type equality", "checked_declarations": 227, "status": "pass", "failures": []}
+{"baseline": "e89cd6d", "evidence": "source-header/body preservation; not kernel type equality", "checked_declarations": 234, "status": "pass", "failures": []}

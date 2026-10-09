@@ -33,8 +33,17 @@ per-obligation tactic scripts or completed datatype proofs. Their earlier helper
 statements remain available for compatibility but are excluded from the
 production VC-input dependency closure.
 
-Ordered-record inputs retain explicit constructor cases,
-fresh-ID setup, coordinate facts and issuer projections. Core/RichCore use
+Embedded RGA supplies eight data maps in an ordered-record description,
+raw-equation annotations and chain/code mappings. Required specialization
+proofs and code-validity obligations count in its datatype footprint.
+`derive_ordered_kit` constructs the ten finite laws using generic list and
+lexicographic-order theorems, with raw recursive equations checked against the
+implementation. Generic prefix-code lemmas derive coordinate injection; the
+input frontend projects the existing issuance and replay contracts. Anchored
+Queue and Peritext reuse this input. Existing datatype helper statements remain
+public but the actual verifier-evidence audit rejects their reuse where the
+generic route replaces them. Other ordered-record inputs retain explicit
+finite proofs. Core/RichCore use
 ordered-text/product and query-lift inputs. Fugue uses archived-record and
 certified-issuance inputs, with explicit chain validity and generator
 preservation proofs. Sequential bridges remain the existing production proofs.
@@ -85,7 +94,8 @@ are proved once, with birth freshness, deletion coverage, common membership
 and newborn freshness derived from issuance/replay evidence. The author
 supplies implementation/representation laws: six for immutable records (MVR),
 ten for ordered records (Embedded/Sided RGA, Peritext and Queue), or thirteen
-for archived ordered records (Fugue). These are **interface laws, not
+for archived ordered records (Fugue). Embedded RGA’s ten fields are constructed
+by the shared frontend rather than supplied as separate datatype proofs. These are **interface laws, not
 Neem-style expanded merge VCs**. Core reuses the ordered-record laws through a
 product template; RichCore adds no merge-law obligation through query transport.
 Fugue also uses nine auxiliary issuance-model laws to derive its issuer
@@ -107,9 +117,11 @@ current RDT-specific proof code. The main total includes the finite inputs,
 annotations, automation calls, and all required datatype helper proofs already
 present in the repository. Compatibility helper statements retained solely to
 preserve the public API are excluded when the production input bypasses them;
-the dependency audit checks this for both OR-sets. For example, Embedded RGA requires 124 input/proof
-lines plus 250 existing insertion, merge and coordinate-lemma lines: **374
-lines in total**. Helpers may belong to that same RDT or be shared with another;
+the dependency audit checks this for both OR-sets and the Embedded route.
+Embedded RGA requires **60 lines**: 55 datatype input, mapping and equation
+certificate lines plus 5 annotation/invocation lines, with no retained datatype
+helper theorems. Anchored Queue requires **69 lines**, including 7 unary-code
+helper lines and its two proof-packaging fields. Helpers may belong to that same RDT or be shared with another;
 they are required proofs that automation reuses, rather than generates.
 
 The historical estimate uses the direct production VC proofs at commit
@@ -117,8 +129,9 @@ The historical estimate uses the direct production VC proofs at commit
 the production automation migration. Both columns include required
 RDT-specific helper proofs. They exclude implementation and contract
 definitions, shared generic framework proofs, and sequential-specification
-bridges. They count nonblank, noncomment lines of complete declarations, including statements and proof
-bodies. They measure source footprint, not human time or proof difficulty.
+bridges. They count nonblank, noncomment lines of complete declarations,
+including statements and proof bodies, plus required annotations and explicitly
+identified proof-packaging fields. They measure source footprint, not human time or proof difficulty.
 Per-case totals overlap because instances share helpers, so do not sum the rows.
 
 The current audit passes **23 named cases, 69 distinct public endpoints and 95
@@ -142,30 +155,39 @@ existing production roots**. These include aliases and family specializations.
 | Ordinary OR-set | 336 | 8 |
 | Efficient OR-set | 234 | 26 |
 | MVR | 148 | 17 |
-| Embedded RGA | 726 | 374 |
-| Sided Embedded RGA | 773 | 420 |
-| Peritext Embedded RGA | 726 | 374 |
-| Sided Peritext Core | 872 | 426 |
-| Sided Peritext RichCore | 882 | 430 |
-| Queue (anchored enqueue) | 759 | 407 |
-| FugueMax | 3377 | 953 |
+| Embedded RGA | 726 | 60 |
+| Sided Embedded RGA | 773 | 424 |
+| Peritext Embedded RGA | 726 | 60 |
+| Sided Peritext Core | 872 | 430 |
+| Sided Peritext RichCore | 882 | 434 |
+| Queue (anchored enqueue) | 761 | 69 |
+| FugueMax | 3377 | 959 |
 
-Across all 23 cases, the estimated RDT-specific footprint falls from **5,921
-to 1,762 distinct lines**, counting each shared source line once. The
+Across all 23 cases, the estimated RDT-specific footprint falls from **5,923
+to 1,502 distinct lines**, counting each shared source line once. The
 [historical comparison](results/manual-effort.json) records the baseline
 proof dependencies, source hashes and counting decisions. These are the costs
 of the checked proof routes, not lower bounds on what a shorter proof could do.
 
 The shared automation library is a separate, once-per-framework cost:
-**3,007 code lines**, including its imports, tactics and annotations. It is
+**3,527 code lines**, including its imports, tactics and annotations. It is
 excluded from both RDT-specific columns. The measurement files retain the
 per-declaration breakdown and the additional existing generic dependencies.
 
 ## What the reduction means
 
-The combined RDT-specific footprint falls by about **70%**. Efficient OR-set
-improves **89%** (234 → 26); Embedded RGA improves **48%** (726 → 374),
-while retaining its insertion, merge and coordinate lemmas.
+The combined RDT-specific footprint falls by about **75%**. Efficient OR-set
+improves **89%** (234 → 26); Embedded RGA improves **92%** (726 → 60).
+Generic proofs replace the required datatype insertion, merge, order and
+coordinate-injection helper theorems. Raw-equation certificates, chain/code
+mappings and their annotations remain counted author inputs.
+
+Against the immediately preceding `ffec6e9` production baseline, Embedded RGA
+falls from **378 to 60 lines**, and anchored Queue from **413 to 69 lines**.
+The [baseline snapshot](results/ordered-derivation-baseline.json) retains the
+previous published 374/407 counts: the corrected comparison also charges four
+concrete registry lines and Queue’s two unary-code proof-packaging fields.
+The historical Queue comparison likewise charges those two fields (759 → 761).
 
 Against the immediately preceding production baseline `7880732`, this
 OR-set derivation change reduces ordinary OR-set from **106 to 8 lines** and
@@ -180,7 +202,8 @@ only by those compatibility proofs are also excluded.
 
 Shared templates perform the history inductions. For both OR-sets, the frontend
 selects witness or mask replay from proof-free annotations and generates and
-discharges the finite laws from implementation definitions. Other families
+discharges the finite laws from implementation definitions. Embedded RGA and
+Queue use the ordered frontend described above. Other families
 still supply template mappings, finite evidence and helper facts that the
 library cannot yet discharge. The campaign requires no external SMT solver;
 it does not discover representations, issuer invariants or sequential specifications.

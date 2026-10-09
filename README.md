@@ -36,20 +36,27 @@ from proof-free annotations: `PolicyData` records the event comparison;
 optional `MaskData` records the record type and carrier, update, birth and kill
 maps. The frontend selects witness replay or mask replay, constructs the
 finite templates, and discharges their laws from registered implementation
-definitions. Other families still supply their finite laws and evidence
-projections explicitly. Shared templates derive the history arguments, including
+definitions. Embedded RGA supplies an eight-map ordered-record description, raw-equation
+annotations and chain/code mappings;
+shared derivation constructs its ten finite laws from raw recursive equations,
+derives coordinate order and injection, and projects existing issuance/replay
+evidence. Anchored Queue and Peritext reuse that route. Other families retain
+explicit finite laws and evidence projections. Shared templates derive the history arguments, including
 Core/RichCore and Fugue; no instance interface contains a bespoke history induction.
 Lean selects registered algebra, collection and ordering helpers. The production audit
 checks that existing certificate endpoints use the common soundness theorem and
 their sequential bridges, excludes earlier correctness paths, and checks
 contract preservation. Negative controls check missing obligations and rejected
-correctness registrations. The automation README counts local declarations,
-annotations and supplied helper proofs separately, including shared coordinate
-libraries. Implementations, contracts and public theorem statements are preserved.
+correctness registrations. The automation README combines local declarations,
+annotations and required datatype helpers in each instance's total, and reports
+the shared library cost separately. Implementations, contracts and public theorem statements are preserved.
 Against production baseline `7880732`, required author code and annotations for
 ordinary OR-set fall from 106 to 8 lines, and efficient OR-set from 219 to 26
 lines; retained compatibility proofs are excluded when the generated input does
 not use them.
+Against the preceding ordered baseline `ffec6e9`, Embedded RGA falls from
+378 to 60 required datatype lines and anchored Queue from 413 to 69, including
+all required helper proofs, raw-equation wiring and code proof packaging.
 Fugue's five-VC proof does not resolve its separate
 sequential-specification obstruction.
 

@@ -154,6 +154,7 @@ def main():
         return source[file]
     def classify(n,file,text):
         theorem=bool(THEOREM.match(text))
+        if n == 'Sal.EmbedRGA.unaryCode':return 'datatype_proof_packaging'
         if Path(file).stem=='FugueMaxReplayProof' and n.rsplit('.',1)[-1] in {'project','written','birthsFirst'}:return 'datatype_helper'
         if (file.startswith('Sal/MRDTs/Instances/') or file.startswith('Sal/EmbedRGA/')) and theorem:return 'datatype_helper'
         specific=any(P+p in n for p in DATATYPE_PREFIXES)
@@ -173,7 +174,8 @@ def main():
             cat=classify(name,loc['file'],text)
             if not cat:continue
             key=f"{loc['file']}:{start}:{end}"
-            if key not in inventory:inventory[key]=dict(**loc,category=cat,constants=[],consumers=[],code_lines=[i for i in range(start,end+1) if lines[i-1].strip()])
+            if key not in inventory:inventory[key]=dict(**loc,category=cat,constants=[],consumers=[],code_lines=[i for i in range(start,end+1) if lines[i-1].strip() and
+                    (cat != 'datatype_proof_packaging' or re.match(r'\s*(?:mono|prefixFree) :=', lines[i-1]))])
             entry=inventory[key];entry['constants'].append(name);entry['consumers'].append(label);entries.add(key)
         wrapper_keys=[]
         for name in wrappers.get(label,[]):
@@ -186,7 +188,7 @@ def main():
                 key=f"{loc['file']}:{i}:{indices[-1]}"
                 calls.setdefault(key,dict(file=loc['file'],code_lines=indices,consumers=[]))['consumers'].append(label);wrapper_keys.append(key)
         def count(cats):return len({(inventory[k]['file'],i) for k in entries if inventory[k]['category'] in cats for i in inventory[k]['code_lines']})
-        main=count({'datatype_helper','manual_datatype_proof','manual_datatype_proof_definition'})+len({(calls[k]['file'],i) for k in wrapper_keys for i in calls[k]['code_lines']})
+        main=count({'datatype_helper','manual_datatype_proof','manual_datatype_proof_definition','datatype_proof_packaging'})+len({(calls[k]['file'],i) for k in wrapper_keys for i in calls[k]['code_lines']})
         cases[label]=dict(baseline_combined_lines=main,current_combined_lines=current['cases'][label]['author_and_retained_helper_lines'],
             baseline_shared_framework_lines=count({'shared_framework'}),declaration_keys=sorted(entries),wrapper_call_keys=wrapper_keys,
             baseline_raw_expression=expressions.get(label),baseline_raw_root=raw_roots.get(label))
@@ -198,7 +200,7 @@ def main():
       declarations=inventory,wrapper_calls=calls,source_sha256=hashes,
       standard_axioms_by_case={name:[a.strip() for a in axioms.split(',') if a.strip()] for name,axioms in rows},
       baseline_commit=subprocess.check_output(['git','rev-parse',args.baseline],cwd=ROOT,text=True).strip(),
-      classification=dict(datatype_theorem_prefixes=list(DATATYPE_PREFIXES),proof_only_definition_modules=sorted(PROOF_DEFS),excluded_contract_definition_names=sorted(EXCLUDED_NAMES)),
+      classification=dict(datatype_theorem_prefixes=list(DATATYPE_PREFIXES),proof_only_definition_modules=sorted(PROOF_DEFS),proof_packaging_fields={'Sal.EmbedRGA.unaryCode':['mono','prefixFree']},excluded_contract_definition_names=sorted(EXCLUDED_NAMES)),
       limitations=['Source footprint estimate, not development time or independent implementation count.','Actual raw-VC closures include complete declaration headers/bodies; implementation and contract definitions, shared framework, and independent sequential bridge fields are excluded.','Named-case rows overlap; only campaign union is additive.','Old commuting callers are measured from actual original call lines, while proof terms specialize their old law-bundle assembler.'],
       current_effort_sha256=hashlib.sha256((HERE/'results/production-effort.json').read_bytes()).hexdigest())
     args.output.write_text(json.dumps(report,indent=2)+'\n')
