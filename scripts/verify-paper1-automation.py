@@ -96,7 +96,7 @@ elab "audit_production " n:ident : command => do
     unless seen.contains current do
       seen := seen.insert current
       if let some info := env.find? current then
-        if current.toString.startsWith "Sal." || current.toString.startsWith "NeemExpansion." ||
+        if current.toString.startsWith "Sal." || current.toString.startsWith "_private.Sal." || current.toString.startsWith "NeemExpansion." ||
             current.toString.startsWith "EfficientReplayAdapter." || current.toString.startsWith "CausalEventClassification." then
           logInfo m!"PROD_DEP {root} {current}"
           if let some moduleIdx := env.getModuleIdxFor? current then
@@ -143,7 +143,7 @@ elab "audit_production_vc_evidence " n:ident : command => do
     unless visited.contains current do
       visited := visited.insert current
       if let some info := env.find? current then
-        if current.toString.startsWith "Sal." then
+        if current.toString.startsWith "Sal." || current.toString.startsWith "_private.Sal." then
           logInfo m!"PROD_VC_DEP {root} {current}"
         pending := info.getUsedConstantsAsSet.toList ++ pending
   logInfo m!"PROD_VC_COMPLETE {root}"
@@ -223,7 +223,7 @@ def main():
     for name, data in audited.items():
         data['dependencies'] = sorted(set(data['dependencies']))
         assert set(data['axioms']) <= STANDARD, (name, data['axioms'])
-        bad = [d for d in data['dependencies'] if d in FORBIDDEN or not d.startswith('Sal.')]
+        bad = [d for d in data['dependencies'] if d in FORBIDDEN or not d.startswith(('Sal.', '_private.Sal.'))]
         assert not bad, (name, 'legacy/prototype dependencies', bad)
     for c in CASES:
         for name in c['vc_roots']:

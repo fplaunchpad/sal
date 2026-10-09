@@ -23,6 +23,11 @@ AUTHOR = {'AutomatedORSet', 'AutomatedEfficientORSet', 'AutomatedMVR',
           'CommutingInputs'}
 MIXED = {'TransferSimple': ('TransferSimple.Add.', 'TransferSimple.Finite.',
                           'TransferSimple.Delta.', 'TransferSimple.Boolean.')}
+# Proof-only representation mappings, rather than operational definitions.
+# The manual baseline applies the identical allowlist.
+PROOF_HELPER_DEFINITIONS = {
+    'Sal/MRDTs/Instances/FugueMaxReplayProof.lean': {'project', 'written', 'birthsFirst'},
+}
 DECL = re.compile(r'\s*(?:@\[[\s\S]*?\]\s*)?(?:(?:private|protected|noncomputable|unsafe)\s+)*(?:def|abbrev|theorem|lemma|structure|inductive|instance)\b')
 THEOREM = re.compile(r'\s*(?:@\[[\s\S]*?\]\s*)?(?:(?:private|protected)\s+)*(?:theorem|lemma)\b')
 
@@ -69,6 +74,8 @@ def category(name, filename, text):
         if stem in AUTHOR or (stem in MIXED and any(p in name for p in MIXED[stem])):
             return 'instance'
         return 'shared_framework'
+    if name.rsplit('.', 1)[-1] in PROOF_HELPER_DEFINITIONS.get(filename, set()):
+        return 'retained_helper'
     if (filename.startswith('Sal/MRDTs/Instances/') or filename.startswith('Sal/EmbedRGA/')) and THEOREM.match(text):
         return 'retained_helper'
     if filename.startswith('Sal/') and THEOREM.match(text):
@@ -84,6 +91,25 @@ for case in audit['cases']:
         for name in evidence[root]['source_verification_declarations']:
             loc = locations.get(name)
             if loc and loc['file'].startswith(AUTOMATION) and Path(loc['file']).stem in AUTHOR:
+                dependencies.add(name)
+    # A direct Raw.MergeVCs theorem can specialize a generic verified family,
+    # supplying concrete coordinate/code proof arguments at its call site.
+    # Charge retained datatype helpers from that actual theorem closure too.
+    # Certificate bundles are excluded here: their other fields contain the
+    # independently maintained sequential/history bridge proofs.
+    concrete_retained_roots = []
+    for root in case['vc_roots']:
+        loc = locations.get(root)
+        if not loc: continue
+        text = '\n'.join(read(loc['file'])[int(loc['start_line'])-1:int(loc['end_line'])])
+        header = text.split(':=', 1)[0].split(' where', 1)[0]
+        if not re.search(r'\bRaw\.MergeVCs\b', header): continue
+        concrete_retained_roots.append(root)
+        for name in roots[root]['dependencies']:
+            helper = locations.get(name)
+            if not helper: continue
+            helper_text = '\n'.join(read(helper['file'])[int(helper['start_line'])-1:int(helper['end_line'])])
+            if DECL.match(helper_text) and category(name, helper['file'], helper_text) == 'retained_helper':
                 dependencies.add(name)
     entries = {}
     for name in sorted(dependencies):
@@ -111,7 +137,7 @@ for case in audit['cases']:
         entries[key] = entry
     def count(cat):
         return len({(e['file'],i) for e in entries.values() if e['category']==cat for i in e['code_lines']})
-    cases[case_id] = {'vc_roots': case['vc_roots'],
+    cases[case_id] = {'vc_roots': case['vc_roots'], 'concrete_retained_helper_roots': concrete_retained_roots,
         'instance_lines': count('instance'), 'retained_helper_lines': count('retained_helper'),
         'shared_framework_declaration_lines': count('shared_framework'),
         'existing_framework_helper_lines': count('existing_framework_helper'),
@@ -197,7 +223,8 @@ report = {'method':__doc__, 'limitations':[
     'Source lines measure proof/annotation footprint, not human effort or proof difficulty.',
     'Per-case totals overlap; campaign totals deduplicate file/line pairs.',
     'Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.',
-    'Existing implementation and contract definitions are excluded. Retained datatype theorem helpers and existing generic foundational theorem helpers are reported separately; structure projections are not charged as authored proofs.',
+    'Concrete retained datatype helpers additionally come from full direct Raw.MergeVCs-root closures, preserving actual specialization proof arguments. Certificate-bundle fields remain excluded.',
+    'Existing implementation and contract definitions are excluded. Retained datatype theorem helpers and explicitly allowlisted proof-only representation mappings are charged; existing generic foundational theorem helpers are separate. Structure projections are not charged as authored proofs.',
     'Shared generic declarations are a separate reusable-library cost; whole participating module code additionally includes macros, imports and annotations.',
     'Induction/recursor syntax scans do not establish absence of hidden history reasoning.'],
     'cases':cases, 'unique_campaign':{'instance_lines':unique('instance'), 'retained_helper_lines':unique('retained_helper'),
@@ -205,7 +232,9 @@ report = {'method':__doc__, 'limitations':[
     'shared_framework':{'dependency_declaration_lines':unique('shared_framework'), 'existing_framework_helper_lines':unique('existing_framework_helper'), 'participating_module_code_lines':framework_code,
         'participating_files':framework_files, 'library_code_lines_excluding_charged_instance_lines':library_code,
         'library_files':library_files, 'registry_annotation_lines':len(registry), 'registry_annotations':registry},
-    'declarations':inventory, 'commands':commands, 'source_sha256':hashes,
+    'declarations':inventory, 'commands':commands,
+    'proof_helper_definition_allowlist':{file:sorted(names) for file,names in PROOF_HELPER_DEFINITIONS.items()},
+    'source_sha256':hashes,
     'audit_sha256':hashlib.sha256(args.audit.read_bytes()).hexdigest()}
 args.output.parent.mkdir(parents=True, exist_ok=True)
 args.output.write_text(json.dumps(report,indent=2)+'\n')

@@ -41,62 +41,62 @@ proof routes. Its VC evidence closures are extracted from the actual submitted
 sequential-history fields in certificate bundles.
 
 [`results/production-effort.json`](results/production-effort.json) measures
-current production source footprints from those VC evidence closures. Author
-inputs and finite proof declarations, production automation invocations,
-retained datatype theorem helpers and the shared generic library are reported
-separately. Complete source-written declarations are charged; existing
-implementation and contract definitions are excluded from author totals.
-Per-case rows overlap and must not be summed: campaign totals deduplicate
-source file/line pairs. Source lines measure footprint, not human time or proof
-difficulty. Induction/recursor scans are diagnostics, alongside the dependency
-audit and manual review.
+current RDT-specific proof code. The main total includes the finite inputs,
+annotations, automation calls, and all required datatype helper proofs already
+present in the repository. For example, Embedded RGA requires 124 input/proof
+lines plus 250 existing insertion, merge and coordinate-lemma lines: **374
+lines in total**. Helpers may belong to that same RDT or be shared with another;
+they are required proofs that automation reuses, rather than generates.
+
+The historical estimate uses the direct production VC proofs at commit
+[`e89cd6d`](https://github.com/fplaunchpad/sal/commit/e89cd6d), immediately before
+the production automation migration. Both columns include required
+RDT-specific helper proofs. They exclude implementation and contract
+definitions, shared generic framework proofs, and sequential-specification
+bridges. They count nonblank,
+noncomment lines of complete declarations, including statements and proof
+bodies. They measure source footprint, not human time or proof difficulty.
+Per-case totals overlap because instances share helpers, so do not sum the rows.
 
 The current audit passes **23 named cases, 69 distinct public endpoints and 95
-existing production roots**. These counts include aliases and family
-specializations, rather than 23 independent designs.
+existing production roots**. These include aliases and family specializations.
 
-| Instance | Author lines | Retained datatype helper lines |
+| Instance | Before automation (lines) | With automation (lines) |
 |---|---:|---:|
-| Grow-only set | 11 | 6 |
-| Add-store | 11 | 6 |
-| Finite add-store | 11 | 6 |
-| Counter | 6 | 8 |
-| Increment-only counter | 6 | 8 |
-| PN-counter | 6 | 8 |
-| Flat grow-only set | 7 | 7 |
-| Flat grow-only map | 7 | 7 |
-| LWW register | 10 | 4 |
-| Native RGA | 23 | 10 |
-| Bounded Counter | 23 | 21 |
-| TreeMove | 12 | 12 |
-| AegisSheet | 12 | 5 |
-| Ordinary OR-set | 106 | 0 |
-| Efficient OR-set | 219 | 0 |
-| MVR | 17 | 0 |
-| Embedded RGA | 116 | 250 |
-| Sided Embedded RGA | 115 | 297 |
-| Peritext Embedded RGA | 116 | 250 |
-| Sided Peritext Core | 121 | 297 |
-| Sided Peritext RichCore | 125 | 297 |
-| Queue (anchored enqueue) | 116 | 250 |
-| FugueMax | 253 | 700 |
+| Grow-only set | 40 | 17 |
+| Add-store | 40 | 17 |
+| Finite add-store | 28 | 17 |
+| Counter | 49 | 14 |
+| Increment-only counter | 49 | 14 |
+| PN-counter | 49 | 14 |
+| Flat grow-only set | 45 | 15 |
+| Flat grow-only map | 45 | 15 |
+| LWW register | 32 | 14 |
+| Native RGA | 60 | 33 |
+| Bounded Counter | 58 | 44 |
+| TreeMove | 33 | 24 |
+| AegisSheet | 26 | 17 |
+| Ordinary OR-set | 336 | 106 |
+| Efficient OR-set | 234 | 219 |
+| MVR | 148 | 17 |
+| Embedded RGA | 726 | 374 |
+| Sided Embedded RGA | 773 | 420 |
+| Peritext Embedded RGA | 726 | 374 |
+| Sided Peritext Core | 872 | 426 |
+| Sided Peritext RichCore | 882 | 430 |
+| Queue (anchored enqueue) | 759 | 407 |
+| FugueMax | 3377 | 953 |
 
-The deduplicated campaign contains **937 author declaration lines, 30
-registration/annotation/invocation lines and 1,044 retained datatype helper
-lines**. Author rows include input statements, finite proof bodies and new
-VC theorem declarations in full. Existing certificate bundles contribute only
-their automation invocation lines; unchanged sequential-history fields are
-excluded.
+Across all 23 cases, the estimated RDT-specific footprint falls from **5,921
+to 2,053 distinct lines**, counting each shared source line once. The
+[historical comparison](results/manual-effort.json) records the baseline
+proof dependencies, source hashes and counting decisions. These are the costs
+of the checked proof routes, not lower bounds on what a shorter proof could do.
 
-The reusable production library is a separate cost: **2,759 code lines**,
-including imports, tactics and annotations, with charged instance lines in
-mixed modules removed. Its actual VC dependency declarations occupy **2,027
-lines**, and existing generic foundational theorem helpers occupy another
-**658 lines**. The 11 shared registry annotation lines are included in the
-library total. These library/dependency measurements overlap and must not be
-added together. Paper1 helper dependencies are generic metadata, ordering and
-convergence facts; the inventory does not omit datatype-specific certified
-replay or issuer theorem helpers.
+The shared automation library is a separate, once-per-framework cost:
+**2,758 code lines**, including its imports, tactics and annotations. It is
+excluded from both RDT-specific columns. The measurement files retain the
+per-declaration breakdown and the additional existing generic dependencies.
 
 ## Reproduction
 
@@ -117,3 +117,14 @@ finite equations. The source preservation report checks unchanged declaration
 headers and semantic definition bodies across implementation, policy, issuance and execution contracts.
 The positive/negative Lean comparator separately exercises full-contract
 definitional equality; source comparison alone is not kernel type equality.
+
+To reproduce the historical column, build `Sal.MRDTs.Paper1.Ledger` in a
+separate checkout of `e89cd6d`, then run from the current repository:
+
+```sh
+python3 experiments/vc-automation/measure_manual_effort.py \
+  --baseline-dir /path/to/built-e89cd6d-checkout
+```
+
+This reads the old kernel dependency graph and checks the measured source files
+against that Git commit; it does not change the working branch.
