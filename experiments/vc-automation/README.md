@@ -30,6 +30,59 @@ ordered-text/product and query-lift inputs. Fugue uses archived-record and
 certified-issuance inputs, with explicit chain validity and generator
 preservation proofs. Sequential bridges remain the existing production proofs.
 
+## How many expanded VCs, using Neem's convention?
+
+Neem instantiates a fixed nine-case induction scheme for its bottom-up merge
+rules. Its [F* interface](https://github.com/fplaunchpad/neem/blob/main/code/interface/App_mrdt.fsti#L83)
+contains **21 merge VCs**: nine two-operation cases, nine one-operation cases,
+one combined zero-operation case, and merge commutativity and idempotence.
+The four policy obligations above that interface section are separate. This
+counts schematic induction obligations, before splitting on an RDT's operation
+constructors; it does not count helper lemmas or solver calls.
+
+Using that convention, Sal's current **policy-based expansion has 17
+merge/replay obligations**:
+
+| Group | Schematic obligations |
+|---|---:|
+| Merge commutativity | 1 |
+| Initial-state merge | 1 |
+| Shared redistribution | 1 |
+| [Local redistribution](../../Sal/MRDTs/Paper1/Automation/LocalAssembly.lean): base/step and freshness schemas | 7 |
+| [Causal delta](../../Sal/MRDTs/Paper1/Automation/CausalCoverage.lean): base/step and freshness schemas | 7 |
+| **Total** | **17** |
+
+The [policy kit](../../Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean)
+also requires **eight policy/event-order obligations**, reported separately:
+two update-only equations and six classification/order laws. The full kit therefore has
+25 fields, of which 17 belong to the merge/replay expansion. These are schema
+occurrences in the templates: freshness proofs are shared across the local and
+causal templates, and some base cases follow from generic lemmas. They are not
+17 independent handwritten proofs.
+
+Both OR-sets use this policy expansion. Ordinary OR-set additionally supplies
+a full commutation characterization and an existing replay-witness projection;
+efficient OR-set supplies seven mask-representation laws and a semantic
+projection. These connect the implementation representation to replay and are
+outside the 17 expanded merge obligations. The fully commuting specialization
+instead supplies five direct finite merge equations, plus update commutation
+and contract identity checks.
+
+**There is no single framework-wide “five VCs expand to N” count today.** The
+common command selects among family-specific templates. Certified-record
+instances use a different route: five generic
+[record-merge equations](../../Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean)
+are proved once, with birth freshness, deletion coverage, common membership
+and newborn freshness derived from issuance/replay evidence. The author
+supplies implementation/representation laws: six for immutable records (MVR),
+ten for ordered records (Embedded/Sided RGA, Peritext and Queue), or thirteen
+for archived ordered records (Fugue). These are **interface laws, not
+Neem-style expanded merge VCs**. Core reuses the ordered-record laws through a
+product template; RichCore adds no merge-law obligation through query transport.
+Fugue also uses nine auxiliary issuance-model laws to derive its issuer
+evidence. Independent sequential-specification bridges are outside all these
+counts.
+
 ## Current production evidence
 
 [`results/production-audit.json`](results/production-audit.json) records the
@@ -53,8 +106,7 @@ The historical estimate uses the direct production VC proofs at commit
 the production automation migration. Both columns include required
 RDT-specific helper proofs. They exclude implementation and contract
 definitions, shared generic framework proofs, and sequential-specification
-bridges. They count nonblank,
-noncomment lines of complete declarations, including statements and proof
+bridges. They count nonblank, noncomment lines of complete declarations, including statements and proof
 bodies. They measure source footprint, not human time or proof difficulty.
 Per-case totals overlap because instances share helpers, so do not sum the rows.
 
@@ -97,6 +149,25 @@ The shared automation library is a separate, once-per-framework cost:
 **2,758 code lines**, including its imports, tactics and annotations. It is
 excluded from both RDT-specific columns. The measurement files retain the
 per-declaration breakdown and the additional existing generic dependencies.
+
+## What the reduction means
+
+The combined RDT-specific footprint falls by about **65%**, but the reduction
+is uneven. Efficient OR-set improves only **6%** (234 → 219): its earlier
+proof was already compact, and the new interface still requires explicit
+mappings and finite-law proofs. Embedded RGA improves **48%** (726 → 374),
+while retaining its insertion, merge and coordinate lemmas.
+
+The demonstrated result is reusable, kernel-checked proof assembly: shared
+templates perform the history inductions, and Lean tactics discharge finite
+obligations using supplied definitions and registered lemmas. The current
+campaign does not require an external SMT solver. It does not discover new
+templates, representations, issuer invariants or sequential specifications.
+Authors still choose the template, supply its mappings and evidence, and prove
+helper facts that the library cannot yet discharge. Further reductions depend
+on deriving more of these inputs from the implementation and reusing more of
+the list, ordering and coordinate proofs. Sequential-bridge automation remains
+separate from this result.
 
 ## Reproduction
 
