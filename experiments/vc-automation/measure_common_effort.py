@@ -28,7 +28,13 @@ MIXED = {'TransferSimple': ('TransferSimple.Add.', 'TransferSimple.Finite.',
 PROOF_HELPER_DEFINITIONS = {
     'Sal/MRDTs/Instances/FugueMaxReplayProof.lean': {'project', 'written', 'birthsFirst'},
 }
-DECL = re.compile(r'\s*(?:@\[[\s\S]*?\]\s*)?(?:(?:private|protected|noncomputable|unsafe)\s+)*(?:def|abbrev|theorem|lemma|structure|inductive|instance)\b')
+# Match the datatype namespaces used by the historical comparison. A theorem
+# is RDT-specific even when its file lives under Paper1 rather than Instances.
+PAPER1_DATATYPE_PREFIXES = ('ORSet.', 'EfficientORSet.', 'CertifiedQueueMVR.MVR.',
+    'CertifiedRGAVC', 'CertifiedRGASidedVC', 'CertifiedRGACore', 'CertifiedRGARichVC',
+    'CertifiedFugueVC', 'CertifiedRGAIssuance.', 'CertifiedRGAScope.', 'LWW.GuardedPort.')
+DECL = re.compile(r'\s*(?:@\[[\s\S]*?\]\s*)?(?:(?:private|protected|noncomputable|unsafe|local)\s+)*(?:def|abbrev|theorem|lemma|structure|inductive|instance)\b')
+assert DECL.match('local instance policyData : PolicyData D := data'), 'local annotation omitted'
 THEOREM = re.compile(r'\s*(?:@\[[\s\S]*?\]\s*)?(?:(?:private|protected)\s+)*(?:theorem|lemma)\b')
 
 
@@ -78,9 +84,56 @@ def category(name, filename, text):
         return 'retained_helper'
     if (filename.startswith('Sal/MRDTs/Instances/') or filename.startswith('Sal/EmbedRGA/')) and THEOREM.match(text):
         return 'retained_helper'
+    # Existing VC wrappers are charged by their automation invocation below,
+    # not again as a retained helper declaration.
+    if name in vc_names:
+        return 'existing_framework_helper'
+    if (filename.startswith('Sal/MRDTs/Paper1/') and THEOREM.match(text) and
+            any('Sal.MRDTs.Paper1.' + prefix in name for prefix in PAPER1_DATATYPE_PREFIXES)):
+        return 'retained_helper'
     if filename.startswith('Sal/') and THEOREM.match(text):
         return 'existing_framework_helper'
     return None
+
+
+def interface_annotations(case_id):
+    """Charge required source data even if elaboration inlines it out of a proof."""
+    scope_name = {'ordinary-or-set-paper-example': 'OrdinaryORSet',
+                  'efficient-or-set': 'EfficientORSet'}.get(case_id)
+    if not scope_name:
+        return []
+    filename = AUTOMATION + 'ORSetInputs.lean'
+    lines, scopes, result = read(filename), [], []
+    if not any('derive_mrdt_input' in line for line in lines):
+        return []  # Earlier audited source had no generated-input data classes.
+    for i, line in enumerate(lines):
+        namespace = re.match(r'namespace\s+(\S+)', line)
+        if namespace:
+            scopes.append(namespace.group(1))
+        elif re.match(r'end\b', line) and scopes:
+            scopes.pop()
+        local = re.match(r'local instance (\w+)\s*:\s*(PolicyData|MaskData)\b', line)
+        if local and scopes[-1] == scope_name:
+            end = i + 1
+            while end < len(lines) and (not lines[end].strip() or lines[end][:1].isspace()):
+                end += 1
+            result.append(dict(name='.'.join(scopes + [local.group(1)]),
+                               file=filename, start=i+1, end=end))
+    expected = 1 if scope_name == 'OrdinaryORSet' else 2
+    assert len(result) == expected, f'Missing required source data annotations: {scope_name}'
+    if scope_name == 'EfficientORSet':
+        filename = AUTOMATION + 'AutomatedEfficientORSet.lean'
+        lines = read(filename)
+        for name in ('maskDescription', 'birth'):
+            matches = [i for i,line in enumerate(lines) if re.match(r'def ' + name + r'\b', line)]
+            assert len(matches) == 1, f'Missing required mask mapping: {name}'
+            start = matches[0]
+            end = start + 1
+            while end < len(lines) and (not lines[end].strip() or lines[end][:1].isspace()):
+                end += 1
+            result.append(dict(name='Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.' + name,
+                               file=filename, start=start+1, end=end))
+    return result
 
 
 for case in audit['cases']:
@@ -135,10 +188,31 @@ for case in audit['cases']:
         if name not in entry['constants']: entry['constants'].append(name)
         if case_id not in entry['consumers']: entry['consumers'].append(case_id)
         entries[key] = entry
+    source_interface_annotations = interface_annotations(case_id)
+    for annotation in source_interface_annotations:
+        filename, start, end = annotation['file'], annotation['start'], annotation['end']
+        lines = read(filename)
+        key = f'{filename}:{start}:{end}'
+        # Kernel locations may end before trailing blank lines: reuse a matched
+        # declaration entry to deduplicate exactly the same code lines.
+        existing = next((k for k,e in entries.items() if e['category']=='instance'
+                         and e['file']==filename and e['start_line']==start), None)
+        if existing:
+            key = existing
+        if key not in inventory:
+            inventory[key] = {'category':'instance', 'file':filename, 'start_line':start,
+                'end_line':end, 'code_lines':[i for i in range(start,end+1) if lines[i-1].strip()],
+                'constants':[], 'consumers':[], 'induction_syntax_lines':[], 'explicit_recursor_lines':[]}
+        entry = inventory[key]
+        if annotation['name'] not in entry['constants']: entry['constants'].append(annotation['name'])
+        if case_id not in entry['consumers']: entry['consumers'].append(case_id)
+        entry['required_source_annotation'] = True
+        entries[key] = entry
     def count(cat):
         return len({(e['file'],i) for e in entries.values() if e['category']==cat for i in e['code_lines']})
     cases[case_id] = {'vc_roots': case['vc_roots'], 'concrete_retained_helper_roots': concrete_retained_roots,
         'instance_lines': count('instance'), 'retained_helper_lines': count('retained_helper'),
+        'required_source_data_annotations': source_interface_annotations,
         'shared_framework_declaration_lines': count('shared_framework'),
         'existing_framework_helper_lines': count('existing_framework_helper'),
         'declaration_keys': sorted(entries),
@@ -189,6 +263,16 @@ for filename in sorted({e['file'] for e in inventory.values() if e['category']==
         if not line.strip(): continue
         target = scope+'.'+registration.group(1) if registration else None
         consumers = sorted({r for e in inventory.values() if e['category']=='instance' and e['file']==filename and any((n==target if target else n.startswith(scope+'.')) for n in e['constants']) for r in e['consumers']})
+        # Local proof attributes cannot affect a plain mapping definition. When
+        # this module contributes only birth/description data, its compatibility
+        # proof annotations are not part of the generated input's interface.
+        scoped_inputs = [e for e in inventory.values() if e['category']=='instance'
+                         and e['file']==filename and any(n.startswith(scope+'.') for n in e['constants'])]
+        data_only = bool(scoped_inputs) and all(
+            all(n.rsplit('.', 1)[-1] in ('birth', 'maskDescription') for n in e['constants'])
+            for e in scoped_inputs)
+        if not registration and data_only and 'local' in read(filename)[active_attribute-1]:
+            continue
         if consumers:
             commands.append({'file':filename, 'line':i, 'text':line.strip(), 'scope':scope, 'kind':'instance_registration_or_annotation', 'consumers':consumers})
 for case_id,row in cases.items():
@@ -207,7 +291,7 @@ framework_code = sum(sum(bool(line.strip()) for line in read(filename)) for file
 # Mixed TransferSimple files contain finite instance declarations too; remove
 # the charged instance lines from this additional module-level measurement.
 library_files = sorted(str(p.relative_to(ROOT)) for p in (ROOT / AUTOMATION).glob('*.lean')
-    if p.stem not in AUTHOR and p.stem != 'Controls')
+    if p.stem not in AUTHOR and p.stem not in {'Controls', 'ORSetAutomationControls'})
 instance_line_pairs = {(e['file'], i) for e in inventory.values() if e['category']=='instance' for i in e['code_lines']}
 library_code = sum(sum(bool(line.strip()) and (filename, i) not in instance_line_pairs
     for i, line in enumerate(read(filename), 1)) for filename in library_files)
@@ -222,9 +306,9 @@ for stem in ['OrderedRecordAutomation','PolicyExpansionAutomation','CommonAlgebr
 report = {'method':__doc__, 'limitations':[
     'Source lines measure proof/annotation footprint, not human effort or proof difficulty.',
     'Per-case totals overlap; campaign totals deduplicate file/line pairs.',
-    'Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.',
+    'Required PolicyData/MaskData annotations and efficient mask-description/birth data are charged even when elaboration erases them from the kernel dependency closure. Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.',
     'Concrete retained datatype helpers additionally come from full direct Raw.MergeVCs-root closures, preserving actual specialization proof arguments. Certificate-bundle fields remain excluded.',
-    'Existing implementation and contract definitions are excluded. Retained datatype theorem helpers and explicitly allowlisted proof-only representation mappings are charged; existing generic foundational theorem helpers are separate. Structure projections are not charged as authored proofs.',
+    'Existing implementation and contract definitions are excluded. Paper1 datatype-namespace theorems are charged as RDT helpers by the same namespace list as the historical comparison. Retained datatype theorem helpers and explicitly allowlisted proof-only representation mappings are charged; existing generic foundational theorem helpers are separate. Structure projections are not charged as authored proofs.',
     'Shared generic declarations are a separate reusable-library cost; whole participating module code additionally includes macros, imports and annotations.',
     'Induction/recursor syntax scans do not establish absence of hidden history reasoning.'],
     'cases':cases, 'unique_campaign':{'instance_lines':unique('instance'), 'retained_helper_lines':unique('retained_helper'),

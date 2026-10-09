@@ -1,0 +1,109 @@
+{
+  "baseline": "7880732",
+  "evidence": "source-header/body preservation; not kernel type equality",
+  "files": [
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+      "checked": 33,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.initial",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_base",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_noncomm",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.semantic_shape",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.remove_add_noncomm",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.no_chain",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.guarded_noncomm",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base",
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kit"
+      ],
+      "preserved_data_descriptions": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit"
+      ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
+      "checked": 21,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.initial",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_base",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.no_chain",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.noncomm_full",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.conditional_base",
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kit"
+      ],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "checked": 2,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input"
+      ],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    }
+  ],
+  "failures": [],
+  "added_files": [
+    "Sal/MRDTs/Paper1/Automation/InputDerivation.lean",
+    "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean",
+    "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean"
+  ],
+  "checked_declarations": 56,
+  "status": "pass"
+}

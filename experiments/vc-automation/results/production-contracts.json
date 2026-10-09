@@ -9,7 +9,9 @@
       "proof_changes": [
         "Sal.MRDTs.Paper1.CertifiedFugueVC.mergeVCs"
       ],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/CertifiedMVRVC.lean",
@@ -31,7 +33,9 @@
       "proof_changes": [
         "Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.RawVC.mergeVCs"
       ],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean",
@@ -40,7 +44,9 @@
       "proof_changes": [
         "Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC.mergeVCs"
       ],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/CertifiedRGARichVC.lean",
@@ -62,7 +68,9 @@
       "proof_changes": [
         "Sal.MRDTs.Paper1.CertifiedRGARichVC.mergeVCs"
       ],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/CertifiedRGASidedVC.lean",
@@ -71,7 +79,9 @@
       "proof_changes": [
         "Sal.MRDTs.Paper1.CertifiedRGAVC.Sided.mergeVCs"
       ],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/CertifiedRGAVC.lean",
@@ -80,7 +90,9 @@
       "proof_changes": [
         "Sal.MRDTs.Paper1.CertifiedRGAVC.Embedded.mergeVCs"
       ],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/ConcreteSimplePorts.lean",
@@ -92,7 +104,9 @@
         "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.treeCertificate",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.sheetCertificate",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.rgaCertificate"
-      ]
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/GuardedLWWPort.lean",
@@ -103,7 +117,9 @@
       ],
       "certificate_changes": [
         "Sal.MRDTs.Paper1.LWW.GuardedPort.certificate"
-      ]
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/GuardedRawORSetJoin.lean",
@@ -112,7 +128,9 @@
       "proof_changes": [
         "Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs"
       ],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/GuardedRawORSetVC.lean",
@@ -121,7 +139,9 @@
       "proof_changes": [
         "Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.mergeVCs"
       ],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/IssuedConcretePorts.lean",
@@ -136,14 +156,18 @@
         "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Bounded.conditions",
         "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.conditions",
         "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.conditions"
-      ]
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/Ledger.lean",
       "checked": 0,
       "moved": [],
       "proof_changes": [],
-      "certificate_changes": []
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/RGAConcretePort.lean",
@@ -154,7 +178,9 @@
       ],
       "certificate_changes": [
         "Sal.MRDTs.Paper1.RGA.ConcretePort.conditions"
-      ]
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/SimpleConcretePorts.lean",
@@ -166,7 +192,9 @@
         "Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.Finite.conditions",
         "Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.Boolean.conditions",
         "Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.Delta.conditions"
-      ]
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     }
   ],
   "failures": [],
@@ -200,16 +228,20 @@
     "Sal/MRDTs/Paper1/Automation/InductiveMask.lean",
     "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
     "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
+    "Sal/MRDTs/Paper1/Automation/InputDerivation.lean",
     "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
     "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
     "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
     "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
     "Sal/MRDTs/Paper1/Automation/MVRInput.lean",
+    "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
     "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
     "Sal/MRDTs/Paper1/Automation/OrderedRecordRules.lean",
     "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
     "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean",
+    "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean",
     "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
     "Sal/MRDTs/Paper1/Automation/SimpleInputs.lean",
     "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean",

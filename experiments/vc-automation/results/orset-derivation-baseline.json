@@ -1,0 +1,32 @@
+{
+  "baseline": "7880732",
+  "evidence": "Observed source footprint from checked-in production-effort.json; not human effort",
+  "cases": {
+    "ordinary-or-set-paper-example": {
+      "instance_lines": 102,
+      "retained_helper_lines": 0,
+      "registration_annotation_lines": 4,
+      "author_total_lines": 106,
+      "author_and_retained_helper_lines": 106
+    },
+    "efficient-or-set": {
+      "instance_lines": 215,
+      "retained_helper_lines": 0,
+      "registration_annotation_lines": 4,
+      "author_total_lines": 219,
+      "author_and_retained_helper_lines": 219
+    }
+  },
+  "recount_check": {
+    "method": "Recount the saved 7880732 production audit against checked baseline source files using the current measurement classifications; required generated-input annotations do not exist at this baseline.",
+    "source_hashes_verified": true,
+    "production_audit_sha256": "25fb1f8fbc5040b9be289a31ff81cab07fdd8bc901dff4877289882168a15b12",
+    "ordinary_author_and_helpers": 106,
+    "efficient_author_and_helpers": 219,
+    "unique_campaign": {
+      "instance_lines": 946,
+      "retained_helper_lines": 1077,
+      "registration_annotation_lines": 30
+    }
+  }
+}

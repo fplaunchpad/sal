@@ -22,3 +22,6 @@ thm:execution	Sal.MRDTs.Metatheory.Join.SetRelativeReplay	Sal.MRDTs.Foundation.l
 thm:execution	Sal.MRDTs.Metatheory.Join.SetRelativeReplay	Sal.MRDTs.Foundation.IsCanonicalState
 sec:verification-templates	Sal.MRDTs.Paper1.Automation.CommonVerification	Sal.MRDTs.Paper1.Automation.CommonVerification.Input
 sec:verification-templates	Sal.MRDTs.Paper1.Automation.CommonVerification	Sal.MRDTs.Paper1.Automation.CommonVerification.verify
+sec:verification-templates	Sal.MRDTs.Paper1.Automation.InputDerivation	Sal.MRDTs.Paper1.Automation.InputDerivation.PolicyData
+sec:verification-templates	Sal.MRDTs.Paper1.Automation.InputDerivation	Sal.MRDTs.Paper1.Automation.InputDerivation.MaskData
+sec:verification-templates	Sal.MRDTs.Paper1.Automation.MaskKitAutomation	Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description

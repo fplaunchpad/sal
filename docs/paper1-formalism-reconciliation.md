@@ -37,8 +37,11 @@ That history proof supplements the VCs; it does not replace them.
   **Reference:** Definitions 5.1–5.4; Theorems 5.5, 5.7.
 - **§5, after the five equations:** explain the reusable template soundness
   statement `Input(D,P,R,M) → MergeVCs(P,R,M)`. An author selects a family,
-  proves its finite collection of universally quantified algebraic laws, and
-  supplies representation, metadata and issuer/replay evidence projections.
+  supplies implementation maps and the required representation, metadata and
+  issuer/replay evidence. For both OR-sets, proof-free comparison/mask
+  annotations select a template whose universally quantified finite laws are
+  constructed and discharged automatically; other families retain explicit
+  laws and evidence projections.
   The command applies the generic proof; it does not take a completed datatype
   VC theorem as an input. Keep uniqueness, finite replay supply and the
   sequential bridge explicit. **Reference:** §5, “Reusable verification

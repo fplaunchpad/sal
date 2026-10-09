@@ -341,7 +341,7 @@
     },
     "ordinary-or-set-paper-example": {
       "baseline_combined_lines": 336,
-      "current_combined_lines": 106,
+      "current_combined_lines": 8,
       "baseline_shared_framework_lines": 43,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Base/Replay.lean:18:22",
@@ -376,7 +376,7 @@
     },
     "efficient-or-set": {
       "baseline_combined_lines": 234,
-      "current_combined_lines": 219,
+      "current_combined_lines": 26,
       "baseline_shared_framework_lines": 35,
       "declaration_keys": [
         "Sal/MRDTs/Instances/EfficientORSet.lean:102:102",
@@ -1093,7 +1093,7 @@
     "baseline_datatype_proof_lines": 5894,
     "baseline_wrapper_call_lines": 27,
     "baseline_excluded_shared_framework_lines": 353,
-    "current_combined_lines": 2053
+    "current_combined_lines": 1762
   },
   "declarations": {
     "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean:1352:1360": {
@@ -14772,5 +14772,5 @@
     "Named-case rows overlap; only campaign union is additive.",
     "Old commuting callers are measured from actual original call lines, while proof terms specialize their old law-bundle assembler."
   ],
-  "current_effort_sha256": "41d0af55bbbeb4991802c773279be208454f6fcfea4e49a5258a964051066ff9"
+  "current_effort_sha256": "af6d57b82358e96a0e4f2063bc284922966f3c4f56447f184477f003c58ba15b"
 }

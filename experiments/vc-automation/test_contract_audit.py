@@ -12,9 +12,15 @@ open Sal.MRDTs Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT
 theorem expectedContract {α : Type} [DecidableEq α] :
     Raw.MergeVCs (ORSet.conflict α) (ORSet.RawReplay.representation (α := α))
       (ORSet.RawReplay.scheme (α := α)) := Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs
+theorem expectedEfficientContract {α : Type} [DecidableEq α] :
+    Raw.MergeVCs (EfficientORSet.EventSpec.conflict α)
+      (EfficientORSet.RawReplay.representation (α := α))
+      (EfficientORSet.RawReplay.scheme (α := α)) :=
+    Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.mergeVCs
 '''
 positive = '''
 audit_vc_contract Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs against expectedContract
+audit_vc_contract Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.mergeVCs against expectedEfficientContract
 '''
 negative = '''
 open Sal.MRDTs Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT
@@ -22,6 +28,11 @@ open Sal.MRDTs Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT
 theorem restricted {α : Type} [DecidableEq α] (_extra : False) :
     Raw.MergeVCs (ORSet.conflict α) (ORSet.RawReplay.representation (α := α))
       (ORSet.RawReplay.scheme (α := α)) := Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs
+theorem expectedEfficientContract {α : Type} [DecidableEq α] :
+    Raw.MergeVCs (EfficientORSet.EventSpec.conflict α)
+      (EfficientORSet.RawReplay.representation (α := α))
+      (EfficientORSet.RawReplay.scheme (α := α)) :=
+    Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.mergeVCs
 audit_vc_contract restricted against expectedContract
 '''
 with tempfile.TemporaryDirectory(prefix='sal-contract-controls-') as tmp:

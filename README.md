@@ -31,7 +31,13 @@ The [five-VC automation interface](experiments/vc-automation/README.md)
 now supplies the production proofs for all 23 current named cases through
 the common `mrdt_verify` command.
 Registered inputs supply finite laws, datatype mappings and existing execution
-or issuance evidence. Shared templates derive the history arguments, including
+or issuance evidence. For both OR-sets, `derive_mrdt_input` constructs that input
+from proof-free annotations: `PolicyData` records the event comparison;
+optional `MaskData` records the record type and carrier, update, birth and kill
+maps. The frontend selects witness replay or mask replay, constructs the
+finite templates, and discharges their laws from registered implementation
+definitions. Other families still supply their finite laws and evidence
+projections explicitly. Shared templates derive the history arguments, including
 Core/RichCore and Fugue; no instance interface contains a bespoke history induction.
 Lean selects registered algebra, collection and ordering helpers. The production audit
 checks that existing certificate endpoints use the common soundness theorem and
@@ -40,6 +46,10 @@ contract preservation. Negative controls check missing obligations and rejected
 correctness registrations. The automation README counts local declarations,
 annotations and supplied helper proofs separately, including shared coordinate
 libraries. Implementations, contracts and public theorem statements are preserved.
+Against production baseline `7880732`, required author code and annotations for
+ordinary OR-set fall from 106 to 8 lines, and efficient OR-set from 219 to 26
+lines; retained compatibility proofs are excluded when the generated input does
+not use them.
 Fugue's five-VC proof does not resolve its separate
 sequential-specification obstruction.
 

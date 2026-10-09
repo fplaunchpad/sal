@@ -6,6 +6,33 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: derive both OR-set templates and finite proofs automatically
+
+Research question: how much OR-set proof code can be derived from unchanged
+implementations, policies and representation contracts using reusable templates?
+
+- [x] Automatically construct policy and replay templates for both OR-sets,
+  retaining only datatype descriptions and declarative annotations.
+- [x] Replace per-obligation introductions, constructor splits and proof scripts
+  with shared automation, without dispatching to old datatype correctness proofs.
+- [x] Preserve implementations, specifications, assumptions and theorem types;
+  verify the generated proofs feed production five-VC and RA certificates.
+  Keep sequential-bridge proofs unchanged.
+- [x] Independently audit preservation and dependencies, and test diagnostics
+  for missing annotations and false obligations.
+- [x] Report before/after author code including required helpers and residual
+  manual work; verify both repository gates.
+
+Oracle: kernel-checked production certificates and independent source/dependency
+audits. Merely wrapping existing finite proof scripts does not complete this goal.
+
+Verified: ordinary OR-set author input falls from 106 to 8 lines and efficient
+OR-set from 219 to 26, including required descriptions, annotations and helpers.
+Neither generated input depends on a retained datatype proof helper. The
+production audit passes 23 cases, 69 endpoints and 95 proof roots; preservation
+checks cover 227 earlier contracts and 56 declarations changed in this step.
+Both repository gates pass, including 187 runtime tests and 569 benchmark records.
+
 ### Checked: production automation and existing sequential bridges
 
 Goal: replace production five-VC proof bodies with the common automation

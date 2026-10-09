@@ -23,8 +23,17 @@ proofs derive replay, ordering, normalization and causal coverage. New datatypes
 still need the finite laws and issuer evidence required by their selected
 input constructor.
 
-OR-set finite tactics unfold registered implementation definitions and solve
-membership equations. Ordered-record inputs retain explicit constructor cases,
+For both OR-sets, `derive_mrdt_input` constructs the input from proof-free
+`PolicyData` (the event comparison) and optional `MaskData` (the record type
+and carrier/update/birth/kill maps). The frontend selects the existing replay
+witness when no mask is supplied, or derives semantic-mask replay when a mask
+is supplied. It builds the policy and mask templates and discharges their
+finite laws from registered raw definitions. These instances supply no
+per-obligation tactic scripts or completed datatype proofs. Their earlier helper
+statements remain available for compatibility but are excluded from the
+production VC-input dependency closure.
+
+Ordered-record inputs retain explicit constructor cases,
 fresh-ID setup, coordinate facts and issuer projections. Core/RichCore use
 ordered-text/product and query-lift inputs. Fugue uses archived-record and
 certified-issuance inputs, with explicit chain validity and generator
@@ -60,10 +69,10 @@ occurrences in the templates: freshness proofs are shared across the local and
 causal templates, and some base cases follow from generic lemmas. They are not
 17 independent handwritten proofs.
 
-Both OR-sets use this policy expansion. Ordinary OR-set additionally supplies
-a full commutation characterization and an existing replay-witness projection;
-efficient OR-set supplies seven mask-representation laws and a semantic
-projection. These connect the implementation representation to replay and are
+Both OR-sets use this policy expansion. The frontend additionally derives
+ordinary OR-set's full commutation characterization and projects its existing
+replay witness; for efficient OR-set it derives seven mask-representation laws
+and projects the existing semantic representation. These connect the implementation representation to replay and are
 outside the 17 expanded merge obligations. The fully commuting specialization
 instead supplies five direct finite merge equations, plus update commutation
 and contract identity checks.
@@ -96,7 +105,9 @@ sequential-history fields in certificate bundles.
 [`results/production-effort.json`](results/production-effort.json) measures
 current RDT-specific proof code. The main total includes the finite inputs,
 annotations, automation calls, and all required datatype helper proofs already
-present in the repository. For example, Embedded RGA requires 124 input/proof
+present in the repository. Compatibility helper statements retained solely to
+preserve the public API are excluded when the production input bypasses them;
+the dependency audit checks this for both OR-sets. For example, Embedded RGA requires 124 input/proof
 lines plus 250 existing insertion, merge and coordinate-lemma lines: **374
 lines in total**. Helpers may belong to that same RDT or be shared with another;
 they are required proofs that automation reuses, rather than generates.
@@ -128,8 +139,8 @@ existing production roots**. These include aliases and family specializations.
 | Bounded Counter | 58 | 44 |
 | TreeMove | 33 | 24 |
 | AegisSheet | 26 | 17 |
-| Ordinary OR-set | 336 | 106 |
-| Efficient OR-set | 234 | 219 |
+| Ordinary OR-set | 336 | 8 |
+| Efficient OR-set | 234 | 26 |
 | MVR | 148 | 17 |
 | Embedded RGA | 726 | 374 |
 | Sided Embedded RGA | 773 | 420 |
@@ -140,33 +151,40 @@ existing production roots**. These include aliases and family specializations.
 | FugueMax | 3377 | 953 |
 
 Across all 23 cases, the estimated RDT-specific footprint falls from **5,921
-to 2,053 distinct lines**, counting each shared source line once. The
+to 1,762 distinct lines**, counting each shared source line once. The
 [historical comparison](results/manual-effort.json) records the baseline
 proof dependencies, source hashes and counting decisions. These are the costs
 of the checked proof routes, not lower bounds on what a shorter proof could do.
 
 The shared automation library is a separate, once-per-framework cost:
-**2,758 code lines**, including its imports, tactics and annotations. It is
+**3,007 code lines**, including its imports, tactics and annotations. It is
 excluded from both RDT-specific columns. The measurement files retain the
 per-declaration breakdown and the additional existing generic dependencies.
 
 ## What the reduction means
 
-The combined RDT-specific footprint falls by about **65%**, but the reduction
-is uneven. Efficient OR-set improves only **6%** (234 → 219): its earlier
-proof was already compact, and the new interface still requires explicit
-mappings and finite-law proofs. Embedded RGA improves **48%** (726 → 374),
+The combined RDT-specific footprint falls by about **70%**. Efficient OR-set
+improves **89%** (234 → 26); Embedded RGA improves **48%** (726 → 374),
 while retaining its insertion, merge and coordinate lemmas.
 
-The demonstrated result is reusable, kernel-checked proof assembly: shared
-templates perform the history inductions, and Lean tactics discharge finite
-obligations using supplied definitions and registered lemmas. The current
-campaign does not require an external SMT solver. It does not discover new
-templates, representations, issuer invariants or sequential specifications.
-Authors still choose the template, supply its mappings and evidence, and prove
-helper facts that the library cannot yet discharge. Further reductions depend
-on deriving more of these inputs from the implementation and reusing more of
-the list, ordering and coordinate proofs. Sequential-bridge automation remains
+Against the immediately preceding production baseline `7880732`, this
+OR-set derivation change reduces ordinary OR-set from **106 to 8 lines** and
+efficient OR-set from **219 to 26 lines**, using the same counting rules.
+The [baseline recount](results/orset-derivation-baseline.json) includes required
+annotations and datatype helpers, including helpers defined under `Paper1`.
+Neither final OR-set VC proof depends on retained datatype helper theorems or
+cached finite-law proofs. Data annotations count even when elaboration inlines
+them. Compatibility helper statements retained for public API preservation
+count only when the production proof requires them. Local annotations used
+only by those compatibility proofs are also excluded.
+
+Shared templates perform the history inductions. For both OR-sets, the frontend
+selects witness or mask replay from proof-free annotations and generates and
+discharges the finite laws from implementation definitions. Other families
+still supply template mappings, finite evidence and helper facts that the
+library cannot yet discharge. The campaign requires no external SMT solver;
+it does not discover representations, issuer invariants or sequential specifications.
+Sequential-bridge automation remains
 separate from this result.
 
 ## Reproduction

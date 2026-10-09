@@ -3,9 +3,9 @@
   "limitations": [
     "Source lines measure proof/annotation footprint, not human effort or proof difficulty.",
     "Per-case totals overlap; campaign totals deduplicate file/line pairs.",
-    "Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.",
+    "Required PolicyData/MaskData annotations and efficient mask-description/birth data are charged even when elaboration erases them from the kernel dependency closure. Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.",
     "Concrete retained datatype helpers additionally come from full direct Raw.MergeVCs-root closures, preserving actual specialization proof arguments. Certificate-bundle fields remain excluded.",
-    "Existing implementation and contract definitions are excluded. Retained datatype theorem helpers and explicitly allowlisted proof-only representation mappings are charged; existing generic foundational theorem helpers are separate. Structure projections are not charged as authored proofs.",
+    "Existing implementation and contract definitions are excluded. Paper1 datatype-namespace theorems are charged as RDT helpers by the same namespace list as the historical comparison. Retained datatype theorem helpers and explicitly allowlisted proof-only representation mappings are charged; existing generic foundational theorem helpers are separate. Structure projections are not charged as authored proofs.",
     "Shared generic declarations are a separate reusable-library cost; whole participating module code additionally includes macros, imports and annotations.",
     "Induction/recursor syntax scans do not establish absence of hidden history reasoning."
   ],
@@ -17,6 +17,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 10,
       "retained_helper_lines": 6,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -252,6 +253,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 10,
       "retained_helper_lines": 6,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -487,6 +489,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 10,
       "retained_helper_lines": 6,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -722,6 +725,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 5,
       "retained_helper_lines": 8,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -957,6 +961,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 5,
       "retained_helper_lines": 8,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -1192,6 +1197,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 5,
       "retained_helper_lines": 8,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -1427,6 +1433,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 7,
       "retained_helper_lines": 7,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -1664,6 +1671,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 7,
       "retained_helper_lines": 7,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -1901,6 +1909,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 7,
       "retained_helper_lines": 4,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -2137,6 +2146,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 21,
       "retained_helper_lines": 10,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -2373,6 +2383,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 21,
       "retained_helper_lines": 21,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -2611,6 +2622,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 10,
       "retained_helper_lines": 12,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -2847,6 +2859,7 @@
       "concrete_retained_helper_roots": [],
       "instance_lines": 10,
       "retained_helper_lines": 5,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -3082,9 +3095,17 @@
       "concrete_retained_helper_roots": [
         "Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs"
       ],
-      "instance_lines": 102,
+      "instance_lines": 3,
       "retained_helper_lines": 0,
-      "shared_framework_declaration_lines": 1966,
+      "required_source_data_annotations": [
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.policyData",
+          "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+          "start": 13,
+          "end": 13
+        }
+      ],
+      "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Base/FiniteOrder.lean:11:40",
@@ -3121,27 +3142,6 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:13:13",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:16:16",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:17:17",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:18:18",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:20:21",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:22:24",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:25:28",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:29:32",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:33:35",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:36:40",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:41:43",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:44:47",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:48:50",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:51:53",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:56:60",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:62:65",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:66:71",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:72:84",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:85:90",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:91:93",
-        "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:95:119",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:11:12",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:14:14",
@@ -3151,7 +3151,6 @@
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:23:30",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:32:100",
         "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:10:11",
-        "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:124:128",
         "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:13:15",
         "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:17:18",
         "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:20:21",
@@ -3267,7 +3266,6 @@
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:18",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:22:22",
-        "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:30:30",
         "Sal/MRDTs/Paper1/Automation/InductiveMask.lean:24:28",
         "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean:12:14",
         "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean:16:18",
@@ -3306,12 +3304,10 @@
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:70:75",
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:77:89",
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:9:11",
-        "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:12:15",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:17:46",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:9:10",
-        "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:10:11",
-        "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean:11:18",
-        "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean:8:9",
+        "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:13:13",
+        "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:17:18",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:14",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:23",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:25:48",
@@ -3332,9 +3328,9 @@
       ],
       "induction_syntax": {},
       "explicit_recursors": {},
-      "registration_annotation_lines": 4,
-      "author_total_lines": 106,
-      "author_and_retained_helper_lines": 106
+      "registration_annotation_lines": 5,
+      "author_total_lines": 8,
+      "author_and_retained_helper_lines": 8
     },
     "efficient-or-set": {
       "vc_roots": [
@@ -3343,9 +3339,35 @@
       "concrete_retained_helper_roots": [
         "Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.mergeVCs"
       ],
-      "instance_lines": 215,
+      "instance_lines": 15,
       "retained_helper_lines": 0,
-      "shared_framework_declaration_lines": 1966,
+      "required_source_data_annotations": [
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.policyData",
+          "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+          "start": 24,
+          "end": 24
+        },
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.maskData",
+          "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+          "start": 25,
+          "end": 28
+        },
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskDescription",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+          "start": 80,
+          "end": 84
+        },
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+          "start": 60,
+          "end": 60
+        }
+      ],
+      "shared_framework_declaration_lines": 1952,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Base/FiniteOrder.lean:11:40",
@@ -3382,39 +3404,8 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:109:110",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:112:116",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:118:125",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:127:132",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:134:152",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:154:157",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:15:15",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:160:164",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:166:169",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:170:175",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:177:188",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:18:18",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:190:224",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:19:19",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:20:20",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:227:229",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:22:23",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:231:244",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:24:26",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:27:30",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:31:34",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:35:37",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:38:42",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:43:45",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:46:49",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:50:52",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:53:55",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:57:57",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:58:62",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:63:68",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:69:77",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:79:92",
-        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:94:107",
+        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:60:60",
+        "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:80:84",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:11:12",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:14:14",
@@ -3424,7 +3415,6 @@
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:23:30",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:32:100",
         "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:10:11",
-        "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:124:128",
         "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:13:15",
         "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:17:18",
         "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:20:21",
@@ -3540,7 +3530,6 @@
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:18",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:22:22",
-        "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:30:30",
         "Sal/MRDTs/Paper1/Automation/InductiveMask.lean:24:28",
         "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean:12:14",
         "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean:16:18",
@@ -3579,12 +3568,13 @@
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:70:75",
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:77:89",
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:9:11",
-        "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:12:15",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:17:46",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:9:10",
-        "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:17:21",
-        "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean:11:18",
-        "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean:8:9",
+        "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean:13:13",
+        "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean:13:18",
+        "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:24:24",
+        "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:25:28",
+        "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:38:41",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:14",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:23",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:25:48",
@@ -3605,9 +3595,9 @@
       ],
       "induction_syntax": {},
       "explicit_recursors": {},
-      "registration_annotation_lines": 4,
-      "author_total_lines": 219,
-      "author_and_retained_helper_lines": 219
+      "registration_annotation_lines": 11,
+      "author_total_lines": 26,
+      "author_and_retained_helper_lines": 26
     },
     "mvr": {
       "vc_roots": [
@@ -3618,6 +3608,7 @@
       ],
       "instance_lines": 15,
       "retained_helper_lines": 0,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1946,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -3854,6 +3845,7 @@
       ],
       "instance_lines": 123,
       "retained_helper_lines": 250,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1961,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -4116,6 +4108,7 @@
       ],
       "instance_lines": 122,
       "retained_helper_lines": 297,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1961,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -4383,6 +4376,7 @@
       ],
       "instance_lines": 123,
       "retained_helper_lines": 250,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1961,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -4645,6 +4639,7 @@
       ],
       "instance_lines": 128,
       "retained_helper_lines": 297,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1961,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -4912,6 +4907,7 @@
       ],
       "instance_lines": 131,
       "retained_helper_lines": 297,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1961,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -5180,6 +5176,7 @@
       ],
       "instance_lines": 123,
       "retained_helper_lines": 283,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 1961,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -5444,6 +5441,7 @@
       ],
       "instance_lines": 252,
       "retained_helper_lines": 700,
+      "required_source_data_annotations": [],
       "shared_framework_declaration_lines": 2036,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
@@ -5748,14 +5746,14 @@
     }
   },
   "unique_campaign": {
-    "instance_lines": 946,
+    "instance_lines": 647,
     "retained_helper_lines": 1077,
-    "registration_annotation_lines": 30
+    "registration_annotation_lines": 38
   },
   "shared_framework": {
-    "dependency_declaration_lines": 2071,
+    "dependency_declaration_lines": 2057,
     "existing_framework_helper_lines": 755,
-    "participating_module_code_lines": 2674,
+    "participating_module_code_lines": 2706,
     "participating_files": [
       "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
       "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
@@ -5778,10 +5776,10 @@
       "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
       "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
       "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
-      "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
+      "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/TransferSimple.lean"
     ],
-    "library_code_lines_excluding_charged_instance_lines": 2758,
+    "library_code_lines_excluding_charged_instance_lines": 3007,
     "library_files": [
       "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
       "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
@@ -5803,18 +5801,21 @@
       "Sal/MRDTs/Paper1/Automation/InductiveMask.lean",
       "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
       "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
+      "Sal/MRDTs/Paper1/Automation/InputDerivation.lean",
       "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
       "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
       "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
       "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
+      "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/OrderedRecordRules.lean",
       "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean",
+      "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
       "Sal/MRDTs/Paper1/Automation/TransferSimple.lean"
     ],
-    "registry_annotation_lines": 11,
+    "registry_annotation_lines": 18,
     "registry_annotations": [
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
@@ -5860,6 +5861,41 @@
         "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
         "line": 12,
         "text": "Signature.commutes Signature.KernelStable Signature.ConditionalBase"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+        "line": 145,
+        "text": "attribute [policy_expansion_simps] Sal.MRDTs.Foundation.UpdateSig.commutes"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+        "line": 149,
+        "text": "attribute [policy_expansion_simps]"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+        "line": 150,
+        "text": "Signature.fresh_base Signature.fresh_step Signature.local_common_opposite"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+        "line": 151,
+        "text": "Signature.local_opposite_fresh Signature.local_empty_past Signature.local_past_singleton"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+        "line": 152,
+        "text": "Signature.causal_common_kernel Signature.causal_commuting_kernel"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+        "line": 153,
+        "text": "Signature.causal_strict_kernel Signature.causal_absorber_kernel"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+        "line": 154,
+        "text": "Signature.local_empty_sides CausalCoverage.signatureOf"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/CommonAlgebraAutomation.lean",
@@ -17556,450 +17592,14 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:51:53": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 51,
-      "end_line": 53,
-      "code_lines": [
-        51,
-        52,
-        53
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:41:43": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 41,
-      "end_line": 43,
-      "code_lines": [
-        41,
-        42,
-        43
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:44:47": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 44,
-      "end_line": 47,
-      "code_lines": [
-        44,
-        45,
-        46,
-        47
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:48:50": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 48,
-      "end_line": 50,
-      "code_lines": [
-        48,
-        49,
-        50
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:17:17": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 17,
-      "end_line": 17,
-      "code_lines": [
-        17
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:66:71": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 66,
-      "end_line": 71,
-      "code_lines": [
-        66,
-        67,
-        68,
-        69,
-        70,
-        71
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:85:90": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 85,
-      "end_line": 90,
-      "code_lines": [
-        85,
-        86,
-        87,
-        88,
-        89,
-        90
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.conditional_base"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:16:16": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 16,
-      "end_line": 16,
-      "code_lines": [
-        16
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:20:21": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 20,
-      "end_line": 21,
-      "code_lines": [
-        20,
-        21
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_base"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:22:24": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 22,
-      "end_line": 24,
-      "code_lines": [
-        22,
-        23,
-        24
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:18:18": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 18,
-      "end_line": 18,
-      "code_lines": [
-        18
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.initial"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:91:93": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 91,
-      "end_line": 93,
-      "code_lines": [
-        91,
-        92,
-        93
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:95:119": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 95,
-      "end_line": 119,
-      "code_lines": [
-        95,
-        96,
-        97,
-        98,
-        99,
-        100,
-        101,
-        102,
-        103,
-        104,
-        105,
-        106,
-        107,
-        108,
-        109,
-        110,
-        111,
-        112,
-        113,
-        114,
-        115,
-        116,
-        117,
-        118,
-        119
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kit"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:25:28": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 25,
-      "end_line": 28,
-      "code_lines": [
-        25,
-        26,
-        27,
-        28
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:33:35": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 33,
-      "end_line": 35,
-      "code_lines": [
-        33,
-        34,
-        35
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:29:32": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 29,
-      "end_line": 32,
-      "code_lines": [
-        29,
-        30,
-        31,
-        32
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:36:40": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 36,
-      "end_line": 40,
-      "code_lines": [
-        36,
-        37,
-        38,
-        39,
-        40
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:62:65": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 62,
-      "end_line": 65,
-      "code_lines": [
-        62,
-        63,
-        64,
-        65
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.no_chain"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:72:84": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 72,
-      "end_line": 84,
-      "code_lines": [
-        72,
-        73,
-        74,
-        75,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        83,
-        84
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.noncomm_full"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:56:60": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 56,
-      "end_line": 60,
-      "code_lines": [
-        56,
-        57,
-        58,
-        59,
-        60
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean:13:13": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "start_line": 13,
-      "end_line": 13,
-      "code_lines": [
-        13
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.signature"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:10:11": {
+    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:17:18": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
-      "start_line": 10,
-      "end_line": 11,
+      "start_line": 17,
+      "end_line": 18,
       "code_lines": [
-        10,
-        11
+        17,
+        18
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input"
@@ -18010,153 +17610,31 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean:124:128": {
-      "category": "shared_framework",
-      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
-      "start_line": 124,
-      "end_line": 128,
+    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:13:13": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "start_line": 13,
+      "end_line": 13,
       "code_lines": [
-        124,
-        125,
-        126,
-        127,
-        128
+        13
       ],
       "constants": [
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal"
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.policyData"
       ],
       "consumers": [
-        "ordinary-or-set-paper-example",
-        "efficient-or-set"
+        "ordinary-or-set-paper-example"
       ],
       "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
     },
-    "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:30:30": {
-      "category": "shared_framework",
-      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
-      "start_line": 30,
-      "end_line": 30,
-      "code_lines": [
-        30
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.Signature.comm"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example",
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:12:15": {
-      "category": "shared_framework",
-      "file": "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
-      "start_line": 12,
-      "end_line": 15,
-      "code_lines": [
-        12,
-        13,
-        14,
-        15
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example",
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean:8:9": {
-      "category": "shared_framework",
-      "file": "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
-      "start_line": 8,
-      "end_line": 9,
-      "code_lines": [
-        8,
-        9
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.collectionMerge"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example",
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean:11:18": {
-      "category": "shared_framework",
-      "file": "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
-      "start_line": 11,
-      "end_line": 18,
-      "code_lines": [
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.collection_shared"
-      ],
-      "consumers": [
-        "ordinary-or-set-paper-example",
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:134:152": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:60:60": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 134,
-      "end_line": 152,
+      "start_line": 60,
+      "end_line": 60,
       "code_lines": [
-        134,
-        135,
-        136,
-        137,
-        138,
-        139,
-        140,
-        141,
-        142,
-        143,
-        144,
-        145,
-        146,
-        147,
-        148,
-        149,
-        150,
-        151,
-        152
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:57:57": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 57,
-      "end_line": 57,
-      "code_lines": [
-        57
+        60
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth"
@@ -18165,705 +17643,19 @@
         "efficient-or-set"
       ],
       "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:53:55": {
+    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:38:41": {
       "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 53,
-      "end_line": 55,
-      "code_lines": [
-        53,
-        54,
-        55
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:43:45": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 43,
-      "end_line": 45,
-      "code_lines": [
-        43,
-        44,
-        45
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:46:49": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 46,
-      "end_line": 49,
-      "code_lines": [
-        46,
-        47,
-        48,
-        49
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:50:52": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 50,
-      "end_line": 52,
-      "code_lines": [
-        50,
-        51,
-        52
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:19:19": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 19,
-      "end_line": 19,
-      "code_lines": [
-        19
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:112:116": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 112,
-      "end_line": 116,
-      "code_lines": [
-        112,
-        113,
-        114,
-        115,
-        116
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:170:175": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 170,
-      "end_line": 175,
-      "code_lines": [
-        170,
-        171,
-        172,
-        173,
-        174,
-        175
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:190:224": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 190,
-      "end_line": 224,
-      "code_lines": [
-        190,
-        191,
-        192,
-        193,
-        194,
-        195,
-        196,
-        197,
-        198,
-        199,
-        200,
-        201,
-        202,
-        203,
-        204,
-        205,
-        206,
-        207,
-        208,
-        209,
-        210,
-        211,
-        212,
-        213,
-        214,
-        215,
-        216,
-        217,
-        218,
-        219,
-        220,
-        221,
-        222,
-        223,
-        224
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:118:125": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 118,
-      "end_line": 125,
-      "code_lines": [
-        118,
-        119,
-        120,
-        121,
-        122,
-        123,
-        124,
-        125
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:18:18": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 18,
-      "end_line": 18,
-      "code_lines": [
-        18
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:109:110": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 109,
-      "end_line": 110,
-      "code_lines": [
-        109,
-        110
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:22:23": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 22,
-      "end_line": 23,
-      "code_lines": [
-        22,
-        23
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_base"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:24:26": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 24,
-      "end_line": 26,
-      "code_lines": [
-        24,
-        25,
-        26
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:177:188": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 177,
-      "end_line": 188,
-      "code_lines": [
-        177,
-        178,
-        179,
-        180,
-        181,
-        182,
-        183,
-        184,
-        185,
-        186,
-        187,
-        188
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.guarded_noncomm"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:20:20": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 20,
-      "end_line": 20,
-      "code_lines": [
-        20
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.initial"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:227:229": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 227,
-      "end_line": 229,
-      "code_lines": [
-        227,
-        228,
-        229
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:231:244": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 231,
-      "end_line": 244,
-      "code_lines": [
-        231,
-        232,
-        233,
-        234,
-        235,
-        236,
-        237,
-        238,
-        239,
-        240,
-        241,
-        242,
-        243,
-        244
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kit"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:27:30": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 27,
-      "end_line": 30,
-      "code_lines": [
-        27,
-        28,
-        29,
-        30
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:35:37": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 35,
-      "end_line": 37,
-      "code_lines": [
-        35,
-        36,
-        37
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:31:34": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 31,
-      "end_line": 34,
-      "code_lines": [
-        31,
-        32,
-        33,
-        34
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:38:42": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
       "start_line": 38,
-      "end_line": 42,
+      "end_line": 41,
       "code_lines": [
         38,
         39,
         40,
-        41,
-        42
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:79:92": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 79,
-      "end_line": 92,
-      "code_lines": [
-        79,
-        80,
-        81,
-        82,
-        83,
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        90,
-        91,
-        92
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:63:68": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 63,
-      "end_line": 68,
-      "code_lines": [
-        63,
-        64,
-        65,
-        66,
-        67,
-        68
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:69:77": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 69,
-      "end_line": 77,
-      "code_lines": [
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76,
-        77
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_noncomm"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:58:62": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 58,
-      "end_line": 62,
-      "code_lines": [
-        58,
-        59,
-        60,
-        61,
-        62
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:166:169": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 166,
-      "end_line": 169,
-      "code_lines": [
-        166,
-        167,
-        168,
-        169
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.no_chain"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:160:164": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 160,
-      "end_line": 164,
-      "code_lines": [
-        160,
-        161,
-        162,
-        163,
-        164
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:127:132": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 127,
-      "end_line": 132,
-      "code_lines": [
-        127,
-        128,
-        129,
-        130,
-        131,
-        132
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.remove_add_noncomm"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:94:107": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 94,
-      "end_line": 107,
-      "code_lines": [
-        94,
-        95,
-        96,
-        97,
-        98,
-        99,
-        100,
-        101,
-        102,
-        103,
-        104,
-        105,
-        106,
-        107
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.semantic_shape"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:15:15": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 15,
-      "end_line": 15,
-      "code_lines": [
-        15
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.signature"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:154:157": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "start_line": 154,
-      "end_line": 157,
-      "code_lines": [
-        154,
-        155,
-        156,
-        157
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric"
-      ],
-      "consumers": [
-        "efficient-or-set"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:17:21": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
-      "start_line": 17,
-      "end_line": 21,
-      "code_lines": [
-        17,
-        18,
-        19,
-        20,
-        21
+        41
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input"
@@ -18873,6 +17665,106 @@
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean:13:18": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+      "start_line": 13,
+      "end_line": 18,
+      "code_lines": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description"
+      ],
+      "consumers": [
+        "efficient-or-set"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean:13:13": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+      "start_line": 13,
+      "end_line": 13,
+      "code_lines": [
+        13
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.mk"
+      ],
+      "consumers": [
+        "efficient-or-set"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:24:24": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "start_line": 24,
+      "end_line": 24,
+      "code_lines": [
+        24
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.policyData"
+      ],
+      "consumers": [
+        "efficient-or-set"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
+    },
+    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean:25:28": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "start_line": 25,
+      "end_line": 28,
+      "code_lines": [
+        25,
+        26,
+        27,
+        28
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.maskData"
+      ],
+      "consumers": [
+        "efficient-or-set"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean:80:84": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+      "start_line": 80,
+      "end_line": 84,
+      "code_lines": [
+        80,
+        81,
+        82,
+        83,
+        84
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskDescription"
+      ],
+      "consumers": [
+        "efficient-or-set"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
     },
     "Sal/MRDTs/Paper1/Automation/AutomatedMVR.lean:14:27": {
       "category": "instance",
@@ -22771,26 +21663,6 @@
       ]
     },
     {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "line": 16,
-      "text": "attribute [local policy_expansion_simps] signature LocalAssembly.ofMRDT D update merge rc",
-      "scope": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "kind": "instance_registration_or_annotation",
-      "consumers": [
-        "efficient-or-set"
-      ]
-    },
-    {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "line": 159,
-      "text": "attribute [local policy_expansion_simps] EfficientORSet.EventSpec.conflict Op.op Op.rep",
-      "scope": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "kind": "instance_registration_or_annotation",
-      "consumers": [
-        "efficient-or-set"
-      ]
-    },
-    {
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
       "line": 272,
       "text": "register_mrdt_input input",
@@ -22798,26 +21670,6 @@
       "kind": "instance_registration_or_annotation",
       "consumers": [
         "fugue-max"
-      ]
-    },
-    {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "line": 14,
-      "text": "attribute [local policy_expansion_simps] signature LocalAssembly.ofMRDT D step merge ORSet.order",
-      "scope": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "kind": "instance_registration_or_annotation",
-      "consumers": [
-        "ordinary-or-set-paper-example"
-      ]
-    },
-    {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "line": 55,
-      "text": "attribute [local policy_expansion_simps] conflict Op.op Op.rep",
-      "scope": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "kind": "instance_registration_or_annotation",
-      "consumers": [
-        "ordinary-or-set-paper-example"
       ]
     },
     {
@@ -22914,7 +21766,37 @@
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
-      "line": 12,
+      "line": 14,
+      "text": "attribute [local policy_expansion_simps] policyData LocalAssembly.ofMRDT D",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "ordinary-or-set-paper-example"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 15,
+      "text": "step merge ORSet.order conflict Op.op Op.rep Op.time",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "ordinary-or-set-paper-example"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 16,
+      "text": "attribute [local mrdt_implementation] RawReplay.representation ConcreteRep.representation",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "ordinary-or-set-paper-example"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 19,
       "text": "register_mrdt_input input",
       "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet",
       "kind": "instance_registration_or_annotation",
@@ -22924,7 +21806,97 @@
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
-      "line": 22,
+      "line": 29,
+      "text": "attribute [local policy_expansion_simps] policyData LocalAssembly.ofMRDT D",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 30,
+      "text": "update merge rc Sal.MRDTs.Paper1.EfficientORSet.EventSpec.conflict Op.op Op.rep Op.time",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 31,
+      "text": "attribute [local policy_expansion_simps] maskData",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 32,
+      "text": "AutomatedEfficientORSet.maskDescription AutomatedEfficientORSet.birth kills",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 33,
+      "text": "attribute [local mask_implementation] maskData",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 34,
+      "text": "AutomatedEfficientORSet.maskDescription AutomatedEfficientORSet.birth kills",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 35,
+      "text": "attribute [local mask_implementation] D update",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 36,
+      "text": "Sal.MRDTs.Paper1.EfficientORSet.RawReplay.representation",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 37,
+      "text": "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.representation Represents live dead",
+      "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
+      "kind": "instance_registration_or_annotation",
+      "consumers": [
+        "efficient-or-set"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "line": 42,
       "text": "register_mrdt_input input",
       "scope": "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet",
       "kind": "instance_registration_or_annotation",
@@ -23051,9 +22023,7 @@
     "Sal/MRDTs/Instances/AegisSheet.lean": "1ef6fc34ce1b75d782a2cd40d710d6815850a73987e655d389e3c48236638d95",
     "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean": "11a764b6e4f506ab8077709d5d1497be92c711b2bdce0dca516a0e0d00bccecf",
     "Sal/MRDTs/Paper1/GuardedRawORSetJoin.lean": "9637b721058f9c14515ecd31b93d15c300671a629e717a163e8370db08d62e5a",
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean": "284b11ba40b69ad05f4604df659524ad853ca857f6f5324a627cb26210d620bd",
-    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean": "8f65742859c306c2afffb5b3d7c33c3ddd360eb4cd54c8fc3cdd71d1745212b6",
-    "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean": "54a91177bee4724f1b7dfce5d05cd3a9a1336855a96b8fb6d32e76bf8c01f0b0",
+    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean": "9fd7524ccdf98b910b447bcbd2a2d5ef802d404e85dc03d768e59384dae58765",
     "Sal/MRDTs/Paper1/ConcreteORSetRepresentation.lean": "ecc1d33048a5d8e82843d51dc43c6f77c43ef839809a60c6125eda7f1fcf6dd5",
     "Sal/MRDTs/Paper1/ORSet.lean": "72650abb5bcd82a52a0a0401cb008565345752c76d641a43400c3dfe5d914515",
     "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean": "6826eee396c71f966269b5c26ef4b0a7d56726effa7b7461e2b49ea35b58c64e",
@@ -23061,7 +22031,8 @@
     "Sal/MRDTs/Paper1/GuardedRawORSetVC.lean": "8aba3e8cd831fe208b572b47e5e9424ad549c05c34c68136ab8a8361581ffbcb",
     "Sal/MRDTs/Instances/EfficientORSet.lean": "8d7913863de07d1ef5ca68983c0c65228e36ec8b7020ef9bfab4255f039b116c",
     "Sal/MRDTs/Instances/EfficientORSetHistory.lean": "5c2696af4271752d6f41e3db4e9437b686d96e7853af9531ba95cf8edb6c4de1",
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean": "961c9fb2aa1894c30e3c5e220ee8107fa6d0a397f2f2a3bf898351bde40d994b",
+    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean": "b4ac40949f1490020606c0ba7a40cd0011991df7fc5176331b1a9aa343a55867",
+    "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean": "386545395a70d52589285c449fc327a19b22cf00a6716ec60fbe880612dc018c",
     "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean": "eeb4899af6f2fffde1a762853a284c611e89d557b7085aa34017a98687a0b832",
     "Sal/MRDTs/Paper1/CertifiedMVRVC.lean": "69cf3225fc5a49163e9cdfa29b7dfdae8f13ac1818e14a9cd56a073cc4e01a67",
     "Sal/MRDTs/Instances/MVR.lean": "56c12a8c20fe91000f735d5d61cefe27bacd395e5565e9cac9b93908c10cc985",
@@ -23106,10 +22077,13 @@
     "Sal/MRDTs/Paper1/Automation/CommonAlgebraAutomation.lean": "da92ced9daadf36396f6e3186381ee425d05677cdab3f3dacdc86f2009d02c03",
     "Sal/MRDTs/Paper1/Automation/CommonVerificationRules.lean": "1aa8656da7d2240af78c6fb74282802b034587308aaeab5978f9f30ef985776e",
     "Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean": "e2cea4518c95b7a53b417bd6a1d4d77d60921b1f59ff163c2ccab7e38ed72486",
+    "Sal/MRDTs/Paper1/Automation/InputDerivation.lean": "676d067609183350c8607788acbc741c85280503299a53f9ab7388e84ec16322",
     "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean": "93d592658364ccc96f429496606e31ee39d50361d2dfdb855b6c3b3211ca0c95",
     "Sal/MRDTs/Paper1/Automation/OrderedRecordRules.lean": "51d656deab0aeeb01cba96d6f7a1906ba9bbdb8f7076fa0264a8003532ed7a53",
-    "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean": "0b4aa9b3af4dd428049af7738a59e483e57994e2c1d2588e1e63a0918796aab3",
-    "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean": "1f4f3eb29b6a105357de29cefe4c78fb92afdd1f58b3d8dde25d4bca500f85a9"
+    "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean": "ebfb90064ec7fb1cb6511d7b06b617a9f7fded91c3a684ddc50a344f78620ff0",
+    "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean": "1f4f3eb29b6a105357de29cefe4c78fb92afdd1f58b3d8dde25d4bca500f85a9",
+    "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean": "3e5cf8ae008b7d750988191bac41aaa4838aafaaa216ae8c0325fabe59d76b65",
+    "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean": "54a91177bee4724f1b7dfce5d05cd3a9a1336855a96b8fb6d32e76bf8c01f0b0"
   },
-  "audit_sha256": "25fb1f8fbc5040b9be289a31ff81cab07fdd8bc901dff4877289882168a15b12"
+  "audit_sha256": "06668d454f8b74c05951fec6ae315af3e21cf1df0ea6291acdb2dd2d3fb9bdc4"
 }

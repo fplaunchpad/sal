@@ -153,7 +153,8 @@ elab "audit_production_vc_evidence " n:ident : command => do
 
 def audit_imports():
     """Inspect the actual repository import graph before invoking the kernel."""
-    roots = ['Sal.MRDTs.Paper1.Ledger', 'Sal.MRDTs.Paper1.Automation.Controls']
+    roots = ['Sal.MRDTs.Paper1.Ledger', 'Sal.MRDTs.Paper1.Automation.Controls',
+             'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls']
     pending = list(roots)
     local = {}
     external = set()
@@ -186,15 +187,48 @@ def run(command, logfile):
     return result.stdout
 
 
+
+def audit_orset_author_interface(evidence):
+    """Exclude cached compatibility proofs from the generated OR-set VC inputs."""
+    prefixes = (P + 'Automation.AutomatedORSet.',
+                P + 'Automation.AutomatedEfficientORSet.')
+    data = {prefixes[1] + 'maskDescription', prefixes[1] + 'birth'}
+    report = {}
+    for c in CASES:
+        if c['id'] not in {'ordinary-or-set-paper-example', 'efficient-or-set'}:
+            continue
+        used, bad = set(), set()
+        for root in c['vc_roots']:
+            for dependency in evidence[root]['dependencies']:
+                if not any(prefix in dependency for prefix in prefixes):
+                    continue
+                # Compiler-generated equations for a raw data definition may be
+                # used by simp; a cached proof/kit/shape theorem may not be used.
+                allowed = any(dependency == name or
+                              dependency.startswith(name + '.eq_') or
+                              dependency.startswith(name + '._eq_') for name in data)
+                if c['id'] == 'ordinary-or-set-paper-example' or not allowed:
+                    bad.add(dependency)
+                else:
+                    used.add(dependency)
+        assert not bad, (c['id'], 'cached datatype proof dependency', sorted(bad))
+        report[c['id']] = dict(status='pass', permitted_data_dependencies=sorted(used),
+                              cached_proof_dependencies=[])
+    return report
+
 def main():
     OUT.mkdir(exist_ok=True)
     import_audit = audit_imports()
-    print('Building production Ledger and Automation.Controls', flush=True)
-    run(['lake', 'build', 'Sal.MRDTs.Paper1.Ledger', 'Sal.MRDTs.Paper1.Automation.Controls'], 'production-build.log')
+    print('Building production Ledger and automation controls', flush=True)
+    run(['lake', 'build', 'Sal.MRDTs.Paper1.Ledger', 'Sal.MRDTs.Paper1.Automation.Controls',
+         'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls'], 'production-build.log')
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py'], 'production-source-contracts.log')
+    run([sys.executable, 'scripts/check-paper1-automation-contracts.py', '--baseline', '7880732',
+         '--output', str(OUT / 'orset-derivation-contracts.json')], 'orset-derivation-source-contracts.log')
     run([sys.executable, 'experiments/vc-automation/test_contract_audit.py'], 'production-contract-controls.log')
     roots = sorted({name for c in CASES for key in ('endpoints', 'vc_roots', 'controls') for name in c.get(key, [])})
-    program = 'import Sal.MRDTs.Paper1.Ledger\nimport Sal.MRDTs.Paper1.Automation.Controls\n' + LEAN_AUDIT
+    program = ('import Sal.MRDTs.Paper1.Ledger\nimport Sal.MRDTs.Paper1.Automation.Controls\n'
+               'import Sal.MRDTs.Paper1.Automation.ORSetAutomationControls\n' + LEAN_AUDIT)
     program += '\n'.join('audit_production ' + name for name in roots) + '\n'
     vc_roots = sorted({name for c in CASES for name in c['vc_roots']})
     program += '\n'.join('audit_production_vc_evidence ' + name for name in vc_roots) + '\n'
@@ -241,13 +275,16 @@ def main():
         assert VERIFY in data['dependencies'], (name, 'missing raw evidence verifier')
         data['dependencies'] = sorted(set(data['dependencies']))
         data['source_verification_declarations'] = sorted(set(data['source_verification_declarations']))
+    orset_author_interface = audit_orset_author_interface(evidence)
     files = sorted({d['file'] for d in declarations.values()})
     report = dict(schema_version=1, status='pass', named_case_count=23,
         unique_endpoint_count=len({n for c in CASES for n in c['endpoints']}),
         counting_note=__doc__, cases=CASES, roots=audited,
         declaration_sources=declarations, vc_evidence_closures=evidence,
+        orset_author_interface=orset_author_interface,
         source_sha256={file: hashlib.sha256((ROOT / file).read_bytes()).hexdigest() for file in files},
         controls=['Sal/MRDTs/Paper1/Automation/Controls.lean',
+                  'Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean',
                   'experiments/vc-automation/test_contract_audit.py',
                   'scripts/check-paper1-automation-contracts.py'],
         forbidden_dependencies=sorted(FORBIDDEN),

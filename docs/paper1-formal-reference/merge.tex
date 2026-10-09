@@ -213,15 +213,17 @@ A query extension preserves the update and merge algebra; its transport rule
 therefore preserves the five VCs. This transport alone proves no assertion
 about the new query's independent sequential specification.
 
-The datatype author chooses the family and proves its finite collection of
-algebraic laws. Here \emph{finite} describes the number of obligations, not a
-finite test domain: each law is universally quantified over its typed inputs.
-Depending on the family, the author also identifies the concrete representation
-and metadata scheme, projects replay witnesses or original-issuer evidence,
-and proves the required correspondence between the implementation and the
-family's record operations. These evidence projections may concern every
-represented history. They are real proof obligations, not supplied by a
-syntax annotation.
+The datatype author chooses the family and identifies its implementation maps.
+For the ordinary and efficient OR-sets, proof-free annotations record the event
+comparison and, optionally, the record type and carrier/update/birth/kill maps.
+The frontend selects witness or mask replay, constructs the templates, and
+proves their finite laws from registered definitions. Other families still
+supply their finite collection of algebraic laws and issuer/replay evidence
+projections explicitly. Here \emph{finite} describes the number of obligations,
+not a finite test domain: each law is universally quantified over its typed
+inputs. Evidence projections may concern every represented history. The
+annotations do not define the independent sequential specification or prove
+its correctness bridge.
 
 The verification command applies the generic soundness theorem and searches
 registered declarative instances. Its registration interface rejects completed

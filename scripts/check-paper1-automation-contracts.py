@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Audit source contracts against e89cd6d; this is not kernel type equality.
+"""Audit source contracts against fixed production baselines; not kernel type equality.
 
 Compares every existing declaration in modified production Lean files, retaining
 namespace and variable contexts. Comments/whitespace and theorem proof bodies
-are ignored. Only named certificate definitions may change bodies. Newly added
-automation declarations are checked by the build/axiom audit, not this scanner.
+are ignored. Only named proof certificates may change bodies. The OR-set derivation
+baseline also checks the four mask data maps moved into a description. Newly
+added declarations are checked by the build/axiom audit, not this scanner.
 """
 import argparse
 import json
@@ -34,7 +35,16 @@ MOVED = {
     'Sal/MRDTs/Paper1/CertifiedRGARichContract.lean'
     for n in ('policy', 'scheme', 'representation')
 }
-DECL = re.compile(r'^(?:(?:private|protected|noncomputable|unsafe|opaque)\s+)*'
+# These terms inhabit Prop; their exact headers and variable contexts still match.
+ORSET_PROOFS = {
+    'Sal.MRDTs.Paper1.Automation.AutomatedORSet.kit',
+    'Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kit',
+    'Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input',
+    'Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input',
+}
+MASK_KIT = 'Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit'
+MASK_DESCRIPTION = 'Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskDescription'
+DECL = re.compile(r'^ ?(?:(?:private|protected|noncomputable|unsafe|opaque)\s+)*'
                   r'(theorem|lemma|def|abbrev|structure|inductive)\s+([^\s(:]+)')
 COMMAND = re.compile(r'^(?:namespace|section|noncomputable section|end|open|variable|'
                      r'set_option|#\w+|attribute|import|instance|example|macro|elab)\b')
@@ -112,22 +122,26 @@ def declarations(text):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--baseline', choices=(BASELINE, '7880732'), default=BASELINE,
+                        help='Fixed production migration or OR-set derivation baseline.')
     parser.add_argument('--output', type=Path,
                         default=ROOT / 'experiments/vc-automation/results/production-contracts.json')
     args = parser.parse_args()
-    changed = git('diff', '--no-renames', '--name-only', BASELINE, '--', 'Sal/**/*.lean').splitlines()
-    baseline_files = set(git('ls-tree', '-r', '--name-only', BASELINE, '--', 'Sal').splitlines())
+    baseline = args.baseline
+    changed = git('diff', '--no-renames', '--name-only', baseline, '--', 'Sal/**/*.lean').splitlines()
+    baseline_files = set(git('ls-tree', '-r', '--name-only', baseline, '--', 'Sal').splitlines())
     files = [path for path in changed if path in baseline_files]
-    report = dict(baseline=BASELINE, evidence='source-header/body preservation; not kernel type equality',
+    report = dict(baseline=baseline, evidence='source-header/body preservation; not kernel type equality',
                   files=[], failures=[],
                   added_files=[path for path in changed if path not in baseline_files])
     for path in files:
         if not (ROOT / path).is_file():
             report['failures'].append(dict(path=path, reason='deleted baseline production file'))
             continue
-        old = declarations(git('show', BASELINE + ':' + path))
+        old = declarations(git('show', baseline + ':' + path))
         current = declarations((ROOT / path).read_text())
-        record = dict(path=path, checked=len(old), moved=[], proof_changes=[], certificate_changes=[])
+        record = dict(path=path, checked=len(old), moved=[], proof_changes=[], certificate_changes=[],
+                      proof_definition_changes=[], preserved_data_descriptions=[])
         for name, before in old.items():
             after = current.get(name)
             if after is None and name in MOVED:
@@ -144,6 +158,16 @@ def main():
             elif before['body'] != after['body']:
                 if before['kind'] in ('theorem', 'lemma'):
                     record['proof_changes'].append(name)
+                elif baseline == '7880732' and name in ORSET_PROOFS:
+                    record['proof_definition_changes'].append(name)
+                elif baseline == '7880732' and name == MASK_KIT:
+                    description = current.get(MASK_DESCRIPTION)
+                    old_data = before['body'].split(' where ', 1)[-1].split(' injective :=', 1)[0]
+                    new_data = description['body'].split(' where ', 1)[-1] if description else None
+                    if new_data != old_data:
+                        reason = 'changed mask carrier/step/birth/kill data'
+                    else:
+                        record['preserved_data_descriptions'].append(name)
                 elif name in CERTIFICATES:
                     record['certificate_changes'].append(name)
                 else:

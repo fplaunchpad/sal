@@ -79262,7 +79262,6 @@
         "Sal.MRDTs.Instances.EfficientORSet.kills.match_1",
         "Sal.MRDTs.Instances.EfficientORSet.live",
         "Sal.MRDTs.Instances.EfficientORSet.merge",
-        "Sal.MRDTs.Instances.EfficientORSet.rc",
         "Sal.MRDTs.Instances.EfficientORSet.rc._sparseCasesOn_1",
         "Sal.MRDTs.Instances.EfficientORSet.rc._sparseCasesOn_2",
         "Sal.MRDTs.Instances.EfficientORSet.rc.match_1",
@@ -79362,108 +79361,7 @@
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification._simp_1_1",
         "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber._proof_1_9",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_7",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_8",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element.match_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.guarded_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.initial",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.no_chain",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.remove_add_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.semantic_shape",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.signature",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric._simp_1_1",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification",
@@ -79506,6 +79404,56 @@
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive._simp_1_2",
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance",
         "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_10",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_11",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_12",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_13",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_14",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_15",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_16",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_17",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_18",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_19",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_20",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_21",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_22",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_23",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_24",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_26",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_27",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_28",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_29",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_3",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_30",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_31",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_32",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_33",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_34",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_35",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_36",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_38",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_39",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_4",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_40",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_41",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_42",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_43",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_45",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_46",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_47",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_48",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_49",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_5",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_54",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_6",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_7",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_8",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_9",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_3",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting",
@@ -79565,6 +79513,12 @@
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.canonical",
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.order_certificate",
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.projection_run",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.birth",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.carrier",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.kill",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.mk",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.step",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.issuer",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.mk",
@@ -79679,7 +79633,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed",
         "Sal.MRDTs.Paper1.Automation.Signature.State",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail",
@@ -79688,7 +79641,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.comm",
         "Sal.MRDTs.Paper1.Automation.Signature.commutes",
         "Sal.MRDTs.Paper1.Automation.Signature.conditional_log",
         "Sal.MRDTs.Paper1.Automation.Signature.distinct",
@@ -79699,7 +79651,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides",
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh",
         "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton",
@@ -79719,8 +79670,6 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
-        "Sal.MRDTs.Paper1.Automation.collectionMerge",
-        "Sal.MRDTs.Paper1.Automation.collection_shared",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.past_eq",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.representation",
@@ -80188,108 +80137,7 @@
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification._simp_1_1",
         "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber._proof_1_9",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_7",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_8",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element.match_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.guarded_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.initial",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.no_chain",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.remove_add_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.semantic_shape",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.signature",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric._simp_1_1",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification",
@@ -80332,6 +80180,56 @@
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive._simp_1_2",
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance",
         "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_10",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_11",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_12",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_13",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_14",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_15",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_16",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_17",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_18",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_19",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_20",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_21",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_22",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_23",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_24",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_26",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_27",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_28",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_29",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_3",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_30",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_31",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_32",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_33",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_34",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_35",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_36",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_38",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_39",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_4",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_40",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_41",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_42",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_43",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_45",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_46",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_47",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_48",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_49",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_5",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_54",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_6",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_7",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_8",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_9",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_3",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting",
@@ -80391,6 +80289,12 @@
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.canonical",
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.order_certificate",
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.projection_run",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.birth",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.carrier",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.kill",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.mk",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.step",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.issuer",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.mk",
@@ -80505,7 +80409,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed",
         "Sal.MRDTs.Paper1.Automation.Signature.State",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail",
@@ -80514,7 +80417,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.comm",
         "Sal.MRDTs.Paper1.Automation.Signature.commutes",
         "Sal.MRDTs.Paper1.Automation.Signature.conditional_log",
         "Sal.MRDTs.Paper1.Automation.Signature.distinct",
@@ -80525,7 +80427,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides",
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh",
         "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton",
@@ -80545,8 +80446,6 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
-        "Sal.MRDTs.Paper1.Automation.collectionMerge",
-        "Sal.MRDTs.Paper1.Automation.collection_shared",
         "Sal.MRDTs.Paper1.CommutationCompatibility",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CanonicalUnique",
@@ -81256,108 +81155,7 @@
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification._simp_1_1",
         "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber._proof_1_9",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_7",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_8",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element.match_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.guarded_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.initial",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.no_chain",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.remove_add_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.semantic_shape",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.signature",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric._simp_1_1",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification",
@@ -81400,6 +81198,56 @@
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive._simp_1_2",
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance",
         "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_10",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_11",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_12",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_13",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_14",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_15",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_16",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_17",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_18",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_19",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_20",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_21",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_22",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_23",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_24",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_26",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_27",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_28",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_29",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_3",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_30",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_31",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_32",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_33",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_34",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_35",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_36",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_38",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_39",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_4",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_40",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_41",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_42",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_43",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_45",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_46",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_47",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_48",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_49",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_5",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_54",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_6",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_7",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_8",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_9",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_3",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting",
@@ -81459,6 +81307,12 @@
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.canonical",
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.order_certificate",
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.projection_run",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.birth",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.carrier",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.kill",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.mk",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.step",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.issuer",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.mk",
@@ -81573,7 +81427,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed",
         "Sal.MRDTs.Paper1.Automation.Signature.State",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail",
@@ -81582,7 +81435,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.comm",
         "Sal.MRDTs.Paper1.Automation.Signature.commutes",
         "Sal.MRDTs.Paper1.Automation.Signature.conditional_log",
         "Sal.MRDTs.Paper1.Automation.Signature.distinct",
@@ -81593,7 +81445,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides",
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh",
         "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton",
@@ -81613,8 +81464,6 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
-        "Sal.MRDTs.Paper1.Automation.collectionMerge",
-        "Sal.MRDTs.Paper1.Automation.collection_shared",
         "Sal.MRDTs.Paper1.CommutationCompatibility",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CanonicalUnique",
@@ -84702,73 +84551,6 @@
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber._proof_1_9",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_8",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.conditional_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.initial",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.no_chain",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.noncomm_full",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.signature",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification",
@@ -84811,6 +84593,51 @@
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive._simp_1_2",
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance",
         "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_10",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_11",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_12",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_13",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_14",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_15",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_16",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_17",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_18",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_19",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_20",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_21",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_22",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_23",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_24",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_25",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_26",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_28",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_29",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_30",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_31",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_32",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_33",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_34",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_35",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_36",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_37",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_38",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_4",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_40",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_41",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_42",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_43",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_45",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_46",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_47",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_48",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_5",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_6",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_7",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_8",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_9",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_3",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting",
@@ -84984,7 +84811,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed",
         "Sal.MRDTs.Paper1.Automation.Signature.State",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail",
@@ -84993,7 +84819,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.comm",
         "Sal.MRDTs.Paper1.Automation.Signature.commutes",
         "Sal.MRDTs.Paper1.Automation.Signature.conditional_log",
         "Sal.MRDTs.Paper1.Automation.Signature.distinct",
@@ -85004,7 +84829,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides",
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh",
         "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton",
@@ -85024,8 +84848,6 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
-        "Sal.MRDTs.Paper1.Automation.collectionMerge",
-        "Sal.MRDTs.Paper1.Automation.collection_shared",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.past_eq",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.representation",
@@ -85110,7 +84932,6 @@
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq.match_1",
         "Sal.MRDTs.Paper1.ORSet.instReprUpdate.repr.match_1",
         "Sal.MRDTs.Paper1.ORSet.merge",
-        "Sal.MRDTs.Paper1.ORSet.order",
         "Sal.MRDTs.Paper1.ORSet.order._sparseCasesOn_1",
         "Sal.MRDTs.Paper1.ORSet.order._sparseCasesOn_2",
         "Sal.MRDTs.Paper1.ORSet.order.match_1",
@@ -85448,73 +85269,6 @@
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber._proof_1_9",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_8",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.conditional_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.initial",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.no_chain",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.noncomm_full",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.signature",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification",
@@ -85557,6 +85311,51 @@
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive._simp_1_2",
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance",
         "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_10",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_11",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_12",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_13",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_14",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_15",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_16",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_17",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_18",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_19",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_20",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_21",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_22",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_23",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_24",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_25",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_26",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_28",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_29",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_30",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_31",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_32",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_33",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_34",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_35",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_36",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_37",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_38",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_4",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_40",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_41",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_42",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_43",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_45",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_46",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_47",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_48",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_5",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_6",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_7",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_8",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_9",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_3",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting",
@@ -85730,7 +85529,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed",
         "Sal.MRDTs.Paper1.Automation.Signature.State",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail",
@@ -85739,7 +85537,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.comm",
         "Sal.MRDTs.Paper1.Automation.Signature.commutes",
         "Sal.MRDTs.Paper1.Automation.Signature.conditional_log",
         "Sal.MRDTs.Paper1.Automation.Signature.distinct",
@@ -85750,7 +85547,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides",
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh",
         "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton",
@@ -85770,8 +85566,6 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
-        "Sal.MRDTs.Paper1.Automation.collectionMerge",
-        "Sal.MRDTs.Paper1.Automation.collection_shared",
         "Sal.MRDTs.Paper1.CommutationCompatibility",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CanonicalUnique",
@@ -86454,73 +86248,6 @@
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber._proof_1_9",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_8",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.conditional_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.initial",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.no_chain",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.noncomm_full",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.signature",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification",
@@ -86563,6 +86290,51 @@
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive._simp_1_2",
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance",
         "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_10",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_11",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_12",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_13",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_14",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_15",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_16",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_17",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_18",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_19",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_20",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_21",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_22",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_23",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_24",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_25",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_26",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_28",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_29",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_30",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_31",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_32",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_33",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_34",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_35",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_36",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_37",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_38",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_4",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_40",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_41",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_42",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_43",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_45",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_46",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_47",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_48",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_5",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_6",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_7",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_8",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_9",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_3",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting",
@@ -86736,7 +86508,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed",
         "Sal.MRDTs.Paper1.Automation.Signature.State",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail",
@@ -86745,7 +86516,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.comm",
         "Sal.MRDTs.Paper1.Automation.Signature.commutes",
         "Sal.MRDTs.Paper1.Automation.Signature.conditional_log",
         "Sal.MRDTs.Paper1.Automation.Signature.distinct",
@@ -86756,7 +86526,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides",
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh",
         "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton",
@@ -86776,8 +86545,6 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
-        "Sal.MRDTs.Paper1.Automation.collectionMerge",
-        "Sal.MRDTs.Paper1.Automation.collection_shared",
         "Sal.MRDTs.Paper1.CommutationCompatibility",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CanonicalUnique",
@@ -112265,36 +112032,50 @@
     "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input": {
       "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
       "module": "Sal.MRDTs.Paper1.Automation.ORSetInputs",
-      "start_line": 17,
-      "end_line": 21,
+      "start_line": 38,
+      "end_line": 41,
       "kind": "definition"
     },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kit": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 231,
-      "end_line": 244,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal": {
-      "file": "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.LocalSingleton",
-      "start_line": 12,
-      "end_line": 15,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 190,
-      "end_line": 224,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Instances.EfficientORSet.update": {
+    "Sal.MRDTs.Instances.EfficientORSet.State": {
       "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
       "module": "Sal.MRDTs.Instances.EfficientORSet",
-      "start_line": 21,
-      "end_line": 25,
+      "start_line": 17,
+      "end_line": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Instances.EfficientORSet.Record": {
+      "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
+      "module": "Sal.MRDTs.Instances.EfficientORSet",
+      "start_line": 16,
+      "end_line": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.EfficientORSet.RawReplay.representation": {
+      "file": "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean",
+      "module": "Sal.MRDTs.Paper1.GuardedRawORSetReplay",
+      "start_line": 10,
+      "end_line": 10,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.representation": {
+      "file": "Sal/MRDTs/Paper1/ConcreteORSetRepresentation.lean",
+      "module": "Sal.MRDTs.Paper1.ConcreteORSetRepresentation",
+      "start_line": 19,
+      "end_line": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Instances.EfficientORSet.Represents": {
+      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
+      "start_line": 29,
+      "end_line": 30,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Instances.EfficientORSet.live": {
+      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
+      "start_line": 25,
+      "end_line": 27,
       "kind": "definition"
     },
     "Sal.MRDTs.Instances.EfficientORSet.SetOp": {
@@ -112318,18 +112099,25 @@
       "end_line": 12,
       "kind": "definition"
     },
-    "Sal.MRDTs.Instances.EfficientORSet.State": {
-      "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSet",
-      "start_line": 17,
-      "end_line": 17,
+    "Sal.MRDTs.Instances.EfficientORSet.dead": {
+      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
+      "start_line": 21,
+      "end_line": 23,
       "kind": "definition"
     },
-    "Sal.MRDTs.Instances.EfficientORSet.Record": {
-      "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSet",
-      "start_line": 16,
-      "end_line": 16,
+    "Sal.MRDTs.Instances.EfficientORSet.Event": {
+      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
+      "start_line": 13,
+      "end_line": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Instances.EfficientORSet.kills": {
+      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
+      "start_line": 15,
+      "end_line": 19,
       "kind": "definition"
     },
     "Sal.MRDTs.Instances.EfficientORSet.SetOp.casesOn": {
@@ -112346,18 +112134,18 @@
       "end_line": 14,
       "kind": "definition"
     },
-    "Sal.MRDTs.Instances.EfficientORSet.rc": {
-      "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSet",
-      "start_line": 44,
-      "end_line": 48,
-      "kind": "definition"
-    },
     "Sal.MRDTs.Instances.EfficientORSet.D": {
       "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
       "module": "Sal.MRDTs.Instances.EfficientORSet",
       "start_line": 32,
       "end_line": 42,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Instances.EfficientORSet.update": {
+      "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
+      "module": "Sal.MRDTs.Instances.EfficientORSet",
+      "start_line": 21,
+      "end_line": 25,
       "kind": "definition"
     },
     "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp": {
@@ -112409,54 +112197,26 @@
       "end_line": 28,
       "kind": "definition"
     },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.signature": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 15,
-      "end_line": 15,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.initial": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 20,
-      "end_line": 20,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 27,
-      "end_line": 30,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 46,
-      "end_line": 49,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.collection_shared": {
-      "file": "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.SharedExpansion",
-      "start_line": 11,
+    "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.kill": {
+      "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.MaskKitAutomation",
+      "start_line": 18,
       "end_line": 18,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.collectionMerge": {
-      "file": "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.SharedExpansion",
-      "start_line": 8,
-      "end_line": 9,
       "kind": "definition"
     },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.no_chain": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 166,
-      "end_line": 169,
-      "kind": "theorem"
+    "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description": {
+      "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.MaskKitAutomation",
+      "start_line": 13,
+      "end_line": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.MaskKitAutomation",
+      "start_line": 13,
+      "end_line": 13,
+      "kind": "definition"
     },
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.conflict": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
@@ -112465,250 +112225,12 @@
       "end_line": 25,
       "kind": "definition"
     },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 18,
-      "end_line": 18,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal": {
-      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.CausalExpansion",
-      "start_line": 124,
-      "end_line": 128,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.Signature.comm": {
-      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.InductiveLeaves",
-      "start_line": 30,
-      "end_line": 30,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 154,
-      "end_line": 157,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 38,
-      "end_line": 42,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 118,
-      "end_line": 125,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Foundation.instDecidableEqRcRes": {
-      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
-      "module": "Sal.MRDTs.Framework.Base.UpdateSignature",
-      "start_line": 25,
-      "end_line": 25,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 134,
-      "end_line": 152,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 109,
-      "end_line": 110,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.remove_add_noncomm": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 127,
-      "end_line": 132,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 112,
-      "end_line": 116,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 19,
-      "end_line": 19,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 31,
-      "end_line": 34,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_base": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 22,
-      "end_line": 23,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 35,
-      "end_line": 37,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 53,
-      "end_line": 55,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 24,
-      "end_line": 26,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 160,
-      "end_line": 164,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 50,
-      "end_line": 52,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 227,
-      "end_line": 229,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.guarded_noncomm": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 177,
-      "end_line": 188,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Instances.EfficientORSet.Event": {
-      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
-      "start_line": 13,
-      "end_line": 13,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 170,
-      "end_line": 175,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 43,
-      "end_line": 45,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.EfficientORSet.RawReplay.representation": {
-      "file": "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean",
-      "module": "Sal.MRDTs.Paper1.GuardedRawORSetReplay",
-      "start_line": 10,
-      "end_line": 10,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.EfficientORSet.ConcreteRep.representation": {
-      "file": "Sal/MRDTs/Paper1/ConcreteORSetRepresentation.lean",
-      "module": "Sal.MRDTs.Paper1.ConcreteORSetRepresentation",
-      "start_line": 19,
-      "end_line": 22,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Instances.EfficientORSet.Represents": {
-      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
-      "start_line": 29,
-      "end_line": 30,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Instances.EfficientORSet.live": {
-      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
-      "start_line": 25,
-      "end_line": 27,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Instances.EfficientORSet.dead": {
-      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
-      "start_line": 21,
-      "end_line": 23,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Instances.EfficientORSet.kills": {
-      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSetHistory",
+    "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.MaskKitAutomation",
       "start_line": 15,
-      "end_line": 19,
+      "end_line": 15,
       "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 79,
-      "end_line": 92,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 58,
-      "end_line": 62,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 57,
-      "end_line": 57,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 63,
-      "end_line": 68,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_noncomm": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 69,
-      "end_line": 77,
-      "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.EfficientORSet.RawReplay.scheme": {
       "file": "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean",
@@ -112724,12 +112246,33 @@
       "end_line": 20,
       "kind": "definition"
     },
-    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.semantic_shape": {
+    "Sal.MRDTs.Foundation.instDecidableEqRcRes": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "module": "Sal.MRDTs.Framework.Base.UpdateSignature",
+      "start_line": 25,
+      "end_line": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.step": {
+      "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.MaskKitAutomation",
+      "start_line": 16,
+      "end_line": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.birth": {
+      "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.MaskKitAutomation",
+      "start_line": 17,
+      "end_line": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth": {
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
       "module": "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
-      "start_line": 94,
-      "end_line": 107,
-      "kind": "theorem"
+      "start_line": 60,
+      "end_line": 60,
+      "kind": "definition"
     },
     "Sal.MRDTs.Paper1.EfficientORSet.RawCertificate.executions": {
       "file": "Sal/MRDTs/Paper1/GuardedRawEfficientCertificate.lean",
@@ -113079,6 +112622,13 @@
       "module": "Sal.MRDTs.Paper1.GuardedRawEfficientExecution",
       "start_line": 13,
       "end_line": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Instances.EfficientORSet.rc": {
+      "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
+      "module": "Sal.MRDTs.Instances.EfficientORSet",
+      "start_line": 44,
+      "end_line": 48,
       "kind": "definition"
     },
     "Sal.MRDTs.Instances.EfficientORSet.repConfig_store": {
@@ -113756,23 +113306,9 @@
     "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input": {
       "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
       "module": "Sal.MRDTs.Paper1.Automation.ORSetInputs",
-      "start_line": 10,
-      "end_line": 11,
+      "start_line": 17,
+      "end_line": 18,
       "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.noncomm_full": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 72,
-      "end_line": 84,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 66,
-      "end_line": 71,
-      "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.ORSet.conflict": {
       "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
@@ -113781,158 +113317,18 @@
       "end_line": 11,
       "kind": "definition"
     },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kit": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 95,
-      "end_line": 119,
+    "Sal.MRDTs.Paper1.ORSet.RawReplay.representation": {
+      "file": "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean",
+      "module": "Sal.MRDTs.Paper1.GuardedRawORSetReplay",
+      "start_line": 142,
+      "end_line": 144,
       "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 33,
-      "end_line": 35,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.signature": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 13,
-      "end_line": 13,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.ORSet.order": {
-      "file": "Sal/MRDTs/Paper1/ORSet.lean",
-      "module": "Sal.MRDTs.Paper1.ORSet",
-      "start_line": 42,
-      "end_line": 46,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 25,
-      "end_line": 28,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 51,
-      "end_line": 53,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 91,
-      "end_line": 93,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 44,
-      "end_line": 47,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 17,
-      "end_line": 17,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 41,
-      "end_line": 43,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 48,
-      "end_line": 50,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_base": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 20,
-      "end_line": 21,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 36,
-      "end_line": 40,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 56,
-      "end_line": 60,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 22,
-      "end_line": 24,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.no_chain": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 62,
-      "end_line": 65,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 29,
-      "end_line": 32,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.initial": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 18,
-      "end_line": 18,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 16,
-      "end_line": 16,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.Automation.AutomatedORSet.conditional_base": {
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-      "module": "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-      "start_line": 85,
-      "end_line": 90,
-      "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.ORSet.ConcreteRep.representation": {
       "file": "Sal/MRDTs/Paper1/ConcreteORSetRepresentation.lean",
       "module": "Sal.MRDTs.Paper1.ConcreteORSetRepresentation",
       "start_line": 9,
       "end_line": 11,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.ORSet.RawReplay.representation": {
-      "file": "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean",
-      "module": "Sal.MRDTs.Paper1.GuardedRawORSetReplay",
-      "start_line": 142,
-      "end_line": 144,
       "kind": "definition"
     },
     "Sal.MRDTs.Paper1.ORSet.RawExecution.executions": {
@@ -114003,6 +113399,13 @@
       "module": "Sal.MRDTs.Paper1.ORSet",
       "start_line": 48,
       "end_line": 49,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ORSet.order": {
+      "file": "Sal/MRDTs/Paper1/ORSet.lean",
+      "module": "Sal.MRDTs.Paper1.ORSet",
+      "start_line": 42,
+      "end_line": 46,
       "kind": "definition"
     },
     "Sal.MRDTs.Paper1.ORSet.EqExcept": {
@@ -127385,7 +126788,6 @@
         "Sal.MRDTs.Instances.EfficientORSet.kills.match_1",
         "Sal.MRDTs.Instances.EfficientORSet.live",
         "Sal.MRDTs.Instances.EfficientORSet.merge",
-        "Sal.MRDTs.Instances.EfficientORSet.rc",
         "Sal.MRDTs.Instances.EfficientORSet.rc._sparseCasesOn_1",
         "Sal.MRDTs.Instances.EfficientORSet.rc._sparseCasesOn_2",
         "Sal.MRDTs.Instances.EfficientORSet.rc.match_1",
@@ -127485,108 +126887,7 @@
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.absorber_classification._simp_1_1",
         "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_absorber._proof_1_9",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_commuting._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.causal_strict._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.comm._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_distinct_elements._proof_1_7",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.commute_nonconflict._proof_1_8",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conditional_base._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.conflict_classification._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.diagonal._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.element.match_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.fresh_step._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.guarded_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.initial",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kernel_stable._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.kit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_empty._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_opposite._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.local_singleton._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.maskKit._proof_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.mask_update._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.no_chain",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.policy_order._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.remove_add_noncomm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.semantic_shape",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.signature",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric",
-        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.strict_asymmetric._simp_1_1",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification",
@@ -127629,6 +126930,56 @@
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive._simp_1_2",
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance",
         "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_10",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_11",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_12",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_13",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_14",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_15",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_16",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_17",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_18",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_19",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_20",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_21",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_22",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_23",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_24",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_26",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_27",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_28",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_29",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_3",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_30",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_31",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_32",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_33",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_34",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_35",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_36",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_38",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_39",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_4",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_40",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_41",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_42",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_43",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_45",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_46",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_47",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_48",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_49",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_5",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_54",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_6",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_7",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_8",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.EfficientORSet.input._proof_9",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_3",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting",
@@ -127688,6 +127039,12 @@
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.canonical",
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.order_certificate",
         "Sal.MRDTs.Paper1.Automation.MaskCanonical.projection_run",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.birth",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.carrier",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.kill",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.mk",
+        "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.step",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.issuer",
         "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.mk",
@@ -127802,7 +127159,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed",
         "Sal.MRDTs.Paper1.Automation.Signature.State",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail",
@@ -127811,7 +127167,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.comm",
         "Sal.MRDTs.Paper1.Automation.Signature.commutes",
         "Sal.MRDTs.Paper1.Automation.Signature.conditional_log",
         "Sal.MRDTs.Paper1.Automation.Signature.distinct",
@@ -127822,7 +127177,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides",
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh",
         "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton",
@@ -127842,8 +127196,6 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
-        "Sal.MRDTs.Paper1.Automation.collectionMerge",
-        "Sal.MRDTs.Paper1.Automation.collection_shared",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.past_eq",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.representation",
@@ -128782,73 +128134,6 @@
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive",
         "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_absorber._proof_1_9",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_commuting._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.causal_strict._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.comm._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_6",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.commute_nonconflict._proof_1_8",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.conditional_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.diagonal._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_base",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.fresh_step._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.initial",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kernel_stable._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.kit",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_common._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_empty._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_opposite._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_2",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_3",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_4",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._proof_1_5",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.local_singleton._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.no_chain",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.noncomm_full",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.policy_order._simp_1_1",
-        "Sal.MRDTs.Paper1.Automation.AutomatedORSet.signature",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification",
         "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification",
@@ -128891,6 +128176,51 @@
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive._simp_1_2",
         "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance",
         "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_10",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_11",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_12",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_13",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_14",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_15",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_16",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_17",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_18",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_19",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_20",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_21",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_22",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_23",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_24",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_25",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_26",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_28",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_29",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_30",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_31",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_32",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_33",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_34",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_35",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_36",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_37",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_38",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_4",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_40",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_41",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_42",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_43",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_44",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_45",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_46",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_47",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_48",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_5",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_6",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_7",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_8",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._proof_9",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_2",
+        "Sal.MRDTs.Paper1.Automation.CommonInstances.OrdinaryORSet.input._simp_3",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting",
@@ -129064,7 +128394,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed",
         "Sal.MRDTs.Paper1.Automation.Signature.State",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.causal_base_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail",
@@ -129073,7 +128402,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step",
         "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel",
-        "Sal.MRDTs.Paper1.Automation.Signature.comm",
         "Sal.MRDTs.Paper1.Automation.Signature.commutes",
         "Sal.MRDTs.Paper1.Automation.Signature.conditional_log",
         "Sal.MRDTs.Paper1.Automation.Signature.distinct",
@@ -129084,7 +128412,6 @@
         "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides",
-        "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides_of_diagonal",
         "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past",
         "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh",
         "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton",
@@ -129104,8 +128431,6 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
-        "Sal.MRDTs.Paper1.Automation.collectionMerge",
-        "Sal.MRDTs.Paper1.Automation.collection_shared",
         "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.past_eq",
         "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.representation",
@@ -129189,7 +128514,6 @@
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq.match_1",
         "Sal.MRDTs.Paper1.ORSet.instReprUpdate.repr.match_1",
         "Sal.MRDTs.Paper1.ORSet.merge",
-        "Sal.MRDTs.Paper1.ORSet.order",
         "Sal.MRDTs.Paper1.ORSet.order._sparseCasesOn_1",
         "Sal.MRDTs.Paper1.ORSet.order._sparseCasesOn_2",
         "Sal.MRDTs.Paper1.ORSet.order.match_1",
@@ -129927,6 +129251,20 @@
       ]
     }
   },
+  "orset_author_interface": {
+    "ordinary-or-set-paper-example": {
+      "status": "pass",
+      "permitted_data_dependencies": [],
+      "cached_proof_dependencies": []
+    },
+    "efficient-or-set": {
+      "status": "pass",
+      "permitted_data_dependencies": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet.birth"
+      ],
+      "cached_proof_dependencies": []
+    }
+  },
   "source_sha256": {
     "Sal/MRDTs/Framework/Base/FiniteOrder.lean": "927ef5ac16c5fa3913374b133ce370fd5d809fce2613a771e621031261b5f656",
     "Sal/MRDTs/Framework/Base/LabeledTS.lean": "cb5ec25ec4d096615eed88c6175aa6db5dd68e7270bbaeb3062099c53e6fcf3d",
@@ -130012,10 +129350,9 @@
     "Sal/MRDTs/Paper1/AnchoredQueueSupport.lean": "83127360a75d2112aec1a649f3b47dd6a830ffe62c1d3937fa471c2ff41470a8",
     "Sal/MRDTs/Paper1/AnchoredQueueSurvivors.lean": "fddf923e2ac23d3869a7cf65ab13f819da82db89ef7dcccc0d5d89ef5be2b0fe",
     "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean": "aa5b1b8f2217126991720b894f85f3a4cfc95a16a13dce09e1bcb6d203a3f88d",
-    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean": "961c9fb2aa1894c30e3c5e220ee8107fa6d0a397f2f2a3bf898351bde40d994b",
+    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean": "b4ac40949f1490020606c0ba7a40cd0011991df7fc5176331b1a9aa343a55867",
     "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean": "d2a4828b431e982fb596f825f3ad2cb495c005ac46ffc4f5f5853dd8754c6ebb",
     "Sal/MRDTs/Paper1/Automation/AutomatedMVR.lean": "d026e2292bd4de9f94dabd3090c4d6005ec7de31fbf073345744e13967e8fe3c",
-    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean": "284b11ba40b69ad05f4604df659524ad853ca857f6f5324a627cb26210d620bd",
     "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean": "8c5c2012f42220daf2cd29182d7d062c69c1580e7d9585106f9ebe22d137323b",
     "Sal/MRDTs/Paper1/Automation/AutomatedRichCore.lean": "bd1bff0ffc1d85870eb88e822249e7e1b061b2a24dcef24cb0961292083e23ba",
     "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean": "4c4d85784ab9f5c15375b46f071b493fada5ccb2b270b2cfcdac3df926e6fb76",
@@ -130042,8 +129379,8 @@
     "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean": "702ee74e692a2f49dd64610556c71ad19776f5ba45b80b3818d9eb74caa1b176",
     "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean": "715b21865522260fd3ad5d1b6c181b6d63374b22732abff64b5da7b057e6a9c6",
     "Sal/MRDTs/Paper1/Automation/MVRInput.lean": "1b8b857e82d264a43821d2c908b4f8a52ffb70713d2a34b6259357ee53975bae",
-    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean": "8f65742859c306c2afffb5b3d7c33c3ddd360eb4cd54c8fc3cdd71d1745212b6",
-    "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean": "54a91177bee4724f1b7dfce5d05cd3a9a1336855a96b8fb6d32e76bf8c01f0b0",
+    "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean": "386545395a70d52589285c449fc327a19b22cf00a6716ec60fbe880612dc018c",
+    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean": "9fd7524ccdf98b910b447bcbd2a2d5ef802d404e85dc03d768e59384dae58765",
     "Sal/MRDTs/Paper1/Automation/SimpleInputs.lean": "a9bfac53dd413e9ae1c6c45b9d61fb6070951a27cfd31f0b57b0debc3c9a0ddc",
     "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean": "11a764b6e4f506ab8077709d5d1497be92c711b2bdce0dca516a0e0d00bccecf",
     "Sal/MRDTs/Paper1/Automation/TransferGuardedCommuting.lean": "ccdb69bb2bbc20424db1ff55c302b57bede027aebd6df034c7e7026c25777f20",
@@ -130153,6 +129490,7 @@
   },
   "controls": [
     "Sal/MRDTs/Paper1/Automation/Controls.lean",
+    "Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean",
     "experiments/vc-automation/test_contract_audit.py",
     "scripts/check-paper1-automation-contracts.py"
   ],
@@ -130208,116 +129546,91 @@
     "status": "pass",
     "root_modules": [
       "Sal.MRDTs.Paper1.Ledger",
-      "Sal.MRDTs.Paper1.Automation.Controls"
+      "Sal.MRDTs.Paper1.Automation.Controls",
+      "Sal.MRDTs.Paper1.Automation.ORSetAutomationControls"
     ],
     "local_modules": {
-      "Sal.MRDTs.Paper1.Automation.Controls": {
-        "file": "Sal/MRDTs/Paper1/Automation/Controls.lean",
+      "Sal.MRDTs.Paper1.Automation.ORSetAutomationControls": {
+        "file": "Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.GuardedLWWPort"
+          "Sal.MRDTs.Paper1.Automation.ORSetInputs"
         ]
       },
-      "Sal.MRDTs.Paper1.GuardedLWWPort": {
-        "file": "Sal/MRDTs/Paper1/GuardedLWWPort.lean",
+      "Sal.MRDTs.Paper1.Automation.ORSetInputs": {
+        "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.Automation.CommutingInputs",
-          "Sal.MRDTs.Paper1.Automation.CommutingAssembly",
-          "Sal.MRDTs.Paper1.ConcreteCommutingVCReplay",
-          "Sal.MRDTs.Paper1.ConcreteHistoryBridge",
-          "Sal.MRDTs.Paper1.ConcreteReplay",
-          "Sal.MRDTs.Paper1.GuardedHistory",
-          "Sal.MRDTs.Instances.LWWRegister"
+          "Sal.MRDTs.Paper1.Automation.CommonVerification",
+          "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
+          "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet",
+          "Sal.MRDTs.Paper1.Automation.InputDerivation"
         ]
       },
-      "Sal.MRDTs.Instances.LWWRegister": {
-        "file": "Sal/MRDTs/Instances/LWWRegister.lean",
+      "Sal.MRDTs.Paper1.Automation.InputDerivation": {
+        "file": "Sal/MRDTs/Paper1/Automation/InputDerivation.lean",
         "imports": [
-          "Sal.MRDTs.Metatheory.Correctness",
-          "Sal.MRDTs.Metatheory.Safety",
-          "Mathlib.Order.WithBot",
-          "Mathlib.Data.Prod.Lex",
-          "Mathlib.Data.List.MinMax"
+          "Sal.MRDTs.Paper1.Automation.CommonVerification",
+          "Sal.MRDTs.Paper1.Automation.PolicyKitAutomation",
+          "Sal.MRDTs.Paper1.Automation.MaskKitAutomation"
         ]
       },
-      "Sal.MRDTs.Metatheory.Safety": {
-        "file": "Sal/MRDTs/Metatheory/Safety.lean",
+      "Sal.MRDTs.Paper1.Automation.MaskKitAutomation": {
+        "file": "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean",
         "imports": [
-          "Sal.MRDTs.Metatheory.CertifiedAdequacy"
+          "Sal.MRDTs.Paper1.Automation.GenericMaskCanonical",
+          "Sal.MRDTs.Paper1.Automation.PolicyExpansionAutomation"
         ]
       },
-      "Sal.MRDTs.Metatheory.CertifiedAdequacy": {
-        "file": "Sal/MRDTs/Metatheory/CertifiedAdequacy.lean",
+      "Sal.MRDTs.Paper1.Automation.PolicyExpansionAutomation": {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
         "imports": [
-          "Sal.MRDTs.Framework.Certificates",
-          "Sal.MRDTs.Metatheory.VirtualAdequacy"
+          "Sal.MRDTs.Paper1.Automation.InductivePolicy",
+          "Sal.MRDTs.Paper1.Automation.PolicyExpansionRules",
+          "Sal.MRDTs.Paper1.Automation.CausalCoverage",
+          "Sal.MRDTs.Paper1.Automation.SharedExpansion"
         ]
       },
-      "Sal.MRDTs.Metatheory.VirtualAdequacy": {
-        "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "Sal.MRDTs.Paper1.Automation.SharedExpansion": {
+        "file": "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
         "imports": [
-          "Sal.MRDTs.Metatheory.Adequacy",
-          "Sal.MRDTs.Metatheory.VirtualMergeBase"
+          "Sal.MRDTs.Paper1.Automation.InductiveLeaves"
         ]
       },
-      "Sal.MRDTs.Metatheory.VirtualMergeBase": {
-        "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "Sal.MRDTs.Paper1.Automation.InductiveLeaves": {
+        "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
         "imports": [
-          "Sal.MRDTs.Metatheory.StoreInvariant",
-          "Mathlib.Data.Nat.Find",
-          "Mathlib.Data.Finset.Sort",
-          "Mathlib.Data.Finset.Lattice.Fold"
+          "Sal.MRDTs.Paper1.ConcreteJoin"
         ]
       },
-      "Sal.MRDTs.Metatheory.StoreInvariant": {
-        "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "Sal.MRDTs.Paper1.ConcreteJoin": {
+        "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
         "imports": [
-          "Sal.MRDTs.Framework.Execution",
-          "Mathlib.Data.Nat.Find"
+          "Sal.MRDTs.Paper1.ConcreteMetadata",
+          "Sal.MRDTs.Paper1.GuardedReplay"
         ]
       },
-      "Sal.MRDTs.Framework.Execution": {
-        "file": "Sal/MRDTs/Framework/Execution.lean",
+      "Sal.MRDTs.Paper1.GuardedReplay": {
+        "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
         "imports": [
-          "Sal.MRDTs.Framework.Signature",
-          "Sal.MRDTs.Framework.Base.ReplayContext",
-          "Sal.MRDTs.Framework.Base.LabeledTS",
-          "Mathlib.Data.Set.Basic"
+          "Sal.MRDTs.Paper1.RestrictedReplay"
         ]
       },
-      "Sal.MRDTs.Framework.Base.LabeledTS": {
-        "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "Sal.MRDTs.Paper1.RestrictedReplay": {
+        "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
         "imports": [
-          "Mathlib.Logic.Relation"
+          "Sal.MRDTs.Framework.MergeLaws"
         ]
       },
-      "Sal.MRDTs.Framework.Base.ReplayContext": {
-        "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+      "Sal.MRDTs.Framework.MergeLaws": {
+        "file": "Sal/MRDTs/Framework/MergeLaws.lean",
         "imports": [
-          "Sal.MRDTs.Framework.Base.Replay"
+          "Sal.MRDTs.Framework.ReplayLaws",
+          "Sal.MRDTs.Metatheory.Join.BinaryJoin"
         ]
       },
-      "Sal.MRDTs.Framework.Base.Replay": {
-        "file": "Sal/MRDTs/Framework/Base/Replay.lean",
+      "Sal.MRDTs.Metatheory.Join.BinaryJoin": {
+        "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
         "imports": [
-          "Sal.MRDTs.Framework.Base.UpdateSignature",
-          "Mathlib.Data.Set.Basic"
-        ]
-      },
-      "Sal.MRDTs.Framework.Base.UpdateSignature": {
-        "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
-        "imports": []
-      },
-      "Sal.MRDTs.Framework.Signature": {
-        "file": "Sal/MRDTs/Framework/Signature.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.Base.UpdateSignature"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.Adequacy": {
-        "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.MergeLaws",
-          "Sal.MRDTs.Metatheory.StoreInvariant",
+          "Sal.MRDTs.Metatheory.Join.Assoc_CounterModel",
           "Sal.MRDTs.Metatheory.Join.SetRelativeReplay"
         ]
       },
@@ -130337,6 +129650,17 @@
           "Mathlib.Tactic"
         ]
       },
+      "Sal.MRDTs.Framework.Base.Replay": {
+        "file": "Sal/MRDTs/Framework/Base/Replay.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Base.UpdateSignature",
+          "Mathlib.Data.Set.Basic"
+        ]
+      },
+      "Sal.MRDTs.Framework.Base.UpdateSignature": {
+        "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+        "imports": []
+      },
       "Sal.MRDTs.Metatheory.Join.ReplayOrderBasics": {
         "file": "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean",
         "imports": [
@@ -130355,18 +129679,10 @@
           "Sal.MRDTs.Framework.Base.ReplayContext"
         ]
       },
-      "Sal.MRDTs.Framework.MergeLaws": {
-        "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "Sal.MRDTs.Framework.Base.ReplayContext": {
+        "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
         "imports": [
-          "Sal.MRDTs.Framework.ReplayLaws",
-          "Sal.MRDTs.Metatheory.Join.BinaryJoin"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.Join.BinaryJoin": {
-        "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Join.Assoc_CounterModel",
-          "Sal.MRDTs.Metatheory.Join.SetRelativeReplay"
+          "Sal.MRDTs.Framework.Base.Replay"
         ]
       },
       "Sal.MRDTs.Metatheory.Join.Assoc_CounterModel": {
@@ -130388,24 +129704,38 @@
           "Sal.MRDTs.Framework.Execution"
         ]
       },
-      "Sal.MRDTs.Framework.Certificates": {
-        "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "Sal.MRDTs.Framework.Execution": {
+        "file": "Sal/MRDTs/Framework/Execution.lean",
         "imports": [
-          "Sal.MRDTs.Framework.Execution",
-          "Sal.MRDTs.Framework.Base.Replay"
+          "Sal.MRDTs.Framework.Signature",
+          "Sal.MRDTs.Framework.Base.ReplayContext",
+          "Sal.MRDTs.Framework.Base.LabeledTS",
+          "Mathlib.Data.Set.Basic"
         ]
       },
-      "Sal.MRDTs.Metatheory.Correctness": {
-        "file": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "Sal.MRDTs.Framework.Base.LabeledTS": {
+        "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
         "imports": [
-          "Sal.MRDTs.Metatheory.CertifiedAdequacy",
-          "Sal.MRDTs.Metatheory.Safety"
+          "Mathlib.Logic.Relation"
         ]
       },
-      "Sal.MRDTs.Paper1.GuardedHistory": {
-        "file": "Sal/MRDTs/Paper1/GuardedHistory.lean",
+      "Sal.MRDTs.Framework.Signature": {
+        "file": "Sal/MRDTs/Framework/Signature.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.EventBridge"
+          "Sal.MRDTs.Framework.Base.UpdateSignature"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteMetadata": {
+        "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteFormalism"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteFormalism": {
+        "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.EventBridge",
+          "Sal.MRDTs.Paper1.GuardedReplay"
         ]
       },
       "Sal.MRDTs.Paper1.EventBridge": {
@@ -130454,10 +129784,62 @@
           "Sal.MRDTs.Metatheory.Correctness"
         ]
       },
-      "Sal.MRDTs.Paper1.RestrictedReplay": {
-        "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "Sal.MRDTs.Metatheory.Correctness": {
+        "file": "Sal/MRDTs/Metatheory/Correctness.lean",
         "imports": [
-          "Sal.MRDTs.Framework.MergeLaws"
+          "Sal.MRDTs.Metatheory.CertifiedAdequacy",
+          "Sal.MRDTs.Metatheory.Safety"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.Safety": {
+        "file": "Sal/MRDTs/Metatheory/Safety.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.CertifiedAdequacy"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.CertifiedAdequacy": {
+        "file": "Sal/MRDTs/Metatheory/CertifiedAdequacy.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Certificates",
+          "Sal.MRDTs.Metatheory.VirtualAdequacy"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.VirtualAdequacy": {
+        "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Adequacy",
+          "Sal.MRDTs.Metatheory.VirtualMergeBase"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.VirtualMergeBase": {
+        "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.StoreInvariant",
+          "Mathlib.Data.Nat.Find",
+          "Mathlib.Data.Finset.Sort",
+          "Mathlib.Data.Finset.Lattice.Fold"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.StoreInvariant": {
+        "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Execution",
+          "Mathlib.Data.Nat.Find"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.Adequacy": {
+        "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.MergeLaws",
+          "Sal.MRDTs.Metatheory.StoreInvariant",
+          "Sal.MRDTs.Metatheory.Join.SetRelativeReplay"
+        ]
+      },
+      "Sal.MRDTs.Framework.Certificates": {
+        "file": "Sal/MRDTs/Framework/Certificates.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Execution",
+          "Sal.MRDTs.Framework.Base.Replay"
         ]
       },
       "Sal.MRDTs.Paper1.HistorySpec": {
@@ -130505,10 +129887,20 @@
           "Sal.MRDTs.Paper1.SpecificationVisibility"
         ]
       },
-      "Sal.MRDTs.Paper1.ConcreteReplay": {
-        "file": "Sal/MRDTs/Paper1/ConcreteReplay.lean",
+      "Sal.MRDTs.Paper1.Automation.CausalCoverage": {
+        "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.ConcreteFormalism",
+          "Sal.MRDTs.Paper1.Automation.CausalExpansion",
+          "Sal.MRDTs.Paper1.Automation.LocalAssembly",
+          "Sal.MRDTs.Paper1.ConcreteJoin"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.LocalAssembly": {
+        "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.LocalSingleton",
+          "Sal.MRDTs.Paper1.Automation.LocalCoverage",
+          "Sal.MRDTs.Paper1.ConcreteJoin",
           "Sal.MRDTs.Paper1.GuardedConvergence",
           "Sal.MRDTs.Paper1.GuardedOrder"
         ]
@@ -130519,69 +129911,82 @@
           "Sal.MRDTs.Paper1.GuardedReplay"
         ]
       },
-      "Sal.MRDTs.Paper1.GuardedReplay": {
-        "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.RestrictedReplay"
-        ]
-      },
       "Sal.MRDTs.Paper1.GuardedConvergence": {
         "file": "Sal/MRDTs/Paper1/GuardedConvergence.lean",
         "imports": [
           "Sal.MRDTs.Paper1.GuardedReplay"
         ]
       },
-      "Sal.MRDTs.Paper1.ConcreteFormalism": {
-        "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.EventBridge",
-          "Sal.MRDTs.Paper1.GuardedReplay"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ConcreteHistoryBridge": {
-        "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteFormalism",
-          "Sal.MRDTs.Paper1.ExecutionTrace"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ExecutionTrace": {
-        "file": "Sal/MRDTs/Paper1/ExecutionTrace.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.Execution"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ConcreteCommutingVCReplay": {
-        "file": "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteVCExecution"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ConcreteVCExecution": {
-        "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "Sal.MRDTs.Paper1.Automation.LocalCoverage": {
+        "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
         "imports": [
           "Sal.MRDTs.Paper1.ConcreteJoin",
-          "Sal.MRDTs.Paper1.ConcreteReplay",
-          "Sal.MRDTs.Paper1.ConcreteHistoryBridge"
+          "Sal.MRDTs.Framework.Base.FiniteOrder"
         ]
       },
-      "Sal.MRDTs.Paper1.ConcreteJoin": {
-        "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "Sal.MRDTs.Paper1.Automation.LocalSingleton": {
+        "file": "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.ConcreteMetadata",
-          "Sal.MRDTs.Paper1.GuardedReplay"
+          "Sal.MRDTs.Paper1.Automation.LocalExpansion"
         ]
       },
-      "Sal.MRDTs.Paper1.ConcreteMetadata": {
-        "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "Sal.MRDTs.Paper1.Automation.LocalExpansion": {
+        "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.ConcreteFormalism"
+          "Sal.MRDTs.Paper1.Automation.InductiveLeaves"
         ]
       },
-      "Sal.MRDTs.Paper1.Automation.CommutingAssembly": {
-        "file": "Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean",
+      "Sal.MRDTs.Paper1.Automation.CausalExpansion": {
+        "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.Automation.CommonVerification"
+          "Sal.MRDTs.Paper1.Automation.InductiveSupplement",
+          "Sal.MRDTs.Paper1.Automation.LocalExpansion"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.InductiveSupplement": {
+        "file": "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.InductiveLeaves"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.PolicyExpansionRules": {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean",
+        "imports": [
+          "Mathlib.Tactic"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.InductivePolicy": {
+        "file": "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.InductiveLeaves"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.GenericMaskCanonical": {
+        "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.InductiveMask",
+          "Sal.MRDTs.Paper1.GuardedOrder"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.InductiveMask": {
+        "file": "Sal/MRDTs/Paper1/Automation/InductiveMask.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteJoin"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.PolicyKitAutomation": {
+        "file": "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.PolicyExpansionAutomation",
+          "Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion": {
+        "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.LocalAssembly",
+          "Sal.MRDTs.Paper1.Automation.CausalCoverage",
+          "Sal.MRDTs.Paper1.Automation.InductivePolicy"
         ]
       },
       "Sal.MRDTs.Paper1.Automation.CommonVerification": {
@@ -130685,89 +130090,6 @@
           "Sal.MRDTs.Metatheory.Correctness",
           "Sal.MRDTs.Instances.RGAKernel.EmbedChainLex",
           "Sal.MRDTs.Instances.RGAKernel.BinaryCode"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.PolicyExpansionAutomation": {
-        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.InductivePolicy",
-          "Sal.MRDTs.Paper1.Automation.PolicyExpansionRules",
-          "Sal.MRDTs.Paper1.Automation.CausalCoverage",
-          "Sal.MRDTs.Paper1.Automation.SharedExpansion"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.SharedExpansion": {
-        "file": "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.InductiveLeaves"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.InductiveLeaves": {
-        "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteJoin"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.CausalCoverage": {
-        "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.CausalExpansion",
-          "Sal.MRDTs.Paper1.Automation.LocalAssembly",
-          "Sal.MRDTs.Paper1.ConcreteJoin"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.LocalAssembly": {
-        "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.LocalSingleton",
-          "Sal.MRDTs.Paper1.Automation.LocalCoverage",
-          "Sal.MRDTs.Paper1.ConcreteJoin",
-          "Sal.MRDTs.Paper1.GuardedConvergence",
-          "Sal.MRDTs.Paper1.GuardedOrder"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.LocalCoverage": {
-        "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteJoin",
-          "Sal.MRDTs.Framework.Base.FiniteOrder"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.LocalSingleton": {
-        "file": "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.LocalExpansion"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.LocalExpansion": {
-        "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.InductiveLeaves"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.CausalExpansion": {
-        "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.InductiveSupplement",
-          "Sal.MRDTs.Paper1.Automation.LocalExpansion"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.InductiveSupplement": {
-        "file": "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.InductiveLeaves"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.PolicyExpansionRules": {
-        "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean",
-        "imports": [
-          "Mathlib.Tactic"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.InductivePolicy": {
-        "file": "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.InductiveLeaves"
         ]
       },
       "Sal.MRDTs.Paper1.Automation.GenericQueryLift": {
@@ -131002,27 +130324,6 @@
           "Sal.MRDTs.Paper1.ConcreteJoin"
         ]
       },
-      "Sal.MRDTs.Paper1.Automation.GenericMaskCanonical": {
-        "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.InductiveMask",
-          "Sal.MRDTs.Paper1.GuardedOrder"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.InductiveMask": {
-        "file": "Sal/MRDTs/Paper1/Automation/InductiveMask.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteJoin"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion": {
-        "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.LocalAssembly",
-          "Sal.MRDTs.Paper1.Automation.CausalCoverage",
-          "Sal.MRDTs.Paper1.Automation.InductivePolicy"
-        ]
-      },
       "Sal.MRDTs.Paper1.Automation.TransferSimple": {
         "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
         "imports": [
@@ -131057,6 +130358,41 @@
           "Sal.MRDTs.Metatheory.Correctness"
         ]
       },
+      "Sal.MRDTs.Paper1.ConcreteCommutingVCReplay": {
+        "file": "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteVCExecution"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteVCExecution": {
+        "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteJoin",
+          "Sal.MRDTs.Paper1.ConcreteReplay",
+          "Sal.MRDTs.Paper1.ConcreteHistoryBridge"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteHistoryBridge": {
+        "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteFormalism",
+          "Sal.MRDTs.Paper1.ExecutionTrace"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ExecutionTrace": {
+        "file": "Sal/MRDTs/Paper1/ExecutionTrace.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Execution"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteReplay": {
+        "file": "Sal/MRDTs/Paper1/ConcreteReplay.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteFormalism",
+          "Sal.MRDTs.Paper1.GuardedConvergence",
+          "Sal.MRDTs.Paper1.GuardedOrder"
+        ]
+      },
       "Sal.MRDTs.Paper1.Automation.CommonAlgebraAutomation": {
         "file": "Sal/MRDTs/Paper1/Automation/CommonAlgebraAutomation.lean",
         "imports": [
@@ -131067,6 +130403,186 @@
         "file": "Sal/MRDTs/Paper1/Automation/CommonVerificationRules.lean",
         "imports": [
           "Mathlib.Tactic"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet": {
+        "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.PolicyExpansionAutomation",
+          "Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion",
+          "Sal.MRDTs.Paper1.Automation.MaskKitAutomation",
+          "Sal.MRDTs.Paper1.Automation.PolicyKitAutomation",
+          "Sal.MRDTs.Paper1.GuardedRawORSetReplay"
+        ]
+      },
+      "Sal.MRDTs.Paper1.GuardedRawORSetReplay": {
+        "file": "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteORSetMetadata",
+          "Sal.MRDTs.Paper1.ConcreteReplay"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteORSetMetadata": {
+        "file": "Sal/MRDTs/Paper1/ConcreteORSetMetadata.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteORSetSorting"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteORSetSorting": {
+        "file": "Sal/MRDTs/Paper1/ConcreteORSetSorting.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteORSetRepresentation"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteORSetRepresentation": {
+        "file": "Sal/MRDTs/Paper1/ConcreteORSetRepresentation.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.GuardedORSet",
+          "Sal.MRDTs.Paper1.ConcreteJoin"
+        ]
+      },
+      "Sal.MRDTs.Paper1.GuardedORSet": {
+        "file": "Sal/MRDTs/Paper1/GuardedORSet.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.GuardedReplay",
+          "Sal.MRDTs.Paper1.NeemScope",
+          "Sal.MRDTs.Paper1.ORSetEventSpec"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ORSetEventSpec": {
+        "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.EventBridge",
+          "Sal.MRDTs.Paper1.Capstone"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Capstone": {
+        "file": "Sal/MRDTs/Paper1/Capstone.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ORSetSpecification",
+          "Sal.MRDTs.Paper1.RGAActive"
+        ]
+      },
+      "Sal.MRDTs.Paper1.RGAActive": {
+        "file": "Sal/MRDTs/Paper1/RGAActive.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.RGA",
+          "Sal.MRDTs.Paper1.RALinearizability"
+        ]
+      },
+      "Sal.MRDTs.Paper1.RGA": {
+        "file": "Sal/MRDTs/Paper1/RGA.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.HistorySpec",
+          "Sal.MRDTs.Instances.RGASequential"
+        ]
+      },
+      "Sal.MRDTs.Instances.RGASequential": {
+        "file": "Sal/MRDTs/Instances/RGASequential.lean",
+        "imports": [
+          "Sal.MRDTs.Instances.RGA",
+          "Sal.MRDTs.Metatheory.Safety"
+        ]
+      },
+      "Sal.MRDTs.Instances.RGA": {
+        "file": "Sal/MRDTs/Instances/RGA.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Correctness",
+          "Sal.MRDTs.Instances.Common"
+        ]
+      },
+      "Sal.MRDTs.Paper1.NeemScope": {
+        "file": "Sal/MRDTs/Paper1/NeemScope.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.EfficientORSetEventSpec"
+        ]
+      },
+      "Sal.MRDTs.Paper1.EfficientORSetEventSpec": {
+        "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.EventBridge",
+          "Sal.MRDTs.Instances.EfficientORSetCertified"
+        ]
+      },
+      "Sal.MRDTs.Instances.EfficientORSetCertified": {
+        "file": "Sal/MRDTs/Instances/EfficientORSetCertified.lean",
+        "imports": [
+          "Sal.MRDTs.Instances.EfficientORSetVirtual",
+          "Sal.MRDTs.Metatheory.AdequacyResult",
+          "Sal.MRDTs.Metatheory.CertifiedAdequacy"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.AdequacyResult": {
+        "file": "Sal/MRDTs/Metatheory/AdequacyResult.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Adequacy"
+        ]
+      },
+      "Sal.MRDTs.Instances.EfficientORSetVirtual": {
+        "file": "Sal/MRDTs/Instances/EfficientORSetVirtual.lean",
+        "imports": [
+          "Sal.MRDTs.Instances.EfficientORSetHistory",
+          "Sal.MRDTs.Metatheory.VirtualAdequacy"
+        ]
+      },
+      "Sal.MRDTs.Instances.EfficientORSetHistory": {
+        "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+        "imports": [
+          "Sal.MRDTs.Instances.EfficientORSet"
+        ]
+      },
+      "Sal.MRDTs.Instances.EfficientORSet": {
+        "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Correctness"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.AutomatedORSet": {
+        "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.PolicyKitAutomation",
+          "Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion",
+          "Sal.MRDTs.Paper1.GuardedRawORSetReplay"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.Controls": {
+        "file": "Sal/MRDTs/Paper1/Automation/Controls.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.GuardedLWWPort"
+        ]
+      },
+      "Sal.MRDTs.Paper1.GuardedLWWPort": {
+        "file": "Sal/MRDTs/Paper1/GuardedLWWPort.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.CommutingInputs",
+          "Sal.MRDTs.Paper1.Automation.CommutingAssembly",
+          "Sal.MRDTs.Paper1.ConcreteCommutingVCReplay",
+          "Sal.MRDTs.Paper1.ConcreteHistoryBridge",
+          "Sal.MRDTs.Paper1.ConcreteReplay",
+          "Sal.MRDTs.Paper1.GuardedHistory",
+          "Sal.MRDTs.Instances.LWWRegister"
+        ]
+      },
+      "Sal.MRDTs.Instances.LWWRegister": {
+        "file": "Sal/MRDTs/Instances/LWWRegister.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Correctness",
+          "Sal.MRDTs.Metatheory.Safety",
+          "Mathlib.Order.WithBot",
+          "Mathlib.Data.Prod.Lex",
+          "Mathlib.Data.List.MinMax"
+        ]
+      },
+      "Sal.MRDTs.Paper1.GuardedHistory": {
+        "file": "Sal/MRDTs/Paper1/GuardedHistory.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.EventBridge"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.CommutingAssembly": {
+        "file": "Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.CommonVerification"
         ]
       },
       "Sal.MRDTs.Paper1.Automation.CommutingInputs": {
@@ -131121,13 +130637,6 @@
         "imports": [
           "Sal.MRDTs.Paper1.Automation.TransferSimple",
           "Sal.MRDTs.Instances.RGA"
-        ]
-      },
-      "Sal.MRDTs.Instances.RGA": {
-        "file": "Sal/MRDTs/Instances/RGA.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Correctness",
-          "Sal.MRDTs.Instances.Common"
         ]
       },
       "Sal.MRDTs.Paper1.Automation.TransferLWW": {
@@ -131314,102 +130823,6 @@
           "Sal.MRDTs.Paper1.ConcreteORSetRepresentation"
         ]
       },
-      "Sal.MRDTs.Paper1.ConcreteORSetRepresentation": {
-        "file": "Sal/MRDTs/Paper1/ConcreteORSetRepresentation.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.GuardedORSet",
-          "Sal.MRDTs.Paper1.ConcreteJoin"
-        ]
-      },
-      "Sal.MRDTs.Paper1.GuardedORSet": {
-        "file": "Sal/MRDTs/Paper1/GuardedORSet.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.GuardedReplay",
-          "Sal.MRDTs.Paper1.NeemScope",
-          "Sal.MRDTs.Paper1.ORSetEventSpec"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ORSetEventSpec": {
-        "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.EventBridge",
-          "Sal.MRDTs.Paper1.Capstone"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Capstone": {
-        "file": "Sal/MRDTs/Paper1/Capstone.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ORSetSpecification",
-          "Sal.MRDTs.Paper1.RGAActive"
-        ]
-      },
-      "Sal.MRDTs.Paper1.RGAActive": {
-        "file": "Sal/MRDTs/Paper1/RGAActive.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.RGA",
-          "Sal.MRDTs.Paper1.RALinearizability"
-        ]
-      },
-      "Sal.MRDTs.Paper1.RGA": {
-        "file": "Sal/MRDTs/Paper1/RGA.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.HistorySpec",
-          "Sal.MRDTs.Instances.RGASequential"
-        ]
-      },
-      "Sal.MRDTs.Instances.RGASequential": {
-        "file": "Sal/MRDTs/Instances/RGASequential.lean",
-        "imports": [
-          "Sal.MRDTs.Instances.RGA",
-          "Sal.MRDTs.Metatheory.Safety"
-        ]
-      },
-      "Sal.MRDTs.Paper1.NeemScope": {
-        "file": "Sal/MRDTs/Paper1/NeemScope.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.EfficientORSetEventSpec"
-        ]
-      },
-      "Sal.MRDTs.Paper1.EfficientORSetEventSpec": {
-        "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.EventBridge",
-          "Sal.MRDTs.Instances.EfficientORSetCertified"
-        ]
-      },
-      "Sal.MRDTs.Instances.EfficientORSetCertified": {
-        "file": "Sal/MRDTs/Instances/EfficientORSetCertified.lean",
-        "imports": [
-          "Sal.MRDTs.Instances.EfficientORSetVirtual",
-          "Sal.MRDTs.Metatheory.AdequacyResult",
-          "Sal.MRDTs.Metatheory.CertifiedAdequacy"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.AdequacyResult": {
-        "file": "Sal/MRDTs/Metatheory/AdequacyResult.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Adequacy"
-        ]
-      },
-      "Sal.MRDTs.Instances.EfficientORSetVirtual": {
-        "file": "Sal/MRDTs/Instances/EfficientORSetVirtual.lean",
-        "imports": [
-          "Sal.MRDTs.Instances.EfficientORSetHistory",
-          "Sal.MRDTs.Metatheory.VirtualAdequacy"
-        ]
-      },
-      "Sal.MRDTs.Instances.EfficientORSetHistory": {
-        "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
-        "imports": [
-          "Sal.MRDTs.Instances.EfficientORSet"
-        ]
-      },
-      "Sal.MRDTs.Instances.EfficientORSet": {
-        "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Correctness"
-        ]
-      },
       "Sal.MRDTs.Paper1.GuardedRawORSetVC": {
         "file": "Sal/MRDTs/Paper1/GuardedRawORSetVC.lean",
         "imports": [
@@ -131420,54 +130833,10 @@
           "Sal.MRDTs.Paper1.ConcreteJoin"
         ]
       },
-      "Sal.MRDTs.Paper1.GuardedRawORSetReplay": {
-        "file": "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteORSetMetadata",
-          "Sal.MRDTs.Paper1.ConcreteReplay"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ConcreteORSetMetadata": {
-        "file": "Sal/MRDTs/Paper1/ConcreteORSetMetadata.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteORSetSorting"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ConcreteORSetSorting": {
-        "file": "Sal/MRDTs/Paper1/ConcreteORSetSorting.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteORSetRepresentation"
-        ]
-      },
       "Sal.MRDTs.Paper1.GuardedEqualityVC": {
         "file": "Sal/MRDTs/Paper1/GuardedEqualityVC.lean",
         "imports": [
           "Sal.MRDTs.Instances.EfficientORSet"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.ORSetInputs": {
-        "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.CommonVerification",
-          "Sal.MRDTs.Paper1.Automation.AutomatedORSet",
-          "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet": {
-        "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.PolicyExpansionAutomation",
-          "Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion",
-          "Sal.MRDTs.Paper1.Automation.GenericMaskCanonical",
-          "Sal.MRDTs.Paper1.GuardedRawORSetReplay"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Automation.AutomatedORSet": {
-        "file": "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Automation.PolicyExpansionAutomation",
-          "Sal.MRDTs.Paper1.Automation.GenericPolicyExpansion",
-          "Sal.MRDTs.Paper1.GuardedRawORSetReplay"
         ]
       },
       "Sal.MRDTs.Paper1.GuardedRawEfficientCertificate": {
