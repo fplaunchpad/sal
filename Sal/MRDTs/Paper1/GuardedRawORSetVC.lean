@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.Automation.ORSetInputs
 import Sal.MRDTs.Paper1.GuardedEqualityVC
 import Sal.MRDTs.Paper1.ConcreteORSetAlgebra
 import Sal.MRDTs.Paper1.GuardedRawORSetReplay
@@ -119,21 +120,8 @@ theorem local_remove_represented (C : ReplayContext (D α).toUpdateSig)
 /-- All five equality-valued merge VCs. Every equation is proved directly;
 no concrete or abstract representation Join theorem is used. -/
 theorem mergeVCs : ConcreteMRDT.Raw.MergeVCs (EventSpec.conflict α)
-    representation (RawReplay.scheme (α := α)) := by
-  refine ⟨?_,?_,?_,?_,?_⟩
-  · intro C E₁ E₂ l a b _ _ _ _ _ _ _
-    exact merge_comm l a b
-  · intro C E s _ _ _
-    exact merge_init s
-  · intro C U s B e _ _ supported closed member semantic metadata hs hB _ _
-    exact causal_replay_eq_raw C U s B e member supported closed semantic metadata hs.1 hB.1
-  · intro C E₁ E₂ l B t s e ctx member absent base past _ other _ _ _
-    rcases e with ⟨et,er,op⟩
-    cases op with
-    | add x => exact local_add_represented C E₁ E₂ l B t s et er x member absent ctx.closed₁ base.1 past.1 other.1
-    | remove x => exact local_remove_represented C E₁ E₂ l B t s et er x member ctx.closed₁ base.1 past.1 other.1
-  · intro C E₁ E₂ t₀ t₁ t₂ B e _ _ _ _ _ _ _ _ _ _ _ _
-    exact shared_replay_eq t₀ t₁ t₂ B e
+    representation (RawReplay.scheme (α := α)) := by mrdt_verify
+
 
 #print axioms local_add_represented
 #print axioms causal_replay_eq_raw

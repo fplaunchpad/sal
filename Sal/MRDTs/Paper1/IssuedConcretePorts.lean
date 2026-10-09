@@ -1,3 +1,5 @@
+import Sal.MRDTs.Paper1.Automation.CommutingInputs
+import Sal.MRDTs.Paper1.Automation.CommutingAssembly
 import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Paper1.BoundedCounterEvent
 import Sal.MRDTs.Paper1.TreeSheetEventSpec
@@ -28,8 +30,7 @@ private theorem issuanceHonest {C : Configuration BC}
 theorem history : EventExecutionHistoryAdequacy BC (commutingPolicy BC.AppOp)
     BoundedCounterEvent.spec generation := by
   intro C exec v s E hv q
-  have good := CommutingPort.vcCanonicalConfig BC_all_comm
-    BC_mergeLaws BC_deltaLaws BC_commutingPeelLaw (virtual_reach exec)
+  have good := CommutingPort.automatedCanonicalConfig BC_all_comm (by mrdt_verify) (virtual_reach exec)
   have causal := causalCanonical_of_all_comm_rc_either BC_all_comm
     (fun _ _ => rfl) good
   obtain ⟨ops,hperm,hvis,_,_⟩ := causal v s E hv
@@ -49,8 +50,7 @@ theorem history : EventExecutionHistoryAdequacy BC (commutingPolicy BC.AppOp)
 
 noncomputable def conditions : ScopedVCConditions (commutingPolicy BC.AppOp)
     BoundedCounterEvent.spec generation :=
-  CommutingPort.scopedConditions BC_all_comm
-    BC_mergeLaws BC_deltaLaws BC_commutingPeelLaw generation history
+  CommutingPort.automatedScopedConditions BC_all_comm (by mrdt_verify) generation history
 
 theorem versionsV {C : Configuration BC}
     (reach : MintCertifiedReachV BC (canonicalVirtualMergeBase BC) generation C) :
@@ -107,8 +107,7 @@ theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     TreeMoveEvent.spec generation := by
   intro C exec v s E hv q
   cases q
-  have good := CommutingPort.vcCanonicalConfig all_comm
-    mergeLaws deltaLaws commutingPeelLaw (virtual_reach exec)
+  have good := CommutingPort.automatedCanonicalConfig all_comm (by mrdt_verify) (virtual_reach exec)
   obtain ⟨ops,perm,_,folded⟩ := good.canonical v s E hv
   have state : ops.toFinset = s := by rw [← folded,applySeq_eq_toFinset]
   let π := orderedEvents s
@@ -143,8 +142,7 @@ theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
 
 noncomputable def conditions : ScopedVCConditions (commutingPolicy D.AppOp)
     TreeMoveEvent.spec generation :=
-  CommutingPort.scopedConditions all_comm
-    mergeLaws deltaLaws commutingPeelLaw generation history
+  CommutingPort.automatedScopedConditions all_comm (by mrdt_verify) generation history
 
 theorem versionsV {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
@@ -204,8 +202,7 @@ theorem originLegal {C : Configuration D} (good : CanonicalConfig C)
 theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     AegisSheetEvent.spec generation := by
   intro C exec v s E hv q
-  have good := CommutingPort.vcCanonicalConfig all_comm
-    mergeLaws deltaLaws commutingPeelLaw (virtual_reach exec)
+  have good := CommutingPort.automatedCanonicalConfig all_comm (by mrdt_verify) (virtual_reach exec)
   obtain ⟨ops,perm,_,_⟩ := good.canonical v s E hv
   have legal := originLegal good exec.mintHonest hv perm
   have πperm : listPermOf (canonical ops) E :=
@@ -227,8 +224,7 @@ theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
 
 noncomputable def conditions : ScopedVCConditions (commutingPolicy D.AppOp)
     AegisSheetEvent.spec generation :=
-  CommutingPort.scopedConditions all_comm
-    mergeLaws deltaLaws commutingPeelLaw generation history
+  CommutingPort.automatedScopedConditions all_comm (by mrdt_verify) generation history
 
 theorem versionsV {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :

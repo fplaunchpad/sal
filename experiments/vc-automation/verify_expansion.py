@@ -30,6 +30,10 @@ parser.add_argument('--common', action='store_true', help='Check all 23 through 
 parser.add_argument('--all', action='store_true', help='Check all 23 current named cases')
 args = parser.parse_args()
 if args.common:
+    # The current interface is production; all other flags retain historical
+    # prototype experiments and must not recompile duplicate rule registries.
+    raise SystemExit(subprocess.call([sys.executable, str(ROOT / 'scripts/verify-paper1-automation.py')], cwd=ROOT))
+if args.common:
     args.automated = True
 if args.automated:
     args.all = True

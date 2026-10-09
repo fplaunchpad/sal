@@ -1,24 +1,10 @@
-import Sal.MRDTs.Paper1.CertifiedMVRReplay
-import Sal.MRDTs.Paper1.ConcreteJoin
+import Sal.MRDTs.Paper1.CertifiedMVRVCContract
+import Sal.MRDTs.Paper1.Automation.MVRInput
 
 namespace Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.RawVC
 open Foundation Classical ConcreteMRDT
 set_option maxHeartbeats 1500000
 open Instances.MVRLive
-
-abbrev policy := emptyPolicy
-
-def scheme (C : ReplayContext D.toUpdateSig) : MetadataDependencies C where
-  before := C.vis
-  causal _ _ h := h
-  covers _ _ h _ := h
-
-/-- Execution eligibility and finite represented history, without a closure
-restriction: the generic induction supplies arbitrary finite supported subsets.
-Closure remains an independent guard on each merge VC. -/
-def representation : Representation D := fun context E s =>
-  ∃ C : Configuration D, CertifiedExecution D issuance C ∧ C.replayContext = context ∧
-    E ⊆ C.events ∧ E.Finite ∧ Represents E s
 
 theorem unique : ConcreteMRDT.Raw.Unique representation := by
   intro context E a b ha hb
@@ -97,63 +83,7 @@ private theorem live_subset {A B : Set Event} {a b : State}
   rintro ⟨e,he,dead⟩
   exact ((hb p).mp live).2 ⟨e,sub he,dead⟩
 
-theorem mergeVCs : ConcreteMRDT.Raw.MergeVCs policy representation scheme := by
-  constructor
-  · intro C E₁ E₂ l a b _ _ _ _ _ _ _
-    exact Instances.MVRLive.merge_comm l a b
-  · intro C E s _ _ h
-    change merge ∅ ∅ s = s
-    simp [merge]
-  · intro C U s B e trans irrefl supported closed member semantic metadata hs hB hupdateB hupdateS
-    obtain ⟨K,exec,eq,sup,finite,repUpdate⟩ := hupdateS
-    subst C
-    have pastSub := (scheme K.replayContext).past_subset U e closed member
-    have sub : (scheme K.replayContext).Past e \ {e} ⊆ U \ {e} :=
-      fun x hx => ⟨pastSub hx.1,hx.2⟩
-    have repS := rep_of _ _ _ hs
-    have repB := rep_of _ _ _ hB
-    apply causal_eq s B e
-    · exact fresh_record (fun x hx => sup (pastSub hx.1)) (sup member)
-        (fun h => h.2 rfl) repB
-    · intro target
-      exact Nat.lt_irrefl _ (issued_overwrite_lt exec.mintHonest (sup member) target)
-    · intro p live target
-      obtain ⟨⟨b,hb,pair⟩,_⟩ := (repS p).mp live
-      have targetB : b.time ∈ Instances.MVR.overwrites e := by
-        have times := congrArg (fun p : Nat × Nat => p.1) pair
-        change b.1 = p.1 at times
-        change b.1 ∈ Instances.MVR.overwrites e
-        rw [times]
-        exact target
-      have vis := overwrite_implies_visibility exec (sup hb.1) (sup member) targetB
-      have birth : b ∈ (scheme K.replayContext).Past e \ {e} :=
-        ⟨Or.inr (.single vis),hb.2⟩
-      exact live_subset sub repB repS live ⟨b,birth,pair⟩
-  · intro C E₁ E₂ l B t b e ctx member absent hl hB ht hb hu hd hm
-    obtain ⟨K,exec,eq,_,_,_⟩ := hd
-    subst C
-    have sup₁ : E₁ ⊆ K.events := by simpa using ctx.supported₁
-    have sup₂ : E₂ ⊆ K.events := by simpa using ctx.supported₂
-    have pastSub := (scheme K.replayContext).past_subset E₁ e ctx.closed₁ member
-    have repL := rep_of _ _ _ hl
-    have repB := rep_of _ _ _ hB
-    have repOther := rep_of _ _ _ hb
-    apply local_eq l B t b e
-    · exact fresh_record (fun x hx => sup₁ (pastSub hx.1)) (sup₁ member)
-        (fun h => h.2 rfl) repB
-    · exact fresh_record (fun x hx => sup₁ hx.1) (sup₁ member)
-        (fun h => absent h.2) repL
-    · intro target
-      exact Nat.lt_irrefl _ (issued_overwrite_lt exec.mintHonest (sup₁ member) target)
-    · intro p inB inOther
-      obtain ⟨⟨a,ha,pairA⟩,_⟩ := (repB p).mp inB
-      obtain ⟨⟨c,hc,pairC⟩,_⟩ := (repOther p).mp inOther
-      have same : a = c := K.replayContext.ts_unique (sup₁ (pastSub ha.1)) (sup₂ hc)
-        (congrArg (fun p : Nat × Nat => p.1) (pairA.trans pairC.symm))
-      have aBase : a ∈ E₁ ∩ E₂ := ⟨pastSub ha.1,same ▸ hc⟩
-      exact live_subset Set.inter_subset_right repL repOther inOther ⟨a,aBase,pairA⟩
-  · intro C E₁ E₂ t₀ t₁ t₂ B e ctx member₁ member₂ ht₀ hB ht₁ ht₂ hu hd₀ hd₁ hd₂ hm
-    exact shared_eq t₀ t₁ t₂ B e
+theorem mergeVCs : ConcreteMRDT.Raw.MergeVCs policy representation scheme := by mrdt_verify
 
 theorem finite (context : ReplayContext D.toUpdateSig) (E : Set Event) (s : State)
     (h : representation context E s) : ∃ π, listPermOf π E := by

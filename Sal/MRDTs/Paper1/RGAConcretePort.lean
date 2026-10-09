@@ -1,3 +1,5 @@
+import Sal.MRDTs.Paper1.Automation.CommutingInputs
+import Sal.MRDTs.Paper1.Automation.CommutingAssembly
 import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Paper1.RGAEventSpec
 
@@ -11,8 +13,7 @@ open Foundation ConcreteMRDT
 open Sal.MRDTs.Instances.RGA
 
 theorem joinAt (C : ReplayContext RGAM.toUpdateSig) : JoinAt RGAM C :=
-  CommutingPort.vcJoinAt RGAM_all_comm RGAM_mergeLaws RGAM_deltaLaws
-    RGAM_commutingPeelLaw C
+  CommutingPort.automatedJoinAt RGAM_all_comm (by mrdt_verify) C
 
 theorem canonicalConfig {C : Configuration RGAM}
     (execution : CertifiedExecution RGAM generation C) : CanonicalConfig C :=
@@ -45,8 +46,7 @@ theorem history : EventExecutionHistoryAdequacy RGAM (commutingPolicy RGAOp)
       Identified.strict_canonical_admitted hp hwf
 
 noncomputable def conditions : ScopedVCConditions (commutingPolicy RGAOp) EventSpec.spec generation :=
-  CommutingPort.scopedConditions RGAM_all_comm
-    RGAM_mergeLaws RGAM_deltaLaws RGAM_commutingPeelLaw generation history
+  CommutingPort.automatedScopedConditions RGAM_all_comm (by mrdt_verify) generation history
 
 theorem versionsV {C : Configuration RGAM}
     (reach : MintCertifiedReachV RGAM (canonicalVirtualMergeBase RGAM) generation C) :

@@ -1,103 +1,119 @@
 # Automating Sal’s five merge VCs
 
-**All 23 current named instances pass the common verification interface.**
-The kernel checks the exact existing `Raw.MergeVCs` types. Implementations,
-issuers, policies, representations and specifications are unchanged.
+The common verification interface now lives in
+[`Sal/MRDTs/Paper1/Automation`](../../Sal/MRDTs/Paper1/Automation).
+Production five-VC proofs use its registered finite inputs, and the existing
+Join, represented-version and RA certificates consume those proofs. This
+directory contains the production audit tooling and effort reports.
+
+The migration preserves implementations, issuers, operation policies,
+representations, execution contracts and existing theorem statements. The 23
+named cases include aliases and specializations. Queue means anchored enqueue;
+the historical unanchored queue is excluded. Core/RichCore retain native
+insert-only issuance. Fugue’s represented-version result uses the common VCs;
+its independent sequential-specification bridge remains open.
 
 ## What does the RDT author supply?
 
-The author supplies record/component mappings, finite laws and projections of
-existing representation or issuance evidence. A typed `Input` selects a shared
-proof template; `mrdt_verify` assembles all five VCs. Registration rejects finished
-VC proofs and direct correctness premises; the dependency audit checks hidden reuse. Generic templates derive replay, ordering, normalization
-and coverage facts; current instance declarations contain no bespoke history
-induction.
+A typed `CommonVerification.Input` supplies record/component mappings, finite
+implementation laws and projections of existing representation or issuance
+evidence. `register_mrdt_input input` registers it; `by mrdt_verify` constructs
+all five VCs. Registration rejects completed correctness inputs. Shared
+proofs derive replay, ordering, normalization and causal coverage. New datatypes
+still need the finite laws and issuer evidence required by their selected
+input constructor.
 
-The following source-line counts include complete declaration statements,
-annotations and proof bodies. “Instance” also includes input registration and
-local definition annotations. “Retained helpers” charges the transitive closure
-of source-written datatype theorem helpers, including coordinate and ordering
-libraries. Existing implementation definitions and generic framework proofs are
-excluded. A specialization includes the family work it consumes.
+OR-set finite tactics unfold registered implementation definitions and solve
+membership equations. Ordered-record inputs retain explicit constructor cases,
+fresh-ID setup, coordinate facts and issuer projections. Core/RichCore use
+ordered-text/product and query-lift inputs. Fugue uses archived-record and
+certified-issuance inputs, with explicit chain validity and generator
+preservation proofs. Sequential bridges remain the existing production proofs.
 
-| Instance | Instance lines | Retained helper lines |
+## Current production evidence
+
+[`results/production-audit.json`](results/production-audit.json) records the
+actual production VC roots and existing public certificate endpoints, their
+transitive dependencies, Lean axioms, declaration locations and source hashes.
+It checks use of the common verifier and excludes earlier datatype VC/Join
+proof routes. Its VC evidence closures are extracted from the actual submitted
+`CommonVerification.verify` proof applications, separately from unchanged
+sequential-history fields in certificate bundles.
+
+[`results/production-effort.json`](results/production-effort.json) measures
+current production source footprints from those VC evidence closures. Author
+inputs and finite proof declarations, production automation invocations,
+retained datatype theorem helpers and the shared generic library are reported
+separately. Complete source-written declarations are charged; existing
+implementation and contract definitions are excluded from author totals.
+Per-case rows overlap and must not be summed: campaign totals deduplicate
+source file/line pairs. Source lines measure footprint, not human time or proof
+difficulty. Induction/recursor scans are diagnostics, alongside the dependency
+audit and manual review.
+
+The current audit passes **23 named cases, 69 distinct public endpoints and 95
+existing production roots**. These counts include aliases and family
+specializations, rather than 23 independent designs.
+
+| Instance | Author lines | Retained datatype helper lines |
 |---|---:|---:|
-| Ordinary OR-set | 107 | 0 |
-| Efficient OR-set | 221 | 0 |
-| Grow-only set | 14 | 6 |
-| Add-store | 14 | 6 |
-| Finite add-store | 14 | 6 |
-| Counter | 9 | 8 |
-| Increment-only counter | 9 | 8 |
-| PN-counter | 9 | 8 |
-| Flat grow-only set | 10 | 7 |
-| Flat grow-only map | 10 | 7 |
+| Grow-only set | 11 | 6 |
+| Add-store | 11 | 6 |
+| Finite add-store | 11 | 6 |
+| Counter | 6 | 8 |
+| Increment-only counter | 6 | 8 |
+| PN-counter | 6 | 8 |
+| Flat grow-only set | 7 | 7 |
+| Flat grow-only map | 7 | 7 |
 | LWW register | 10 | 4 |
-| Sided Embedded RGA | 113 | 297 |
-| Native RGA | 25 | 10 |
+| Native RGA | 23 | 10 |
+| Bounded Counter | 23 | 21 |
+| TreeMove | 12 | 12 |
+| AegisSheet | 12 | 5 |
+| Ordinary OR-set | 106 | 0 |
+| Efficient OR-set | 219 | 0 |
+| MVR | 17 | 0 |
+| Embedded RGA | 116 | 250 |
+| Sided Embedded RGA | 115 | 297 |
+| Peritext Embedded RGA | 116 | 250 |
 | Sided Peritext Core | 121 | 297 |
 | Sided Peritext RichCore | 125 | 297 |
-| Embedded RGA | 116 | 250 |
-| Queue (anchored enqueue) | 115 | 283 |
-| Peritext Embedded RGA | 114 | 250 |
+| Queue (anchored enqueue) | 116 | 250 |
 | FugueMax | 253 | 700 |
-| Bounded Counter | 25 | 21 |
-| TreeMove | 14 | 12 |
-| AegisSheet | 14 | 5 |
-| MVR | 18 | 0 |
 
-**Do not sum the rows:** family declarations and helpers recur under each
-consumer. Across the campaign, deduplicating source file/line pairs gives
-**984 instance declaration lines, 22 instance annotation/registration lines,
-and 1,077 retained helper lines**. The shared finite-helper registries contribute
-another **11 annotation lines**, recorded separately. Framework proof and tactic
-implementation code is not included in these author-side totals.
+The deduplicated campaign contains **937 author declaration lines, 30
+registration/annotation/invocation lines and 1,044 retained datatype helper
+lines**. Author rows include input statements, finite proof bodies and new
+VC theorem declarations in full. Existing certificate bundles contribute only
+their automation invocation lines; unchanged sequential-history fields are
+excluded.
 
-These are reproducible source footprints, not estimates of human time or proof
-difficulty. The [current effort inventory](results/common-effort.json) records
-all declaration ranges, consumers, registration commands and source hashes.
-Ranges come from Lean’s transitive dependency audit, rather than selected helper
-names. Comment-stripped instance ranges contain no `induction` or explicit
-recursor syntax; this diagnostic complements the dependency audit and manual
-review, and does not by itself certify the meaning of every helper.
+The reusable production library is a separate cost: **2,759 code lines**,
+including imports, tactics and annotations, with charged instance lines in
+mixed modules removed. Its actual VC dependency declarations occupy **2,027
+lines**, and existing generic foundational theorem helpers occupy another
+**658 lines**. The 11 shared registry annotation lines are included in the
+library total. These library/dependency measurements overlap and must not be
+added together. Paper1 helper dependencies are generic metadata, ordering and
+convergence facts; the inventory does not omit datatype-specific certified
+replay or issuer theorem helpers.
 
-Lean selects registered maximum algebra for LWW and raw RGA membership, ordering and equality helpers from
-the finite goals. OR-set finite tactics unfold registered raw definitions and
-solve membership equations with `simp` and `grind`. Mappings, constructor cases,
-fresh-ID setup and projections of existing certification evidence remain
-explicit. Templates do not establish issuer honesty automatically for a new RDT.
-Core/RichCore use generic ordered-text/product and query-lift inputs. Fugue uses
-generic archived-record and certified-issuance templates; its chain-validity
-annotation and finite generator-preservation proofs remain supplied author work.
+## Reproduction
 
-## Scope and reproduction
-
-The 23 cases include aliases and specializations. LWW retains its existing
-empty-policy port. Core/RichCore retain their
-native-insert-only premise. Queue means anchored enqueue; the earlier unanchored
-queue is historical and excluded. Five VCs feed the checked Join theorem, but
-full RA-linearizability additionally needs the sequential bridge. Fugue’s
-sequential-specification obstruction remains open. Sequential-bridge automation
-is deferred; production bundles still use their existing proofs.
-
-From the repository root, with production dependencies built:
+From the repository root:
 
 ```sh
+scripts/check-mrdt-refactor.sh
+scripts/check-paper1.sh
 python3 experiments/vc-automation/verify_expansion.py --common
 python3 experiments/vc-automation/measure_common_effort.py
-python3 experiments/vc-automation/measure_helper_sources.py
 ```
 
-The verifier rebuilds all 23 common roots, compares their complete VC types and
-audits transitive proof dependencies against forbidden datatype correctness and
-history adapters. The [combined audit](results/common-audit.json) records source
-hashes, standard Lean axioms, dependencies and declaration locations. The
-[scope inventory](transfer-inventory.json) identifies the unchanged targets.
-
-Use `register_mrdt_input input` after defining a finite `CommonVerification.Input`,
-then finish the unchanged VC theorem with `by mrdt_verify`. For a partial input,
-`mrdt_obligations` exposes the remaining typed fields. The checked
-[controls](CommonVerificationControls.lean) demonstrate missing-input and missing
-`Shared` diagnostics, reject completed correctness registrations, and show that
-false finite equations remain unproved. The common verification command also
-runs the positive/negative full-contract comparison controls.
+The `--common` command delegates to `scripts/verify-paper1-automation.py`,
+which builds the existing ledger and audits the current production roots.
+The production controls under `Sal/MRDTs/Paper1/Automation` exercise missing
+inputs and fields, rejected completed-correctness registrations, and false
+finite equations. The source preservation report checks unchanged declaration
+headers and semantic definition bodies across implementation, policy, issuance and execution contracts.
+The positive/negative Lean comparator separately exercises full-contract
+definitional equality; source comparison alone is not kernel type equality.

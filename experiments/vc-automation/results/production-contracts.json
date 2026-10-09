@@ -1,0 +1,225 @@
+{
+  "baseline": "e89cd6d",
+  "evidence": "source-header/body preservation; not kernel type equality",
+  "files": [
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedFugueVC.lean",
+      "checked": 3,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedFugueVC.mergeVCs"
+      ],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedMVRVC.lean",
+      "checked": 19,
+      "moved": [
+        {
+          "declaration": "Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.RawVC.policy",
+          "target": "Sal/MRDTs/Paper1/CertifiedMVRVCContract.lean"
+        },
+        {
+          "declaration": "Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.RawVC.scheme",
+          "target": "Sal/MRDTs/Paper1/CertifiedMVRVCContract.lean"
+        },
+        {
+          "declaration": "Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.RawVC.representation",
+          "target": "Sal/MRDTs/Paper1/CertifiedMVRVCContract.lean"
+        }
+      ],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.RawVC.mergeVCs"
+      ],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC.mergeVCs"
+      ],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGARichVC.lean",
+      "checked": 6,
+      "moved": [
+        {
+          "declaration": "Sal.MRDTs.Paper1.CertifiedRGARichVC.representation",
+          "target": "Sal/MRDTs/Paper1/CertifiedRGARichContract.lean"
+        },
+        {
+          "declaration": "Sal.MRDTs.Paper1.CertifiedRGARichVC.policy",
+          "target": "Sal/MRDTs/Paper1/CertifiedRGARichContract.lean"
+        },
+        {
+          "declaration": "Sal.MRDTs.Paper1.CertifiedRGARichVC.scheme",
+          "target": "Sal/MRDTs/Paper1/CertifiedRGARichContract.lean"
+        }
+      ],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGARichVC.mergeVCs"
+      ],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGASidedVC.lean",
+      "checked": 2,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGAVC.Sided.mergeVCs"
+      ],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAVC.lean",
+      "checked": 2,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGAVC.Embedded.mergeVCs"
+      ],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ConcreteSimplePorts.lean",
+      "checked": 60,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.boundedCertificate",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.treeCertificate",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.sheetCertificate",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.rgaCertificate"
+      ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedLWWPort.lean",
+      "checked": 13,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.LWW.GuardedPort.history"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.LWW.GuardedPort.certificate"
+      ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedRawORSetJoin.lean",
+      "checked": 3,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs"
+      ],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedRawORSetVC.lean",
+      "checked": 5,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.EfficientORSet.GuardedRawVC.mergeVCs"
+      ],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/IssuedConcretePorts.lean",
+      "checked": 19,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Bounded.history",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.history",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.history"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Bounded.conditions",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.conditions",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.conditions"
+      ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Ledger.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/RGAConcretePort.lean",
+      "checked": 9,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.RGA.ConcretePort.joinAt"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.RGA.ConcretePort.conditions"
+      ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/SimpleConcretePorts.lean",
+      "checked": 82,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.Add.conditions",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.Finite.conditions",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.Boolean.conditions",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.Delta.conditions"
+      ]
+    }
+  ],
+  "failures": [],
+  "added_files": [
+    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean",
+    "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+    "Sal/MRDTs/Paper1/Automation/AutomatedMVR.lean",
+    "Sal/MRDTs/Paper1/Automation/AutomatedORSet.lean",
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+    "Sal/MRDTs/Paper1/Automation/AutomatedRichCore.lean",
+    "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+    "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+    "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+    "Sal/MRDTs/Paper1/Automation/CertifiedReplayExpansion.lean",
+    "Sal/MRDTs/Paper1/Automation/CommonAlgebraAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+    "Sal/MRDTs/Paper1/Automation/CommonVerificationRules.lean",
+    "Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean",
+    "Sal/MRDTs/Paper1/Automation/CommutingInputs.lean",
+    "Sal/MRDTs/Paper1/Automation/Controls.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericCertifiedIssuance.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean",
+    "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+    "Sal/MRDTs/Paper1/Automation/InductiveMask.lean",
+    "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
+    "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
+    "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+    "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
+    "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+    "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
+    "Sal/MRDTs/Paper1/Automation/MVRInput.lean",
+    "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+    "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/OrderedRecordRules.lean",
+    "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean",
+    "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
+    "Sal/MRDTs/Paper1/Automation/SimpleInputs.lean",
+    "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean",
+    "Sal/MRDTs/Paper1/Automation/TransferGuardedCommuting.lean",
+    "Sal/MRDTs/Paper1/Automation/TransferLWW.lean",
+    "Sal/MRDTs/Paper1/Automation/TransferNativeRGA.lean",
+    "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+    "Sal/MRDTs/Paper1/CertifiedMVRVCContract.lean",
+    "Sal/MRDTs/Paper1/CertifiedRGARichContract.lean"
+  ],
+  "checked_declarations": 227,
+  "status": "pass"
+}

@@ -27,17 +27,20 @@ VC route; Embedded RGA uses that merge route with certified representation and
 an exact selected-history bridge. A [reviewable manuscript patch](docs/paper1-manuscript-reconciliation.patch)
 provides the corresponding revisions against Overleaf `0450d48`.
 
-The [five-VC automation experiment](experiments/vc-automation/README.md)
-checks all 23 current named instances through the common `mrdt_verify` command.
+The [five-VC automation interface](experiments/vc-automation/README.md)
+now supplies the production proofs for all 23 current named cases through
+the common `mrdt_verify` command.
 Registered inputs supply finite laws, datatype mappings and existing execution
 or issuance evidence. Shared templates derive the history arguments, including
 Core/RichCore and Fugue; no instance interface contains a bespoke history induction.
-Lean selects registered algebra, collection and ordering helpers. The audit
-compares complete theorem types and excludes old datatype correctness proofs;
-negative controls check missing obligations and rejected correctness registrations.
-The experiment README counts local declarations, annotations and supplied helper
-proofs separately, including shared coordinate libraries. Production certificates
-remain unchanged. Fugue's five-VC proof does not resolve its separate
+Lean selects registered algebra, collection and ordering helpers. The production audit
+checks that existing certificate endpoints use the common soundness theorem and
+their sequential bridges, excludes earlier correctness paths, and checks
+contract preservation. Negative controls check missing obligations and rejected
+correctness registrations. The automation README counts local declarations,
+annotations and supplied helper proofs separately, including shared coordinate
+libraries. Implementations, contracts and public theorem statements are preserved.
+Fugue's five-VC proof does not resolve its separate
 sequential-specification obstruction.
 
 The corrected core uses event-guarded laws in

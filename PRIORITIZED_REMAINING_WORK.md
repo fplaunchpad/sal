@@ -6,6 +6,34 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: production automation and existing sequential bridges
+
+Goal: replace production five-VC proof bodies with the common automation
+interface while preserving every implementation, policy, issuance/execution
+contract and public theorem statement. Existing sequential bridges must consume
+the generated VCs; Fugue's sequential-bridge obstruction remains explicit.
+
+- [x] Promote generic templates and finite input registrations to production,
+  removing experimental dependencies and separating contracts to avoid cycles.
+- [x] Replace the existing production VC paths for all 23 current named cases.
+- [x] Verify that public RA-linearizability certificates transitively use the
+  common soundness theorem and the existing sequential bridges; retain Fugue's
+  implementation-only result and checked obstruction.
+- [x] Independently check unchanged definitions/types, proof dependencies,
+  standard axioms and both repository gates.
+- [x] Update and visually verify the formal reference PDF and concise paper
+  reconciliation note, including soundness and remaining finite author work.
+
+Oracle: production Lean ledger and dependency/type audits, not parallel unused
+experimental certificates. No new execution assumptions or specification edits
+may make verification pass.
+
+Verified: all 23 named cases and 95 existing proof roots pass the production
+dependency and standard-axiom audit. The source comparison preserves 227
+existing declaration contracts; both repository gates pass (13 certificate
+controls, 187 runtime tests, 569 benchmark results). The formal reference has
+96 checked source citations. Fugue remains implementation-only.
+
 ### Checked: common finite-obligation verification interface
 
 Research question: can existing execution and issuance evidence systematically

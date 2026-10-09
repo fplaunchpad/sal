@@ -6,17 +6,23 @@ import tempfile
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-preamble = 'import AutomatedORSet\nimport ExpandedVCs\n' + (HERE / 'Audit.lean').read_text()
+preamble = 'import Sal.MRDTs.Paper1.GuardedRawORSetJoin\n' + (HERE / 'Audit.lean').read_text()
+preamble += '''
+open Sal.MRDTs Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT
+theorem expectedContract {α : Type} [DecidableEq α] :
+    Raw.MergeVCs (ORSet.conflict α) (ORSet.RawReplay.representation (α := α))
+      (ORSet.RawReplay.scheme (α := α)) := Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs
+'''
 positive = '''
-audit_vc_contract NeemExpansion.AutomatedORSet.automated_vcs against NeemExpansion.Exact.expanded_vcs
+audit_vc_contract Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs against expectedContract
 '''
 negative = '''
 open Sal.MRDTs Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT
 -- A spurious extra execution premise must not count as the unchanged contract.
 theorem restricted {α : Type} [DecidableEq α] (_extra : False) :
     Raw.MergeVCs (ORSet.conflict α) (ORSet.RawReplay.representation (α := α))
-      (ORSet.RawReplay.scheme (α := α)) := NeemExpansion.AutomatedORSet.automated_vcs
-audit_vc_contract restricted against NeemExpansion.Exact.expanded_vcs
+      (ORSet.RawReplay.scheme (α := α)) := Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs
+audit_vc_contract restricted against expectedContract
 '''
 with tempfile.TemporaryDirectory(prefix='sal-contract-controls-') as tmp:
     for name, body, expected in [('positive', positive, 0), ('negative', negative, 1)]:

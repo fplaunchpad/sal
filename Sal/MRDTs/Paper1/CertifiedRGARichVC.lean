@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.Automation.AutomatedRichCore
 import Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC
 
 /-! RichCore changes only the independent client query. The raw equality
@@ -5,27 +6,9 @@ VC equations and metadata supply remain the operational Core proof. -/
 namespace Sal.MRDTs.Paper1.CertifiedRGARichVC
 open Foundation Sal.EmbedRGA Instances.SidedPeritext
 noncomputable section
-abbrev representation (Γ : OrderedPrefixCode) : ConcreteMRDT.Representation (RichCore Γ) :=
-  CertifiedRGACoreVC.representation Γ
-
-def policy (Γ : OrderedPrefixCode) : OperationPolicy (RichCore Γ).AppOp := CertifiedRGACoreVC.policy Γ
-
-def scheme (Γ : OrderedPrefixCode) (C : ReplayContext (RichCore Γ).toUpdateSig) :
-    ConcreteMRDT.MetadataDependencies C where
-  before := C.vis
-  causal _ _ h := h
-  covers _ _ h _ := h
-
 theorem mergeVCs (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.MergeVCs
     (policy Γ) (representation Γ) (scheme Γ) := by
-  have h := CertifiedRGACoreMergeVC.mergeVCs Γ
-  refine ⟨h.merge_comm,h.init,h.causal_delta,?_,?_⟩
-  · intro C E₁ E₂ l B t b e ctx
-    exact h.local_redistribute C E₁ E₂ l B t b e
-      ⟨ctx.trans,ctx.irrefl,ctx.supported₁,ctx.supported₂,ctx.closed₁,ctx.closed₂,ctx.semantic,ctx.metadata⟩
-  · intro C E₁ E₂ t₀ t₁ t₂ B e ctx
-    exact h.shared C E₁ E₂ t₀ t₁ t₂ B e
-      ⟨ctx.trans,ctx.irrefl,ctx.supported₁,ctx.supported₂,ctx.closed₁,ctx.closed₂,ctx.semantic,ctx.metadata⟩
+  exact Sal.MRDTs.Paper1.Automation.AutomatedRichCore.rich_automated_vcs Γ
 
 theorem replaySupply (Γ : OrderedPrefixCode) (C : ReplayContext (RichCore Γ).toUpdateSig)
     (honest : Instances.SidedEmbedRGA.SHonestCore Γ (projReplayContext₁ C))

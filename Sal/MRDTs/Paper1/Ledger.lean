@@ -189,7 +189,8 @@ elab "assert_raw_vc_dependencies " n:ident " using " vc:ident : command => do
         throwError "{n} uses earlier merge correctness route {current}"
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
-  for required in [``ConcreteMRDT.Raw.join_at_sizes, obligation] do
+  for required in [``ConcreteMRDT.Raw.join_at_sizes, obligation,
+      ``Automation.CommonVerification.verify] do
     unless seen.contains required do
       throwError "{n} omits raw VC dependency {required}"
 
@@ -221,7 +222,8 @@ elab "assert_commuting_vc_dependencies " n:ident : command => do
   let env ← getEnv
   let mut seen : NameSet := {}
   let mut pending := [root]
-  let forbidden := ["Sal.MRDTs.Instances.AddStore.join",
+  let forbidden := ["Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.mergeVCs",
+    "Sal.MRDTs.Instances.AddStore.join",
     "Sal.MRDTs.Instances.LWWRegister.join",
     "Sal.MRDTs.Instances.LWWRegister.sequentialCorrectness",
     "Sal.MRDTs.Instances.FinsetStore.join",
@@ -246,9 +248,8 @@ elab "assert_commuting_vc_dependencies " n:ident : command => do
         throwError "{n} uses earlier concrete proof route {current}"
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
-  for required in [``ConcreteMRDT.Raw.join_at_sizes, ``ConcreteMRDT.CommutingPort.mergeVCs,
-      ``Sal.MRDTs.causalDeltaLaw_of_all_comm, ``Sal.MRDTs.DeltaLaws.local_redistribute,
-      ``Sal.MRDTs.DeltaLaws.redistribute] do
+  for required in [``ConcreteMRDT.Raw.join_at_sizes,
+      ``Automation.CommonVerification.verify] do
     unless seen.contains required do
       throwError "{n} lacks required concrete VC obligation {required}"
 
@@ -621,6 +622,7 @@ elab "assert_certified_mvr_dependencies " n:ident : command => do
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
   for required in [``ConcreteMRDT.Raw.join_at_sizes,
+      ``Automation.CommonVerification.verify,
       ``CertifiedQueueMVR.MVR.RawVC.mergeVCs,
       ``CertifiedQueueMVR.MVR.Execution.vcVirtualMergeBaseStateRepresents,
       ``CertifiedMVRHistory.replay_history,
@@ -674,6 +676,7 @@ elab "assert_certified_rga_dependencies " n:ident " using " vc:ident : command =
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
   for required in [``ConcreteMRDT.Raw.join_at_sizes, equations,
+      ``Automation.CommonVerification.verify,
       ``CertifiedClosedExecution.canonicalConfig_of_mintCertifiedV] do
     unless seen.contains required do
       throwError "{n} omits certified VC/execution dependency {required}"

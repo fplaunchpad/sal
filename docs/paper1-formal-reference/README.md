@@ -18,7 +18,7 @@ tectonic -X compile docs/paper1-formal-reference/main.tex
 ```
 
 The script regenerates the source appendix from the four `*-sources.tsv` files
-and emits a check for all 94 declarations. Repository gates additionally build
+and emits a check for every listed declaration. Repository gates additionally build
 and audit the theorem ledger. When changing statements or numbering, update
 [the manuscript reconciliation note](../paper1-formalism-reconciliation.md),
 rebuild the PDF, and inspect its rendered pages.

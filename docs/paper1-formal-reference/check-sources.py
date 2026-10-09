@@ -31,7 +31,10 @@ lines = [r'\section{Mechanization Traceability}', r'\label{app:traceability}',
          'script supplied with this reference checks that every name resolves.',
          'The theorem ledger separately audits final roots for permitted axioms.', '']
 for label, entries in groups.items():
-    lines.append(r'\medskip\noindent\textbf{Reference~\ref{' + label + r'}.}\par\nobreak')
+    if label == 'sec:verification-templates':
+        lines.append(r'\medskip\noindent\textbf{Reusable verification templates (Section~\ref{' + label + r'}).}\par\nobreak')
+    else:
+        lines.append(r'\medskip\noindent\textbf{Reference~\ref{' + label + r'}.}\par\nobreak')
     modules = collections.OrderedDict()
     for row in entries:
         modules.setdefault(row['module'], []).append(row['declaration'])

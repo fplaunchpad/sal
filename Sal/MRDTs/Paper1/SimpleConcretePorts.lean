@@ -1,3 +1,5 @@
+import Sal.MRDTs.Paper1.Automation.SimpleInputs
+import Sal.MRDTs.Paper1.Automation.CommutingAssembly
 import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Paper1.SimpleEventPorts
 
@@ -18,9 +20,9 @@ theorem compatible : CommutationCompatibility (D (A := A)) id setMachine.toSpec 
   fun a b _ => SimpleEventPorts.Add.commutes a b
 
 def conditions : VCConditions (commutingPolicy A) setMachine.toSpec generation where
-  toVCReplayConditions := CommutingPort.vcReplayConditions
-    Instances.AddStore.all_comm Instances.AddStore.mergeLaws Instances.AddStore.deltaLaws
-    Instances.AddStore.commutingPeelLaw generation
+  toVCReplayConditions := CommutingPort.automatedReplayConditions
+    Instances.AddStore.all_comm
+    (by mrdt_verify) generation
   compatibility := compatible
   historySound := SimpleEventPorts.Add.simulation.sound
 
@@ -54,9 +56,9 @@ theorem compatible : CommutationCompatibility (D (A := A)) id finiteMachine.toSp
   fun a b _ => SimpleEventPorts.Finite.commutes a b
 
 def conditions : VCConditions (commutingPolicy A) finiteMachine.toSpec generation where
-  toVCReplayConditions := CommutingPort.vcReplayConditions
-    Instances.FinsetStore.all_comm Instances.FinsetStore.mergeLaws Instances.FinsetStore.deltaLaws
-    Instances.FinsetStore.commutingPeelLaw generation
+  toVCReplayConditions := CommutingPort.automatedReplayConditions
+    Instances.FinsetStore.all_comm
+    (by mrdt_verify) generation
   compatibility := compatible
   historySound := SimpleEventPorts.Finite.simulation.sound
 
@@ -90,9 +92,9 @@ theorem compatible : CommutationCompatibility (D (A := A)) id booleanMachine.toS
   fun a b _ => SimpleEventPorts.Boolean.commutes a b
 
 def conditions : VCConditions (commutingPolicy A) booleanMachine.toSpec generation where
-  toVCReplayConditions := CommutingPort.vcReplayConditions
-    Instances.FlatGrowOnly.all_comm Instances.FlatGrowOnly.mergeLaws Instances.FlatGrowOnly.deltaLaws
-    Instances.FlatGrowOnly.commutingPeelLaw generation
+  toVCReplayConditions := CommutingPort.automatedReplayConditions
+    Instances.FlatGrowOnly.all_comm
+    (by mrdt_verify) generation
   compatibility := compatible
   historySound := SimpleEventPorts.Boolean.simulation.sound
 
@@ -128,10 +130,8 @@ theorem compatible : CommutationCompatibility (D delta) id (deltaMachine delta).
 
 def conditions : VCConditions (commutingPolicy A)
     (deltaMachine delta).toSpec (generation delta) where
-  toVCReplayConditions := CommutingPort.vcReplayConditions
-    (Instances.FlatCounters.all_comm delta) (Instances.FlatCounters.mergeLaws delta)
-    (Instances.FlatCounters.deltaLaws delta) (Instances.FlatCounters.commutingPeelLaw delta)
-    (generation delta)
+  toVCReplayConditions := CommutingPort.automatedReplayConditions
+    (Instances.FlatCounters.all_comm delta) (by mrdt_verify) (generation delta)
   compatibility := compatible delta
   historySound := (SimpleEventPorts.Delta.simulation delta).sound
 

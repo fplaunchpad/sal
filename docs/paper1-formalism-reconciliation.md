@@ -1,7 +1,8 @@
 # Changes to the Sal paper
 
-Compared against **Overleaf `0450d48`**, fetched again on 8 October 2026.
-The live Overleaf source is unchanged. The Lean work is on `paper1`.
+Compared against the **latest checked-in manuscript baseline, Overleaf
+`0450d48` (8 October 2026)**. This revision does not fetch or change live
+Overleaf source. The Lean work is on `paper1`.
 
 The paper should organize correctness around **two obligations**:
 
@@ -31,9 +32,17 @@ That history proof supplements the VCs; it does not replace them.
   **Reference:** Definitions 4.5, 4.7–4.8; Theorem 4.9.
 - **§5, `proof_strategy.tex`:** expose representation, uniqueness, finite replay
   supply and metadata reconstruction alongside the five equations. These are
-  instantiated obligations, not an assumed Join result. Distinguish the exact
-  OR-set's weak-closure Join from the represented certified extension.
+  instantiated obligations, not an assumed Join result. Distinguish the
+  ordinary OR-set's weak-closure Join from the represented certified extension.
   **Reference:** Definitions 5.1–5.4; Theorems 5.5, 5.7.
+- **§5, after the five equations:** explain the reusable template soundness
+  statement `Input(D,P,R,M) → MergeVCs(P,R,M)`. An author selects a family,
+  proves its finite collection of universally quantified algebraic laws, and
+  supplies representation, metadata and issuer/replay evidence projections.
+  The command applies the generic proof; it does not take a completed datatype
+  VC theorem as an input. Keep uniqueness, finite replay supply and the
+  sequential bridge explicit. **Reference:** §5, “Reusable verification
+  templates”, between Definitions 5.3 and 5.4.
 - **§6, `seq_spec.tex`:** state totality/determinism for the simulation method
   and specification-commutation compatibility for the strengthened criterion.
   Add the certified exact-history bridge without a universal uniqueness claim.
@@ -57,11 +66,18 @@ function `α`. No implementation-state semantic abstraction is needed.
 - [Exact manuscript patch](paper1-manuscript-reconciliation.patch): replacements
   for seven source files, preserving the worked OR-set example and figures.
   It applies to `0450d48`; review it in a separate checkout before importing it
-  into Overleaf. The combined proposed source compiles.
+  into Overleaf. The combined proposed source compiles. This patch predates
+  the new reusable-verification-template paragraph above; that paragraph is
+  an additional revision and is not included in the patch.
 - [Correctness audit](paper1-correctness-audit.md): assumptions, conclusions,
   proof dependencies and the claim-by-claim evidence.
 
 The revised theorem connections are machine-checked: unrestricted raw ordinary
-and virtual payload correctness for the exact OR-set, and certified full-event
+and virtual payload correctness for the ordinary OR-set, and certified full-event
 invariant-order correctness for Embedded RGA. The audit does not establish the
 broader claim that every public-order RGA permutation has the same fold.
+
+The implementation template result and the sequential bridge have separate
+conclusions. Reuse the established sequential bridge for each supported port;
+do not infer a bridge from VC automation or query transport. The Fugue
+sequential-specification obstruction remains unresolved (Reference Example 6.6).

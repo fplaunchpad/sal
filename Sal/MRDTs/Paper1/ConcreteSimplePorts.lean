@@ -62,33 +62,25 @@ namespace Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts
 noncomputable section
 open Sal.MRDTs.Paper1.ConcreteMRDT
 
-abbrev boundedCertificate := (CommutingPort.scopedConditions
-  Instances.BoundedCounter.BC_all_comm Instances.BoundedCounter.BC_mergeLaws Instances.BoundedCounter.BC_deltaLaws
-  Instances.BoundedCounter.BC_commutingPeelLaw Instances.BoundedCounter.generation GuardedPorts.Bounded.history).toCertificate
+abbrev boundedCertificate := GuardedPorts.Bounded.conditions.toCertificate
 abbrev boundedVersions {C : Configuration (Instances.BoundedCounter.BC)} := boundedCertificate.versions (C := C)
 abbrev boundedVersionsV {C : Configuration (Instances.BoundedCounter.BC)} := boundedCertificate.versionsV (C := C)
 abbrev boundedExecutions := boundedCertificate.executions
 abbrev boundedExecutionsV := boundedCertificate.executionsV
 
-abbrev treeCertificate := (CommutingPort.scopedConditions
-  Instances.TreeMove.all_comm Instances.TreeMove.mergeLaws Instances.TreeMove.deltaLaws
-  Instances.TreeMove.commutingPeelLaw Instances.TreeMove.generation GuardedPorts.Tree.history).toCertificate
+abbrev treeCertificate := GuardedPorts.Tree.conditions.toCertificate
 abbrev treeVersions {C : Configuration (Instances.TreeMove.D)} := treeCertificate.versions (C := C)
 abbrev treeVersionsV {C : Configuration (Instances.TreeMove.D)} := treeCertificate.versionsV (C := C)
 abbrev treeExecutions := treeCertificate.executions
 abbrev treeExecutionsV := treeCertificate.executionsV
 
-abbrev sheetCertificate := (CommutingPort.scopedConditions
-  Instances.AegisSheet.all_comm Instances.AegisSheet.mergeLaws Instances.AegisSheet.deltaLaws
-  Instances.AegisSheet.commutingPeelLaw Instances.AegisSheet.generation GuardedPorts.Sheet.history).toCertificate
+abbrev sheetCertificate := GuardedPorts.Sheet.conditions.toCertificate
 abbrev sheetVersions {C : Configuration (Instances.AegisSheet.D)} := sheetCertificate.versions (C := C)
 abbrev sheetVersionsV {C : Configuration (Instances.AegisSheet.D)} := sheetCertificate.versionsV (C := C)
 abbrev sheetExecutions := sheetCertificate.executions
 abbrev sheetExecutionsV := sheetCertificate.executionsV
 
-abbrev rgaCertificate := (CommutingPort.scopedConditions
-  Instances.RGA.RGAM_all_comm Instances.RGA.RGAM_mergeLaws Instances.RGA.RGAM_deltaLaws
-  Instances.RGA.RGAM_commutingPeelLaw Instances.RGA.generation Sal.MRDTs.Paper1.RGA.ConcretePort.history).toCertificate
+abbrev rgaCertificate := Sal.MRDTs.Paper1.RGA.ConcretePort.conditions.toCertificate
 abbrev rgaVersions {C : Configuration (Instances.RGA.RGAM)} := rgaCertificate.versions (C := C)
 abbrev rgaVersionsV {C : Configuration (Instances.RGA.RGAM)} := rgaCertificate.versionsV (C := C)
 abbrev rgaExecutions := rgaCertificate.executions

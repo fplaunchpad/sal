@@ -1,3 +1,5 @@
+import Sal.MRDTs.Paper1.Automation.CommutingInputs
+import Sal.MRDTs.Paper1.Automation.CommutingAssembly
 import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Paper1.ConcreteHistoryBridge
 import Sal.MRDTs.Paper1.ConcreteReplay
@@ -45,8 +47,7 @@ theorem chronological_respects_vis (C : Configuration D) (ops : List (Op LWWOp))
 LWW Join theorem and its timestamp replay resolver. -/
 theorem history : EventExecutionHistoryAdequacy D policy language issuance := by
   intro C execution v s E hv q
-  have good := CommutingPort.vcCanonicalConfig all_comm emptyMergeLaws deltaLaws
-    commutingPeelLaw (virtual_reach execution)
+  have good := CommutingPort.automatedCanonicalConfig all_comm (by mrdt_verify) (virtual_reach execution)
   obtain ⟨ops,hp,_,_⟩ := good.canonical v s E hv
   have perm : listPermOf (canonical ops) E :=
     ⟨hp.1.perm (canonical_perm ops).symm,
@@ -71,12 +72,10 @@ def certificate : ScopedCertificate policy language issuance where
       C E supported hs ht
   supportedVersions := by
     intro C execution v s E hv
-    exact (CommutingPort.vcCanonicalConfig all_comm emptyMergeLaws deltaLaws
-      commutingPeelLaw (virtual_reach execution)).version_events_supported v s E hv
+    exact (CommutingPort.automatedCanonicalConfig all_comm (by mrdt_verify) (virtual_reach execution)).version_events_supported v s E hv
   canonicalVersions := by
     intro C execution v s E hv
-    obtain ⟨π,hp,_,hf⟩ := (CommutingPort.vcCanonicalConfig all_comm emptyMergeLaws deltaLaws
-      commutingPeelLaw (virtual_reach execution)).canonical v s E hv
+    obtain ⟨π,hp,_,hf⟩ := (CommutingPort.automatedCanonicalConfig all_comm (by mrdt_verify) (virtual_reach execution)).canonical v s E hv
     exact ⟨π,hp,hp.1.imp (fun {_ _} _ =>
       paperOrder_false_of_all_commute all_comm C.replayContext E _ _),hf⟩
   history := history
