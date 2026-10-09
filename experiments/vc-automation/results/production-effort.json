@@ -3,7 +3,7 @@
   "limitations": [
     "Source lines measure proof/annotation footprint, not human effort or proof difficulty.",
     "Per-case totals overlap; campaign totals deduplicate file/line pairs.",
-    "Required PolicyData/MaskData annotations, efficient mask-description/birth data and ordered description/chain-mapping data and unary-code mono/prefixFree proof packaging are charged even when elaboration erases them from the kernel dependency closure. Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.",
+    "Required PolicyData/MaskData annotations, efficient mask-description/birth data and ordered/archive description, raw-equation, chain-mapping and issuance-model data and unary-code mono/prefixFree proof packaging are charged even when elaboration erases them from the kernel dependency closure. Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.",
     "Concrete retained datatype helpers additionally come from full direct Raw.MergeVCs-root closures, preserving actual specialization proof arguments. Certificate-bundle fields remain excluded.",
     "Existing implementation and contract definitions are excluded. Paper1 datatype-namespace theorem helpers are charged, including AnchoredQueue and Embedded replay namespaces; the selected VC-root wrappers are charged separately as automation calls. The historical direct-proof report retains its checked baseline classification. Retained datatype theorem helpers and explicitly allowlisted proof-only representation mappings are charged; existing generic foundational theorem helpers are separate. Structure projections are not charged as authored proofs.",
     "Shared generic declarations are a separate reusable-library cost; whole participating module code additionally includes macros, imports and annotations.",
@@ -3849,14 +3849,14 @@
         {
           "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.description",
           "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-          "start": 138,
-          "end": 147
+          "start": 139,
+          "end": 148
         },
         {
           "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.chainMapping",
           "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-          "start": 153,
-          "end": 171
+          "start": 154,
+          "end": 172
         }
       ],
       "shared_framework_declaration_lines": 2301,
@@ -3896,14 +3896,14 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:137:146",
         "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:138:147",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:148:150",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:152:170",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:139:148",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:149:151",
         "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:153:171",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:172:175",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:254:256",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:259:261",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:154:172",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:173:176",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:240:242",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:245:247",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:11:12",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:14:14",
@@ -4138,10 +4138,23 @@
       "concrete_retained_helper_roots": [
         "Sal.MRDTs.Paper1.CertifiedRGAVC.Sided.mergeVCs"
       ],
-      "instance_lines": 122,
-      "retained_helper_lines": 297,
-      "required_source_data_annotations": [],
-      "shared_framework_declaration_lines": 1961,
+      "instance_lines": 62,
+      "retained_helper_lines": 0,
+      "required_source_data_annotations": [
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.description",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+          "start": 183,
+          "end": 192
+        },
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.chainMapping",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+          "start": 197,
+          "end": 222
+        }
+      ],
+      "shared_framework_declaration_lines": 2326,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Base/FiniteOrder.lean:11:40",
@@ -4167,24 +4180,6 @@
         "Sal/MRDTs/Framework/Product.lean:78:86",
         "Sal/MRDTs/Framework/Product.lean:88:96",
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:194:199",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:30:33",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:35:47",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:49:78",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:80:92",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:346:350",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:352:354",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:356:358",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:360:370",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:372:441",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:87:91",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:146:155",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:157:180",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:199:235",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:239:254",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:256:293",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:295:310",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:590:593",
         "Sal/MRDTs/Metatheory/Correctness.lean:130:135",
         "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:18:21",
         "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:23:29",
@@ -4196,18 +4191,12 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:102:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:115:128",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:16:23",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:182:221",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:223:241",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:269:273",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:275:277",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:280:282",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:81:82",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:83:83",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:85:91",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:93:100",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:183:191",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:193:195",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:197:221",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:223:226",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:261:263",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:266:268",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:11:12",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:14:14",
@@ -4275,6 +4264,8 @@
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:72:81",
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:83:90",
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:92:164",
+        "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:11:36",
+        "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:38:70",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:12:24",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:29:55",
@@ -4329,9 +4320,35 @@
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:32:41",
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:43:57",
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:59:72",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:13:24",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:26:28",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:30:35",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:37:69",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:7:11",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:9:9",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:20:26",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:28:38",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:8:18",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:120:149",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:151:162",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:15:16",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:164:185",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:187:199",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:18:20",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:202:209",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:211:218",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:220:224",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:22:27",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:29:37",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:39:51",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:53:61",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:63:82",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:84:90",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:92:118",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:9:13",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:9:9",
+        "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:12:36",
+        "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:5:11",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:18",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:22:22",
@@ -4375,6 +4392,15 @@
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:9:11",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:17:46",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:9:10",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:11:11",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:19:36",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:9:17",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:19:25",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:9:17",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:9:9",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:14:18",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:20:25",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:9:12",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:14",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:23",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:25:48",
@@ -4396,8 +4422,8 @@
       "induction_syntax": {},
       "explicit_recursors": {},
       "registration_annotation_lines": 5,
-      "author_total_lines": 127,
-      "author_and_retained_helper_lines": 424
+      "author_total_lines": 67,
+      "author_and_retained_helper_lines": 67
     },
     "peritext-embed-rga": {
       "vc_roots": [
@@ -4412,14 +4438,14 @@
         {
           "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.description",
           "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-          "start": 138,
-          "end": 147
+          "start": 139,
+          "end": 148
         },
         {
           "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.chainMapping",
           "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-          "start": 153,
-          "end": 171
+          "start": 154,
+          "end": 172
         }
       ],
       "shared_framework_declaration_lines": 2301,
@@ -4459,14 +4485,14 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:137:146",
         "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:138:147",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:148:150",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:152:170",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:139:148",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:149:151",
         "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:153:171",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:172:175",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:254:256",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:259:261",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:154:172",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:173:176",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:240:242",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:245:247",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:11:12",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:14:14",
@@ -4701,10 +4727,23 @@
       "concrete_retained_helper_roots": [
         "Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC.mergeVCs"
       ],
-      "instance_lines": 128,
-      "retained_helper_lines": 297,
-      "required_source_data_annotations": [],
-      "shared_framework_declaration_lines": 1961,
+      "instance_lines": 69,
+      "retained_helper_lines": 0,
+      "required_source_data_annotations": [
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.description",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+          "start": 183,
+          "end": 192
+        },
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.chainMapping",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+          "start": 197,
+          "end": 222
+        }
+      ],
+      "shared_framework_declaration_lines": 2326,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Base/FiniteOrder.lean:11:40",
@@ -4730,24 +4769,6 @@
         "Sal/MRDTs/Framework/Product.lean:78:86",
         "Sal/MRDTs/Framework/Product.lean:88:96",
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:194:199",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:30:33",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:35:47",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:49:78",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:80:92",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:346:350",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:352:354",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:356:358",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:360:370",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:372:441",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:87:91",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:146:155",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:157:180",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:199:235",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:239:254",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:256:293",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:295:310",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:590:593",
         "Sal/MRDTs/Metatheory/Correctness.lean:130:135",
         "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:18:21",
         "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:23:29",
@@ -4759,18 +4780,13 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:15:23",
-        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:25:28",
-        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:32:35",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:102:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:115:128",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:16:23",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:182:221",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:223:241",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:81:82",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:83:83",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:85:91",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:93:100",
+        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:15:19",
+        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:21:24",
+        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:28:31",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:183:191",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:193:195",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:197:221",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:223:226",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:11:12",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:14:14",
@@ -4838,6 +4854,8 @@
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:72:81",
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:83:90",
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:92:164",
+        "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:11:36",
+        "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:38:70",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:12:24",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:29:55",
@@ -4892,9 +4910,35 @@
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:32:41",
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:43:57",
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:59:72",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:13:24",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:26:28",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:30:35",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:37:69",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:7:11",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:9:9",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:20:26",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:28:38",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:8:18",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:120:149",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:151:162",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:15:16",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:164:185",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:187:199",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:18:20",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:202:209",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:211:218",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:220:224",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:22:27",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:29:37",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:39:51",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:53:61",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:63:82",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:84:90",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:92:118",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:9:13",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:9:9",
+        "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:12:36",
+        "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:5:11",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:18",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:22:22",
@@ -4938,6 +4982,15 @@
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:9:11",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:17:46",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:9:10",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:11:11",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:19:36",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:9:17",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:19:25",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:9:17",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:9:9",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:14:18",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:20:25",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:9:12",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:14",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:23",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:25:48",
@@ -4959,8 +5012,8 @@
       "induction_syntax": {},
       "explicit_recursors": {},
       "registration_annotation_lines": 5,
-      "author_total_lines": 133,
-      "author_and_retained_helper_lines": 430
+      "author_total_lines": 74,
+      "author_and_retained_helper_lines": 74
     },
     "sided-peritext-rich-core": {
       "vc_roots": [
@@ -4969,10 +5022,23 @@
       "concrete_retained_helper_roots": [
         "Sal.MRDTs.Paper1.CertifiedRGARichVC.mergeVCs"
       ],
-      "instance_lines": 131,
-      "retained_helper_lines": 297,
-      "required_source_data_annotations": [],
-      "shared_framework_declaration_lines": 1961,
+      "instance_lines": 72,
+      "retained_helper_lines": 0,
+      "required_source_data_annotations": [
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.description",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+          "start": 183,
+          "end": 192
+        },
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.chainMapping",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+          "start": 197,
+          "end": 222
+        }
+      ],
+      "shared_framework_declaration_lines": 2326,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Base/FiniteOrder.lean:11:40",
@@ -4998,24 +5064,6 @@
         "Sal/MRDTs/Framework/Product.lean:78:86",
         "Sal/MRDTs/Framework/Product.lean:88:96",
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:194:199",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:30:33",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:35:47",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:49:78",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:80:92",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:346:350",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:352:354",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:356:358",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:360:370",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:372:441",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:87:91",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:146:155",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:157:180",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:199:235",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:239:254",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:256:293",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:295:310",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:590:593",
         "Sal/MRDTs/Metatheory/Correctness.lean:130:135",
         "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:18:21",
         "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:23:29",
@@ -5027,17 +5075,12 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:15:23",
-        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:25:28",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:102:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:115:128",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:16:23",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:182:221",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:223:241",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:81:82",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:83:83",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:85:91",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:93:100",
+        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:15:19",
+        "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:21:24",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:183:191",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:193:195",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:197:221",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:223:226",
         "Sal/MRDTs/Paper1/Automation/AutomatedRichCore.lean:15:17",
         "Sal/MRDTs/Paper1/Automation/AutomatedRichCore.lean:8:11",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
@@ -5107,6 +5150,8 @@
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:72:81",
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:83:90",
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:92:164",
+        "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:11:36",
+        "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:38:70",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:12:24",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:29:55",
@@ -5161,9 +5206,35 @@
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:32:41",
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:43:57",
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:59:72",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:13:24",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:26:28",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:30:35",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:37:69",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:7:11",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:9:9",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:20:26",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:28:38",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:8:18",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:120:149",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:151:162",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:15:16",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:164:185",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:187:199",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:18:20",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:202:209",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:211:218",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:220:224",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:22:27",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:29:37",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:39:51",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:53:61",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:63:82",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:84:90",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:92:118",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:9:13",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:9:9",
+        "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:12:36",
+        "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:5:11",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:18",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:22:22",
@@ -5207,6 +5278,15 @@
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:9:11",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:17:46",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:9:10",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:11:11",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:19:36",
+        "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean:9:17",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:19:25",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:9:17",
+        "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean:9:9",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:14:18",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:20:25",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:9:12",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:14",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:23",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:25:48",
@@ -5228,8 +5308,8 @@
       "induction_syntax": {},
       "explicit_recursors": {},
       "registration_annotation_lines": 6,
-      "author_total_lines": 137,
-      "author_and_retained_helper_lines": 434
+      "author_total_lines": 78,
+      "author_and_retained_helper_lines": 78
     },
     "anchored-queue-paper-variant": {
       "vc_roots": [
@@ -5244,14 +5324,14 @@
         {
           "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.description",
           "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-          "start": 138,
-          "end": 147
+          "start": 139,
+          "end": 148
         },
         {
           "name": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.chainMapping",
           "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-          "start": 153,
-          "end": 171
+          "start": 154,
+          "end": 172
         },
         {
           "name": "Sal.EmbedRGA.unaryCode.mono",
@@ -5307,14 +5387,14 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:137:146",
         "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:138:147",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:148:150",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:152:170",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:139:148",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:149:151",
         "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:153:171",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:172:175",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:254:256",
-        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:259:261",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:154:172",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:173:176",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:240:242",
+        "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:245:247",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:11:12",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:14:14",
@@ -5549,10 +5629,29 @@
       "concrete_retained_helper_roots": [
         "Sal.MRDTs.Paper1.CertifiedFugueVC.mergeVCs"
       ],
-      "instance_lines": 252,
-      "retained_helper_lines": 700,
-      "required_source_data_annotations": [],
-      "shared_framework_declaration_lines": 2036,
+      "instance_lines": 317,
+      "retained_helper_lines": 0,
+      "required_source_data_annotations": [
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedFugue.description",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+          "start": 27,
+          "end": 38
+        },
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedFugue.equations",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+          "start": 39,
+          "end": 58
+        },
+        {
+          "name": "Sal.MRDTs.Paper1.Automation.AutomatedFugue.issuanceModel",
+          "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+          "start": 127,
+          "end": 201
+        }
+      ],
+      "shared_framework_declaration_lines": 2683,
       "existing_framework_helper_lines": 755,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Base/FiniteOrder.lean:11:40",
@@ -5578,60 +5677,6 @@
         "Sal/MRDTs/Framework/Product.lean:78:86",
         "Sal/MRDTs/Framework/Product.lean:88:96",
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
-        "Sal/MRDTs/Instances/Fugue.lean:393:418",
-        "Sal/MRDTs/Instances/FugueMax.lean:1155:1163",
-        "Sal/MRDTs/Instances/FugueMax.lean:1165:1172",
-        "Sal/MRDTs/Instances/FugueMax.lean:1174:1182",
-        "Sal/MRDTs/Instances/FugueMax.lean:212:218",
-        "Sal/MRDTs/Instances/FugueMax.lean:220:225",
-        "Sal/MRDTs/Instances/FugueMax.lean:227:244",
-        "Sal/MRDTs/Instances/FugueMax.lean:246:248",
-        "Sal/MRDTs/Instances/FugueMax.lean:450:461",
-        "Sal/MRDTs/Instances/FugueMax.lean:463:467",
-        "Sal/MRDTs/Instances/FugueMax.lean:469:479",
-        "Sal/MRDTs/Instances/FugueMaxIssuer.lean:124:134",
-        "Sal/MRDTs/Instances/FugueMaxIssuer.lean:136:146",
-        "Sal/MRDTs/Instances/FugueMaxIssuer.lean:161:172",
-        "Sal/MRDTs/Instances/FugueMaxIssuer.lean:174:184",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:194:199",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:30:33",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:35:47",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:49:78",
-        "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:80:92",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:101:119",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:130:134",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:136:137",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:151:153",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:157:174",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:194:206",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:208:215",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:217:222",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:226:226",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:227:227",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:228:228",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:229:229",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:231:241",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:243:255",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:257:265",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:267:302",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:63:67",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:69:81",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:771:773",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:775:777",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:781:783",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:785:787",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:789:802",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:804:833",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:835:945",
-        "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:83:99",
-        "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:360:370",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:146:155",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:157:180",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:199:235",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:239:254",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:256:293",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:295:310",
-        "Sal/MRDTs/Instances/SidedEmbedRGA.lean:590:593",
         "Sal/MRDTs/Metatheory/Correctness.lean:130:135",
         "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:18:21",
         "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean:23:29",
@@ -5643,19 +5688,26 @@
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:75:81",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:83:92",
         "Sal/MRDTs/Metatheory/VirtualMergeBase.lean:94:113",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:106:171",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:13:13",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:14:14",
+        "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:11:11",
+        "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:11:21",
+        "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:23:27",
+        "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:29:33",
+        "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:35:35",
+        "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:35:47",
+        "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:49:120",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:127:200",
         "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:15:15",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:173:242",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:17:23",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:244:262",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:25:90",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:264:267",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:269:271",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:274:275",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:92:93",
-        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:95:104",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:16:16",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:17:17",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:202:215",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:222:224",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:227:228",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:27:37",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:39:57",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:59:60",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:62:63",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:65:76",
+        "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:78:125",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:102:160",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:11:12",
         "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean:14:14",
@@ -5690,6 +5742,19 @@
         "Sal/MRDTs/Paper1/Automation/CommonVerification.lean:34:42",
         "Sal/MRDTs/Paper1/Automation/CommonVerification.lean:44:92",
         "Sal/MRDTs/Paper1/Automation/CommonVerification.lean:94:115",
+        "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean:18:24",
+        "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean:26:37",
+        "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean:39:47",
+        "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean:7:16",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:123:130",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:14:18",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:20:21",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:23:29",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:31:37",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:39:69",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:71:83",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:85:121",
+        "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:8:12",
         "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean:113:118",
         "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean:120:137",
         "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean:139:143",
@@ -5733,6 +5798,19 @@
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:72:81",
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:83:90",
         "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean:92:164",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:101:111",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:113:122",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:124:155",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:21:27",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:29:35",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:43:64",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:66:80",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:82:99",
+        "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:8:19",
+        "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean:34:48",
+        "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean:7:29",
+        "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:11:36",
+        "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean:38:70",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:12:24",
         "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean:29:55",
@@ -5784,9 +5862,36 @@
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:32:41",
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:43:57",
         "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean:59:72",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:13:24",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:26:28",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:30:35",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:37:69",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:7:11",
+        "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean:9:9",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:20:26",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:28:38",
         "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean:8:18",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:120:149",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:151:162",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:15:16",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:164:185",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:187:199",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:18:20",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:22:27",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:29:37",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:39:51",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:53:61",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:63:82",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:84:90",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:92:118",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:9:13",
+        "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean:9:9",
+        "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:5:11",
+        "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:15:17",
+        "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:19:30",
+        "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:32:48",
+        "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:50:69",
+        "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:7:13",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:12",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:12:18",
         "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean:22:22",
@@ -5830,6 +5935,9 @@
         "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean:9:11",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:17:46",
         "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean:9:10",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:14:18",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:20:25",
+        "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:9:12",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:14",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:14:23",
         "Sal/MRDTs/Paper1/Automation/TransferSimple.lean:25:48",
@@ -5850,29 +5958,33 @@
       ],
       "induction_syntax": {},
       "explicit_recursors": {},
-      "registration_annotation_lines": 7,
-      "author_total_lines": 259,
-      "author_and_retained_helper_lines": 959
+      "registration_annotation_lines": 5,
+      "author_total_lines": 322,
+      "author_and_retained_helper_lines": 322
     }
   },
   "unique_campaign": {
-    "instance_lines": 589,
-    "retained_helper_lines": 867,
-    "registration_annotation_lines": 46
+    "instance_lines": 575,
+    "retained_helper_lines": 84,
+    "registration_annotation_lines": 45
   },
   "shared_framework": {
-    "dependency_declaration_lines": 2397,
+    "dependency_declaration_lines": 2788,
     "existing_framework_helper_lines": 755,
-    "participating_module_code_lines": 3198,
+    "participating_module_code_lines": 3637,
     "participating_files": [
+      "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
       "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
       "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
       "Sal/MRDTs/Paper1/Automation/CertifiedReplayExpansion.lean",
       "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
       "Sal/MRDTs/Paper1/Automation/GenericCertifiedIssuance.lean",
       "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean",
       "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean",
       "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
       "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
@@ -5881,6 +5993,8 @@
       "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean",
       "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean",
       "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean",
+      "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean",
+      "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
       "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
       "Sal/MRDTs/Paper1/Automation/InductiveMask.lean",
       "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
@@ -5894,8 +6008,10 @@
       "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/TransferSimple.lean"
     ],
-    "library_code_lines_excluding_charged_instance_lines": 3527,
+    "library_code_lines_excluding_charged_instance_lines": 3985,
     "library_files": [
+      "Sal/MRDTs/Paper1/Automation/ArchivedInputDerivation.lean",
+      "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
       "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
       "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
@@ -5904,9 +6020,12 @@
       "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
       "Sal/MRDTs/Paper1/Automation/CommonVerificationRules.lean",
       "Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean",
+      "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean",
       "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
       "Sal/MRDTs/Paper1/Automation/GenericCertifiedIssuance.lean",
       "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean",
       "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean",
       "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
       "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
@@ -5915,6 +6034,8 @@
       "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean",
       "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean",
       "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean",
+      "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean",
+      "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
       "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
       "Sal/MRDTs/Paper1/Automation/InductiveMask.lean",
       "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
@@ -5935,7 +6056,7 @@
       "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
       "Sal/MRDTs/Paper1/Automation/TransferSimple.lean"
     ],
-    "registry_annotation_lines": 27,
+    "registry_annotation_lines": 30,
     "registry_annotations": [
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
@@ -5955,57 +6076,72 @@
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
         "line": 13,
-        "text": "attribute [ordered_generic_simps, aesop (rule_sets := [OrderedGeneric]) norm simp]"
+        "text": "Sal.MRDTs.Paper1.Automation.SidedPrimitives.insertion"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
         "line": 14,
-        "text": "Sal.MRDTs.Paper1.Automation.OrderedLists.mem_insert"
+        "text": "Sal.MRDTs.Paper1.Automation.SidedPrimitives.merging"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
         "line": 15,
-        "text": "Sal.MRDTs.Paper1.Automation.OrderedLists.mem_merge2"
+        "text": "attribute [ordered_generic_simps, aesop (rule_sets := [OrderedGeneric]) norm simp]"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
         "line": 16,
-        "text": "List.mem_toFinset"
+        "text": "Sal.MRDTs.Paper1.Automation.OrderedLists.mem_insert"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
         "line": 17,
-        "text": "attribute [aesop (rule_sets := [OrderedGeneric]) safe apply] List.Pairwise.filter"
+        "text": "Sal.MRDTs.Paper1.Automation.OrderedLists.mem_merge2"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+        "line": 18,
+        "text": "List.mem_toFinset"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
         "line": 19,
-        "text": "attribute [ordered_record_simps, aesop (rule_sets := [OrderedRecord]) norm simp]"
-      },
-      {
-        "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
-        "line": 20,
-        "text": "mem_eInsert mem_eMerge2 mem_sInsert mem_sMerge2 List.mem_toFinset"
+        "text": "attribute [aesop (rule_sets := [OrderedGeneric]) safe apply] List.Pairwise.filter"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
         "line": 21,
-        "text": "attribute [aesop (rule_sets := [OrderedRecord]) safe apply]"
+        "text": "attribute [ordered_record_simps, aesop (rule_sets := [OrderedRecord]) norm simp]"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
         "line": 22,
+        "text": "mem_eInsert mem_eMerge2 mem_sInsert mem_sMerge2 List.mem_toFinset"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+        "line": 23,
+        "text": "attribute [aesop (rule_sets := [OrderedRecord]) safe apply]"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+        "line": 24,
         "text": "eInsert_sorted eMerge_sorted esorted_ext sInsert_sorted sMerge_sorted ssorted_ext List.Pairwise.filter"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
-        "line": 31,
+        "line": 33,
         "text": "attribute [aesop (rule_sets := [OrderedRecord, OrderedGeneric]) safe apply] ordered_record_membership"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
-        "line": 39,
+        "line": 41,
         "text": "attribute [ordered_order] Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.order"
+      },
+      {
+        "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+        "line": 42,
+        "text": "attribute [ordered_order] Sal.MRDTs.Paper1.Automation.SidedPrimitives.order"
       },
       {
         "file": "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
@@ -17978,15 +18114,15 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:259:261": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:245:247": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 259,
-      "end_line": 261,
+      "start_line": 245,
+      "end_line": 247,
       "code_lines": [
-        259,
-        260,
-        261
+        245,
+        246,
+        247
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.automated_vcs"
@@ -17999,13 +18135,12 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:152:170": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:153:171": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 152,
-      "end_line": 170,
+      "start_line": 153,
+      "end_line": 171,
       "code_lines": [
-        153,
         154,
         155,
         156,
@@ -18022,7 +18157,8 @@
         167,
         168,
         169,
-        170
+        170,
+        171
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.chainMapping"
@@ -18035,13 +18171,12 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:137:146": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:138:147": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 137,
-      "end_line": 146,
+      "start_line": 138,
+      "end_line": 147,
       "code_lines": [
-        138,
         139,
         140,
         141,
@@ -18049,7 +18184,8 @@
         143,
         144,
         145,
-        146
+        146,
+        147
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.description"
@@ -18062,15 +18198,15 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:254:256": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:240:242": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 254,
-      "end_line": 256,
+      "start_line": 240,
+      "end_line": 242,
       "code_lines": [
-        254,
-        255,
-        256
+        240,
+        241,
+        242
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.input"
@@ -18083,16 +18219,16 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:172:175": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:173:176": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 172,
-      "end_line": 175,
+      "start_line": 173,
+      "end_line": 176,
       "code_lines": [
-        172,
         173,
         174,
-        175
+        175,
+        176
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.issuer"
@@ -18105,15 +18241,15 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:148:150": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:149:151": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 148,
-      "end_line": 150,
+      "start_line": 149,
+      "end_line": 151,
       "code_lines": [
-        148,
         149,
-        150
+        150,
+        151
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.kit"
@@ -18212,8 +18348,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18231,8 +18371,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18251,8 +18395,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18295,8 +18443,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [
         19
@@ -18323,7 +18475,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -18352,8 +18507,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18380,8 +18539,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18401,8 +18564,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18426,8 +18593,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [
         35
@@ -18452,7 +18623,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -18490,8 +18664,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18517,8 +18695,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18542,8 +18724,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [
         86
@@ -18568,8 +18754,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18597,8 +18787,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [
         47
@@ -18644,8 +18838,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [
         95
@@ -18695,8 +18893,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18718,7 +18920,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -18766,8 +18971,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18804,8 +19013,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -18908,7 +19121,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -18927,7 +19143,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -18961,7 +19180,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -18988,7 +19210,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -19007,7 +19232,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -19030,7 +19258,10 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
         "anchored-queue-paper-variant"
       ],
       "induction_syntax_lines": [],
@@ -19051,8 +19282,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -19070,8 +19305,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -19091,8 +19330,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -19115,8 +19358,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [
         33
@@ -19168,8 +19415,12 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
@@ -19218,19 +19469,22 @@
       ],
       "consumers": [
         "embed-rga",
+        "sided-embed-rga",
         "peritext-embed-rga",
-        "anchored-queue-paper-variant"
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "anchored-queue-paper-variant",
+        "fugue-max"
       ],
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:138:147": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:139:148": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 138,
-      "end_line": 147,
+      "start_line": 139,
+      "end_line": 148,
       "code_lines": [
-        138,
         139,
         140,
         141,
@@ -19238,7 +19492,8 @@
         143,
         144,
         145,
-        146
+        146,
+        147
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.description"
@@ -19252,13 +19507,12 @@
       "explicit_recursor_lines": [],
       "required_source_annotation": true
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:153:171": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:154:172": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 153,
-      "end_line": 171,
+      "start_line": 154,
+      "end_line": 172,
       "code_lines": [
-        153,
         154,
         155,
         156,
@@ -19275,7 +19529,8 @@
         167,
         168,
         169,
-        170
+        170,
+        171
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.chainMapping"
@@ -19289,715 +19544,15 @@
       "explicit_recursor_lines": [],
       "required_source_annotation": true
     },
-    "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:194:199": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
-      "start_line": 194,
-      "end_line": 199,
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:266:268": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+      "start_line": 266,
+      "end_line": 268,
       "code_lines": [
-        194,
-        195,
-        196,
-        197,
-        198,
-        199
-      ],
-      "constants": [
-        "Sal.EmbedRGA.enc_ne_nil"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:35:47": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
-      "start_line": 35,
-      "end_line": 47,
-      "code_lines": [
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47
-      ],
-      "constants": [
-        "Sal.EmbedRGA.keyLt_asymm"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:30:33": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
-      "start_line": 30,
-      "end_line": 33,
-      "code_lines": [
-        30,
-        31,
-        32,
-        33
-      ],
-      "constants": [
-        "Sal.EmbedRGA.keyLt_irrefl"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [
-        31
-      ],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:80:92": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
-      "start_line": 80,
-      "end_line": 92,
-      "code_lines": [
-        80,
-        81,
-        82,
-        83,
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        90,
-        91,
-        92
-      ],
-      "constants": [
-        "Sal.EmbedRGA.keyLt_total"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean:49:78": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
-      "start_line": 49,
-      "end_line": 78,
-      "code_lines": [
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        66,
-        67,
-        68,
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76,
-        77,
-        78
-      ],
-      "constants": [
-        "Sal.EmbedRGA.keyLt_trans"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:360:370": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
-      "start_line": 360,
-      "end_line": 370,
-      "code_lines": [
-        361,
-        362,
-        363,
-        364,
-        365,
-        366,
-        367,
-        368,
-        369,
-        370
-      ],
-      "constants": [
-        "Sal.EmbedRGA.map_prefix_reflect"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:346:350": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
-      "start_line": 346,
-      "end_line": 350,
-      "code_lines": [
-        346,
-        347,
-        348,
-        349,
-        350
-      ],
-      "constants": [
-        "Sal.EmbedRGA.sBlock_eq"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:87:91": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
-      "start_line": 87,
-      "end_line": 91,
-      "code_lines": [
-        87,
-        88,
-        89,
-        90,
-        91
-      ],
-      "constants": [
-        "Sal.EmbedRGA.sBlock_ne_nil"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:356:358": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
-      "start_line": 356,
-      "end_line": 358,
-      "code_lines": [
-        356,
-        357,
-        358
-      ],
-      "constants": [
-        "Sal.EmbedRGA.sideSym_band_ne"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:352:354": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
-      "start_line": 352,
-      "end_line": 354,
-      "code_lines": [
-        352,
-        353,
-        354
-      ],
-      "constants": [
-        "Sal.EmbedRGA.sideSym_inj"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean:372:441": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean",
-      "start_line": 372,
-      "end_line": 441,
-      "code_lines": [
-        375,
-        376,
-        377,
-        378,
-        379,
-        380,
-        381,
-        382,
-        383,
-        384,
-        385,
-        386,
-        387,
-        388,
-        389,
-        390,
-        391,
-        392,
-        393,
-        394,
-        395,
-        396,
-        397,
-        398,
-        399,
-        400,
-        401,
-        402,
-        403,
-        404,
-        405,
-        406,
-        407,
-        408,
-        409,
-        410,
-        411,
-        412,
-        413,
-        414,
-        415,
-        416,
-        417,
-        418,
-        419,
-        420,
-        421,
-        422,
-        423,
-        424,
-        425,
-        426,
-        427,
-        428,
-        429,
-        430,
-        431,
-        432,
-        433,
-        434,
-        435,
-        436,
-        437,
-        438,
-        439,
-        440,
-        441
-      ],
-      "constants": [
-        "Sal.EmbedRGA.sidedCoordOf_inj"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/SidedEmbedRGA.lean:146:155": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
-      "start_line": 146,
-      "end_line": 155,
-      "code_lines": [
-        146,
-        147,
-        148,
-        149,
-        150,
-        151,
-        152,
-        153,
-        154,
-        155
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sInsert"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/SidedEmbedRGA.lean:239:254": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
-      "start_line": 239,
-      "end_line": 254,
-      "code_lines": [
-        239,
-        240,
-        241,
-        242,
-        243,
-        244,
-        245,
-        246,
-        247,
-        248,
-        249,
-        250,
-        251,
-        252,
-        253,
-        254
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mem_sMerge2"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [
-        242
-      ],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/SidedEmbedRGA.lean:157:180": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
-      "start_line": 157,
-      "end_line": 180,
-      "code_lines": [
-        157,
-        158,
-        159,
-        160,
-        161,
-        162,
-        163,
-        164,
-        165,
-        166,
-        167,
-        168,
-        169,
-        170,
-        171,
-        172,
-        173,
-        174,
-        175,
-        176,
-        177,
-        178,
-        179,
-        180
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.sInsert_sorted"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/SidedEmbedRGA.lean:590:593": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
-      "start_line": 590,
-      "end_line": 593,
-      "code_lines": [
-        591,
-        592,
-        593
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.sKey_inj"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/SidedEmbedRGA.lean:256:293": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
-      "start_line": 256,
-      "end_line": 293,
-      "code_lines": [
-        256,
-        257,
-        258,
-        259,
-        260,
-        261,
-        262,
-        263,
-        264,
-        265,
         266,
         267,
-        268,
-        269,
-        270,
-        271,
-        272,
-        273,
-        274,
-        275,
-        276,
-        277,
-        278,
-        279,
-        280,
-        281,
-        282,
-        283,
-        284,
-        285,
-        286,
-        287,
-        288,
-        289,
-        290,
-        291,
-        292,
-        293
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge2_sorted"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [
-        260
-      ],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/SidedEmbedRGA.lean:295:310": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
-      "start_line": 295,
-      "end_line": 310,
-      "code_lines": [
-        298,
-        299,
-        300,
-        301,
-        302,
-        303,
-        304,
-        305,
-        306,
-        307,
-        308,
-        309,
-        310
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.sMerge_sorted"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/SidedEmbedRGA.lean:199:235": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
-      "start_line": 199,
-      "end_line": 235,
-      "code_lines": [
-        202,
-        203,
-        204,
-        205,
-        206,
-        207,
-        208,
-        209,
-        210,
-        211,
-        212,
-        213,
-        214,
-        215,
-        216,
-        217,
-        218,
-        219,
-        220,
-        221,
-        222,
-        223,
-        224,
-        225,
-        226,
-        227,
-        228,
-        229,
-        230,
-        231,
-        232,
-        233,
-        234,
-        235
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.ssorted_ext"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core",
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:81:82": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 81,
-      "end_line": 82,
-      "code_lines": [
-        81,
-        82
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.Born"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:83:83": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 83,
-      "end_line": 83,
-      "code_lines": [
-        83
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.Kill"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:269:273": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 269,
-      "end_line": 273,
-      "code_lines": [
-        269,
-        270,
-        271,
-        272,
-        273
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.adapter"
-      ],
-      "consumers": [
-        "sided-embed-rga"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:280:282": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 280,
-      "end_line": 282,
-      "code_lines": [
-        280,
-        281,
-        282
+        268
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.automated_vcs"
@@ -20008,83 +19563,12 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:275:277": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:197:221": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 275,
-      "end_line": 277,
-      "code_lines": [
-        275,
-        276,
-        277
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.input"
-      ],
-      "consumers": [
-        "sided-embed-rga"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:223:241": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 223,
-      "end_line": 241,
-      "code_lines": [
-        223,
-        224,
-        225,
-        226,
-        227,
-        228,
-        229,
-        230,
-        231,
-        232,
-        233,
-        234,
-        235,
-        236,
-        237,
-        238,
-        239,
-        240,
-        241
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.issuer"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:182:221": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 182,
+      "start_line": 197,
       "end_line": 221,
       "code_lines": [
-        182,
-        183,
-        184,
-        185,
-        186,
-        187,
-        188,
-        189,
-        190,
-        191,
-        192,
-        193,
-        194,
-        195,
-        196,
         197,
         198,
         199,
@@ -20112,6 +19596,97 @@
         221
       ],
       "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.chainMapping"
+      ],
+      "consumers": [
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:183:191": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+      "start_line": 183,
+      "end_line": 191,
+      "code_lines": [
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.description"
+      ],
+      "consumers": [
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:261:263": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+      "start_line": 261,
+      "end_line": 263,
+      "code_lines": [
+        261,
+        262,
+        263
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.input"
+      ],
+      "consumers": [
+        "sided-embed-rga"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:223:226": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+      "start_line": 223,
+      "end_line": 226,
+      "code_lines": [
+        223,
+        224,
+        225,
+        226
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.issuer"
+      ],
+      "consumers": [
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:193:195": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
+      "start_line": 193,
+      "end_line": 195,
+      "code_lines": [
+        193,
+        194,
+        195
+      ],
+      "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.kit"
       ],
       "consumers": [
@@ -20122,125 +19697,14 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:93:100": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 93,
-      "end_line": 100,
+    "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:12:36": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean",
+      "start_line": 12,
+      "end_line": 36,
       "code_lines": [
-        93,
-        94,
-        95,
-        96,
-        97,
-        98,
-        99,
-        100
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.membership_step"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:115:128": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 115,
-      "end_line": 128,
-      "code_lines": [
-        115,
-        116,
-        117,
-        118,
-        119,
-        120,
-        121,
-        122,
-        123,
-        124,
-        125,
-        126,
-        127,
-        128
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.merge_cell"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:102:113": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 102,
-      "end_line": 113,
-      "code_lines": [
-        102,
-        103,
-        104,
-        105,
-        106,
-        107,
-        108,
-        109,
-        110,
-        111,
-        112,
-        113
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.ordered_step"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:85:91": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 85,
-      "end_line": 91,
-      "code_lines": [
-        85,
-        86,
-        87,
-        88,
-        89,
-        90,
-        91
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.provenance_step"
-      ],
-      "consumers": [
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean:16:23": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "start_line": 16,
-      "end_line": 23,
-      "code_lines": [
+        14,
+        15,
         16,
         17,
         18,
@@ -20248,10 +19712,23 @@
         20,
         21,
         22,
-        23
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
       ],
       "constants": [
-        "_private.Sal.MRDTs.Paper1.Automation.AutomatedRGA.0.Sal.MRDTs.Paper1.Automation.AutomatedRGA.id_mem"
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.tagged"
       ],
       "consumers": [
         "sided-embed-rga",
@@ -20261,16 +19738,114 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:32:35": {
+    "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean:5:11": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean",
+      "start_line": 5,
+      "end_line": 11,
+      "code_lines": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.map_prefix_reflect"
+      ],
+      "consumers": [
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:14:18": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean",
+      "start_line": 14,
+      "end_line": 18,
+      "code_lines": [
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.SidedPrimitives.insertion"
+      ],
+      "consumers": [
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:20:25": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean",
+      "start_line": 20,
+      "end_line": 25,
+      "code_lines": [
+        20,
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.SidedPrimitives.merging"
+      ],
+      "consumers": [
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean:9:12": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean",
+      "start_line": 9,
+      "end_line": 12,
+      "code_lines": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.SidedPrimitives.order"
+      ],
+      "consumers": [
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core",
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:28:31": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean",
-      "start_line": 32,
-      "end_line": 35,
+      "start_line": 28,
+      "end_line": 31,
       "code_lines": [
-        32,
-        33,
-        34,
-        35
+        28,
+        29,
+        30,
+        31
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedCore.automated_vcs"
@@ -20281,21 +19856,17 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:15:23": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:15:19": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean",
       "start_line": 15,
-      "end_line": 23,
+      "end_line": 19,
       "code_lines": [
         15,
         16,
         17,
         18,
-        19,
-        20,
-        21,
-        22,
-        23
+        19
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedCore.evidence"
@@ -20307,16 +19878,16 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:25:28": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean:21:24": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean",
-      "start_line": 25,
-      "end_line": 28,
+      "start_line": 21,
+      "end_line": 24,
       "code_lines": [
-        25,
-        26,
-        27,
-        28
+        21,
+        22,
+        23,
+        24
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedCore.input"
@@ -20442,1156 +20013,6 @@
       "explicit_recursor_lines": [],
       "required_source_annotation": true
     },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:785:787": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 785,
-      "end_line": 787,
-      "code_lines": [
-        785,
-        786,
-        787
-      ],
-      "constants": [
-        "Sal.EmbedRGA.compl_map_symL"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:775:777": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 775,
-      "end_line": 777,
-      "code_lines": [
-        775,
-        776,
-        777
-      ],
-      "constants": [
-        "Sal.EmbedRGA.compl_map_symR"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:217:222": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 217,
-      "end_line": 222,
-      "code_lines": [
-        217,
-        218,
-        219,
-        220,
-        221,
-        222
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fmBlock_head_L"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:208:215": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 208,
-      "end_line": 215,
-      "code_lines": [
-        210,
-        211,
-        212,
-        213,
-        214,
-        215
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fmBlock_head_R"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:194:206": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 194,
-      "end_line": 206,
-      "code_lines": [
-        194,
-        195,
-        196,
-        197,
-        198,
-        199,
-        200,
-        201,
-        202,
-        203,
-        204,
-        205,
-        206
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fmBlock_ne_nil"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:243:255": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 243,
-      "end_line": 255,
-      "code_lines": [
-        243,
-        244,
-        245,
-        246,
-        247,
-        248,
-        249,
-        250,
-        251,
-        252,
-        253,
-        254,
-        255
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fmBlock_symbols"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:835:945": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 835,
-      "end_line": 945,
-      "code_lines": [
-        837,
-        838,
-        839,
-        840,
-        841,
-        842,
-        843,
-        844,
-        845,
-        846,
-        847,
-        848,
-        849,
-        850,
-        851,
-        852,
-        853,
-        854,
-        855,
-        856,
-        857,
-        858,
-        859,
-        860,
-        861,
-        862,
-        863,
-        864,
-        865,
-        866,
-        867,
-        868,
-        869,
-        870,
-        871,
-        872,
-        873,
-        874,
-        875,
-        876,
-        877,
-        878,
-        879,
-        880,
-        881,
-        882,
-        883,
-        884,
-        885,
-        886,
-        887,
-        888,
-        889,
-        890,
-        891,
-        892,
-        893,
-        894,
-        895,
-        896,
-        897,
-        898,
-        899,
-        900,
-        901,
-        902,
-        903,
-        904,
-        905,
-        906,
-        907,
-        908,
-        909,
-        910,
-        911,
-        912,
-        913,
-        914,
-        915,
-        916,
-        917,
-        918,
-        919,
-        920,
-        921,
-        922,
-        923,
-        924,
-        925,
-        926,
-        927,
-        928,
-        929,
-        930,
-        931,
-        932,
-        933,
-        934,
-        935,
-        936,
-        937,
-        938,
-        939,
-        940,
-        941,
-        942,
-        943,
-        944,
-        945
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fmCoordOf_inj"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:257:265": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 257,
-      "end_line": 265,
-      "code_lines": [
-        257,
-        258,
-        259,
-        260,
-        261,
-        262,
-        263,
-        264,
-        265
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fmCoordOf_symbols"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [
-        259
-      ],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:130:134": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 130,
-      "end_line": 134,
-      "code_lines": [
-        130,
-        131,
-        132,
-        133,
-        134
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fwTag_append"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [
-        132
-      ],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:804:833": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 804,
-      "end_line": 833,
-      "code_lines": [
-        806,
-        807,
-        808,
-        809,
-        810,
-        811,
-        812,
-        813,
-        814,
-        816,
-        817,
-        818,
-        819,
-        820,
-        821,
-        822,
-        823,
-        824,
-        825,
-        826,
-        827,
-        828,
-        829,
-        830,
-        831,
-        832,
-        833
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fwTag_cancel"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:231:241": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 231,
-      "end_line": 241,
-      "code_lines": [
-        231,
-        232,
-        233,
-        234,
-        235,
-        236,
-        237,
-        238,
-        239,
-        240,
-        241
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fwTag_symbols"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [
-        233
-      ],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:789:802": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 789,
-      "end_line": 802,
-      "code_lines": [
-        792,
-        793,
-        794,
-        795,
-        796,
-        797,
-        798,
-        799,
-        800,
-        801,
-        802
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fw_group_inj"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:136:137": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 136,
-      "end_line": 137,
-      "code_lines": [
-        136,
-        137
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fw_head_band"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:151:153": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 151,
-      "end_line": 153,
-      "code_lines": [
-        151,
-        152,
-        153
-      ],
-      "constants": [
-        "Sal.EmbedRGA.fw_inj"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:157:174": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 157,
-      "end_line": 174,
-      "code_lines": [
-        157,
-        158,
-        159,
-        160,
-        161,
-        162,
-        163,
-        164,
-        165,
-        166,
-        167,
-        168,
-        169,
-        170,
-        171,
-        172,
-        173,
-        174
-      ],
-      "constants": [
-        "Sal.EmbedRGA.keyLt_first_diff"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:83:99": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 83,
-      "end_line": 99,
-      "code_lines": [
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        90,
-        91,
-        92,
-        93,
-        94,
-        95,
-        96,
-        97,
-        98,
-        99
-      ],
-      "constants": [
-        "Sal.EmbedRGA.key_body_prefixFree"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:228:228": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 228,
-      "end_line": 228,
-      "code_lines": [
-        228
-      ],
-      "constants": [
-        "Sal.EmbedRGA.symL_le"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:229:229": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 229,
-      "end_line": 229,
-      "code_lines": [
-        229
-      ],
-      "constants": [
-        "Sal.EmbedRGA.symL_ne3"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:781:783": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 781,
-      "end_line": 783,
-      "code_lines": [
-        781,
-        782,
-        783
-      ],
-      "constants": [
-        "Sal.EmbedRGA.symLc_inj"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:226:226": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 226,
-      "end_line": 226,
-      "code_lines": [
-        226
-      ],
-      "constants": [
-        "Sal.EmbedRGA.symR_le"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:227:227": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 227,
-      "end_line": 227,
-      "code_lines": [
-        227
-      ],
-      "constants": [
-        "Sal.EmbedRGA.symR_ne3"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:771:773": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 771,
-      "end_line": 773,
-      "code_lines": [
-        771,
-        772,
-        773
-      ],
-      "constants": [
-        "Sal.EmbedRGA.symRc_inj"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:63:67": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 63,
-      "end_line": 67,
-      "code_lines": [
-        63,
-        64,
-        65,
-        66,
-        67
-      ],
-      "constants": [
-        "Sal.EmbedRGA.tagOK_head"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:267:302": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 267,
-      "end_line": 302,
-      "code_lines": [
-        270,
-        271,
-        272,
-        273,
-        274,
-        275,
-        276,
-        277,
-        278,
-        279,
-        280,
-        281,
-        282,
-        283,
-        284,
-        285,
-        286,
-        287,
-        288,
-        289,
-        290,
-        291,
-        292,
-        293,
-        294,
-        295,
-        296,
-        297,
-        298,
-        299,
-        300,
-        301,
-        302
-      ],
-      "constants": [
-        "Sal.EmbedRGA.tagOK_key"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:101:119": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 101,
-      "end_line": 119,
-      "code_lines": [
-        102,
-        103,
-        104,
-        105,
-        106,
-        107,
-        108,
-        109,
-        110,
-        111,
-        112,
-        113,
-        114,
-        115,
-        116,
-        117,
-        118,
-        119
-      ],
-      "constants": [
-        "Sal.EmbedRGA.tagOK_prefixFree"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean:69:81": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean",
-      "start_line": 69,
-      "end_line": 81,
-      "code_lines": [
-        69,
-        70,
-        71,
-        72,
-        73,
-        74,
-        75,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81
-      ],
-      "constants": [
-        "Sal.EmbedRGA.tagOK_symbols_le"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMaxIssuer.lean:174:184": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
-      "start_line": 174,
-      "end_line": 184,
-      "code_lines": [
-        174,
-        175,
-        176,
-        177,
-        178,
-        179,
-        180,
-        181,
-        182,
-        183,
-        184
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.canIssue_delete_iff"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMaxIssuer.lean:161:172": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
-      "start_line": 161,
-      "end_line": 172,
-      "code_lines": [
-        161,
-        162,
-        163,
-        164,
-        165,
-        166,
-        167,
-        168,
-        169,
-        170,
-        171,
-        172
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.canIssue_insert_iff"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMaxIssuer.lean:136:146": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
-      "start_line": 136,
-      "end_line": 146,
-      "code_lines": [
-        138,
-        139,
-        140,
-        141,
-        142,
-        143,
-        144,
-        145,
-        146
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.delete_position_finite"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMaxIssuer.lean:124:134": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMaxIssuer.lean",
-      "start_line": 124,
-      "end_line": 134,
-      "code_lines": [
-        126,
-        127,
-        128,
-        129,
-        130,
-        131,
-        132,
-        133,
-        134
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.insert_position_finite"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/Fugue.lean:393:418": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/Fugue.lean",
-      "start_line": 393,
-      "end_line": 418,
-      "code_lines": [
-        393,
-        394,
-        395,
-        396,
-        397,
-        398,
-        399,
-        400,
-        401,
-        402,
-        403,
-        404,
-        405,
-        406,
-        407,
-        408,
-        409,
-        410,
-        411,
-        412,
-        413,
-        414,
-        415,
-        416,
-        417,
-        418
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.foldl_maxKey_mem"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [
-        397
-      ],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:463:467": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 463,
-      "end_line": 467,
-      "code_lines": [
-        463,
-        464,
-        465,
-        466,
-        467
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mChainOf_eq_of_rec"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:469:479": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 469,
-      "end_line": 479,
-      "code_lines": [
-        469,
-        470,
-        471,
-        472,
-        473,
-        474,
-        475,
-        476,
-        477,
-        478,
-        479
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mChainOf_zero"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:1155:1163": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 1155,
-      "end_line": 1163,
-      "code_lines": [
-        1157,
-        1158,
-        1159,
-        1160,
-        1161,
-        1162,
-        1163
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_none"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:1174:1182": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 1174,
-      "end_line": 1182,
-      "code_lines": [
-        1174,
-        1175,
-        1176,
-        1177,
-        1178,
-        1179,
-        1180,
-        1181,
-        1182
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_someFalse"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:1165:1172": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 1165,
-      "end_line": 1172,
-      "code_lines": [
-        1165,
-        1166,
-        1167,
-        1168,
-        1169,
-        1170,
-        1171,
-        1172
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mGenInsAfter_someTrue"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:220:225": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 220,
-      "end_line": 225,
-      "code_lines": [
-        220,
-        221,
-        222,
-        223,
-        224,
-        225
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mKeys_shape"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:450:461": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 450,
-      "end_line": 461,
-      "code_lines": [
-        450,
-        451,
-        452,
-        453,
-        454,
-        455,
-        456,
-        457,
-        458,
-        459,
-        460,
-        461
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.mRecOfId_of_minted"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:212:218": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 212,
-      "end_line": 218,
-      "code_lines": [
-        212,
-        213,
-        214,
-        215,
-        216,
-        217,
-        218
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.succCandM_sub"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:246:248": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 246,
-      "end_line": 248,
-      "code_lines": [
-        246,
-        247,
-        248
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.succOfM_mem"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Instances/FugueMax.lean:227:244": {
-      "category": "retained_helper",
-      "file": "Sal/MRDTs/Instances/FugueMax.lean",
-      "start_line": 227,
-      "end_line": 244,
-      "code_lines": [
-        228,
-        229,
-        230,
-        231,
-        232,
-        233,
-        234,
-        235,
-        236,
-        237,
-        238,
-        239,
-        240,
-        241,
-        242,
-        243,
-        244
-      ],
-      "constants": [
-        "Sal.MRDTs.Instances.SidedEmbedRGA.succOfM_pair"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
     "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean:62:69": {
       "category": "shared_framework",
       "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
@@ -21656,14 +20077,234 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:92:93": {
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:11:21": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+      "start_line": 11,
+      "end_line": 21,
+      "code_lines": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Description"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:11:11": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+      "start_line": 11,
+      "end_line": 11,
+      "code_lines": [
+        11
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Description.mk"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:35:47": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+      "start_line": 35,
+      "end_line": 47,
+      "code_lines": [
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Equations"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:49:120": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+      "start_line": 49,
+      "end_line": 120,
+      "code_lines": [
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Equations.kit"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:35:35": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+      "start_line": 35,
+      "end_line": 35,
+      "code_lines": [
+        35
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Equations.mk"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:29:33": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+      "start_line": 29,
+      "end_line": 33,
+      "code_lines": [
+        29,
+        30,
+        31,
+        32,
+        33
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.mergeList"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean:23:27": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+      "start_line": 23,
+      "end_line": 27,
+      "code_lines": [
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.updateList"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:62:63": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 92,
-      "end_line": 93,
+      "start_line": 62,
+      "end_line": 63,
       "code_lines": [
-        92,
-        93
+        62,
+        63
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedFugue.ChainFacts"
@@ -21674,34 +20315,14 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:264:267": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:227:228": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 264,
-      "end_line": 267,
+      "start_line": 227,
+      "end_line": 228,
       "code_lines": [
-        264,
-        265,
-        266,
-        267
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.adapter"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:274:275": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 274,
-      "end_line": 275,
-      "code_lines": [
-        274,
-        275
+        227,
+        228
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedFugue.automated_vcs"
@@ -21712,12 +20333,104 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:106:171": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:27:37": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 106,
-      "end_line": 171,
+      "start_line": 27,
+      "end_line": 37,
       "code_lines": [
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.description"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:39:57": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "start_line": 39,
+      "end_line": 57,
+      "code_lines": [
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.equations"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:78:125": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "start_line": 78,
+      "end_line": 125,
+      "code_lines": [
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
         106,
         107,
         108,
@@ -21737,8 +20450,59 @@
         122,
         123,
         124,
-        125,
-        126,
+        125
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.generated_chain"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:222:224": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "start_line": 222,
+      "end_line": 224,
+      "code_lines": [
+        222,
+        223,
+        224
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.input"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:15:15": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "start_line": 15,
+      "end_line": 15,
+      "code_lines": [
+        15
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.insertion"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:127:200": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "start_line": 127,
+      "end_line": 200,
+      "code_lines": [
         127,
         128,
         129,
@@ -21783,59 +20547,8 @@
         168,
         169,
         170,
-        171
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.generated_chain"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:269:271": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 269,
-      "end_line": 271,
-      "code_lines": [
-        269,
-        270,
-        271
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.input"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:13:13": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 13,
-      "end_line": 13,
-      "code_lines": [
-        13
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.insertion"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:173:242": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 173,
-      "end_line": 242,
-      "code_lines": [
+        171,
+        172,
         173,
         174,
         175,
@@ -21863,8 +20576,24 @@
         197,
         198,
         199,
-        200,
-        201,
+        200
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.issuanceModel"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": [],
+      "required_source_annotation": true
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:202:215": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "start_line": 202,
+      "end_line": 215,
+      "code_lines": [
         202,
         203,
         204,
@@ -21878,69 +20607,7 @@
         212,
         213,
         214,
-        215,
-        216,
-        217,
-        218,
-        219,
-        220,
-        221,
-        222,
-        223,
-        224,
-        225,
-        226,
-        227,
-        228,
-        229,
-        230,
-        231,
-        232,
-        233,
-        234,
-        235,
-        236,
-        237,
-        238,
-        239,
-        240,
-        241,
-        242
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.issuanceModel"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:244:262": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 244,
-      "end_line": 262,
-      "code_lines": [
-        244,
-        245,
-        246,
-        247,
-        248,
-        249,
-        250,
-        251,
-        252,
-        253,
-        254,
-        255,
-        256,
-        257,
-        258,
-        259,
-        260,
-        261,
-        262
+        215
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedFugue.issuer"
@@ -21951,52 +20618,30 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:25:90": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:59:60": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 25,
-      "end_line": 90,
+      "start_line": 59,
+      "end_line": 60,
       "code_lines": [
-        25,
-        26,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
         59,
-        60,
-        61,
-        62,
-        63,
-        64,
+        60
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.kit"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:65:76": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "start_line": 65,
+      "end_line": 76,
+      "code_lines": [
         65,
         66,
         67,
@@ -22008,47 +20653,7 @@
         73,
         74,
         75,
-        76,
-        77,
-        78,
-        79,
-        80,
-        81,
-        82,
-        83,
-        84,
-        85,
-        86,
-        87,
-        88,
-        89,
-        90
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.kit"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:95:104": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 95,
-      "end_line": 104,
-      "code_lines": [
-        95,
-        96,
-        97,
-        98,
-        99,
-        100,
-        101,
-        102,
-        103,
-        104
+        76
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedFugue.lookup_chain"
@@ -22059,36 +20664,13 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:17:23": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:17:17": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
       "start_line": 17,
-      "end_line": 23,
+      "end_line": 17,
       "code_lines": [
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23
-      ],
-      "constants": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.provenance_step"
-      ],
-      "consumers": [
-        "fugue-max"
-      ],
-      "induction_syntax_lines": [],
-      "explicit_recursor_lines": []
-    },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:15:15": {
-      "category": "instance",
-      "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 15,
-      "end_line": 15,
-      "code_lines": [
-        15
+        17
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedFugue.target"
@@ -22099,13 +20681,13 @@
       "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:14:14": {
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean:16:16": {
       "category": "instance",
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "start_line": 14,
-      "end_line": 14,
+      "start_line": 16,
+      "end_line": 16,
       "code_lines": [
-        14
+        16
       ],
       "constants": [
         "Sal.MRDTs.Paper1.Automation.AutomatedFugue.written"
@@ -22204,6 +20786,34 @@
       "induction_syntax_lines": [
         40
       ],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean:34:48": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean",
+      "start_line": 34,
+      "end_line": 48,
+      "code_lines": [
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.CertifiedIssuance.creator_of_mint"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
       "explicit_recursor_lines": []
     },
     "Sal/MRDTs/Paper1/Automation/GenericCertifiedIssuance.lean:59:65": {
@@ -22307,6 +20917,813 @@
         71
       ],
       "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean:26:37": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean",
+      "start_line": 26,
+      "end_line": 37,
+      "code_lines": [
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.FiniteLookup.fold_choice"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [
+        30
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean:7:16": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean",
+      "start_line": 7,
+      "end_line": 16,
+      "code_lines": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.FiniteLookup.marked_lookup"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean:39:47": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean",
+      "start_line": 39,
+      "end_line": 47,
+      "code_lines": [
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.FiniteLookup.selected_id"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean:18:24": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean",
+      "start_line": 18,
+      "end_line": 24,
+      "code_lines": [
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.FiniteLookup.zero_lookup"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:39:69": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 39,
+      "end_line": 69,
+      "code_lines": [
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.FugueCodes.blockCode"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:123:130": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 123,
+      "end_line": 130,
+      "code_lines": [
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.FugueCodes.coordinate_injective"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:85:121": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 85,
+      "end_line": 121,
+      "code_lines": [
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.FugueCodes.key_tag"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:8:19": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 8,
+      "end_line": 19,
+      "code_lines": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.cancel"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:43:64": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 43,
+      "end_line": 64,
+      "code_lines": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.encode_prefix_reflect"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:29:35": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 29,
+      "end_line": 35,
+      "code_lines": [
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.fixedWidth"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:21:27": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 21,
+      "end_line": 27,
+      "code_lines": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.map"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:82:99": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 82,
+      "end_line": 99,
+      "code_lines": [
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.product"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:113:122": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 113,
+      "end_line": 122,
+      "code_lines": [
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.relabel"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:124:155": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 124,
+      "end_line": 155,
+      "code_lines": [
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.sum"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:66:80": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 66,
+      "end_line": 80,
+      "code_lines": [
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.Code.words"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:7:13": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
+      "start_line": 7,
+      "end_line": 13,
+      "code_lines": [
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.TerminatedTag"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:19:30": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
+      "start_line": 19,
+      "end_line": 30,
+      "code_lines": [
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.TerminatedTag.allSymbols"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:15:17": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
+      "start_line": 15,
+      "end_line": 17,
+      "code_lines": [
+        15,
+        16,
+        17
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.TerminatedTag.nonempty"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:50:69": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
+      "start_line": 50,
+      "end_line": 69,
+      "code_lines": [
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.TerminatedTag.prefixFree"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean:101:111": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+      "start_line": 101,
+      "end_line": 111,
+      "code_lines": [
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.encode_all"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [
+        105
+      ],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean:32:48": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
+      "start_line": 32,
+      "end_line": 48,
+      "code_lines": [
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.PrefixCodes.marker_terminated_prefixFree"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean:7:29": {
+      "category": "shared_framework",
+      "file": "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean",
+      "start_line": 7,
+      "end_line": 29,
+      "code_lines": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "constants": [
+        "Sal.MRDTs.Paper1.Automation.append_delta_valid"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:71:83": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 71,
+      "end_line": 83,
+      "code_lines": [
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83
+      ],
+      "constants": [
+        "_private.Sal.MRDTs.Paper1.Automation.FugueCodePrimitives.0.Sal.MRDTs.Paper1.Automation.FugueCodes.blockSymbols"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:8:12": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 8,
+      "end_line": 12,
+      "code_lines": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "constants": [
+        "_private.Sal.MRDTs.Paper1.Automation.FugueCodePrimitives.0.Sal.MRDTs.Paper1.Automation.FugueCodes.deltaCode"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:31:37": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 31,
+      "end_line": 37,
+      "code_lines": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37
+      ],
+      "constants": [
+        "_private.Sal.MRDTs.Paper1.Automation.FugueCodePrimitives.0.Sal.MRDTs.Paper1.Automation.FugueCodes.fwSymbols"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:14:18": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 14,
+      "end_line": 18,
+      "code_lines": [
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "constants": [
+        "_private.Sal.MRDTs.Paper1.Automation.FugueCodePrimitives.0.Sal.MRDTs.Paper1.Automation.FugueCodes.symbolCode"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:23:29": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 23,
+      "end_line": 29,
+      "code_lines": [
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "constants": [
+        "_private.Sal.MRDTs.Paper1.Automation.FugueCodePrimitives.0.Sal.MRDTs.Paper1.Automation.FugueCodes.tagCode"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
+    },
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean:20:21": {
+      "category": "instance",
+      "file": "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+      "start_line": 20,
+      "end_line": 21,
+      "code_lines": [
+        20,
+        21
+      ],
+      "constants": [
+        "_private.Sal.MRDTs.Paper1.Automation.FugueCodePrimitives.0.Sal.MRDTs.Paper1.Automation.FugueCodes.tagSymbols"
+      ],
+      "consumers": [
+        "fugue-max"
+      ],
+      "induction_syntax_lines": [],
+      "explicit_recursor_lines": []
     }
   },
   "commands": [
@@ -22393,7 +21810,7 @@
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean",
-      "line": 30,
+      "line": 26,
       "text": "register_mrdt_input input",
       "scope": "Sal.MRDTs.Paper1.Automation.AutomatedCore",
       "kind": "instance_registration_or_annotation",
@@ -22404,7 +21821,7 @@
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
-      "line": 272,
+      "line": 225,
       "text": "register_mrdt_input input",
       "scope": "Sal.MRDTs.Paper1.Automation.AutomatedFugue",
       "kind": "instance_registration_or_annotation",
@@ -22414,7 +21831,7 @@
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "line": 257,
+      "line": 243,
       "text": "register_mrdt_input input",
       "scope": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded",
       "kind": "instance_registration_or_annotation",
@@ -22426,7 +21843,7 @@
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
-      "line": 278,
+      "line": 264,
       "text": "register_mrdt_input input",
       "scope": "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided",
       "kind": "instance_registration_or_annotation",
@@ -22696,7 +22113,6 @@
       "consumers": [
         "anchored-queue-paper-variant",
         "embed-rga",
-        "fugue-max",
         "peritext-embed-rga"
       ]
     },
@@ -22713,6 +22129,30 @@
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+      "line": 13,
+      "text": "Sal.MRDTs.Paper1.Automation.SidedPrimitives.insertion",
+      "kind": "concrete_helper_registration",
+      "consumers": [
+        "fugue-max",
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+      "line": 14,
+      "text": "Sal.MRDTs.Paper1.Automation.SidedPrimitives.merging",
+      "kind": "concrete_helper_registration",
+      "consumers": [
+        "fugue-max",
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
       "line": 10,
       "text": "attribute [ordered_algorithm_simps, ordered_generic_simps, aesop (rule_sets := [OrderedGeneric]) norm simp]",
       "kind": "concrete_helper_registration",
@@ -22720,16 +22160,7 @@
         "anchored-queue-paper-variant",
         "embed-rga",
         "fugue-max",
-        "peritext-embed-rga"
-      ]
-    },
-    {
-      "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
-      "line": 20,
-      "text": "mem_eInsert mem_eMerge2 mem_sInsert mem_sMerge2 List.mem_toFinset",
-      "kind": "concrete_helper_registration",
-      "consumers": [
-        "fugue-max",
+        "peritext-embed-rga",
         "sided-embed-rga",
         "sided-peritext-core",
         "sided-peritext-rich-core"
@@ -22737,49 +22168,25 @@
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
-      "line": 19,
-      "text": "attribute [ordered_record_simps, aesop (rule_sets := [OrderedRecord]) norm simp]",
-      "kind": "concrete_helper_registration",
-      "consumers": [
-        "fugue-max",
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ]
-    },
-    {
-      "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
-      "line": 22,
-      "text": "eInsert_sorted eMerge_sorted esorted_ext sInsert_sorted sMerge_sorted ssorted_ext List.Pairwise.filter",
-      "kind": "concrete_helper_registration",
-      "consumers": [
-        "fugue-max",
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ]
-    },
-    {
-      "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
-      "line": 21,
-      "text": "attribute [aesop (rule_sets := [OrderedRecord]) safe apply]",
-      "kind": "concrete_helper_registration",
-      "consumers": [
-        "fugue-max",
-        "sided-embed-rga",
-        "sided-peritext-core",
-        "sided-peritext-rich-core"
-      ]
-    },
-    {
-      "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
-      "line": 39,
+      "line": 41,
       "text": "attribute [ordered_order] Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.order",
       "kind": "concrete_helper_registration",
       "consumers": [
         "anchored-queue-paper-variant",
         "embed-rga",
         "peritext-embed-rga"
+      ]
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
+      "line": 42,
+      "text": "attribute [ordered_order] Sal.MRDTs.Paper1.Automation.SidedPrimitives.order",
+      "kind": "concrete_helper_registration",
+      "consumers": [
+        "fugue-max",
+        "sided-embed-rga",
+        "sided-peritext-core",
+        "sided-peritext-rich-core"
       ]
     }
   ],
@@ -22883,23 +22290,25 @@
     "Sal/MRDTs/Instances/RGAKernel/EmbedState.lean": "b1f14c4d82cd4f5d6b3a58930a7df5c3f61d9aff3358b22a4866fbd6b5d6d828",
     "Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean": "d510dcc0a9f7172c2fdc0d62d863d1d04cdca5f235f1e51fcdf5220fde01d6b0",
     "Sal/MRDTs/Instances/EmbedRGA.lean": "cecd02c8445a3c1157a61dfadd34c97d4bb1c9fd20a5ff82be31f99e37ee18b4",
-    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean": "40b085101a6a77894fb5d0cbfc2ca18ce1cad280c947e643b168553952031239",
+    "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean": "86e981d5efe0e160b24b3335dd073e1cfe091c994d58ad1dc902fb2849495ec6",
     "Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean": "249db8e1b88d4758757d799a2c3bb65814e0046d1dc5986c7cb1fb6dd86561d4",
     "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean": "5a3fedb3397fa2b95fe65dcf9ab990fcf2e388a4279a95546745e11e59615a17",
     "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean": "ec2db1d3f4a14bc6ab5442f70f91b0dd20dff1db49815b43c7ca19290cf09b34",
-    "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean": "97b66e13ccec9e91452e231a4a1e0ebd7c760f857b6a37f83159106dd4008e2c",
+    "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean": "ace81fe0e25be4aa9f411bff108008008281794e37c1e013b2abd02e60ecd889",
     "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean": "6e02cccfc3eebf8d0d4f4a1d11ee0154a890fe972980beef80966799d00e998d",
     "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean": "35e91637cc7068269cde1b36089a1a0aa9292075b781983ee79479f5725782ed",
     "Sal/MRDTs/Paper1/CertifiedRGAVCReplay.lean": "7821da2c68fb905ff0089bcd220ff5455275b27597e3b2a2c9033c4b391eeed0",
     "Sal/MRDTs/Paper1/CertifiedRGASidedVC.lean": "2909a7d8f59a7c814983898161dab53b2bed0915ac09482ba3f23eca3e5391aa",
     "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean": "6a1899ba9002e6dfd55a379c957c420a6d9fc6bfa4fd57db6fce69d4dcf120d7",
     "Sal/MRDTs/Instances/SidedEmbedRGA.lean": "72e65e82f06a4bc80f59b0b80be18ecd3e78c366b4ec38f1bd4d1e1865c4adcb",
+    "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean": "5be8fbb91c9d8c00cc49de495e7b8f4074c50cbf678115a490e475c2b9b668e2",
+    "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean": "8eb6e6e5f26bd953177ab38da9d53a3d4fc4bb792e7808e6144aa1680720e2c8",
     "Sal/MRDTs/Paper1/CertifiedPeritextVC.lean": "355d57fc7f586bcf64f6452253a78c41333734a277b8c31a9cb5af0a9d4a8b5b",
     "Sal/MRDTs/Instances/Peritext.lean": "650a0527c972a6f68083cc509625ccc9f60016e559dcb10c1dcab96cd81df84e",
     "Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean": "31a430d6e6b632ff8e6458b6273c2315c86b9bc5a454f8f489aefa77769cb2aa",
     "Sal/MRDTs/Instances/PeritextRender.lean": "515f2ed726222fbb8e1c537db7f1da1546989bd84f0f3d06384c8a5f47ace912",
     "Sal/MRDTs/Instances/SidedPeritext.lean": "8dea5cc11ffcc78441f5a6e9cc8b8c87187cb81b7dc8be39839dd946241c4f06",
-    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean": "aa5b1b8f2217126991720b894f85f3a4cfc95a16a13dce09e1bcb6d203a3f88d",
+    "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean": "249e0fb81773c12b99934ac40646e075baf4b44f55133a7051dbc551748945b1",
     "Sal/MRDTs/Paper1/CertifiedRGACoreVC.lean": "bb25fb07e5f7c730ce76dc302ae7272e1389b27dcb611e8215746976e04794a6",
     "Sal/MRDTs/Paper1/CertifiedRGARichVC.lean": "62b47242c0db89c3b1d2e081091390ab08b1b1cf774f1be99be8dac13d7843bb",
     "Sal/MRDTs/Paper1/Automation/AutomatedRichCore.lean": "bd1bff0ffc1d85870eb88e822249e7e1b061b2a24dcef24cb0961292083e23ba",
@@ -22911,10 +22320,17 @@
     "Sal/MRDTs/Instances/FugueMaxImplementation.lean": "c0acafde2a2c67ed202360bfc4c3da89e92952314c7d6ca94bb8d81c64ce704f",
     "Sal/MRDTs/Instances/FugueMax.lean": "a29542e3d35360e8950869f7170645f602ed77679ae6552c5545e6f0e42e6f97",
     "Sal/MRDTs/Instances/Fugue.lean": "c2071799d0a759f1a693461e2ad08829890cf624d17f57073bb2753b3d2d90f7",
-    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean": "d2a4828b431e982fb596f825f3ad2cb495c005ac46ffc4f5f5853dd8754c6ebb",
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean": "f1f3fde512675086334fe7e2d26adf741f757e870064672521f92bf44f2aeb0a",
+    "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean": "9f27b7be6675cb08873b7ddfe1a72d5fad656bfd0085c343726ac868c56eb335",
     "Sal/MRDTs/Paper1/Automation/GenericCertifiedIssuance.lean": "92700e5b9081f29b9c233f2dd662d3a2acd3f2ab1cfb12387ccbfed43d1f43d4",
+    "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean": "ad31405125fc5d5fe7b9a3c61428b1506d5bb1629d45a1794f51fecfe182c8ae",
+    "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean": "cc3989f1c92ed750987bb24c23c1d3b09121fa5ce4b170d0707206f6b8e36def",
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean": "e5a616eff3a6492b4d380777a2dc14e162b29e11a30d1fa0da778630c737c3ce",
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean": "9b18c9c0e34842e7286d733e98a6c5f23a5f22920c0e4e72b8ec92c8e397d3e1",
+    "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean": "89bfba34509565d8c85f37f9eecf958c35a748950850f1d1047ef93fd0ea5631",
     "Sal/MRDTs/Paper1/CertifiedFugueVCReplay.lean": "b46b5b2b9d74067ef8532e862cae3a433e382e68e97eb6381523fd920f49cf78",
-    "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean": "d03f2f18205266202ec874244ec184c71c7097ab1ec708bb899f29447c830d29",
+    "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean": "580e0de58eafdcbef10f8d63acc95352021e2d854f9bfba3e879b03f56eee8df",
+    "Sal/MRDTs/Paper1/Automation/ArchivedInputDerivation.lean": "5a183d140c8cdac4804f6d7c2a0527f14e2216b2227db4fa55cec9b3873d173e",
     "Sal/MRDTs/Paper1/Automation/CommonAlgebraAutomation.lean": "da92ced9daadf36396f6e3186381ee425d05677cdab3f3dacdc86f2009d02c03",
     "Sal/MRDTs/Paper1/Automation/CommonVerificationRules.lean": "1aa8656da7d2240af78c6fb74282802b034587308aaeab5978f9f30ef985776e",
     "Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean": "e2cea4518c95b7a53b417bd6a1d4d77d60921b1f59ff163c2ccab7e38ed72486",
@@ -22925,5 +22341,5 @@
     "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean": "3e5cf8ae008b7d750988191bac41aaa4838aafaaa216ae8c0325fabe59d76b65",
     "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean": "54a91177bee4724f1b7dfce5d05cd3a9a1336855a96b8fb6d32e76bf8c01f0b0"
   },
-  "audit_sha256": "0bc1e51fa71745736917ff91bb207978c3fd427fc575ec399f763518a8585f2d"
+  "audit_sha256": "e825b2154866af315c16dbb6437fb888a4bd4b7d16c46dfc41d9535e38aee704"
 }

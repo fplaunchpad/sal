@@ -1,5 +1,5 @@
 import Sal.MRDTs.Paper1.Automation.EmbeddedOrderedPrimitives
-import Sal.MRDTs.Instances.SidedEmbedRGA
+import Sal.MRDTs.Paper1.Automation.SidedOrderedPrimitives
 import Sal.MRDTs.Paper1.Automation.OrderedRecordRules
 
 /-! Explicit helper selection registry for finite raw ordered-record goals.
@@ -10,6 +10,8 @@ open Sal.MRDTs.Instances.EmbedRGA Sal.MRDTs.Instances.SidedEmbedRGA
 attribute [ordered_algorithm_simps, ordered_generic_simps, aesop (rule_sets := [OrderedGeneric]) norm simp]
   Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.insertion
   Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.merging
+  Sal.MRDTs.Paper1.Automation.SidedPrimitives.insertion
+  Sal.MRDTs.Paper1.Automation.SidedPrimitives.merging
 attribute [ordered_generic_simps, aesop (rule_sets := [OrderedGeneric]) norm simp]
   Sal.MRDTs.Paper1.Automation.OrderedLists.mem_insert
   Sal.MRDTs.Paper1.Automation.OrderedLists.mem_merge2
@@ -37,6 +39,7 @@ macro "ordered_record" : tactic => `(tactic| (aesop (rule_sets := [OrderedRecord
 macro "ordered_record_simp" : tactic => `(tactic| try simp only [ordered_record_simps, List.mem_filter, decide_eq_true_eq])
 
 attribute [ordered_order] Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.order
+attribute [ordered_order] Sal.MRDTs.Paper1.Automation.SidedPrimitives.order
 
 open Lean Elab Tactic in
 elab "ordered_apply" : tactic => do

@@ -504,7 +504,7 @@
     },
     "sided-embed-rga": {
       "baseline_combined_lines": 773,
-      "current_combined_lines": 424,
+      "current_combined_lines": 67,
       "baseline_shared_framework_lines": 28,
       "declaration_keys": [
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
@@ -630,7 +630,7 @@
     },
     "sided-peritext-core": {
       "baseline_combined_lines": 872,
-      "current_combined_lines": 430,
+      "current_combined_lines": 74,
       "baseline_shared_framework_lines": 113,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Product.lean:131:135",
@@ -719,7 +719,7 @@
     },
     "sided-peritext-rich-core": {
       "baseline_combined_lines": 882,
-      "current_combined_lines": 434,
+      "current_combined_lines": 78,
       "baseline_shared_framework_lines": 113,
       "declaration_keys": [
         "Sal/MRDTs/Framework/Product.lean:131:135",
@@ -873,7 +873,7 @@
     },
     "fugue-max": {
       "baseline_combined_lines": 3377,
-      "current_combined_lines": 959,
+      "current_combined_lines": 322,
       "baseline_shared_framework_lines": 28,
       "declaration_keys": [
         "Sal/MRDTs/Framework/ReplayLaws.lean:643:652",
@@ -1094,7 +1094,7 @@
     "baseline_datatype_proof_lines": 5896,
     "baseline_wrapper_call_lines": 27,
     "baseline_excluded_shared_framework_lines": 353,
-    "current_combined_lines": 1502
+    "current_combined_lines": 704
   },
   "declarations": {
     "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean:1352:1360": {
@@ -14795,5 +14795,5 @@
     "Named-case rows overlap; only campaign union is additive.",
     "Old commuting callers are measured from actual original call lines, while proof terms specialize their old law-bundle assembler."
   ],
-  "current_effort_sha256": "c3a54bcae5b3e77ad146e6e4255044502e3e96b9bc7f58cb77e168fd970b8943"
+  "current_effort_sha256": "49561c5fe33254170ceb5174affce4e3b0421ddb40ee254feb44088fd3db7601"
 }

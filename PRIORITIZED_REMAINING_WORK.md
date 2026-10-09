@@ -6,6 +6,41 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: derive Sided RGA, Core/RichCore and Fugue certificates
+
+Research question: can the shared list, ordering and prefix-code machinery
+generalize to the remaining sequence families, including archived records and
+certified issuance, without datatype-specific tactic branches?
+
+- [x] Generate Sided RGA finite laws and evidence projections, and reuse them
+  through the unchanged Core/RichCore product and query transports.
+- [x] Derive recurring Fugue archive, coordinate and issuance facts through
+  reusable templates, reducing all required datatype-specific proofs.
+- [x] Preserve implementations, policies, specifications, certification
+  assumptions and theorem statements; retain existing sequential bridges and
+  Fugue's checked sequential-bridge obstruction.
+- [x] Independently audit preservation, actual production dependencies and
+  failure controls; count every required helper and annotation.
+- [x] Update documentation, verify both repository gates, then commit and push.
+
+Against `7e7ec86`, required datatype footprints fall from 424 to 67 lines for
+Sided RGA, 430 to 74 for Core, 434 to 78 for RichCore, and 959 to 322 for
+Fugue. These totals include every required concrete helper and annotation.
+Shared list/order and compositional prefix-code laws replace the old native
+helper dependencies. Fugue's archive template derives its finite kit from raw
+projection equations; generic lookup, chain-extension and creator lemmas
+replace recurring issuance arguments. Its remaining author proofs connect
+the raw issuer and encoding to those interfaces. No sequential bridge changes.
+
+The production audit passes all 23 cases, 69 endpoints and 95 proof roots,
+checks 323 source hashes and excludes the old Sided/Fugue helper paths.
+Preservation checks pass 234, 103, 47 and 44 declarations against the four
+fixed baselines. Kernel controls pin the generated semantic maps, and negative
+controls reject altered maps, cached proof dispatch, colliding codes and
+malformed tags. Both repository gates pass, including 187 runtime tests and
+569 benchmark records. The formal reference's 99 declarations check and its
+updated 22-page PDF is visually verified.
+
 ### Checked: derive Embedded RGA and anchored Queue certificates
 
 Research question: can implementation descriptions and existing certified

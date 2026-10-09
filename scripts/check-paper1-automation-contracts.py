@@ -14,6 +14,7 @@ import subprocess
 from pathlib import Path
 
 BASELINE = 'e89cd6d'
+SIDED_BASELINE = '7e7ec86'
 ROOT = Path(__file__).resolve().parents[1]
 CERTIFICATES = {
     'Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.' + n + '.conditions'
@@ -49,6 +50,43 @@ ORDERED_PROOFS = {
     'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.issuer',
     'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.input',
 }
+
+SIDED_KIT = 'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.kit'
+FUGUE_KIT = 'Sal.MRDTs.Paper1.Automation.AutomatedFugue.kit'
+ARCHIVED_DATA_FIELDS = ('archive', 'archive_written', 'archive_add') + ORDERED_DATA_FIELDS
+ISSUANCE_MODEL = 'Sal.MRDTs.Paper1.Automation.AutomatedFugue.issuanceModel'
+ISSUANCE_DATA_FIELDS = ('archive', 'live', 'record', 'written', 'insertion', 'marked',
+                        'stamp', 'id', 'valid', 'guard', 'target')
+SIDED_PROOFS = ORDERED_PROOFS | {
+    'Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.' + n
+    for n in ('issuer', 'input')
+} | {
+    'Sal.MRDTs.Paper1.Automation.AutomatedFugue.' + n
+    for n in ('issuer', 'input', 'adapter')
+} | {
+    'Sal.MRDTs.Paper1.Automation.AutomatedCore.input',
+    'Sal.MRDTs.Paper1.Automation.AutomatedRichCore.rich_input',
+}
+
+def kit_data(body, fields):
+    result = {}
+    for field in fields:
+        matches = list(re.finditer(r'\b' + field + r' := (.*?)(?= \w+ :=|$)', body))
+        if len(matches) != 1:
+            return None
+        result[field] = matches[0][1].strip()
+    return result
+
+def archived_description_data(body):
+    """Recognize the exact live-list adapter to the unchanged archived Kit."""
+    fields = ('live', 'archive', 'archive_written', 'insertion', 'id', 'Key',
+              'key', 'lt', 'written', 'target')
+    data = kit_data(body, fields)
+    if data is None or data['live'] != 'State.live' or data['lt'] != 'fun p q=>keyLt (sKey p.2.2) (sKey q.2.2)':
+        return None
+    return {**{f: data[f] for f in ('archive', 'archive_written', 'id', 'Key', 'key', 'insertion', 'written', 'target')},
+            'archive_add': data['insertion'], 'carrier': 'fun s=>s.live.toFinset',
+            'ordered': 'fun s=>SSorted s.live'}
 
 def ordered_data(body):
     """Extract precisely the eight source data assignments, not proof fields."""
@@ -140,7 +178,7 @@ def declarations(text):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--baseline', choices=(BASELINE, '7880732', 'ffec6e9'), default=BASELINE,
+    parser.add_argument('--baseline', choices=(BASELINE, '7880732', 'ffec6e9', SIDED_BASELINE), default=BASELINE,
                         help='Fixed production migration or OR-set derivation baseline.')
     parser.add_argument('--output', type=Path,
                         default=ROOT / 'experiments/vc-automation/results/production-contracts.json')
@@ -178,7 +216,27 @@ def main():
                     record['proof_changes'].append(name)
                 elif (baseline == '7880732' and name in ORSET_PROOFS) or (baseline in ('7880732', 'ffec6e9') and name in ORDERED_PROOFS):
                     record['proof_definition_changes'].append(name)
-                elif baseline in ('7880732', 'ffec6e9') and name == ORDERED_KIT:
+                elif baseline in ('7880732', 'ffec6e9', SIDED_BASELINE) and name in SIDED_PROOFS:
+                    record['proof_definition_changes'].append(name)
+                elif baseline in ('7880732', 'ffec6e9', SIDED_BASELINE) and name == ISSUANCE_MODEL:
+                    old_data = kit_data(before['body'].split(' initial_archive :=', 1)[0], ISSUANCE_DATA_FIELDS)
+                    new_data = kit_data(after['body'].split(' initial_archive :=', 1)[0], ISSUANCE_DATA_FIELDS)
+                    if old_data is None or old_data != new_data:
+                        reason = 'changed issuance-model semantic data'
+                    else:
+                        record['preserved_data_descriptions'].append(name)
+                elif baseline in ('7880732', 'ffec6e9', SIDED_BASELINE) and name in (SIDED_KIT, FUGUE_KIT):
+                    fields = ARCHIVED_DATA_FIELDS if name == FUGUE_KIT else ORDERED_DATA_FIELDS
+                    description_name = name.rsplit('.', 1)[0] + '.description'
+                    description = current.get(description_name)
+                    old_data = kit_data(before['body'], fields)
+                    new_data = (archived_description_data(description['body']) if name == FUGUE_KIT and description
+                                else kit_data(description['body'] if description else after['body'], fields))
+                    if old_data is None or old_data != new_data:
+                        reason = 'changed Type-valued kit semantic data'
+                    else:
+                        record['preserved_data_descriptions'].append(name)
+                elif baseline in ('7880732', 'ffec6e9', SIDED_BASELINE) and name == ORDERED_KIT:
                     description = current.get(ORDERED_DESCRIPTION)
                     old_data = ordered_data(before['body'])
                     new_data = ordered_data(description['body']) if description else None

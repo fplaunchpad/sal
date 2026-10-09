@@ -94,12 +94,15 @@ are proved once, with birth freshness, deletion coverage, common membership
 and newborn freshness derived from issuance/replay evidence. The author
 supplies implementation/representation laws: six for immutable records (MVR),
 ten for ordered records (Embedded/Sided RGA, Peritext and Queue), or thirteen
-for archived ordered records (Fugue). Embedded RGA’s ten fields are constructed
-by the shared frontend rather than supplied as separate datatype proofs. These are **interface laws, not
+for archived ordered records (Fugue). Embedded and Sided RGA’s ten fields are constructed
+by the shared frontend. Fugue’s thirteen fields are derived from an archived
+list description and ten finite implementation obligations. These are **interface laws, not
 Neem-style expanded merge VCs**. Core reuses the ordered-record laws through a
 product template; RichCore adds no merge-law obligation through query transport.
-Fugue also uses nine auxiliary issuance-model laws to derive its issuer
-evidence. Independent sequential-specification bridges are outside all these
+Fugue supplies nine finite issuance-model laws, derived from raw issuer
+definitions and generic lookup, chain and minting arguments. Its coordinate
+injection and tag validity follow from generic code composition with concrete
+fixed-width, alphabet and raw-equation certificates. Independent sequential-specification bridges are outside all these
 counts.
 
 ## Current production evidence
@@ -117,7 +120,8 @@ current RDT-specific proof code. The main total includes the finite inputs,
 annotations, automation calls, and all required datatype helper proofs already
 present in the repository. Compatibility helper statements retained solely to
 preserve the public API are excluded when the production input bypasses them;
-the dependency audit checks this for both OR-sets and the Embedded route.
+the dependency audit checks this for both OR-sets, the Embedded and Sided routes,
+and Fugue.
 Embedded RGA requires **60 lines**: 55 datatype input, mapping and equation
 certificate lines plus 5 annotation/invocation lines, with no retained datatype
 helper theorems. Anchored Queue requires **69 lines**, including 7 unary-code
@@ -156,27 +160,27 @@ existing production roots**. These include aliases and family specializations.
 | Efficient OR-set | 234 | 26 |
 | MVR | 148 | 17 |
 | Embedded RGA | 726 | 60 |
-| Sided Embedded RGA | 773 | 424 |
+| Sided Embedded RGA | 773 | 67 |
 | Peritext Embedded RGA | 726 | 60 |
-| Sided Peritext Core | 872 | 430 |
-| Sided Peritext RichCore | 882 | 434 |
+| Sided Peritext Core | 872 | 74 |
+| Sided Peritext RichCore | 882 | 78 |
 | Queue (anchored enqueue) | 761 | 69 |
-| FugueMax | 3377 | 959 |
+| FugueMax | 3377 | 322 |
 
 Across all 23 cases, the estimated RDT-specific footprint falls from **5,923
-to 1,502 distinct lines**, counting each shared source line once. The
+to 704 distinct lines**, counting each shared source line once. The
 [historical comparison](results/manual-effort.json) records the baseline
 proof dependencies, source hashes and counting decisions. These are the costs
 of the checked proof routes, not lower bounds on what a shorter proof could do.
 
 The shared automation library is a separate, once-per-framework cost:
-**3,527 code lines**, including its imports, tactics and annotations. It is
+**3,985 code lines**, including its imports, tactics and annotations. It is
 excluded from both RDT-specific columns. The measurement files retain the
 per-declaration breakdown and the additional existing generic dependencies.
 
 ## What the reduction means
 
-The combined RDT-specific footprint falls by about **75%**. Efficient OR-set
+The combined RDT-specific footprint falls by about **88%**. Efficient OR-set
 improves **89%** (234 → 26); Embedded RGA improves **92%** (726 → 60).
 Generic proofs replace the required datatype insertion, merge, order and
 coordinate-injection helper theorems. Raw-equation certificates, chain/code
@@ -188,6 +192,16 @@ The [baseline snapshot](results/ordered-derivation-baseline.json) retains the
 previous published 374/407 counts: the corrected comparison also charges four
 concrete registry lines and Queue’s two unary-code proof-packaging fields.
 The historical Queue comparison likewise charges those two fields (759 → 761).
+
+Against production baseline `7e7ec86`, Sided Embedded RGA falls from **424 to
+67 lines**, Core from **430 to 74**, RichCore from **434 to 78**, and FugueMax
+from **959 to 322**. The [baseline snapshot](results/sided-derivation-baseline.json)
+retains the checked declarations, registrations and source hashes. The submitted
+VC inputs use no retained datatype helper theorems for these four cases. Their
+remaining author code consists of data mappings, raw-equation certificates,
+finite issuance adapters and concrete code-composition proofs. Fugue's result is
+represented-state convergence; its checked sequential-specification obstruction
+remains.
 
 Against the immediately preceding production baseline `7880732`, this
 OR-set derivation change reduces ordinary OR-set from **106 to 8 lines** and
@@ -203,7 +217,9 @@ only by those compatibility proofs are also excluded.
 Shared templates perform the history inductions. For both OR-sets, the frontend
 selects witness or mask replay from proof-free annotations and generates and
 discharges the finite laws from implementation definitions. Embedded RGA and
-Queue use the ordered frontend described above. Other families
+Queue and Sided RGA use the ordered frontend described above; Core and RichCore
+reuse the Sided input. Fugue uses archive, code-composition and issuance
+derivations. Other families
 still supply template mappings, finite evidence and helper facts that the
 library cannot yet discharge. The campaign requires no external SMT solver;
 it does not discover representations, issuer invariants or sequential specifications.
@@ -218,6 +234,7 @@ From the repository root:
 scripts/check-mrdt-refactor.sh
 scripts/check-paper1.sh
 python3 experiments/vc-automation/verify_expansion.py --common
+python3 experiments/vc-automation/test_measurement_registration.py
 python3 experiments/vc-automation/measure_common_effort.py
 ```
 

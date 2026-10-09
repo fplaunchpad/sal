@@ -82,6 +82,31 @@ for command in ('assert_raw_vc_dependencies', 'assert_commuting_vc_dependencies'
 
 
 LEAN_AUDIT = r'''
+open Lean in
+partial def auditVerifierApps (verifier : Name) : Expr → List Expr
+  | e@(.app f a) =>
+    if e.getAppFn.isConstOf verifier then
+      e :: e.getAppArgs.toList.flatMap (auditVerifierApps verifier)
+    else auditVerifierApps verifier f ++ auditVerifierApps verifier a
+  | .lam _ t b _ | .forallE _ t b _ => auditVerifierApps verifier t ++ auditVerifierApps verifier b
+  | .letE _ t v b _ => auditVerifierApps verifier t ++ auditVerifierApps verifier v ++ auditVerifierApps verifier b
+  | .mdata _ e | .proj _ _ e => auditVerifierApps verifier e
+  | _ => []
+
+open Lean Elab Command in
+elab "audit_verifier_traversal_control" : command => do
+  let verifier := ``Sal.MRDTs.Paper1.Automation.CommonVerification.verify
+  let first := mkApp (mkConst verifier) (mkConst `FIRST_VC_INPUT)
+  let second := mkApp (mkConst verifier) (mkConst `SECOND_VC_INPUT)
+  let tree := mkApp2 (mkConst ``And.intro) first second
+  let apps := auditVerifierApps verifier tree
+  unless apps.length == 2 && apps[0]!.getUsedConstants.contains `FIRST_VC_INPUT &&
+      apps[1]!.getUsedConstants.contains `SECOND_VC_INPUT do
+    throwError "VC traversal dropped one of two submitted verification applications"
+  unless (auditVerifierApps verifier (mkConst ``True.intro)).isEmpty do
+    throwError "VC traversal invented an absent verification application"
+  logInfo "PROD_VC_TRAVERSAL_CONTROL pass: both applications retained; absent application excluded"
+
 open Lean Elab Command in
 elab "audit_production " n:ident : command => do
   let root ← liftCoreM <| Lean.Elab.realizeGlobalConstNoOverloadWithInfo n
@@ -125,12 +150,12 @@ elab "audit_production_vc_evidence " n:ident : command => do
           | .thmInfo i => some i.value
           | .defnInfo i => some i.value
           | _ => none
-        let application := value.bind fun v => v.find? fun e =>
-          e.isApp && e.getAppFn.isConstOf verifier
-        if let some proof := application then
+        let applications := value.toList.flatMap (auditVerifierApps verifier)
+        if !applications.isEmpty then
           logInfo m!"PROD_VC_APP {root} {current}"
-          for dependency in proof.getUsedConstants do
-            evidence := evidence.insert dependency
+          for proof in applications do
+            for dependency in proof.getUsedConstants do
+              evidence := evidence.insert dependency
         else
           pending := info.getUsedConstantsAsSet.toList ++ pending
   if evidence.isEmpty then
@@ -155,7 +180,9 @@ def audit_imports():
     """Inspect the actual repository import graph before invoking the kernel."""
     roots = ['Sal.MRDTs.Paper1.Ledger', 'Sal.MRDTs.Paper1.Automation.Controls',
              'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls',
-             'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls']
+             'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls',
+             'Sal.MRDTs.Paper1.Automation.CodeCompositionControls',
+             'Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls']
     pending = list(roots)
     local = {}
     external = set()
@@ -243,6 +270,59 @@ def audit_ordered_author_interface(evidence):
             residual_boundary='Generic comparator, sorted-list and prefix-code laws derive correctness from kernel-checked raw recursive equations and datatype data mappings.')
     return report
 
+def audit_sided_author_interface(evidence):
+    """Reject cached datatype law dispatch in the actual submitted VC inputs."""
+    prefix = P + 'Automation.AutomatedRGA.Sided.'
+    eliminated = {prefix + n for n in
+        ('provenance_step', 'membership_step', 'ordered_step', 'merge_cell', 'adapter')}
+    eliminated.update('Sal.MRDTs.Instances.SidedEmbedRGA.' + n for n in
+        ('mem_sInsert', 'mem_sMerge2', 'sInsert_sorted', 'sMerge2_sorted', 'sMerge_sorted', 'ssorted_ext', 'sKey_inj'))
+    eliminated.update('Sal.EmbedRGA.' + n for n in ('sKey_inj', 'sidedCoordOf_inj', 'keyLt_irrefl', 'keyLt_asymm', 'keyLt_trans',
+         'keyLt_total', 'enc_ne_nil', 'sBlock_eq', 'sideSym_inj', 'sideSym_band_ne',
+         'map_prefix_reflect', 'sBlock_ne_nil'))
+    report = {}
+    for case in CASES:
+        if case['id'] not in {'sided-embed-rga', 'sided-peritext-core', 'sided-peritext-rich-core'}:
+            continue
+        dependencies = set().union(*(set(evidence[root]['dependencies']) for root in case['vc_roots']))
+        bad = dependencies & eliminated
+        assert not bad, (case['id'], 'cached sided datatype law dependency', sorted(bad))
+        assert P + 'Automation.OrderedRecords.ChainMapping.unique_keys' in dependencies, (case['id'], 'missing generic issuance derivation')
+        report[case['id']] = dict(status='pass',
+            datatype_author_dependencies=sorted(d for d in dependencies if prefix in d),
+            eliminated_compatibility_proofs=sorted(eliminated))
+    return report
+
+def audit_fugue_author_interface(evidence):
+    """Separate generated archive/code laws from still-retained issuance lemmas."""
+    eliminated = {'Sal.EmbedRGA.' + n for n in (
+        'keyLt_irrefl', 'keyLt_asymm', 'keyLt_trans', 'keyLt_total', 'enc_ne_nil',
+        'fmCoordOf_inj', 'fwTag_cancel', 'fw_group_inj', 'map_prefix_reflect',
+        'tagOK_prefixFree', 'tagOK_key', 'key_body_prefixFree')}
+    eliminated.update('Sal.MRDTs.Instances.SidedEmbedRGA.' + n for n in (
+        'mem_sInsert', 'mem_sMerge2', 'sInsert_sorted', 'sMerge2_sorted',
+        'sMerge_sorted', 'ssorted_ext', 'sKey_inj',
+        'mGenInsAfter_none', 'mGenInsAfter_someTrue', 'mGenInsAfter_someFalse',
+        'mRecOfId_of_minted', 'mChainOf_zero', 'mChainOf_eq_of_rec', 'succOfM_mem',
+        'succOfM_pair', 'succCandM_sub', 'mKeys_shape', 'foldl_maxKey_mem'))
+    eliminated.update('Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.' + n for n in (
+        'insert_position_finite', 'delete_position_finite',
+        'canIssue_insert_iff', 'canIssue_delete_iff'))
+    eliminated.add(P + 'Automation.AutomatedFugue.provenance_step')
+    case = next(c for c in CASES if c['id'] == 'fugue-max')
+    dependencies = set().union(*(set(evidence[root]['dependencies']) for root in case['vc_roots']))
+    bad = dependencies & eliminated
+    assert not bad, ('fugue-max', 'cached archived/code datatype law dependency', sorted(bad))
+    required = {P + 'Automation.' + n for n in (
+        'ArchivedOrderedRecords.Equations.kit', 'PrefixCodes.encode_injective',
+        'CertifiedIssuance.creator_of_mint', 'append_delta_valid')}
+    assert required <= dependencies, ('fugue-max', 'missing generic archive/code/issuance derivation', sorted(required - dependencies))
+    return dict(status='pass', eliminated_compatibility_proofs=sorted(eliminated),
+        generic_derivation_markers=sorted(required),
+        retained_issuance_dependencies=sorted(d for d in dependencies if
+            d.startswith('Sal.MRDTs.Instances.SidedEmbedRGA.') or d.startswith('Sal.EmbedRGA.')),
+        claim='represented-state convergence; separate sequential-specification obstruction remains')
+
 def main():
     OUT.mkdir(exist_ok=True)
     import_audit = audit_imports()
@@ -251,18 +331,27 @@ def main():
     print('Building production Ledger and automation controls', flush=True)
     run(['lake', 'build', 'Sal.MRDTs.Paper1.Ledger', 'Sal.MRDTs.Paper1.Automation.Controls',
          'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls',
-             'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls'], 'production-build.log')
+             'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls',
+             'Sal.MRDTs.Paper1.Automation.CodeCompositionControls',
+             'Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls'], 'production-build.log')
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py'], 'production-source-contracts.log')
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py', '--baseline', '7880732',
          '--output', str(OUT / 'orset-derivation-contracts.json')], 'orset-derivation-source-contracts.log')
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py', '--baseline', 'ffec6e9',
          '--output', str(OUT / 'ordered-derivation-contracts.json')], 'ordered-derivation-source-contracts.log')
+    run([sys.executable, 'scripts/check-paper1-automation-contracts.py', '--baseline', '7e7ec86',
+         '--output', str(OUT / 'sided-derivation-contracts.json')], 'sided-derivation-source-contracts.log')
+    run([sys.executable, 'experiments/vc-automation/test_sided_contract_source.py'], 'sided-source-controls.log')
+    run([sys.executable, 'experiments/vc-automation/test_sided_evidence_audit.py'], 'sided-evidence-controls.log')
     run([sys.executable, 'experiments/vc-automation/test_ordered_contract_source.py'], 'ordered-source-controls.log')
     run([sys.executable, 'experiments/vc-automation/test_contract_audit.py'], 'production-contract-controls.log')
     roots = sorted({name for c in CASES for key in ('endpoints', 'vc_roots', 'controls') for name in c.get(key, [])})
     program = ('import Sal.MRDTs.Paper1.Ledger\nimport Sal.MRDTs.Paper1.Automation.Controls\n'
                'import Sal.MRDTs.Paper1.Automation.ORSetAutomationControls\n'
-               'import Sal.MRDTs.Paper1.Automation.OrderedAutomationControls\n' + LEAN_AUDIT)
+               'import Sal.MRDTs.Paper1.Automation.OrderedAutomationControls\n'
+               'import Sal.MRDTs.Paper1.Automation.CodeCompositionControls\n'
+               'import Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls\n' + LEAN_AUDIT)
+    program += 'audit_verifier_traversal_control\n'
     program += '\n'.join('audit_production ' + name for name in roots) + '\n'
     vc_roots = sorted({name for c in CASES for name in c['vc_roots']})
     program += '\n'.join('audit_production_vc_evidence ' + name for name in vc_roots) + '\n'
@@ -271,6 +360,7 @@ def main():
         path = Path(tmp) / 'ProductionAudit.lean'
         path.write_text(program)
         log = run(['lake', 'env', 'lean', str(path)], 'production-audit.log')
+    assert 'PROD_VC_TRAVERSAL_CONTROL pass:' in log, 'Missing verifier traversal control'
     complete = re.findall(r'PROD_COMPLETE (\S+)', log)
     assert complete == roots, 'Missing or duplicate root audits'
     declarations = {}
@@ -311,6 +401,8 @@ def main():
         data['source_verification_declarations'] = sorted(set(data['source_verification_declarations']))
     orset_author_interface = audit_orset_author_interface(evidence)
     ordered_author_interface = audit_ordered_author_interface(evidence)
+    sided_author_interface = audit_sided_author_interface(evidence)
+    fugue_author_interface = audit_fugue_author_interface(evidence)
     files = sorted({d['file'] for d in declarations.values()} | set(imported_hashes))
     source_hashes = {file: hashlib.sha256((ROOT / file).read_bytes()).hexdigest() for file in files}
     assert all(source_hashes[file] == digest for file, digest in imported_hashes.items()), 'Source changed during production audit'
@@ -319,11 +411,16 @@ def main():
         counting_note=__doc__, cases=CASES, roots=audited,
         declaration_sources=declarations, vc_evidence_closures=evidence,
         orset_author_interface=orset_author_interface, ordered_author_interface=ordered_author_interface,
+        sided_author_interface=sided_author_interface, fugue_author_interface=fugue_author_interface,
         source_sha256=source_hashes,
         controls=['Sal/MRDTs/Paper1/Automation/Controls.lean',
                   'Sal/MRDTs/Paper1/Automation/ORSetAutomationControls.lean',
                   'Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean',
+                  'Sal/MRDTs/Paper1/Automation/CodeCompositionControls.lean',
+                  'Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean',
                   'experiments/vc-automation/test_ordered_contract_source.py',
+                  'experiments/vc-automation/test_sided_contract_source.py',
+                  'experiments/vc-automation/test_sided_evidence_audit.py',
                   'experiments/vc-automation/test_contract_audit.py',
                   'scripts/check-paper1-automation-contracts.py'],
         forbidden_dependencies=sorted(FORBIDDEN),

@@ -15,19 +15,54 @@
       "preserved_data_descriptions": []
     },
     {
+      "path": "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean",
+      "checked": 3,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedCore.evidence"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "checked": 13,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.provenance_step",
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.lookup_chain",
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.generated_chain"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.issuer",
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.adapter",
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.input"
+      ],
+      "preserved_data_descriptions": [
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.kit",
+        "Sal.MRDTs.Paper1.Automation.AutomatedFugue.issuanceModel"
+      ]
+    },
+    {
       "path": "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean",
       "checked": 23,
       "moved": [],
       "proof_changes": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.adapter"
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.adapter",
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.adapter"
       ],
       "certificate_changes": [],
       "proof_definition_changes": [
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.issuer",
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.input"
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.issuer",
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.input",
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.input"
       ],
       "preserved_data_descriptions": [
-        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.kit"
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.kit",
+        "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.kit"
       ]
     },
     {
@@ -50,7 +85,15 @@
     }
   ],
   "failures": [],
-  "added_files": [],
-  "checked_declarations": 31,
+  "added_files": [
+    "Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean",
+    "Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean",
+    "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean",
+    "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean"
+  ],
+  "checked_declarations": 47,
   "status": "pass"
 }

@@ -20,7 +20,7 @@ AUTHOR = {'AutomatedORSet', 'AutomatedEfficientORSet', 'AutomatedMVR',
           'AutomatedRGA', 'AutomatedCore', 'AutomatedRichCore', 'AutomatedFugue',
           'TransferGuardedCommuting', 'TransferAegisSheet', 'TransferLWW',
           'TransferNativeRGA', 'SimpleInputs', 'ORSetInputs', 'MVRInput',
-          'CommutingInputs', 'EmbeddedOrderedPrimitives'}
+          'CommutingInputs', 'EmbeddedOrderedPrimitives', 'SidedOrderedPrimitives', 'FugueCodePrimitives'}
 MIXED = {'TransferSimple': ('TransferSimple.Add.', 'TransferSimple.Finite.',
                           'TransferSimple.Delta.', 'TransferSimple.Boolean.')}
 # Proof-only representation mappings, rather than operational definitions.
@@ -50,6 +50,12 @@ def uncomment(text):
         else:
             out.append(text[i] if not depth or text[i] == '\n' else ' '); i += 1
     return ''.join(out)
+
+
+def registration_mentions(name, line):
+    """Resolve complete symbol tokens, preserving qualifier distinctions."""
+    tokens = re.findall(r'(?<![\w.])[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*(?![\w.])', line)
+    return any(name == token or name.endswith('.' + token) for token in tokens)
 
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -101,8 +107,10 @@ def interface_annotations(case_id):
     """Charge required source data even if elaboration inlines it out of a proof."""
     scope_name = {'ordinary-or-set-paper-example': 'OrdinaryORSet',
                   'efficient-or-set': 'EfficientORSet'}.get(case_id)
-    if case_id in {'embed-rga', 'anchored-queue-paper-variant', 'peritext-embed-rga'}:
-        filename = AUTOMATION + 'AutomatedRGA.lean'
+    if case_id in {'embed-rga', 'anchored-queue-paper-variant', 'peritext-embed-rga',
+                   'sided-embed-rga', 'sided-peritext-core', 'sided-peritext-rich-core', 'fugue-max'}:
+        filename = AUTOMATION + ('AutomatedFugue.lean' if case_id == 'fugue-max' else 'AutomatedRGA.lean')
+        required_scope = '.AutomatedFugue' if case_id == 'fugue-max' else ('.Sided' if case_id.startswith('sided-') else '.Embedded')
         lines = read(filename)
         generated = any('derive_ordered_kit' in line for line in lines)
         scopes, result = [], []
@@ -110,8 +118,8 @@ def interface_annotations(case_id):
             ns = re.match(r'namespace\s+(\S+)', line)
             if ns: scopes.append(ns.group(1))
             elif re.match(r'end\b', line) and scopes: scopes.pop()
-            name = re.match(r'(?:def|abbrev) (description|chainMapping)\b', line)
-            if not name or not '.'.join(scopes).endswith('.Embedded'):
+            name = re.match(r'(?:def|abbrev) (description|equations|chainMapping|issuanceModel)\b', line)
+            if not name or not '.'.join(scopes).endswith(required_scope):
                 continue
             end = i + 1
             while end < len(lines) and (not lines[end].strip() or lines[end][:1].isspace()):
@@ -320,7 +328,7 @@ for filename in [AUTOMATION + 'OrderedRecordAutomation.lean']:
         selected = {}
         for j in range(i, end):
             consumers = {c for e in inventory.values() if e['category'] in {'instance', 'retained_helper'}
-                         for n in e['constants'] if n in lines[j] or re.search(r'\b' + re.escape(n.rsplit('.',1)[-1]) + r'\b', lines[j]) for c in e['consumers']}
+                         for n in e['constants'] if registration_mentions(n, lines[j]) for c in e['consumers']}
             if consumers:
                 selected[j] = consumers
         if selected:
@@ -348,7 +356,7 @@ framework_code = sum(sum(bool(line.strip()) for line in read(filename)) for file
 # Mixed TransferSimple files contain finite instance declarations too; remove
 # the charged instance lines from this additional module-level measurement.
 library_files = sorted(str(p.relative_to(ROOT)) for p in (ROOT / AUTOMATION).glob('*.lean')
-    if p.stem not in AUTHOR and p.stem not in {'Controls', 'ORSetAutomationControls', 'OrderedAutomationControls'})
+    if p.stem not in AUTHOR and not p.stem.endswith('Controls'))
 instance_line_pairs = {(e['file'], i) for e in inventory.values() if e['category']=='instance' for i in e['code_lines']}
 instance_line_pairs.update((c['file'],c['line']) for c in commands)
 library_code = sum(sum(bool(line.strip()) and (filename, i) not in instance_line_pairs
@@ -364,7 +372,7 @@ for stem in ['OrderedRecordAutomation','PolicyExpansionAutomation','CommonAlgebr
 report = {'method':__doc__, 'limitations':[
     'Source lines measure proof/annotation footprint, not human effort or proof difficulty.',
     'Per-case totals overlap; campaign totals deduplicate file/line pairs.',
-    'Required PolicyData/MaskData annotations, efficient mask-description/birth data and ordered description/chain-mapping data and unary-code mono/prefixFree proof packaging are charged even when elaboration erases them from the kernel dependency closure. Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.',
+    'Required PolicyData/MaskData annotations, efficient mask-description/birth data and ordered/archive description, raw-equation, chain-mapping and issuance-model data and unary-code mono/prefixFree proof packaging are charged even when elaboration erases them from the kernel dependency closure. Author declarations are transitive production instance inputs and finite proofs from actual submitted CommonVerification.verify applications. Existing certificate wrappers contribute only mrdt_verify invocation lines; new author-side VC theorem declarations are counted in full.',
     'Concrete retained datatype helpers additionally come from full direct Raw.MergeVCs-root closures, preserving actual specialization proof arguments. Certificate-bundle fields remain excluded.',
     'Existing implementation and contract definitions are excluded. Paper1 datatype-namespace theorem helpers are charged, including AnchoredQueue and Embedded replay namespaces; the selected VC-root wrappers are charged separately as automation calls. The historical direct-proof report retains its checked baseline classification. Retained datatype theorem helpers and explicitly allowlisted proof-only representation mappings are charged; existing generic foundational theorem helpers are separate. Structure projections are not charged as authored proofs.',
     'Shared generic declarations are a separate reusable-library cost; whole participating module code additionally includes macros, imports and annotations.',
@@ -380,34 +388,6 @@ report = {'method':__doc__, 'limitations':[
     'audit_sha256':hashlib.sha256(args.audit.read_bytes()).hexdigest()}
 args.output.parent.mkdir(parents=True, exist_ok=True)
 args.output.write_text(json.dumps(report,indent=2)+'\n')
-# Concrete helper/certificate registrations in mixed shared modules are
-# author wiring too. Charge the annotation header and each selected symbol
-# line; generic registry entries remain part of the reusable library.
-for filename in [AUTOMATION + 'OrderedRecordAutomation.lean']:
-    lines = read(filename)
-    i = 0
-    while i < len(lines):
-        if not re.match(r'\s*attribute\b', lines[i]):
-            i += 1
-            continue
-        end = i + 1
-        while end < len(lines) and lines[end][:1].isspace():
-            end += 1
-        selected = {}
-        for j in range(i, end):
-            consumers = {c for e in inventory.values() if e['category'] in {'instance', 'retained_helper'}
-                         for n in e['constants'] if n in lines[j] or re.search(r'\b' + re.escape(n.rsplit('.',1)[-1]) + r'\b', lines[j]) for c in e['consumers']}
-            if consumers:
-                selected[j] = consumers
-        if selected:
-            selected.setdefault(i, set()).update(set().union(*selected.values()))
-            for j, consumers in selected.items():
-                if any(c['file']==filename and c['line']==j+1 for c in commands):
-                    continue
-                commands.append(dict(file=filename, line=j+1, text=lines[j].strip(),
-                    kind='concrete_helper_registration', consumers=sorted(consumers)))
-        i = end
-
 for case_id,row in cases.items():
     print(f"{case_id}: {row['instance_lines']} instance + {row['retained_helper_lines']} retained helper + {row['registration_annotation_lines']} annotation lines")
 print('Unique campaign:',report['unique_campaign'])

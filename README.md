@@ -9,7 +9,7 @@ submission's prefix-closed history specifications and explicit per-query
 RA-linearizability criterion. Implementation replay, merge VCs, and canonical
 state reconstruction use concrete equality. Soundness retains issuance and
 execution evidence, with local sequential simulations or suitable-history
-proofs supplying the bridge to specification acceptance. The exact paper
+proofs supplying the bridge to specification acceptance. The paper
 OR-set retains every addition tag and has an ancestor-aware Join proof.
 
 The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
@@ -36,11 +36,11 @@ from proof-free annotations: `PolicyData` records the event comparison;
 optional `MaskData` records the record type and carrier, update, birth and kill
 maps. The frontend selects witness replay or mask replay, constructs the
 finite templates, and discharges their laws from registered implementation
-definitions. Embedded RGA supplies an eight-map ordered-record description, raw-equation
+definitions. Embedded and Sided RGA supply an eight-map ordered-record description, raw-equation
 annotations and chain/code mappings;
-shared derivation constructs its ten finite laws from raw recursive equations,
+shared derivation constructs their ten finite laws from raw recursive equations,
 derives coordinate order and injection, and projects existing issuance/replay
-evidence. Anchored Queue and Peritext reuse that route. Other families retain
+evidence. Anchored Queue, Peritext and Sided Core/RichCore reuse that route. Other families retain
 explicit finite laws and evidence projections. Shared templates derive the history arguments, including
 Core/RichCore and Fugue; no instance interface contains a bespoke history induction.
 Lean selects registered algebra, collection and ordering helpers. The production audit
@@ -57,6 +57,12 @@ not use them.
 Against the preceding ordered baseline `ffec6e9`, Embedded RGA falls from
 378 to 60 required datatype lines and anchored Queue from 413 to 69, including
 all required helper proofs, raw-equation wiring and code proof packaging.
+Against baseline `7e7ec86`, Sided RGA falls from 424 to 67 required datatype
+lines, Core from 430 to 74, RichCore from 434 to 78, and FugueMax from 959 to
+322. These totals include raw-equation certificates, data mappings, concrete
+code-composition proofs, finite issuance adapters and annotations. Shared
+archive, prefix-code and minting proofs replace the retained datatype helper
+proofs in the submitted Fugue VC input.
 Fugue's five-VC proof does not resolve its separate
 sequential-specification obstruction.
 

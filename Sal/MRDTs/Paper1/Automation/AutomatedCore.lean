@@ -16,11 +16,7 @@ theorem evidence (Γ : OrderedPrefixCode) (C : ReplayContext (Core Γ).toUpdateS
     (H : Set (Op (Core Γ).AppOp)) (s : (Core Γ).State)
     (rep : CertifiedRGACoreVC.representation Γ C H s) :
     MonotoneProduct.Evidence (AutomatedRGA.Sided.kit Γ) C H s := by
-  refine ⟨AutomatedRGA.Sided.issuer Γ _ rep.1,?_,?_⟩
-  · intro e he n target
-    apply rep.2.1 (inlOp e) (mem_projReplayContext₁_events.mp he) n
-    exact congrArg Sum.inl target
-  · exact ⟨rep.2.2.2.2.1,rep.2.2.2.2.2⟩
+  derive_product_evidence rep with (AutomatedRGA.Sided.issuer Γ)
 
 def input (Γ : OrderedPrefixCode) : CommonVerification.Input (Core Γ)
     (CertifiedRGACoreVC.policy Γ) (CertifiedRGACoreVC.representation Γ)

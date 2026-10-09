@@ -71,3 +71,14 @@ macro "derive_ordered_issuer " mapping:term " at " stored:term " using " creator
     · apply Sal.MRDTs.Paper1.Automation.OrderedRecords.ChainMapping.unique_keys _ _ ($mapping) ($stored)
       · intros; rfl
       · exact $chains))
+
+/-- Project the existing text/mark product contract into generic evidence.
+The sum-operation visibility witness is preserved by the left injection. -/
+macro "derive_product_evidence " representation:ident " with " issuance:term : tactic =>
+  `(tactic| (
+    refine ⟨($issuance) _ ($representation).1, ?_, ?_⟩
+    · intro e he n target
+      apply ($representation).2.1 (Sal.MRDTs.inlOp e)
+        (Sal.MRDTs.mem_projReplayContext₁_events.mp he) n
+      exact congrArg Sum.inl target
+    · exact ⟨($representation).2.2.2.2.1, ($representation).2.2.2.2.2⟩))
