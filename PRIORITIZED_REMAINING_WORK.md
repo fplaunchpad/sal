@@ -6,6 +6,53 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Checked: derive sequential-history bridges
+
+Research question: can small implementation-to-specification descriptions
+derive history acceptance and observable commutation compatibility, including
+the execution and issuance facts needed by certified sequences?
+
+- [x] Measure current production bridge proofs and their required concrete
+  helper/annotation closures against `052b8fb`.
+- [x] Derive ordinary and efficient OR-set bridges through a reusable template
+  without dispatching to their old bridge or projection-correctness proofs.
+- [x] Investigate and machine-check the extension to issuance-certified
+  Embedded RGA; report finite obligations and any boundary that remains.
+- [x] Preserve independent specifications, implementations, certification
+  assumptions and public theorem statements; retain Fugue's obstruction.
+- [x] Independently audit dependencies, assumptions and failure controls;
+  count all required concrete descriptions, helpers and annotations.
+- [x] Update documentation, run both repository gates, then commit and push.
+
+Against `052b8fb`, the selected bridge proof slices fall from 49 to 23
+nonblank, noncomment lines for ordinary OR-set and 48 to 24 for efficient
+OR-set. Both history acceptance and observable commutation compatibility use
+the generated finite-set projection laws. Required descriptions and annotations
+are included; the shared projection/fold library is 140 lines.
+
+Embedded RGA changes from 2,021 to 2,013 lines across the complete
+`canonical_valid_history` proof closure, including ordering and specification
+visibility. The generic guarded induction is checked and used in production,
+but insertion adjacency and execution/issuance legal-history selection remain
+substantial datatype obligations. This is a checked extension boundary, not a
+substantial reduction. These bridge costs overlap the existing VC invariants;
+do not add the two tables. Fugue's obstruction remains unchanged.
+
+The baseline includes a 23-case bridge inventory. The five selected bridge
+roots pass standard-axiom and dependency audits, excluding the old projection
+and completed RGA bridge proofs. Source controls preserve theorem statements,
+variable contexts and semantic definitions; polymorphic kernel equalities pin
+the three generated simulation relations, and concrete negative controls
+reject degenerate tagged-set actions.
+
+The final production audit passes 23 cases and 95 roots with 329 current
+source hashes. All 87 baseline declarations in the touched files pass
+preservation checks. Both repository gates pass, including 187 runtime tests
+and 569 benchmark records. The existing VC footprint remains 704 concrete
+lines plus a separately counted 3,985-line shared library. The formal
+reference's 102 declarations check; the updated 22-page PDF is visually
+verified.
+
 ### Checked: derive Sided RGA, Core/RichCore and Fugue certificates
 
 Research question: can the shared list, ordering and prefix-code machinery

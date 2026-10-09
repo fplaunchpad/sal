@@ -115,6 +115,16 @@ force the resulting state to abstract to presence, while removal of that same
 unchanged state forces it to abstract to absence. This contradiction explains
 the failure of the sequential premise.
 
+For both set implementations, a shared template now derives these projection
+laws from record-level actions and their raw update equations. An addition may
+replace tags for its own element, but must retain records for other elements;
+removal filters all records for the removed element. Taking the image of the
+record carrier then yields ordinary set insertion and removal. The frontend
+checks the finite action laws and constructs the simulation. For Embedded RGA,
+the shared induction instead assumes a legal selected history and a one-step
+projection law. Proving insertion adjacency and deriving legality from the
+certified execution remain datatype-specific obligations.
+
 \paragraph{Retaining specification conflicts.}
 For the stronger criterion of Definition~\ref{def:ra}, additionally require
 \begin{equation}

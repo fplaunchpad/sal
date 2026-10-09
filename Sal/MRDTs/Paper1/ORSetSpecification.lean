@@ -14,15 +14,10 @@ all its elements with zero. These are proof states, not issued histories. -/
 theorem language_commutes_of_concrete (a b : Op (Update α))
     (hc : (D α).toUpdateSig.commutes a b) :
     (spec α).toSpec.Commutes a.op b.op := by
-  apply DeterministicSpec.language_commutes
+  apply projectionDescription.language_commutes _ a b hc
   intro s
-  change abstractStep (abstractStep s a.2.2) b.2.2 =
-    abstractStep (abstractStep s b.2.2) a.2.2
-  let repr : State α := s.image (fun x => (x, 0))
-  have hv : view repr = s := by simp [repr, view, Finset.image_image, Function.comp_def]
-  have h := congrArg (view : State α → Finset α) (hc repr)
-  change view (step (step repr a) b) = view (step (step repr b) a) at h
-  simpa only [view_step, hv] using h
+  exact ⟨s.image (fun x => (x, 0)), finiteDescription.representative
+    (fun x => (x, 0)) (fun _ => rfl) s⟩
 
 /-- The specification-visible criterion's additional sequential premise holds for the exact OR-set. -/
 theorem specificationConflictsCovered :

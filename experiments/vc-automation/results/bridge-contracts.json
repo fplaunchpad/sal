@@ -1,0 +1,40 @@
+{
+  "baseline": "052b8fb",
+  "checked": [
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
+      "declarations": 27
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
+      "declarations": 6
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
+      "declarations": 25
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
+      "declarations": 16
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ORSetSpecification.lean",
+      "declarations": 5
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
+      "declarations": 8
+    }
+  ],
+  "negative_controls": [
+    "mutated projection map",
+    "mutated simulation generator",
+    "weakened premise",
+    "altered semantic definition",
+    "deleted declaration",
+    "altered variable context",
+    "proof-only positive control"
+  ],
+  "failures": [],
+  "status": "pass"
+}

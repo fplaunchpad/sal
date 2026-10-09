@@ -355,8 +355,9 @@ framework_code = sum(sum(bool(line.strip()) for line in read(filename)) for file
 # Whole reusable library size, independent of the selected proof closures.
 # Mixed TransferSimple files contain finite instance declarations too; remove
 # the charged instance lines from this additional module-level measurement.
+BRIDGE_ONLY = {'FiniteSetSimulation', 'GenericGuardedFold', 'EmbeddedSequentialBridge'}
 library_files = sorted(str(p.relative_to(ROOT)) for p in (ROOT / AUTOMATION).glob('*.lean')
-    if p.stem not in AUTHOR and not p.stem.endswith('Controls'))
+    if p.stem not in AUTHOR and p.stem not in BRIDGE_ONLY and not p.stem.endswith('Controls'))
 instance_line_pairs = {(e['file'], i) for e in inventory.values() if e['category']=='instance' for i in e['code_lines']}
 instance_line_pairs.update((c['file'],c['line']) for c in commands)
 library_code = sum(sum(bool(line.strip()) and (filename, i) not in instance_line_pairs

@@ -46,7 +46,7 @@ generic route replaces them. Other ordered-record inputs retain explicit
 finite proofs. Core/RichCore use
 ordered-text/product and query-lift inputs. Fugue uses archived-record and
 certified-issuance inputs, with explicit chain validity and generator
-preservation proofs. Sequential bridges remain the existing production proofs.
+preservation proofs. Sequential bridges have a separate measured experiment below.
 
 ## How many expanded VCs, using Neem's convention?
 
@@ -223,8 +223,54 @@ derivations. Other families
 still supply template mappings, finite evidence and helper facts that the
 library cannot yet discharge. The campaign requires no external SMT solver;
 it does not discover representations, issuer invariants or sequential specifications.
-Sequential-bridge automation remains
-separate from this result.
+Sequential-bridge automation is measured separately below.
+
+## Sequential-history bridge experiment
+
+The selected production bridges now use generic finite-set projection and
+guarded-fold templates. The baseline is production commit `052b8fb`, after the
+VC automation campaign. Counts are nonblank, noncomment source lines in complete
+kernel-reached concrete declarations, including their statements, proof bodies,
+wrappers and datatype descriptions. Shared framework code and semantic or
+implementation definitions are reported separately.
+
+| Production bridge | Before (lines) | Current (lines) |
+| --- | ---: | ---: |
+| Ordinary OR-set | 49 | 23 |
+| Efficient OR-set | 48 | 24 |
+| Issuance-certified Embedded RGA | 2,021 | 2,013 |
+
+The roots include both OR-set `foldHistorySound` and
+`commutationCompatibility` theorems, and Embedded RGA's
+`canonical_valid_history`. Thus the RGA count includes ordering, visibility and
+legal-history selection, in addition to sequential acceptance. The full
+concrete helper closure includes execution and issuance invariants also used by
+the VC proofs. These columns overlap the VC table above and must not be added
+to it. The separate generic bridge library is **140 code lines** across
+`ProjectedSimulation`, `FiniteSetSimulation` and `GenericGuardedFold`, including
+imports, macros and annotations. Bridge-only modules are excluded from the
+3,985-line VC library measurement.
+
+For the OR-sets, finite descriptions give raw record actions and independent
+model actions; the library derives projection and observable commutation.
+The actual production closures exclude the old `view_step` and
+`elements_update` bridge proofs. Embedded RGA is a boundary experiment with no
+substantial reduction: the generic template owns history induction and the
+filter projection, while ordered-chain insertion adjacency and
+execution/issuance legal-history selection retain substantial concrete proofs.
+Both its acceptance and visibility paths exclude the old `embed_seq_sound`.
+Fugue's sequential-specification obstruction remains unchanged.
+
+The [baseline closure and measurement](bridge-baseline/measurement-052b8fb.json),
+[baseline provenance and 23-case bridge inventory](bridge-baseline/production-audit-052b8fb.json),
+and [current comparison](results/bridge-measurement.json) expose declaration
+ranges, classifications, axioms and source hashes. The audit hashes the full
+local import closure, including macros and description fields absent from
+compiled proof expressions. Source preservation checks retain statements,
+contexts and semantic definitions; Lean controls additionally pin all three
+simulation relations to their original projections and exercise rejected
+degenerate set actions. Old-dispatch negative controls check the dependency
+gates themselves.
 
 ## Reproduction
 
@@ -236,6 +282,8 @@ scripts/check-paper1.sh
 python3 experiments/vc-automation/verify_expansion.py --common
 python3 experiments/vc-automation/test_measurement_registration.py
 python3 experiments/vc-automation/measure_common_effort.py
+python3 scripts/check-paper1-bridge-contracts.py
+python3 scripts/measure-paper1-bridges.py
 ```
 
 The `--common` command delegates to `scripts/verify-paper1-automation.py`,

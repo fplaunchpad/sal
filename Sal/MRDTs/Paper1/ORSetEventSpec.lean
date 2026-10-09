@@ -30,10 +30,6 @@ theorem spec_eq : spec α = (ORSet.spec α).toSpec.withInputs Op.op :=
     rw [hm]
     exact (ORSet.spec α).machine.toSpec_withInputs Op.op
 
-theorem commutationCompatibility : CommutationCompatibility (D α) id (spec α) := by
-  rw [spec_eq]
-  exact ORSet.eventCommutationCompatibility
-
 /-- Ignoring irrelevant event inputs preserves contextual specification
 conflicts exactly, rather than merely preserving selected examples. -/
 theorem commutes_iff (a b : Op (Update α)) :
@@ -42,8 +38,21 @@ theorem commutes_iff (a b : Op (Update α)) :
   exact HistorySpec.withInputs_commutes_iff _ Op.op
     (fun op => ⟨(0, 0, op), rfl⟩) a b
 
-def simulation : EventSequentialSimulation (D α) (model α) :=
-  ORSet.simulation.withInputs
+def projectionDescription : MachineProjection (D α) (model α) id where
+  project := view
+  initial := by simp [D, model, view]
+  update := finiteDescription.project_update
+  observes _ _ := rfl
+
+def simulation : EventSequentialSimulation (D α) (model α) := by
+  derive_projected_simulation projectionDescription
+
+theorem commutationCompatibility : CommutationCompatibility (D α) id (spec α) := by
+  intro a b hc
+  apply projectionDescription.language_commutes _ a b hc
+  intro s
+  exact ⟨s.image (fun x => (x, 0)), finiteDescription.representative
+    (fun x => (x, 0)) (fun _ => rfl) s⟩
 
 theorem foldHistorySound : EventFoldHistorySound (D α) (spec α) := simulation.sound
 

@@ -1,4 +1,5 @@
 import Sal.MRDTs.Paper1.EventBridge
+import Sal.MRDTs.Paper1.Automation.FiniteSetSimulation
 import Sal.MRDTs.Instances.EfficientORSetCertified
 
 /-! An independent ordinary-set history bridge for the production efficient
@@ -40,40 +41,41 @@ theorem conflict_lift_eq : (conflict α).lift = (rc : ReplayPolicy (D α).toUpda
   rcases b with ⟨tb, rb, ob⟩
   cases oa <;> cases ob <;> simp [conflict, Op.op, eq_comm]
 
+/-- Replica overwrite is a tag filter: only tags of the added element may
+be discarded, and the new record restores that element's witness. -/
+def finiteDescription : Automation.FiniteSetDescription (Nat × Nat × α) α
+    (Op (SetOp α)) update setStep where
+  key p := p.2.2
+  action e := match e.op with
+    | .add x => .add (e.2.1, e.time, x)
+        (fun p => decide (¬ (p.1 = e.2.1 ∧ p.2.2 = x)))
+    | .remove x => .remove x
+  valid := by derive_finite_set_law [update, setStep]
+  concrete := by derive_finite_set_law [update, setStep]
+  abstract := by derive_finite_set_law [update, setStep]
+
+def projectionDescription : MachineProjection (D α) (model α) id where
+  project := elements
+  initial := by simp [D, model, elements]
+  update := finiteDescription.project_update
+  observes _ _ := rfl
+
+def simulation : EventSequentialSimulation (D α) (model α) := by
+  derive_projected_simulation projectionDescription
+
 theorem commutationCompatibility : CommutationCompatibility (D α) id (spec α) := by
   intro a b hc
-  apply DeterministicSpec.language_commutes
+  apply projectionDescription.language_commutes _ a b hc
   intro s
-  let repr : State α := s.image (fun x => (0, 0, x))
-  have hv : elements repr = s := by
-    simp [repr, elements, Finset.image_image, Function.comp_def]
-  have h := congrArg (elements : State α → Finset α) (hc repr)
-  change elements (update (update repr a) b) = elements (update (update repr b) a) at h
-  simpa only [elements_update, hv] using h
+  exact ⟨s.image (fun x => (0, 0, x)), finiteDescription.representative
+    (fun x => (0, 0, x)) (fun _ => rfl) s⟩
+
+theorem foldHistorySound : EventFoldHistorySound (D α) (spec α) := simulation.sound
 
 theorem history_bridge (ops : List (Op (SetOp α))) (x : α) :
     (spec α).admits (projectedLabels (D := D α) id ops ++
-      [.query x ((D α).query (applySeq (D α).toUpdateSig (D α).init ops) x)]) := by
-  apply (model α).updates_query_iff ops x _ |>.mpr
-  change decide (x ∈ elements (ops.foldl update ∅)) =
-    decide (x ∈ ops.foldl setStep ∅)
-  rw [elements_fold]
-  rfl
-
-
-def simulation : EventSequentialSimulation (D α) (model α) where
-  Rel s a := elements s = a
-  initial := by simp [D, model, elements]
-  update s a h e := by
-    change elements (update s e) = setStep a e
-    rw [elements_update, h]
-  observes s a h q := by
-    change Finset α at a
-    change α at q
-    change decide (q ∈ elements s) = decide (q ∈ a)
-    rw [h]
-
-theorem foldHistorySound : EventFoldHistorySound (D α) (spec α) := simulation.sound
+      [.query x ((D α).query (applySeq (D α).toUpdateSig (D α).init ops) x)]) :=
+  foldHistorySound ops x
 
 /-- Updates on different elements commute on every concrete state. -/
 theorem different_elements_commute (a b : Event α)

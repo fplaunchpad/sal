@@ -82,18 +82,100 @@
       "certificate_changes": [],
       "proof_definition_changes": [],
       "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
+      "checked": 27,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_full_history_of_replay"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
+      "checked": 6,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_history_data"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
+      "checked": 25,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.history_bridge"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": [
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation"
+      ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
+      "checked": 16,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": [
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation"
+      ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ORSetSpecification.lean",
+      "checked": 5,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.ORSet.language_commutes_of_concrete"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ORSetVerified.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": [
+        "Sal.MRDTs.Paper1.ORSet.simulation"
+      ]
     }
   ],
   "failures": [],
   "added_files": [
+    "Sal/MRDTs/Paper1/Automation/ArchivedInputDerivation.lean",
+    "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/CodeCompositionControls.lean",
     "Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean",
+    "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean",
     "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean",
     "Sal/MRDTs/Paper1/Automation/GenericPrefixCodes.lean",
     "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
     "Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean",
-    "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean"
+    "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean",
+    "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean"
   ],
-  "checked_declarations": 47,
+  "checked_declarations": 134,
   "status": "pass"
 }

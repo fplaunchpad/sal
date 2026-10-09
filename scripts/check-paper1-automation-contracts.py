@@ -176,6 +176,36 @@ def declarations(text):
     return result
 
 
+BRIDGE_SIMULATIONS = {
+    'Sal.MRDTs.Paper1.ORSet.simulation': 'view',
+    'Sal.MRDTs.Paper1.ORSet.EventSpec.simulation': 'view',
+    'Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation': 'elements',
+}
+
+def bridge_simulation_data(name, before, after, current):
+    """Exact generator/description wiring plus preserved projection data.
+
+    Kernel controls additionally compare all three Rel functions for arbitrary
+    element types; the production audit builds/imports those controls.
+    """
+    expected = BRIDGE_SIMULATIONS.get(name)
+    if expected is None or after is None:
+        return False
+    # The old event wrapper inherited the unchanged ordinary-set relation.
+    if name == 'Sal.MRDTs.Paper1.ORSet.EventSpec.simulation':
+        if before['body'] != before['header'] + ' := ORSet.simulation.withInputs':
+            return False
+    elif ' Rel s a := ' + expected + ' s = a initial :=' not in before['body']:
+        return False
+    if after['body'] != after['header'] + ' := by derive_projected_simulation projectionDescription':
+        return False
+    descriptor = current.get(name.rsplit('.', 1)[0] + '.projectionDescription')
+    if descriptor is None:
+        return False
+    field = re.search(r'\bproject := (.*?)(?= initial :=)', descriptor['body'])
+    return field is not None and field[1].strip() == expected
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--baseline', choices=(BASELINE, '7880732', 'ffec6e9', SIDED_BASELINE), default=BASELINE,
@@ -250,6 +280,11 @@ def main():
                     new_data = description['body'].split(' where ', 1)[-1] if description else None
                     if new_data != old_data:
                         reason = 'changed mask carrier/step/birth/kill data'
+                    else:
+                        record['preserved_data_descriptions'].append(name)
+                elif name in BRIDGE_SIMULATIONS:
+                    if not bridge_simulation_data(name, before, after, current):
+                        reason = 'changed simulation relation or projection/generator wiring'
                     else:
                         record['preserved_data_descriptions'].append(name)
                 elif name in CERTIFICATES:

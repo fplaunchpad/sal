@@ -182,7 +182,8 @@ def audit_imports():
              'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls',
              'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls',
              'Sal.MRDTs.Paper1.Automation.CodeCompositionControls',
-             'Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls']
+             'Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls',
+             'Sal.MRDTs.Paper1.Automation.SetBridgeAutomationControls']
     pending = list(roots)
     local = {}
     external = set()
@@ -333,7 +334,9 @@ def main():
          'Sal.MRDTs.Paper1.Automation.ORSetAutomationControls',
              'Sal.MRDTs.Paper1.Automation.OrderedAutomationControls',
              'Sal.MRDTs.Paper1.Automation.CodeCompositionControls',
-             'Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls'], 'production-build.log')
+             'Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls',
+             'Sal.MRDTs.Paper1.Automation.SetBridgeAutomationControls'], 'production-build.log')
+    run([sys.executable, 'scripts/check-paper1-bridge-contracts.py'], 'bridge-source-contracts.log')
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py'], 'production-source-contracts.log')
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py', '--baseline', '7880732',
          '--output', str(OUT / 'orset-derivation-contracts.json')], 'orset-derivation-source-contracts.log')
@@ -350,7 +353,8 @@ def main():
                'import Sal.MRDTs.Paper1.Automation.ORSetAutomationControls\n'
                'import Sal.MRDTs.Paper1.Automation.OrderedAutomationControls\n'
                'import Sal.MRDTs.Paper1.Automation.CodeCompositionControls\n'
-               'import Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls\n' + LEAN_AUDIT)
+               'import Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls\n'
+               'import Sal.MRDTs.Paper1.Automation.SetBridgeAutomationControls\n' + LEAN_AUDIT)
     program += 'audit_verifier_traversal_control\n'
     program += '\n'.join('audit_production ' + name for name in roots) + '\n'
     vc_roots = sorted({name for c in CASES for name in c['vc_roots']})
@@ -418,6 +422,8 @@ def main():
                   'Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean',
                   'Sal/MRDTs/Paper1/Automation/CodeCompositionControls.lean',
                   'Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean',
+                  'Sal/MRDTs/Paper1/Automation/SetBridgeAutomationControls.lean',
+                  'scripts/check-paper1-bridge-contracts.py',
                   'experiments/vc-automation/test_ordered_contract_source.py',
                   'experiments/vc-automation/test_sided_contract_source.py',
                   'experiments/vc-automation/test_sided_evidence_audit.py',

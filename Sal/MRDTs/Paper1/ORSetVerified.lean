@@ -1,5 +1,6 @@
 import Sal.MRDTs.Paper1.ORSetCanonical
-import Sal.MRDTs.Paper1.SequentialSimulation
+import Sal.MRDTs.Paper1.Automation.FiniteSetSimulation
+import Sal.MRDTs.Paper1.ProjectedSimulation
 
 namespace Sal.MRDTs.Paper1.ORSet
 open Sal.MRDTs.Foundation
@@ -46,15 +47,25 @@ theorem restrictedLaws : RestrictedLaws (D α).toUpdateSig (conflict α) := by
     · simp [hp]
     · exact and_congr (hfold p hp) Iff.rfl
 
-def simulation : SequentialSimulation (D α) (spec α) where
-  Rel s a := view s = a
-  initial := view_empty
-  update s a h e := by
-    change view (step s e) = abstractStep a e.2.2
-    rw [view_step, h]
-  observes s a h q := by
-    change decide (q ∈ view s) = decide (q ∈ (show Finset α from a))
-    rw [h]
+/-- Finite record actions for the independent ordinary-set model. -/
+def finiteDescription : Automation.FiniteSetDescription (α × Timestamp) α
+    (Op (Update α)) step (fun s e => abstractStep s e.op) where
+  key := Prod.fst
+  action e := match e.op with
+    | .add x => .add (x, e.time) (fun _ => true)
+    | .remove x => .remove x
+  valid := by derive_finite_set_law [step, abstractStep]
+  concrete := by derive_finite_set_law [step, abstractStep]
+  abstract := by derive_finite_set_law [step, abstractStep]
+
+def projectionDescription : MachineProjection (D α) (spec α) Op.op where
+  project := view
+  initial := by simp [D, spec, view]
+  update := finiteDescription.project_update
+  observes _ _ := rfl
+
+def simulation : SequentialSimulation (D α) (spec α) := by
+  derive_projected_simulation projectionDescription
 
 theorem foldHistorySound : FoldHistorySound (D α) (spec α).toSpec :=
   simulation.sound

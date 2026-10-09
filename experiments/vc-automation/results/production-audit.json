@@ -9139,16 +9139,6 @@
         "Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_5",
         "Sal.MRDTs.Instances.EmbedRGA.e_vis_of_rc_of_honest",
         "Sal.MRDTs.Instances.EmbedRGA.e_wf_of_enum",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_1",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_10",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_11",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_2",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_3",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_4",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_5",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_8",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_9",
         "Sal.MRDTs.Instances.EmbedRGA.esorted_ext",
         "Sal.MRDTs.Instances.EmbedRGA.esorted_ext.match_1_1",
         "Sal.MRDTs.Instances.EmbedRGA.generation",
@@ -9163,7 +9153,6 @@
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_7",
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_8",
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq.match_1",
-        "Sal.MRDTs.Instances.EmbedRGA.map_eProj_filter",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eDels",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eDels._simp_1_2",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds",
@@ -9504,6 +9493,17 @@
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.insertion",
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.merging",
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.order",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_1",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_2",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_3",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_4",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_5",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_6",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_7",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_8",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_9",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.sound",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic",
@@ -9782,6 +9782,8 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
+        "Sal.MRDTs.Paper1.Automation.guarded_fold_projection",
+        "Sal.MRDTs.Paper1.Automation.map_filter_project",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.ClosedJoinAt",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_execution",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_mintCertified",
@@ -10528,16 +10530,6 @@
         "Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_5",
         "Sal.MRDTs.Instances.EmbedRGA.e_vis_of_rc_of_honest",
         "Sal.MRDTs.Instances.EmbedRGA.e_wf_of_enum",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_1",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_10",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_11",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_2",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_3",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_4",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_5",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_8",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_9",
         "Sal.MRDTs.Instances.EmbedRGA.esorted_ext",
         "Sal.MRDTs.Instances.EmbedRGA.esorted_ext.match_1_1",
         "Sal.MRDTs.Instances.EmbedRGA.generation",
@@ -10552,7 +10544,6 @@
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_7",
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_8",
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq.match_1",
-        "Sal.MRDTs.Instances.EmbedRGA.map_eProj_filter",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eDels",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eDels._simp_1_2",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds",
@@ -10893,6 +10884,17 @@
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.insertion",
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.merging",
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.order",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_1",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_2",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_3",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_4",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_5",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_6",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_7",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_8",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_9",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.sound",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic",
@@ -11171,6 +11173,8 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
+        "Sal.MRDTs.Paper1.Automation.guarded_fold_projection",
+        "Sal.MRDTs.Paper1.Automation.map_filter_project",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.ClosedJoinAt",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_execution",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_mintCertified",
@@ -18814,16 +18818,6 @@
         "Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_5",
         "Sal.MRDTs.Instances.EmbedRGA.e_vis_of_rc_of_honest",
         "Sal.MRDTs.Instances.EmbedRGA.e_wf_of_enum",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_1",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_10",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_11",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_2",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_3",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_4",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_5",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_8",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_9",
         "Sal.MRDTs.Instances.EmbedRGA.esorted_ext",
         "Sal.MRDTs.Instances.EmbedRGA.esorted_ext.match_1_1",
         "Sal.MRDTs.Instances.EmbedRGA.generation",
@@ -18838,7 +18832,6 @@
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_7",
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_8",
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq.match_1",
-        "Sal.MRDTs.Instances.EmbedRGA.map_eProj_filter",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eDels",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eDels._simp_1_2",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds",
@@ -19059,6 +19052,17 @@
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.insertion",
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.merging",
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.order",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_1",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_2",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_3",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_4",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_5",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_6",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_7",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_8",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_9",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.sound",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic",
@@ -19337,6 +19341,8 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
+        "Sal.MRDTs.Paper1.Automation.guarded_fold_projection",
+        "Sal.MRDTs.Paper1.Automation.map_filter_project",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.ClosedJoinAt",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_execution",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_mintCertified",
@@ -20084,16 +20090,6 @@
         "Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_5",
         "Sal.MRDTs.Instances.EmbedRGA.e_vis_of_rc_of_honest",
         "Sal.MRDTs.Instances.EmbedRGA.e_wf_of_enum",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_1",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_10",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_11",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_2",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_3",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_4",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_5",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_8",
-        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_9",
         "Sal.MRDTs.Instances.EmbedRGA.esorted_ext",
         "Sal.MRDTs.Instances.EmbedRGA.esorted_ext.match_1_1",
         "Sal.MRDTs.Instances.EmbedRGA.generation",
@@ -20108,7 +20104,6 @@
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_7",
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_8",
         "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq.match_1",
-        "Sal.MRDTs.Instances.EmbedRGA.map_eProj_filter",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eDels",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eDels._simp_1_2",
         "Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds",
@@ -20329,6 +20324,17 @@
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.insertion",
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.merging",
         "Sal.MRDTs.Paper1.Automation.EmbeddedPrimitives.order",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_1",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_2",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_3",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_4",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_5",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_6",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_7",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_8",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step._proof_1_9",
+        "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.sound",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic",
@@ -20607,6 +20613,8 @@
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared",
         "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble",
+        "Sal.MRDTs.Paper1.Automation.guarded_fold_projection",
+        "Sal.MRDTs.Paper1.Automation.map_filter_project",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.ClosedJoinAt",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_execution",
         "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_mintCertified",
@@ -81394,11 +81402,6 @@
         "Sal.MRDTs.Instances.EfficientORSet.early_backwards",
         "Sal.MRDTs.Instances.EfficientORSet.element",
         "Sal.MRDTs.Instances.EfficientORSet.elements",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_4",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_5",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_6",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_7",
         "Sal.MRDTs.Instances.EfficientORSet.exists_sorted",
         "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp",
         "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq",
@@ -81652,6 +81655,15 @@
         "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.rec",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.witness",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.verify",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.abstract",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.action",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.concrete",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.key",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.mk",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.project_update",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.representative",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.valid",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic",
@@ -81794,6 +81806,20 @@
         "Sal.MRDTs.Paper1.Automation.QueryLift.scheme._proof_2",
         "Sal.MRDTs.Paper1.Automation.QueryLift.transport",
         "Sal.MRDTs.Paper1.Automation.QueryLift.withQuery",
+        "Sal.MRDTs.Paper1.Automation.SetAction",
+        "Sal.MRDTs.Paper1.Automation.SetAction.Valid",
+        "Sal.MRDTs.Paper1.Automation.SetAction.add",
+        "Sal.MRDTs.Paper1.Automation.SetAction.casesOn",
+        "Sal.MRDTs.Paper1.Automation.SetAction.elements",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_10",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_7",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_8",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_9",
+        "Sal.MRDTs.Paper1.Automation.SetAction.rec",
+        "Sal.MRDTs.Paper1.Automation.SetAction.records",
+        "Sal.MRDTs.Paper1.Automation.SetAction.records.match_1",
+        "Sal.MRDTs.Paper1.Automation.SetAction.remove",
         "Sal.MRDTs.Paper1.Automation.Signature",
         "Sal.MRDTs.Paper1.Automation.Signature.AppOp",
         "Sal.MRDTs.Paper1.Automation.Signature.Bad",
@@ -81976,10 +82002,21 @@
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.different_elements_commute._proof_1_6",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.different_elements_commute._simp_1_1",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.different_elements_commute._simp_1_2",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_1",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_2",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_3",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_4",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_5",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription.match_1",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.model",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.no_chain",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.noncomm_same_element",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription._proof_1",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription._proof_2",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription._proof_3",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation._proof_1",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation._proof_2",
@@ -82076,6 +82113,13 @@
         "Sal.MRDTs.Paper1.LocalCoverage.nested_enumeration._simp_1_1",
         "Sal.MRDTs.Paper1.LocalCoverage.nested_graph_acyclic",
         "Sal.MRDTs.Paper1.LocalCoverage.nested_order_acyclic",
+        "Sal.MRDTs.Paper1.MachineProjection",
+        "Sal.MRDTs.Paper1.MachineProjection.initial",
+        "Sal.MRDTs.Paper1.MachineProjection.language_commutes",
+        "Sal.MRDTs.Paper1.MachineProjection.mk",
+        "Sal.MRDTs.Paper1.MachineProjection.observes",
+        "Sal.MRDTs.Paper1.MachineProjection.project",
+        "Sal.MRDTs.Paper1.MachineProjection.update",
         "Sal.MRDTs.Paper1.OperationPolicy",
         "Sal.MRDTs.Paper1.OperationPolicy.before",
         "Sal.MRDTs.Paper1.OperationPolicy.lift",
@@ -82412,11 +82456,6 @@
         "Sal.MRDTs.Instances.EfficientORSet.early_backwards",
         "Sal.MRDTs.Instances.EfficientORSet.element",
         "Sal.MRDTs.Instances.EfficientORSet.elements",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_4",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_5",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_6",
-        "Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_7",
         "Sal.MRDTs.Instances.EfficientORSet.exists_sorted",
         "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp",
         "Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq",
@@ -82670,6 +82709,15 @@
         "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.rec",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.witness",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.verify",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.abstract",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.action",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.concrete",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.key",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.mk",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.project_update",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.representative",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.valid",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic",
@@ -82812,6 +82860,20 @@
         "Sal.MRDTs.Paper1.Automation.QueryLift.scheme._proof_2",
         "Sal.MRDTs.Paper1.Automation.QueryLift.transport",
         "Sal.MRDTs.Paper1.Automation.QueryLift.withQuery",
+        "Sal.MRDTs.Paper1.Automation.SetAction",
+        "Sal.MRDTs.Paper1.Automation.SetAction.Valid",
+        "Sal.MRDTs.Paper1.Automation.SetAction.add",
+        "Sal.MRDTs.Paper1.Automation.SetAction.casesOn",
+        "Sal.MRDTs.Paper1.Automation.SetAction.elements",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_10",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_7",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_8",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_9",
+        "Sal.MRDTs.Paper1.Automation.SetAction.rec",
+        "Sal.MRDTs.Paper1.Automation.SetAction.records",
+        "Sal.MRDTs.Paper1.Automation.SetAction.records.match_1",
+        "Sal.MRDTs.Paper1.Automation.SetAction.remove",
         "Sal.MRDTs.Paper1.Automation.Signature",
         "Sal.MRDTs.Paper1.Automation.Signature.AppOp",
         "Sal.MRDTs.Paper1.Automation.Signature.Bad",
@@ -82994,10 +83056,21 @@
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.different_elements_commute._proof_1_6",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.different_elements_commute._simp_1_1",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.different_elements_commute._simp_1_2",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_1",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_2",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_3",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_4",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription._proof_5",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription.match_1",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.model",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.no_chain",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.noncomm_same_element",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription._proof_1",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription._proof_2",
+        "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription._proof_3",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation._proof_1",
         "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation._proof_2",
@@ -83094,6 +83167,13 @@
         "Sal.MRDTs.Paper1.LocalCoverage.nested_enumeration._simp_1_1",
         "Sal.MRDTs.Paper1.LocalCoverage.nested_graph_acyclic",
         "Sal.MRDTs.Paper1.LocalCoverage.nested_order_acyclic",
+        "Sal.MRDTs.Paper1.MachineProjection",
+        "Sal.MRDTs.Paper1.MachineProjection.initial",
+        "Sal.MRDTs.Paper1.MachineProjection.language_commutes",
+        "Sal.MRDTs.Paper1.MachineProjection.mk",
+        "Sal.MRDTs.Paper1.MachineProjection.observes",
+        "Sal.MRDTs.Paper1.MachineProjection.project",
+        "Sal.MRDTs.Paper1.MachineProjection.update",
         "Sal.MRDTs.Paper1.OperationPolicy",
         "Sal.MRDTs.Paper1.OperationPolicy.before",
         "Sal.MRDTs.Paper1.OperationPolicy.lift",
@@ -86778,6 +86858,15 @@
         "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.rec",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.witness",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.verify",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.abstract",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.action",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.concrete",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.key",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.mk",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.project_update",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.representative",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.valid",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic",
@@ -86914,6 +87003,20 @@
         "Sal.MRDTs.Paper1.Automation.QueryLift.scheme._proof_2",
         "Sal.MRDTs.Paper1.Automation.QueryLift.transport",
         "Sal.MRDTs.Paper1.Automation.QueryLift.withQuery",
+        "Sal.MRDTs.Paper1.Automation.SetAction",
+        "Sal.MRDTs.Paper1.Automation.SetAction.Valid",
+        "Sal.MRDTs.Paper1.Automation.SetAction.add",
+        "Sal.MRDTs.Paper1.Automation.SetAction.casesOn",
+        "Sal.MRDTs.Paper1.Automation.SetAction.elements",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_10",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_7",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_8",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_9",
+        "Sal.MRDTs.Paper1.Automation.SetAction.rec",
+        "Sal.MRDTs.Paper1.Automation.SetAction.records",
+        "Sal.MRDTs.Paper1.Automation.SetAction.records.match_1",
+        "Sal.MRDTs.Paper1.Automation.SetAction.remove",
         "Sal.MRDTs.Paper1.Automation.Signature",
         "Sal.MRDTs.Paper1.Automation.Signature.AppOp",
         "Sal.MRDTs.Paper1.Automation.Signature.Bad",
@@ -87096,25 +87199,14 @@
         "Sal.MRDTs.Paper1.HistoryMachine.commutes_of_diamond",
         "Sal.MRDTs.Paper1.HistoryMachine.initial",
         "Sal.MRDTs.Paper1.HistoryMachine.mk",
-        "Sal.MRDTs.Paper1.HistoryMachine.runs_withInputs_iff",
         "Sal.MRDTs.Paper1.HistoryMachine.toSpec",
         "Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_1",
         "Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_2",
-        "Sal.MRDTs.Paper1.HistoryMachine.toSpec_withInputs",
         "Sal.MRDTs.Paper1.HistoryMachine.transition",
-        "Sal.MRDTs.Paper1.HistoryMachine.withInputs",
         "Sal.MRDTs.Paper1.HistorySpec",
         "Sal.MRDTs.Paper1.HistorySpec.Commutes",
         "Sal.MRDTs.Paper1.HistorySpec.admits",
-        "Sal.MRDTs.Paper1.HistorySpec.casesOn",
-        "Sal.MRDTs.Paper1.HistorySpec.empty",
-        "Sal.MRDTs.Paper1.HistorySpec.ext",
         "Sal.MRDTs.Paper1.HistorySpec.mk",
-        "Sal.MRDTs.Paper1.HistorySpec.prefix_closed",
-        "Sal.MRDTs.Paper1.HistorySpec.rec",
-        "Sal.MRDTs.Paper1.HistorySpec.withInputs",
-        "Sal.MRDTs.Paper1.HistorySpec.withInputs._proof_1",
-        "Sal.MRDTs.Paper1.HistorySpec.withInputs_commutes",
         "Sal.MRDTs.Paper1.LocalCoverage.Acyclic",
         "Sal.MRDTs.Paper1.LocalCoverage.add_sink_edges",
         "Sal.MRDTs.Paper1.LocalCoverage.jointOrder",
@@ -87122,6 +87214,13 @@
         "Sal.MRDTs.Paper1.LocalCoverage.nested_enumeration._simp_1_1",
         "Sal.MRDTs.Paper1.LocalCoverage.nested_graph_acyclic",
         "Sal.MRDTs.Paper1.LocalCoverage.nested_order_acyclic",
+        "Sal.MRDTs.Paper1.MachineProjection",
+        "Sal.MRDTs.Paper1.MachineProjection.initial",
+        "Sal.MRDTs.Paper1.MachineProjection.language_commutes",
+        "Sal.MRDTs.Paper1.MachineProjection.mk",
+        "Sal.MRDTs.Paper1.MachineProjection.observes",
+        "Sal.MRDTs.Paper1.MachineProjection.project",
+        "Sal.MRDTs.Paper1.MachineProjection.update",
         "Sal.MRDTs.Paper1.ORSet.ConcreteRep.joint_maximal",
         "Sal.MRDTs.Paper1.ORSet.ConcreteRep.peel_choice",
         "Sal.MRDTs.Paper1.ORSet.ConcreteRep.representation",
@@ -87130,9 +87229,15 @@
         "Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility",
         "Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound",
         "Sal.MRDTs.Paper1.ORSet.EventSpec.model",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription._proof_1",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription._proof_2",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription._proof_3",
         "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation._proof_1",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation._proof_2",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation._proof_3",
         "Sal.MRDTs.Paper1.ORSet.EventSpec.spec",
-        "Sal.MRDTs.Paper1.ORSet.EventSpec.spec_eq",
         "Sal.MRDTs.Paper1.ORSet.Guarded.laws",
         "Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs",
         "Sal.MRDTs.Paper1.ORSet.RawExecution.certificate",
@@ -87164,7 +87269,6 @@
         "Sal.MRDTs.Paper1.ORSet.Update.remove.injEq",
         "Sal.MRDTs.Paper1.ORSet.Update.remove.noConfusion",
         "Sal.MRDTs.Paper1.ORSet.abstractStep",
-        "Sal.MRDTs.Paper1.ORSet.commutationCompatibility",
         "Sal.MRDTs.Paper1.ORSet.commute_of_no_conflict",
         "Sal.MRDTs.Paper1.ORSet.commute_of_no_conflict._proof_1_2",
         "Sal.MRDTs.Paper1.ORSet.commute_of_no_conflict._proof_1_3",
@@ -87173,7 +87277,11 @@
         "Sal.MRDTs.Paper1.ORSet.conflict",
         "Sal.MRDTs.Paper1.ORSet.eqExcept_fold",
         "Sal.MRDTs.Paper1.ORSet.eqExcept_step",
-        "Sal.MRDTs.Paper1.ORSet.eventCommutationCompatibility",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription._proof_1",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription._proof_2",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription._proof_3",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription.match_1",
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate",
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq",
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_1",
@@ -87185,7 +87293,6 @@
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq.match_1",
         "Sal.MRDTs.Paper1.ORSet.instReprUpdate.repr.match_1",
         "Sal.MRDTs.Paper1.ORSet.issuance",
-        "Sal.MRDTs.Paper1.ORSet.language_commutes_of_concrete",
         "Sal.MRDTs.Paper1.ORSet.merge",
         "Sal.MRDTs.Paper1.ORSet.noncomm_iff_rc",
         "Sal.MRDTs.Paper1.ORSet.order",
@@ -87199,17 +87306,8 @@
         "Sal.MRDTs.Paper1.ORSet.restrictedLaws",
         "Sal.MRDTs.Paper1.ORSet.restrictedLaws._simp_1_1",
         "Sal.MRDTs.Paper1.ORSet.restrictedLaws._simp_1_3",
-        "Sal.MRDTs.Paper1.ORSet.simulation",
-        "Sal.MRDTs.Paper1.ORSet.simulation._proof_1",
-        "Sal.MRDTs.Paper1.ORSet.simulation._proof_2",
-        "Sal.MRDTs.Paper1.ORSet.spec",
         "Sal.MRDTs.Paper1.ORSet.step",
         "Sal.MRDTs.Paper1.ORSet.view",
-        "Sal.MRDTs.Paper1.ORSet.view_empty",
-        "Sal.MRDTs.Paper1.ORSet.view_step",
-        "Sal.MRDTs.Paper1.ORSet.view_step._simp_1_6",
-        "Sal.MRDTs.Paper1.ORSet.view_step._simp_1_7",
-        "Sal.MRDTs.Paper1.ORSet.view_step._simp_1_8",
         "Sal.MRDTs.Paper1.OperationPolicy",
         "Sal.MRDTs.Paper1.OperationPolicy.before",
         "Sal.MRDTs.Paper1.OperationPolicy.lift",
@@ -87231,18 +87329,9 @@
         "Sal.MRDTs.Paper1.Runs.split",
         "Sal.MRDTs.Paper1.SeqLabel",
         "Sal.MRDTs.Paper1.SeqLabel.casesOn",
-        "Sal.MRDTs.Paper1.SeqLabel.mapUpdate",
-        "Sal.MRDTs.Paper1.SeqLabel.mapUpdate.match_1",
         "Sal.MRDTs.Paper1.SeqLabel.query",
         "Sal.MRDTs.Paper1.SeqLabel.rec",
         "Sal.MRDTs.Paper1.SeqLabel.update",
-        "Sal.MRDTs.Paper1.SequentialSimulation",
-        "Sal.MRDTs.Paper1.SequentialSimulation.Rel",
-        "Sal.MRDTs.Paper1.SequentialSimulation.initial",
-        "Sal.MRDTs.Paper1.SequentialSimulation.mk",
-        "Sal.MRDTs.Paper1.SequentialSimulation.observes",
-        "Sal.MRDTs.Paper1.SequentialSimulation.update",
-        "Sal.MRDTs.Paper1.SequentialSimulation.withInputs",
         "Sal.MRDTs.Paper1.applySeq_bubble_to_front_loOn_guarded",
         "Sal.MRDTs.Paper1.applySeq_swap_loOn_incomparable_guarded",
         "Sal.MRDTs.Paper1.applySeq_swap_via_cond_comm_lift_guarded",
@@ -87757,6 +87846,15 @@
         "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.rec",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.witness",
         "Sal.MRDTs.Paper1.Automation.CommonVerification.verify",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.abstract",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.action",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.concrete",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.key",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.mk",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.project_update",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.representative",
+        "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.valid",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation",
         "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic",
@@ -87893,6 +87991,20 @@
         "Sal.MRDTs.Paper1.Automation.QueryLift.scheme._proof_2",
         "Sal.MRDTs.Paper1.Automation.QueryLift.transport",
         "Sal.MRDTs.Paper1.Automation.QueryLift.withQuery",
+        "Sal.MRDTs.Paper1.Automation.SetAction",
+        "Sal.MRDTs.Paper1.Automation.SetAction.Valid",
+        "Sal.MRDTs.Paper1.Automation.SetAction.add",
+        "Sal.MRDTs.Paper1.Automation.SetAction.casesOn",
+        "Sal.MRDTs.Paper1.Automation.SetAction.elements",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_10",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_7",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_8",
+        "Sal.MRDTs.Paper1.Automation.SetAction.image_records._simp_1_9",
+        "Sal.MRDTs.Paper1.Automation.SetAction.rec",
+        "Sal.MRDTs.Paper1.Automation.SetAction.records",
+        "Sal.MRDTs.Paper1.Automation.SetAction.records.match_1",
+        "Sal.MRDTs.Paper1.Automation.SetAction.remove",
         "Sal.MRDTs.Paper1.Automation.Signature",
         "Sal.MRDTs.Paper1.Automation.Signature.AppOp",
         "Sal.MRDTs.Paper1.Automation.Signature.Bad",
@@ -88075,25 +88187,14 @@
         "Sal.MRDTs.Paper1.HistoryMachine.commutes_of_diamond",
         "Sal.MRDTs.Paper1.HistoryMachine.initial",
         "Sal.MRDTs.Paper1.HistoryMachine.mk",
-        "Sal.MRDTs.Paper1.HistoryMachine.runs_withInputs_iff",
         "Sal.MRDTs.Paper1.HistoryMachine.toSpec",
         "Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_1",
         "Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_2",
-        "Sal.MRDTs.Paper1.HistoryMachine.toSpec_withInputs",
         "Sal.MRDTs.Paper1.HistoryMachine.transition",
-        "Sal.MRDTs.Paper1.HistoryMachine.withInputs",
         "Sal.MRDTs.Paper1.HistorySpec",
         "Sal.MRDTs.Paper1.HistorySpec.Commutes",
         "Sal.MRDTs.Paper1.HistorySpec.admits",
-        "Sal.MRDTs.Paper1.HistorySpec.casesOn",
-        "Sal.MRDTs.Paper1.HistorySpec.empty",
-        "Sal.MRDTs.Paper1.HistorySpec.ext",
         "Sal.MRDTs.Paper1.HistorySpec.mk",
-        "Sal.MRDTs.Paper1.HistorySpec.prefix_closed",
-        "Sal.MRDTs.Paper1.HistorySpec.rec",
-        "Sal.MRDTs.Paper1.HistorySpec.withInputs",
-        "Sal.MRDTs.Paper1.HistorySpec.withInputs._proof_1",
-        "Sal.MRDTs.Paper1.HistorySpec.withInputs_commutes",
         "Sal.MRDTs.Paper1.LocalCoverage.Acyclic",
         "Sal.MRDTs.Paper1.LocalCoverage.add_sink_edges",
         "Sal.MRDTs.Paper1.LocalCoverage.jointOrder",
@@ -88101,6 +88202,13 @@
         "Sal.MRDTs.Paper1.LocalCoverage.nested_enumeration._simp_1_1",
         "Sal.MRDTs.Paper1.LocalCoverage.nested_graph_acyclic",
         "Sal.MRDTs.Paper1.LocalCoverage.nested_order_acyclic",
+        "Sal.MRDTs.Paper1.MachineProjection",
+        "Sal.MRDTs.Paper1.MachineProjection.initial",
+        "Sal.MRDTs.Paper1.MachineProjection.language_commutes",
+        "Sal.MRDTs.Paper1.MachineProjection.mk",
+        "Sal.MRDTs.Paper1.MachineProjection.observes",
+        "Sal.MRDTs.Paper1.MachineProjection.project",
+        "Sal.MRDTs.Paper1.MachineProjection.update",
         "Sal.MRDTs.Paper1.ORSet.ConcreteRep.joint_maximal",
         "Sal.MRDTs.Paper1.ORSet.ConcreteRep.peel_choice",
         "Sal.MRDTs.Paper1.ORSet.ConcreteRep.representation",
@@ -88109,9 +88217,15 @@
         "Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility",
         "Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound",
         "Sal.MRDTs.Paper1.ORSet.EventSpec.model",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription._proof_1",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription._proof_2",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription._proof_3",
         "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation._proof_1",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation._proof_2",
+        "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation._proof_3",
         "Sal.MRDTs.Paper1.ORSet.EventSpec.spec",
-        "Sal.MRDTs.Paper1.ORSet.EventSpec.spec_eq",
         "Sal.MRDTs.Paper1.ORSet.Guarded.laws",
         "Sal.MRDTs.Paper1.ORSet.GuardedRawVC.mergeVCs",
         "Sal.MRDTs.Paper1.ORSet.RawExecution.certificate",
@@ -88143,7 +88257,6 @@
         "Sal.MRDTs.Paper1.ORSet.Update.remove.injEq",
         "Sal.MRDTs.Paper1.ORSet.Update.remove.noConfusion",
         "Sal.MRDTs.Paper1.ORSet.abstractStep",
-        "Sal.MRDTs.Paper1.ORSet.commutationCompatibility",
         "Sal.MRDTs.Paper1.ORSet.commute_of_no_conflict",
         "Sal.MRDTs.Paper1.ORSet.commute_of_no_conflict._proof_1_2",
         "Sal.MRDTs.Paper1.ORSet.commute_of_no_conflict._proof_1_3",
@@ -88152,7 +88265,11 @@
         "Sal.MRDTs.Paper1.ORSet.conflict",
         "Sal.MRDTs.Paper1.ORSet.eqExcept_fold",
         "Sal.MRDTs.Paper1.ORSet.eqExcept_step",
-        "Sal.MRDTs.Paper1.ORSet.eventCommutationCompatibility",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription._proof_1",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription._proof_2",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription._proof_3",
+        "Sal.MRDTs.Paper1.ORSet.finiteDescription.match_1",
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate",
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq",
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_1",
@@ -88164,7 +88281,6 @@
         "Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq.match_1",
         "Sal.MRDTs.Paper1.ORSet.instReprUpdate.repr.match_1",
         "Sal.MRDTs.Paper1.ORSet.issuance",
-        "Sal.MRDTs.Paper1.ORSet.language_commutes_of_concrete",
         "Sal.MRDTs.Paper1.ORSet.merge",
         "Sal.MRDTs.Paper1.ORSet.noncomm_iff_rc",
         "Sal.MRDTs.Paper1.ORSet.order",
@@ -88178,17 +88294,8 @@
         "Sal.MRDTs.Paper1.ORSet.restrictedLaws",
         "Sal.MRDTs.Paper1.ORSet.restrictedLaws._simp_1_1",
         "Sal.MRDTs.Paper1.ORSet.restrictedLaws._simp_1_3",
-        "Sal.MRDTs.Paper1.ORSet.simulation",
-        "Sal.MRDTs.Paper1.ORSet.simulation._proof_1",
-        "Sal.MRDTs.Paper1.ORSet.simulation._proof_2",
-        "Sal.MRDTs.Paper1.ORSet.spec",
         "Sal.MRDTs.Paper1.ORSet.step",
         "Sal.MRDTs.Paper1.ORSet.view",
-        "Sal.MRDTs.Paper1.ORSet.view_empty",
-        "Sal.MRDTs.Paper1.ORSet.view_step",
-        "Sal.MRDTs.Paper1.ORSet.view_step._simp_1_6",
-        "Sal.MRDTs.Paper1.ORSet.view_step._simp_1_7",
-        "Sal.MRDTs.Paper1.ORSet.view_step._simp_1_8",
         "Sal.MRDTs.Paper1.OperationPolicy",
         "Sal.MRDTs.Paper1.OperationPolicy.before",
         "Sal.MRDTs.Paper1.OperationPolicy.lift",
@@ -88210,18 +88317,9 @@
         "Sal.MRDTs.Paper1.Runs.split",
         "Sal.MRDTs.Paper1.SeqLabel",
         "Sal.MRDTs.Paper1.SeqLabel.casesOn",
-        "Sal.MRDTs.Paper1.SeqLabel.mapUpdate",
-        "Sal.MRDTs.Paper1.SeqLabel.mapUpdate.match_1",
         "Sal.MRDTs.Paper1.SeqLabel.query",
         "Sal.MRDTs.Paper1.SeqLabel.rec",
         "Sal.MRDTs.Paper1.SeqLabel.update",
-        "Sal.MRDTs.Paper1.SequentialSimulation",
-        "Sal.MRDTs.Paper1.SequentialSimulation.Rel",
-        "Sal.MRDTs.Paper1.SequentialSimulation.initial",
-        "Sal.MRDTs.Paper1.SequentialSimulation.mk",
-        "Sal.MRDTs.Paper1.SequentialSimulation.observes",
-        "Sal.MRDTs.Paper1.SequentialSimulation.update",
-        "Sal.MRDTs.Paper1.SequentialSimulation.withInputs",
         "Sal.MRDTs.Paper1.applySeq_bubble_to_front_loOn_guarded",
         "Sal.MRDTs.Paper1.applySeq_swap_loOn_incomparable_guarded",
         "Sal.MRDTs.Paper1.applySeq_swap_via_cond_comm_lift_guarded",
@@ -103407,8 +103505,8 @@
     "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.emptyPolicy": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory",
-      "start_line": 71,
-      "end_line": 72,
+      "start_line": 72,
+      "end_line": 73,
       "kind": "definition"
     },
     "Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate.invariant": {
@@ -103813,22 +103911,22 @@
     "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory",
-      "start_line": 149,
-      "end_line": 175,
+      "start_line": 150,
+      "end_line": 176,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_full_history": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory",
-      "start_line": 104,
-      "end_line": 136,
+      "start_line": 105,
+      "end_line": 137,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_history_data": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory",
-      "start_line": 15,
-      "end_line": 69,
+      "start_line": 16,
+      "end_line": 70,
       "kind": "theorem"
     },
     "Sal.MRDTs.Instances.ProductionRGA.embedLegal_of_seqOK": {
@@ -103932,15 +104030,15 @@
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_canonical_specVisibility": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 366,
-      "end_line": 399,
+      "start_line": 367,
+      "end_line": 400,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_causal_delete_insert": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 86,
-      "end_line": 132,
+      "start_line": 87,
+      "end_line": 133,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAScope.Embedded.wellformed": {
@@ -103960,43 +104058,43 @@
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_deletes_language": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 317,
-      "end_line": 334,
+      "start_line": 318,
+      "end_line": 335,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_swap": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 222,
-      "end_line": 236,
+      "start_line": 223,
+      "end_line": 237,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.PrefixChecks": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 182,
-      "end_line": 184,
+      "start_line": 183,
+      "end_line": 185,
       "kind": "definition"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_congr": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 214,
-      "end_line": 220,
+      "start_line": 215,
+      "end_line": 221,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_splits": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 186,
-      "end_line": 204,
+      "start_line": 187,
+      "end_line": 205,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_append": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 206,
-      "end_line": 212,
+      "start_line": 207,
+      "end_line": 213,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_legal_prefix": {
@@ -104009,50 +104107,71 @@
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCheck": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 238,
-      "end_line": 248,
+      "start_line": 239,
+      "end_line": 249,
       "kind": "definition"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_checks_legal": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 250,
-      "end_line": 253,
+      "start_line": 251,
+      "end_line": 254,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_language": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 306,
-      "end_line": 315,
+      "start_line": 307,
+      "end_line": 316,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_steps": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 54,
-      "end_line": 69,
+      "start_line": 55,
+      "end_line": 70,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_filter_splice": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 9,
-      "end_line": 22,
+      "start_line": 10,
+      "end_line": 23,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_legal_swap": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 255,
-      "end_line": 270,
+      "start_line": 256,
+      "end_line": 271,
       "kind": "theorem"
     },
-    "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound": {
+    "Sal.MRDTs.Instances.EmbedRGA.eSpecFold": {
       "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
       "module": "Sal.MRDTs.Instances.EmbedRGASequential",
-      "start_line": 436,
-      "end_line": 600,
+      "start_line": 49,
+      "end_line": 50,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.sound": {
+      "file": "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge",
+      "start_line": 177,
+      "end_line": 183,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Instances.EmbedRGA.eSpecFold_snoc": {
+      "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
+      "module": "Sal.MRDTs.Instances.EmbedRGASequential",
+      "start_line": 52,
+      "end_line": 56,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge.projection_step": {
+      "file": "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge",
+      "start_line": 18,
+      "end_line": 175,
       "kind": "theorem"
     },
     "Sal.MRDTs.Instances.EmbedRGA.e_fold_id_lt": {
@@ -104118,19 +104237,12 @@
       "end_line": 305,
       "kind": "definition"
     },
-    "Sal.MRDTs.Instances.EmbedRGA.eSpecFold_snoc": {
-      "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-      "module": "Sal.MRDTs.Instances.EmbedRGASequential",
-      "start_line": 52,
-      "end_line": 56,
+    "Sal.MRDTs.Paper1.Automation.map_filter_project": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.GenericGuardedFold",
+      "start_line": 23,
+      "end_line": 31,
       "kind": "theorem"
-    },
-    "Sal.MRDTs.Instances.EmbedRGA.eSpecFold": {
-      "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-      "module": "Sal.MRDTs.Instances.EmbedRGASequential",
-      "start_line": 49,
-      "end_line": 50,
-      "kind": "definition"
     },
     "Sal.EmbedRGA.display_iff_chainBefore": {
       "file": "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean",
@@ -104195,13 +104307,6 @@
       "end_line": 75,
       "kind": "theorem"
     },
-    "Sal.MRDTs.Instances.EmbedRGA.map_eProj_filter": {
-      "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-      "module": "Sal.MRDTs.Instances.EmbedRGASequential",
-      "start_line": 400,
-      "end_line": 409,
-      "kind": "theorem"
-    },
     "Sal.MRDTs.Instances.EmbedRGA.e_fold_chain": {
       "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
       "module": "Sal.MRDTs.Instances.EmbedRGASequential",
@@ -104216,11 +104321,18 @@
       "end_line": 237,
       "kind": "theorem"
     },
+    "Sal.MRDTs.Paper1.Automation.guarded_fold_projection": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.GenericGuardedFold",
+      "start_line": 7,
+      "end_line": 21,
+      "kind": "theorem"
+    },
     "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_respects_invariant": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory",
-      "start_line": 74,
-      "end_line": 102,
+      "start_line": 75,
+      "end_line": 103,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCanonical_respects_of": {
@@ -104261,8 +104373,8 @@
     "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.invariant_swaps": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory",
-      "start_line": 138,
-      "end_line": 147,
+      "start_line": 139,
+      "end_line": 148,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAInvariantReplay.storedCanonical": {
@@ -108034,36 +108146,36 @@
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_canonical_specVisibility": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 401,
-      "end_line": 434,
+      "start_line": 402,
+      "end_line": 435,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_causal_delete_insert": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 134,
-      "end_line": 180,
+      "start_line": 135,
+      "end_line": 181,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_deletes_language": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 347,
-      "end_line": 364,
+      "start_line": 348,
+      "end_line": 365,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.sidedCheck": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 272,
-      "end_line": 282,
+      "start_line": 273,
+      "end_line": 283,
       "kind": "definition"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_checks_legal": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 284,
-      "end_line": 287,
+      "start_line": 285,
+      "end_line": 288,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_legal_prefix": {
@@ -108076,36 +108188,36 @@
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_delete_insert_language": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 336,
-      "end_line": 345,
+      "start_line": 337,
+      "end_line": 346,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_delete_insert_legal_swap": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 289,
-      "end_line": 304,
+      "start_line": 290,
+      "end_line": 305,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_delete_insert_steps": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 71,
-      "end_line": 84,
+      "start_line": 72,
+      "end_line": 85,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_filter_splice_before": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 39,
-      "end_line": 52,
+      "start_line": 40,
+      "end_line": 53,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.sided_filter_splice_after": {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "module": "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
-      "start_line": 24,
-      "end_line": 37,
+      "start_line": 25,
+      "end_line": 38,
       "kind": "theorem"
     },
     "Sal.MRDTs.Instances.ProductionRGA.sidedRel": {
@@ -114383,8 +114495,8 @@
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.conflict": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 24,
-      "end_line": 25,
+      "start_line": 25,
+      "end_line": 26,
       "kind": "definition"
     },
     "Sal.MRDTs.Paper1.Automation.MaskKitAutomation.Description.carrier": {
@@ -114446,15 +114558,15 @@
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.spec": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 22,
-      "end_line": 22,
+      "start_line": 23,
+      "end_line": 23,
       "kind": "definition"
     },
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.model": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 16,
-      "end_line": 20,
+      "start_line": 17,
+      "end_line": 21,
       "kind": "definition"
     },
     "Sal.MRDTs.Instances.EfficientORSet.setStep": {
@@ -114474,22 +114586,190 @@
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 76,
-      "end_line": 76,
+      "start_line": 73,
+      "end_line": 73,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 64,
-      "end_line": 74,
+      "start_line": 63,
+      "end_line": 64,
       "kind": "definition"
     },
-    "Sal.MRDTs.Instances.EfficientORSet.elements_update": {
-      "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
-      "module": "Sal.MRDTs.Instances.EfficientORSet",
-      "start_line": 104,
-      "end_line": 129,
+    "Sal.MRDTs.Paper1.MachineProjection.project": {
+      "file": "Sal/MRDTs/Paper1/ProjectedSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.ProjectedSimulation",
+      "start_line": 13,
+      "end_line": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.MachineProjection": {
+      "file": "Sal/MRDTs/Paper1/ProjectedSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.ProjectedSimulation",
+      "start_line": 11,
+      "end_line": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.MachineProjection.mk": {
+      "file": "Sal/MRDTs/Paper1/ProjectedSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.ProjectedSimulation",
+      "start_line": 11,
+      "end_line": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.projectionDescription": {
+      "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
+      "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
+      "start_line": 57,
+      "end_line": 61,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.key": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 63,
+      "end_line": 63,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 57,
+      "end_line": 67,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 61,
+      "end_line": 61,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction.Valid": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 24,
+      "end_line": 28,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction.casesOn": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 9,
+      "end_line": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction.rec": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 9,
+      "end_line": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction.add": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 10,
+      "end_line": 10,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 9,
+      "end_line": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction.remove": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 11,
+      "end_line": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction.elements": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 20,
+      "end_line": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction.records": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 16,
+      "end_line": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.finiteDescription": {
+      "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
+      "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
+      "start_line": 44,
+      "end_line": 55,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.project_update": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 73,
+      "end_line": 77,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.SetAction.image_records": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 30,
+      "end_line": 54,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.concrete": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 66,
+      "end_line": 66,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.action": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 64,
+      "end_line": 64,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.valid": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 65,
+      "end_line": 65,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.abstract": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 67,
+      "end_line": 67,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.MachineProjection.update": {
+      "file": "Sal/MRDTs/Paper1/ProjectedSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.ProjectedSimulation",
+      "start_line": 15,
+      "end_line": 15,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.MachineProjection.initial": {
+      "file": "Sal/MRDTs/Paper1/ProjectedSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.ProjectedSimulation",
+      "start_line": 14,
+      "end_line": 14,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.MachineProjection.observes": {
+      "file": "Sal/MRDTs/Paper1/ProjectedSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.ProjectedSimulation",
+      "start_line": 16,
+      "end_line": 16,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.EfficientORSet.RawCertificate.representedVersions": {
@@ -114593,15 +114873,15 @@
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.noncomm_same_element": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 90,
-      "end_line": 93,
+      "start_line": 92,
+      "end_line": 95,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.different_elements_commute": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 78,
-      "end_line": 88,
+      "start_line": 80,
+      "end_line": 90,
       "kind": "theorem"
     },
     "Sal.MRDTs.Instances.EfficientORSet.exists_sorted": {
@@ -114635,8 +114915,8 @@
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.add_remove_noncomm": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 95,
-      "end_line": 104,
+      "start_line": 97,
+      "end_line": 106,
       "kind": "theorem"
     },
     "Sal.MRDTs.Instances.EfficientORSet.before_of_vis": {
@@ -114957,8 +115237,8 @@
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.no_chain": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 28,
-      "end_line": 32,
+      "start_line": 29,
+      "end_line": 33,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.EfficientORSet.Guarded.conditional": {
@@ -115027,8 +115307,22 @@
     "Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility": {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
-      "start_line": 43,
-      "end_line": 52,
+      "start_line": 66,
+      "end_line": 71,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.FiniteSetDescription.representative": {
+      "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+      "start_line": 79,
+      "end_line": 83,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.MachineProjection.language_commutes": {
+      "file": "Sal/MRDTs/Paper1/ProjectedSimulation.lean",
+      "module": "Sal.MRDTs.Paper1.ProjectedSimulation",
+      "start_line": 22,
+      "end_line": 32,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.DeterministicSpec.language_commutes": {
@@ -115475,8 +115769,8 @@
     "Sal.MRDTs.Paper1.ORSet.conflict": {
       "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
       "module": "Sal.MRDTs.Paper1.ORSetVerified",
-      "start_line": 8,
-      "end_line": 11,
+      "start_line": 9,
+      "end_line": 12,
       "kind": "definition"
     },
     "Sal.MRDTs.Paper1.ORSet.RawReplay.representation": {
@@ -115503,8 +115797,8 @@
     "Sal.MRDTs.Paper1.ORSet.issuance": {
       "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
       "module": "Sal.MRDTs.Paper1.ORSetVerified",
-      "start_line": 62,
-      "end_line": 64,
+      "start_line": 73,
+      "end_line": 75,
       "kind": "definition"
     },
     "Sal.MRDTs.Paper1.ORSet.EventSpec.spec": {
@@ -115545,8 +115839,8 @@
     "Sal.MRDTs.Paper1.ORSet.restrictedLaws": {
       "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
       "module": "Sal.MRDTs.Paper1.ORSetVerified",
-      "start_line": 22,
-      "end_line": 47,
+      "start_line": 23,
+      "end_line": 48,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.ORSet.rc_iff": {
@@ -115846,93 +116140,30 @@
     "Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound": {
       "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.ORSetEventSpec",
-      "start_line": 48,
-      "end_line": 48,
+      "start_line": 57,
+      "end_line": 57,
       "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation": {
       "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.ORSetEventSpec",
-      "start_line": 45,
-      "end_line": 46,
+      "start_line": 47,
+      "end_line": 48,
       "kind": "definition"
     },
-    "Sal.MRDTs.Paper1.ORSet.simulation": {
+    "Sal.MRDTs.Paper1.ORSet.EventSpec.projectionDescription": {
+      "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
+      "module": "Sal.MRDTs.Paper1.ORSetEventSpec",
+      "start_line": 41,
+      "end_line": 45,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ORSet.finiteDescription": {
       "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
       "module": "Sal.MRDTs.Paper1.ORSetVerified",
-      "start_line": 49,
-      "end_line": 57,
+      "start_line": 50,
+      "end_line": 59,
       "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.ORSet.spec": {
-      "file": "Sal/MRDTs/Paper1/ORSet.lean",
-      "module": "Sal.MRDTs.Paper1.ORSet",
-      "start_line": 134,
-      "end_line": 138,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.ORSet.view_step": {
-      "file": "Sal/MRDTs/Paper1/ORSet.lean",
-      "module": "Sal.MRDTs.Paper1.ORSet",
-      "start_line": 142,
-      "end_line": 152,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.SequentialSimulation.mk": {
-      "file": "Sal/MRDTs/Paper1/SequentialSimulation.lean",
-      "module": "Sal.MRDTs.Paper1.SequentialSimulation",
-      "start_line": 10,
-      "end_line": 10,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.SequentialSimulation": {
-      "file": "Sal/MRDTs/Paper1/SequentialSimulation.lean",
-      "module": "Sal.MRDTs.Paper1.SequentialSimulation",
-      "start_line": 10,
-      "end_line": 16,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.ORSet.view_empty": {
-      "file": "Sal/MRDTs/Paper1/ORSet.lean",
-      "module": "Sal.MRDTs.Paper1.ORSet",
-      "start_line": 140,
-      "end_line": 140,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.SequentialSimulation.withInputs": {
-      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
-      "module": "Sal.MRDTs.Paper1.EventBridge",
-      "start_line": 57,
-      "end_line": 63,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.SequentialSimulation.update": {
-      "file": "Sal/MRDTs/Paper1/SequentialSimulation.lean",
-      "module": "Sal.MRDTs.Paper1.SequentialSimulation",
-      "start_line": 14,
-      "end_line": 14,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.SequentialSimulation.Rel": {
-      "file": "Sal/MRDTs/Paper1/SequentialSimulation.lean",
-      "module": "Sal.MRDTs.Paper1.SequentialSimulation",
-      "start_line": 12,
-      "end_line": 12,
-      "kind": "definition"
-    },
-    "Sal.MRDTs.Paper1.SequentialSimulation.initial": {
-      "file": "Sal/MRDTs/Paper1/SequentialSimulation.lean",
-      "module": "Sal.MRDTs.Paper1.SequentialSimulation",
-      "start_line": 13,
-      "end_line": 13,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.SequentialSimulation.observes": {
-      "file": "Sal/MRDTs/Paper1/SequentialSimulation.lean",
-      "module": "Sal.MRDTs.Paper1.SequentialSimulation",
-      "start_line": 16,
-      "end_line": 16,
-      "kind": "theorem"
     },
     "Sal.MRDTs.Paper1.ORSet.RawExecution.compatibility": {
       "file": "Sal/MRDTs/Paper1/GuardedRawExactExecution.lean",
@@ -115944,36 +116175,8 @@
     "Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility": {
       "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
       "module": "Sal.MRDTs.Paper1.ORSetEventSpec",
-      "start_line": 33,
-      "end_line": 35,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.ORSet.eventCommutationCompatibility": {
-      "file": "Sal/MRDTs/Paper1/CommutationBridge.lean",
-      "module": "Sal.MRDTs.Paper1.CommutationBridge",
-      "start_line": 83,
-      "end_line": 90,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.ORSet.commutationCompatibility": {
-      "file": "Sal/MRDTs/Paper1/CommutationBridge.lean",
-      "module": "Sal.MRDTs.Paper1.CommutationBridge",
-      "start_line": 77,
-      "end_line": 81,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.ORSet.language_commutes_of_concrete": {
-      "file": "Sal/MRDTs/Paper1/ORSetSpecification.lean",
-      "module": "Sal.MRDTs.Paper1.ORSetSpecification",
-      "start_line": 11,
-      "end_line": 25,
-      "kind": "theorem"
-    },
-    "Sal.MRDTs.Paper1.ORSet.EventSpec.spec_eq": {
-      "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
-      "module": "Sal.MRDTs.Paper1.ORSetEventSpec",
-      "start_line": 22,
-      "end_line": 31,
+      "start_line": 50,
+      "end_line": 55,
       "kind": "theorem"
     },
     "_private.Sal.MRDTs.Paper1.GuardedRawExactExecution.0.Sal.MRDTs.Paper1.ORSet.RawExecution.virtual_reach": {
@@ -132335,12 +132538,15 @@
     "Sal/MRDTs/Paper1/Automation/CommutingInputs.lean": "d09134aa08999c4c64c78af03cc00d070f4ef669aa3531154e1fc1ba617eab61",
     "Sal/MRDTs/Paper1/Automation/Controls.lean": "bb5e89ae5b11b528aa214618599a96c143cdf2e69904220773ce0245ed073ff6",
     "Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean": "249db8e1b88d4758757d799a2c3bb65814e0046d1dc5986c7cb1fb6dd86561d4",
+    "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean": "d3a9fbdd6a76c62e2c00815f3ae5a498eca6a729d0588a36823fcafbd266ca39",
     "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean": "cc3989f1c92ed750987bb24c23c1d3b09121fa5ce4b170d0707206f6b8e36def",
+    "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean": "7d23d85b320147e04a99226926d7cf59bf520228b0d8c831da8ffc1f5a92122b",
     "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean": "e5a616eff3a6492b4d380777a2dc14e162b29e11a30d1fa0da778630c737c3ce",
     "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean": "4094564ca3a17fd3aeab2a5efd061bd13ddbe9a408e98577ce514bb26c6c2edd",
     "Sal/MRDTs/Paper1/Automation/GenericCertifiedIssuance.lean": "92700e5b9081f29b9c233f2dd662d3a2acd3f2ab1cfb12387ccbfed43d1f43d4",
     "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean": "9d76887ddf556ecf39c955fcd199d0ce04562268e8e7aa1de25ba2b58e1973b1",
     "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean": "9b18c9c0e34842e7286d733e98a6c5f23a5f22920c0e4e72b8ec92c8e397d3e1",
+    "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean": "fcf721a2d87bb0c1b5d9436ba1360cbc34ed390ad9d598ac43781d75ffcc1560",
     "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean": "ad31405125fc5d5fe7b9a3c61428b1506d5bb1629d45a1794f51fecfe182c8ae",
     "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean": "ec2db1d3f4a14bc6ab5442f70f91b0dd20dff1db49815b43c7ca19290cf09b34",
     "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean": "4effb462db33163dc0cdfb16982402ee06153a152facb005950014d79aa4b551",
@@ -132373,6 +132579,8 @@
     "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean": "ebfb90064ec7fb1cb6511d7b06b617a9f7fded91c3a684ddc50a344f78620ff0",
     "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean": "1f4f3eb29b6a105357de29cefe4c78fb92afdd1f58b3d8dde25d4bca500f85a9",
     "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean": "3e5cf8ae008b7d750988191bac41aaa4838aafaaa216ae8c0325fabe59d76b65",
+    "Sal/MRDTs/Paper1/Automation/SequentialBridgeControls.lean": "ae8e786436b26b6b2e72eef1964c80d689827e2d7c183b49e390de68295cc82a",
+    "Sal/MRDTs/Paper1/Automation/SetBridgeAutomationControls.lean": "0de49c7b00eb0c0bd14db5cc40fe9cf0fb973a1fcd2487540ae301e092928072",
     "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean": "54a91177bee4724f1b7dfce5d05cd3a9a1336855a96b8fb6d32e76bf8c01f0b0",
     "Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean": "5d36fbb05d85cf85457cf732c11a602c00045cd7e5b10535319ad04bc19398c8",
     "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean": "8eb6e6e5f26bd953177ab38da9d53a3d4fc4bb792e7808e6144aa1680720e2c8",
@@ -132421,12 +132629,12 @@
     "Sal/MRDTs/Paper1/CertifiedRGAExecution.lean": "6b2b26190fd5b2667ed778c2d0d07a512c46710dc0be6419b974e08db927a222",
     "Sal/MRDTs/Paper1/CertifiedRGAFugue.lean": "e3764e662b5bcec4fbc5e62023b2b8053d4063c07c140fc6b67ad266f6f23f01",
     "Sal/MRDTs/Paper1/CertifiedRGAHistory.lean": "6768fb7faf92006f9ebf7c9aff2afa90040e43aaa82c03578bef5aac26e8da54",
-    "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean": "643e4703543bfa94b4d4b6c70158a823b6edf98c1a60c91976d1f2a2326ef05e",
+    "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean": "ea463cf477af6db31ab82faafd8a222e869cb9bfc9f8a9b112bb6946d8c804cf",
     "Sal/MRDTs/Paper1/CertifiedRGAHistoryControls.lean": "4c406d96ee38302f73fc19e54a87f9bf2a29dc2dfdf203ff9e18cb59bb225ccf",
     "Sal/MRDTs/Paper1/CertifiedRGAInvariant.lean": "652938c26b95c95705fd9db8f0a9144ad18aa6d5797c443a3e6376b8e6cfd0c8",
     "Sal/MRDTs/Paper1/CertifiedRGAInvariantCertificate.lean": "d9f00cfaec9a78ab867d4b4472bbca1435920b4d19388bccd42a84ae6f686f8f",
     "Sal/MRDTs/Paper1/CertifiedRGAInvariantControls.lean": "8abbde4d3e31a4ee976b6a5d4a2483707badec7253b7421effe419a8f584f8c5",
-    "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean": "2ae6b47fe4e1a5d864ffabf4f552de178f94a771b58ae1e0f5506cae6ef965aa",
+    "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean": "e071ea84b78c8d448b15c8fa920ea3b92757f34c84112edb1141123627c9c2c3",
     "Sal/MRDTs/Paper1/CertifiedRGAInvariantReplay.lean": "3c50f7a257e68054de17bc8a6bf11b61e7a167553f022cfd6fce0a7bdcc08f28",
     "Sal/MRDTs/Paper1/CertifiedRGAIssuance.lean": "bda2f461d58fd5e66afe2e2354eb0e96c8a73e46751aca4697a0371fd5ab3fdf",
     "Sal/MRDTs/Paper1/CertifiedRGAOrderComparison.lean": "fad6d90f54ef5fdc7d86359f3de3ab8d1ef9daf39f0917c66252498aab15d355",
@@ -132465,7 +132673,7 @@
     "Sal/MRDTs/Paper1/ConcreteSimplePorts.lean": "2193ec548c860032a17c3b218ae775d5bd1f106cf5c61820cd1394b74f81c0d6",
     "Sal/MRDTs/Paper1/ConcreteVCExecution.lean": "6a7e5558626c9a6513fc6559e3631b799d249d613b29250d57e3094a3b0e5ba6",
     "Sal/MRDTs/Paper1/CriterionCounterexample.lean": "efffda062fec236f63700d37baf1de97e90db0151303c87bb64687ce2ca447c8",
-    "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean": "eeb4899af6f2fffde1a762853a284c611e89d557b7085aa34017a98687a0b832",
+    "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean": "d222453cb161cd36e4f4a7b92a8e21b4ca2f41716becd1d74ebb542aadc11485",
     "Sal/MRDTs/Paper1/EventBridge.lean": "0aaebd7e963bfa9a6b1756152e6849e3b0b524b858dd97e8a5e9d544c1529a7c",
     "Sal/MRDTs/Paper1/ExecutionTrace.lean": "1e194dc1b4f16f4a99fe45ad4584722463d9064ada2bba5a0a720407285af09e",
     "Sal/MRDTs/Paper1/GuardedConvergence.lean": "1be634968b088f093ee4e661c95798af13aedc2360aa3cdae342f292730d41ee",
@@ -132497,15 +132705,16 @@
     "Sal/MRDTs/Paper1/ORSet.lean": "72650abb5bcd82a52a0a0401cb008565345752c76d641a43400c3dfe5d914515",
     "Sal/MRDTs/Paper1/ORSetBridgeControls.lean": "0e0f90cb6ef7e1bd9297855427a1b925b6ff42c122e4562f7be13fbb6d50d5e4",
     "Sal/MRDTs/Paper1/ORSetCanonical.lean": "51679e93a2fa4ba823e04a6ddd3cb1a5568edebabf767161210497d4ab3e8d94",
-    "Sal/MRDTs/Paper1/ORSetEventSpec.lean": "962881bc3de77c7015ad7ced97d6c031bbb30c4747f300fe7a1dde3f0571dc5a",
+    "Sal/MRDTs/Paper1/ORSetEventSpec.lean": "d3598c7509a4d31a464a981aa64c1ddba48620b07abf2f48740203acbb8ec8e9",
     "Sal/MRDTs/Paper1/ORSetExecution.lean": "85b6e60484121d76924b26638091d2f5c7d5a2d2be61ad41c14ed50715902212",
     "Sal/MRDTs/Paper1/ORSetPaperContract.lean": "3afb17d602c7219dc55bceb6c396d00df49e89a18c61529674f016613cfeeaf8",
     "Sal/MRDTs/Paper1/ORSetSPOT.lean": "1d8fe0a139ac6b9f09e4b26db58510509621d6e1dd5f7337fad9e192d06a6387",
-    "Sal/MRDTs/Paper1/ORSetSpecification.lean": "836118d01f8a7f98e994b691154ca3722fe1d1d914b3c1af8b3076e22b580171",
-    "Sal/MRDTs/Paper1/ORSetVerified.lean": "07d594a9a7cbc7fd5d8c5ae69e097101f8e3ca1d8e690e8112c38bfe5dd88dce",
+    "Sal/MRDTs/Paper1/ORSetSpecification.lean": "982db058faf94ea02e89521e5b88a97350faa15a9b95e03eb7a38b5371e25f88",
+    "Sal/MRDTs/Paper1/ORSetVerified.lean": "a7d055e8334b3c2a4b347600b7b4a8518a33f69a2982b3d02df406e520358895",
     "Sal/MRDTs/Paper1/PaperPresentation.lean": "151fdc81d2996695c59b588eb78bd153a3107eed92e0f11e04b44d76c290084e",
     "Sal/MRDTs/Paper1/PolicyObstructions.lean": "ae23a846503a4a25b9879b7baf282b3d2b565fd444b78b67087ecad6720ca90e",
     "Sal/MRDTs/Paper1/ProjectedCriterion.lean": "14dc403b4faa1408425017e41a46ac648c618afdb38ad3131ef0367009d1222b",
+    "Sal/MRDTs/Paper1/ProjectedSimulation.lean": "e3aa9a945c4d7c4c9f508f986a5b4adacb118b1f1cbd20e1284fe959841e7ab6",
     "Sal/MRDTs/Paper1/RALinearizability.lean": "97648bf8a74912ec239ef72cd44a232519563ba78efaa762923d76160de059be",
     "Sal/MRDTs/Paper1/RGA.lean": "2e0ae99232c831a11f74f0ab3e9e97336c46f6bdefea552d2ea6cf274c41acb2",
     "Sal/MRDTs/Paper1/RGAActive.lean": "d30a44d199aaff962b1fb297749712ddab86e4ece7737ed97c28be9b0e9b7536",
@@ -132536,6 +132745,8 @@
     "Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/CodeCompositionControls.lean",
     "Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean",
+    "Sal/MRDTs/Paper1/Automation/SetBridgeAutomationControls.lean",
+    "scripts/check-paper1-bridge-contracts.py",
     "experiments/vc-automation/test_ordered_contract_source.py",
     "experiments/vc-automation/test_sided_contract_source.py",
     "experiments/vc-automation/test_sided_evidence_audit.py",
@@ -132598,200 +132809,26 @@
       "Sal.MRDTs.Paper1.Automation.ORSetAutomationControls",
       "Sal.MRDTs.Paper1.Automation.OrderedAutomationControls",
       "Sal.MRDTs.Paper1.Automation.CodeCompositionControls",
-      "Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls"
+      "Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls",
+      "Sal.MRDTs.Paper1.Automation.SetBridgeAutomationControls"
     ],
     "local_modules": {
-      "Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls": {
-        "file": "Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean",
+      "Sal.MRDTs.Paper1.Automation.SetBridgeAutomationControls": {
+        "file": "Sal/MRDTs/Paper1/Automation/SetBridgeAutomationControls.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.Automation.OrderedAutomationControls",
-          "Sal.MRDTs.Paper1.Automation.AutomatedFugue"
+          "Sal.MRDTs.Paper1.ORSetEventSpec",
+          "Sal.MRDTs.Paper1.EfficientORSetEventSpec",
+          "Sal.MRDTs.Paper1.Automation.SequentialBridgeControls"
         ]
       },
-      "Sal.MRDTs.Paper1.Automation.AutomatedFugue": {
-        "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+      "Sal.MRDTs.Paper1.Automation.SequentialBridgeControls": {
+        "file": "Sal/MRDTs/Paper1/Automation/SequentialBridgeControls.lean",
         "imports": [
-          "Sal.MRDTs.Paper1.Automation.ArchivedInputDerivation",
-          "Sal.MRDTs.Paper1.Automation.ArchivedKitAutomation",
-          "Sal.MRDTs.Paper1.Automation.GenericIssuanceAdapters",
-          "Sal.MRDTs.Paper1.Automation.FiniteLookupAutomation",
-          "Sal.MRDTs.Paper1.Automation.FugueCodePrimitives",
-          "Sal.MRDTs.Paper1.Automation.OrderedRecordAutomation",
-          "Sal.MRDTs.Paper1.CertifiedFugueVCReplay"
+          "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation"
         ]
       },
-      "Sal.MRDTs.Paper1.CertifiedFugueVCReplay": {
-        "file": "Sal/MRDTs/Paper1/CertifiedFugueVCReplay.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.CertifiedRGAFugue",
-          "Sal.MRDTs.Paper1.ConcreteJoin"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ConcreteJoin": {
-        "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteMetadata",
-          "Sal.MRDTs.Paper1.GuardedReplay"
-        ]
-      },
-      "Sal.MRDTs.Paper1.GuardedReplay": {
-        "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.RestrictedReplay"
-        ]
-      },
-      "Sal.MRDTs.Paper1.RestrictedReplay": {
-        "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.MergeLaws"
-        ]
-      },
-      "Sal.MRDTs.Framework.MergeLaws": {
-        "file": "Sal/MRDTs/Framework/MergeLaws.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.ReplayLaws",
-          "Sal.MRDTs.Metatheory.Join.BinaryJoin"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.Join.BinaryJoin": {
-        "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Join.Assoc_CounterModel",
-          "Sal.MRDTs.Metatheory.Join.SetRelativeReplay"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.Join.SetRelativeReplay": {
-        "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Join.ReplayOrderBasics",
-          "Sal.MRDTs.Framework.Base.FiniteOrder"
-        ]
-      },
-      "Sal.MRDTs.Framework.Base.FiniteOrder": {
-        "file": "Sal/MRDTs/Framework/Base/FiniteOrder.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.Base.Replay",
-          "Mathlib.Data.List.Basic",
-          "Mathlib.Data.List.Nodup",
-          "Mathlib.Tactic"
-        ]
-      },
-      "Sal.MRDTs.Framework.Base.Replay": {
-        "file": "Sal/MRDTs/Framework/Base/Replay.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.Base.UpdateSignature",
-          "Mathlib.Data.Set.Basic"
-        ]
-      },
-      "Sal.MRDTs.Framework.Base.UpdateSignature": {
-        "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
-        "imports": []
-      },
-      "Sal.MRDTs.Metatheory.Join.ReplayOrderBasics": {
-        "file": "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Join.HistoricalReplay",
-          "Mathlib.Data.Set.Basic",
-          "Mathlib.Data.Set.Insert",
-          "Mathlib.Data.List.Induction",
-          "Mathlib.Data.List.Basic",
-          "Mathlib.Data.List.Nodup",
-          "Mathlib.Tactic"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.Join.HistoricalReplay": {
-        "file": "Sal/MRDTs/Metatheory/Join/HistoricalReplay.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.Base.ReplayContext"
-        ]
-      },
-      "Sal.MRDTs.Framework.Base.ReplayContext": {
-        "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.Base.Replay"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.Join.Assoc_CounterModel": {
-        "file": "Sal/MRDTs/Metatheory/Join/Assoc_CounterModel.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Join.Convergence_CounterModel"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.Join.Convergence_CounterModel": {
-        "file": "Sal/MRDTs/Metatheory/Join/Convergence_CounterModel.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Join.SetRelativeReplay"
-        ]
-      },
-      "Sal.MRDTs.Framework.ReplayLaws": {
-        "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Join.SetRelativeReplay",
-          "Sal.MRDTs.Framework.Execution"
-        ]
-      },
-      "Sal.MRDTs.Framework.Execution": {
-        "file": "Sal/MRDTs/Framework/Execution.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.Signature",
-          "Sal.MRDTs.Framework.Base.ReplayContext",
-          "Sal.MRDTs.Framework.Base.LabeledTS",
-          "Mathlib.Data.Set.Basic"
-        ]
-      },
-      "Sal.MRDTs.Framework.Base.LabeledTS": {
-        "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
-        "imports": [
-          "Mathlib.Logic.Relation"
-        ]
-      },
-      "Sal.MRDTs.Framework.Signature": {
-        "file": "Sal/MRDTs/Framework/Signature.lean",
-        "imports": [
-          "Sal.MRDTs.Framework.Base.UpdateSignature"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ConcreteMetadata": {
-        "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ConcreteFormalism"
-        ]
-      },
-      "Sal.MRDTs.Paper1.ConcreteFormalism": {
-        "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.EventBridge",
-          "Sal.MRDTs.Paper1.GuardedReplay"
-        ]
-      },
-      "Sal.MRDTs.Paper1.EventBridge": {
-        "file": "Sal/MRDTs/Paper1/EventBridge.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.CommutationBridge"
-        ]
-      },
-      "Sal.MRDTs.Paper1.CommutationBridge": {
-        "file": "Sal/MRDTs/Paper1/CommutationBridge.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.HistoryInputs",
-          "Sal.MRDTs.Paper1.ORSetSpecification",
-          "Sal.MRDTs.Paper1.CriterionCounterexample"
-        ]
-      },
-      "Sal.MRDTs.Paper1.CriterionCounterexample": {
-        "file": "Sal/MRDTs/Paper1/CriterionCounterexample.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.SpecificationVisibility"
-        ]
-      },
-      "Sal.MRDTs.Paper1.SpecificationVisibility": {
-        "file": "Sal/MRDTs/Paper1/SpecificationVisibility.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.Soundness"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Soundness": {
-        "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation": {
+        "file": "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
         "imports": [
           "Sal.MRDTs.Paper1.SequentialSimulation"
         ]
@@ -132853,12 +132890,117 @@
           "Mathlib.Data.Nat.Find"
         ]
       },
+      "Sal.MRDTs.Framework.Execution": {
+        "file": "Sal/MRDTs/Framework/Execution.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Signature",
+          "Sal.MRDTs.Framework.Base.ReplayContext",
+          "Sal.MRDTs.Framework.Base.LabeledTS",
+          "Mathlib.Data.Set.Basic"
+        ]
+      },
+      "Sal.MRDTs.Framework.Base.LabeledTS": {
+        "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+        "imports": [
+          "Mathlib.Logic.Relation"
+        ]
+      },
+      "Sal.MRDTs.Framework.Base.ReplayContext": {
+        "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Base.Replay"
+        ]
+      },
+      "Sal.MRDTs.Framework.Base.Replay": {
+        "file": "Sal/MRDTs/Framework/Base/Replay.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Base.UpdateSignature",
+          "Mathlib.Data.Set.Basic"
+        ]
+      },
+      "Sal.MRDTs.Framework.Base.UpdateSignature": {
+        "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+        "imports": []
+      },
+      "Sal.MRDTs.Framework.Signature": {
+        "file": "Sal/MRDTs/Framework/Signature.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Base.UpdateSignature"
+        ]
+      },
       "Sal.MRDTs.Metatheory.Adequacy": {
         "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
         "imports": [
           "Sal.MRDTs.Framework.MergeLaws",
           "Sal.MRDTs.Metatheory.StoreInvariant",
           "Sal.MRDTs.Metatheory.Join.SetRelativeReplay"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.Join.SetRelativeReplay": {
+        "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Join.ReplayOrderBasics",
+          "Sal.MRDTs.Framework.Base.FiniteOrder"
+        ]
+      },
+      "Sal.MRDTs.Framework.Base.FiniteOrder": {
+        "file": "Sal/MRDTs/Framework/Base/FiniteOrder.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Base.Replay",
+          "Mathlib.Data.List.Basic",
+          "Mathlib.Data.List.Nodup",
+          "Mathlib.Tactic"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.Join.ReplayOrderBasics": {
+        "file": "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Join.HistoricalReplay",
+          "Mathlib.Data.Set.Basic",
+          "Mathlib.Data.Set.Insert",
+          "Mathlib.Data.List.Induction",
+          "Mathlib.Data.List.Basic",
+          "Mathlib.Data.List.Nodup",
+          "Mathlib.Tactic"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.Join.HistoricalReplay": {
+        "file": "Sal/MRDTs/Metatheory/Join/HistoricalReplay.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.Base.ReplayContext"
+        ]
+      },
+      "Sal.MRDTs.Framework.MergeLaws": {
+        "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.ReplayLaws",
+          "Sal.MRDTs.Metatheory.Join.BinaryJoin"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.Join.BinaryJoin": {
+        "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Join.Assoc_CounterModel",
+          "Sal.MRDTs.Metatheory.Join.SetRelativeReplay"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.Join.Assoc_CounterModel": {
+        "file": "Sal/MRDTs/Metatheory/Join/Assoc_CounterModel.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Join.Convergence_CounterModel"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.Join.Convergence_CounterModel": {
+        "file": "Sal/MRDTs/Metatheory/Join/Convergence_CounterModel.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Join.SetRelativeReplay"
+        ]
+      },
+      "Sal.MRDTs.Framework.ReplayLaws": {
+        "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Join.SetRelativeReplay",
+          "Sal.MRDTs.Framework.Execution"
         ]
       },
       "Sal.MRDTs.Framework.Certificates": {
@@ -132868,10 +133010,89 @@
           "Sal.MRDTs.Framework.Base.Replay"
         ]
       },
+      "Sal.MRDTs.Paper1.RestrictedReplay": {
+        "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+        "imports": [
+          "Sal.MRDTs.Framework.MergeLaws"
+        ]
+      },
       "Sal.MRDTs.Paper1.HistorySpec": {
         "file": "Sal/MRDTs/Paper1/HistorySpec.lean",
         "imports": [
           "Mathlib.Data.List.Basic"
+        ]
+      },
+      "Sal.MRDTs.Paper1.EfficientORSetEventSpec": {
+        "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.EventBridge",
+          "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+          "Sal.MRDTs.Instances.EfficientORSetCertified"
+        ]
+      },
+      "Sal.MRDTs.Instances.EfficientORSetCertified": {
+        "file": "Sal/MRDTs/Instances/EfficientORSetCertified.lean",
+        "imports": [
+          "Sal.MRDTs.Instances.EfficientORSetVirtual",
+          "Sal.MRDTs.Metatheory.AdequacyResult",
+          "Sal.MRDTs.Metatheory.CertifiedAdequacy"
+        ]
+      },
+      "Sal.MRDTs.Metatheory.AdequacyResult": {
+        "file": "Sal/MRDTs/Metatheory/AdequacyResult.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Adequacy"
+        ]
+      },
+      "Sal.MRDTs.Instances.EfficientORSetVirtual": {
+        "file": "Sal/MRDTs/Instances/EfficientORSetVirtual.lean",
+        "imports": [
+          "Sal.MRDTs.Instances.EfficientORSetHistory",
+          "Sal.MRDTs.Metatheory.VirtualAdequacy"
+        ]
+      },
+      "Sal.MRDTs.Instances.EfficientORSetHistory": {
+        "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+        "imports": [
+          "Sal.MRDTs.Instances.EfficientORSet"
+        ]
+      },
+      "Sal.MRDTs.Instances.EfficientORSet": {
+        "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Correctness"
+        ]
+      },
+      "Sal.MRDTs.Paper1.EventBridge": {
+        "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.CommutationBridge"
+        ]
+      },
+      "Sal.MRDTs.Paper1.CommutationBridge": {
+        "file": "Sal/MRDTs/Paper1/CommutationBridge.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.HistoryInputs",
+          "Sal.MRDTs.Paper1.ORSetSpecification",
+          "Sal.MRDTs.Paper1.CriterionCounterexample"
+        ]
+      },
+      "Sal.MRDTs.Paper1.CriterionCounterexample": {
+        "file": "Sal/MRDTs/Paper1/CriterionCounterexample.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.SpecificationVisibility"
+        ]
+      },
+      "Sal.MRDTs.Paper1.SpecificationVisibility": {
+        "file": "Sal/MRDTs/Paper1/SpecificationVisibility.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Soundness"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Soundness": {
+        "file": "Sal/MRDTs/Paper1/Soundness.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.SequentialSimulation"
         ]
       },
       "Sal.MRDTs.Paper1.ORSetSpecification": {
@@ -132885,7 +133106,15 @@
         "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
         "imports": [
           "Sal.MRDTs.Paper1.ORSetCanonical",
-          "Sal.MRDTs.Paper1.SequentialSimulation"
+          "Sal.MRDTs.Paper1.Automation.FiniteSetSimulation",
+          "Sal.MRDTs.Paper1.ProjectedSimulation"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ProjectedSimulation": {
+        "file": "Sal/MRDTs/Paper1/ProjectedSimulation.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.SequentialSimulation",
+          "Sal.MRDTs.Paper1.SpecificationVisibility"
         ]
       },
       "Sal.MRDTs.Paper1.ORSetCanonical": {
@@ -132911,6 +133140,104 @@
         "file": "Sal/MRDTs/Paper1/ProjectedCriterion.lean",
         "imports": [
           "Sal.MRDTs.Paper1.SpecificationVisibility"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ORSetEventSpec": {
+        "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.EventBridge",
+          "Sal.MRDTs.Paper1.Capstone"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Capstone": {
+        "file": "Sal/MRDTs/Paper1/Capstone.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ORSetSpecification",
+          "Sal.MRDTs.Paper1.RGAActive"
+        ]
+      },
+      "Sal.MRDTs.Paper1.RGAActive": {
+        "file": "Sal/MRDTs/Paper1/RGAActive.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.RGA",
+          "Sal.MRDTs.Paper1.RALinearizability"
+        ]
+      },
+      "Sal.MRDTs.Paper1.RGA": {
+        "file": "Sal/MRDTs/Paper1/RGA.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.HistorySpec",
+          "Sal.MRDTs.Instances.RGASequential"
+        ]
+      },
+      "Sal.MRDTs.Instances.RGASequential": {
+        "file": "Sal/MRDTs/Instances/RGASequential.lean",
+        "imports": [
+          "Sal.MRDTs.Instances.RGA",
+          "Sal.MRDTs.Metatheory.Safety"
+        ]
+      },
+      "Sal.MRDTs.Instances.RGA": {
+        "file": "Sal/MRDTs/Instances/RGA.lean",
+        "imports": [
+          "Sal.MRDTs.Metatheory.Correctness",
+          "Sal.MRDTs.Instances.Common"
+        ]
+      },
+      "Sal.MRDTs.Instances.Common": {
+        "file": "Sal/MRDTs/Instances/Common.lean",
+        "imports": []
+      },
+      "Sal.MRDTs.Paper1.Automation.SidedFugueAutomationControls": {
+        "file": "Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.OrderedAutomationControls",
+          "Sal.MRDTs.Paper1.Automation.AutomatedFugue"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.AutomatedFugue": {
+        "file": "Sal/MRDTs/Paper1/Automation/AutomatedFugue.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.ArchivedInputDerivation",
+          "Sal.MRDTs.Paper1.Automation.ArchivedKitAutomation",
+          "Sal.MRDTs.Paper1.Automation.GenericIssuanceAdapters",
+          "Sal.MRDTs.Paper1.Automation.FiniteLookupAutomation",
+          "Sal.MRDTs.Paper1.Automation.FugueCodePrimitives",
+          "Sal.MRDTs.Paper1.Automation.OrderedRecordAutomation",
+          "Sal.MRDTs.Paper1.CertifiedFugueVCReplay"
+        ]
+      },
+      "Sal.MRDTs.Paper1.CertifiedFugueVCReplay": {
+        "file": "Sal/MRDTs/Paper1/CertifiedFugueVCReplay.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.CertifiedRGAFugue",
+          "Sal.MRDTs.Paper1.ConcreteJoin"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteJoin": {
+        "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteMetadata",
+          "Sal.MRDTs.Paper1.GuardedReplay"
+        ]
+      },
+      "Sal.MRDTs.Paper1.GuardedReplay": {
+        "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.RestrictedReplay"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteMetadata": {
+        "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.ConcreteFormalism"
+        ]
+      },
+      "Sal.MRDTs.Paper1.ConcreteFormalism": {
+        "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.EventBridge",
+          "Sal.MRDTs.Paper1.GuardedReplay"
         ]
       },
       "Sal.MRDTs.Paper1.CertifiedRGAFugue": {
@@ -133484,10 +133811,6 @@
           "Sal.MRDTs.Metatheory.Correctness"
         ]
       },
-      "Sal.MRDTs.Instances.Common": {
-        "file": "Sal/MRDTs/Instances/Common.lean",
-        "imports": []
-      },
       "Sal.MRDTs.Instances.FlatCounters": {
         "file": "Sal/MRDTs/Instances/FlatCounters.lean",
         "imports": [
@@ -133692,92 +134015,10 @@
           "Sal.MRDTs.Paper1.ORSetEventSpec"
         ]
       },
-      "Sal.MRDTs.Paper1.ORSetEventSpec": {
-        "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.EventBridge",
-          "Sal.MRDTs.Paper1.Capstone"
-        ]
-      },
-      "Sal.MRDTs.Paper1.Capstone": {
-        "file": "Sal/MRDTs/Paper1/Capstone.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.ORSetSpecification",
-          "Sal.MRDTs.Paper1.RGAActive"
-        ]
-      },
-      "Sal.MRDTs.Paper1.RGAActive": {
-        "file": "Sal/MRDTs/Paper1/RGAActive.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.RGA",
-          "Sal.MRDTs.Paper1.RALinearizability"
-        ]
-      },
-      "Sal.MRDTs.Paper1.RGA": {
-        "file": "Sal/MRDTs/Paper1/RGA.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.HistorySpec",
-          "Sal.MRDTs.Instances.RGASequential"
-        ]
-      },
-      "Sal.MRDTs.Instances.RGASequential": {
-        "file": "Sal/MRDTs/Instances/RGASequential.lean",
-        "imports": [
-          "Sal.MRDTs.Instances.RGA",
-          "Sal.MRDTs.Metatheory.Safety"
-        ]
-      },
-      "Sal.MRDTs.Instances.RGA": {
-        "file": "Sal/MRDTs/Instances/RGA.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Correctness",
-          "Sal.MRDTs.Instances.Common"
-        ]
-      },
       "Sal.MRDTs.Paper1.NeemScope": {
         "file": "Sal/MRDTs/Paper1/NeemScope.lean",
         "imports": [
           "Sal.MRDTs.Paper1.EfficientORSetEventSpec"
-        ]
-      },
-      "Sal.MRDTs.Paper1.EfficientORSetEventSpec": {
-        "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
-        "imports": [
-          "Sal.MRDTs.Paper1.EventBridge",
-          "Sal.MRDTs.Instances.EfficientORSetCertified"
-        ]
-      },
-      "Sal.MRDTs.Instances.EfficientORSetCertified": {
-        "file": "Sal/MRDTs/Instances/EfficientORSetCertified.lean",
-        "imports": [
-          "Sal.MRDTs.Instances.EfficientORSetVirtual",
-          "Sal.MRDTs.Metatheory.AdequacyResult",
-          "Sal.MRDTs.Metatheory.CertifiedAdequacy"
-        ]
-      },
-      "Sal.MRDTs.Metatheory.AdequacyResult": {
-        "file": "Sal/MRDTs/Metatheory/AdequacyResult.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Adequacy"
-        ]
-      },
-      "Sal.MRDTs.Instances.EfficientORSetVirtual": {
-        "file": "Sal/MRDTs/Instances/EfficientORSetVirtual.lean",
-        "imports": [
-          "Sal.MRDTs.Instances.EfficientORSetHistory",
-          "Sal.MRDTs.Metatheory.VirtualAdequacy"
-        ]
-      },
-      "Sal.MRDTs.Instances.EfficientORSetHistory": {
-        "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
-        "imports": [
-          "Sal.MRDTs.Instances.EfficientORSet"
-        ]
-      },
-      "Sal.MRDTs.Instances.EfficientORSet": {
-        "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
-        "imports": [
-          "Sal.MRDTs.Metatheory.Correctness"
         ]
       },
       "Sal.MRDTs.Paper1.Automation.AutomatedORSet": {
@@ -134585,6 +134826,7 @@
       "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation": {
         "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
         "imports": [
+          "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge",
           "Sal.MRDTs.Paper1.CertifiedRGAHistory",
           "Sal.MRDTs.Paper1.CertifiedHistoryCommutation"
         ]
@@ -134602,6 +134844,19 @@
           "Sal.MRDTs.Instances.ProductionRGA",
           "Sal.MRDTs.Paper1.GuardedHistory",
           "Sal.MRDTs.Paper1.CertifiedRGAScope"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge": {
+        "file": "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean",
+        "imports": [
+          "Sal.MRDTs.Paper1.Automation.GenericGuardedFold",
+          "Sal.MRDTs.Instances.EmbedRGASequential"
+        ]
+      },
+      "Sal.MRDTs.Paper1.Automation.GenericGuardedFold": {
+        "file": "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean",
+        "imports": [
+          "Mathlib.Data.List.Induction"
         ]
       },
       "Sal.MRDTs.Paper1.CertifiedSidedRawOrderObstruction": {
@@ -134793,6 +135048,7 @@
       "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory": {
         "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
         "imports": [
+          "Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge",
           "Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation",
           "Sal.MRDTs.Paper1.InvariantOrder",
           "Sal.MRDTs.Paper1.CertifiedRGAInvariant"

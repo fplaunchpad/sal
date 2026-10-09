@@ -1,0 +1,1601 @@
+PROD_AXIOMS Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound [propext, Quot.sound, Classical.choice]
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSetEventSpec 48 48 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.EventSpec.simulation
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.EventSpec.simulation Sal.MRDTs.Paper1.ORSetEventSpec 45 46 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.simulation
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.simulation Sal.MRDTs.Paper1.ORSetVerified 49 57 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.simulation._proof_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.Timestamp
+PROD_SOURCE Sal.MRDTs.Foundation.Timestamp Sal.MRDTs.Framework.Base.UpdateSignature 30 32 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.spec
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.spec Sal.MRDTs.Paper1.ORSet 134 138 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec Sal.MRDTs.Paper1.HistorySpec 72 77 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.mk Sal.MRDTs.Paper1.HistorySpec 73 73 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.abstractStep
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.abstractStep Sal.MRDTs.Paper1.ORSet 130 132 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update Sal.MRDTs.Paper1.ORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.remove
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.remove Sal.MRDTs.Paper1.ORSet 13 13 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.add
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.add Sal.MRDTs.Paper1.ORSet 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instReprUpdate.repr.match_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.casesOn Sal.MRDTs.Paper1.ORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.rec
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.rec Sal.MRDTs.Paper1.ORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.Query
+PROD_SOURCE Sal.MRDTs.MRDTSig.Query Sal.MRDTs.Framework.Signature 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig
+PROD_SOURCE Sal.MRDTs.MRDTSig Sal.MRDTs.Framework.Signature 15 27 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.mk
+PROD_SOURCE Sal.MRDTs.MRDTSig.mk Sal.MRDTs.Framework.Signature 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.Op
+PROD_SOURCE Sal.MRDTs.Foundation.Op Sal.MRDTs.Framework.Base.UpdateSignature 34 35 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.Replica
+PROD_SOURCE Sal.MRDTs.Foundation.Replica Sal.MRDTs.Framework.Base.UpdateSignature 27 28 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.Value
+PROD_SOURCE Sal.MRDTs.MRDTSig.Value Sal.MRDTs.Framework.Signature 24 24 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.State
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.State Sal.MRDTs.Paper1.HistorySpec 74 74 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.view_step
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.view_step Sal.MRDTs.Paper1.ORSet 142 152 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.view_step._simp_1_6
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.step
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.step Sal.MRDTs.Paper1.ORSet 18 21 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.State
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.State Sal.MRDTs.Paper1.ORSet 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.view_step._simp_1_8
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.view_step._simp_1_7
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.view
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.view Sal.MRDTs.Paper1.ORSet 26 26 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.AppOp
+PROD_SOURCE Sal.MRDTs.MRDTSig.AppOp Sal.MRDTs.Framework.Signature 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.State
+PROD_SOURCE Sal.MRDTs.MRDTSig.State Sal.MRDTs.Framework.Signature 18 18 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.update
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.update Sal.MRDTs.Paper1.HistorySpec 76 76 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.D
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.D Sal.MRDTs.Paper1.ORSet 30 40 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.merge
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.merge Sal.MRDTs.Paper1.ORSet 23 24 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate Sal.MRDTs.Paper1.ORSet 14 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq Sal.MRDTs.Paper1.ORSet 14 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_2
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.add.noConfusion
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.add.noConfusion Sal.MRDTs.Paper1.ORSet 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.noConfusion
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.noConfusion Sal.MRDTs.Paper1.ORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.noConfusionType
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_5
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_6
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.remove.noConfusion
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.remove.noConfusion Sal.MRDTs.Paper1.ORSet 13 13 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_3
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.Update.ctorIdx
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_4
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq.match_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.query
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.query Sal.MRDTs.Paper1.ORSet 28 28 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.update
+PROD_SOURCE Sal.MRDTs.MRDTSig.update Sal.MRDTs.Framework.Signature 25 25 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.Op.op
+PROD_SOURCE Sal.MRDTs.Foundation.Op.op Sal.MRDTs.Framework.Base.UpdateSignature 44 45 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SequentialSimulation.mk
+PROD_SOURCE Sal.MRDTs.Paper1.SequentialSimulation.mk Sal.MRDTs.Paper1.SequentialSimulation 10 10 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SequentialSimulation
+PROD_SOURCE Sal.MRDTs.Paper1.SequentialSimulation Sal.MRDTs.Paper1.SequentialSimulation 10 16 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.query
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.query Sal.MRDTs.Paper1.HistorySpec 77 77 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.init
+PROD_SOURCE Sal.MRDTs.MRDTSig.init Sal.MRDTs.Framework.Signature 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.query
+PROD_SOURCE Sal.MRDTs.MRDTSig.query Sal.MRDTs.Framework.Signature 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.initial
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.initial Sal.MRDTs.Paper1.HistorySpec 75 75 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.view_empty
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.view_empty Sal.MRDTs.Paper1.ORSet 140 140 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.simulation._proof_2
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SequentialSimulation.withInputs
+PROD_SOURCE Sal.MRDTs.Paper1.SequentialSimulation.withInputs Sal.MRDTs.Paper1.EventBridge 57 63 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation Sal.MRDTs.Paper1.EventBridge 26 32 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.mk
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.mk Sal.MRDTs.Paper1.EventBridge 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SequentialSimulation.update
+PROD_SOURCE Sal.MRDTs.Paper1.SequentialSimulation.update Sal.MRDTs.Paper1.SequentialSimulation 14 14 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SequentialSimulation.Rel
+PROD_SOURCE Sal.MRDTs.Paper1.SequentialSimulation.Rel Sal.MRDTs.Paper1.SequentialSimulation 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SequentialSimulation.initial
+PROD_SOURCE Sal.MRDTs.Paper1.SequentialSimulation.initial Sal.MRDTs.Paper1.SequentialSimulation 13 13 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SequentialSimulation.observes
+PROD_SOURCE Sal.MRDTs.Paper1.SequentialSimulation.observes Sal.MRDTs.Paper1.SequentialSimulation 16 16 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.EventSpec.model
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.EventSpec.model Sal.MRDTs.Paper1.ORSetEventSpec 12 17 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.sound
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.sound Sal.MRDTs.Paper1.EventBridge 48 55 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.toSpec Sal.MRDTs.Paper1.HistorySpec 88 89 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.machine
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.machine Sal.MRDTs.Paper1.HistorySpec 81 86 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel.query
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.query Sal.MRDTs.Paper1.HistorySpec 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel.update
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.update Sal.MRDTs.Paper1.HistorySpec 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.machine.match_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.casesOn Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel.rec
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.rec Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.mk Sal.MRDTs.Paper1.HistorySpec 26 26 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine Sal.MRDTs.Paper1.HistorySpec 25 29 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.toSpec Sal.MRDTs.Paper1.HistorySpec 62 68 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_2
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.initial
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.initial Sal.MRDTs.Paper1.HistorySpec 28 28 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.State
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.State Sal.MRDTs.Paper1.HistorySpec 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.transition
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.transition Sal.MRDTs.Paper1.HistorySpec 29 29 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs
+PROD_SOURCE Sal.MRDTs.Paper1.Runs Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.nil
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.nil Sal.MRDTs.Paper1.HistorySpec 33 33 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.cons
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.cons Sal.MRDTs.Paper1.HistorySpec 34 34 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.split
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.split Sal.MRDTs.Paper1.HistorySpec 46 56 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.casesOn Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.rec
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.rec Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistorySpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.mk Sal.MRDTs.Paper1.HistorySpec 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistorySpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec Sal.MRDTs.Paper1.HistorySpec 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.updates_query_iff
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.updates_query_iff Sal.MRDTs.Paper1.HistorySpec 101 126 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistorySpec.admits
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.admits Sal.MRDTs.Paper1.HistorySpec 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.append
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.append Sal.MRDTs.Paper1.HistorySpec 38 44 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.updates_run
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.updates_run Sal.MRDTs.Paper1.HistorySpec 94 99 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.updateLabels
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.updateLabels Sal.MRDTs.Paper1.HistorySpec 91 92 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.toUpdateSig
+PROD_SOURCE Sal.MRDTs.MRDTSig.toUpdateSig Sal.MRDTs.Framework.Signature 33 40 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.dec_state
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_state Sal.MRDTs.Framework.Signature 19 19 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.dec_op
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_op Sal.MRDTs.Framework.Signature 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig Sal.MRDTs.Framework.Base.UpdateSignature 49 59 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig.mk
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.mk Sal.MRDTs.Framework.Base.UpdateSignature 53 53 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.projectedLabels
+PROD_SOURCE Sal.MRDTs.Paper1.projectedLabels Sal.MRDTs.Paper1.ProjectedCriterion 9 11 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventFoldHistorySound
+PROD_SOURCE Sal.MRDTs.Paper1.EventFoldHistorySound Sal.MRDTs.Paper1.EventBridge 34 37 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.applySeq
+PROD_SOURCE Sal.MRDTs.Foundation.applySeq Sal.MRDTs.Framework.Base.Replay 13 16 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig.AppOp
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.AppOp Sal.MRDTs.Framework.Base.UpdateSignature 57 57 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig.State
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.State Sal.MRDTs.Framework.Base.UpdateSignature 54 54 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig.update
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.update Sal.MRDTs.Framework.Base.UpdateSignature 59 59 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.fold_rel
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.fold_rel Sal.MRDTs.Paper1.EventBridge 39 46 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.update
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.update Sal.MRDTs.Paper1.EventBridge 31 31 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.Rel
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.Rel Sal.MRDTs.Paper1.EventBridge 29 29 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.initial
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.initial Sal.MRDTs.Paper1.EventBridge 30 30 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.observes
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.observes Sal.MRDTs.Paper1.EventBridge 32 32 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.ORSet.EventSpec.spec
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.EventSpec.spec Sal.MRDTs.Paper1.ORSetEventSpec 19 20 definition
+PROD_COMPLETE Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound
+PROD_AXIOMS Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility [propext, Quot.sound, Classical.choice]
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSetEventSpec 33 35 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.spec
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.spec Sal.MRDTs.Paper1.ORSet 134 138 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec Sal.MRDTs.Paper1.HistorySpec 72 77 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.mk Sal.MRDTs.Paper1.HistorySpec 73 73 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.abstractStep
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.abstractStep Sal.MRDTs.Paper1.ORSet 130 132 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update Sal.MRDTs.Paper1.ORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.remove
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.remove Sal.MRDTs.Paper1.ORSet 13 13 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.add
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.add Sal.MRDTs.Paper1.ORSet 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instReprUpdate.repr.match_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.casesOn Sal.MRDTs.Paper1.ORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.rec
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.rec Sal.MRDTs.Paper1.ORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.toSpec Sal.MRDTs.Paper1.HistorySpec 88 89 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.machine
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.machine Sal.MRDTs.Paper1.HistorySpec 81 86 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.query
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.query Sal.MRDTs.Paper1.HistorySpec 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.update
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.update Sal.MRDTs.Paper1.HistorySpec 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.machine.match_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.casesOn Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.rec
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.rec Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.State
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.State Sal.MRDTs.Paper1.HistorySpec 74 74 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.mk Sal.MRDTs.Paper1.HistorySpec 26 26 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine Sal.MRDTs.Paper1.HistorySpec 25 29 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.query
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.query Sal.MRDTs.Paper1.HistorySpec 77 77 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.update
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.update Sal.MRDTs.Paper1.HistorySpec 76 76 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.initial
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.initial Sal.MRDTs.Paper1.HistorySpec 75 75 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.toSpec Sal.MRDTs.Paper1.HistorySpec 62 68 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_2
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.initial
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.initial Sal.MRDTs.Paper1.HistorySpec 28 28 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.State
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.State Sal.MRDTs.Paper1.HistorySpec 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.transition
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.transition Sal.MRDTs.Paper1.HistorySpec 29 29 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs
+PROD_SOURCE Sal.MRDTs.Paper1.Runs Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.nil
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.nil Sal.MRDTs.Paper1.HistorySpec 33 33 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.cons
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.cons Sal.MRDTs.Paper1.HistorySpec 34 34 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.split
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.split Sal.MRDTs.Paper1.HistorySpec 46 56 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.casesOn Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.rec
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.rec Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.mk Sal.MRDTs.Paper1.HistorySpec 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec Sal.MRDTs.Paper1.HistorySpec 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.Op
+PROD_SOURCE Sal.MRDTs.Foundation.Op Sal.MRDTs.Framework.Base.UpdateSignature 34 35 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.Timestamp
+PROD_SOURCE Sal.MRDTs.Foundation.Timestamp Sal.MRDTs.Framework.Base.UpdateSignature 30 32 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.Replica
+PROD_SOURCE Sal.MRDTs.Foundation.Replica Sal.MRDTs.Framework.Base.UpdateSignature 27 28 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.withInputs
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.withInputs Sal.MRDTs.Paper1.HistoryInputs 21 25 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.admits
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.admits Sal.MRDTs.Paper1.HistorySpec 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.withInputs._proof_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.mapUpdate
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.mapUpdate Sal.MRDTs.Paper1.HistoryInputs 16 19 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.mapUpdate.match_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.prefix_closed
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.prefix_closed Sal.MRDTs.Paper1.HistorySpec 23 23 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.empty
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.empty Sal.MRDTs.Paper1.HistorySpec 22 22 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.eventCommutationCompatibility
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.eventCommutationCompatibility Sal.MRDTs.Paper1.CommutationBridge 83 90 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.withInputs_commutes
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.withInputs_commutes Sal.MRDTs.Paper1.HistoryInputs 27 33 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.Commutes
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.Commutes Sal.MRDTs.Paper1.SpecificationVisibility 17 20 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.Query
+PROD_SOURCE Sal.MRDTs.MRDTSig.Query Sal.MRDTs.Framework.Signature 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig
+PROD_SOURCE Sal.MRDTs.MRDTSig Sal.MRDTs.Framework.Signature 15 27 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.mk
+PROD_SOURCE Sal.MRDTs.MRDTSig.mk Sal.MRDTs.Framework.Signature 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.commutes
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.commutes Sal.MRDTs.Framework.Base.UpdateSignature 112 116 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.AppOp
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.AppOp Sal.MRDTs.Framework.Base.UpdateSignature 57 57 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig Sal.MRDTs.Framework.Base.UpdateSignature 49 59 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.mk
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.mk Sal.MRDTs.Framework.Base.UpdateSignature 53 53 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.State
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.State Sal.MRDTs.Framework.Base.UpdateSignature 54 54 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.update
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.update Sal.MRDTs.Framework.Base.UpdateSignature 59 59 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.toUpdateSig
+PROD_SOURCE Sal.MRDTs.MRDTSig.toUpdateSig Sal.MRDTs.Framework.Signature 33 40 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.dec_state
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_state Sal.MRDTs.Framework.Signature 19 19 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.State
+PROD_SOURCE Sal.MRDTs.MRDTSig.State Sal.MRDTs.Framework.Signature 18 18 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.AppOp
+PROD_SOURCE Sal.MRDTs.MRDTSig.AppOp Sal.MRDTs.Framework.Signature 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.dec_op
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_op Sal.MRDTs.Framework.Signature 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.init
+PROD_SOURCE Sal.MRDTs.MRDTSig.init Sal.MRDTs.Framework.Signature 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.update
+PROD_SOURCE Sal.MRDTs.MRDTSig.update Sal.MRDTs.Framework.Signature 25 25 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.Value
+PROD_SOURCE Sal.MRDTs.MRDTSig.Value Sal.MRDTs.Framework.Signature 24 24 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.commutationCompatibility
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.commutationCompatibility Sal.MRDTs.Paper1.CommutationBridge 77 81 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.language_commutes_of_concrete
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.language_commutes_of_concrete Sal.MRDTs.Paper1.ORSetSpecification 11 25 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.view_step
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.view_step Sal.MRDTs.Paper1.ORSet 142 152 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.view_step._simp_1_6
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.step
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.step Sal.MRDTs.Paper1.ORSet 18 21 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.State
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.State Sal.MRDTs.Paper1.ORSet 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.view_step._simp_1_8
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.view_step._simp_1_7
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.view
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.view Sal.MRDTs.Paper1.ORSet 26 26 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.D
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.D Sal.MRDTs.Paper1.ORSet 30 40 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.merge
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.merge Sal.MRDTs.Paper1.ORSet 23 24 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate Sal.MRDTs.Paper1.ORSet 14 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq Sal.MRDTs.Paper1.ORSet 14 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_2
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.add.noConfusion
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.add.noConfusion Sal.MRDTs.Paper1.ORSet 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.noConfusion
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.noConfusion Sal.MRDTs.Paper1.ORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.noConfusionType
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_5
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_6
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.remove.noConfusion
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.Update.remove.noConfusion Sal.MRDTs.Paper1.ORSet 13 13 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_3
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.Update.ctorIdx
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_4
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq._proof_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.instDecidableEqUpdate.decEq.match_1
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.query
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.query Sal.MRDTs.Paper1.ORSet 28 28 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.Op.op
+PROD_SOURCE Sal.MRDTs.Foundation.Op.op Sal.MRDTs.Framework.Base.UpdateSignature 44 45 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.language_commutes
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.language_commutes Sal.MRDTs.Paper1.SpecificationVisibility 49 72 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.commutes_of_diamond
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.commutes_of_diamond Sal.MRDTs.Paper1.SpecificationVisibility 26 47 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.append
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.append Sal.MRDTs.Paper1.HistorySpec 38 44 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.CommutationCompatibility
+PROD_SOURCE Sal.MRDTs.Paper1.CommutationCompatibility Sal.MRDTs.Paper1.CommutationBridge 18 22 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.EventSpec.spec
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.EventSpec.spec Sal.MRDTs.Paper1.ORSetEventSpec 19 20 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.EventSpec.model
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.EventSpec.model Sal.MRDTs.Paper1.ORSetEventSpec 12 17 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.ORSet.EventSpec.spec_eq
+PROD_SOURCE Sal.MRDTs.Paper1.ORSet.EventSpec.spec_eq Sal.MRDTs.Paper1.ORSetEventSpec 22 31 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.withInputs
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.withInputs Sal.MRDTs.Paper1.HistoryInputs 66 70 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.toSpec_withInputs
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.toSpec_withInputs Sal.MRDTs.Paper1.HistoryInputs 88 94 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.ext
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.ext Sal.MRDTs.Paper1.HistoryInputs 9 14 theorem
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.casesOn Sal.MRDTs.Paper1.HistorySpec 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.rec
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.rec Sal.MRDTs.Paper1.HistorySpec 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.runs_withInputs_iff
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.runs_withInputs_iff Sal.MRDTs.Paper1.HistoryInputs 72 86 theorem
+PROD_COMPLETE Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility
+PROD_AXIOMS Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound [propext, Quot.sound, Classical.choice]
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound
+PROD_SOURCE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EfficientORSetEventSpec 76 76 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EfficientORSet.EventSpec.spec
+PROD_SOURCE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.spec Sal.MRDTs.Paper1.EfficientORSetEventSpec 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.toSpec Sal.MRDTs.Paper1.HistorySpec 88 89 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec Sal.MRDTs.Paper1.HistorySpec 72 77 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.mk Sal.MRDTs.Paper1.HistorySpec 73 73 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.machine
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.machine Sal.MRDTs.Paper1.HistorySpec 81 86 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel.query
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.query Sal.MRDTs.Paper1.HistorySpec 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel.update
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.update Sal.MRDTs.Paper1.HistorySpec 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.machine.match_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.casesOn Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.SeqLabel.rec
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.rec Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.State
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.State Sal.MRDTs.Paper1.HistorySpec 74 74 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.mk Sal.MRDTs.Paper1.HistorySpec 26 26 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine Sal.MRDTs.Paper1.HistorySpec 25 29 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.query
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.query Sal.MRDTs.Paper1.HistorySpec 77 77 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.update
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.update Sal.MRDTs.Paper1.HistorySpec 76 76 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.initial
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.initial Sal.MRDTs.Paper1.HistorySpec 75 75 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.toSpec Sal.MRDTs.Paper1.HistorySpec 62 68 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_2
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.initial
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.initial Sal.MRDTs.Paper1.HistorySpec 28 28 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.State
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.State Sal.MRDTs.Paper1.HistorySpec 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.transition
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.transition Sal.MRDTs.Paper1.HistorySpec 29 29 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs
+PROD_SOURCE Sal.MRDTs.Paper1.Runs Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.nil
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.nil Sal.MRDTs.Paper1.HistorySpec 33 33 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.cons
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.cons Sal.MRDTs.Paper1.HistorySpec 34 34 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.split
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.split Sal.MRDTs.Paper1.HistorySpec 46 56 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.casesOn Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.rec
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.rec Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistorySpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.mk Sal.MRDTs.Paper1.HistorySpec 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistorySpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec Sal.MRDTs.Paper1.HistorySpec 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.Op
+PROD_SOURCE Sal.MRDTs.Foundation.Op Sal.MRDTs.Framework.Base.UpdateSignature 34 35 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.Timestamp
+PROD_SOURCE Sal.MRDTs.Foundation.Timestamp Sal.MRDTs.Framework.Base.UpdateSignature 30 32 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.Replica
+PROD_SOURCE Sal.MRDTs.Foundation.Replica Sal.MRDTs.Framework.Base.UpdateSignature 27 28 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp Sal.MRDTs.Instances.EfficientORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.remove
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.remove Sal.MRDTs.Instances.EfficientORSet 13 13 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.add
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.add Sal.MRDTs.Instances.EfficientORSet 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EfficientORSet.EventSpec.model
+PROD_SOURCE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.model Sal.MRDTs.Paper1.EfficientORSetEventSpec 16 20 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.setStep
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.setStep Sal.MRDTs.Instances.EfficientORSet 55 58 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.update.match_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.casesOn
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.casesOn Sal.MRDTs.Instances.EfficientORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.rec
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.rec Sal.MRDTs.Instances.EfficientORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.sound
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.sound Sal.MRDTs.Paper1.EventBridge 48 55 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.updates_query_iff
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.updates_query_iff Sal.MRDTs.Paper1.HistorySpec 101 126 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.HistorySpec.admits
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.admits Sal.MRDTs.Paper1.HistorySpec 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.Runs.append
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.append Sal.MRDTs.Paper1.HistorySpec 38 44 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.updates_run
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.updates_run Sal.MRDTs.Paper1.HistorySpec 94 99 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.DeterministicSpec.updateLabels
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.updateLabels Sal.MRDTs.Paper1.HistorySpec 91 92 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation Sal.MRDTs.Paper1.EventBridge 26 32 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.Query
+PROD_SOURCE Sal.MRDTs.MRDTSig.Query Sal.MRDTs.Framework.Signature 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig
+PROD_SOURCE Sal.MRDTs.MRDTSig Sal.MRDTs.Framework.Signature 15 27 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.mk
+PROD_SOURCE Sal.MRDTs.MRDTSig.mk Sal.MRDTs.Framework.Signature 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.Value
+PROD_SOURCE Sal.MRDTs.MRDTSig.Value Sal.MRDTs.Framework.Signature 24 24 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.mk
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.mk Sal.MRDTs.Paper1.EventBridge 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.AppOp
+PROD_SOURCE Sal.MRDTs.MRDTSig.AppOp Sal.MRDTs.Framework.Signature 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.State
+PROD_SOURCE Sal.MRDTs.MRDTSig.State Sal.MRDTs.Framework.Signature 18 18 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.init
+PROD_SOURCE Sal.MRDTs.MRDTSig.init Sal.MRDTs.Framework.Signature 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.update
+PROD_SOURCE Sal.MRDTs.MRDTSig.update Sal.MRDTs.Framework.Signature 25 25 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.query
+PROD_SOURCE Sal.MRDTs.MRDTSig.query Sal.MRDTs.Framework.Signature 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.toUpdateSig
+PROD_SOURCE Sal.MRDTs.MRDTSig.toUpdateSig Sal.MRDTs.Framework.Signature 33 40 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.dec_state
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_state Sal.MRDTs.Framework.Signature 19 19 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.MRDTSig.dec_op
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_op Sal.MRDTs.Framework.Signature 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig Sal.MRDTs.Framework.Base.UpdateSignature 49 59 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig.mk
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.mk Sal.MRDTs.Framework.Base.UpdateSignature 53 53 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.projectedLabels
+PROD_SOURCE Sal.MRDTs.Paper1.projectedLabels Sal.MRDTs.Paper1.ProjectedCriterion 9 11 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventFoldHistorySound
+PROD_SOURCE Sal.MRDTs.Paper1.EventFoldHistorySound Sal.MRDTs.Paper1.EventBridge 34 37 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.applySeq
+PROD_SOURCE Sal.MRDTs.Foundation.applySeq Sal.MRDTs.Framework.Base.Replay 13 16 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig.AppOp
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.AppOp Sal.MRDTs.Framework.Base.UpdateSignature 57 57 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig.State
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.State Sal.MRDTs.Framework.Base.UpdateSignature 54 54 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Foundation.UpdateSig.update
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.update Sal.MRDTs.Framework.Base.UpdateSignature 59 59 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.fold_rel
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.fold_rel Sal.MRDTs.Paper1.EventBridge 39 46 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.update
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.update Sal.MRDTs.Paper1.EventBridge 31 31 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.Rel
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.Rel Sal.MRDTs.Paper1.EventBridge 29 29 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.initial
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.initial Sal.MRDTs.Paper1.EventBridge 30 30 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EventSequentialSimulation.observes
+PROD_SOURCE Sal.MRDTs.Paper1.EventSequentialSimulation.observes Sal.MRDTs.Paper1.EventBridge 32 32 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation
+PROD_SOURCE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation Sal.MRDTs.Paper1.EfficientORSetEventSpec 64 74 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation._proof_2
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.update
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.update Sal.MRDTs.Instances.EfficientORSet 21 25 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.State
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.State Sal.MRDTs.Instances.EfficientORSet 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.Record
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.Record Sal.MRDTs.Instances.EfficientORSet 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.elements_update
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.elements_update Sal.MRDTs.Instances.EfficientORSet 104 129 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_7
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_4
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_5
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_6
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.elements
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.elements Sal.MRDTs.Instances.EfficientORSet 30 30 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.D
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.D Sal.MRDTs.Instances.EfficientORSet 32 42 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp Sal.MRDTs.Instances.EfficientORSet 14 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq Sal.MRDTs.Instances.EfficientORSet 14 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq.match_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_5
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_4
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.ctorIdx
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_3
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_2
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.add.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.add.noConfusion Sal.MRDTs.Instances.EfficientORSet 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.noConfusion Sal.MRDTs.Instances.EfficientORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.noConfusionType
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_6
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.SetOp.remove.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.remove.noConfusion Sal.MRDTs.Instances.EfficientORSet 13 13 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Instances.EfficientORSet.merge
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.merge Sal.MRDTs.Instances.EfficientORSet 27 28 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation._proof_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation._proof_3
+PROD_COMPLETE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.foldHistorySound
+PROD_AXIOMS Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility [propext, Quot.sound, Classical.choice]
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility
+PROD_SOURCE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.EfficientORSetEventSpec 43 52 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.Timestamp
+PROD_SOURCE Sal.MRDTs.Foundation.Timestamp Sal.MRDTs.Framework.Base.UpdateSignature 30 32 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.Query
+PROD_SOURCE Sal.MRDTs.MRDTSig.Query Sal.MRDTs.Framework.Signature 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig
+PROD_SOURCE Sal.MRDTs.MRDTSig Sal.MRDTs.Framework.Signature 15 27 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.mk
+PROD_SOURCE Sal.MRDTs.MRDTSig.mk Sal.MRDTs.Framework.Signature 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.Op
+PROD_SOURCE Sal.MRDTs.Foundation.Op Sal.MRDTs.Framework.Base.UpdateSignature 34 35 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.Replica
+PROD_SOURCE Sal.MRDTs.Foundation.Replica Sal.MRDTs.Framework.Base.UpdateSignature 27 28 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.commutes
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.commutes Sal.MRDTs.Framework.Base.UpdateSignature 112 116 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.AppOp
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.AppOp Sal.MRDTs.Framework.Base.UpdateSignature 57 57 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig Sal.MRDTs.Framework.Base.UpdateSignature 49 59 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.mk
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.mk Sal.MRDTs.Framework.Base.UpdateSignature 53 53 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.State
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.State Sal.MRDTs.Framework.Base.UpdateSignature 54 54 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Foundation.UpdateSig.update
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.update Sal.MRDTs.Framework.Base.UpdateSignature 59 59 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.toUpdateSig
+PROD_SOURCE Sal.MRDTs.MRDTSig.toUpdateSig Sal.MRDTs.Framework.Signature 33 40 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.dec_state
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_state Sal.MRDTs.Framework.Signature 19 19 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.State
+PROD_SOURCE Sal.MRDTs.MRDTSig.State Sal.MRDTs.Framework.Signature 18 18 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.AppOp
+PROD_SOURCE Sal.MRDTs.MRDTSig.AppOp Sal.MRDTs.Framework.Signature 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.dec_op
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_op Sal.MRDTs.Framework.Signature 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.init
+PROD_SOURCE Sal.MRDTs.MRDTSig.init Sal.MRDTs.Framework.Signature 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.update
+PROD_SOURCE Sal.MRDTs.MRDTSig.update Sal.MRDTs.Framework.Signature 25 25 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.update
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.update Sal.MRDTs.Instances.EfficientORSet 21 25 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp Sal.MRDTs.Instances.EfficientORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.remove
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.remove Sal.MRDTs.Instances.EfficientORSet 13 13 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.add
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.add Sal.MRDTs.Instances.EfficientORSet 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.State
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.State Sal.MRDTs.Instances.EfficientORSet 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.Record
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.Record Sal.MRDTs.Instances.EfficientORSet 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.update.match_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.casesOn
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.casesOn Sal.MRDTs.Instances.EfficientORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.rec
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.rec Sal.MRDTs.Instances.EfficientORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.EfficientORSet.EventSpec.spec
+PROD_SOURCE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.spec Sal.MRDTs.Paper1.EfficientORSetEventSpec 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.toSpec Sal.MRDTs.Paper1.HistorySpec 88 89 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec Sal.MRDTs.Paper1.HistorySpec 72 77 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.mk Sal.MRDTs.Paper1.HistorySpec 73 73 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.machine
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.machine Sal.MRDTs.Paper1.HistorySpec 81 86 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.query
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.query Sal.MRDTs.Paper1.HistorySpec 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.update
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.update Sal.MRDTs.Paper1.HistorySpec 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.machine.match_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.casesOn Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.SeqLabel.rec
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.rec Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.State
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.State Sal.MRDTs.Paper1.HistorySpec 74 74 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.mk Sal.MRDTs.Paper1.HistorySpec 26 26 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine Sal.MRDTs.Paper1.HistorySpec 25 29 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.query
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.query Sal.MRDTs.Paper1.HistorySpec 77 77 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.update
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.update Sal.MRDTs.Paper1.HistorySpec 76 76 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.initial
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.initial Sal.MRDTs.Paper1.HistorySpec 75 75 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.toSpec Sal.MRDTs.Paper1.HistorySpec 62 68 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_2
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.initial
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.initial Sal.MRDTs.Paper1.HistorySpec 28 28 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.State
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.State Sal.MRDTs.Paper1.HistorySpec 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.transition
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.transition Sal.MRDTs.Paper1.HistorySpec 29 29 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs
+PROD_SOURCE Sal.MRDTs.Paper1.Runs Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.nil
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.nil Sal.MRDTs.Paper1.HistorySpec 33 33 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.cons
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.cons Sal.MRDTs.Paper1.HistorySpec 34 34 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.split
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.split Sal.MRDTs.Paper1.HistorySpec 46 56 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.casesOn Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.rec
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.rec Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.mk Sal.MRDTs.Paper1.HistorySpec 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec Sal.MRDTs.Paper1.HistorySpec 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.EfficientORSet.EventSpec.model
+PROD_SOURCE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.model Sal.MRDTs.Paper1.EfficientORSetEventSpec 16 20 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.setStep
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.setStep Sal.MRDTs.Instances.EfficientORSet 55 58 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.MRDTSig.Value
+PROD_SOURCE Sal.MRDTs.MRDTSig.Value Sal.MRDTs.Framework.Signature 24 24 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.elements_update
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.elements_update Sal.MRDTs.Instances.EfficientORSet 104 129 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_7
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_4
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_5
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.elements_update._simp_1_6
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.elements
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.elements Sal.MRDTs.Instances.EfficientORSet 30 30 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.CommutationCompatibility
+PROD_SOURCE Sal.MRDTs.Paper1.CommutationCompatibility Sal.MRDTs.Paper1.CommutationBridge 18 22 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.Commutes
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.Commutes Sal.MRDTs.Paper1.SpecificationVisibility 17 20 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistorySpec.admits
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.admits Sal.MRDTs.Paper1.HistorySpec 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.D
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.D Sal.MRDTs.Instances.EfficientORSet 32 42 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp Sal.MRDTs.Instances.EfficientORSet 14 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq Sal.MRDTs.Instances.EfficientORSet 14 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq.match_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_5
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_4
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.ctorIdx
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_3
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_1
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_2
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.add.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.add.noConfusion Sal.MRDTs.Instances.EfficientORSet 12 12 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.noConfusion Sal.MRDTs.Instances.EfficientORSet 11 14 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.noConfusionType
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.instDecidableEqSetOp.decEq._proof_6
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.SetOp.remove.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.SetOp.remove.noConfusion Sal.MRDTs.Instances.EfficientORSet 13 13 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Instances.EfficientORSet.merge
+PROD_SOURCE Sal.MRDTs.Instances.EfficientORSet.merge Sal.MRDTs.Instances.EfficientORSet 27 28 definition
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.DeterministicSpec.language_commutes
+PROD_SOURCE Sal.MRDTs.Paper1.DeterministicSpec.language_commutes Sal.MRDTs.Paper1.SpecificationVisibility 49 72 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.HistoryMachine.commutes_of_diamond
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.commutes_of_diamond Sal.MRDTs.Paper1.SpecificationVisibility 26 47 theorem
+PROD_DEP Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility Sal.MRDTs.Paper1.Runs.append
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.append Sal.MRDTs.Paper1.HistorySpec 38 44 theorem
+PROD_COMPLETE Sal.MRDTs.Paper1.EfficientORSet.EventSpec.commutationCompatibility
+PROD_AXIOMS Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history [propext,
+ Quot.sound,
+ Classical.choice]
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory 149 175 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Version
+PROD_SOURCE Sal.MRDTs.Version Sal.MRDTs.Framework.Execution 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.projectedSpecVisibility
+PROD_SOURCE Sal.MRDTs.Paper1.projectedSpecVisibility Sal.MRDTs.Paper1.ProjectedCriterion 13 16 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayContext.vis
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayContext.vis Sal.MRDTs.Framework.Base.ReplayContext 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.Op
+PROD_SOURCE Sal.MRDTs.Foundation.Op Sal.MRDTs.Framework.Base.UpdateSignature 34 35 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.Timestamp
+PROD_SOURCE Sal.MRDTs.Foundation.Timestamp Sal.MRDTs.Framework.Base.UpdateSignature 30 32 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.Replica
+PROD_SOURCE Sal.MRDTs.Foundation.Replica Sal.MRDTs.Framework.Base.UpdateSignature 27 28 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayContext
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayContext Sal.MRDTs.Framework.Base.ReplayContext 17 33 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayContext.mk
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayContext.mk Sal.MRDTs.Framework.Base.ReplayContext 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig.AppOp
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.AppOp Sal.MRDTs.Framework.Base.UpdateSignature 57 57 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig Sal.MRDTs.Framework.Base.UpdateSignature 49 59 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig.mk
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.mk Sal.MRDTs.Framework.Base.UpdateSignature 53 53 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.Query
+PROD_SOURCE Sal.MRDTs.MRDTSig.Query Sal.MRDTs.Framework.Signature 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig
+PROD_SOURCE Sal.MRDTs.MRDTSig Sal.MRDTs.Framework.Signature 15 27 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.mk
+PROD_SOURCE Sal.MRDTs.MRDTSig.mk Sal.MRDTs.Framework.Signature 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.toUpdateSig
+PROD_SOURCE Sal.MRDTs.MRDTSig.toUpdateSig Sal.MRDTs.Framework.Signature 33 40 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.dec_state
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_state Sal.MRDTs.Framework.Signature 19 19 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.State
+PROD_SOURCE Sal.MRDTs.MRDTSig.State Sal.MRDTs.Framework.Signature 18 18 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.AppOp
+PROD_SOURCE Sal.MRDTs.MRDTSig.AppOp Sal.MRDTs.Framework.Signature 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.dec_op
+PROD_SOURCE Sal.MRDTs.MRDTSig.dec_op Sal.MRDTs.Framework.Signature 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.init
+PROD_SOURCE Sal.MRDTs.MRDTSig.init Sal.MRDTs.Framework.Signature 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.update
+PROD_SOURCE Sal.MRDTs.MRDTSig.update Sal.MRDTs.Framework.Signature 25 25 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.Value
+PROD_SOURCE Sal.MRDTs.MRDTSig.Value Sal.MRDTs.Framework.Signature 24 24 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistorySpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec Sal.MRDTs.Paper1.HistorySpec 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistorySpec.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.mk Sal.MRDTs.Paper1.HistorySpec 20 20 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.SeqLabel
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.SeqLabel.query
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.query Sal.MRDTs.Paper1.HistorySpec 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.SeqLabel.update
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.update Sal.MRDTs.Paper1.HistorySpec 16 16 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistorySpec.Commutes
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.Commutes Sal.MRDTs.Paper1.SpecificationVisibility 17 20 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistorySpec.admits
+PROD_SOURCE Sal.MRDTs.Paper1.HistorySpec.admits Sal.MRDTs.Paper1.HistorySpec 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.respects
+PROD_SOURCE Sal.MRDTs.Foundation.respects Sal.MRDTs.Framework.Base.Replay 28 30 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.generation
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.generation Sal.MRDTs.Instances.EmbedRGA 1237 1238 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Issuance.mk
+PROD_SOURCE Sal.MRDTs.Issuance.mk Sal.MRDTs.Framework.Certificates 30 30 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Issuance
+PROD_SOURCE Sal.MRDTs.Issuance Sal.MRDTs.Framework.Certificates 26 31 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eApplicable
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eApplicable Sal.MRDTs.Instances.EmbedRGA 1126 1132 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eApplicable.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.ins
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EOp.ins Sal.MRDTs.Instances.EmbedRGA 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EOp Sal.MRDTs.Instances.EmbedRGA 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.del
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EOp.del Sal.MRDTs.Instances.EmbedRGA 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.casesOn
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EOp.casesOn Sal.MRDTs.Instances.EmbedRGA 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.rec
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EOp.rec Sal.MRDTs.Instances.EmbedRGA 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.ERec
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.ERec Sal.MRDTs.Instances.EmbedRGA 25 26 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eIds
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eIds Sal.MRDTs.Instances.EmbedRGA 35 35 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EState
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EState Sal.MRDTs.Instances.EmbedRGA 28 31 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.E
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.E Sal.MRDTs.Instances.EmbedRGA 81 97 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eMerge
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eMerge Sal.MRDTs.Instances.EmbedRGA 72 79 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eMerge2
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eMerge2 Sal.MRDTs.Instances.EmbedRGA 62 70 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eMerge2._unary
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eMerge2._unary._proof_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt
+PROD_SOURCE Sal.EmbedRGA.keyLt Sal.MRDTs.Instances.RGAKernel.EmbedRead 41 46 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.key
+PROD_SOURCE Sal.EmbedRGA.key Sal.MRDTs.Instances.RGAKernel.EmbedRead 33 39 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.coord
+PROD_SOURCE Sal.EmbedRGA.coord Sal.MRDTs.Instances.RGAKernel.EmbedState 37 38 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eMerge2.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eMerge2._unary._proof_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eUpdate
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eUpdate Sal.MRDTs.Instances.EmbedRGA 52 60 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.OrderedPrefixCode.enc
+PROD_SOURCE Sal.EmbedRGA.OrderedPrefixCode.enc Sal.MRDTs.Instances.RGAKernel.Code 41 41 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.OrderedPrefixCode
+PROD_SOURCE Sal.EmbedRGA.OrderedPrefixCode Sal.MRDTs.Instances.RGAKernel.Code 37 43 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.OrderedPrefixCode.mk
+PROD_SOURCE Sal.EmbedRGA.OrderedPrefixCode.mk Sal.MRDTs.Instances.RGAKernel.Code 40 40 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.bitLt
+PROD_SOURCE Sal.EmbedRGA.bitLt Sal.MRDTs.Instances.RGAKernel.Code 34 35 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eCoord.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsert
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eInsert Sal.MRDTs.Instances.EmbedRGA 44 50 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsert.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp Sal.MRDTs.Instances.EmbedRGA 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq Sal.MRDTs.Instances.EmbedRGA 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_8
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.del.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EOp.del.noConfusion Sal.MRDTs.Instances.EmbedRGA 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EOp.noConfusion Sal.MRDTs.Instances.EmbedRGA 20 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.noConfusionType
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_4
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.ins.noConfusion
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EOp.ins.noConfusion Sal.MRDTs.Instances.EmbedRGA 21 21 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_6
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EOp.ctorIdx
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_5
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_3
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq._proof_7
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.ver
+PROD_SOURCE Sal.MRDTs.Configuration.ver Sal.MRDTs.Framework.Execution 108 108 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration
+PROD_SOURCE Sal.MRDTs.Configuration Sal.MRDTs.Framework.Execution 104 134 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.mk
+PROD_SOURCE Sal.MRDTs.Configuration.mk Sal.MRDTs.Framework.Execution 106 106 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.headEventsFrom
+PROD_SOURCE Sal.MRDTs.headEventsFrom Sal.MRDTs.Framework.Execution 98 102 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.IsGCA
+PROD_SOURCE Sal.MRDTs.IsGCA Sal.MRDTs.Framework.Execution 27 32 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Reaches
+PROD_SOURCE Sal.MRDTs.Reaches Sal.MRDTs.Framework.Execution 24 25 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical Sal.MRDTs.Instances.ProductionRGA 29 30 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.leBool
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.leBool Sal.MRDTs.Instances.ProductionRGA 20 25 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.leBool.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CertifiedExecution.mintHonest
+PROD_SOURCE Sal.MRDTs.CertifiedExecution.mintHonest Sal.MRDTs.Metatheory.Correctness 130 135 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReachV
+PROD_SOURCE Sal.MRDTs.MintCertifiedReachV Sal.MRDTs.Framework.Certificates 89 98 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReachV.init
+PROD_SOURCE Sal.MRDTs.MintCertifiedReachV.init Sal.MRDTs.Framework.Certificates 92 92 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig
+PROD_SOURCE Sal.MRDTs.initConfig Sal.MRDTs.Framework.Execution 261 305 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_7
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_3
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_10
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Framework.Execution.0.Sal.MRDTs.initVer_decompose
+PROD_SOURCE _private.Sal.MRDTs.Framework.Execution.0.Sal.MRDTs.initVer_decompose Sal.MRDTs.Framework.Execution 250 259 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_9
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_8
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_5
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_4
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.initConfig._proof_6
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.VirtualMergeBaseResolver
+PROD_SOURCE Sal.MRDTs.VirtualMergeBaseResolver Sal.MRDTs.Framework.Execution 411 416 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.VirtualMergeBaseResolver.mk
+PROD_SOURCE Sal.MRDTs.VirtualMergeBaseResolver.mk Sal.MRDTs.Framework.Execution 415 415 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReachV.step
+PROD_SOURCE Sal.MRDTs.MintCertifiedReachV.step Sal.MRDTs.Framework.Certificates 93 98 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.IssuedStepV
+PROD_SOURCE Sal.MRDTs.IssuedStepV Sal.MRDTs.Framework.Certificates 57 68 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.IssuedStepV.virtual
+PROD_SOURCE Sal.MRDTs.IssuedStepV.virtual Sal.MRDTs.Framework.Certificates 65 68 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.StepV
+PROD_SOURCE Sal.MRDTs.StepV Sal.MRDTs.Framework.Execution 418 437 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.StepV.mergeVirtual
+PROD_SOURCE Sal.MRDTs.StepV.mergeVirtual Sal.MRDTs.Framework.Execution 424 437 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.parents
+PROD_SOURCE Sal.MRDTs.Configuration.parents Sal.MRDTs.Framework.Execution 110 110 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.merge
+PROD_SOURCE Sal.MRDTs.MRDTSig.merge Sal.MRDTs.Framework.Signature 26 26 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.head
+PROD_SOURCE Sal.MRDTs.Configuration.head Sal.MRDTs.Framework.Execution 109 109 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.VirtualMergeBaseResolver.state
+PROD_SOURCE Sal.MRDTs.VirtualMergeBaseResolver.state Sal.MRDTs.Framework.Execution 416 416 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Label.merge
+PROD_SOURCE Sal.MRDTs.Label.merge Sal.MRDTs.Framework.Execution 310 310 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Label
+PROD_SOURCE Sal.MRDTs.Label Sal.MRDTs.Framework.Execution 307 311 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Label.apply
+PROD_SOURCE Sal.MRDTs.Label.apply Sal.MRDTs.Framework.Execution 309 309 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Label.fork
+PROD_SOURCE Sal.MRDTs.Label.fork Sal.MRDTs.Framework.Execution 308 308 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Label.query
+PROD_SOURCE Sal.MRDTs.Label.query Sal.MRDTs.Framework.Execution 311 311 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.vis
+PROD_SOURCE Sal.MRDTs.Configuration.vis Sal.MRDTs.Framework.Execution 107 107 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.StepV.base
+PROD_SOURCE Sal.MRDTs.StepV.base Sal.MRDTs.Framework.Execution 422 423 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Step
+PROD_SOURCE Sal.MRDTs.Step Sal.MRDTs.Framework.Execution 313 361 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Step.apply
+PROD_SOURCE Sal.MRDTs.Step.apply Sal.MRDTs.Framework.Execution 328 341 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.events
+PROD_SOURCE Sal.MRDTs.Configuration.events Sal.MRDTs.Framework.Execution 221 222 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.headEvents
+PROD_SOURCE Sal.MRDTs.Configuration.headEvents Sal.MRDTs.Framework.Execution 143 145 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.Op.time
+PROD_SOURCE Sal.MRDTs.Foundation.Op.time Sal.MRDTs.Framework.Base.UpdateSignature 40 41 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Step.fork
+PROD_SOURCE Sal.MRDTs.Step.fork Sal.MRDTs.Framework.Execution 316 327 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Step.query
+PROD_SOURCE Sal.MRDTs.Step.query Sal.MRDTs.Framework.Execution 358 361 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.headState
+PROD_SOURCE Sal.MRDTs.Configuration.headState Sal.MRDTs.Framework.Execution 140 141 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.headStateFrom
+PROD_SOURCE Sal.MRDTs.headStateFrom Sal.MRDTs.Framework.Execution 93 96 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MRDTSig.query
+PROD_SOURCE Sal.MRDTs.MRDTSig.query Sal.MRDTs.Framework.Signature 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Step.merge
+PROD_SOURCE Sal.MRDTs.Step.merge Sal.MRDTs.Framework.Execution 342 357 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.IssuedStepV.base
+PROD_SOURCE Sal.MRDTs.IssuedStepV.base Sal.MRDTs.Framework.Certificates 63 64 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.IssuedStep
+PROD_SOURCE Sal.MRDTs.IssuedStep Sal.MRDTs.Framework.Certificates 33 48 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.IssuedStep.nonApply
+PROD_SOURCE Sal.MRDTs.IssuedStep.nonApply Sal.MRDTs.Framework.Certificates 38 41 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.IssuedStep.apply
+PROD_SOURCE Sal.MRDTs.IssuedStep.apply Sal.MRDTs.Framework.Certificates 42 48 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Issuance.CanIssue
+PROD_SOURCE Sal.MRDTs.Issuance.CanIssue Sal.MRDTs.Framework.Certificates 31 31 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintHonest
+PROD_SOURCE Sal.MRDTs.MintHonest Sal.MRDTs.Framework.Certificates 16 24 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.listPermOf
+PROD_SOURCE Sal.MRDTs.Foundation.listPermOf Sal.MRDTs.Framework.Base.Replay 24 26 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.applySeq
+PROD_SOURCE Sal.MRDTs.Foundation.applySeq Sal.MRDTs.Framework.Base.Replay 13 16 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig.State
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.State Sal.MRDTs.Framework.Base.UpdateSignature 54 54 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig.update
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.update Sal.MRDTs.Framework.Base.UpdateSignature 59 59 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReachV.mintHonest
+PROD_SOURCE Sal.MRDTs.MintCertifiedReachV.mintHonest Sal.MRDTs.Framework.Certificates 128 144 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReachV.casesOn
+PROD_SOURCE Sal.MRDTs.MintCertifiedReachV.casesOn Sal.MRDTs.Framework.Certificates 89 98 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReachV.rec
+PROD_SOURCE Sal.MRDTs.MintCertifiedReachV.rec Sal.MRDTs.Framework.Certificates 89 98 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReach.mintHonest
+PROD_SOURCE Sal.MRDTs.MintCertifiedReach.mintHonest Sal.MRDTs.Framework.Certificates 111 126 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReach
+PROD_SOURCE Sal.MRDTs.MintCertifiedReach Sal.MRDTs.Framework.Certificates 77 87 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReach.step
+PROD_SOURCE Sal.MRDTs.MintCertifiedReach.step Sal.MRDTs.Framework.Certificates 82 87 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReach.init
+PROD_SOURCE Sal.MRDTs.MintCertifiedReach.init Sal.MRDTs.Framework.Certificates 81 81 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReach.casesOn
+PROD_SOURCE Sal.MRDTs.MintCertifiedReach.casesOn Sal.MRDTs.Framework.Certificates 77 87 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.MintCertifiedReach.rec
+PROD_SOURCE Sal.MRDTs.MintCertifiedReach.rec Sal.MRDTs.Framework.Certificates 77 87 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CertifiedExecution.virtual
+PROD_SOURCE Sal.MRDTs.CertifiedExecution.virtual Sal.MRDTs.Metatheory.Correctness 127 128 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CertifiedExecution
+PROD_SOURCE Sal.MRDTs.CertifiedExecution Sal.MRDTs.Metatheory.Correctness 120 128 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CertifiedExecution.ordinary
+PROD_SOURCE Sal.MRDTs.CertifiedExecution.ordinary Sal.MRDTs.Metatheory.Correctness 126 126 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.canonicalVirtualMergeBase
+PROD_SOURCE Sal.MRDTs.canonicalVirtualMergeBase Sal.MRDTs.Metatheory.VirtualMergeBase 261 263 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.virtualMergeBaseState
+PROD_SOURCE Sal.MRDTs.virtualMergeBaseState Sal.MRDTs.Metatheory.VirtualMergeBase 253 258 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.virtualBaseAux
+PROD_SOURCE Sal.MRDTs.virtualBaseAux Sal.MRDTs.Metatheory.VirtualMergeBase 195 204 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.vfoldAux.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.stateD
+PROD_SOURCE Sal.MRDTs.stateD Sal.MRDTs.Metatheory.VirtualMergeBase 23 26 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.vfoldAux
+PROD_SOURCE Sal.MRDTs.vfoldAux Sal.MRDTs.Metatheory.VirtualMergeBase 135 192 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.vfoldAux._unary
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.vfoldAux._unary._proof_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.mem_supportOf_of
+PROD_SOURCE Sal.MRDTs.mem_supportOf_of Sal.MRDTs.Metatheory.VirtualMergeBase 64 68 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.reaches_le
+PROD_SOURCE Sal.MRDTs.reaches_le Sal.MRDTs.Framework.Execution 86 91 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.supportOf
+PROD_SOURCE Sal.MRDTs.supportOf Sal.MRDTs.Metatheory.VirtualMergeBase 58 61 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.maximalCommonAncestorsWithAny_eq_singleton_of_mem_support
+PROD_SOURCE Sal.MRDTs.maximalCommonAncestorsWithAny_eq_singleton_of_mem_support Sal.MRDTs.Metatheory.VirtualMergeBase 94 113 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.maximalCommonAncestorsWithAny_eq_singleton_of_mem_support._simp_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CommonAncestorsWithAny
+PROD_SOURCE Sal.MRDTs.CommonAncestorsWithAny Sal.MRDTs.Framework.Execution 45 49 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.IsMaximalCommonAncestorWithAny
+PROD_SOURCE Sal.MRDTs.IsMaximalCommonAncestorWithAny Sal.MRDTs.Framework.Execution 51 56 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.mem_maximalCommonAncestorsWithAny
+PROD_SOURCE Sal.MRDTs.mem_maximalCommonAncestorsWithAny Sal.MRDTs.Metatheory.VirtualMergeBase 38 41 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.maximalCommonAncestorsWithAny
+PROD_SOURCE Sal.MRDTs.maximalCommonAncestorsWithAny Sal.MRDTs.Metatheory.VirtualMergeBase 29 35 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.maximalCommonAncestorsWithAny_le
+PROD_SOURCE Sal.MRDTs.maximalCommonAncestorsWithAny_le Sal.MRDTs.Metatheory.VirtualMergeBase 44 46 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.exists_of_mem_supportOf
+PROD_SOURCE Sal.MRDTs.exists_of_mem_supportOf Sal.MRDTs.Metatheory.VirtualMergeBase 71 73 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.supportOf_maximalCommonAncestorsWithAny_subset
+PROD_SOURCE Sal.MRDTs.supportOf_maximalCommonAncestorsWithAny_subset Sal.MRDTs.Metatheory.VirtualMergeBase 83 92 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.supportOf_mono
+PROD_SOURCE Sal.MRDTs.supportOf_mono Sal.MRDTs.Metatheory.VirtualMergeBase 75 81 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.vfoldAux._unary._proof_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.vfoldAux.match_3
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.vfoldAux._unary._proof_3
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.parents_lt
+PROD_SOURCE Sal.MRDTs.Configuration.parents_lt Sal.MRDTs.Framework.Execution 111 111 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CertifiedExecution.casesOn
+PROD_SOURCE Sal.MRDTs.CertifiedExecution.casesOn Sal.MRDTs.Metatheory.Correctness 120 128 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CertifiedExecution.rec
+PROD_SOURCE Sal.MRDTs.CertifiedExecution.rec Sal.MRDTs.Metatheory.Correctness 120 128 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_full_history
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_full_history Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory 104 136 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.emptyPolicy
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.emptyPolicy Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory 71 72 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.OperationPolicy.mk
+PROD_SOURCE Sal.MRDTs.Paper1.OperationPolicy.mk Sal.MRDTs.Paper1.RestrictedReplay 17 17 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.OperationPolicy
+PROD_SOURCE Sal.MRDTs.Paper1.OperationPolicy Sal.MRDTs.Paper1.RestrictedReplay 17 18 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.InvariantOrder.order
+PROD_SOURCE Sal.MRDTs.Paper1.InvariantOrder.order Sal.MRDTs.Paper1.InvariantOrder 30 34 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.OperationPolicy.before
+PROD_SOURCE Sal.MRDTs.Paper1.OperationPolicy.before Sal.MRDTs.Paper1.RestrictedReplay 18 18 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.InvariantOrder.Commutes
+PROD_SOURCE Sal.MRDTs.Paper1.InvariantOrder.Commutes Sal.MRDTs.Paper1.InvariantOrder 12 15 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.Op.op
+PROD_SOURCE Sal.MRDTs.Foundation.Op.op Sal.MRDTs.Framework.Base.UpdateSignature 44 45 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.projectedLabels
+PROD_SOURCE Sal.MRDTs.Paper1.projectedLabels Sal.MRDTs.Paper1.ProjectedCriterion 9 11 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.GuardedHistory.language
+PROD_SOURCE Sal.MRDTs.Paper1.GuardedHistory.language Sal.MRDTs.Paper1.GuardedHistory 19 19 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistoryMachine.toSpec
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.toSpec Sal.MRDTs.Paper1.HistorySpec 62 68 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistoryMachine.initial
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.initial Sal.MRDTs.Paper1.HistorySpec 28 28 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistoryMachine
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine Sal.MRDTs.Paper1.HistorySpec 25 29 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistoryMachine.mk
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.mk Sal.MRDTs.Paper1.HistorySpec 26 26 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistoryMachine.State
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.State Sal.MRDTs.Paper1.HistorySpec 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistoryMachine.transition
+PROD_SOURCE Sal.MRDTs.Paper1.HistoryMachine.transition Sal.MRDTs.Paper1.HistorySpec 29 29 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.Runs
+PROD_SOURCE Sal.MRDTs.Paper1.Runs Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.Runs.nil
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.nil Sal.MRDTs.Paper1.HistorySpec 33 33 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.Runs.cons
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.cons Sal.MRDTs.Paper1.HistorySpec 34 34 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.Runs.split
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.split Sal.MRDTs.Paper1.HistorySpec 46 56 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.Runs.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.casesOn Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.Runs.rec
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.rec Sal.MRDTs.Paper1.HistorySpec 31 34 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.HistoryMachine.toSpec._proof_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.GuardedHistory.machine
+PROD_SOURCE Sal.MRDTs.Paper1.GuardedHistory.machine Sal.MRDTs.Paper1.GuardedHistory 11 17 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.GuardedHistory.machine.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.SeqLabel.casesOn
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.casesOn Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.SeqLabel.rec
+PROD_SOURCE Sal.MRDTs.Paper1.SeqLabel.rec Sal.MRDTs.Paper1.HistorySpec 15 18 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialMachine.State
+PROD_SOURCE Sal.MRDTs.SequentialMachine.State Sal.MRDTs.Framework.Certificates 206 206 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialMachine
+PROD_SOURCE Sal.MRDTs.SequentialMachine Sal.MRDTs.Framework.Certificates 202 208 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialMachine.mk
+PROD_SOURCE Sal.MRDTs.SequentialMachine.mk Sal.MRDTs.Framework.Certificates 205 205 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialSpec.toSequentialMachine
+PROD_SOURCE Sal.MRDTs.SequentialSpec.toSequentialMachine Sal.MRDTs.Framework.Certificates 212 214 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialSpec
+PROD_SOURCE Sal.MRDTs.SequentialSpec Sal.MRDTs.Framework.Certificates 210 214 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialSpec.mk
+PROD_SOURCE Sal.MRDTs.SequentialSpec.mk Sal.MRDTs.Framework.Certificates 212 212 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialMachine.init
+PROD_SOURCE Sal.MRDTs.SequentialMachine.init Sal.MRDTs.Framework.Certificates 207 207 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialSpec.query
+PROD_SOURCE Sal.MRDTs.SequentialSpec.query Sal.MRDTs.Framework.Certificates 214 214 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialSpec.Legal
+PROD_SOURCE Sal.MRDTs.SequentialSpec.Legal Sal.MRDTs.Framework.Certificates 213 213 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialMachine.step
+PROD_SOURCE Sal.MRDTs.SequentialMachine.step Sal.MRDTs.Framework.Certificates 208 208 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eHonest_of_mint
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eHonest_of_mint Sal.MRDTs.Instances.EmbedRGA 1240 1244 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EHonest
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EHonest Sal.MRDTs.Instances.EmbedRGA 1091 1099 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.PosChain
+PROD_SOURCE Sal.EmbedRGA.PosChain Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 190 192 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.coordOf
+PROD_SOURCE Sal.EmbedRGA.coordOf Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 185 188 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.coordOf.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eCoord
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eCoord Sal.MRDTs.Instances.EmbedRGA 37 42 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eIsIns
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eIsIns Sal.MRDTs.Instances.EmbedRGA 335 338 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eHonest_of_applicable
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eHonest_of_applicable Sal.MRDTs.Instances.EmbedRGA 1203 1235 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_rec_sub
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_fold_rec_sub Sal.MRDTs.Instances.EmbedRGA 401 431 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eFold_snoc
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eFold_snoc Sal.MRDTs.Instances.EmbedRGA 329 333 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eFold
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eFold Sal.MRDTs.Instances.EmbedRGA 326 327 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eRecOf
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eRecOf Sal.MRDTs.Instances.EmbedRGA 340 342 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.mem_eInsert
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.mem_eInsert Sal.MRDTs.Instances.EmbedRGA 154 163 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.mem_eInsert._simp_1_6
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.mem_eInsert.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_chain_exists
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_chain_exists Sal.MRDTs.Instances.EmbedRGA 1134 1201 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_8
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_7
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_5
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.coordOf_append
+PROD_SOURCE Sal.EmbedRGA.coordOf_append Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 201 205 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayContext.ts_unique
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayContext.ts_unique Sal.MRDTs.Framework.ReplayLaws 643 652 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayContext.timestamps_distinct
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayContext.timestamps_distinct Sal.MRDTs.Framework.Base.ReplayContext 25 25 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayContext.L
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayContext.L Sal.MRDTs.Framework.Base.ReplayContext 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayContext.events
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayContext.events Sal.MRDTs.Framework.Base.ReplayContext 37 39 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig.dec_op
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.dec_op Sal.MRDTs.Framework.Base.UpdateSignature 58 58 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_9
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.replayContext
+PROD_SOURCE Sal.MRDTs.Configuration.replayContext Sal.MRDTs.Framework.Execution 230 236 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.vis_total_same_replica
+PROD_SOURCE Sal.MRDTs.Configuration.vis_total_same_replica Sal.MRDTs.Framework.Execution 126 126 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.timestamps_distinct
+PROD_SOURCE Sal.MRDTs.Configuration.timestamps_distinct Sal.MRDTs.Framework.Execution 120 120 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_history_data
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_history_data Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory 15 69 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedLegal_of_seqOK
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedLegal_of_seqOK Sal.MRDTs.Instances.ProductionRGA 197 217 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eSeqOK
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eSeqOK Sal.MRDTs.Instances.EmbedRGASequential 60 70 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eSpecStep.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsIds
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eInsIds Sal.MRDTs.Instances.EmbedRGA 344 345 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedLegal.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedLegal
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedLegal Sal.MRDTs.Instances.ProductionRGA 178 195 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedRel
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedRel Sal.MRDTs.Instances.ProductionRGA 225 227 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eProj
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eProj Sal.MRDTs.Instances.EmbedRGASequential 32 33 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCanonical_seqOK_of
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCanonical_seqOK_of Sal.MRDTs.Paper1.CertifiedRGAHistory 15 127 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_mem
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_fold_mem Sal.MRDTs.Instances.EmbedRGA 485 556 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_guard_free
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_fold_guard_free Sal.MRDTs.Instances.EmbedRGA 433 448 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EWf
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EWf Sal.MRDTs.Instances.EmbedRGA 379 386 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EWf.mk
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EWf.mk Sal.MRDTs.Instances.EmbedRGA 382 382 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eDels
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eDels Sal.MRDTs.Instances.EmbedRGA 347 348 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eDels.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsIds_append
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eInsIds_append Sal.MRDTs.Instances.EmbedRGA 371 373 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EWf.ins_nodup
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EWf.ins_nodup Sal.MRDTs.Instances.EmbedRGA 383 383 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds Sal.MRDTs.Instances.EmbedRGA 350 357 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds._simp_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds._simp_1_3
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_mem._simp_1_7
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eDels_append
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eDels_append Sal.MRDTs.Instances.EmbedRGA 375 377 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EWf.del_late
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EWf.del_late Sal.MRDTs.Instances.EmbedRGA 384 384 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_mem._simp_1_8
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EWf.prefix
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EWf.prefix Sal.MRDTs.Instances.EmbedRGA 388 399 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EWf.keys_inj
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EWf.keys_inj Sal.MRDTs.Instances.EmbedRGA 385 385 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.earlier_insert_mem_prefix
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.earlier_insert_mem_prefix Sal.MRDTs.Instances.ProductionRGA 109 135 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.earlier_insert_mem_prefix._simp_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.LE
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.LE Sal.MRDTs.Instances.ProductionRGA 27 27 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.insert_mem_prefix_of_delete
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.insert_mem_prefix_of_delete Sal.MRDTs.Instances.ProductionRGA 137 156 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.insert_mem_prefix_of_delete._simp_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CanonicalConfig.version_events_causal
+PROD_SOURCE Sal.MRDTs.CanonicalConfig.version_events_causal Sal.MRDTs.Metatheory.Adequacy 57 57 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayPolicy
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayPolicy Sal.MRDTs.Framework.Base.UpdateSignature 66 73 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayPolicy.mk
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayPolicy.mk Sal.MRDTs.Framework.Base.UpdateSignature 72 72 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.RcRes
+PROD_SOURCE Sal.MRDTs.Foundation.RcRes Sal.MRDTs.Framework.Base.UpdateSignature 19 25 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.RcRes.Snd_then_fst
+PROD_SOURCE Sal.MRDTs.Foundation.RcRes.Snd_then_fst Sal.MRDTs.Framework.Base.UpdateSignature 23 23 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.RcRes.Fst_then_snd
+PROD_SOURCE Sal.MRDTs.Foundation.RcRes.Fst_then_snd Sal.MRDTs.Framework.Base.UpdateSignature 22 22 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.RcRes.Either
+PROD_SOURCE Sal.MRDTs.Foundation.RcRes.Either Sal.MRDTs.Framework.Base.UpdateSignature 24 24 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CanonicalConfig
+PROD_SOURCE Sal.MRDTs.CanonicalConfig Sal.MRDTs.Metatheory.Adequacy 44 58 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CanonicalConfig.mk
+PROD_SOURCE Sal.MRDTs.CanonicalConfig.mk Sal.MRDTs.Metatheory.Adequacy 50 50 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.IsCanonicalState
+PROD_SOURCE Sal.MRDTs.Foundation.IsCanonicalState Sal.MRDTs.Metatheory.Join.SetRelativeReplay 1051 1057 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.loOn
+PROD_SOURCE Sal.MRDTs.Foundation.loOn Sal.MRDTs.Metatheory.Join.SetRelativeReplay 151 161 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig.rc
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.rc Sal.MRDTs.Framework.Base.UpdateSignature 108 110 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayPolicy.Before
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayPolicy.Before Sal.MRDTs.Framework.Base.UpdateSignature 77 81 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.ReplayPolicy.order
+PROD_SOURCE Sal.MRDTs.Foundation.ReplayPolicy.order Sal.MRDTs.Framework.Base.UpdateSignature 73 73 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig.init
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.init Sal.MRDTs.Framework.Base.UpdateSignature 56 56 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.wf_of_insert_only
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.wf_of_insert_only Sal.MRDTs.Instances.ProductionRGA 78 107 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.coordOf_inj
+PROD_SOURCE Sal.EmbedRGA.coordOf_inj Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 207 250 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.coordOf_inj.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.OrderedPrefixCode.prefixFree
+PROD_SOURCE Sal.EmbedRGA.OrderedPrefixCode.prefixFree Sal.MRDTs.Instances.RGAKernel.Code 43 43 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.enc_ne_nil
+PROD_SOURCE Sal.EmbedRGA.enc_ne_nil Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 194 199 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.enc_ne_nil._proof_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.enc_ne_nil._proof_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.key_inj
+PROD_SOURCE Sal.EmbedRGA.key_inj Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 149 156 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EHonestCore.chain_gen
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EHonestCore.chain_gen Sal.MRDTs.Instances.EmbedRGA 632 632 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EHonestCore
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EHonestCore Sal.MRDTs.Instances.EmbedRGA 623 636 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EHonestCore.mk
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EHonestCore.mk Sal.MRDTs.Instances.EmbedRGA 624 624 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.dels_nil_of_insert_only
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.dels_nil_of_insert_only Sal.MRDTs.Instances.ProductionRGA 64 76 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CanonicalConfig.version_events_supported
+PROD_SOURCE Sal.MRDTs.CanonicalConfig.version_events_supported Sal.MRDTs.Metatheory.Adequacy 55 55 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eHonest_core
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eHonest_core Sal.MRDTs.Instances.EmbedRGA 1101 1114 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.replayContext_events
+PROD_SOURCE Sal.MRDTs.Configuration.replayContext_events Sal.MRDTs.Framework.Execution 238 239 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.prefix_insert_only
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.prefix_insert_only Sal.MRDTs.Instances.ProductionRGA 158 169 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical_listPermOf
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical_listPermOf Sal.MRDTs.Instances.ProductionRGA 36 40 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical_perm
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical_perm Sal.MRDTs.Instances.ProductionRGA 32 34 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy Sal.MRDTs.Instances.EmbedRGA 110 112 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eRcOrder
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eRcOrder Sal.MRDTs.Instances.EmbedRGA 102 108 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eRcOrder.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eRcOrder._sparseCasesOn_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eRcOrder._sparseCasesOn_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical_ordered
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.EmbedWitness.canonical_ordered Sal.MRDTs.Instances.ProductionRGA 42 51 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_canonical_specVisibility
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_canonical_specVisibility Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 366 399 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_causal_delete_insert
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_causal_delete_insert Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 86 132 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.EHonestCore.del_has_ins
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.EHonestCore.del_has_ins Sal.MRDTs.Instances.EmbedRGA 627 627 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAScope.Embedded.wellformed
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAScope.Embedded.wellformed Sal.MRDTs.Paper1.CertifiedRGAScope 29 37 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.UpdateSig.commutes
+PROD_SOURCE Sal.MRDTs.Foundation.UpdateSig.commutes Sal.MRDTs.Framework.Base.UpdateSignature 112 116 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAScope.0.Sal.MRDTs.Paper1.CertifiedRGAScope.Embedded.loOn_implies_vis
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAScope.0.Sal.MRDTs.Paper1.CertifiedRGAScope.Embedded.loOn_implies_vis Sal.MRDTs.Paper1.CertifiedRGAScope 10 16 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_vis_of_rc_of_honest
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_vis_of_rc_of_honest Sal.MRDTs.Instances.EmbedRGA 638 658 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.RcRes.ctorIdx
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.RcRes.casesOn
+PROD_SOURCE Sal.MRDTs.Foundation.RcRes.casesOn Sal.MRDTs.Framework.Base.UpdateSignature 19 25 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Foundation.RcRes.rec
+PROD_SOURCE Sal.MRDTs.Foundation.RcRes.rec Sal.MRDTs.Framework.Base.UpdateSignature 19 25 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_wf_of_enum
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_wf_of_enum Sal.MRDTs.Instances.EmbedRGA 683 739 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.mem_eDels
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.mem_eDels Sal.MRDTs.Instances.EmbedRGA 359 369 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.mem_eDels._simp_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_del_ins_mem
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_del_ins_mem Sal.MRDTs.Instances.EmbedRGA 660 681 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_ins_del_not_comm
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_ins_del_not_comm Sal.MRDTs.Instances.EmbedRGA 589 599 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.E_core_update
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.E_core_update Sal.MRDTs.Instances.EmbedRGA 99 100 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_ins_del_not_comm._simp_1_6
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_causal_delete_insert._proof_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.causal_mono
+PROD_SOURCE Sal.MRDTs.Configuration.causal_mono Sal.MRDTs.Framework.Execution 125 125 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Configuration.vis_src
+PROD_SOURCE Sal.MRDTs.Configuration.vis_src Sal.MRDTs.Framework.Execution 114 114 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CanonicalConfig.vis_trans
+PROD_SOURCE Sal.MRDTs.CanonicalConfig.vis_trans Sal.MRDTs.Metatheory.Adequacy 53 53 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_causal_delete_insert._proof_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_deletes_language
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_deletes_language Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 317 334 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_swap
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_swap Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 222 236 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.PrefixChecks
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.PrefixChecks Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 182 184 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.PrefixChecks.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_congr
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_congr Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 214 220 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_splits
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_splits Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 186 204 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_append
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_append Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 206 212 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.checks_append._simp_1_4
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_deletes_language._simp_1_4
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_deletes_language._simp_1_5
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_legal_prefix
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_legal_prefix Sal.MRDTs.Paper1.CertifiedRGAHistory 310 316 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedClientSpec
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedClientSpec Sal.MRDTs.Instances.ProductionRGA 219 223 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedSpec
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedSpec Sal.MRDTs.Instances.ProductionRGA 173 176 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eSpecStep
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eSpecStep Sal.MRDTs.Instances.EmbedRGASequential 41 47 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsAfter
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eInsAfter Sal.MRDTs.Instances.EmbedRGASequential 35 39 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsAfter.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCheck
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCheck Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 238 248 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCheck.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_checks_legal
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_checks_legal Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 250 253 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.GuardedHistory.language_commutes_of_legal_swap
+PROD_SOURCE Sal.MRDTs.Paper1.GuardedHistory.language_commutes_of_legal_swap Sal.MRDTs.Paper1.CertifiedHistoryCommutation 39 87 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.GuardedHistory.FutureLegal
+PROD_SOURCE Sal.MRDTs.Paper1.GuardedHistory.FutureLegal Sal.MRDTs.Paper1.CertifiedHistoryCommutation 11 12 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.Runs.append
+PROD_SOURCE Sal.MRDTs.Paper1.Runs.append Sal.MRDTs.Paper1.HistorySpec 38 44 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedHistoryCommutation.0.Sal.MRDTs.Paper1.GuardedHistory.run_transport
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedHistoryCommutation.0.Sal.MRDTs.Paper1.GuardedHistory.run_transport Sal.MRDTs.Paper1.CertifiedHistoryCommutation 14 37 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_language
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_language Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 306 315 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_steps
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_steps Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 54 69 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_filter_splice
+PROD_SOURCE _private.Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation.0.Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_filter_splice Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 9 22 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_legal_swap
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_legal_swap Sal.MRDTs.Paper1.CertifiedRGAHistoryCommutation 255 270 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_legal_swap._simp_1_8
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_legal_swap._simp_1_5
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_legal_swap._simp_1_6
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_legal_swap._simp_1_7
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embed_delete_insert_legal_swap._simp_1_4
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.GuardedHistory.admits_updates_query
+PROD_SOURCE Sal.MRDTs.Paper1.GuardedHistory.admits_updates_query Sal.MRDTs.Paper1.GuardedHistory 36 41 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.GuardedHistory.updates_run
+PROD_SOURCE Sal.MRDTs.Paper1.GuardedHistory.updates_run Sal.MRDTs.Paper1.GuardedHistory 21 34 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialSpec.run
+PROD_SOURCE Sal.MRDTs.SequentialSpec.run Sal.MRDTs.Framework.Certificates 230 232 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.SequentialMachine.run
+PROD_SOURCE Sal.MRDTs.SequentialMachine.run Sal.MRDTs.Framework.Certificates 218 219 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound Sal.MRDTs.Instances.EmbedRGASequential 436 600 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_id_lt
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_fold_id_lt Sal.MRDTs.Instances.EmbedRGASequential 425 434 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_id_lt._proof_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsIds_lt_of_seqOK
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eInsIds_lt_of_seqOK Sal.MRDTs.Instances.EmbedRGASequential 134 143 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore.newer
+PROD_SOURCE Sal.EmbedRGA.chainBefore.newer Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 304 305 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore
+PROD_SOURCE Sal.EmbedRGA.chainBefore Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 299 305 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore.ancestor
+PROD_SOURCE Sal.EmbedRGA.chainBefore.ancestor Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 303 303 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.chainBefore_snoc_iff
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.chainBefore_snoc_iff Sal.MRDTs.Instances.EmbedRGASequential 251 294 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.chainBefore_snoc_iff._simp_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.chainBefore_inv'
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.chainBefore_inv' Sal.MRDTs.Instances.EmbedRGASequential 241 249 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore.casesOn
+PROD_SOURCE Sal.EmbedRGA.chainBefore.casesOn Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 299 305 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore.rec
+PROD_SOURCE Sal.EmbedRGA.chainBefore.rec Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 299 305 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.chainBefore_snoc_iff._proof_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eSpecFold_snoc
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eSpecFold_snoc Sal.MRDTs.Instances.EmbedRGASequential 52 56 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eSpecFold
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eSpecFold Sal.MRDTs.Instances.EmbedRGASequential 49 50 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_5
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.ESorted
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.ESorted Sal.MRDTs.Instances.EmbedRGA 150 152 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.display_iff_chainBefore
+PROD_SOURCE Sal.EmbedRGA.display_iff_chainBefore Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 362 377 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_asymm
+PROD_SOURCE Sal.EmbedRGA.keyLt_asymm Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 35 47 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_asymm._proof_1_9
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_asymm._proof_1_8
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_asymm.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_asymm._proof_1_10
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore_total
+PROD_SOURCE Sal.EmbedRGA.chainBefore_total Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 316 329 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore_cons
+PROD_SOURCE Sal.EmbedRGA.chainBefore_cons Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 307 314 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore_total.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.chainBefore_display
+PROD_SOURCE Sal.EmbedRGA.chainBefore_display Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 331 360 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_append_left
+PROD_SOURCE Sal.EmbedRGA.keyLt_append_left Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 291 295 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.sym
+PROD_SOURCE Sal.EmbedRGA.sym Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 283 284 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.key_def
+PROD_SOURCE Sal.EmbedRGA.key_def Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 286 286 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.enc_first_diff
+PROD_SOURCE Sal.EmbedRGA.enc_first_diff Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 276 279 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.lex_first_diff
+PROD_SOURCE Sal.EmbedRGA.lex_first_diff Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 259 274 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.OrderedPrefixCode.mono
+PROD_SOURCE Sal.EmbedRGA.OrderedPrefixCode.mono Sal.MRDTs.Instances.RGAKernel.Code 42 42 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.key_append
+PROD_SOURCE Sal.EmbedRGA.key_append Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 288 289 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_10
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_8
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsert_map_insAfter
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eInsert_map_insAfter Sal.MRDTs.Instances.EmbedRGASequential 307 396 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_irrefl
+PROD_SOURCE Sal.EmbedRGA.keyLt_irrefl Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 30 33 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_total
+PROD_SOURCE Sal.EmbedRGA.keyLt_total Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 80 92 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_total.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsert_all_lt
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eInsert_all_lt Sal.MRDTs.Instances.EmbedRGASequential 298 305 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsert_all_lt.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsert.eq_def
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history _private.Sal.MRDTs.Instances.EmbedRGA.0.Sal.MRDTs.Instances.EmbedRGA.eInsert.match_1.splitter
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_4
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK Sal.MRDTs.Instances.EmbedRGASequential 145 209 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK._proof_1_5
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_seq_chains
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_seq_chains Sal.MRDTs.Instances.EmbedRGASequential 79 130 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_5
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_4
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_3
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eSeqOK_prefix
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eSeqOK_prefix Sal.MRDTs.Instances.EmbedRGASequential 72 75 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_seq_chains._proof_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK._simp_1_3
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK._simp_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK._proof_1_4
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.map_eProj_filter
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.map_eProj_filter Sal.MRDTs.Instances.EmbedRGASequential 400 409 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_11
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_3
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_chain
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_fold_chain Sal.MRDTs.Instances.EmbedRGASequential 413 423 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_fst_inj
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_fold_fst_inj Sal.MRDTs.Instances.EmbedRGASequential 222 237 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_sorted
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_fold_sorted Sal.MRDTs.Instances.EmbedRGA 450 483 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted Sal.MRDTs.Instances.EmbedRGA 165 188 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_trans
+PROD_SOURCE Sal.EmbedRGA.keyLt_trans Sal.MRDTs.Instances.RGAKernel.EmbedChainLex 49 78 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_trans._proof_1_9
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_trans.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_trans._proof_1_8
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_trans._proof_1_10
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.EmbedRGA.keyLt_trans._proof_1_11
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound._proof_1_9
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_fold_canon
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_fold_canon Sal.MRDTs.Instances.EmbedRGA 558 577 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.esorted_ext
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.esorted_ext Sal.MRDTs.Instances.EmbedRGA 207 243 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.esorted_ext.match_1_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_respects_invariant
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_respects_invariant Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory 74 102 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCanonical_respects_of
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAHistory.embedCanonical_respects_of Sal.MRDTs.Paper1.CertifiedRGAHistory 129 203 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedRc_noncomm
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedRc_noncomm Sal.MRDTs.Instances.ProductionRGA 440 451 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedRc
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedRc Sal.MRDTs.Instances.ProductionRGA 437 438 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedRc_noncomm._simp_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedSemanticCommutes
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedSemanticCommutes Sal.MRDTs.Instances.ProductionRGA 415 425 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.CanonicalConfig.vis_irrefl
+PROD_SOURCE Sal.MRDTs.CanonicalConfig.vis_irrefl Sal.MRDTs.Metatheory.Adequacy 54 54 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedRc_not_before
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedRc_not_before Sal.MRDTs.Instances.ProductionRGA 453 463 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.ProductionRGA.embedSemanticCommutes_symm
+PROD_SOURCE Sal.MRDTs.Instances.ProductionRGA.embedSemanticCommutes_symm Sal.MRDTs.Instances.ProductionRGA 427 432 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.invariant_swaps
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.invariant_swaps Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory 138 147 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariant.semantic_commutes
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariant.semantic_commutes Sal.MRDTs.Paper1.CertifiedRGAInvariant 109 147 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariant.update_membership
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariant.update_membership Sal.MRDTs.Paper1.CertifiedRGAInvariant 82 106 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariant.update_membership._simp_1_2
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariant.Valid
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariant.Valid Sal.MRDTs.Paper1.CertifiedRGAInvariant 8 10 definition
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariant.update_membership.match_1
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Paper1.CertifiedRGAInvariant.update_valid
+PROD_SOURCE Sal.MRDTs.Paper1.CertifiedRGAInvariant.update_valid Sal.MRDTs.Paper1.CertifiedRGAInvariant 45 70 theorem
+PROD_DEP Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history Sal.MRDTs.Instances.EmbedRGA.e_keys_inj_events
+PROD_SOURCE Sal.MRDTs.Instances.EmbedRGA.e_keys_inj_events Sal.MRDTs.Instances.EmbedRGA 761 779 theorem
+PROD_COMPLETE Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history

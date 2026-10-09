@@ -1,7 +1,10 @@
 label	module	declaration
 eq:total-fold-sound	Sal.MRDTs.Paper1.SequentialSimulation	Sal.MRDTs.Paper1.SequentialSimulation.sound
+eq:total-fold-sound	Sal.MRDTs.Paper1.Automation.FiniteSetSimulation	Sal.MRDTs.Paper1.Automation.FiniteSetDescription.project_update
+eq:total-fold-sound	Sal.MRDTs.Paper1.Automation.GenericGuardedFold	Sal.MRDTs.Paper1.Automation.guarded_fold_projection
 eq:total-fold-sound	Sal.MRDTs.Paper1.RALinearizability	Sal.MRDTs.Paper1.ra_of_canonical_total
 eq:commutation-compatibility	Sal.MRDTs.Paper1.CommutationBridge	Sal.MRDTs.Paper1.CommutationCompatibility
+eq:commutation-compatibility	Sal.MRDTs.Paper1.ProjectedSimulation	Sal.MRDTs.Paper1.MachineProjection.language_commutes
 eq:commutation-compatibility	Sal.MRDTs.Paper1.CommutationBridge	Sal.MRDTs.Paper1.projectedSpecVisibility_sub_paperOrder
 def:history-adequacy	Sal.MRDTs.Paper1.ConcreteHistoryBridge	Sal.MRDTs.Paper1.ConcreteMRDT.ExecutionHistoryAdequacy
 thm:history-bridge	Sal.MRDTs.Paper1.ConcreteHistoryBridge	Sal.MRDTs.Paper1.ConcreteMRDT.versions_of_scoped_history

@@ -66,6 +66,15 @@ proofs in the submitted Fugue VC input.
 Fugue's five-VC proof does not resolve its separate
 sequential-specification obstruction.
 
+A separate [sequential-history bridge experiment](experiments/vc-automation/README.md#sequential-history-bridge-experiment)
+reduces the required concrete bridge source from 49 to 23 lines for ordinary
+OR-set and from 48 to 24 for efficient OR-set, against `052b8fb`, using a
+140-line generic projection/fold library. Embedded RGA remains a boundary
+experiment (2,021 to 2,013 lines): ordered-chain insertion adjacency and
+execution/issuance legal-history selection retain substantial concrete proofs.
+These full bridge closures include ordering and visibility and overlap the VC
+invariant costs; their counts should not be added to the VC totals.
+
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay
 in `GuardedConvergence`, `GuardedOrder`, and `ConcreteReplay`, and the full-event

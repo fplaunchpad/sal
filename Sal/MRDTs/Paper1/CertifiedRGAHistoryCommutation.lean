@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.Automation.EmbeddedSequentialBridge
 import Sal.MRDTs.Paper1.CertifiedRGAHistory
 import Sal.MRDTs.Paper1.CertifiedHistoryCommutation
 
@@ -468,7 +469,7 @@ theorem embed_full_history_of_replay {Γ : OrderedPrefixCode}
     have hstate : eFold Γ (EmbedWitness.canonical ops) = s := by
       rw [hcanonFold]
       exact hfold
-    have hsound := embed_seq_sound hseq
+    have hsound := Automation.EmbeddedSequentialBridge.sound hseq
     have hrel : embedRel s ((embedClientSpec Γ).run
         (EmbedWitness.canonical ops)) := by
       unfold embedRel

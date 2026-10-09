@@ -22268,13 +22268,13 @@
     "Sal/MRDTs/Paper1/ConcreteORSetRepresentation.lean": "ecc1d33048a5d8e82843d51dc43c6f77c43ef839809a60c6125eda7f1fcf6dd5",
     "Sal/MRDTs/Paper1/ORSet.lean": "72650abb5bcd82a52a0a0401cb008565345752c76d641a43400c3dfe5d914515",
     "Sal/MRDTs/Paper1/GuardedRawORSetReplay.lean": "6826eee396c71f966269b5c26ef4b0a7d56726effa7b7461e2b49ea35b58c64e",
-    "Sal/MRDTs/Paper1/ORSetVerified.lean": "07d594a9a7cbc7fd5d8c5ae69e097101f8e3ca1d8e690e8112c38bfe5dd88dce",
+    "Sal/MRDTs/Paper1/ORSetVerified.lean": "a7d055e8334b3c2a4b347600b7b4a8518a33f69a2982b3d02df406e520358895",
     "Sal/MRDTs/Paper1/GuardedRawORSetVC.lean": "8aba3e8cd831fe208b572b47e5e9424ad549c05c34c68136ab8a8361581ffbcb",
     "Sal/MRDTs/Instances/EfficientORSet.lean": "8d7913863de07d1ef5ca68983c0c65228e36ec8b7020ef9bfab4255f039b116c",
     "Sal/MRDTs/Instances/EfficientORSetHistory.lean": "5c2696af4271752d6f41e3db4e9437b686d96e7853af9531ba95cf8edb6c4de1",
     "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean": "b4ac40949f1490020606c0ba7a40cd0011991df7fc5176331b1a9aa343a55867",
     "Sal/MRDTs/Paper1/Automation/MaskKitAutomation.lean": "386545395a70d52589285c449fc327a19b22cf00a6716ec60fbe880612dc018c",
-    "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean": "eeb4899af6f2fffde1a762853a284c611e89d557b7085aa34017a98687a0b832",
+    "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean": "d222453cb161cd36e4f4a7b92a8e21b4ca2f41716becd1d74ebb542aadc11485",
     "Sal/MRDTs/Paper1/CertifiedMVRVC.lean": "69cf3225fc5a49163e9cdfa29b7dfdae8f13ac1818e14a9cd56a073cc4e01a67",
     "Sal/MRDTs/Instances/MVR.lean": "56c12a8c20fe91000f735d5d61cefe27bacd395e5565e9cac9b93908c10cc985",
     "Sal/MRDTs/Instances/MVRContract.lean": "86c9462ec4e5c3f68550cf613abe1b25be861ff2f0d246f8efe52ac5b31949fc",
@@ -22341,5 +22341,5 @@
     "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean": "3e5cf8ae008b7d750988191bac41aaa4838aafaaa216ae8c0325fabe59d76b65",
     "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean": "54a91177bee4724f1b7dfce5d05cd3a9a1336855a96b8fb6d32e76bf8c01f0b0"
   },
-  "audit_sha256": "e825b2154866af315c16dbb6437fb888a4bd4b7d16c46dfc41d9535e38aee704"
+  "audit_sha256": "06bd65105f681d7395b648451b777a9edcd4ab7ebaf76ee108522bcd9501f764"
 }
