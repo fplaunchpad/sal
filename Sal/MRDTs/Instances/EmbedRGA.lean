@@ -1,4 +1,5 @@
 import Sal.MRDTs.Metatheory.Correctness
+import Sal.MRDTs.Framework.CertifiedEventInduction
 import Sal.MRDTs.Instances.RGAKernel.EmbedChainLex
 import Sal.MRDTs.Instances.RGAKernel.BinaryCode
 
@@ -1140,65 +1141,53 @@ theorem e_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (E Γ α))
     ∀ t : ℕ, ∃ ch : List ℕ, PosChain ch ∧ ch.sum = t ∧
       ∀ o ∈ C.events, eIsIns o = true → o.1 = t →
         eCoord Γ o = coordOf Γ ch := by
+  classical
+  have born : ∀ o ∈ C.events, eIsIns o = true →
+      ∃ ch, PosChain ch ∧ ch.sum = o.1 ∧ eCoord Γ o = coordOf Γ ch := by
+    apply issued_event_induction C eApplicable hApp
+      (fun o => eIsIns o = true →
+        ∃ ch, PosChain ch ∧ ch.sum = o.1 ∧ eCoord Γ o = coordOf Γ ch)
+    intro o past eligible perm applicable prior insertion
+    rcases o with ⟨ts, r, op⟩
+    cases op with
+    | del x => simp [eIsIns] at insertion
+    | ins el pref anchor =>
+      rcases applicable with ⟨late, root | ⟨value, live⟩⟩
+      · rcases root with ⟨rfl, rfl⟩
+        exact ⟨[ts], by intro d hd; simp at hd; omega, by simp,
+          by simp [eCoord, coordOf]⟩
+      · obtain ⟨birth, member, ins, record⟩ :=
+          e_fold_rec_sub Γ past (anchor, value, pref) live
+        obtain ⟨chain, positive, sum, coordinate⟩ := prior birth member ins
+        have stamp : birth.1 = anchor := congrArg Prod.fst record.symm
+        have carried : pref = eCoord Γ birth :=
+          congrArg (fun p : ERec α => p.2.2) record
+        refine ⟨chain ++ [ts - anchor], ?_, ?_, ?_⟩
+        · intro d hd
+          rcases List.mem_append.mp hd with old | new
+          · exact positive d old
+          · simp only [List.mem_singleton] at new
+            subst d; omega
+        · rw [List.sum_append, sum, stamp]
+          simp; omega
+        · show pref ++ Γ.enc (ts - anchor) = _
+          rw [coordOf_append, carried, coordinate]
+          simp [coordOf]
   intro t
-  induction t using Nat.strong_induction_on with
-  | _ t ih =>
-    classical
-    by_cases hex : ∃ o ∈ C.events, eIsIns o = true ∧ o.1 = t
-    · obtain ⟨o, ho, hoi, hot⟩ := hex
-      obtain ⟨ts, r, op⟩ := o
-      cases op with
-      | del x => simp [eIsIns] at hoi
-      | ins el π a =>
-          simp only at hot
-          subst hot
-          obtain ⟨πe, hπe, happ⟩ := hApp _ ho
-          simp only [eApplicable] at happ
-          obtain ⟨hat, hcase⟩ := happ
-          rcases hcase with ⟨ha0, hπ0⟩ | ⟨el', hmem⟩
-          · subst ha0
-            subst hπ0
-            refine ⟨[ts], ?_, by simp, ?_⟩
-            · intro d hd
-              simp at hd
-              omega
-            · intro o' ho' hoi' hot'
-              have ho'eq : o' = (ts, r, EOp.ins el [] 0) :=
-                (Configuration.replayContext C).ts_unique ho' ho hot'
-              rw [ho'eq]
-              simp [eCoord, coordOf]
-          · obtain ⟨aop, haπ, hai, hae⟩ := e_fold_rec_sub Γ πe (a, el', π) hmem
-            have haev := (hπe.2 aop).mp haπ
-            have ha1 : aop.1 = a := congrArg Prod.fst hae.symm
-            have hπval : π = eCoord Γ aop :=
-              congrArg (fun p : ERec α => p.2.2) hae
-            obtain ⟨ch, hpos, hsum, hcoord⟩ := ih a hat
-            refine ⟨ch ++ [ts - a], ?_, ?_, ?_⟩
-            · intro d hd
-              rcases List.mem_append.mp hd with h | h
-              · exact hpos d h
-              · simp at h
-                omega
-            · rw [List.sum_append]
-              simp
-              omega
-            · intro o' ho' hoi' hot'
-              have ho'eq : o' = (ts, r, EOp.ins el π a) :=
-                (Configuration.replayContext C).ts_unique ho' ho hot'
-              rw [ho'eq]
-              show π ++ Γ.enc (ts - a) = coordOf Γ (ch ++ [ts - a])
-              rw [coordOf_append, hπval, hcoord aop haev.1 hai ha1]
-              simp [coordOf]
-    · push_neg at hex
-      cases t with
-      | zero =>
-          exact ⟨[], by intro d hd; simp at hd, rfl,
-            fun o ho hi h1 => absurd h1 (hex o ho hi)⟩
-      | succ n =>
-          refine ⟨[n + 1], ?_, by simp, fun o ho hi h1 => absurd h1 (hex o ho hi)⟩
-          intro d hd
-          simp at hd
-          omega
+  by_cases present : ∃ o ∈ C.events, eIsIns o = true ∧ o.1 = t
+  · obtain ⟨o, eligible, insertion, stamp⟩ := present
+    obtain ⟨chain, positive, sum, coordinate⟩ := born o eligible insertion
+    refine ⟨chain, positive, sum.trans stamp, ?_⟩
+    intro other member ins time
+    have same := C.replayContext.ts_unique member eligible (time.trans stamp.symm)
+    exact same ▸ coordinate
+  · refine ⟨if t = 0 then [] else [t], ?_, ?_, ?_⟩
+    · split
+      · intro d hd; simp at hd
+      · intro d hd; simp at hd; omega
+    · split <;> simp_all
+    · intro o eligible insertion stamp
+      exact False.elim (present ⟨o, eligible, insertion, stamp⟩)
 
 /-- **The `applicable` discipline discharges honesty.** If every op was
 applicable at SOME fold of its issuer's causal past, the issuer's own

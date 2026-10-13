@@ -1,4 +1,4 @@
-import Mathlib.Data.List.Induction
+import Sal.MRDTs.Framework.SequentialInduction
 
 /-! The reusable induction for an independent sequential machine. The legality
 predicate is an input; it is never defined through the implementation replay. -/
@@ -15,10 +15,11 @@ theorem guarded_fold_projection {Event Concrete Abstract : Type}
       project (concrete (pre ++ [e])) = step (project (concrete pre)) e)
     {ops : List Event} (hlegal : legal ops) :
     project (concrete ops) = abstract ops := by
-  induction ops using List.reverseRecOn with
-  | nil => exact initial
-  | append_singleton pre e ih =>
-    rw [local_step pre e hlegal, abstract_snoc pre e, ih (prefix_closed pre e hlegal)]
+  exact Foundation.legal_snoc_induction
+    (Inv := fun ops => project (concrete ops) = abstract ops) prefix_closed initial
+    (fun pre e h ih => by
+      change project (concrete (pre ++ [e])) = abstract (pre ++ [e])
+      rw [local_step pre e h, abstract_snoc pre e, ih]) hlegal
 
 /-- Filtering by an observable field commutes with record projection. -/
 theorem map_filter_project {Record View : Type} (project : Record → View)

@@ -143,19 +143,19 @@ existing production roots**. These include aliases and family specializations.
 
 | Instance | Before automation (lines) | With automation (lines) |
 |---|---:|---:|
-| Grow-only set | 40 | 17 |
-| Add-store | 40 | 17 |
-| Finite add-store | 28 | 17 |
+| Grow-only set | 40 | 12 |
+| Add-store | 40 | 12 |
+| Finite add-store | 28 | 12 |
 | Counter | 49 | 14 |
 | Increment-only counter | 49 | 14 |
 | PN-counter | 49 | 14 |
-| Flat grow-only set | 45 | 15 |
-| Flat grow-only map | 45 | 15 |
+| Flat grow-only set | 45 | 13 |
+| Flat grow-only map | 45 | 13 |
 | LWW register | 32 | 14 |
-| Native RGA | 60 | 33 |
-| Bounded Counter | 58 | 44 |
-| TreeMove | 33 | 24 |
-| AegisSheet | 26 | 17 |
+| Native RGA | 60 | 17 |
+| Bounded Counter | 58 | 28 |
+| TreeMove | 33 | 19 |
+| AegisSheet | 26 | 12 |
 | Ordinary OR-set | 336 | 8 |
 | Efficient OR-set | 234 | 26 |
 | MVR | 148 | 17 |
@@ -168,19 +168,20 @@ existing production roots**. These include aliases and family specializations.
 | FugueMax | 3377 | 322 |
 
 Across all 23 cases, the estimated RDT-specific footprint falls from **5,923
-to 704 distinct lines**, counting each shared source line once. The
+to 650 distinct lines**, counting each shared source line once. The
 [historical comparison](results/manual-effort.json) records the baseline
 proof dependencies, source hashes and counting decisions. These are the costs
 of the checked proof routes, not lower bounds on what a shorter proof could do.
 
 The shared automation library is a separate, once-per-framework cost:
-**3,985 code lines**, including its imports, tactics and annotations. It is
+**4,003 code lines**, including its imports, tactics and annotations. This whole-module count also
+includes the one-line unused private compatibility helper. It is
 excluded from both RDT-specific columns. The measurement files retain the
 per-declaration breakdown and the additional existing generic dependencies.
 
 ## What the reduction means
 
-The combined RDT-specific footprint falls by about **88%**. Efficient OR-set
+The combined RDT-specific footprint falls by about **89%**. Efficient OR-set
 improves **89%** (234 → 26); Embedded RGA improves **92%** (726 → 60).
 Generic proofs replace the required datatype insertion, merge, order and
 coordinate-injection helper theorems. Raw-equation certificates, chain/code
@@ -225,6 +226,49 @@ library cannot yet discharge. The campaign requires no external SMT solver;
 it does not discover representations, issuer invariants or sequential specifications.
 Sequential-bridge automation is measured separately below.
 
+## Shared reasoning across datatype families
+
+`mrdt_representation [definitions]` discharges finite state equations by
+unfolding the supplied definitions, decomposing extensional equality, exposing
+constructor and conditional branches, and applying membership, Boolean and
+linear-integer reasoning. The same command is used for Add-store, finite
+add-store, flat counters, flat grow-only sets/maps, Bounded Counter, native
+RGA, TreeMove and AegisSheet. These are eight input families; named counter
+and map specializations reuse them. It closes their 40 finite merge-kernel
+fields without calling their previous completed kernel or merge-law proofs.
+
+The author still supplies the implementation definitions to unfold, the input
+packaging and any remaining commuting/evidence helpers. This is reusable
+representation reasoning, not invariant discovery. Scalar counters already
+had a two-line kernel proof, so their reuse provides a generality test rather
+than a source reduction.
+
+Against `fa96479`, the eight kernel declarations and their previously required private
+helper shrink from **70 to 16 lines**, including theorem statements and tactic
+arguments. The old private helper remains available but is absent from the production
+proof dependencies. The new shared tactic costs **16 code lines**. This is a targeted
+slice of the full costs in the table above, not an additional reduction to add
+to those totals. Independent controls exercise unrelated representations and
+reject a merge that drops one input and an incorrect arithmetic equation.
+
+A separate `origin_subset_prefix` lemma transports an honest origin into a
+visibility-respecting sequential prefix. TreeMove and AegisSheet share this
+order argument while retaining their different tree-cycle and spreadsheet
+correctness proofs. Both use finite event logs; they are not evidence of
+different carrier representations. The set/function/arithmetic cases above
+supply that test. Anchor legality and insertion adjacency remain explicit
+where a datatype needs them.
+
+The origin-prefix refactoring adds a **26-line shared module**. Its concrete
+proof dependencies shrink from **46 to 35 lines** for TreeMove and **120 to 98**
+for AegisSheet; their generic dependencies increase by 21 lines each. These
+small reductions do not automate either datatype's sequential specification.
+The [measurement](results/shared-pattern-measurement.json) records the fixed
+baseline, complete production dependencies, shared costs and preservation
+checks. The independent validation modules add 111 test lines, counted
+separately from production proofs. Kernel controls also show why visibility order is necessary: reversing
+`[1, 2]` retains the origin evidence but puts event `1` outside event `2`'s prefix.
+
 ## Sequential-history bridge experiment
 
 The selected production bridges now use generic finite-set projection and
@@ -238,7 +282,7 @@ implementation definitions are reported separately.
 | --- | ---: | ---: |
 | Ordinary OR-set | 49 | 23 |
 | Efficient OR-set | 48 | 24 |
-| Issuance-certified Embedded RGA | 2,021 | 2,013 |
+| Issuance-certified Embedded RGA | 2,021 | 2,001 |
 
 The roots include both OR-set `foldHistorySound` and
 `commutationCompatibility` theorems, and Embedded RGA's
@@ -246,10 +290,12 @@ The roots include both OR-set `foldHistorySound` and
 legal-history selection, in addition to sequential acceptance. The full
 concrete helper closure includes execution and issuance invariants also used by
 the VC proofs. These columns overlap the VC table above and must not be added
-to it. The separate generic bridge library is **140 code lines** across
-`ProjectedSimulation`, `FiniteSetSimulation` and `GenericGuardedFold`, including
-imports, macros and annotations. Bridge-only modules are excluded from the
-3,985-line VC library measurement.
+to it. The separate generic bridge library is **175 code lines** across
+`ProjectedSimulation`, `FiniteSetSimulation`, `GenericGuardedFold` and
+`Framework/SequentialInduction`, including
+imports, macros and annotations. Embedded RGA also uses the new 24-line causal
+issuance induction module. Bridge-only modules are excluded from the
+4,003-line VC library measurement.
 
 For the OR-sets, finite descriptions give raw record actions and independent
 model actions; the library derives projection and observable commutation.
@@ -272,6 +318,119 @@ simulation relations to their original projections and exercise rejected
 degenerate set actions. Old-dispatch negative controls check the dependency
 gates themselves.
 
+## Sequential bridges beyond OR-sets
+
+`GuardedStateProjection` derives replay refinement, query agreement and history
+acceptance from a supplied invariant, projection and local transition/observation
+laws. Transitions need only correspond at justified states and legal extensions.
+Execution and issuance evidence select a legal history; they do not replace the
+five VCs or independently establish the datatype's sequential semantics.
+
+The current experiment reduces structural proof work beneath that interface:
+
+The following table covers all 23 registered cases; aliases sharing the same
+bridge are grouped. Counts are nonblank, noncomment lines in the transitive
+closure of each registered sequential-bridge theorem, including required helper
+proofs and annotations. They do not measure just the final wrapper.
+
+| Case | Classified proof/description lines | All concrete source lines | Main manual argument |
+|---|---:|---:|---|
+| Grow-only set / AddStore | 9 | 26 | Direct update simulation |
+| Finite AddStore | 5 | 22 | Direct update simulation |
+| Counter / increment-only / PN | 10 | 27 | Arithmetic update simulation |
+| Flat grow-only set / map | 7 | 24 | Pointwise update simulation |
+| LWW register | 744 | 829 | Legal ordering and last-write observation |
+| Native RGA | 1,494 | 1,693 | Ordered replay and reference validity |
+| Bounded counter | 874 | 970 | Issuance-derived prefix safety |
+| TreeMove | 772 | 882 | Rendering, cycle checks and ordered replay |
+| AegisSheet | 2,744 | 3,354 | Materialization, undo and overwrite semantics |
+| Ordinary OR-set | 17 | 55 | Set projection description |
+| Efficient OR-set | 18 | 56 | Live-element projection description |
+| MVR | 314 | 420 | Certified replay and surviving writes |
+| Embedded RGA / Peritext Embedded RGA | 2,001 | 2,199 | Coordinates, adjacency and legal-history selection |
+| Sided Embedded RGA | 2,526 | 2,756 | Sided ordering and legal-history selection |
+| Sided Peritext Core | 3,576 | 3,933 | Text/product refinement and history legality |
+| Sided Peritext RichCore | 3,622 | 4,107 | Core refinement and query transport |
+| Anchored Queue | 503 | 624 | Scheduling a legal queue history |
+| Fugue | — | — | Checked obstruction; no sequential bridge |
+
+The first numeric column uses an explicit proof/descriptor classifier. The
+second includes **every concrete declaration kind**, including implementation
+and independent specification definitions, so unclassified invariant definitions
+cannot disappear from the accounting. These are source footprints, not author
+time or counts of independent obligations. The [full report](results/seq-bridge-effort.json)
+records the 17 distinct roots, shared dependencies and classification limits.
+It reports 5,901 deduplicated shared source lines across these bridge closures,
+including existing framework support; that is not the cost of a new library.
+
+Do not sum these rows or add them to the VC column. Families share proofs, and
+bridge proofs reuse execution/issuance invariants. Some registered VC roots are
+whole certificate bundles that also contain the history proof. The OR-set
+numbers here cover `foldHistorySound` alone; the preceding comparison also
+includes commutation compatibility, so its 23/24-line counts have a wider scope.
+
+
+AegisSheet's selected preservation declarations, including new helpers, shrink
+from **210 to 130 lines**. Shared closure rules account for 22 saved lines;
+removing duplicate same-origin/causal-origin semantic proofs accounts for the
+other 58. The latter is proof reuse, not automatic discovery of cell or purge
+semantics. In particular, the issuer-to-witness extraction remains explicit.
+
+The shared rules transport witnesses upwards into a larger event carrier. They
+do not infer validity in an arbitrary smaller origin from validity in a merged
+prefix. The new control demonstrates why that inference is false. Fresh-key
+uniqueness also needs freshness; issuance alone does not prove arbitrary semantic
+invariants without an operation-specific local argument.
+
+Embedded RGA now uses `issued_event_induction`: its callback receives the actual
+issuer replay, the guard and the property for earlier events; configuration
+causality supplies strict timestamp descent. This removes repeated causal
+induction machinery. Its new guarded projection still supplies the substantial
+local insertion proof. The descriptor adds concrete cost, so routing the bridge
+through this interface is not itself a proof-size reduction.
+
+TreeMove tests reuse of origin transport and the existing simulation interface.
+Its node identifiers are not event timestamps, so the RGA timestamp/coordinate
+birth argument does not apply to tree references. The new causal-induction
+helper currently has one production family, Embedded RGA; no broader reuse is
+claimed for it.
+
+The existing `guarded_projection_step [definitions] using [local_laws]` tactic
+can apply the shared closure and witness rules, as checked by the new controls.
+There is no new solver and no invariant discovery. Concrete invariants,
+projections, semantic extraction and local preservation lemmas remain author
+inputs. AegisSheet and TreeMove production histories and Embedded RGA production
+query refinement use guarded simulation. The independent machines, issuers and
+public theorem assumptions are preserved.
+
+The [durable baseline](certification-invariants-baseline/README.md) and
+[complete comparison](results/certification-invariants-measurement.json) record
+all concrete declarations, descriptors, annotations and helper dependencies,
+whole changed files including retained helpers, and shared-library cost. The
+baseline is the captured worktree after the guarded-interface experiment.
+Across the same public endpoints before and after this campaign, the
+deduplicated classified proof/description closure falls **7,799 → 7,778** lines;
+all concrete declaration kinds fall **9,005 → 8,984**. These include both Paper1
+and independent production sequential certificates, a wider scope than the
+per-case table above. Embedded RGA's independent production bridge grows
+**1,997 → 2,003** proof/description lines; the improvement is not uniform.
+
+Whole changed concrete files, including retained helpers, shrink by 76 lines.
+The two new shared modules cost 65 lines and controls cost 42. Production source
+therefore shrinks by just **11 lines overall**. The result supports stopping
+further abstraction work here: the remaining expensive arguments are largely
+datatype semantics, and the observed sharing is modest. It does not establish
+automatic sequential-bridge derivation.
+
+Controls check births, fresh and duplicate keys, absent births, unsupported
+origins, invalid downward transport and nonmonotone predicates. Existing
+nonempty RGA traces, illegal-origin controls and Fugue's genuine obstruction
+remain checked. Trusted model definitions are unchanged; these proof refactors
+do not constitute a new external validation of the source algorithms. The audit
+preserves 484 existing declarations, with two reviewed sound-only certificate
+proof replacements. The production audit passes 23 cases and 95 roots; both
+repository gates pass, including 187 runtime tests and 569 benchmark records.
+
 ## Reproduction
 
 From the repository root:
@@ -284,6 +443,9 @@ python3 experiments/vc-automation/test_measurement_registration.py
 python3 experiments/vc-automation/measure_common_effort.py
 python3 scripts/check-paper1-bridge-contracts.py
 python3 scripts/measure-paper1-bridges.py
+python3 scripts/measure-paper1-shared-patterns.py
+python3 scripts/measure-paper1-certification-invariants.py
+python3 experiments/vc-automation/measure_bridge_effort.py
 ```
 
 The `--common` command delegates to `scripts/verify-paper1-automation.py`,

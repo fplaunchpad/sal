@@ -1,5 +1,6 @@
 import Sal.MRDTs.Instances.AegisSheet
 import Sal.MRDTs.Framework.StateGC
+import Sal.MRDTs.Framework.CertifiedInvariant
 import Sal.MRDTs.GC.Distributed
 
 /-!
@@ -70,22 +71,9 @@ theorem timestampUnique_empty : TimestampUnique (∅ : Finset Event) := by
 theorem timestampUnique_insert {events : Finset Event} {e : Event}
     (unique : TimestampUnique events) (fresh : e.1 ∉ eventTimes events) :
     TimestampUnique (insert e events) := by
-  intro a ha b hb same
-  rcases Finset.mem_insert.mp ha with haeq | haold
-  · subst a
-    rcases Finset.mem_insert.mp hb with hbeq | hbold
-    · exact hbeq.symm
-    · exfalso
-      apply fresh
-      exact Finset.mem_union_left _
-        (Finset.mem_image.mpr ⟨b, hbold, same.symm⟩)
-  · rcases Finset.mem_insert.mp hb with hbeq | hbold
-    · subst b
-      exfalso
-      apply fresh
-      exact Finset.mem_union_left _
-        (Finset.mem_image.mpr ⟨a, haold, same⟩)
-    · exact unique a haold b hbold same
+  apply key_unique_insert (fun event : Event => event.1) unique
+  intro member
+  exact fresh (Finset.mem_union_left _ member)
 
 theorem timestampUnique_union {a b : Finset Event}
     (ua : TimestampUnique a) (ub : TimestampUnique b)
@@ -134,11 +122,8 @@ theorem StateValid.mono {small large : Finset Event}
 theorem stateValid_insert {events : Finset Event} {e : Event}
     (valid : StateValid events) (newValid : metadataValidB events e = true) :
     StateValid (insert e events) := by
-  intro candidate member
-  rcases Finset.mem_insert.mp member with same | old
-  · subst candidate
-    exact metadataValid_mono (Finset.subset_insert e events) newValid
-  · exact metadataValid_mono (Finset.subset_insert e events) (valid candidate old)
+  exact all_insert (fun carrier event => metadataValidB carrier event = true)
+    (fun subset _ valid => metadataValid_mono subset valid) valid newValid
 
 theorem stateValid_union {a b : Finset Event}
     (ha : StateValid a) (hb : StateValid b) : StateValid (a ∪ b) := by

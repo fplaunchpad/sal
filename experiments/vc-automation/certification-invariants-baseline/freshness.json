@@ -1,0 +1,9 @@
+{
+  "prior_build_source_count": 340,
+  "mismatches": [],
+  "kernel_declaration_source_count": 119,
+  "kernel_sources_outside_prior_build": [],
+  "evidence": "Prior production ledger and repo gates built before snapshot; production-audit SHA256 entries cover every campaign kernel source.",
+  "isolated_baseline_rebuild": "lake build Sal.MRDTs.Paper1.Ledger: successful3605 jobs",
+  "snapshot_source_hash_mismatches": []
+}

@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.GuardedProjectionHistory
 import Sal.MRDTs.Paper1.Automation.CommutingInputs
 import Sal.MRDTs.Paper1.Automation.CommutingAssembly
 import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
@@ -81,27 +82,10 @@ theorem originLegal {C : Configuration D} (good : CanonicalConfig C)
     (hv : C.ver v = some (s,E)) (perm : listPermOf ops E)
     (legal : SequentialLegal ops) (visible : respects ops C.vis) :
     ClientLegal ops := by
-  refine ⟨legal,?_⟩
-  intro pre e post split
-  have heE : e ∈ E := (perm.2 e).mp (by rw [split]; simp)
-  obtain ⟨past,hpast,_,guard⟩ := mint e (good.version_events_supported v s E hv e heE)
-  refine ⟨past.toFinset,?_,?_⟩
-  · intro old hold
-    have before := (hpast.2 old).mp (List.mem_toFinset.mp hold)
-    have oldE := good.version_events_causal v s E hv old e before.2 heE
-    have member := (perm.2 old).mpr oldE
-    rw [split] at member
-    rcases List.mem_append.mp member with inPre | inRest
-    · exact List.mem_toFinset.mpr inPre
-    · rcases List.mem_cons.mp inRest with same | inPost
-      · subst old
-        exact False.elim (Nat.lt_irrefl _ (C.causal_mono before.2))
-      · have ordered := visible
-        rw [split] at ordered
-        have noBack := (List.pairwise_cons.mp
-          (List.pairwise_append.mp ordered).2.1).1 old inPost
-        exact False.elim (noBack before.2)
-  · simpa only [generation, applySeq_eq_toFinset] using guard
+  refine ⟨legal, ?_⟩
+  exact Automation.mint_origin_prefix id applicable applySeq_eq_toFinset
+    (fun _ _ h => h) mint (good.version_events_supported v s E hv)
+    (good.version_events_causal v s E hv) perm visible
 
 theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     TreeMoveEvent.spec generation := by
@@ -128,17 +112,7 @@ theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     subst b
     exact Nat.lt_irrefl _ (C.causal_mono hba)
   have legal := originLegal good exec.mintHonest hv πperm chronological visible
-  refine ⟨π,πperm,?_,visible.imp (fun {_ _} h edge => h edge.1),?_⟩
-  · apply List.pairwise_of_forall
-    intro a b
-    exact paperOrder_false_of_all_commute all_comm C.replayContext E b a
-  · have accepted := GuardedHistory.admits_updates_query sequentialSpec
-      TreeMoveEvent.legal_prefix π legal ()
-    have answer : D.query (applySeq D.toUpdateSig D.init π) () =
-        sequentialSpec.query (sequentialSpec.run π) () :=
-      congrArg visibleTree (sequentialSound π chronological)
-    rw [answer]
-    exact accepted
+  exact ⟨π, stateProjection.witness all_comm C E π πperm visible legal ()⟩
 
 noncomputable def conditions : ScopedVCConditions (commutingPolicy D.AppOp)
     TreeMoveEvent.spec generation :=
@@ -182,22 +156,12 @@ theorem originLegal {C : Configuration D} (good : CanonicalConfig C)
     · exact supported b ((perm.2 b).mp (by simpa using hb))
     · exact same
   have chronological := canonical_chronological perm.1 unique
-  refine ⟨chronological,?_⟩
-  intro pre e post split
-  have eCanonical : e ∈ canonical ops := by rw [split]; simp
-  have eE : e ∈ E := (perm.2 e).mp ((canonical_perm ops).mem_iff.mp eCanonical)
-  obtain ⟨origin,originPerm,_,issued⟩ := mint e (supported e eE)
-  have guard : applicable e origin.toFinset := by
-    simpa [Instances.AegisSheet.applySeq_eq_toFinset] using issued
-  refine ⟨origin.toFinset,?_,guard⟩
-  intro old member
-  have oldPred := (originPerm.2 old).mp (by simpa using member)
-  have oldE := closed old e oldPred.2 eE
-  have oldCanonical : old ∈ canonical ops :=
-    (canonical_perm ops).mem_iff.mpr ((perm.2 old).mpr oldE)
-  have oldTime : old.1 < e.1 := guard.2.lt old.1 (eventTime_mem member)
-  have oldPrefix := mem_prefix_of_chronological chronological split oldCanonical oldTime
-  simpa using oldPrefix
+  refine ⟨chronological, ?_⟩
+  exact Automation.mint_origin_prefix id applicable applySeq_eq_toFinset
+    (fun _ _ h => h) mint supported closed
+    ⟨canonical_nodup perm.1,
+      fun a => (canonical_perm ops).mem_iff.trans (perm.2 a)⟩
+    (chronological_respects_vis C chronological)
 
 theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
     AegisSheetEvent.spec generation := by
@@ -207,20 +171,8 @@ theorem history : EventExecutionHistoryAdequacy D (commutingPolicy D.AppOp)
   have legal := originLegal good exec.mintHonest hv perm
   have πperm : listPermOf (canonical ops) E :=
     ⟨canonical_nodup perm.1,fun e => (canonical_perm ops).mem_iff.trans (perm.2 e)⟩
-  refine ⟨canonical ops,πperm,?_,?_,?_⟩
-  · apply List.pairwise_of_forall
-    intro a b
-    exact paperOrder_false_of_all_commute all_comm C.replayContext E b a
-  · exact (chronological_respects_vis C legal.1).imp (fun {_ _} h edge => h edge.1)
-  · have accepted := GuardedHistory.admits_updates_query clientSpec
-      AegisSheetEvent.legal_prefix (canonical ops) legal q
-    have refined := causalOriginSequentialSound (canonical ops) legal
-    have answer : D.query (applySeq D.toUpdateSig D.init (canonical ops)) q =
-        clientSpec.query (clientSpec.run (canonical ops)) q := by
-      cases q
-      simpa [D,clientSpec] using refined.2.2.symm
-    rw [answer]
-    exact accepted
+  exact ⟨canonical ops, materializeProjection.witness all_comm C E (canonical ops)
+    πperm (chronological_respects_vis C legal.1) legal q⟩
 
 noncomputable def conditions : ScopedVCConditions (commutingPolicy D.AppOp)
     AegisSheetEvent.spec generation :=

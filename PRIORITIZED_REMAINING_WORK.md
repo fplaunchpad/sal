@@ -6,6 +6,237 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
+Manuscript comparison refreshed against fetched Overleaf `d3ad6ff`
+(13 October 2026). See [remaining paper changes](docs/paper1-formalism-reconciliation.md).
+The older PDF and manuscript patch retain their explicitly labelled `0450d48`
+baseline. The canonical five-VC equations already match; certified coverage
+and the listed definition/bridge corrections remain manuscript work.
+
+### Deferred: distinct-operation guard experiment
+
+Keep the existing `rc-non-comm` guards for the submission. The alternative
+and its full scoped-bridge counterexample are saved on
+`research/rc-non-comm-operation-guard` at `93fc631`. Production laws were never
+changed. Revisit only with an explicit plan for the sequential bridge.
+
+### Checked: structural invariants from certification
+
+Research question: which timestamp, birth, reference and overwrite facts can be
+derived uniformly from execution/issuance evidence, eliminating concrete bridge
+proofs rather than relocating them? AegisSheet is the primary case; TreeMove and
+one issuance-certified RGA test reuse across distinct semantics.
+
+Candidate claim: origin membership, chronological freshness and monotone
+reference/witness closure admit shared induction and local automation. Semantic
+interpretation of references remains explicit. A legal certified trace lacking
+an asserted witness, or an instance needing stronger public premises, refutes
+that generalization. Lean checks the laws and adversarial controls; unchanged
+independent machines and existing semantic fixtures delimit model validation.
+
+- [x] Capture the current worktree baseline, including complete concrete proof,
+  invariant, projection, descriptor, annotation and helper closures.
+- [x] Separate generic certification consequences from AegisSheet semantics;
+  implement shared induction rules and local automation with failure controls.
+- [x] Replace concrete reasoning in AegisSheet and test reuse on TreeMove and
+  one issuance-certified RGA, preserving all public contracts.
+- [x] Derive query/history consequences through guarded simulation and retain
+  genuine obstructions and invalid-origin examples.
+- [x] Measure complete concrete and shared costs, audit semantic/header
+  preservation, run repository gates and document remaining manual obligations.
+
+Machine-checked result: `CertifiedInvariant` shares monotone carrier insertion,
+origin-supported properties and fresh-key uniqueness. `CertifiedEventInduction`
+shares induction over actual causal issuer histories. AegisSheet uses the former;
+Embedded RGA uses the latter. TreeMove reuses certified-origin reconstruction and
+guarded query agreement. Its node identities are not timestamp birth identities,
+so the RGA coordinate argument does not generalize to tree references. Embedded
+RGA's production sequential proof now uses a guarded projection into its unchanged
+splice/delete machine; local adjacency semantics remain manual.
+
+The reduction is modest. Across the same public endpoints, including both
+Paper1 and independent production sequential certificates, the deduplicated
+classified proof/description closure is 7,799 to 7,778 lines; all concrete
+source is 9,005 to 8,984. Embedded production grows 1,997 to 2,003 proof lines.
+Whole retained concrete source falls by 76, new shared source costs 65, and
+controls cost 42: production source is only 11 lines smaller. AegisSheet's
+selected helper declarations fall 210 to 130: 22 from shared structural laws,
+58 from deduplicating semantic preservation arguments. These overlapping
+measurements must not be added. No invariant discovery or automatic semantic
+bridge is claimed. Freshness derivation, direct/undo command semantics, purge
+witnesses, materialization and RGA coordinates/adjacency remain manual.
+
+The baseline was rebuilt independently (3,605 jobs); its source hashes match
+the capture. `scripts/measure-paper1-certification-invariants.py` audits the
+same endpoint set, complete helpers, annotations and descriptors, source
+preservation, and generic/cached-bridge dispatch. It checks 484 declarations;
+two sound-only certificate body replacements preserve all model arguments in
+the unchanged type. Negative controls reject altered types or added data fields.
+Local controls reject unsupported origins, downward witness transport, missing
+births, duplicate keys and nonmonotone predicates. Existing RGA traces and
+Fugue's checked obstruction remain. The production audit passes 23 cases and
+95 roots with 343 exact source hashes; both repository gates pass, including
+187 runtime tests and 569 benchmark records. Five-VC author cost remains 650.
+
+At the user's request, the README now includes a separate current sequential
+bridge table covering all 23 named cases (17 distinct roots; Fugue obstructed).
+`experiments/vc-automation/measure_bridge_effort.py` records classified
+proof/descriptor costs and a conservative all-concrete-source column; rows
+share helpers and overlap VC bundles, so they are not additive. Source lines
+are not author time. The measured benefit does not justify further abstraction
+work in this direction now. Changes remain local and uncommitted.
+
+### Checked: guarded invariant-based simulation
+
+Research question: can one represented-state invariant/projection interface
+replace substantial datatype-specific sequential-bridge reasoning, rather than
+merely reorganize it? TreeMove and AegisSheet are the primary instances; the
+OR-set total projection is the baseline.
+
+Candidate claim: initial, invariant-preservation, guarded transition and
+observation obligations suffice to derive legal-history refinement and
+acceptance without correspondence over arbitrary implementation states.
+A legal represented-state step that violates correspondence refutes a proposed
+instance; a proof that assumes its own final replay equality is inadmissible.
+Lean checks public theorem preservation and genuine local obligations. Existing
+independent specifications and their semantic controls delimit the trusted
+model; this experiment does not revalidate the source algorithms externally.
+
+- [x] Capture the current worktree baseline and complete proof/description costs.
+- [x] Build the shared guarded projection and derive invariant, relation, query
+  and history consequences; connect the total OR-set projection as a baseline.
+- [x] Instantiate TreeMove and AegisSheet without embedding completed refinement
+  in the invariant or dispatching to the old completed bridge proofs.
+- [x] Automate recurring local normalization/preservation obligations and count
+  every supplied invariant, projection, hint, annotation and helper.
+- [x] Check nonempty positive controls, invalid-state/step negatives and existing
+  genuine obstructions; preserve all independent semantics and public premises.
+- [x] Report complete before/after cost and shared cost, including source growth
+  or mere repackaging; update documentation and run audits and repository gates.
+
+The shared `GuardedStateProjection` derives legal replay invariants, simulation,
+query agreement and history acceptance from local guarded laws. TreeMove and
+AegisSheet production histories use it; ordinary OR-set's total projection adapts
+with invariant `True`. Prefix restriction reuses the same machine/projection.
+The `guarded_projection_step` tactic closes local representation and preservation
+steps from explicit definitions and supplied laws. It does not discover those
+laws or invariants. Sheet's invariant contains structural facts, not its final
+replay equality; no new production bridge dispatches to an old completed bridge.
+
+The research result is a limitation: concrete proof-and-description cost grows
+from 3,020 to 3,052 nonblank, noncomment lines. This charges required invariants,
+projections, descriptors, annotations and helpers. Including executable/model
+source gives 3,756 to 3,788; entire changed concrete files grow by 65 lines,
+including retained unused helpers. New shared modules cost 124 lines; controls
+cost 113 lines. The interface organizes the proofs but does not reduce semantic
+author work. This measurement uses broader descriptor-inclusive accounting than
+the preceding proof-only experiment; the overlapping totals must not be added.
+
+Evidence is in `experiments/vc-automation/results/invariant-projection-measurement.json`
+and its durable `invariant-projection-baseline/`, reproduced by
+`scripts/measure-paper1-invariant-projection.py`. Preservation checks cover 301
+existing declarations plus unchanged-source hashes. Seven generic closures and
+three instance descriptors pass the transitive dispatch checks; both production
+history closures exclude cached full-bridge proofs. Independent controls check
+nonempty counter/OR-set traces, false invariants, constant projections,
+invalid-state correspondence, explicit local-law search and finite-set
+normalization. Existing illegal-origin examples and Fugue's obstruction remain.
+
+The production audit passes 23 cases and 95 roots with 340 current source hashes.
+Both repository gates pass, including 187 runtime tests and 569 benchmark records.
+The five-VC author footprint remains 650 lines. Implementations, independent
+specifications, issuance contracts and public premises are preserved. Results and
+limitations are reflected in both READMEs. Changes are local and uncommitted.
+
+### Checked: sequential bridges across families
+
+Research question: which replay-to-specification and legal-prefix obligations
+follow uniformly from execution/issuance evidence, and which require datatype
+semantics? TreeMove and AegisSheet are the first targets; OR-set bridges are an
+established baseline and RGA remains a later test.
+
+Candidate claim: shared finite-log replay, origin reconstruction and guarded
+fold arguments can replace duplicated production proofs while preserving
+independent specifications and their public assumptions. A counterexample to
+a required local step, or a replacement requiring stronger assumptions,
+refutes that proposed generalization. Lean checks the exact old theorem
+statements and independent PASS+FAIL controls; unchanged source definitions
+and existing semantic controls delimit the semantics validated by this work.
+
+- [x] Audit the collection and capture the current worktree baseline, including
+  complete TreeMove/AegisSheet bridge dependencies and annotations.
+- [x] Derive shared replay, legal-prefix and execution/issuance arguments and
+  use them in production for both families without cached full bridge proofs.
+- [x] Preserve independent specifications, issuers, theorem assumptions and
+  existing genuine bridge counterexamples; test missing-premise failures.
+- [x] Measure complete concrete proof burden and separate shared-library cost;
+  report remaining semantic arguments and any unsuccessful generalization.
+- [x] Update documentation and run production audits and repository gates.
+
+The shared machinery reconstructs applicable origins from honest issuance and
+version support/causal closure, transports legal prefixes, and derives guarded
+history witnesses from independent query refinement. Fold fusion drives the
+TreeMove replay helpers; shared legal-history induction drives AegisSheet's
+facts and the existing guarded-fold bridge. Tree normalization and Sheet's six
+semantic preservation obligations remain concrete. No specification, issuer
+or existing public premise changed; Fugue's checked obstruction remains.
+
+Against the captured post-cross-family worktree, full concrete `history`
+dependencies fall from 758 to 741 lines (TreeMove) and 2,818 to 2,792 (Sheet).
+Their deduplicated union falls from 2,918 to 2,875. All concrete local-step and
+retained helper declarations are charged. Shared modules cost 105 lines,
+including the existing guarded-fold module (26 to 27 lines); the incremental
+shared cost is 79 lines. Validation adds 28 lines. The reduction is modest and
+total framework-plus-instance source grows; this does not automate the remaining
+semantic obligations. These closures overlap VC and other bridge measurements.
+
+The durable baseline and reproducer are in
+`experiments/vc-automation/sequential-bridge-baseline/` and
+`scripts/measure-paper1-sequential-bridges.py`. Preservation checks cover 285
+existing declarations across the five changed files; other baseline production
+sources are hash-pinned. All five new generic theorem closures exclude concrete
+datatype proof dispatch. The production audit passes 23 cases and 95 roots
+with 336 source hashes. Both repository gates pass, including 187 runtime tests
+and 569 benchmark records. The existing VC footprint remains 650 concrete lines.
+Changes are local and uncommitted.
+
+### Checked: cross-family proof automation
+
+Research question: which remaining proof obligations recur across structurally
+different datatype families and can be discharged by shared tactics or evidence
+lemmas without encoding another datatype-specific proof template?
+
+- [x] Audit the production proof collection against `fa96479`, selecting live
+  obligations rather than compatibility proofs outside the current proof path.
+- [x] Automate extensional finite equations across set/function carriers and
+  scalar/product-map arithmetic, using raw definitions and general lemmas.
+- [x] Factor recurring honest-origin prefix evidence from TreeMove and
+  AegisSheet, preserving their separate sequential correctness arguments.
+- [x] Check independent positive/negative controls and preservation; count all
+  concrete helper proofs, declarations and annotations plus shared-library cost.
+- [x] Update the measured results and documentation and run repository gates.
+
+Against `fa96479`, eight production kernel declarations plus their previously
+required private helper fall from 70 to 16 lines. One 16-line tactic reasons
+from raw definitions across sets, Boolean functions, integers and products of
+integer maps; no completed datatype algebra is dispatched. All 40 finite fields
+pass. Scalar counters already had a two-line proof and provide a reuse control.
+The full VC author footprint falls from 704 to 650 lines, including 84 retained
+helper and 45 annotation lines. The whole shared VC library is 4,003 lines.
+
+TreeMove and AegisSheet reuse a separate 26-line origin-prefix module. Their
+concrete origin proof closures fall from 46 to 35 and 120 to 98 lines; generic
+dependencies increase by 21 lines each. Their sequential correctness arguments
+remain explicit. These closures overlap the VC and history costs; do not add
+the separate tables. Independent validation costs 111 lines.
+
+All 30 existing declarations in touched production files preserve their headers,
+contexts and semantic definitions. The private Boolean helper remains available
+but is absent from the new production proof dependencies. The production audit
+passes 23 cases and 95 roots with 333 source hashes; failure controls reject
+incorrect set/arithmetic equations and demonstrate the need for visibility order.
+Both repository gates pass, including 187 runtime tests and 569 benchmark records.
+Changes are local; this goal did not publish a commit.
+
 ### Checked: derive sequential-history bridges
 
 Research question: can small implementation-to-specification descriptions

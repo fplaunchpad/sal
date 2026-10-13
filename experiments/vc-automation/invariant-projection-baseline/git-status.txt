@@ -1,0 +1,57 @@
+ M PRIORITIZED_REMAINING_WORK.md
+ M README.md
+ M Sal/MRDTs/Instances/AegisSheetSequential.lean
+ M Sal/MRDTs/Instances/TreeMove.lean
+ M Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean
+ M Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean
+ M Sal/MRDTs/Paper1/Automation/TransferGuardedCommuting.lean
+ M Sal/MRDTs/Paper1/Automation/TransferNativeRGA.lean
+ M Sal/MRDTs/Paper1/Automation/TransferSimple.lean
+ M Sal/MRDTs/Paper1/IssuedConcretePorts.lean
+ M Sal/MRDTs/Paper1/TreeSheetEventSpec.lean
+ M docs/efficient-orset-gc-research.md
+ M docs/efficient-orset-port.md
+ M experiments/vc-automation/README.md
+ M experiments/vc-automation/measure_common_effort.py
+ M experiments/vc-automation/results/bridge-audit.log
+ M experiments/vc-automation/results/bridge-contracts.json
+ M experiments/vc-automation/results/bridge-measurement.json
+ M experiments/vc-automation/results/manual-effort.json
+ M experiments/vc-automation/results/ordered-derivation-contracts.json
+ M experiments/vc-automation/results/ordered-derivation-source-contracts.log
+ M experiments/vc-automation/results/orset-derivation-contracts.json
+ M experiments/vc-automation/results/orset-derivation-source-contracts.log
+ M experiments/vc-automation/results/production-audit.json
+ M experiments/vc-automation/results/production-audit.log
+ M experiments/vc-automation/results/production-build.log
+ M experiments/vc-automation/results/production-contracts.json
+ M experiments/vc-automation/results/production-effort.json
+ M experiments/vc-automation/results/production-source-contracts.log
+ M experiments/vc-automation/results/sided-derivation-contracts.json
+ M experiments/vc-automation/results/sided-derivation-source-contracts.log
+ M scripts/measure-paper1-bridges.py
+ M scripts/verify-paper1-automation.py
+?? .agents/
+?? AGENTS.md
+?? Sal/MRDTs/Framework/SequentialInduction.lean
+?? Sal/MRDTs/Instances/EfficientORSetHeadGC.lean
+?? Sal/MRDTs/Instances/EfficientORSetHeadGCProtocol.lean
+?? Sal/MRDTs/Instances/EfficientORSetHeadGCProtocolSPOT.lean
+?? Sal/MRDTs/Instances/EfficientORSetHeadGCSPOT.lean
+?? Sal/MRDTs/Instances/EfficientORSetRetirement.lean
+?? Sal/MRDTs/Paper1/Automation/CertifiedOriginBridge.lean
+?? Sal/MRDTs/Paper1/Automation/OriginPrefixEvidence.lean
+?? Sal/MRDTs/Paper1/Automation/OriginPrefixEvidenceControls.lean
+?? Sal/MRDTs/Paper1/Automation/RepresentationAutomation.lean
+?? Sal/MRDTs/Paper1/Automation/RepresentationAutomationControls.lean
+?? Sal/MRDTs/Paper1/Automation/SequentialBridgeFamilyControls.lean
+?? docs/efficient-orset-head-gc-research.md
+?? docs/fugue-spec-source-audit.md
+?? experiments/vc-automation/results/sequential-bridge-kernel.log
+?? experiments/vc-automation/results/sequential-bridge-measurement.json
+?? experiments/vc-automation/results/sequential-bridge-worktree-baseline.json
+?? experiments/vc-automation/results/shared-pattern-measurement.json
+?? experiments/vc-automation/sequential-bridge-baseline/
+?? experiments/vc-automation/shared-pattern-baseline/
+?? scripts/measure-paper1-sequential-bridges.py
+?? scripts/measure-paper1-shared-patterns.py

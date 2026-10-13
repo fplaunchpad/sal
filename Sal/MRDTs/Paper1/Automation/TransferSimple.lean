@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.Automation.RepresentationAutomation
 import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Instances.AddStore
 import Sal.MRDTs.Instances.FinsetStore
@@ -52,31 +53,21 @@ variable {A : Type} [DecidableEq A]
 namespace Add
 open Instances.AddStore
  theorem kernels : EmptyPastKernels (D A) := by
-  constructor
-  · intros; apply Set.ext; intro x; simp [D, or_comm]
-  · intros; apply Set.ext; intro x; simp [D]
-  · intros; apply Set.ext; intro x; simp [D]
-  · intros; apply Set.ext; intro x; simp [D, or_assoc, or_comm]
-  · intros; apply Set.ext; intro x; simp [D, or_assoc, or_left_comm, or_comm]
+  constructor <;> mrdt_representation [D]
 
 end Add
 
 namespace Finite
 open Instances.FinsetStore
  theorem kernels : EmptyPastKernels (D A) := by
-  constructor
-  · intros; apply Finset.ext; intro x; simp [D, or_comm]
-  · intros; apply Finset.ext; intro x; simp [D]
-  · intros; apply Finset.ext; intro x; simp [D]
-  · intros; apply Finset.ext; intro x; simp [D, or_left_comm, or_comm]
-  · intros; apply Finset.ext; intro x; simp [D, or_left_comm, or_comm]
+  constructor <;> mrdt_representation [D]
 
 end Finite
 
 namespace Delta
 open Instances.FlatCounters
  theorem kernels (delta : A → Int) : EmptyPastKernels (D A delta) := by
-  constructor <;> intros <;> simp only [D] <;> omega
+  constructor <;> mrdt_representation [D]
 
 end Delta
 
@@ -84,8 +75,7 @@ namespace Boolean
 private theorem or_idem (a b : Bool) : (a || (a || b)) = (a || b) := by cases a <;> rfl
 open Instances.FlatGrowOnly
  theorem kernels : EmptyPastKernels (D A) := by
-  constructor <;> intros <;> funext x <;> simp only [D]
-  all_goals simp only [Bool.or_assoc, Bool.or_comm, Bool.or_left_comm, Bool.false_or, Bool.or_self, or_idem]
+  constructor <;> mrdt_representation [D]
 
 end Boolean
 

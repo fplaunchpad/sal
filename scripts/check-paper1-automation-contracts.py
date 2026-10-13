@@ -182,6 +182,24 @@ BRIDGE_SIMULATIONS = {
     'Sal.MRDTs.Paper1.EfficientORSet.EventSpec.simulation': 'elements',
 }
 
+SEQUENTIAL_PROOF_BUNDLES = {
+    'Sal.MRDTs.Instances.TreeMove.sequentialCorrectness',
+    'Sal.MRDTs.Instances.ProductionRGA.embedSequentialCorrectness',
+}
+
+def sequential_proof_bundle(name, before, after):
+    """These fixed certificate types contain only a theorem-valued sound field.
+
+    All model, policy, issuer, relation and specification arguments occur in
+    the unchanged header. Their definitions remain subject to the normal gate.
+    """
+    return (name in SEQUENTIAL_PROOF_BUNDLES and after is not None
+            and before['header'] == after['header']
+            and before['variables'] == after['variables']
+            and ' : SequentialCorrectnessCertificate ' in before['header']
+            and all(d['body'].startswith(d['header'] + ' where sound C exec replay := by ')
+                    for d in (before, after)))
+
 def bridge_simulation_data(name, before, after, current):
     """Exact generator/description wiring plus preserved projection data.
 
@@ -287,6 +305,8 @@ def main():
                         reason = 'changed simulation relation or projection/generator wiring'
                     else:
                         record['preserved_data_descriptions'].append(name)
+                elif sequential_proof_bundle(name, before, after):
+                    record['proof_definition_changes'].append(name)
                 elif name in CERTIFICATES:
                     record['certificate_changes'].append(name)
                 else:
