@@ -375,8 +375,8 @@ theorem embedCanonical_seqOK {Γ : OrderedPrefixCode}
         rw [hparentRec] at htarget
         exact htarget
 
-/-! The raw conflict relation is intentionally stronger than the relation
-seen on reachable, sorted states.  This checked control prevents the public
+/-! Universal concrete noncommutation is intentionally stronger than
+noncommutation on reachable, sorted states.  This checked control prevents the public
 legalization proof from silently treating raw universal commutation as
 reachable-state commutation. -/
 

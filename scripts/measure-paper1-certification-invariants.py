@@ -103,7 +103,9 @@ def main():
             if d['header'] != nd['header'] or d['variables'] != nd['variables']:
                 preservation.append([f,n,'changed statement/context'])
             if d['kind'] not in ('theorem','lemma') and d['body'] != nd['body']:
-                if n in PROOF_BUNDLE_EXCEPTIONS:
+                if M.C.split_interface_certificate(n,d,nd):
+                    reviewed_bundles.append({'file':f,'name':n,'review':'Exact scoped-law carrier substitution; whole RestrictedLaws equivalence kernel-checked by SplitPolicy.Certified/Invariant.restricted_iff_existing.'})
+                elif n in PROOF_BUNDLE_EXCEPTIONS:
                     reviewed_bundles.append({'file':f,'name':n,'review':'Only theorem-valued callbacks changed; model, issuance, relation and public type unchanged.'})
                 else: preservation.append([f,n,'changed definition: requires semantic/proof descriptor review'])
     dispatch = {}

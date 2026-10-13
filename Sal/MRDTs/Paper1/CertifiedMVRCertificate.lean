@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.SplitPolicy
 import Sal.MRDTs.Paper1.ExecutionTrace
 import Sal.MRDTs.Paper1.CertifiedMVRExecution
 import Sal.MRDTs.Paper1.CertifiedMVRHistory
@@ -50,7 +51,7 @@ theorem history (historyMerge : Execution.HistoryMerge) :
 RA history witness; no global law over illegal states is asserted. -/
 def Correct (C : Configuration D) : Prop :=
   (∀ v s E, C.ver v = some (s,E) →
-    CertifiedReplay.RestrictedLaws (scopeC C E) emptyPolicy ∧
+    SplitPolicy.Certified.RestrictedLaws (scopeC C E) emptyPolicy ∧
     CertifiedReplay.Canonical (scopeC C E) emptyPolicy D.init s) ∧
   VersionsWitness emptyPolicy language C
 
@@ -59,8 +60,8 @@ theorem correct (historyMerge : Execution.HistoryMerge)
   constructor
   · intro v s E hv
     have good := (Execution.representedExecution historyMerge execution).2.1
-    exact ⟨CertifiedReplay.restrictedEmpty _ (scope_laws execution E
-      (fun e he => good.version_events_supported v s E hv e he)),
+    exact ⟨SplitPolicy.Certified.RestrictedLaws.ofExisting (CertifiedReplay.restrictedEmpty _ (scope_laws execution E
+      (fun e he => good.version_events_supported v s E hv e he))),
       storedCanonical historyMerge execution hv⟩
   · exact CertifiedHistory.versions_of_representation unique (history historyMerge) execution
       (Execution.representedVersions historyMerge execution)

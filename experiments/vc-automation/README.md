@@ -11,7 +11,15 @@ representations, execution contracts and existing theorem statements. The 23
 named cases include aliases and specializations. Queue means anchored enqueue;
 the historical unanchored queue is excluded. Core/RichCore retain native
 insert-only issuance. Fugue’s represented-version result uses the common VCs;
-its independent sequential-specification bridge remains open.
+its original issuer and independent sequential specification have a checked
+specification-visibility obstruction. The 23-case automation inventory is distinct
+from the 22-package production registry; the latter retains the historical queue.
+
+Kartik's split policy interfaces are integrated and checked for these same
+23 cases, with the original event/state scopes and five-VC dependencies.
+The additional transferable-counter candidate has separate proofs and is not
+included in the measured corpus or its effort columns. Existing `BoundedCounter`
+rows refer to independent nonnegative replica accounts.
 
 ## What does the RDT author supply?
 
@@ -260,8 +268,8 @@ supply that test. Anchor legality and insertion adjacency remain explicit
 where a datatype needs them.
 
 The origin-prefix refactoring adds a **26-line shared module**. Its concrete
-proof dependencies shrink from **46 to 35 lines** for TreeMove and **120 to 98**
-for AegisSheet; their generic dependencies increase by 21 lines each. These
+proof dependencies shrink from **46 to 28 lines** for TreeMove and **120 to 89**
+for AegisSheet; their generic dependency closures increase by 66 and 43 lines, respectively. These
 small reductions do not automate either datatype's sequential specification.
 The [measurement](results/shared-pattern-measurement.json) records the fixed
 baseline, complete production dependencies, shared costs and preservation
@@ -341,7 +349,7 @@ proofs and annotations. They do not measure just the final wrapper.
 | Flat grow-only set / map | 7 | 24 | Pointwise update simulation |
 | LWW register | 744 | 829 | Legal ordering and last-write observation |
 | Native RGA | 1,494 | 1,693 | Ordered replay and reference validity |
-| Bounded counter | 874 | 970 | Issuance-derived prefix safety |
+| Nonnegative replica accounts (`BoundedCounter`) | 874 | 970 | Issuance-derived prefix safety |
 | TreeMove | 772 | 882 | Rendering, cycle checks and ordered replay |
 | AegisSheet | 2,744 | 3,354 | Materialization, undo and overwrite semantics |
 | Ordinary OR-set | 17 | 55 | Set projection description |
@@ -409,17 +417,19 @@ all concrete declarations, descriptors, annotations and helper dependencies,
 whole changed files including retained helpers, and shared-library cost. The
 baseline is the captured worktree after the guarded-interface experiment.
 Across the same public endpoints before and after this campaign, the
-deduplicated classified proof/description closure falls **7,799 → 7,778** lines;
-all concrete declaration kinds fall **9,005 → 8,984**. These include both Paper1
+deduplicated classified proof/description closure falls **7,799 → 7,788** lines;
+all concrete declaration kinds fall **9,005 → 9,019**. These include both Paper1
 and independent production sequential certificates, a wider scope than the
 per-case table above. Embedded RGA's independent production bridge grows
 **1,997 → 2,003** proof/description lines; the improvement is not uniform.
 
-Whole changed concrete files, including retained helpers, shrink by 76 lines.
-The two new shared modules cost 65 lines and controls cost 42. Production source
-therefore shrinks by just **11 lines overall**. The result supports stopping
-further abstraction work here: the remaining expensive arguments are largely
-datatype semantics, and the observed sharing is modest. It does not establish
+The refreshed whole-source comparison also includes later framework and instance
+changes. It therefore does
+not isolate the net source cost of the original abstraction campaign. The two
+shared induction modules still cost 65 lines; the 23-case closure table above
+retains its fixed registered scope. The modest change in the fixed
+proof closures supports stopping further abstraction work here: the remaining
+expensive arguments are largely datatype semantics. It does not establish
 automatic sequential-bridge derivation.
 
 Controls check births, fresh and duplicate keys, absent births, unsupported

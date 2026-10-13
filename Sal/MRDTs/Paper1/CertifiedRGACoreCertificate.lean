@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.SplitPolicy
 import Sal.MRDTs.Paper1.CertifiedRGACoreExecution
 import Sal.MRDTs.Paper1.CertifiedRGACertificate
 import Sal.MRDTs.Paper1.CertifiedHistoryBridge
@@ -163,7 +164,7 @@ theorem storedCanonical (Γ : OrderedPrefixCode) {C : Configuration (Core Γ)}
 
 def Correct (Γ : OrderedPrefixCode) (C : Configuration (Core Γ)) : Prop :=
   (∀v s H, C.ver v=some (s,H) →
-    CertifiedReplay.RestrictedLaws (scope Γ C H) (policy Γ) ∧
+    SplitPolicy.Certified.RestrictedLaws (scope Γ C H) (policy Γ) ∧
     CertifiedReplay.Canonical (scope Γ C H) (policy Γ) (Core Γ).init s) ∧
   EventVersionsSpecificationRA (Core Γ) (policy Γ) (language Γ) C
 
@@ -171,7 +172,7 @@ theorem correct (Γ : OrderedPrefixCode) {C : Configuration (Core Γ)}
     (execution : CertifiedExecution (Core Γ) (Instances.SidedPeritext.generation Γ) C) : Correct Γ C := by
   constructor
   · intro v s H hv
-    exact ⟨laws Γ execution hv,storedCanonical Γ execution hv⟩
+    exact ⟨SplitPolicy.Certified.RestrictedLaws.ofExisting (laws Γ execution hv),storedCanonical Γ execution hv⟩
   · exact CertifiedHistory.versions_of_representation
       (fun C execution v s H hv a b ha hb => unique Γ C.replayContext H a b ha hb)
       (history Γ) execution (fun v s H hv => CertifiedRGACoreExecution.representedVersions Γ execution hv)

@@ -31,15 +31,9 @@ lines = [r'\section{Mechanization Traceability}', r'\label{app:traceability}',
          'script supplied with this reference checks that every name resolves.',
          'The theorem ledger separately audits final roots for permitted axioms.',
          r'For Definitions~\ref{def:guards} and \ref{def:scoped-laws}, the',
-         'production declarations below retain combined policy exactness. The split',
-         'presentation is equivalent under the same no-chain and domain premises.',
-         r'Its separately checked adapters are in research commit \texttt{47f943f},',
-         r'\texttt{SelfCommutationTheory.lean}:',
-         r'{\small\nolinkurl{guarded_iff_repaired}},',
-         r'{\small\nolinkurl{Certified.existing_iff_repaired}}, and',
-         r'{\small\nolinkurl{Invariant.existing_iff_repaired}} in namespace',
-         r'{\small\nolinkurl{Sal.MRDTs.Paper1.SelfCommutationTheory}}.',
-         'These research adapters are not part of the production name check.', '']
+         'production split interfaces below state operation-distinct exactness and',
+         'equal-operation self-commutation separately. Checked equivalences retain',
+         'the previous combined contracts on exactly the same event and state domains.', '']
 for label, entries in groups.items():
     if label == 'sec:verification-templates':
         lines.append(r'\medskip\noindent\textbf{Reusable verification templates (Section~\ref{' + label + r'}).}\par\nobreak')
@@ -59,7 +53,10 @@ for label, entries in groups.items():
                     else 'paper1')
         url = f'https://github.com/fplaunchpad/sal/blob/{revision}/' + module.replace('.', '/') + '.lean'
         lines.append(r'\noindent\href{' + url + '}{' + module.split('.')[-1] + r'.lean}:\par')
-        lines.extend(r'{\small\nolinkurl{' + declaration + r'}}\par' for declaration in declarations)
+        for declaration in declarations:
+            prefix, _, name = declaration.rpartition('.')
+            separator = r'}.\\\nolinkurl{' if len(declaration) > 85 else r'}.\allowbreak\nolinkurl{'
+            lines.append(r'{\small\nolinkurl{' + prefix + separator + name + r'}}\par')
     lines.append('')
 (root / 'traceability.tex').write_text('\n'.join(lines).rstrip() + '\n')
 modules = sorted({row['module'] for row in rows})

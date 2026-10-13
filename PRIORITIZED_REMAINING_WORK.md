@@ -28,21 +28,33 @@ The rename passed `scripts/check-mrdt-refactor.sh` on 13 October: production
 Lean ledgers, 187 runtime tests and 569 benchmark records. Independent comparison
 of 125 changed Lean files found only identifier/comment changes.
 
-### Active submission campaign
+### Checked submission campaign
 
-- [ ] Integrate the proved split-law interfaces and check all 23 certificates.
-- [ ] Trace and mechanize a labelled transferable-counter candidate, including
+- [x] Integrate the proved split-law interfaces and check all 23 certificates.
+- [x] Trace and mechanize a labelled transferable-counter candidate, including
   its independent sequential specification and five-VC/bridge proof attempts.
-- [ ] Reconcile submission coverage claims across README, formal reference and Site.
-- [ ] Run final gates, commit and push completed work without unrelated GC edits.
+- [x] Reconcile submission coverage claims across README, formal reference and Site.
+- [x] Run final gates, commit and push completed work without unrelated GC edits.
+
+The production automation audit passes all 23 named cases and 95 existing
+roots, including 344 source hashes, source-preservation and negative controls.
+The refreshed author-cost measurement remains 650 concrete lines and 4,003
+shared-library lines; the additional counter is outside that corpus.
+Final repository gate passed on 13 October: 3,648 Lean build jobs, 187 runtime
+tests and 569 benchmark records. The formal reference checks 111 declarations;
+its 25-page PDF was rebuilt and visually inspected. Site validation renders
+1,048 LaTeX expressions without errors and locates 426 displayed source names;
+browser inspection confirms 16px body/source/declaration text and no page overflow.
 
 Kartik's split-law equivalences and 23-case audit are committed locally on
 `research/rc-non-comm-operation-guard` at `47f943f`, with the agreed paper
 presentation recorded at `f9712d6`. GitHub was checked on 13 October: the remote
-research branch remains at `93fc631`, and `paper1` remains at `46e353e`.
-The adapters are not integrated into `paper1`; the formal-reference update is
-currently local. Publishing/integrating the research changes must be reported
-separately from this semantics-preserving naming cleanup.
+research branch remains at `93fc631`.
+The naming cleanup is published on `paper1` at `5a4e15f`. The split-law production integration preserves raw event guards, certified
+concurrency/support and represented-ready or invariant state domains. The
+23-case dependency audit requires the five-VC verifier and merge induction;
+296 new declarations use only standard logical axioms. The earlier research
+history is retained independently.
 
 ### Required: reconcile bounded-counter coverage with the paper
 
@@ -53,6 +65,31 @@ manuscript `d3ad6ff` contains no definition; Bismuth's reference implementation
 has reservation, allocation and transfer. Confirm the intended source, then
 implement and prove the matching datatype and independent sequential spec.
 This is a coverage gap to resolve, not an optional enhancement to claim as done.
+
+The source audit identified Bismuth commit `dd4c614adf03e57911630a4b73936a818a3d0860`,
+`Modules/RDTs/src/main/scala/rdts/experiments/BoundedCounter.scala`. Its
+pointwise-max reservation maps allow different donors to update the same
+recipient component. A checked candidate-model fork starts with ten rights,
+distributes five to a second donor, and transfers three from each donor to a
+third replica: max join credits three instead of six. Negative transfers also
+debit the recipient without checking its rights. These observations concern
+the source-specific model, not every transferable counter or the paper.
+
+Research question: can additive three-way transfer accounting retain all five
+merge VCs and prove the independent rights-conserving account specification
+under the original issuance evidence? The corrected candidate uses nonnegative
+amounts and prepares rebalance into an explicit transfer. Its source correspondence
+is intentionally partial; the intended manuscript counter remains unidentified.
+The candidate now has checked five-VC, independent issued-history and global
+budget certificates for ordinary and recursive-virtual executions. Every stored
+version has nonnegative balances and allocations, total allocation at most the
+initial capacity, and exact conservation of balance plus consumed budget on a
+finite support containing all allocations. Its dependency audit checks the five
+VCs and merge induction and standard logical axioms across 552 declarations.
+Positive/negative controls cover shared-recipient transfers, overspending,
+negative requests, membership union and prepared rebalance. This completes the
+labelled candidate experiment; manuscript correspondence remains the separate
+open item below.
 
 - [ ] Identify the intended bounded-counter definition with KC.
 - [ ] Port its full API and prove the five VCs plus sequential-history bridge.
@@ -96,10 +133,11 @@ splice/delete machine; local adjacency semantics remain manual.
 
 The reduction is modest. Across the same public endpoints, including both
 Paper1 and independent production sequential certificates, the deduplicated
-classified proof/description closure is 7,799 to 7,778 lines; all concrete
-source is 9,005 to 8,984. Embedded production grows 1,997 to 2,003 proof lines.
-Whole retained concrete source falls by 76, new shared source costs 65, and
-controls cost 42: production source is only 11 lines smaller. AegisSheet's
+classified proof/description closure is 7,799 to 7,788 lines; all concrete
+source is 9,005 to 9,019 in the refreshed submission audit. Embedded production grows 1,997 to 2,003 proof lines.
+The two shared induction modules cost 65 lines and their controls cost 42.
+Later framework and instance changes mean that the refreshed whole-source
+comparison no longer isolates this campaign's net source cost. AegisSheet's
 selected helper declarations fall 210 to 130: 22 from shared structural laws,
 58 from deduplicating semantic preservation arguments. These overlapping
 measurements must not be added. No invariant discovery or automatic semantic
@@ -124,7 +162,8 @@ bridge table covering all 23 named cases (17 distinct roots; Fugue obstructed).
 proof/descriptor costs and a conservative all-concrete-source column; rows
 share helpers and overlap VC bundles, so they are not additive. Source lines
 are not author time. The measured benefit does not justify further abstraction
-work in this direction now. Changes remain local and uncommitted.
+work in this direction now. The current measurements retain the original fixed
+endpoints and account for the equivalent split-law interfaces.
 
 ### Checked: guarded invariant-based simulation
 

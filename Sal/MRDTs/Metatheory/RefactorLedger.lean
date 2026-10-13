@@ -1,3 +1,5 @@
+import Sal.MRDTs.Paper1.TransferableBoundedCounterAudit
+import Sal.MRDTs.Paper1.SelfCommutationAudit
 import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Paper1.Ledger
 import Sal.MRDTs.Metatheory.Countermodels.TaggedORSet
@@ -312,3 +314,10 @@ namespace Sal.MRDTs
 example (D : MRDTSig) : Configuration D := initConfig D
 
 end Sal.MRDTs
+
+#check Sal.MRDTs.Paper1.SplitPolicy.laws_iff_guarded
+#check Sal.MRDTs.Paper1.SplitPolicy.Certified.restricted_iff_existing
+#check Sal.MRDTs.Paper1.SplitPolicy.Invariant.restricted_iff_existing
+#check Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.executionsV
+#check Sal.MRDTs.Paper1.SplitPolicy.Certified.versions_of_canonical_histories
+#check Sal.MRDTs.Paper1.SplitPolicy.Invariant.versions_of_canonical_histories

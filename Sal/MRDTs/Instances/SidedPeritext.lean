@@ -757,7 +757,7 @@ theorem sequentially_correct {Γ : OrderedPrefixCode}
 /-! ## Production-facing rich signature
 
 The following package transfers the operational proofs to `RichCore`.  The
-state, operations, update, merge, conflict relation, and ternary merge are
+state, operations, update, merge, and event replay order are
 definitionally the same; only client queries differ.
 -/
 

@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.SplitPolicy
 import Sal.MRDTs.Paper1.ExecutionTrace
 import Sal.MRDTs.Paper1.CertifiedRGACoreCertificate
 
@@ -90,7 +91,7 @@ theorem storedCanonical (Γ : OrderedPrefixCode) {C : Configuration (RichCore Γ
 
 def Correct (Γ : OrderedPrefixCode) (C : Configuration (RichCore Γ)) : Prop :=
   (∀v s H, C.ver v=some (s,H) →
-    CertifiedReplay.RestrictedLaws (scope Γ C H) (CertifiedRGARichVC.policy Γ) ∧
+    SplitPolicy.Certified.RestrictedLaws (scope Γ C H) (CertifiedRGARichVC.policy Γ) ∧
     CertifiedReplay.Canonical (scope Γ C H) (CertifiedRGARichVC.policy Γ) (RichCore Γ).init s) ∧
   EventVersionsSpecificationRA (RichCore Γ) (CertifiedRGARichVC.policy Γ) (language Γ) C
 
@@ -98,7 +99,7 @@ theorem correct (Γ : OrderedPrefixCode) {C : Configuration (RichCore Γ)}
     (execution : CertifiedExecution (RichCore Γ) (richGeneration Γ) C) : Correct Γ C := by
   constructor
   · intro v s H hv
-    exact ⟨laws Γ execution hv,storedCanonical Γ execution hv⟩
+    exact ⟨SplitPolicy.Certified.RestrictedLaws.ofExisting (laws Γ execution hv),storedCanonical Γ execution hv⟩
   · exact CertifiedHistory.versions_of_representation (D := RichCore Γ) (R := CertifiedRGARichVC.representation Γ)
       (fun C execution v s H hv a b ha hb => unique Γ C.replayContext H a b ha hb)
       (history Γ) execution (fun v s H hv => CertifiedRGACoreExecution.Rich.representedVersions Γ execution hv)

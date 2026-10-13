@@ -2,12 +2,60 @@
   "baseline": "052b8fb",
   "checked": [
     {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "declarations": 14
+    },
+    {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "declarations": 17
+    },
+    {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "declarations": 54
+    },
+    {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "declarations": 24
+    },
+    {
+      "file": "Sal/MRDTs/Instances/AddStore.lean",
+      "declarations": 12
+    },
+    {
+      "file": "Sal/MRDTs/Instances/AegisSheet.lean",
+      "declarations": 177
+    },
+    {
       "file": "Sal/MRDTs/Instances/AegisSheetGC.lean",
       "declarations": 89
     },
     {
       "file": "Sal/MRDTs/Instances/AegisSheetSequential.lean",
       "declarations": 175
+    },
+    {
+      "file": "Sal/MRDTs/Instances/BoundedCounter.lean",
+      "declarations": 59
+    },
+    {
+      "file": "Sal/MRDTs/Instances/Common.lean",
+      "declarations": 6
+    },
+    {
+      "file": "Sal/MRDTs/Instances/EfficientORSet.lean",
+      "declarations": 38
+    },
+    {
+      "file": "Sal/MRDTs/Instances/EfficientORSetCertified.lean",
+      "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+      "declarations": 30
+    },
+    {
+      "file": "Sal/MRDTs/Instances/EfficientORSetVirtual.lean",
+      "declarations": 5
     },
     {
       "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
@@ -18,12 +66,236 @@
       "declarations": 20
     },
     {
+      "file": "Sal/MRDTs/Instances/FinsetStore.lean",
+      "declarations": 12
+    },
+    {
+      "file": "Sal/MRDTs/Instances/FlatCounters.lean",
+      "declarations": 21
+    },
+    {
+      "file": "Sal/MRDTs/Instances/FlatGrowOnly.lean",
+      "declarations": 17
+    },
+    {
+      "file": "Sal/MRDTs/Instances/FugueMaxContract.lean",
+      "declarations": 12
+    },
+    {
+      "file": "Sal/MRDTs/Instances/FugueMaxImplementation.lean",
+      "declarations": 21
+    },
+    {
+      "file": "Sal/MRDTs/Instances/FugueMaxReplay.lean",
+      "declarations": 65
+    },
+    {
+      "file": "Sal/MRDTs/Instances/FugueMaxReplayProof.lean",
+      "declarations": 24
+    },
+    {
+      "file": "Sal/MRDTs/Instances/FugueMaxSequential.lean",
+      "declarations": 14
+    },
+    {
+      "file": "Sal/MRDTs/Instances/FugueMaxSequentialSPOT.lean",
+      "declarations": 19
+    },
+    {
+      "file": "Sal/MRDTs/Instances/LWWRegister.lean",
+      "declarations": 40
+    },
+    {
+      "file": "Sal/MRDTs/Instances/MVR.lean",
+      "declarations": 49
+    },
+    {
+      "file": "Sal/MRDTs/Instances/MVRContract.lean",
+      "declarations": 24
+    },
+    {
+      "file": "Sal/MRDTs/Instances/MVRLive.lean",
+      "declarations": 26
+    },
+    {
+      "file": "Sal/MRDTs/Instances/MVRLiveCertified.lean",
+      "declarations": 7
+    },
+    {
+      "file": "Sal/MRDTs/Instances/MVRLiveContract.lean",
+      "declarations": 9
+    },
+    {
+      "file": "Sal/MRDTs/Instances/MVRLiveHistory.lean",
+      "declarations": 10
+    },
+    {
+      "file": "Sal/MRDTs/Instances/MVRLiveVirtual.lean",
+      "declarations": 4
+    },
+    {
       "file": "Sal/MRDTs/Instances/ProductionRGA.lean",
       "declarations": 62
     },
     {
+      "file": "Sal/MRDTs/Instances/Queue.lean",
+      "declarations": 58
+    },
+    {
+      "file": "Sal/MRDTs/Instances/QueueCertificates.lean",
+      "declarations": 14
+    },
+    {
+      "file": "Sal/MRDTs/Instances/QueueContract.lean",
+      "declarations": 10
+    },
+    {
+      "file": "Sal/MRDTs/Instances/QueueContractSPOT.lean",
+      "declarations": 29
+    },
+    {
+      "file": "Sal/MRDTs/Instances/QueueCorrectness.lean",
+      "declarations": 4
+    },
+    {
+      "file": "Sal/MRDTs/Instances/QueueLegalization.lean",
+      "declarations": 36
+    },
+    {
+      "file": "Sal/MRDTs/Instances/RGA.lean",
+      "declarations": 26
+    },
+    {
+      "file": "Sal/MRDTs/Instances/RGASequential.lean",
+      "declarations": 63
+    },
+    {
+      "file": "Sal/MRDTs/Instances/RcSPOT.lean",
+      "declarations": 11
+    },
+    {
+      "file": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "declarations": 58
+    },
+    {
+      "file": "Sal/MRDTs/Instances/SidedPeritext.lean",
+      "declarations": 63
+    },
+    {
       "file": "Sal/MRDTs/Instances/TreeMove.lean",
       "declarations": 71
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "declarations": 23
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/AdequacyResult.lean",
+      "declarations": 1
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/CertifiedAdequacy.lean",
+      "declarations": 4
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "declarations": 23
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Countermodels/TaggedORSet.lean",
+      "declarations": 73
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/FormalReferenceLedger.lean",
+      "declarations": 0
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Join/Assoc_CounterModel.lean",
+      "declarations": 49
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "declarations": 24
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Join/Convergence_CounterModel.lean",
+      "declarations": 56
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Join/HistoricalReplay.lean",
+      "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Join/HistoricalVCs.lean",
+      "declarations": 34
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "declarations": 51
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/NegativeLedger.lean",
+      "declarations": 0
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/PaperLedger.lean",
+      "declarations": 0
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/PublicCertificateGate.lean",
+      "declarations": 4
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/RefactorLedger.lean",
+      "declarations": 0
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/Safety.lean",
+      "declarations": 10
+    },
+    {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "declarations": 20
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean",
+      "declarations": 17
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+      "declarations": 34
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "declarations": 6
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "declarations": 4
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean",
+      "declarations": 4
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "declarations": 4
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "declarations": 26
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/InputDerivation.lean",
+      "declarations": 0
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "declarations": 9
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "declarations": 2
     },
     {
       "file": "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean",
@@ -42,24 +314,208 @@
       "declarations": 7
     },
     {
+      "file": "Sal/MRDTs/Paper1/BoundedCounterEvent.lean",
+      "declarations": 18
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Capstone.lean",
+      "declarations": 3
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "declarations": 11
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedCoverage.lean",
+      "declarations": 32
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedFugueInvariant.lean",
+      "declarations": 16
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedFugueInvariantObstruction.lean",
+      "declarations": 17
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedFugueInvariantReplay.lean",
+      "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedFugueVC.lean",
+      "declarations": 3
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedFugueVCAlgebra.lean",
+      "declarations": 18
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedFugueVCExecution.lean",
+      "declarations": 6
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedFugueVCReplay.lean",
+      "declarations": 11
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedMVRCertificate.lean",
+      "declarations": 12
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedMVRExecution.lean",
+      "declarations": 13
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedMVRHistory.lean",
+      "declarations": 6
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedPeritextInvariantCertificate.lean",
+      "declarations": 15
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean",
+      "declarations": 17
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGACoreExecution.lean",
+      "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAExecution.lean",
+      "declarations": 12
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAFugue.lean",
+      "declarations": 3
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAHistory.lean",
+      "declarations": 8
+    },
+    {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "declarations": 27
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantCertificate.lean",
+      "declarations": 13
     },
     {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
       "declarations": 6
     },
     {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAInvariantReplay.lean",
+      "declarations": 10
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAOrderComparison.lean",
+      "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGARichCertificate.lean",
+      "declarations": 12
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedRGAScope.lean",
+      "declarations": 14
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedSidedInvariantCertificate.lean",
+      "declarations": 13
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedSidedInvariantHistory.lean",
+      "declarations": 6
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CertifiedSidedInvariantReplay.lean",
+      "declarations": 10
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CommutationBridge.lean",
+      "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean",
+      "declarations": 15
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ConcreteORSetAlgebra.lean",
+      "declarations": 11
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ConcreteORSetMetadata.lean",
+      "declarations": 11
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/CriterionCounterexample.lean",
+      "declarations": 59
+    },
+    {
       "file": "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean",
       "declarations": 25
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "declarations": 26
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/GuardedConvergence.lean",
+      "declarations": 4
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/GuardedHistory.lean",
+      "declarations": 7
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/GuardedLWWExclusion.lean",
+      "declarations": 4
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/GuardedLWWPort.lean",
+      "declarations": 13
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/GuardedORSet.lean",
+      "declarations": 9
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/GuardedPolicyControls.lean",
+      "declarations": 10
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/GuardedRawEfficientExecution.lean",
+      "declarations": 10
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/GuardedRawExactExecution.lean",
+      "declarations": 12
     },
     {
       "file": "Sal/MRDTs/Paper1/IssuedConcretePorts.lean",
       "declarations": 19
     },
     {
+      "file": "Sal/MRDTs/Paper1/Ledger.lean",
+      "declarations": 0
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ORSet.lean",
+      "declarations": 19
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ORSetCanonical.lean",
+      "declarations": 13
+    },
+    {
       "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
       "declarations": 16
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/ORSetPaperContract.lean",
+      "declarations": 4
     },
     {
       "file": "Sal/MRDTs/Paper1/ORSetSpecification.lean",
@@ -68,6 +524,38 @@
     {
       "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
       "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/RALinearizability.lean",
+      "declarations": 21
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/RGAEmbeddingObstructions.lean",
+      "declarations": 18
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/RGAEventMigration.lean",
+      "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/RGAIdentified.lean",
+      "declarations": 43
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "declarations": 6
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/SimpleEventPorts.lean",
+      "declarations": 61
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "declarations": 12
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/SpecificationVisibility.lean",
+      "declarations": 14
     },
     {
       "file": "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean",

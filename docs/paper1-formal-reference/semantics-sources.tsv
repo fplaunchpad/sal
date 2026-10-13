@@ -4,7 +4,8 @@ def:events	Sal.MRDTs.Framework.Base.UpdateSignature	Sal.MRDTs.Foundation.UpdateS
 def:events	Sal.MRDTs.Paper1.RestrictedReplay	Sal.MRDTs.Paper1.OperationPolicy
 def:events	Sal.MRDTs.Paper1.RestrictedReplay	Sal.MRDTs.Paper1.OperationPolicy.lift_replayOrder_iff
 def:events	Sal.MRDTs.Metatheory.Join.HistoricalReplay	Sal.MRDTs.Foundation.distinctOps
-def:guards	Sal.MRDTs.Paper1.GuardedReplay	Sal.MRDTs.Paper1.GuardedReplay.Laws
+def:guards	Sal.MRDTs.Paper1.SplitPolicy	Sal.MRDTs.Paper1.SplitPolicy.Laws
+def:guards	Sal.MRDTs.Paper1.SplitPolicy	Sal.MRDTs.Paper1.SplitPolicy.laws_iff_guarded
 def:invariant	Sal.MRDTs.Paper1.InvariantOrder	Sal.MRDTs.Paper1.InvariantOrder.Commutes
 def:invariant	Sal.MRDTs.Paper1.InvariantOrder	Sal.MRDTs.Paper1.InvariantOrder.Closed
 def:order	Sal.MRDTs.Paper1.InvariantOrder	Sal.MRDTs.Paper1.InvariantOrder.order
@@ -22,8 +23,10 @@ def:issuance	Sal.MRDTs.Paper1.CertifiedReplay	Sal.MRDTs.Paper1.CertifiedReplay.S
 def:issuance	Sal.MRDTs.Paper1.CertifiedReplay	Sal.MRDTs.Paper1.CertifiedReplay.Ready
 def:issuance	Sal.MRDTs.Paper1.CertifiedReplay	Sal.MRDTs.Paper1.CertifiedReplay.Legal
 def:scoped-laws	Sal.MRDTs.Paper1.InvariantReplay	Sal.MRDTs.Paper1.InvariantReplay.Laws
-def:scoped-laws	Sal.MRDTs.Paper1.InvariantReplay	Sal.MRDTs.Paper1.InvariantReplay.PolicyLaws
-def:scoped-laws	Sal.MRDTs.Paper1.InvariantReplay	Sal.MRDTs.Paper1.InvariantReplay.RestrictedLaws
+def:scoped-laws	Sal.MRDTs.Paper1.SplitPolicy	Sal.MRDTs.Paper1.SplitPolicy.Invariant.PolicyLaws
+def:scoped-laws	Sal.MRDTs.Paper1.SplitPolicy	Sal.MRDTs.Paper1.SplitPolicy.Invariant.RestrictedLaws
+def:scoped-laws	Sal.MRDTs.Paper1.SplitPolicy	Sal.MRDTs.Paper1.SplitPolicy.Invariant.restricted_iff_existing
+def:scoped-laws	Sal.MRDTs.Paper1.SplitPolicy	Sal.MRDTs.Paper1.SplitPolicy.Certified.restricted_iff_existing
 def:scoped-laws	Sal.MRDTs.Paper1.CertifiedPolicy	Sal.MRDTs.Paper1.CertifiedReplay.Commutes
 thm:scoped-replay	Sal.MRDTs.Paper1.InvariantReplay	Sal.MRDTs.Paper1.InvariantReplay.convergence_on
 def:history	Sal.MRDTs.Paper1.HistorySpec	Sal.MRDTs.Paper1.HistorySpec

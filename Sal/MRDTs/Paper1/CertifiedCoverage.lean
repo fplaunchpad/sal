@@ -29,7 +29,7 @@ structure ScopedResult (D : MRDTSig) (I : Issuance D) where
   events_eq : ∀ C E, (scope C E).events = E
   correct : ∀ C, CertifiedExecution D I C →
     (∀ v s E, C.ver v = some (s,E) →
-      CertifiedReplay.RestrictedLaws (scope C E) policy ∧
+      SplitPolicy.Certified.RestrictedLaws (scope C E) policy ∧
       CertifiedReplay.Canonical (scope C E) policy D.init s) ∧
     VersionsWitness policy spec C
 

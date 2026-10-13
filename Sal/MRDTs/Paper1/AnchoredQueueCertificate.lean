@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.SplitPolicy
 import Sal.MRDTs.Paper1.ExecutionTrace
 import Sal.MRDTs.Paper1.AnchoredQueueCommutation
 import Sal.MRDTs.Paper1.AnchoredQueueSupport
@@ -276,7 +277,7 @@ structure Certificate (C : Configuration publicQueue) : Prop where
   closed : InvariantOrder.Closed publicQueue C.replayContext (Valid (Public.kernel C))
   stored_valid : ∀ v s H, C.ver v = some (s,H) → Valid (Public.kernel C) s
   scoped_replay : ∀ v s H, C.ver v = some (s,H) →
-    InvariantReplay.RestrictedLaws
+    SplitPolicy.Invariant.RestrictedLaws
       (CertifiedRGAInvariantReplay.scope Sal.EmbedRGA.unaryCode (Public.kernel C) H)
       (Valid (Public.kernel C)) CertifiedRGAInvariantReplay.policy ∧
     InvariantReplay.Canonical
@@ -293,7 +294,7 @@ theorem certificate {C : Configuration publicQueue}
   have kernelClosed := AnchoredQueue.closed kernelExec
   refine ⟨⟨kernelClosed.initial,kernelClosed.update,kernelClosed.merge⟩,
     fun _ _ _ stored => AnchoredQueue.stored_valid kernelExec stored,
-    fun _ _ _ stored => ⟨AnchoredQueue.scoped_laws kernelExec stored,?_⟩,
+    fun _ _ _ stored => ⟨SplitPolicy.Invariant.RestrictedLaws.ofExisting (AnchoredQueue.scoped_laws kernelExec stored),?_⟩,
     ?_,public_versions execution⟩
   · exact CertifiedRGAInvariantReplay.storedCanonical Sal.EmbedRGA.unaryCode
       (execution_weaken kernelExec) stored

@@ -3,10 +3,8 @@
 Compared with Overleaf **`d3ad6ff` (13 October 2026)**, fetched and
 fast-forwarded into `sal_paper`. The comparison uses the retained `paper1`
 formalism, with Kartik's agreed split presentation: operation-distinct
-`rc-non-comm` and separate equal-operation self-commutation. The equivalence
-with the existing laws is checked on research branch
-`research/rc-non-comm-operation-guard` at `47f943f`; its adapters are not yet
-integrated into `paper1`.
+`rc-non-comm` and separate equal-operation self-commutation. The production split interfaces in `SplitPolicy.lean` preserve the same
+event and state domains and have checked adapters to the existing laws.
 
 The latest paper already adds fresh-child forks, causal timestamp growth,
 a greatest-common-ancestor definition, discussion of recursive bases, label
@@ -85,7 +83,14 @@ route; they do not need replacing with the certified route's guarded equations.
    supplied, and which sequential bridges are proved. Use the current
    [automation results](../experiments/vc-automation/README.md); do not infer a
    sequential bridge from VC discharge. In particular, retain the documented
-   Fugue sequential-specification limitation.
+   Fugue sequential-specification obstruction. Distinguish the 23 named five-VC
+   cases (including aliases and the anchored Queue) from the older 22-package
+   registry. The current “bounded counter” is independent nonnegative replica
+   accounts; it does not yet establish coverage of the intended transferable
+   counter. A corrected transferable-counter candidate now has separate five-VC,
+   sequential-history and global-capacity proofs (formal reference,
+   “Transferable-budget candidate”). Its correspondence with the intended paper
+   datatype remains unresolved; do not count it as manuscript coverage yet.
 
 Small consistency fixes: `opsem.tex:61,87` should take the union of event-set
 components of `S(v)`, since `range(S)` contains state/event-set pairs. The RA
@@ -96,6 +101,9 @@ refinement function `α`; no implementation-state observational quotient is
 needed.
 
 ## Reference artifacts
+
+- [Interactive datatype reference](https://sal-datatype-reference.fizzyearth10.chatgpt.site/):
+  implementation and sequential equations, issuance guards and checked coverage.
 
 - [Formal reference PDF](paper1-formal-reference/main.pdf): numbered definitions
   cited above. The replay laws now use the agreed split formulation. The other manuscript

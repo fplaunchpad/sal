@@ -36,12 +36,13 @@ def preservation(start):
    path=ROOT/f
    if not path.exists() or hashlib.sha256(path.read_bytes()).hexdigest()!=original['sha256']:failures.append([f,'source','unlisted original file changed'])
    continue
-  old=C.declarations((start/f).read_text()); path=ROOT/f;new=C.declarations(path.read_text()) if path.exists() else {}
+  old=C.declarations((start/f).read_text()); path=ROOT/C.RENAMED_PATHS.get(f,f);new=C.declarations(path.read_text()) if path.exists() else {}
   for n,b in old.items():
    a=new.get(n)
    if a is None:failures.append([f,n,'deleted declaration']);continue
    if b['header']!=a['header'] or b['variables']!=a['variables']:failures.append([f,n,'header/context changed'])
-   if b['kind'] not in ('theorem','lemma') and b['body']!=a['body']:failures.append([f,n,'semantic definition changed'])
+   if (b['kind'] not in ('theorem','lemma') and b['body']!=a['body']
+       and not C.split_interface_certificate(n,b,a)):failures.append([f,n,'semantic definition changed'])
   if old:checked.append({'file':f,'declarations':len(old)})
  return {'checked':checked,'failures':failures,'status':'fail' if failures else 'pass'}
 

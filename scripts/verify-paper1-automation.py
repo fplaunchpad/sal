@@ -355,6 +355,7 @@ def main():
     run([sys.executable, 'scripts/check-paper1-automation-contracts.py', '--baseline', '7e7ec86',
          '--output', str(OUT / 'sided-derivation-contracts.json')], 'sided-derivation-source-contracts.log')
     run([sys.executable, 'experiments/vc-automation/test_sided_contract_source.py'], 'sided-source-controls.log')
+    run([sys.executable, 'experiments/vc-automation/test_event_order_contract_source.py'], 'event-order-source-controls.log')
     run([sys.executable, 'experiments/vc-automation/test_sided_evidence_audit.py'], 'sided-evidence-controls.log')
     run([sys.executable, 'experiments/vc-automation/test_ordered_contract_source.py'], 'ordered-source-controls.log')
     run([sys.executable, 'experiments/vc-automation/test_contract_audit.py'], 'production-contract-controls.log')
@@ -447,6 +448,7 @@ def main():
                   'experiments/vc-automation/test_ordered_contract_source.py',
                   'experiments/vc-automation/test_sided_contract_source.py',
                   'experiments/vc-automation/test_sided_evidence_audit.py',
+                  'experiments/vc-automation/test_event_order_contract_source.py',
                   'experiments/vc-automation/test_contract_audit.py',
                   'scripts/check-paper1-automation-contracts.py'],
         forbidden_dependencies=sorted(FORBIDDEN),

@@ -1,1 +1,1 @@
-{"baseline": "ffec6e9", "evidence": "source-header/body preservation; not kernel type equality", "checked_declarations": 656, "status": "pass", "failures": []}
+{"baseline": "ffec6e9", "evidence": "source-header/body preservation; not kernel type equality", "checked_declarations": 3073, "status": "pass", "failures": []}

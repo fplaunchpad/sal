@@ -18,6 +18,7 @@ def reason(name,before,after,current=None):
  if before['variables']!=after['variables']:return 'changed variable context'
  if before['body']!=after['body'] and before['kind'] not in ('theorem','lemma'):
   if C.sequential_proof_bundle(name,before,after):return None
+  if C.split_interface_certificate(name,before,after):return None
   if name not in PROOFS:return 'changed semantic definition'
   if not C.bridge_simulation_data(name,before,after,current or {}):return 'changed simulation relation or projection/generator wiring'
  return None
@@ -63,7 +64,7 @@ def main():
  failures=[];checked=[]
  for f in changed:
   if f not in baseline:continue
-  old=C.declarations(C.git('show',BASE+':'+f));new=C.declarations((ROOT/f).read_text()) if (ROOT/f).exists() else {}
+  old=C.declarations(C.git('show',BASE+':'+f));current_path=C.RENAMED_PATHS.get(f,f);new=C.declarations((ROOT/current_path).read_text()) if (ROOT/current_path).exists() else {}
   for n,b in old.items():
    why=reason(n,b,new.get(n),new)
    if why:failures.append(dict(file=f,name=n,reason=why))

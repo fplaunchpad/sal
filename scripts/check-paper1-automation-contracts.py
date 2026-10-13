@@ -137,8 +137,42 @@ def norm(text):
     return re.sub(r'\s+', ' ', text).strip()
 
 
+# Approved nomenclature-only checkpoint. Historical fixed baselines remain
+# intact; this explicit vocabulary map cannot alter operation/specification
+# data, premises or guards. Both sides are normalized before comparison.
+RENAME_CHECKPOINT = '5a4e15f175f1b6f749df33657d05ea1f2da6c5b6'
+RENAMED_PATHS = {'Sal/MRDTs/Instances/RcSPOT.lean':
+                 'Sal/MRDTs/Instances/EventOrderSPOT.lean'}
+
+def normalize_event_order_names(text):
+    text = text.replace('ReplayPolicy', 'EventOrder')
+    text = re.sub(r'\bRcRes\b', 'OrderResult', text)
+    text = text.replace('RcAcyclic', 'ReplayAcyclic').replace('RcEdge', 'ReplayEdge')
+    text = text.replace('rcAcyclic', 'replayAcyclic').replace('noRcChain', 'noReplayChain')
+    text = text.replace('rc_acyclic', 'replayOrder_acyclic')
+    text = text.replace('_rc_', '_replayOrder_')
+    text = re.sub(r'_rc\b', '_replayOrder', text)
+    text = re.sub(r'\brc_', 'replayOrder_', text)
+    text = text.replace('RcOrder', 'EventOrder')
+    for before, after in (('rcOrder', 'eventOrder'), ('coreRc', 'coreOrder'),
+                          ('richRc', 'richOrder'), ('embedRc', 'embedOrder'),
+                          ('sidedRc', 'sidedOrder'), ('awRc', 'awOrder'),
+                          ('historicalGapRc', 'historicalGapOrder'),
+                          ('wrongRc', 'wrongOrder'), ('rcNonComm', 'replayOrderNonComm')):
+        text = text.replace(before, after)
+    text = re.sub(r'\b(K|M|V|self)\.rc\b', r'\1.replayOrder', text)
+    # The merge-free directed relation is different from the public order field.
+    text = re.sub(r'\bMVR\.rc\b', 'MVR.replayOrder', text)
+    text = re.sub(r'(Sal\.MRDTs\.Instances\.[A-Za-z0-9_.]+)\.rc\b', r'\1.replayOrder', text)
+    text = re.sub(r'\.rc\b', '.replayBefore', text)
+    text = re.sub(r'\babbrev rc\b', 'abbrev replayBefore', text)
+    text = re.sub(r'\brc\b', 'replayOrder', text)
+    text = text.replace('RcSPOT', 'EventOrderSPOT')
+    return text
+
+
 def declarations(text):
-    lines = strip_comments(text).splitlines()
+    lines = normalize_event_order_names(strip_comments(text)).splitlines()
     result, scopes, variables = {}, [], []
     i = 0
     while i < len(lines):
@@ -224,6 +258,35 @@ def bridge_simulation_data(name, before, after, current):
     return field is not None and field[1].strip() == expected
 
 
+# Whole-carrier equivalence is kernel-checked by
+# SplitPolicy.Certified.restricted_iff_existing and
+# SplitPolicy.Invariant.restricted_iff_existing in the production ledger.
+# Only these public certificate propositions change their proof-law carrier.
+# All scope, invariant, policy, query language and execution arguments remain
+# byte-for-byte identical after ordinary nomenclature normalization.
+SPLIT_INTERFACE_CERTIFICATES = {
+    'Sal.MRDTs.Paper1.AnchoredQueue.History.Certificate',
+    'Sal.MRDTs.Paper1.CertifiedCoverage.ScopedResult',
+    'Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.Certificate.Correct',
+    'Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate.Correct',
+    'Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.Correct',
+    'Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.Correct',
+    'Sal.MRDTs.Paper1.CertifiedRGARichCertificate.Correct',
+    'Sal.MRDTs.Paper1.CertifiedSidedInvariantCertificate.Correct',
+}
+
+def split_interface_certificate(name, before, after):
+    if name not in SPLIT_INTERFACE_CERTIFICATES or after is None:
+        return False
+    expected = before['body'].replace('InvariantReplay.RestrictedLaws',
+                                      'SplitPolicy.Invariant.RestrictedLaws')
+    expected = expected.replace('CertifiedReplay.RestrictedLaws',
+                                'SplitPolicy.Certified.RestrictedLaws')
+    return (expected != before['body'] and expected == after['body']
+            and before['header'] == after['header']
+            and before['variables'] == after['variables'])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--baseline', choices=(BASELINE, '7880732', 'ffec6e9', SIDED_BASELINE), default=BASELINE,
@@ -236,14 +299,16 @@ def main():
     baseline_files = set(git('ls-tree', '-r', '--name-only', baseline, '--', 'Sal').splitlines())
     files = [path for path in changed if path in baseline_files]
     report = dict(baseline=baseline, evidence='source-header/body preservation; not kernel type equality',
+                  rename_checkpoint=RENAME_CHECKPOINT, rename_normalization='explicit event-order vocabulary only',
                   files=[], failures=[],
                   added_files=[path for path in changed if path not in baseline_files])
     for path in files:
-        if not (ROOT / path).is_file():
+        current_path = RENAMED_PATHS.get(path, path)
+        if not (ROOT / current_path).is_file():
             report['failures'].append(dict(path=path, reason='deleted baseline production file'))
             continue
         old = declarations(git('show', baseline + ':' + path))
-        current = declarations((ROOT / path).read_text())
+        current = declarations((ROOT / current_path).read_text())
         record = dict(path=path, checked=len(old), moved=[], proof_changes=[], certificate_changes=[],
                       proof_definition_changes=[], preserved_data_descriptions=[])
         for name, before in old.items():
@@ -300,6 +365,8 @@ def main():
                         reason = 'changed mask carrier/step/birth/kill data'
                     else:
                         record['preserved_data_descriptions'].append(name)
+                elif split_interface_certificate(name, before, after):
+                    record['certificate_changes'].append(name)
                 elif name in BRIDGE_SIMULATIONS:
                     if not bridge_simulation_data(name, before, after, current):
                         reason = 'changed simulation relation or projection/generator wiring'

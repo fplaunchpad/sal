@@ -7,7 +7,7 @@ namespace Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax.SequentialSPOT
 open Sal.EmbedRGA (unaryCode FMEntry Side keyLt)
 
 /-! Refutation gate for the ordinary-list witness construction. This order is
-proof-local: it is not another public conflict relation. Construct parents
+proof-local: it is not the public event replay order or the paper conflict policy. Construct parents
 before children, and farther siblings before nearer siblings. Then delete.
 The abstract buffer stores only identities/values and the root sentinel. -/
 

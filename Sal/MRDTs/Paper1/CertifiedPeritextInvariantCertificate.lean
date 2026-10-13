@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.SplitPolicy
 import Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate
 import Sal.MRDTs.Paper1.CertifiedPeritextVC
 import Sal.MRDTs.Instances.Peritext
@@ -77,7 +78,7 @@ structure Correct (Γ : OrderedPrefixCode) (C : Configuration (D Γ)) : Prop whe
   closed : InvariantOrder.Closed (D Γ) C.replayContext (invariant Γ C)
   stored_valid : ∀ v s H, C.ver v = some (s,H) → invariant Γ C s
   replay : ∀ v s H, C.ver v = some (s,H) →
-    InvariantReplay.RestrictedLaws (CertifiedRGAInvariantReplay.scope Γ C H)
+    SplitPolicy.Invariant.RestrictedLaws (CertifiedRGAInvariantReplay.scope Γ C H)
       (invariant Γ C) CertifiedRGAInvariantReplay.policy ∧
     InvariantReplay.Canonical (CertifiedRGAInvariantReplay.scope Γ C H)
       (invariant Γ C) CertifiedRGAInvariantReplay.policy (D Γ).init s
@@ -86,7 +87,7 @@ structure Correct (Γ : OrderedPrefixCode) (C : Configuration (D Γ)) : Prop whe
 theorem correct (Γ : OrderedPrefixCode) {C : Configuration (D Γ)}
     (execution : CertifiedExecution (D Γ) (generation Γ) C) : Correct Γ C :=
   ⟨closed Γ execution,fun _ _ _ hv => stored_valid Γ execution hv,
-    fun _ _ _ hv => ⟨CertifiedRGAInvariantReplay.laws Γ execution hv,
+    fun _ _ _ hv => ⟨SplitPolicy.Invariant.RestrictedLaws.ofExisting (CertifiedRGAInvariantReplay.laws Γ execution hv),
       CertifiedRGAInvariantReplay.storedCanonical Γ execution hv⟩,versions Γ execution⟩
 
 theorem correctV (Γ : OrderedPrefixCode) {C : Configuration (D Γ)}

@@ -11,6 +11,9 @@
 \newtheorem{example}[theorem]{Example}
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
+\makeatletter
+\g@addto@macro\UrlBreaks{\do\_}
+\makeatother
 \newcommand{\code}[1]{\texttt{\detokenize{#1}}}
 % Shared notation follows the manuscript's opsem.tex and ralin.tex.
 \newcommand{\F}[1]{\ensuremath{\mathsf{#1}}}
@@ -66,9 +69,9 @@ Fugue examples explain the scope of these results. The claims concern the
 mathematical execution model. Definitions~\ref{def:guards} and
 \ref{def:scoped-laws} now present operation-distinct \textsc{rc-non-comm}
 and equal-operation self-commutation separately. Their equivalence to the
-combined policy laws is checked on research branch
-\texttt{research/rc-non-comm-operation-guard}, commit \texttt{47f943f};
-these adapters have not been integrated into \texttt{paper1}.
+combined policy laws is checked in \texttt{paper1}: the production
+split interfaces preserve the existing event and state domains, five merge VCs,
+and independent sequential-history obligations.
 The other manuscript comparisons retain the stated October 8 baseline.
 \setcounter{tocdepth}{1}
 \tableofcontents

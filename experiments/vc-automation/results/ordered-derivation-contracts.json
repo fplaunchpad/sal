@@ -1,7 +1,63 @@
 {
   "baseline": "ffec6e9",
   "evidence": "source-header/body preservation; not kernel type equality",
+  "rename_checkpoint": "5a4e15f175f1b6f749df33657d05ea1f2da6c5b6",
+  "rename_normalization": "explicit event-order vocabulary only",
   "files": [
+    {
+      "path": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "checked": 14,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "checked": 17,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Framework/Product.lean",
+      "checked": 54,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "checked": 24,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/AddStore.lean",
+      "checked": 12,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/AegisSheet.lean",
+      "checked": 177,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
     {
       "path": "Sal/MRDTs/Instances/AegisSheetGC.lean",
       "checked": 89,
@@ -33,6 +89,60 @@
       "preserved_data_descriptions": []
     },
     {
+      "path": "Sal/MRDTs/Instances/BoundedCounter.lean",
+      "checked": 59,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/Common.lean",
+      "checked": 6,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/EfficientORSet.lean",
+      "checked": 38,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/EfficientORSetCertified.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/EfficientORSetHistory.lean",
+      "checked": 30,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/EfficientORSetVirtual.lean",
+      "checked": 5,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Instances/EmbedRGA.lean",
       "checked": 57,
       "moved": [],
@@ -55,6 +165,159 @@
       "preserved_data_descriptions": []
     },
     {
+      "path": "Sal/MRDTs/Instances/FinsetStore.lean",
+      "checked": 12,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/FlatCounters.lean",
+      "checked": 21,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/FlatGrowOnly.lean",
+      "checked": 17,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/FugueMaxContract.lean",
+      "checked": 12,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/FugueMaxImplementation.lean",
+      "checked": 21,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/FugueMaxReplay.lean",
+      "checked": 65,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/FugueMaxReplayProof.lean",
+      "checked": 24,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/FugueMaxSequential.lean",
+      "checked": 14,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/FugueMaxSequentialSPOT.lean",
+      "checked": 19,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/LWWRegister.lean",
+      "checked": 40,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/MVR.lean",
+      "checked": 49,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/MVRContract.lean",
+      "checked": 24,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/MVRLive.lean",
+      "checked": 26,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/MVRLiveCertified.lean",
+      "checked": 7,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/MVRLiveContract.lean",
+      "checked": 9,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/MVRLiveHistory.lean",
+      "checked": 10,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/MVRLiveVirtual.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Instances/ProductionRGA.lean",
       "checked": 62,
       "moved": [],
@@ -66,6 +329,69 @@
       "preserved_data_descriptions": []
     },
     {
+      "path": "Sal/MRDTs/Instances/Queue.lean",
+      "checked": 58,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/QueueCertificates.lean",
+      "checked": 14,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/QueueContract.lean",
+      "checked": 10,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/QueueContractSPOT.lean",
+      "checked": 29,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/QueueCorrectness.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/QueueLegalization.lean",
+      "checked": 36,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/RGA.lean",
+      "checked": 26,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
       "checked": 7,
       "moved": [],
@@ -73,6 +399,42 @@
         "Sal.EmbedRGA.unaryEnc_mono",
         "Sal.EmbedRGA.unaryEnc_not_prefix"
       ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/RGASequential.lean",
+      "checked": 63,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/RcSPOT.lean",
+      "checked": 11,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/SidedEmbedRGA.lean",
+      "checked": 58,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/SidedPeritext.lean",
+      "checked": 63,
+      "moved": [],
+      "proof_changes": [],
       "certificate_changes": [],
       "proof_definition_changes": [],
       "preserved_data_descriptions": []
@@ -93,12 +455,196 @@
       "preserved_data_descriptions": []
     },
     {
+      "path": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "checked": 23,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/AdequacyResult.lean",
+      "checked": 1,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/CertifiedAdequacy.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "checked": 23,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Countermodels/TaggedORSet.lean",
+      "checked": 73,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/FormalReferenceLedger.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Join/Assoc_CounterModel.lean",
+      "checked": 49,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "checked": 24,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Join/Convergence_CounterModel.lean",
+      "checked": 56,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Join/HistoricalReplay.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Join/HistoricalVCs.lean",
+      "checked": 34,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "checked": 51,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/NegativeLedger.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/PaperLedger.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/PublicCertificateGate.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/RefactorLedger.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/Safety.lean",
+      "checked": 10,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "checked": 20,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean",
+      "checked": 17,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.AnchoredQueue.History.certificate"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.AnchoredQueue.History.Certificate"
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean",
       "checked": 3,
       "moved": [],
       "proof_changes": [
         "Sal.MRDTs.Paper1.Automation.AutomatedCore.evidence"
       ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/AutomatedEfficientORSet.lean",
+      "checked": 34,
+      "moved": [],
+      "proof_changes": [],
       "certificate_changes": [],
       "proof_definition_changes": [],
       "preserved_data_descriptions": []
@@ -142,6 +688,78 @@
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Embedded.kit",
         "Sal.MRDTs.Paper1.Automation.AutomatedRGA.Sided.kit"
       ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "checked": 6,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/CommutingAssembly.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "checked": 26,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/InputDerivation.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "checked": 9,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean",
+      "checked": 2,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/Automation/OrderedRecordAutomation.lean",
@@ -210,6 +828,200 @@
       "preserved_data_descriptions": []
     },
     {
+      "path": "Sal/MRDTs/Paper1/BoundedCounterEvent.lean",
+      "checked": 18,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Capstone.lean",
+      "checked": 3,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "checked": 11,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedCoverage.lean",
+      "checked": 32,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.CertifiedCoverage.ScopedResult"
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedFugueInvariant.lean",
+      "checked": 16,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedFugueInvariantObstruction.lean",
+      "checked": 17,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedFugueInvariantReplay.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedFugueVC.lean",
+      "checked": 3,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedFugueVCAlgebra.lean",
+      "checked": 18,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedFugueVCExecution.lean",
+      "checked": 6,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedFugueVCReplay.lean",
+      "checked": 11,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedMVRCertificate.lean",
+      "checked": 12,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.Certificate.correct"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.Certificate.Correct"
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedMVRExecution.lean",
+      "checked": 13,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedMVRHistory.lean",
+      "checked": 6,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedPeritextInvariantCertificate.lean",
+      "checked": 15,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate.correct"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.CertifiedPeritextInvariantCertificate.Correct"
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean",
+      "checked": 17,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.correct"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.Correct"
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGACoreExecution.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAExecution.lean",
+      "checked": 12,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAFugue.lean",
+      "checked": 3,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAHistory.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "checked": 27,
       "moved": [],
@@ -221,12 +1033,141 @@
       "preserved_data_descriptions": []
     },
     {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAInvariantCertificate.lean",
+      "checked": 13,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.correct"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.Correct"
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean",
       "checked": 6,
       "moved": [],
       "proof_changes": [
         "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_history_data"
       ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAInvariantReplay.lean",
+      "checked": 10,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAOrderComparison.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGARichCertificate.lean",
+      "checked": 12,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.correct"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.Correct"
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedRGAScope.lean",
+      "checked": 14,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedSidedInvariantCertificate.lean",
+      "checked": 13,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.CertifiedSidedInvariantCertificate.correct"
+      ],
+      "certificate_changes": [
+        "Sal.MRDTs.Paper1.CertifiedSidedInvariantCertificate.Correct"
+      ],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedSidedInvariantHistory.lean",
+      "checked": 6,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CertifiedSidedInvariantReplay.lean",
+      "checked": 10,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CommutationBridge.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean",
+      "checked": 15,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ConcreteORSetAlgebra.lean",
+      "checked": 11,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ConcreteORSetMetadata.lean",
+      "checked": 11,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/CriterionCounterexample.lean",
+      "checked": 59,
+      "moved": [],
+      "proof_changes": [],
       "certificate_changes": [],
       "proof_definition_changes": [],
       "preserved_data_descriptions": []
@@ -246,6 +1187,87 @@
       ]
     },
     {
+      "path": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "checked": 26,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedConvergence.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedHistory.lean",
+      "checked": 7,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedLWWExclusion.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedLWWPort.lean",
+      "checked": 13,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedORSet.lean",
+      "checked": 9,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedPolicyControls.lean",
+      "checked": 10,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedRawEfficientExecution.lean",
+      "checked": 10,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/GuardedRawExactExecution.lean",
+      "checked": 12,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Paper1/IssuedConcretePorts.lean",
       "checked": 19,
       "moved": [],
@@ -255,6 +1277,33 @@
         "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.originLegal",
         "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.history"
       ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Ledger.lean",
+      "checked": 0,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ORSet.lean",
+      "checked": 19,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ORSetCanonical.lean",
+      "checked": 13,
+      "moved": [],
+      "proof_changes": [],
       "certificate_changes": [],
       "proof_definition_changes": [],
       "preserved_data_descriptions": []
@@ -271,6 +1320,15 @@
       "preserved_data_descriptions": [
         "Sal.MRDTs.Paper1.ORSet.EventSpec.simulation"
       ]
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/ORSetPaperContract.lean",
+      "checked": 4,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     },
     {
       "path": "Sal/MRDTs/Paper1/ORSetSpecification.lean",
@@ -295,6 +1353,78 @@
       ]
     },
     {
+      "path": "Sal/MRDTs/Paper1/RALinearizability.lean",
+      "checked": 21,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/RGAEmbeddingObstructions.lean",
+      "checked": 18,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/RGAEventMigration.lean",
+      "checked": 8,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/RGAIdentified.lean",
+      "checked": 43,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "checked": 6,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/SimpleEventPorts.lean",
+      "checked": 61,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/Soundness.lean",
+      "checked": 12,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/SpecificationVisibility.lean",
+      "checked": 14,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean",
       "checked": 18,
       "moved": [],
@@ -308,8 +1438,16 @@
   ],
   "failures": [],
   "added_files": [
+    "Sal/MRDTs/Framework/CertifiedEventInduction.lean",
+    "Sal/MRDTs/Framework/CertifiedInvariant.lean",
+    "Sal/MRDTs/Framework/GuardedProjectionAutomation.lean",
+    "Sal/MRDTs/Framework/GuardedStateProjection.lean",
+    "Sal/MRDTs/Framework/SequentialInduction.lean",
+    "Sal/MRDTs/Instances/EventOrderSPOT.lean",
     "Sal/MRDTs/Paper1/Automation/ArchivedInputDerivation.lean",
     "Sal/MRDTs/Paper1/Automation/ArchivedKitAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/CertifiedInvariantControls.lean",
+    "Sal/MRDTs/Paper1/Automation/CertifiedOriginBridge.lean",
     "Sal/MRDTs/Paper1/Automation/CodeCompositionControls.lean",
     "Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean",
     "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean",
@@ -324,15 +1462,22 @@
     "Sal/MRDTs/Paper1/Automation/GenericSortedLists.lean",
     "Sal/MRDTs/Paper1/Automation/GenericTaggedPrefixCodes.lean",
     "Sal/MRDTs/Paper1/Automation/GenericTerminatedTags.lean",
+    "Sal/MRDTs/Paper1/Automation/GuardedStateProjectionControls.lean",
     "Sal/MRDTs/Paper1/Automation/OrderedAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean",
     "Sal/MRDTs/Paper1/Automation/OrderedKitAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/OriginPrefixEvidence.lean",
+    "Sal/MRDTs/Paper1/Automation/OriginPrefixEvidenceControls.lean",
+    "Sal/MRDTs/Paper1/Automation/RepresentationAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/RepresentationAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/SequentialBridgeControls.lean",
+    "Sal/MRDTs/Paper1/Automation/SequentialBridgeFamilyControls.lean",
     "Sal/MRDTs/Paper1/Automation/SetBridgeAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean",
+    "Sal/MRDTs/Paper1/GuardedProjectionHistory.lean",
     "Sal/MRDTs/Paper1/ProjectedSimulation.lean"
   ],
-  "checked_declarations": 656,
+  "checked_declarations": 3073,
   "status": "pass"
 }

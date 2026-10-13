@@ -223,7 +223,7 @@ theorem canonical_ordered (ops : List (Op RGAOp)) :
       simp [witnessLEBool]
     exact Nat.le_total ta tb
 
-/-! ## Resolve-conflict relation
+/-! ## Specification conflicts and event replay order
 
 The public relation describes conflicts of the ordinary-list specification,
 not commutation of the grow-only implementation fields.  Two insertions

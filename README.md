@@ -16,7 +16,9 @@ The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
 changes against the current Overleaf manuscript, with numbered references to a
 [self-contained formal reference PDF](docs/paper1-formal-reference/main.pdf).
 The reference follows the paper’s Sections 3–6 and notation, with an explicit
-manuscript-to-reference-to-Lean map. Its direct sequential lifting theorem
+manuscript-to-reference-to-Lean map. The [public datatype reference](https://sal-datatype-reference.fizzyearth10.chatgpt.site/)
+pairs implementation and sequential definitions with explicit issuance guards.
+Its direct sequential lifting theorem
 uses the same public-order witness as the paper, without extra replay-law
 assumptions at that lifting step.
 
@@ -28,13 +30,20 @@ an exact selected-history bridge. The [earlier manuscript patch](docs/paper1-man
 targets Overleaf `0450d48`; it must not be applied wholesale to the current
 `d3ad6ff` manuscript. The revision note above records the remaining differences.
 
-The existing `rc-non-comm` condition is retained for the submission. The
-alternative-guard investigation is archived on
-[`research/rc-non-comm-operation-guard`](https://github.com/fplaunchpad/sal/tree/research/rc-non-comm-operation-guard) (`93fc631`).
+The paper-facing policy now uses Kartik's split formulation: `rc-non-comm`
+for distinct operation payloads, plus equal-payload self-commutation.
+[`SplitPolicy.lean`](Sal/MRDTs/Paper1/SplitPolicy.lean) proves equivalence with the
+combined laws on the same raw, represented-ready and invariant domains.
+[`SplitCertificates.lean`](Sal/MRDTs/Paper1/SplitCertificates.lean) exposes the
+23 existing cases through the split interfaces: 22 positive history cases and
+Fugue's algebraic certificate with its separate specification obstruction.
+The dependency audit requires the five-VC verifier, merge induction and split
+laws; it does not count aliases as independent implementations.
 
 The [five-VC automation interface](experiments/vc-automation/README.md)
 now supplies the production proofs for all 23 current named cases through
-the common `mrdt_verify` command.
+the common `mrdt_verify` command. The named inventory includes anchored Queue
+and aliases; it differs from the historical 22-package production registry.
 Registered inputs supply finite laws, datatype mappings and existing execution
 or issuance evidence. For both OR-sets, `derive_mrdt_input` constructs that input
 from proof-free annotations: `PolicyData` records the event comparison;
@@ -54,7 +63,10 @@ their sequential bridges, excludes earlier correctness paths, and checks
 contract preservation. Negative controls check missing obligations and rejected
 correctness registrations. The automation README combines local declarations,
 annotations and required datatype helpers in each instance's total, and reports
-the shared library cost separately. Implementations, contracts and public theorem statements are preserved.
+the shared library cost separately. Implementations and client-facing specifications are preserved. Replay-order names
+are normalized to the event-order vocabulary; scoped certificate law carriers
+use kernel-proved equivalent split-policy interfaces. All other public statement
+arguments and premises are preserved.
 Against production baseline `7880732`, required author code and annotations for
 ordinary OR-set fall from 106 to 8 lines, and efficient OR-set from 219 to 26
 lines; retained compatibility proofs are excluded when the generated input does
@@ -92,9 +104,11 @@ The [sequential-bridge table](experiments/vc-automation/README.md#sequential-bri
 now reports all 23 named cases separately from the VC proofs, including required
 concrete helpers and remaining manual arguments. Guarded simulation derives
 query/history consequences, while structural rules share freshness and origin
-transport. The latest campaign reduces the complete classified concrete proof
-closure by only 21 lines; new shared machinery leaves just 11 fewer production
-source lines overall. Embedded RGA's independent production bridge grows.
+transport. The refreshed fixed-root comparison reduces the complete classified concrete
+proof closure by 11 lines (7,799 to 7,788), while the conservative count of all
+concrete declaration kinds grows from 9,005 to 9,019. Later framework and instance
+changes prevent isolating the original campaign's net whole-source cost.
+Embedded RGA's independent production bridge grows.
 Further abstraction has limited returns: tree rendering, sheet materialization
 and RGA insertion semantics remain manual.
 
@@ -189,6 +203,20 @@ order and specification visibility. Representation uses the new merge VCs and
 concrete equality. PASS+FAIL controls include actual public certified execution
 and the requested concurrency cases. This additional variant does not change
 the original Queue or the 20-of-22 production count; it has no JavaScript port.
+
+An additional [transferable-counter candidate](Sal/MRDTs/Instances/TransferableBoundedCounterCorrected.lean)
+has five-VC, ordinary/recursive-virtual sequential-history, and
+[global budget proofs](Sal/MRDTs/Paper1/TransferableBoundedCounterCorrectedBudget.lean).
+It supports participant updates, allocation, transfer, prepared rebalance and
+available/reserved/allocated queries. Its independent balance specification
+requires funds before a debit; all allocations together remain within the
+initial capacity. This candidate is outside the original 23-case inventory and
+is not yet identified with the paper's intended bounded counter. The older
+`BoundedCounter` provides independent nonnegative replica accounts.
+The [Bismuth source model](Sal/MRDTs/Paper1/TransferableBoundedCounterEvent.lean)
+has checked shared-recipient credit loss under pointwise-max merge; the corrected
+candidate instead uses additive three-way accounting and nonnegative amounts.
+It is not a source-equivalence claim.
 
 The implementation metatheory is concrete throughout.
 [`ConcreteFormalism.lean`](Sal/MRDTs/Paper1/ConcreteFormalism.lean) defines
