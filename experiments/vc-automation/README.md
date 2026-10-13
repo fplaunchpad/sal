@@ -31,6 +31,15 @@ It is not yet a measured case in the automation effort tables below. Its
 [bounded exhaustive control](balegas-controls.py) checks 49,796 trace prefixes
 with zero failures; ten Lean PASS+FAIL controls exercise the actual definitions.
 
+Neem's corrected enable-wins and disable-wins flags also have separate checked
+five-VC and Boolean-history proofs, audited by
+[`NeemFlagAudit`](../../Sal/MRDTs/Paper1/NeemFlagAudit.lean). They are not yet
+registered or measured automation cases. Their shared proof uses explicit
+causal-prefix and live-event lemmas; it is not an automatic-discovery result.
+[Exhaustive controls](neem-flag-controls.py) check 55,987 trace prefixes per
+polarity with zero failures and catch the older scalar-flag mutant. Nine
+Lean PASS+FAIL examples check the actual definitions.
+
 ## What does the RDT author supply?
 
 A typed `CommonVerification.Input` supplies record/component mappings, finite

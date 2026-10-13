@@ -99,6 +99,11 @@ have been removed from the active text.
    [Published paper](https://asc.di.fct.unl.pt/~nmp/pubs/srds-2015.pdf) and
    [technical report, §III](https://asc.di.fct.unl.pt/~nmp/pubs/tr-corr-1-2015.pdf)
    are the authority; the Bismuth experimental implementation is not.
+   Neem’s corrected enable-wins and disable-wins flags now also have five-VC
+   and independent Boolean-history proofs for ordinary and recursive executions.
+   Include them in implementation coverage; their queries are explicit additions
+   to the F* source API. See Example 6.9 for both equations and policies.
+
    **Reference:** Example 6.8, “Published bounded counter”; Example 6.7 documents the additive alternative.
 
 Small mathematical fixes: `proof_strategy.tex:49` should say that every

@@ -56,7 +56,7 @@ concurrency/support and represented-ready or invariant state domains. The
 296 new declarations use only standard logical axioms. The earlier research
 history is retained independently.
 
-### Active: port Neem's enable-wins and disable-wins flags
+### Checked: Neem's enable-wins and disable-wins flags
 
 KC explicitly requested both missing flags. Use the corrected Neem F* sources
 (`Enable-wins_flag` and `Disable-wins_flag`, not the divergent example) as the
@@ -64,6 +64,14 @@ design authority. Prove the current five VCs and independent Boolean sequential
 bridges under ordinary and recursive executions, with source-derived positive
 and negative controls. Keep these claims separate from Neem's older VC theorem;
 the current Sal merge induction must appear in public proof dependencies.
+
+Both certificates now check for ordinary and recursive executions. The shared
+five-VC proof preserves Neem’s integer counter and ancestor-subtracting merge.
+The independent audit checks 321 declarations and both public theorem roots.
+Nine Lean PASS+FAIL examples and 55,987 exhaustive trace prefixes per polarity
+pass; the old scalar-flag mutant fails as expected. Formal reference Example 6.9
+documents the explicit query interpretation (absent from the F* application).
+These cases remain outside the measured automation inventory.
 
 ### Checked: consolidate grow-only-set aliases
 

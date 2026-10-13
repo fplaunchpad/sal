@@ -34,3 +34,6 @@ ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterVC	Sal.MRDTs.Paper1.Bal
 ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterCertificate	Sal.MRDTs.Paper1.BalegasBoundedCounterEvent.certifiedV
 ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterCertificate	Sal.MRDTs.Paper1.BalegasBoundedCounterEvent.versions_safeV
 ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterGlobal	Sal.MRDTs.Paper1.BalegasBoundedCounterEvent.global_boundV
+ex:neem-flags	Sal.MRDTs.Paper1.EnableWinsFlagVC	Sal.MRDTs.Paper1.NeemFlagVC.fiveVC
+ex:neem-flags	Sal.MRDTs.Paper1.EnableWinsFlagCertificate	Sal.MRDTs.Paper1.EnableWinsFlagEvent.certifiedV
+ex:neem-flags	Sal.MRDTs.Paper1.DisableWinsFlagCertificate	Sal.MRDTs.Paper1.DisableWinsFlagEvent.certifiedV

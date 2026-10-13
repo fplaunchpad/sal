@@ -385,3 +385,53 @@ executions with recursively reconstructed merge bases are covered. The public
 history, local-safety and global-bound theorem dependencies are audited to
 include all five VCs and the generic merge induction.
 \end{example}
+
+\begin{example}[Neem enable-wins and disable-wins flags]\label{ex:neem-flags}
+Neem's corrected flag stores one counter--bit pair $(c_i,b_i)\in\mathbb Z\times
+\{\mathsf{false},\mathsf{true}\}$ per replica $i$. Its source constant maps
+have universal domain. The two implementations share physical operations
+$W$ (the winning update) and $Z$ (the resetting update):
+\[
+ \doop(s,(t,i,W))(j)=
+ \begin{cases}(c_i+1,\mathsf{true})&j=i,\\s(j)&j\ne i,\end{cases}
+ \qquad
+ \doop(s,(t,i,Z))(j)=(c_j,\mathsf{false}).
+\]
+For each row, merge retains Neem's ancestor subtraction and bit test:
+\[
+ c_m=c_a+c_b-c_l,\qquad
+ b_m=\begin{cases}
+ \mathsf{true}&b_a\land b_b,\\
+ \mathsf{false}&\neg b_a\land\neg b_b,\\
+ c_a>c_l&b_a\land\neg b_b,\\
+ c_b>c_l&\neg b_a\land b_b.
+ \end{cases}
+\]
+The source operation names, initial rows, public query and policy are
+\[
+\begin{array}{c|c|c|c|c|c}
+ &W&Z&s_0(i)&\F{read}(s)&\rcrel\\\hline
+ \text{enable-wins}&\F{enable}&\F{disable}&(0,\mathsf{false})&
+   \exists i.\ b_i&\F{disable}\to\F{enable}\\
+ \text{disable-wins}&\F{disable}&\F{enable}&(0,\mathsf{true})&
+   \neg\exists i.\ b_i&\F{enable}\to\F{disable}
+\end{array}
+\]
+Neem's F* application files specify updates and merge but no read operation.
+The enable-wins query follows the paper's surviving-enable interpretation;
+the disable-wins query is its Boolean dual. Both resulting public flags start
+false. The independent sequential state is a Boolean $v$, initially false,
+with $v\xrightarrow{\F{enable}}\mathsf{true}$,
+$v\xrightarrow{\F{disable}}\mathsf{false}$, and read returning $v$.
+All operations are issuable; execution still serializes each replica's updates.
+
+The proof represents each counter by its number of winning events. A row bit
+is true when a winning event from that replica survives every visible reset,
+or when its initially true bit has encountered no reset. Full causal metadata
+retains the single-writer prefixes. The source merge equations are proved from
+this representation; the implementation remains the displayed ternary merge.
+Both flags have checked five-VC certificates and independent Boolean-history
+bridges for ordinary and recursive-merge executions. The dependency audit
+checks that both public certificates consume the five VCs and generic merge
+induction; nine PASS+FAIL examples exercise the actual Lean definitions.
+\end{example}

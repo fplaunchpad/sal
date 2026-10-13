@@ -233,6 +233,17 @@ and serialized issuance per replica are explicit. Ten Lean PASS+FAIL controls an
 exercise the design. The old independent-account instance and additive-budget
 alternative are separate implementations, not substitutes for this result.
 
+Neem's corrected **enable-wins and disable-wins flags** are also verified.
+Their per-replica integer-counter/bit implementation shares a
+[five-VC proof](Sal/MRDTs/Paper1/EnableWinsFlagVC.lean); both have independent
+Boolean sequential specifications and ordinary/recursive execution certificates.
+The [audit](Sal/MRDTs/Paper1/NeemFlagAudit.lean) checks both theorem dependencies
+and 321 declarations. Nine Lean PASS+FAIL examples and exhaustive small-trace
+controls cover both polarities and distinguish the older scalar-flag bug.
+Neem's source omits queries; we explicitly supply the surviving-enable query
+and its disable-wins dual. These additional cases are not yet measured in the
+automation effort tables.
+
 `GSet`'s alias module has been removed: the single mathematical grow-only-set
 implementation is `AddStore`, with one coverage entry. `FinsetStore` and
 `FlatGrowOnly` provide enumerable and Boolean representations of the same abstract
