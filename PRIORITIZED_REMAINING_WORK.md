@@ -6,7 +6,7 @@ anonymous long-form working papers under `docs/`.
 
 ## Paper1: specialize the framework to the submission formalism
 
-Manuscript comparison refreshed against fetched Overleaf `d3ad6ff`
+Manuscript comparison refreshed against fetched Overleaf `179d763`
 (13 October 2026). See [remaining paper changes](docs/paper1-formalism-reconciliation.md).
 The older PDF and manuscript patch retain their explicitly labelled `0450d48`
 baseline. The canonical five-VC equations already match; certified coverage
@@ -58,13 +58,22 @@ history is retained independently.
 
 ### Required: reconcile bounded-counter coverage with the paper
 
-The current `BoundedCounter` on both main and paper1 provides independent
-nonnegative replica accounts; it does not establish a transferable bounded
-counter. Do not present it as the paper's intended bounded counter. The local
-manuscript `d3ad6ff` contains no definition; Bismuth's reference implementation
-has reservation, allocation and transfer. Confirm the intended source, then
-implement and prove the matching datatype and independent sequential spec.
-This is a coverage gap to resolve, not an optional enhancement to claim as done.
+The current `BoundedCounter` provides independent nonnegative replica accounts.
+The additional proved transferable-budget candidate uses aggregate accounting
+and additive three-way merge. Neither is a port of the published bounded counter.
+
+KC selected the published paper as the design source: Balegas et al.,
+[Extending Eventually Consistent Cloud Databases for Enforcing Numeric Invariants](https://asc.di.fct.unl.pt/~nmp/pubs/srds-2015.pdf),
+SRDS 2015, §III-B and Figure 1; its companion technical report supplies the
+single-writer/rights-conservatism argument. Use the transfer matrix `R[i,j]`,
+consumption vector `U[i]`, increment/decrement/transfer API, scalar value query
+and local-rights query, with componentwise-max merge. The original paper model
+is state-based; embedding its binary merge as an ancestor-ignoring ternary merge
+is a proposed Sal port, not yet a proved five-VC result. Preserve serialized
+per-replica issuance and sufficient local rights. Make nonnegative amounts and
+transfer to another replica explicit, consistent with monotonic counters and
+the prose. Keep client scalar semantics separate from any local-rights query
+contract. The Bismuth code is secondary evidence, not the design authority.
 
 The source audit identified Bismuth commit `dd4c614adf03e57911630a4b73936a818a3d0860`,
 `Modules/RDTs/src/main/scala/rdts/experiments/BoundedCounter.scala`. Its
@@ -79,7 +88,7 @@ Research question: can additive three-way transfer accounting retain all five
 merge VCs and prove the independent rights-conserving account specification
 under the original issuance evidence? The corrected candidate uses nonnegative
 amounts and prepares rebalance into an explicit transfer. Its source correspondence
-is intentionally partial; the intended manuscript counter remains unidentified.
+is intentionally partial; the published matrix-based target is now identified and differs from this candidate.
 The candidate now has checked five-VC, independent issued-history and global
 budget certificates for ordinary and recursive-virtual executions. Every stored
 version has nonnegative balances and allocations, total allocation at most the
@@ -88,11 +97,13 @@ finite support containing all allocations. Its dependency audit checks the five
 VCs and merge induction and standard logical axioms across 552 declarations.
 Positive/negative controls cover shared-recipient transfers, overspending,
 negative requests, membership union and prepared rebalance. This completes the
-labelled candidate experiment; manuscript correspondence remains the separate
+labelled candidate experiment; the published-design port remains the separate
 open item below.
 
-- [ ] Identify the intended bounded-counter definition with KC.
-- [ ] Port its full API and prove the five VCs plus sequential-history bridge.
+- [x] Select the published bounded-counter paper as the design source with KC.
+- [ ] Port the published matrix-based counter and its full API, then prove the
+  five VCs, independent sequential-history bridge and bound preservation. Do
+  not substitute the already proved additive-budget candidate for this task.
 - [x] Label the current Site entry as independent nonnegative replica accounts.
 - [x] Correct the Site typography: readable body, source text and declaration
   names without progressively shrinking sizes.

@@ -28,7 +28,7 @@ bridge. The ordinary OR-set has unrestricted payload correctness through the new
 VC route; Embedded RGA uses that merge route with certified representation and
 an exact selected-history bridge. The [earlier manuscript patch](docs/paper1-manuscript-reconciliation.patch)
 targets Overleaf `0450d48`; it must not be applied wholesale to the current
-`d3ad6ff` manuscript. The revision note above records the remaining differences.
+`179d763` manuscript. The revision note above records the remaining differences.
 
 The paper-facing policy now uses Kartik's split formulation: `rc-non-comm`
 for distinct operation payloads, plus equal-payload self-commutation.
@@ -211,7 +211,8 @@ It supports participant updates, allocation, transfer, prepared rebalance and
 available/reserved/allocated queries. Its independent balance specification
 requires funds before a debit; all allocations together remain within the
 initial capacity. This candidate is outside the original 23-case inventory and
-is not yet identified with the paper's intended bounded counter. The older
+differs from the published matrix-based bounded counter of Balegas et al.;
+that published algorithm is now the design target and remains to be ported. The older
 `BoundedCounter` provides independent nonnegative replica accounts.
 The [Bismuth source model](Sal/MRDTs/Paper1/TransferableBoundedCounterEvent.lean)
 has checked shared-recipient credit loss under pointwise-max merge; the corrected
