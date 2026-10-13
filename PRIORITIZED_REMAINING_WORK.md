@@ -72,7 +72,7 @@ KC requested one datatype and no redundant alias module. Remove `GSet` (the
 present one grow-only-set entry. Audit coverage counts and source links;
 representation variants must not be reported as independent datatype results.
 
-### Checked: published bounded-counter proofs; publication finishing
+### Checked and published: Balegas bounded counter
 
 The current `BoundedCounter` provides independent nonnegative replica accounts.
 The additional proved transferable-budget candidate uses aggregate accounting
@@ -135,6 +135,14 @@ VCs and merge induction and standard logical axioms across 552 declarations.
 Positive/negative controls cover shared-recipient transfers, overspending,
 negative requests, membership union and prepared rebalance. This completes the
 labelled candidate experiment; the published-design port now has its own checked proof package.
+
+Publication and verification: commit `f67aea8` is pushed to `paper1`.
+The full gate passed (3,657 Lean jobs, 187 runtime tests, 569 benchmark records).
+The formal reference has 116 resolved declaration anchors and a visually checked
+26-page PDF; Example 6.8 states the published counter. Public Site version 7,
+source `af23b69bfcdf4aa468f9bb1dd11a4b54fb10bf7d`, is deployed with the
+matrix/max counter and grouped grow-only-set representation variants. Its 990
+LaTeX expressions pass rendering checks. Unrelated GC files were excluded.
 
 - [x] Select the published bounded-counter paper as the design source with KC.
 - [x] Port the published matrix-based counter and its full API, then prove the
