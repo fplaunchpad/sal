@@ -64,20 +64,20 @@ abbrev policy := emptyPolicy BCOp
 abbrev laws : RestrictedLaws BC.toUpdateSig policy := emptyLaws BC_all_comm
 
 theorem join : @Join BC policy.lift := by
-  simpa [policy, emptyPolicy, OperationPolicy.lift, ReplayPolicy.default,
-    ReplayPolicy.unconstrained] using
+  simpa [policy, emptyPolicy, OperationPolicy.lift, EventOrder.default,
+    EventOrder.unconstrained] using
     JoinProof.ofArbitraryStateLaws BC_mergeLaws BC_deltaLaws
       (causalDeltaLaw_of_all_comm BC_mergeLaws BC_commutingPeelLaw BC_all_comm)
 
 /-- Every allocated version has a legal full-input history preserving all
 visibility edges. Mint provenance and issuer guards remain explicit. -/
 theorem certifiedV : EventCertifiedSpecificationRAV BC policy spec generation := by
-  letI : ReplayPolicy BC.toUpdateSig := policy.lift
+  letI : EventOrder BC.toUpdateSig := policy.lift
   intro C reach
   have hG := canonicalConfig_of_mintCertifiedV (fun _ _ => join _) reach
-  have hCC := causalCanonical_of_all_comm_rc_either BC_all_comm
+  have hCC := causalCanonical_of_all_comm_replayOrder_either BC_all_comm
     (fun _ _ => by
-      change (policy.lift (D := BC.toUpdateSig)).order _ _ = RcRes.Either
+      change (policy.lift (D := BC.toUpdateSig)).order _ _ = OrderResult.Either
       simp [policy, emptyPolicy, OperationPolicy.lift]) hG
   intro v s E hv q
   obtain ⟨ops,hperm,hvis,_,hfold⟩ := hCC v s E hv

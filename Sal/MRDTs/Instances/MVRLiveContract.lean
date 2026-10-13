@@ -3,14 +3,14 @@ import Sal.MRDTs.Instances.MVRLiveCertified
 namespace Sal.MRDTs.Instances.MVRLive
 open Sal.MRDTs.Foundation
 open Classical
-local instance : ReplayPolicy D.toUpdateSig := rc
+local instance : EventOrder D.toUpdateSig := replayOrder
 set_option maxHeartbeats 1000000
 
-theorem rc_iff_overwrite_of_execution {C : Configuration D}
+theorem replayOrder_iff_overwrite_of_execution {C : Configuration D}
     (exec : CertifiedExecution D issuance C) {a b : Event} (hb : b ∈ C.events) :
-    D.toUpdateSig.rc a b ↔ a.1 ∈ MVR.overwrites b := by
-  rw [show D.toUpdateSig.rc a b ↔ a.1 < b.1 ∧ a.1 ∈ MVR.overwrites b from
-    MVR.rc_before_iff a b]
+    D.toUpdateSig.replayBefore a b ↔ a.1 ∈ MVR.overwrites b := by
+  rw [show D.toUpdateSig.replayBefore a b ↔ a.1 < b.1 ∧ a.1 ∈ MVR.overwrites b from
+    MVR.replayOrder_before_iff a b]
   exact ⟨And.right,fun h => ⟨issued_overwrite_lt exec.mintHonest hb h,h⟩⟩
 
 theorem replay_legal {C : Configuration D}
@@ -34,10 +34,10 @@ theorem replay_legal {C : Configuration D}
   · rw [hsplit] at hr
     have hnlo := (List.pairwise_cons.mp (List.pairwise_append.mp hr).2.1).1 a ha
     apply (hnlo _).elim
-    exact Or.inl ⟨hv,Or.inl ((MVR.rc_before_iff a e).mpr
+    exact Or.inl ⟨hv,Or.inl ((MVR.replayOrder_before_iff a e).mpr
       ⟨C.causal_mono hv,ht ▸ hn⟩)⟩
 
-noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D issuance rc spec Eq where
+noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D issuance replayOrder spec Eq where
   sound C exec replay := by
     obtain ⟨hG,hR⟩ := represented_of_execution exec
     intro v s E hver
@@ -53,7 +53,7 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D iss
 
 noncomputable def verified : VerifiedMRDT D where
   issuance := issuance
-  rc := rc
+  replayOrder := replayOrder
   replayAdequacy := replayAdequacy
   Spec := spec
   Rel := Eq
@@ -120,7 +120,7 @@ theorem version_maximal {C : Configuration D}
     exact hmax c hc hvis
 
 theorem mvr_correct {C : Configuration D} (exec : CertifiedExecution D issuance C) :
-    IsSpecLinearizable D rc spec Eq C ∧
+    IsSpecLinearizable D replayOrder spec Eq C ∧
     (∀ v (s : State) E, C.ver v = some (s,E) → ∀ p : ℕ × ℕ,
       p ∈ s ↔ ∃ a ∈ E, a.1 = p.1 ∧ MVR.writeValue a = p.2 ∧ ∀ b ∈ E, ¬ C.vis a b) := by
   refine ⟨?_,fun _ _ _ hv p => version_maximal exec hv p⟩

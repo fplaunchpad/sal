@@ -91,7 +91,7 @@ theorem canonical_respects_invariant {Γ : OrderedPrefixCode}
   rcases edge with ⟨vis,nc⟩ | ⟨_,_,before,_⟩
   · apply ordered
     apply Or.inl
-    refine ⟨vis, (sidedRc_noncomm Γ b a).mpr ?_⟩
+    refine ⟨vis, (sidedOrder_noncomm Γ b a).mpr ?_⟩
     exact fun independent => nc (swaps b hbC a haC independent)
   · exact before
 

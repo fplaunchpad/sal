@@ -2,7 +2,7 @@
 
 namespace Sal.MRDTs.Instances
 
-theorem bor_rc (a b c : Bool) : ((a || b) || c) = ((a || c) || b) := by
+theorem bor_replayOrder (a b c : Bool) : ((a || b) || c) = ((a || c) || b) := by
   cases a <;> cases b <;> cases c <;> rfl
 
 theorem bor_comm (l a b : Bool) : (l || (a || b)) = (l || (b || a)) := by

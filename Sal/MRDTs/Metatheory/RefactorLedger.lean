@@ -70,7 +70,7 @@ namespace Sal.MRDTs
 #check SafetyCertificate.preservation
 #check SequentialRefinement
 #check SequentialSpec
-#check Foundation.ReplayPolicy
+#check Foundation.EventOrder
 #check Foundation.loOn
 #check ReplayAdequacyCertificate
 #check ReplayAdequacyCertificate.sound
@@ -127,10 +127,10 @@ namespace Sal.MRDTs
 #check Instances.BoundedCounter.versions_safeV
 #check Instances.BoundedCounter.sequential
 #check Instances.BoundedCounter.verified
-#check Instances.LWWRegister.rc
+#check Instances.LWWRegister.replayOrder
 #check Instances.LWWRegister.replayLaws
 #check Instances.LWWRegister.ordered_updates_commute
-#check Instances.LWWRegister.concrete_noncomm_iff_rc_refuted
+#check Instances.LWWRegister.concrete_noncomm_iff_replayOrder_refuted
 #check Instances.LWWRegister.reversed_assignments_wrong_winner
 #check Instances.LWWRegister.canonical_respects
 #check Instances.LWWRegister.verified
@@ -142,8 +142,8 @@ namespace Sal.MRDTs
 #check Instances.RGA.birthGraveSound
 #check Instances.RGA.verified
 #check Instances.RGA.listSpec
-#check Instances.RGA.rc
-#check Instances.RGA.canonical_respects_rc
+#check Instances.RGA.replayOrder
+#check Instances.RGA.canonical_respects_replayOrder
 #check Instances.RGA.rga_spec_linearizable
 #check Instances.RGA.rga_spec_linearizableV
 #check Instances.RGA.ConditioningSPOT.invalid_delete_not_list_legal
@@ -225,7 +225,7 @@ namespace Sal.MRDTs
 #check Instances.SidedEmbedRGA.fuguemax_forward_ni
 #check Instances.SidedEmbedRGA.fuguemax_backward_ni
 #check Instances.SidedEmbedRGA.fuguemax_maximally_noninterleaving
-#check Instances.Queue.rc
+#check Instances.Queue.replayOrder
 #check Instances.Queue.q_join_at
 #check Instances.Queue.replayAdequacy
 #check Instances.Queue.queue_replay_witness
@@ -241,7 +241,7 @@ namespace Sal.MRDTs
 #check Instances.Queue.ContractSPOT.lo_eq_loOn
 #check Instances.Queue.ContractSPOT.extra_pop_rejected
 #check Instances.Queue.ContractSPOT.fork_duplicate_witness
-#check Instances.SidedEmbedRGA.fRcOrder
+#check Instances.SidedEmbedRGA.fEventOrder
 #check Instances.SidedEmbedRGA.fmReplayAdequacy
 #check Instances.SidedEmbedRGA.fuguemax_replay_witness
 #check Instances.SidedEmbedRGA.FugueMax.insertion_issuance_exact

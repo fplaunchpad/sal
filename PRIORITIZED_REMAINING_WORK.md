@@ -12,12 +12,53 @@ The older PDF and manuscript patch retain their explicitly labelled `0450d48`
 baseline. The canonical five-VC equations already match; certified coverage
 and the listed definition/bridge corrections remain manuscript work.
 
-### Deferred: distinct-operation guard experiment
+### Checked: clarify conflict policy and replay ordering
 
-Keep the existing `rc-non-comm` guards for the submission. The alternative
-and its full scoped-bridge counterexample are saved on
-`research/rc-non-comm-operation-guard` at `93fc631`. Production laws were never
-changed. Revisit only with an explicit plan for the sequential bridge.
+- [x] Reserve `rc` for the paper's operation-level conflict relation and its
+  event lift. Rename independently supplied event-ordering APIs in Lean and
+  update their consumers without changing semantics.
+- [x] Align the formal reference and reconciliation note with that distinction;
+  retain Kartik's split exactness/self-commutation formulation and its domains.
+- [x] Present only the selected paper policy in the datatype Site. Put sequential
+  admission guards beside transitions for all 23 cases; make conjunctions explicit.
+- [x] Review the combined changes, build the theorem ledger, and run the
+  repository gate before any Sal push.
+
+The rename passed `scripts/check-mrdt-refactor.sh` on 13 October: production
+Lean ledgers, 187 runtime tests and 569 benchmark records. Independent comparison
+of 125 changed Lean files found only identifier/comment changes.
+
+### Active submission campaign
+
+- [ ] Integrate the proved split-law interfaces and check all 23 certificates.
+- [ ] Trace and mechanize a labelled transferable-counter candidate, including
+  its independent sequential specification and five-VC/bridge proof attempts.
+- [ ] Reconcile submission coverage claims across README, formal reference and Site.
+- [ ] Run final gates, commit and push completed work without unrelated GC edits.
+
+Kartik's split-law equivalences and 23-case audit are committed locally on
+`research/rc-non-comm-operation-guard` at `47f943f`, with the agreed paper
+presentation recorded at `f9712d6`. GitHub was checked on 13 October: the remote
+research branch remains at `93fc631`, and `paper1` remains at `46e353e`.
+The adapters are not integrated into `paper1`; the formal-reference update is
+currently local. Publishing/integrating the research changes must be reported
+separately from this semantics-preserving naming cleanup.
+
+### Required: reconcile bounded-counter coverage with the paper
+
+The current `BoundedCounter` on both main and paper1 provides independent
+nonnegative replica accounts; it does not establish a transferable bounded
+counter. Do not present it as the paper's intended bounded counter. The local
+manuscript `d3ad6ff` contains no definition; Bismuth's reference implementation
+has reservation, allocation and transfer. Confirm the intended source, then
+implement and prove the matching datatype and independent sequential spec.
+This is a coverage gap to resolve, not an optional enhancement to claim as done.
+
+- [ ] Identify the intended bounded-counter definition with KC.
+- [ ] Port its full API and prove the five VCs plus sequential-history bridge.
+- [x] Label the current Site entry as independent nonnegative replica accounts.
+- [x] Correct the Site typography: readable body, source text and declaration
+  names without progressively shrinking sizes.
 
 ### Checked: structural invariants from certification
 

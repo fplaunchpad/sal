@@ -39,6 +39,13 @@ Concrete raw commutation is
 \]
 \end{definition}
 These are relations on full events, even though $\rcrel$ acts on payloads.
+Throughout this reference, $\rcrel$ denotes only that operation relation or
+its payload-only event lift. The generic Lean framework also accepts an
+independently supplied \emph{event replay order}, which can inspect timestamps
+and replica IDs. That interface is named \texttt{EventOrder}, with directed
+predicate \texttt{replayBefore}; it is not another definition of $\rcrel$.
+The paper1 certificates use the operation policy explicitly stated in their
+hypotheses. A separate event replay order cannot be substituted silently.
 
 
 \subsection{RA-Linearizability for MRDTs}
@@ -137,16 +144,24 @@ insertion identities.
 
 \begin{definition}[Globally guarded replay laws]
 \label{def:guards}
-The paper calls its three replay assumptions \textsc{rc-non-comm},
-\textsc{no-rc-chain}, and \textsc{cond-comm}. The checked guarded
-full-event counterpart requires:
+The replay assumptions are \textsc{rc-non-comm}, self-commutation,
+\textsc{no-rc-chain}, and \textsc{cond-comm}. Write
+$G_{\mathrm{raw}}(a,b)\equiv a.t\ne b.t\land a.r\ne b.r$ for the raw event guard.
+The first two clauses split on equality of operation payloads, including
+all operation arguments:
 \begin{align*}
-&a.t\ne b.t\ \land\ a.r\ne b.r
- \quad\Longrightarrow\quad
- (\neg(a\comm b)\ \Longleftrightarrow\ a\xrightarrow{\rcrel}b\lor b\xrightarrow{\rcrel}a),\\
-&a.t\ne b.t\ \land\ b.t\ne c.t
- \quad\Longrightarrow\quad \neg(a\xrightarrow{\rcrel}b\land b\xrightarrow{\rcrel}c).
+&G_{\mathrm{raw}}(a,b)\land a.o\ne b.o\quad\Longrightarrow\\[-3pt]
+&\qquad\bigl(\neg(a\comm b)\ \Longleftrightarrow\
+ a\xrightarrow{\rcrel}b\lor b\xrightarrow{\rcrel}a\bigr)
+ &&\text{(\textsc{rc-non-comm})},\\
+&G_{\mathrm{raw}}(a,b)\land a.o=b.o\quad\Longrightarrow\quad a\comm b
+ &&\text{(self-commutation)}.
 \end{align*}
+No-chain retains its timestamp guards:
+\[
+ a.t\ne b.t\land b.t\ne c.t\quad\Longrightarrow\quad
+ \neg(a\xrightarrow{\rcrel}b\land b\xrightarrow{\rcrel}c).
+\]
 For every $s\in\Sigma$, intervening event list $\beta$, and $a,b,c$ with
 pairwise distinct timestamps, it also requires
 \[
@@ -161,6 +176,12 @@ The no-chain clause allows $a=c$ when the two adjacent timestamp guards hold;
 therefore a payload self-edge is not rescued by external event freshness.
 These global equations quantify over arbitrary concrete scratch states and
 intervening lists. They are not the scoped laws below.
+The split is equivalent to the former combined exactness law on the same
+guarded domain: no-chain forbids a policy self-edge, so combined exactness
+implies equal-payload commutation; conversely, the two payload cases recover
+combined exactness. Self-commutation does not assert idempotence, nor does it
+compare arbitrary same-replica instances. For certified datatypes use the
+scoped formulation of Definition~\ref{def:scoped-laws}.
 
 \paragraph{The paper's criterion.}
 Let an active replica $r$ have head record $(\sigma,E)$ and let
@@ -267,19 +288,33 @@ They also require the concrete diamond
 $\doop(\doop(s,a),b)=\doop(\doop(s,b),a)$ whenever $R(H,s)$, both events are ready,
 $a\conc b$, and neither direction of
 $\operatorname{lo}^{C,I}_{F}$ orders them.
-The accompanying policy laws require
-\[
- \neg(a\mathrel{\comm_I} b)\Longleftrightarrow a\xrightarrow{\rcrel}b\lor b\xrightarrow{\rcrel}a
-\]
-only for $a,b\in F$ that are concurrent, have distinct timestamps, and come
-from different replicas. No-chain is required for $a,b,c\in F$ with
+The accompanying policy laws split into
+\begin{align*}
+ a.o\ne b.o&\quad\Longrightarrow\quad
+ \bigl(\neg(a\mathrel{\comm_I} b)\Longleftrightarrow
+ a\xrightarrow{\rcrel}b\lor b\xrightarrow{\rcrel}a\bigr),\\
+ a.o=b.o&\quad\Longrightarrow\quad a\mathrel{\comm_I}b.
+\end{align*}
+Both clauses quantify only over $a,b\in F$ that are concurrent, have distinct
+timestamps, and come from different replicas. Commutation here quantifies over
+\emph{every state satisfying $I$}, exactly as in
+Definition~\ref{def:invariant}. No-chain is required for $a,b,c\in F$ with
 $a.t\ne b.t$ and $b.t\ne c.t$, as in Definition~\ref{def:guards}.
 The package consists of both replay laws and policy laws.
 \end{definition}
 An alternative represented-prefix commutation test instead quantifies over represented
 prefixes where both events are ready. That definition is distinct from
 $\mathrel{\comm_I}$; replacing the latter by readiness would make causal-pair tests
-potentially vacuous.
+potentially vacuous. The same two-clause split applies to that alternative
+using its represented-prefix commutation relation throughout. In either
+formulation, no-chain makes the split equivalent to combined policy exactness.
+If $F\subseteq\mathcal E_C$, the supported configuration's freshness and
+per-replica visibility laws imply the metadata guards for distinct concurrent
+events. They can then be left implicit, but membership and concurrency cannot.
+Original issuance evidence restricts which events are eligible; state
+reachability alone does not supply that restriction. The concrete replay
+diamond above remains a separate obligation, as does the sequential-history
+bridge in Section~\ref{sec:history-bridge}.
 
 \begin{theorem}[Scoped implementation replay equality]
 \label{thm:scoped-replay}

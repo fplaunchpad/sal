@@ -136,7 +136,7 @@ theorem embedCanonical_respects_of {Γ : OrderedPrefixCode}
     {ops : List (Op (Sal.MRDTs.Instances.EmbedRGA.EOp α))}
     (hperm : listPermOf ops E) :
     respects (EmbedWitness.canonical ops)
-      (@loOn _ (embedRc Γ) C.replayContext E) := by
+      (@loOn _ (embedOrder Γ) C.replayContext E) := by
   open Sal.MRDTs.Instances.EmbedRGA in
     have hsub := hgood.version_events_supported v s E hver
     have hcan := EmbedWitness.canonical_listPermOf hperm
@@ -167,17 +167,17 @@ theorem embedCanonical_respects_of {Γ : OrderedPrefixCode}
               | ins bel bpref banchor =>
                   simp [EmbedWitness.LE, EmbedWitness.leBool] at hab
               | del target =>
-                  simpa [embedRc, ReplayPolicy.Before,
-                    Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy,
-                    Sal.MRDTs.Instances.EmbedRGA.eRcOrder,
+                  simpa [embedOrder, EventOrder.Before,
+                    Sal.MRDTs.Instances.EmbedRGA.EEventOrder,
+                    Sal.MRDTs.Instances.EmbedRGA.eEventOrder,
                     embedSemanticCommutes] using
                     hconflict
           | ins ael apref aanchor =>
               cases bop with
               | ins bel bpref banchor =>
-                  simpa [embedRc, ReplayPolicy.Before,
-                    Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy,
-                    Sal.MRDTs.Instances.EmbedRGA.eRcOrder,
+                  simpa [embedOrder, EventOrder.Before,
+                    Sal.MRDTs.Instances.EmbedRGA.EEventOrder,
+                    Sal.MRDTs.Instances.EmbedRGA.eEventOrder,
                     embedSemanticCommutes] using
                     hconflict
               | del target =>
@@ -185,7 +185,7 @@ theorem embedCanonical_respects_of {Γ : OrderedPrefixCode}
                     have hncBA : ¬ embedSemanticCommutes
                         (bt, br, .del target)
                         (ats, ar, .ins ael apref aanchor) := by
-                      exact (embedRc_noncomm Γ _ _).mp hconflict
+                      exact (embedOrder_noncomm Γ _ _).mp hconflict
                     have hnc : ¬ embedSemanticCommutes
                         (ats, ar, .ins ael apref aanchor)
                         (bt, br, .del target) := fun hcomm =>
@@ -200,7 +200,7 @@ theorem embedCanonical_respects_of {Γ : OrderedPrefixCode}
                   subst creator
                   exact hgood.vis_irrefl _
                     (hgood.vis_trans hcreatorVis hvba)
-        · exact (embedRc_not_before Γ _ _ hab) hrc.2.2.1
+        · exact (embedOrder_not_before Γ _ _ hab) hrc.2.2.1
 
 
 /-- A supplied stored causal replay yields the unchanged independent public
@@ -214,7 +214,7 @@ theorem embed_history_of_replay {Γ : OrderedPrefixCode}
     (hver : C.ver v = some (s,E)) {ops : List (Op (Sal.MRDTs.Instances.EmbedRGA.EOp α))}
     (hperm : listPermOf ops E) (hresp : respects ops C.vis)
     (hfold : Sal.MRDTs.Instances.EmbedRGA.eFold Γ ops = s) :
-    ∃ π, listPermOf π E ∧ respects π (@loOn _ (embedRc Γ) C.replayContext E) ∧
+    ∃ π, listPermOf π E ∧ respects π (@loOn _ (embedOrder Γ) C.replayContext E) ∧
       (embedClientSpec Γ).Legal π ∧ Sal.MRDTs.Instances.EmbedRGA.eFold Γ π = s ∧
       embedRel s ((embedClientSpec Γ).run π) ∧
       ∀ q, (Sal.MRDTs.Instances.EmbedRGA.E Γ α).query s q = (embedClientSpec Γ).query ((embedClientSpec Γ).run π) q := by
@@ -265,7 +265,7 @@ theorem sided_history_of_replay {Γ : OrderedPrefixCode}
     (hver : C.ver v = some (s,E)) {ops : List (Op (Sal.MRDTs.Instances.SidedEmbedRGA.SOp))}
     (hperm : listPermOf ops E) (hresp : respects ops C.vis)
     (hfold : Sal.MRDTs.Instances.SidedEmbedRGA.sFold Γ ops = s) :
-    ∃ π, listPermOf π E ∧ respects π (@loOn _ (sidedRc Γ) C.replayContext E) ∧
+    ∃ π, listPermOf π E ∧ respects π (@loOn _ (sidedOrder Γ) C.replayContext E) ∧
       (sidedClientSpec Γ).Legal π ∧ Sal.MRDTs.Instances.SidedEmbedRGA.sFold Γ π = s ∧
       sidedRel s ((sidedClientSpec Γ).run π) ∧
       ∀ q, (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ).query s q = (sidedClientSpec Γ).query ((sidedClientSpec Γ).run π) q := by

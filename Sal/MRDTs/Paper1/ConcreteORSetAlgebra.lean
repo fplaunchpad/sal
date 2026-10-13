@@ -112,7 +112,7 @@ theorem local_replay_eq (C : ReplayContext (D α).toUpdateSig)
       ((ConcreteMRDT.MetadataDependencies.ofConcrete C).Past e \ {e}) B)
     (other : representation C E₂ s) :
     merge l (merge B t (step B e)) s = merge B (merge l t s) (step B e) := by
-  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  letI : EventOrder (D α).toUpdateSig := (conflict α).lift
   have pastSub := (ConcreteMRDT.MetadataDependencies.ofConcrete C).past_subset
     E₁ e closed member
   have rawBase : @IsCanonicalState (D α).toUpdateSig policy C (E₁ ∩ E₂) l := by
@@ -216,8 +216,8 @@ theorem causal_replay_eq (C : ReplayContext (D α).toUpdateSig)
       have vis := removed_before C U (et,er,.remove x) a x rfl
         (by simpa only [Op.op,elem] using add) ha (by simpa only [elem] using alive) maximal
       have nc : ¬ (D α).toUpdateSig.commutes a (et,er,.remove x) :=
-        (noncomm_iff_rc a (et,er,.remove x)).mpr
-          (Or.inr ((rc_iff (et,er,.remove x) a).mpr ⟨x,rfl,by simpa [elem] using add⟩))
+        (noncomm_iff_replayOrder a (et,er,.remove x)).mpr
+          (Or.inr ((replayOrder_iff (et,er,.remove x) a).mpr ⟨x,rfl,by simpa [elem] using add⟩))
       apply (canonical_mem_iff rawPast p).mpr
       refine ⟨a,⟨Or.inr (.single ⟨vis,nc⟩),ha.2⟩,add,time,?_⟩
       rintro ⟨r,hr,visibility,remove⟩

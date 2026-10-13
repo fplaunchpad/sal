@@ -32,7 +32,7 @@ theorem history : EventExecutionHistoryAdequacy BC (commutingPolicy BC.AppOp)
     BoundedCounterEvent.spec generation := by
   intro C exec v s E hv q
   have good := CommutingPort.automatedCanonicalConfig BC_all_comm (by mrdt_verify) (virtual_reach exec)
-  have causal := causalCanonical_of_all_comm_rc_either BC_all_comm
+  have causal := causalCanonical_of_all_comm_replayOrder_either BC_all_comm
     (fun _ _ => rfl) good
   obtain ⟨ops,hperm,hvis,_,_⟩ := causal v s E hv
   have legal : SequentialHonest ops :=

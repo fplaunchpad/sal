@@ -8,14 +8,14 @@ Kamath, Nagar, Sivaramakrishnan; PLDI 2022), re-proved here. Enqueue mints a
 timestamped element; dequeue removes a **named** element, the head its issuer
 observed (the op carries the tag; the client API is unchanged, and the replica
 captures its generation context). The three-way merge first computes Peepul's
-survivor set and then sorts the result by the enqueue key selected by `rc`.
+survivor set and then sorts the result by the enqueue key selected by `replayOrder`.
 This normalization makes concurrent enqueue order independent of merge-operand
 position.
 
 Concurrent enqueues genuinely do not commute (queue order is arrival order)
-and they conflict with their own class, a clique. The former `no_rc_chain`
+and they conflict with their own class, a clique. The former `no_replayOrder_chain`
 contract therefore forced this instance out of the flat engine. The current
-`rc_acyclic` contract removes that particular obstruction: a total order may
+`replayOrder_acyclic` contract removes that particular obstruction: a total order may
 orient a clique acyclically. This file retains its independent route and proves
 the ternary **Join Lemma directly** (`q_join_at`): the canonical ordering of
 Peepul's survivor set is the linearization witness, and the framework's
@@ -151,7 +151,7 @@ theorem qEnqLTB_eq_true (a b : Op QOp) :
   cases ao <;> cases bo <;>
     simp [qEnqLTB, qEnqLt]
 
-def qRcOrder (a b : Op QOp) : RcRes :=
+def qEventOrder (a b : Op QOp) : OrderResult :=
   match a.2.2, b.2.2 with
   | .enq _, .enq _ =>
       if qEnqLTB a b then .Fst_then_snd
@@ -162,12 +162,12 @@ def qRcOrder (a b : Op QOp) : RcRes :=
       if b.1 = target then .Snd_then_fst else .Either
   | .deq _, .deq _ => .Either
 
-/-- Queue resolve-conflict policy: enqueue/enqueue conflicts use enqueue-key
+/-- Queue event replay order: enqueue/enqueue conflicts use enqueue-key
 order, and an enqueue precedes a dequeue of its tag. -/
-def rc : ReplayPolicy Q.toUpdateSig where
-  order := qRcOrder
+def replayOrder : EventOrder Q.toUpdateSig where
+  order := qEventOrder
 
-instance QReplayPolicy : ReplayPolicy Q.toUpdateSig := rc
+instance QEventOrder : EventOrder Q.toUpdateSig := replayOrder
 
 /-! ## §2  Event helpers -/
 
@@ -188,7 +188,7 @@ def qVal (e : Op QOp) : ℕ :=
   | .deq _ => 0
 
 /-- Canonical replay order: enqueues precede dequeues; enqueues use the same
-key order as `rc`; dequeue order is immaterial. -/
+key order as `replayOrder`; dequeue order is immaterial. -/
 def qWitnessLEB (a b : Op QOp) : Bool :=
   match a.2.2, b.2.2 with
   | .enq av, .enq bv => qEntryLEB (a.1, av) (b.1, bv)
@@ -215,7 +215,7 @@ theorem qCanonical_ordered (ops : List (Op QOp)) :
     (qCanonical ops).Pairwise QWitnessLE := by
   unfold qCanonical QWitnessLE
   apply List.pairwise_mergeSort
-  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, rc', oc⟩ hab hbc
+  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, replayOrder', oc⟩ hab hbc
     cases oa <;> cases ob <;> cases oc <;>
       simp [qWitnessLEB, qEntryLEB_eq_true] at *
     exact qEntryLE_trans hab hbc
@@ -423,7 +423,7 @@ def QHonestCore (C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig) : Prop :=
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = t ∧ ∃ v, a.2.2 = QOp.enq v
 
 /-- Queue replay additionally uses Lamport monotonicity to reconcile visible
-enqueue/enqueue conflicts with the timestamp-directed `rc`. -/
+enqueue/enqueue conflicts with the timestamp-directed `replayOrder`. -/
 def QGoodCore (C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig) : Prop :=
   QHonestCore C ∧ ∀ {a b}, C.vis a b → a.1 < b.1
 
@@ -509,9 +509,9 @@ theorem q_wf_of_enum (hHon : QHonestCore C)
         | deq t =>
             simp [qTag] at ha't
             subst t
-            change qRcOrder (ats, ar, QOp.enq v) (dts, dr, QOp.deq ats) =
-              RcRes.Fst_then_snd
-            simp [qRcOrder]
+            change qEventOrder (ats, ar, QOp.enq v) (dts, dr, QOp.deq ats) =
+              OrderResult.Fst_then_snd
+            simp [qEventOrder]
 
 /-! ## §6  The Join: Peepul's merge is the linearization witness -/
 
@@ -649,11 +649,11 @@ theorem qCanonical_respects (hGood : QGoodCore C)
                   (hGood.2 hvis.1)
               · have hlt : qEnqLt (bts, br, .enq bv) (ats, ar, .enq av) := by
                   have hbefore := hrc.2.2.1
-                  change qRcOrder (bts, br, .enq bv) (ats, ar, .enq av) =
+                  change qEventOrder (bts, br, .enq bv) (ats, ar, .enq av) =
                     .Fst_then_snd at hbefore
                   by_cases hltB : qEnqLTB (bts, br, .enq bv) (ats, ar, .enq av) = true
                   · exact (qEnqLTB_eq_true _ _).mp hltB
-                  · simp [qRcOrder, hltB] at hbefore
+                  · simp [qEventOrder, hltB] at hbefore
                     split at hbefore <;> contradiction
                 change bts < ats ∨ (bts = ats ∧ bv < av) at hlt
                 change ats < bts ∨ (ats = bts ∧ av ≤ bv) at hle
@@ -667,12 +667,12 @@ theorem qCanonical_respects (hGood : QGoodCore C)
           | deq target =>
               rcases hba with hvis | hrc
               · rcases hvis.2 with hback | hforward
-                · change (if ats = target then RcRes.Snd_then_fst else RcRes.Either) =
-                    RcRes.Fst_then_snd at hback
+                · change (if ats = target then OrderResult.Snd_then_fst else OrderResult.Either) =
+                    OrderResult.Fst_then_snd at hback
                   split at hback <;> contradiction
                 · have hat : ats = target := by
-                    simpa [UpdateSig.rc, ReplayPolicy.Before, rc, QReplayPolicy,
-                      qRcOrder] using hforward
+                    simpa [UpdateSig.replayBefore, EventOrder.Before, replayOrder, QEventOrder,
+                      qEventOrder] using hforward
                   obtain ⟨c, hc, hcb, hct, _⟩ :=
                     hGood.1 (bts, br, .deq target) hbC target rfl
                   have hca : c = (ats, ar, .enq av) :=
@@ -681,19 +681,19 @@ theorem qCanonical_respects (hGood : QGoodCore C)
                     simpa [hca] using hcb
                   exact (Nat.lt_asymm (hGood.2 habvis) (hGood.2 hvis.1))
               · have hbefore := hrc.2.2.1
-                change (if ats = target then RcRes.Snd_then_fst else RcRes.Either) =
-                  RcRes.Fst_then_snd at hbefore
+                change (if ats = target then OrderResult.Snd_then_fst else OrderResult.Either) =
+                  OrderResult.Fst_then_snd at hbefore
                 split at hbefore <;> contradiction
       | deq atarget =>
           cases bop with
           | enq bv => simp [QWitnessLE, qWitnessLEB] at hab
           | deq btarget =>
-              simp [loOn, UpdateSig.rc, ReplayPolicy.Before, rc, QReplayPolicy,
-                qRcOrder] at hba
+              simp [loOn, UpdateSig.replayBefore, EventOrder.Before, replayOrder, QEventOrder,
+                qEventOrder] at hba
 
 open LabeledTS in
 /-- **The queue's ternary Join Lemma.** Peepul's survivor calculation is
-normalized by the queue `rc`; the witness is the corresponding canonical
+normalized by the queue `replayOrder`; the witness is the corresponding canonical
 ordering of the union event set. -/
 theorem q_join_at (hGood : QGoodCore C) : JoinAt Q C := by
   intro ev₁ ev₂ s₀ s₁ s₂ htr hir hin₁ hin₂ hcl₁ hcl₂ h₀ h₁ h₂

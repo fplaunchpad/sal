@@ -22,3 +22,11 @@ and emits a check for every listed declaration. Repository gates additionally bu
 and audit the theorem ledger. When changing statements or numbering, update
 [the manuscript reconciliation note](../paper1-formalism-reconciliation.md),
 rebuild the PDF, and inspect its rendered pages.
+
+The 13 October revision adopts Kartik's split formulation in Definitions 4.5
+and 4.8: operation-distinct `rc-non-comm` plus equal-operation self-commutation,
+with the same eligible-event and state domains. The equivalence adapters were
+checked on `research/rc-non-comm-operation-guard` at `47f943f`; they are not yet
+integrated into `paper1`. The source appendix continues to identify the
+equivalent combined production interfaces. The remaining manuscript mapping
+retains the October 8 baseline.

@@ -25,7 +25,7 @@
 \newcommand{\merge}{\mathsf{merge}}
 \newcommand{\query}{\mathsf{query}}
 \newcommand{\vis}{\mathrel{\mathsf{vis}}}
-\newcommand{\rc}{\mathrel{\xrightarrow{\mathsf{rc}}}}
+\newcommand{\ord}{\mathrel{\xrightarrow{\mathsf{ord}}}}
 \newcommand{\loOn}{\mathsf{loOn}}
 \newcommand{\lo}{\mathsf{lo}}
 \newcommand{\Can}{\mathsf{Canonical}}
@@ -116,7 +116,7 @@ sufficient replay laws, which also make its fold unique. & Sections~4--5\\
 Merge preservation & An all-context or restricted merge theorem preserves
 a canonical state at a merge step. Execution invariants provide another
 proof route. & Section~6\\
-Client correctness & Issuance, one visibility-plus-$rc$ order, an independent
+Client correctness & Issuance, one visibility-plus-$ord$ order, an independent
 sequential machine, and a representation relation turn internal replay into
 observable sequential correctness. & Section~7\\
 Virtual bases & A recursive fold over maximal common ancestors constructs the
@@ -274,11 +274,16 @@ implementation state, from every starting state:
  \doop(\doop(s,e_1),e_2)=\doop(\doop(s,e_2),e_1).
 \]
 
-A replay policy $P$ determines a directed relation on events, written
-$e_1\rc e_2$: replay $e_1$ before $e_2$ to resolve their conflict.
+The notation $\mathsf{ord}$ denotes an independently selected full-event
+replay order. The submission manuscript reserves $rc$ for its
+operation-level conflict relation and event lift. An \lean{EventOrder}
+may inspect event metadata and is not required to be that lift.
+
+An event replay order $P$ determines a directed relation on events, written
+$e_1\ord e_2$: replay $e_1$ before $e_2$ to resolve their conflict.
 Lean represents the policy by a resolver with results
 \lean{Fst\_then\_snd}, \lean{Snd\_then\_fst}, and \lean{Either};
-the directed relation is precisely \lean{ReplayPolicy.Before}, which tests
+the directed relation is precisely \lean{EventOrder.Before}, which tests
 for \lean{Fst\_then\_snd}. The theory tests the reverse edge on the reversed
 pair. The carrier alone does not guarantee that a \lean{Snd\_then\_fst}
 verdict agrees with that reverse test.
@@ -289,14 +294,14 @@ retain the maximum timestamp and commute. The default policy returns
 $\mathsf{Either}$. Each public package selects one such policy. The sequential
 legality predicate may impose additional constraints on the witness list;
 these must also be stated in the datatype's contract.
-Section~\ref{sec:rc-order} derives its set-relative client relation once
+Section~\ref{sec:ord-order} derives its set-relative client relation once
 replay contexts have supplied visibility and the finite event set. Finite
 replay, commutation, and the policy are factored through the merge-free
 projection of $D$.
 \anchor{Sal/MRDTs/Framework/Base/UpdateSignature.lean}
-  {Foundation.UpdateSig.commutes, Foundation.RcRes,
-   Foundation.ReplayPolicy, Foundation.ReplayPolicy.Before,
-   Foundation.UpdateSig.rc}
+  {Foundation.UpdateSig.commutes, Foundation.OrderResult,
+   Foundation.EventOrder, Foundation.EventOrder.Before,
+   Foundation.UpdateSig.\allowbreak replayBefore}
 \anchor{Sal/MRDTs/Metatheory/ProductionLedger.lean}{Production.registry}
 
 \section{Version-DAG operational semantics}
@@ -631,30 +636,30 @@ MRDT configuration. The projection preserves the active event universe:
   {Foundation.ReplayContext}
 \anchor{Sal/MRDTs/Framework/Execution.lean}{Configuration.replayContext}
 
-\subsection{Resolve-conflict relation and set-relative linearization}
+\subsection{Replay-order relation and set-relative linearization}
 
-Fix a replay policy $P$ and its directed relation $rc$ as defined in Section~2.
+Fix an event replay order $P$ and its directed relation $ord$ as defined in Section~2.
 The relation expresses the datatype's resolution policy independently
 of its implementation. For concurrent LWW writes with distinct timestamps,
 \[
- a\rc b\Longleftrightarrow \mathsf{time}(a)<\mathsf{time}(b).
+ a\ord b\Longleftrightarrow \mathsf{time}(a)<\mathsf{time}(b).
 \]
 The implementation retains the maximum timestamp regardless of delivery
 order; an ordinary overwrite replay places the smaller timestamp first.
 
-\label{sec:rc-order}
+\label{sec:ord-order}
 
-The resolve-conflict relation now supplies the directed policy edge used by
+The replay-order relation now supplies the directed policy edge used by
 linearization. For replay context $R$, version event set $E$, and events
 $e_1,e_2$, define the set-relative linearization relation by
 \[
 \begin{aligned}
  e_1\;\loOn_{R,E}\;e_2\Longleftrightarrow
- &(e_1\vis e_2\land(e_1\rc e_2\lor e_2\rc e_1))\\
+ &(e_1\vis e_2\land(e_1\ord e_2\lor e_2\ord e_1))\\
  {}\lor{}&(\neg(e_1\vis e_2)\land\neg(e_2\vis e_1)
- \land e_1\rc e_2\\
+ \land e_1\ord e_2\\
  &\quad\land\neg\exists e_3\in E.\;
- e_2\vis e_3\land(e_2\rc e_3\lor e_3\rc e_2)).
+ e_2\vis e_3\land(e_2\ord e_3\lor e_3\ord e_2)).
 \end{aligned}
 \]
 An event $e_3\in E$ satisfying the final existential condition is an
@@ -674,25 +679,25 @@ particular version being replayed, not merely on the global event universe.
 \anchor{Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean}
   {Foundation.loOn, Foundation.loOn\_mono, Foundation.loOn\_of\_lo}
 
-For an all-$\mathsf{Either}$ policy, $rc$ has no edges and therefore
+For an all-$\mathsf{Either}$ policy, $ord$ has no edges and therefore
 \[
  \neg(a\;\loOn_{R,E}\;b).
 \]
 In particular, $\mathsf{Either}$ does not mean ``retain all visibility.''
-Visibility contributes to $\loOn$ only for a pair that $rc$ classifies as a
+Visibility contributes to $\loOn$ only for a pair that $ord$ classifies as a
 conflict.
 
 \paragraph{RGA instance.}
 RGA insertion and tombstone updates commute at the raw storage layer, but its
-ordinary-list specification still has conflicts. Its sole $rc$ relation
+ordinary-list specification still has conflicts. Its sole $ord$ relation
 orders the RGA conflicts described in Section~\ref{sec:instances}; $\loOn$ uses that relation
 directly.
-\anchor{Sal/MRDTs/Instances/RGASequential.lean}{RGA.rc}
+\anchor{Sal/MRDTs/Instances/RGASequential.lean}{RGA.replayOrder}
 
 \subsection{Sufficient replay laws and convergence}
 
 The following optional algebraic laws are one sufficient route to replay
-convergence under $P$. They are not the definition of $rc$ and are not
+convergence under $P$. They are not the definition of $ord$ and are not
 required fields of the public datatype certificate. In this subsection and
 the replay theorems below, $D$ and $P$ are fixed together.
 
@@ -709,22 +714,22 @@ noncommuting pairs is
  \mathsf{NoncommCovered}(D,P)\Longleftrightarrow
  \forall a,b.\;&
  \neg(a\leftrightarrow b)\Longrightarrow
- (a\rc b\lor b\rc a).
+ (a\ord b\lor b\ord a).
 \end{aligned}
 \]
 This is a one-way proof obligation: a pair not ordered in either direction
 must commute concretely. An ordered pair may also commute. In particular,
-all-commuting updates satisfy coverage for every choice of $rc$.
+all-commuting updates satisfy coverage for every choice of $ord$.
 Write $Q^{+}(a,b)$ when there is a nonempty finite $Q$-path from $a$ to $b$,
 and define
 \[
  \mathsf{Acyclic}(Q)\Longleftrightarrow
  \forall a.\;\neg Q^{+}(a,a).
 \]
-Resolve-conflict acyclicity is
+Replay-order acyclicity is
 \[
- \mathsf{RcAcyclic}(D,P)\Longleftrightarrow
- \mathsf{Acyclic}(\lambda a\,b.\;a\rc b).
+ \mathsf{ReplayAcyclic}(D,P)\Longleftrightarrow
+ \mathsf{Acyclic}(\lambda a\,b.\;a\ord b).
 \]
 It permits policy chains of arbitrary finite length and rules out only directed
 cycles. Finally,
@@ -735,8 +740,8 @@ conditional commutation lift is
  \forall s,e,e',e'',\pi.\;&
  \mathsf{distinct}(e,e')\land\mathsf{distinct}(e,e'')
  \land\mathsf{distinct}(e',e'')\\
- &\land e\rc e'
- \land(e'\rc e''\lor e''\rc e')\\
+ &\land e\ord e'
+ \land(e'\ord e''\lor e''\ord e')\\
  &\Longrightarrow
  \doop(\applySeq(D,\doop(\doop(s,e'),e),\pi),e'')\\
  &\qquad=
@@ -747,19 +752,19 @@ Therefore
 \[
  \mathsf{ReplayLaws}(D,P)\Longleftrightarrow
  \mathsf{NoncommCovered}(D,P)\land
- \mathsf{RcAcyclic}(D,P)\land
+ \mathsf{ReplayAcyclic}(D,P)\land
  \mathsf{CondCommLift}(D,P).
 \]
 These conjuncts correspond respectively to Lean's
-\lean{noncomm\_covered}, \lean{rc\_acyclic}, and
+\lean{noncomm\_covered}, \lean{replayOrder\_acyclic}, and
 \lean{cond\_comm\_lift} fields.
-The conditional swap uses the $rc$-related successor tested by the
+The conditional swap uses the $ord$-related successor tested by the
 linearization relation above; that successor need not be concretely
 noncommuting. When all concrete updates commute, both swap orders already
-agree before the successor is applied. Thus every acyclic $rc$ satisfies
+agree before the successor is applied. Thus every acyclic $ord$ satisfies
 these sufficient laws for an all-commuting implementation.
 \anchor{Sal/MRDTs/Framework/ReplayLaws.lean}
-  {RcAcyclic, ReplayLaws, ReplayLaws.of\_all\_comm}
+  {ReplayAcyclic, ReplayLaws, ReplayLaws.of\_all\_comm}
 
 With these laws, transitive and irreflexive visibility, and finite support,
 $\loOn_{R,E}$ is acyclic on $E$, admits a respecting enumeration, and all
@@ -780,7 +785,7 @@ For events in $E$, write
 Suppose
 \[
 \begin{gathered}
- \mathsf{RcAcyclic}(D,P),\qquad
+ \mathsf{ReplayAcyclic}(D,P),\qquad
  \mathsf{Transitive}(R.\mathsf{vis}),\qquad
  \mathsf{Irreflexive}(R.\mathsf{vis}),\\
  E\subseteq R.\mathsf{events},\qquad
@@ -817,9 +822,9 @@ of $E$ have the same fold, from every starting state:
 \end{lemma}
 
 \anchor{Sal/MRDTs/Framework/ReplayLaws.lean}
-  {loOnNe\_acyclic\_of\_rcAcyclic, convergence\_on\_of\_replayLaws}
+  {loOnNe\_acyclic\_of\_replayAcyclic, convergence\_on\_of\_replayLaws}
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}
-  {exists\_loOn\_respecting\_perm\_of\_rcAcyclic}
+  {exists\_loOn\_respecting\_perm\_of\_replayAcyclic}
 
 \section{Canonical states and canonical configurations}
 \label{sec:canonical}
@@ -867,7 +872,7 @@ bases. Its internal replay projection is
  &\land\applySeq(D,\init,\pi)=s.
 \end{aligned}
 \]
-Canonicality supplies this witness directly, with the same selected $rc$
+Canonicality supplies this witness directly, with the same selected $ord$
 and the same set-relative order:
 \[
  \mathsf{CanonicalConfig}(C)\Longrightarrow\mathsf{HasReplayWitness}(C).
@@ -880,9 +885,9 @@ witness to an independent client specification.
 \section{Merge preservation}
 \label{sec:join}
 
-Fix $D$ and its replay policy $P$ throughout this section. The notation
+Fix $D$ and its event replay order $P$ throughout this section. The notation
 $\Can(R,E,s)$ uses that same policy. We write $P$ explicitly in the Join
-contracts; Lean supplies it as an implicit \lean{ReplayPolicy} argument.
+contracts; Lean supplies it as an implicit \lean{EventOrder} argument.
 
 \subsection{The semantic contract}
 
@@ -1427,8 +1432,8 @@ at the end.
 \label{sec:client}
 
 Fix a datatype $D$ with operations $O$, concrete state $\State$, query type
-$Q$, and result type $R$, and a replay policy $P$ supplying its resolve-conflict
-relation $rc$. We first define the sequential behavior against which $D$ is
+$Q$, and result type $R$, and an event replay order $P$ supplying its replay-order
+relation $ord$. We first define the sequential behavior against which $D$ is
 checked, then the executions to which the correctness claim applies.
 
 \subsection{Sequential specification}
@@ -1446,7 +1451,7 @@ A sequential specification $\mathit{Spec}$ contains
 Its run is the left fold of $\mathsf{step}_S$ from $\sigma^S_0$.
 The predicate $\mathsf{Legal}_S$ constrains the event list; it receives
 neither the implementation state nor visibility. The witness must separately
-respect $\loOn$, defined in Section~\ref{sec:rc-order}. Legality may further
+respect $\loOn$, defined in Section~\ref{sec:ord-order}. Legality may further
 constrain its order: TreeMove, for example, requires a key-sorted list.
 \anchor{Sal/MRDTs/Framework/Certificates.lean}
   {SequentialMachine, SequentialSpec, SequentialSpec.run}
@@ -1813,12 +1818,12 @@ The complete package is
 \[
 \begin{aligned}
  \mathsf{VerifiedMRDT}(D)=(&I:\mathsf{Issuance}(D),\\
- &rc:\mathsf{ReplayPolicy}(D),\\
- &K:\mathsf{ReplayAdequacyCertificate}(D,I,rc),\\
+ &ord:\mathsf{EventOrder}(D),\\
+ &K:\mathsf{ReplayAdequacyCertificate}(D,I,ord),\\
  &\mathit{Spec}:\mathsf{SequentialSpec}(D),\\
  &\mathsf{Rel}:\State\to\State_S\to\mathsf{Prop},\\
  &K_S:\mathsf{SequentialCorrectnessCertificate}
-   (D,I,rc,\mathit{Spec},\mathsf{Rel})).
+   (D,I,ord,\mathit{Spec},\mathsf{Rel})).
 \end{aligned}
 \]
 \lean{PackagedMRDT} additionally contains a name and the signature $D$.
@@ -1829,11 +1834,11 @@ Its public conclusions are
 \[
 \begin{aligned}
  \mathsf{MintCertifiedReach}(D,I,C)&\to
-   \mathsf{IsSpecLinearizable}(D,rc,\mathit{Spec},\mathsf{Rel},C),\\
+   \mathsf{IsSpecLinearizable}(D,ord,\mathit{Spec},\mathsf{Rel},C),\\
  &\mathsf{MintCertifiedReachV}
    (D,\mathsf{canonicalVirtualMergeBase}(D),I,C)\\
  &\qquad\to
-   \mathsf{IsSpecLinearizable}(D,rc,\mathit{Spec},\mathsf{Rel},C).
+   \mathsf{IsSpecLinearizable}(D,ord,\mathit{Spec},\mathsf{Rel},C).
 \end{aligned}
 \]
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}
@@ -2102,7 +2107,7 @@ $e=(t,r,o)\in\Time\times\Replica\times O$ is an event: $t$ is its timestamp,
 $r$ its issuing replica, and $o$ its operation payload. The operation forms
 below include metadata checked by issuance, not just the client's command.
 Each profile separates the datatype $D=(\State,\mathsf{init},O,Q,R,\doop,
-\merge,\mathsf{query})$, its resolve-conflict relation, issuance, and public
+\merge,\mathsf{query})$, its replay-order relation, issuance, and public
 sequential specification. Unless a profile states otherwise, $Q=\{\mathsf{rd}\}$
 is the singleton read query (Lean's unit type); $R$ is the stated query-result
 type. The sequential specification
@@ -2110,11 +2115,11 @@ uses the same query interface and supplies its own state, initial state, step,
 legality predicate, and query; the representation relation connects it to $D$.
 Global timestamp freshness and causal timestamp monotonicity come from the
 execution rules. Issuance checks whether a command may be created in its
-local state; $rc$ specifies how conflicting events are ordered in replay.
+local state; $ord$ specifies how conflicting events are ordered in replay.
 An identifier may occur in both rules without making either rule redundant.
 
 Each profile below records the information needed to interpret the package:
-the representation, issuance predicate, sole $rc$ relation, merge scope,
+the representation, issuance predicate, sole $ord$ relation, merge scope,
 public sequential state and legality predicate, representation relation, and
 proof route. The typed production registry contains 22 \lean{PackagedMRDT}
 values; the profiles name the released entries belonging to each family.
@@ -2181,7 +2186,7 @@ Here $A$ is the key type or key--value-pair type, respectively: the map stores
 pairs, not overwriting assignments. The ancestor is included in this raw
 Boolean merge, unlike the two-set union above. Its query is identity.
 
-\emph{Resolve-conflict relation $rc$.} For every store variant, $\forall a,b.\;\neg(a\rc b)$.
+\emph{Replay-order relation $ord$.} For every store variant, $\forall a,b.\;\neg(a\ord b)$.
 
 \emph{Issuance.} For every variant, $\forall e,s.\;I.\mathsf{CanIssue}(e,s)$.
 
@@ -2232,7 +2237,7 @@ Counter and increment-only counter have $\delta=1$; PN-counter has
 $\delta(\mathsf{inc})=1$ and $\delta(\mathsf{dec})=-1$.
 Concrete state starts at zero and its query is identity.
 
-\emph{Resolve-conflict relation $rc$.} $\forall a,b.\;\neg(a\rc b)$.
+\emph{Replay-order relation $ord$.} $\forall a,b.\;\neg(a\ord b)$.
 
 \emph{Issuance.} $\forall e,s.\;I.\mathsf{CanIssue}(e,s)$.
 
@@ -2275,9 +2280,9 @@ The state is either unset or a lexicographically ordered write,
 The initial state is $\bot$. The query returns none at $\bot$ and the
 value component otherwise.
 
-\emph{Resolve-conflict relation $rc$.}
+\emph{Replay-order relation $ord$.}
 \[
- e_1\rc e_2\Longleftrightarrow k(e_1)<k(e_2).
+ e_1\ord e_2\Longleftrightarrow k(e_1)<k(e_2).
 \]
 
 \emph{Issuance.} $\forall e,s.\;I.\mathsf{CanIssue}(e,s)$.
@@ -2295,19 +2300,19 @@ value component otherwise.
 The abstract step always overwrites, even for a lower-timestamp event;
 the witness order, not the step, supplies last-writer-wins resolution.
 
-The sole $rc$ policy orders unequal writes by their keys. The $\max$
+The sole $ord$ policy orders unequal writes by their keys. The $\max$
 updates commute, and the universal laws prove all-context Join under this
 same timestamp policy. The function
 \lean{canonical} sorts the replay witness by key;
 \lean{canonical\_respects} proves that the result respects $\loOn$.
-The theorem \lean{rc\_order\_acyclic} proves acyclicity by strict increase of
+The theorem \lean{replayOrder\_order\_acyclic} proves acyclicity by strict increase of
 the key. Chronological overwrite replay returns the stored maximal value,
 independently of concrete delivery order.
 \anchor{Sal/MRDTs/Instances/LWWRegister.lean}
-  {LWWRegister.D, LWWRegister.rc, LWWRegister.spec,
+  {LWWRegister.D, LWWRegister.replayOrder, LWWRegister.spec,
    LWWRegister.stateRel, LWWRegister.replayLaws, LWWRegister.join,
    LWWRegister.canonical\_respects,
-   LWWRegister.rc\_order\_acyclic, LWWRegister.chronological\_winner}
+   LWWRegister.replayOrder\_order\_acyclic, LWWRegister.chronological\_winner}
 
 \emph{Datatype-state collection.} The exact-state baseline stores only the current winning tuple. Older writes
 are already absent from the semantic state, so this representation contains
@@ -2335,17 +2340,17 @@ Writing $\mathsf{writeValue}((t,r,\mathsf{write}(v,O)))=v$,
 The ancestor distinguishes overwritten values from concurrent additions.
 Neither historical writes nor overwritten-tag tombstones are retained in $S$.
 
-\emph{Resolve-conflict relation $rc$.}
+\emph{Replay-order relation $ord$.}
 \[
- a\rc(t,r,\mathsf{write}(v,O))
+ a\ord(t,r,\mathsf{write}(v,O))
    \Longleftrightarrow \mathsf{time}(a)\in O
    \qquad\text{for an issued write}.
 \]
 The raw resolver additionally checks $\mathsf{time}(a)<t$ to exclude cyclic
 payloads on arbitrary inputs. For issued writes this inequality follows from
-issuance and is redundant, as proved by \lean{rc\_iff\_overwrite\_of\_execution}.
+issuance and is redundant, as proved by \lean{replayOrder\_iff\_overwrite\_of\_execution}.
 Every edge between certified events follows visibility; concurrent writes
-do not choose a winner through $rc$.
+do not choose a winner through $ord$.
 
 \emph{Issuance.} For $e=(t,r,\mathsf{write}(v,O))$, issuance requires
 \[
@@ -2399,13 +2404,13 @@ The proof maintains the surviving-write characterization for stored versions
 and recursively constructed virtual merge bases. It does not rely on
 all-commuting concrete updates or arbitrary-state Join.
 \anchor{Sal/MRDTs/Instances/MVRLive.lean}
-  {MVRLive.D, MVRLive.canIssue, MVRLive.rc, MVRLive.spec,
+  {MVRLive.D, MVRLive.canIssue, MVRLive.replayOrder, MVRLive.spec,
    MVRLive.issued\_write\_singleton}
 \anchor{Sal/MRDTs/Instances/MVRLiveCertified.lean}
   {MVRLive.represented\_of\_mintCertifiedV}
 \anchor{Sal/MRDTs/Instances/MVRLiveContract.lean}
   {MVRLive.verified, MVRLive.mvr\_correct,
-   MVRLive.linear\_register, MVRLive.rc\_iff\_overwrite\_of\_execution}
+   MVRLive.linear\_register, MVRLive.replayOrder\_iff\_overwrite\_of\_execution}
 
 \emph{Datatype-state collection.} The registered representation already retains
 only live tagged values and has an exact-state baseline. Writes remove observed
@@ -2431,7 +2436,7 @@ functional replacement at $r$,
 \]
 Arithmetic on functions is pointwise. Thus $Q=\Replica$, not a singleton read.
 
-\emph{Resolve-conflict relation $rc$.} $\forall a,b.\;\neg(a\rc b)$.
+\emph{Replay-order relation $ord$.} $\forall a,b.\;\neg(a\ord b)$.
 
 \emph{Issuance.}
 \[
@@ -2494,12 +2499,12 @@ most one record per replica and element. The raw state type is
 The query type is $Q=\alpha$ and the Boolean query at $x$ tests whether
 $\exists r,t.\;(r,t,x)\in s$. There are no removed-tag tombstones.
 
-\emph{Resolve-conflict relation $rc$.}
+\emph{Replay-order relation $ord$.}
 \[
- (t,r,\mathsf{remove}(x))\rc(u,r',\mathsf{add}(y))
+ (t,r,\mathsf{remove}(x))\ord(u,r',\mathsf{add}(y))
  \Longleftrightarrow x=y,
 \]
-and $rc$ is false for all other operation pairs. This gives add-wins for
+and $ord$ is false for all other operation pairs. This gives add-wins for
 concurrent add/remove pairs on the same element.
 
 \emph{Issuance.} $\mathsf{CanIssue}(e,s)=\mathsf{True}$.
@@ -2527,9 +2532,9 @@ absence of a causally later removal or same-replica replacement. Three-way
 merge preserves this invariant; a sorted witness then reproduces the exact
 state while respecting $\mathsf{loOn}$. Same-replica additions need not
 commute as record updates, so the proof does not use the all-state replay-law
-route or add edges to the public $rc$.
+route or add edges to the public $ord$.
 \anchor{Sal/MRDTs/Instances/EfficientORSet.lean}
-  {EfficientORSet.update, EfficientORSet.merge, EfficientORSet.rc,
+  {EfficientORSet.update, EfficientORSet.merge, EfficientORSet.replayOrder,
    EfficientORSet.issuance, EfficientORSet.spec, EfficientORSet.stateRel}
 \anchor{Sal/MRDTs/Instances/EfficientORSetCertified.lean}
   {EfficientORSet.represented\_of\_mintCertifiedV, EfficientORSet.verified}
@@ -2566,20 +2571,20 @@ timestamp, folds root-prepend and after-anchor splices from the empty list, and 
 graves; infinite Boolean supports are interpreted as empty supports by the
 total implementation.
 
-\emph{Resolve-conflict relation $rc$.} Write $\mathsf{ins}(i,a)$ for an insertion with
+\emph{Replay-order relation $ord$.} Write $\mathsf{ins}(i,a)$ for an insertion with
 identifier $i$ and anchor $a$, and $\mathsf{del}(x)$ for a
 deletion. The directed relation is
 \[
 \begin{aligned}
- \mathsf{ins}(i,a)\rc\mathsf{ins}(j,b)
+ \mathsf{ins}(i,a)\ord\mathsf{ins}(j,b)
  &\Longleftrightarrow
    (a=b\lor i=b)\land i<j,\\
- \mathsf{ins}(i,a)\rc\mathsf{del}(x)
+ \mathsf{ins}(i,a)\ord\mathsf{del}(x)
  &\Longleftrightarrow x=i\lor(a\ne0\land x=a).
 \end{aligned}
 \]
 Here $a=b$ identifies siblings, and $i=b$ means the second insertion uses the
-first as its anchor. It is false on the remaining directed forms. Thus $rc$ orders sibling and
+first as its anchor. It is false on the remaining directed forms. Thus $ord$ orders sibling and
 dependent insertions by timestamp and puts a child insertion before a
 conflicting deletion of its identifier or non-root anchor.
 
@@ -2648,9 +2653,9 @@ ordinary-list witness.
 \anchor{Sal/MRDTs/Instances/RGA.lean}
   {RGA.applicable, RGA.generation, RGA.join}
 \anchor{Sal/MRDTs/Instances/RGASequential.lean}
-  {RGA.listStep, RGA.listLegal, RGA.listSpec, RGA.rc, RGA.listRel,
-   RGA.rc\_insert\_iff\_original\_of\_execution,
-   RGA.canonical\_respects\_rc, RGA.verified}
+  {RGA.listStep, RGA.listLegal, RGA.listSpec, RGA.replayOrder, RGA.listRel,
+   RGA.replayOrder\_insert\_iff\_original\_of\_execution,
+   RGA.canonical\_respects\_replayOrder, RGA.verified}
 
 \emph{Datatype-state collection.} RGA has a checked representation compactor, but not deleted-identifier
 reclamation. Its finite state consists of birth pairs $(i,p)$ and a graveyard
@@ -2697,8 +2702,8 @@ Root is zero and trash is one. The query hides trash and every node with a
 nonempty parent path to trash, returning the remaining partial map.
 Rendering folds these guarded steps in key order.
 
-\emph{Resolve-conflict relation $rc$.} The resolver is all-$\mathsf{Either}$, hence
-$\forall a,b.\;\neg(a\rc b)$.
+\emph{Replay-order relation $ord$.} The resolver is all-$\mathsf{Either}$, hence
+$\forall a,b.\;\neg(a\ord b)$.
 
 \emph{Issuance.}
 \[
@@ -2790,8 +2795,8 @@ The MRDT stores a finite set of these events and merges by union.
 It starts empty and update inserts the event.
 The query is the sheet view defined with the sequential specification below.
 
-\emph{Resolve-conflict relation $rc$.} Its resolver is all-$\mathsf{Either}$, hence
-$\forall a,b.\;\neg(a\rc b)$.
+\emph{Replay-order relation $ord$.} Its resolver is all-$\mathsf{Either}$, hence
+$\forall a,b.\;\neg(a\ord b)$.
 
 \emph{Issuance.}
 \[
@@ -2971,13 +2976,13 @@ identifiers are in $B$ or absent from $L$, and from $B$ records whose identifier
 are absent from both $L$ and $A$. It merges these two filtered lists in key
 order (choosing the second list at a key tie).
 
-\emph{Resolve-conflict relation $rc$.}
+\emph{Replay-order relation $ord$.}
 \[
- \mathsf{ins}^{t}_{x,p,a}\rc\mathsf{del}_i
+ \mathsf{ins}^{t}_{x,p,a}\ord\mathsf{del}_i
  \Longleftrightarrow t=i,
 \]
 and is false on all other directed forms. In particular, immutable
-coordinates make insertion/insertion pairs commute without an $rc$ edge.
+coordinates make insertion/insertion pairs commute without an $ord$ edge.
 
 \emph{Issuance.}
 \[
@@ -3070,9 +3075,9 @@ $c{+\!+}[3]$. An insertion's coordinate is $p$ followed by the code of $t-a$:
 for right insertion map false/true to 1/2; for left insertion complement the
 bits and map false/true to 4/5.
 
-\emph{Resolve-conflict relation $rc$.}
+\emph{Replay-order relation $ord$.}
 \[
- \mathsf{ins}^{t}_{x,p,a,d}\rc\mathsf{del}_i
+ \mathsf{ins}^{t}_{x,p,a,d}\ord\mathsf{del}_i
  \Longleftrightarrow t=i,
 \]
 with no other directed edges; the side $d$ is already part of the immutable
@@ -3145,16 +3150,16 @@ queries. The rich query instead takes a formatting kind (bold, italic,
 underline, strike, link, comment, color, or heading) and returns a list of
 codepoint--Boolean pairs, as defined below.
 
-\emph{Resolve-conflict relation $rc$.} Its $rc$ lifts the SidedEmbedRGA
+\emph{Replay-order relation $ord$.} Its $ord$ lifts the SidedEmbedRGA
 relation on two text events and returns $\mathsf{Either}$ for store/store and
 text/store pairs. Formally, if $\iota$ injects a text event into the product,
 \[
- \iota(e_1)\rc\iota(e_2)\Longleftrightarrow e_1\rc e_2,
+ \iota(e_1)\ord\iota(e_2)\Longleftrightarrow e_1\ord e_2,
  \qquad
- \neg(s_1\rc s_2),\quad\neg(\iota(e)\rc s),\quad\neg(s\rc\iota(e))
+ \neg(s_1\ord s_2),\quad\neg(\iota(e)\ord s),\quad\neg(s\ord\iota(e))
 \]
 for store events $s,s_1,s_2$. The rich package changes only the query boundary
-to rendered marks, not the sequential machine or $rc$.
+to rendered marks, not the sequential machine or $ord$.
 
 \emph{Issuance.} For an event $e$ and state $(s_T,s_D,s_M)$, its cross-component guard
 is
@@ -3238,8 +3243,8 @@ first mark in the finite-set enumeration used by the renderer.
 This query exposes a Boolean formatting flag, not the stored mark value.
 \anchor{Sal/MRDTs/Instances/SidedPeritext.lean}
   {SidedPeritext.coreGuard, SidedPeritext.core\_join\_at,
-   SidedPeritext.coreRc, SidedPeritext.clientSpec,
-   SidedPeritext.verified, SidedPeritext.richRc,
+   SidedPeritext.coreOrder, SidedPeritext.clientSpec,
+   SidedPeritext.verified, SidedPeritext.richOrder,
    SidedPeritext.richVerified}
 \anchor{Sal/MRDTs/Instances/PeritextRender.lean}
   {PeritextRender.startIncl, PeritextRender.endExcl,
@@ -3294,14 +3299,14 @@ the identifiers in list $X$, the raw survivor list is
 Merge sorts this list by enqueue key, so concurrent enqueue order
 does not depend on branch argument position.
 
-\emph{Resolve-conflict relation $rc$.} For $q=(t,r,\mathsf{enq}(v))$, put $k(q)=(t,v)$.
+\emph{Replay-order relation $ord$.} For $q=(t,r,\mathsf{enq}(v))$, put $k(q)=(t,v)$.
 The value is a tie-breaker on raw inputs; distinct issued enqueues are ordered
 by timestamp. The directed policy is
 \[
 \begin{aligned}
- q_1\rc q_2&\Longleftrightarrow k(q_1)<_{\rm lex}k(q_2)
+ q_1\ord q_2&\Longleftrightarrow k(q_1)<_{\rm lex}k(q_2)
      &&\text{for two enqueues},\\
- (t,r,\mathsf{enq}(v))\rc(u,r',\mathsf{deq}(i))
+ (t,r,\mathsf{enq}(v))\ord(u,r',\mathsf{deq}(i))
    &\Longleftrightarrow t=i,
 \end{aligned}
 \]
@@ -3363,7 +3368,7 @@ and visibility-incomparability of dequeues naming the same target.
 For linear mint histories, \lean{client\_linear\_fifo} proves equality with the
 ordinary FIFO value sequence. Queue is a released production package.
 \anchor{Sal/MRDTs/Instances/Queue.lean}
-  {Queue.qRcOrder, Queue.rc, Queue.q\_join\_at}
+  {Queue.qEventOrder, Queue.replayOrder, Queue.q\_join\_at}
 \anchor{Sal/MRDTs/Instances/QueueCertificates.lean}
   {Queue.qApplicable, Queue.queue\_replay\_witness, Queue.replayAdequate}
 \anchor{Sal/MRDTs/Instances/QueueContract.lean}
@@ -3393,10 +3398,10 @@ Insertion adds its immutable birth record and inserts the corresponding
 coordinate record into the live list; deletion filters its target and preserves
 birth records. The query projects live identifiers.
 
-\emph{Resolve-conflict relation $rc$.} The relation is false
+\emph{Replay-order relation $ord$.} The relation is false
 except for insertion before deletion of that identity:
 \[
- \mathsf{ins}^{t}_{p,s}\rc\mathsf{del}_i
+ \mathsf{ins}^{t}_{p,s}\ord\mathsf{del}_i
  \Longleftrightarrow t=i.
 \]
 
@@ -3490,7 +3495,7 @@ The registered package is \lean{FugueMax.verified}.
 No independent FugueMax runtime is claimed.
 \anchor{Sal/MRDTs/Instances/FugueMaxImplementation.lean}
   {SidedEmbedRGA.FugueMax.datatype, SidedEmbedRGA.FugueMax.generation,
-   SidedEmbedRGA.FugueMax.rc}
+   SidedEmbedRGA.FugueMax.replayOrder}
 \anchor{Sal/MRDTs/Instances/FugueMaxReplayProof.lean}
   {SidedEmbedRGA.FugueMax.join\_of\_mint}
 \anchor{Sal/MRDTs/Instances/FugueMaxContract.lean}
@@ -3579,7 +3584,7 @@ Operational semantics & \lean{Configuration}, \lean{Label}, \lean{Step},
 \lean{StepV} & \src{Sal/MRDTs/Framework/Execution.lean}{Execution.lean}\\
 Store/GCA events & \lean{StoreInv}, \lean{gca\_events\_of\_storeInv} &
 \src{Sal/MRDTs/Metatheory/StoreInvariant.lean}{StoreInvariant.lean}\\
-Resolve-conflict policy & \lean{ReplayPolicy}, \lean{UpdateSig.rc} &
+Event replay order & \lean{EventOrder}, \lean{UpdateSig.replayBefore} &
 \src{Sal/MRDTs/Framework/Base/UpdateSignature.lean}{UpdateSignature.lean}\\
 Set-relative linearization & \lean{loOn}, \lean{IsCanonicalState} &
 \src{Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean}{SetRelativeReplay.lean}\\
@@ -3597,7 +3602,7 @@ Canonical reachability & \lean{CanonicalConfig},
 \src{Sal/MRDTs/Metatheory/Adequacy.lean}{Adequacy.lean}\\
 Issuance/spec interfaces & \lean{Issuance}, \lean{SequentialSpec} &
 \src{Sal/MRDTs/Framework/Certificates.lean}{Certificates.lean}\\
-LWW single-$rc$ ordering & \lean{LWWRegister.rc\_order\_acyclic},
+LWW single-$ord$ ordering & \lean{LWWRegister.replayOrder\_order\_acyclic},
 \lean{LWWRegister.canonical\_respects}, \lean{LWWRegister.verified} &
 \src{Sal/MRDTs/Instances/LWWRegister.lean}{LWWRegister.lean}\\
 Certified adequacy & \lean{replayWitness\_of\_mintCertified} &

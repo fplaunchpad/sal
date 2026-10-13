@@ -11,7 +11,7 @@ open Foundation Instances.LWWRegister
 def SourceNoChain : Prop :=
   ∀ a b c : Op LWWOp, distinctOps (D := D.toUpdateSig) a b →
     distinctOps (D := D.toUpdateSig) b c →
-    ¬ (rc.order a b = .Fst_then_snd ∧ rc.order b c = .Fst_then_snd)
+    ¬ (replayOrder.order a b = .Fst_then_snd ∧ replayOrder.order b c = .Fst_then_snd)
 
 theorem source_policy_excluded : ¬ SourceNoChain := by
   intro h
@@ -26,7 +26,7 @@ theorem empty_policy_possible :
 theorem control :
     distinctOps (D := D.toUpdateSig) w₁ w₂ ∧ w₁.rep ≠ w₂.rep ∧
     distinctOps (D := D.toUpdateSig) w₂ w₃ ∧ w₂.rep ≠ w₃.rep ∧
-    (rc.order w₁ w₂ = .Fst_then_snd ∧ rc.order w₂ w₃ = .Fst_then_snd) ∧
+    (replayOrder.order w₁ w₂ = .Fst_then_snd ∧ replayOrder.order w₂ w₃ = .Fst_then_snd) ∧
     ¬ SourceNoChain :=
   ⟨by change 1 ≠ 2; decide, by decide, by change 2 ≠ 3; decide, by decide, timestamp_chain, source_policy_excluded⟩
 

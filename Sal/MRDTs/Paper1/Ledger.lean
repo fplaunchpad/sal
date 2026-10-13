@@ -231,7 +231,7 @@ elab "assert_commuting_vc_dependencies " n:ident : command => do
     "Sal.MRDTs.Instances.FlatGrowOnly.join",
     "Sal.MRDTs.Instances.RGA.join",
     "Sal.MRDTs.Instances.RGA.versionWellFormed_of_execution",
-    "Sal.MRDTs.Instances.RGA.canonical_respects_rc",
+    "Sal.MRDTs.Instances.RGA.canonical_respects_replayOrder",
     "Sal.MRDTs.Paper1.RGA.Identified.canonical_respects_specVisibility",
     "Sal.MRDTs.Instances.BoundedCounter.sequentialCorrectness",
     "Sal.MRDTs.Instances.TreeMove.join",

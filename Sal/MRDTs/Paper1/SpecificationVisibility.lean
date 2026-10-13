@@ -121,7 +121,7 @@ theorem specificationRA_of_canonical_total {D : MRDTSig} {P : OperationPolicy D.
     (canonical : @CanonicalConfig D P.lift C)
     (covered : SpecificationConflictsCovered D S) (sound : FoldHistorySound D S) :
     SpecificationRALinearizable D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact specificationRA_of_replay_total laws (hasReplayWitness_of_canonical canonical)
     covered sound
 
@@ -147,7 +147,7 @@ theorem specificationRA_of_canonical_issued {D : MRDTSig} {P : OperationPolicy D
     (honest : MintHonest D I.CanIssue C)
     (adequacy : IssuedSpecificationHistoryAdequacy D P S I) :
     SpecificationRALinearizable D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro r v s E _ hv q
   have hs := canonical.canonical v s E hv
   obtain ⟨π, hp, hr, specResp, accepted⟩ := adequacy C honest E
@@ -170,7 +170,7 @@ theorem specificationCertifiedRA_of_join_issued
     {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) I C) :
     SpecificationRALinearizable D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact specificationRA_of_canonical_issued laws
     (canonicalConfig_of_mintCertifiedV join reach) reach.mintHonest history
 

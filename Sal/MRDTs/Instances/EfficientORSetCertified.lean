@@ -6,7 +6,7 @@ namespace Sal.MRDTs.Instances.EfficientORSet
 open Sal.MRDTs.Foundation
 open Classical
 variable {α : Type} [DecidableEq α]
-local instance : ReplayPolicy (D α).toUpdateSig := rc
+local instance : EventOrder (D α).toUpdateSig := replayOrder
 
 theorem repConfig_init : RepConfig (initConfig (D α)) := by
   intro v s E hv
@@ -123,12 +123,12 @@ theorem keyUnique_reachableV {C : Configuration (D α)}
   obtain ⟨rb,sb,hsb,hbb⟩ := hG.version_events_supported v s E hv b hb
   exact C.vis_total_same_replica hsa haa hsb hbb hne hr
 
-noncomputable def replayAdequacy : @ReplayAdequacyCertificate (D α) issuance rc where
+noncomputable def replayAdequacy : @ReplayAdequacyCertificate (D α) issuance replayOrder where
   soundV reach := hasReplayWitness_of_canonical (represented_of_mintCertifiedV reach).2.1
 
 noncomputable def verified : VerifiedMRDT (D α) where
   issuance := issuance
-  rc := rc
+  replayOrder := replayOrder
   replayAdequacy := replayAdequacy
   Spec := spec
   Rel := stateRel

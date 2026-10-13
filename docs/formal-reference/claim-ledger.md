@@ -26,19 +26,19 @@ introductions and rejects the former `CanIssue ⇒ MintHonest` display.
 | Ordinary merge uses a registered GCA and ternary merge; virtual merge uses the canonical resolver without allocating a base version. | Mechanized | `Framework/Execution.lean`: `Step.merge`, `StepV.mergeVirtual`; `Metatheory/VirtualMergeBase.lean`: `canonicalVirtualMergeBase`. |
 | A stored real GCA has exactly the intersection of branch event sets. | Mechanized | `Metatheory/StoreInvariant.lean`: `StoreInv`, `gca_events_of_storeInv`. |
 | Replay arbitration is relative to the event set being replayed. | Mechanized definition | `Metatheory/Join/SetRelativeReplay.lean`: `Foundation.loOn`. |
-| Every verified package supplies exactly one `rc` policy. `loOn` retains visibility only for pairs classified as conflicting, and all-`Either` contributes no edge. LWW supplies a timestamp-directed policy. | Mechanized definitions and source concordance | `Metatheory/Correctness.lean`: `VerifiedMRDT.rc`; `Metatheory/Join/HistoricalReplay.lean` and `Metatheory/Join/SetRelativeReplay.lean`: `lo`, `loOn`; `Instances/LWWRegister.lean`: `rc`. |
-| Under the sufficient replay laws, respecting enumerations of the same finite event set fold to the same state. Coverage is one-way; conditional swaps use semantic `rc` absorbers; acyclicity excludes every nonempty `rc` cycle. Ordered updates may commute. | Mechanized | `Framework/ReplayLaws.lean`: `ReplayLaws.noncomm_covered`, `ReplayLaws.cond_comm_lift`, `RcAcyclic`, `convergence_on_of_replayLaws`. |
-| All-commuting concrete updates support every acyclic semantic `rc`. The merge-law bundles and ordinary/virtual adapters carry the selected policy explicitly. | Mechanized sufficient proof route, not a public semantic axiom | `Framework/ReplayLaws.lean`: `ReplayLaws.of_all_comm`; `Framework/MergeLaws.lean`: `MergeLaws`, `JoinCoreLaws`, `FeasibleDeltaLaws`, `CausalDeltaLaw`, `CanonicalJoinLaws`; `Metatheory/Adequacy.lean`: `causalDeltaLaw_of_all_comm`; `Metatheory/VirtualAdequacy.lean`: `replayWitnessV_of_delta`. |
+| Every verified package supplies exactly one `ord` policy. `loOn` retains visibility only for pairs classified as conflicting, and all-`Either` contributes no edge. LWW supplies a timestamp-directed policy. | Mechanized definitions and source concordance | `Metatheory/Correctness.lean`: `VerifiedMRDT.replayOrder`; `Metatheory/Join/HistoricalReplay.lean` and `Metatheory/Join/SetRelativeReplay.lean`: `lo`, `loOn`; `Instances/LWWRegister.lean`: `replayOrder`. |
+| Under the sufficient replay laws, respecting enumerations of the same finite event set fold to the same state. Coverage is one-way; conditional swaps use event replay order `ord` absorbers; acyclicity excludes every nonempty `ord` cycle. Ordered updates may commute. | Mechanized | `Framework/ReplayLaws.lean`: `ReplayLaws.noncomm_covered`, `ReplayLaws.cond_comm_lift`, `ReplayAcyclic`, `convergence_on_of_replayLaws`. |
+| All-commuting concrete updates support every acyclic event replay order `ord`. The merge-law bundles and ordinary/virtual adapters carry the selected policy explicitly. | Mechanized sufficient proof route, not a public semantic axiom | `Framework/ReplayLaws.lean`: `ReplayLaws.of_all_comm`; `Framework/MergeLaws.lean`: `MergeLaws`, `JoinCoreLaws`, `FeasibleDeltaLaws`, `CausalDeltaLaw`, `CanonicalJoinLaws`; `Metatheory/Adequacy.lean`: `causalDeltaLaw_of_all_comm`; `Metatheory/VirtualAdequacy.lean`: `replayWitnessV_of_delta`. |
 | `CanonicalConfig` is the inductive invariant over every allocated version; `HasReplayWitness` is its internal projection. | Mechanized | `Metatheory/Adequacy.lean`: `CanonicalConfig`, `HasReplayWitness`, `hasReplayWitness_of_canonical`. |
 | `JoinAt` is the single contextual merge-preservation obligation; `Join` requires it at every replay context and `JoinOn` restricts it by an explicit context predicate. | Mechanized definition | `Framework/MergeLaws.lean`: `JoinAt`, `Join`, and `JoinOn`. |
 | `CanonicalJoinLaws` is the single reusable canonical-state contract for all-context Join; the arbitrary-state constructor first adapts universal equations to that contract. | Mechanized | `Framework/MergeLaws.lean`: `CanonicalJoinLaws`; `Metatheory/Adequacy.lean`: `CanonicalJoinLaws.join`, `CanonicalJoinLaws.ofArbitrary`, and `JoinProof.ofArbitraryStateLaws`. |
 | Internal replay is not the public theorem; public correctness additionally requires sequential legality, a state relation, and equality of every query. | Mechanized definition and theorems | `Metatheory/Correctness.lean`: `IsSpecLinearizable`, `VerifiedMRDT.correct`, `VerifiedMRDT.correctV`. |
-| The LWW register uses the same timestamp-directed `rc` in concrete replay laws, Join, and sequential correctness, even though its `max` updates commute. The direction is acyclic, permits nontrivial chains, and a sorted `loOn` witness refines the stored maximum to a total overwrite register. The old concrete-noncommutation biconditional is refuted by ordered commuting writes. | Mechanized | `Instances/LWWRegister.lean`: `rc`, `replayLaws`, `join`, `rc_order_acyclic`, `timestamp_chain`, `canonical_respects`, `verified`, `chronological_winner`, `lower_timestamp_does_not_win`, `ordered_updates_commute`, `concrete_noncomm_iff_rc_refuted`, and `reversed_assignments_wrong_winner`. |
-| The retired tagged OR-set fixture proves all-context Join and refines to the ordinary `Finset` specification. Its `rc` gives `Either` to cross-key and same-kind pairs and resolves a same-key remove before an add. | Mechanized positive theorem and controls | `Metatheory/Countermodels/TaggedORSet.lean`: `rc`, `spec`, `setSequentialCorrectness`, `cross_key_rc_either`, `same_key_rc_add_wins`, `observed_remove_removes`. |
-| RGA stores grow-only insertion and deletion facts internally, permits insertion only at root or a live anchor, and refines issuance-certified executions to an ordinary `List Nat` specification. Its `rc` covers sibling/dependent insertions and insertion/deletion conflicts. | Mechanized definitions and theorems | `Instances/RGA.lean`: `RGAM`, `join`, `applicable`; `Instances/RGASequential.lean`: `listSpec`, `rc`, `canonical_respects_rc`, `listSequentialCorrectness`, `verified`. |
-| Queue uses one `rc`: enqueue/enqueue edges follow the lexicographic enqueue key, and an enqueue precedes a dequeue naming its tag. For the same ordinary or virtual certified execution, the public theorem proves legal FIFO replay with head observation, exact timestamp-ordered surviving contents, and concurrency of duplicate dequeue targets. Linear mint histories refine to the ordinary FIFO value sequence. | Mechanized public certificate and combined contract | `Instances/Queue.lean`: `qRcOrder`, `rc`, `q_join_at`; `Instances/QueueContract.lean`: `clientSpec`, `client_linear_fifo`; `Instances/QueueLegalization.lean`: `queue_legal_witness`, `verified`; `Instances/QueueCorrectness.lean`: `queue_correct`. |
-| The enriched FugueMax implementation retains immutable birth/origin metadata for its exact positional issuer. Its sole `rc` orders insertion before deletion of that identity. One witness proves plain-list legality, refinement, query agreement, and maximal non-interleaving for the same ordinary or virtual certified execution, without a separate `MaxReach` premise. The old coordinate-only `FMSig` remains internal. | Mechanized public certificate and same-witness contract | `Instances/FugueMaxImplementation.lean`: `datatype`, `generation`, `rc`; `Instances/FugueMaxContract.lean`: `listSpec`, `listRel`, `verified`, `correct`. |
-| MVR's concrete state and public specification are finite sets of live tagged values; the query exposes only values. Its observed-supersession `rc` is used throughout replay and public correctness. For the same ordinary or virtual certified execution, `mvr_correct` proves public linearizability and that live writes are exactly the causally maximal events of every version. Linear mint histories expose the last written value. | Mechanized public certificate and combined contract | `Instances/MVRLive.lean`: `D`, `canIssue`, `rc`, `spec`; `Instances/MVRLiveCertified.lean`: `represented_of_mintCertifiedV`; `Instances/MVRLiveContract.lean`: `verified`, `mvr_correct`, `linear_register`. |
+| The LWW register uses the same timestamp-directed `ord` in concrete replay laws, Join, and sequential correctness, even though its `max` updates commute. The direction is acyclic, permits nontrivial chains, and a sorted `loOn` witness refines the stored maximum to a total overwrite register. The old concrete-noncommutation biconditional is refuted by ordered commuting writes. | Mechanized | `Instances/LWWRegister.lean`: `replayOrder`, `replayLaws`, `join`, `replayOrder_order_acyclic`, `timestamp_chain`, `canonical_respects`, `verified`, `chronological_winner`, `lower_timestamp_does_not_win`, `ordered_updates_commute`, `concrete_noncomm_iff_replayOrder_refuted`, and `reversed_assignments_wrong_winner`. |
+| The retired tagged OR-set fixture proves all-context Join and refines to the ordinary `Finset` specification. Its `ord` gives `Either` to cross-key and same-kind pairs and resolves a same-key remove before an add. | Mechanized positive theorem and controls | `Metatheory/Countermodels/TaggedORSet.lean`: `replayOrder`, `spec`, `setSequentialCorrectness`, `cross_key_replayOrder_either`, `same_key_replayOrder_add_wins`, `observed_remove_removes`. |
+| RGA stores grow-only insertion and deletion facts internally, permits insertion only at root or a live anchor, and refines issuance-certified executions to an ordinary `List Nat` specification. Its `ord` covers sibling/dependent insertions and insertion/deletion conflicts. | Mechanized definitions and theorems | `Instances/RGA.lean`: `RGAM`, `join`, `applicable`; `Instances/RGASequential.lean`: `listSpec`, `replayOrder`, `canonical_respects_replayOrder`, `listSequentialCorrectness`, `verified`. |
+| Queue uses one `ord`: enqueue/enqueue edges follow the lexicographic enqueue key, and an enqueue precedes a dequeue naming its tag. For the same ordinary or virtual certified execution, the public theorem proves legal FIFO replay with head observation, exact timestamp-ordered surviving contents, and concurrency of duplicate dequeue targets. Linear mint histories refine to the ordinary FIFO value sequence. | Mechanized public certificate and combined contract | `Instances/Queue.lean`: `qEventOrder`, `replayOrder`, `q_join_at`; `Instances/QueueContract.lean`: `clientSpec`, `client_linear_fifo`; `Instances/QueueLegalization.lean`: `queue_legal_witness`, `verified`; `Instances/QueueCorrectness.lean`: `queue_correct`. |
+| The enriched FugueMax implementation retains immutable birth/origin metadata for its exact positional issuer. Its sole `ord` orders insertion before deletion of that identity. One witness proves plain-list legality, refinement, query agreement, and maximal non-interleaving for the same ordinary or virtual certified execution, without a separate `MaxReach` premise. The old coordinate-only `FMSig` remains internal. | Mechanized public certificate and same-witness contract | `Instances/FugueMaxImplementation.lean`: `datatype`, `generation`, `replayOrder`; `Instances/FugueMaxContract.lean`: `listSpec`, `listRel`, `verified`, `correct`. |
+| MVR's concrete state and public specification are finite sets of live tagged values; the query exposes only values. Its observed-supersession `ord` is used throughout replay and public correctness. For the same ordinary or virtual certified execution, `mvr_correct` proves public linearizability and that live writes are exactly the causally maximal events of every version. Linear mint histories expose the last written value. | Mechanized public certificate and combined contract | `Instances/MVRLive.lean`: `D`, `canIssue`, `replayOrder`, `spec`; `Instances/MVRLiveCertified.lean`: `represented_of_mintCertifiedV`; `Instances/MVRLiveContract.lean`: `verified`, `mvr_correct`, `linear_register`. |
 | The typed datatype-state GC registry covers all 22 production packages and distinguishes exact-state baselines, representation-changing certificates, operational protocols, and staged collectors. LWW, Queue, compact MVR, and the efficient OR-set have non-collecting exact-state baselines. RGA has a lossless `(id,parent)`/live-set compactor; its guard rejects insertion after an observed anchor deletion while retained tombstones remain available for concurrent integration. AegisSheet, TreeMove, and rich SidedPeritext carry the other representation-changing proofs. FugueMax remains staged; the tagged OR-set is no longer registered; MVR discards overwritten values during normal updates. | Mechanized coverage classification plus checked collectors | `Metatheory/StateGCCoverage.lean`: `StateGCCoverage`, `Production.StateGC.registry`; `Instances/RGAGC.lean`: `certificate`, `packedWords_pack_lt_of_live_lt_grave`, `future_after_dead_anchor_not_applicable`; `Instances/AegisSheetGC.lean`: `certificate`; `Instances/TreeMoveGC.lean`: `protocol`; `Instances/SidedPeritextProtocol.lean`: `protocol`. |
 | TreeMove's sequential state is the ordinary parent tree; the replicated event set is not copied into the specification. | Mechanized | `Instances/TreeMove.lean`: `spec`, `stateRel`, `sequentialSound`. |
 | The recursive maximal-common-ancestor fold is canonical for the intersection event set and preserves widened adequacy. | Mechanized | `Metatheory/VirtualAdequacy.lean`: `virtualMergeBaseState_canonical`, `canonicalConfig_reachableV`, `replayWitnessV_of_join`. |
@@ -54,7 +54,7 @@ Section 11.1 presents grow-only stores and counters in separate semantic
 profiles; their shared universal-law proof route is recorded in Section 11.2.
 This is a presentation change, with no change to the underlying contracts.
 The profiles introduce operation payloads and the event envelope before use,
-then separate `D`, `rc`, issuance, and the sequential specification. The PDF
+then separate `D`, `replayOrder`, issuance, and the sequential specification. The PDF
 source gate checks these four blocks in dependency order. The sole OR-set profile
 presents Neem's efficient per-replica/per-element implementation. It has a complete public
 certificate in `EfficientORSetCertified.lean`, including recursive virtual
@@ -65,7 +65,7 @@ all-state Join claim for incompatible replays. The cached source is
 
 The instance-profile presentation audit expands initial states, concrete and
 abstract updates, observations, and representation relations beside issuance
-and `rc`. In particular, bounded-counter `ClientLegal` checks balance at every
+and `ord`. In particular, bounded-counter `ClientLegal` checks balance at every
 prefix, not membership in a canonical normal form; Boolean grow-only merge
 includes the ancestor; OR-set observes membership; and core SidedPeritext
 component queries differ from its rich Boolean-formatting query. These are
@@ -96,12 +96,12 @@ not erasure), defines branch compatibility and the embedded-RGA honesty
 conditions before use, identifies the mutually recursive virtual-base
 definitions, and includes Queue, MVR, and efficient OR-set in the proof-route
 table. Sequential legality may impose additional list-order constraints;
-the text no longer claims that `rc` is the only place any such constraint
+the text no longer claims that `ord` is the only place any such constraint
 can occur.
 
 The RGA insertion edge is now `(a = b ∨ i = b) ∧ i < j`: siblings or a
-forward parent–child dependency. `RGA.rc_insert_iff` checks the displayed
-definition, and `RGA.rc_insert_iff_original_of_execution` proves agreement
+forward parent–child dependency. `RGA.replayOrder_insert_iff` checks the displayed
+definition, and `RGA.replayOrder_insert_iff_original_of_execution` proves agreement
 with the former three-disjunct expression on certified version histories.
 The reverse resolver verdict checks the reversed directed condition; controls
 cover both argument orders of a parent–child pair. No new conflict predicate
@@ -117,7 +117,7 @@ and historical no-chain results instantiate these helpers instead of
 maintaining separate acyclicity and enumeration proofs. Existence needs
 acyclicity, not the concrete-update laws required for fold uniqueness.
 
-Section 4 now introduces the directed `rc` relation, then `loOn` and its
+Section 4 now introduces the directed `ord` relation, then `loOn` and its
 absorber, then sufficient replay laws. The mathematical relation is binary;
 the executable three-valued carrier alone does not imply reversal coherence.
 The certificate theorem has three joint premises, with the selected policy
@@ -126,7 +126,7 @@ Detailed merge-law adapters are in Appendix D; the TikZ redistribution
 diagrams and their law definitions are together in the main text.
 
 The redundancy review distinguishes issued histories from arbitrary raw
-inputs. `MVRLive.rc_iff_overwrite_of_execution` proves that the timestamp guard
+inputs. `MVRLive.replayOrder_iff_overwrite_of_execution` proves that the timestamp guard
 is implied by issuance for an issued target write. The raw guard remains
 necessary to the unrestricted acyclicity argument. LWW and Queue profile
 tie breakers are identified as raw-input cases, and efficient OR-set record
@@ -279,3 +279,13 @@ printed citations. All three PDFs were rebuilt; the efficient-set-to-RGA
 transition was visually inspected. A profile mutation test rejects restoration
 of the retired tagged-set heading. Earlier validation counts in this ledger
 describe their historical passes, not the current registry.
+
+## Event-order terminology
+
+Mathematical `ord` denotes the independently selected full-event replay order;
+Lean represents it with `EventOrder`, `OrderResult`, `UpdateSig.replayBefore`,
+and `VerifiedMRDT.replayOrder`. The submission manuscript reserves `rc` for
+its operation-level conflict relation and its event lift. These documents
+describe the general event-order route and do not identify every event order
+with that operation-level relation. This naming change preserves definitions
+and theorem statements.

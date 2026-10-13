@@ -5,7 +5,7 @@ namespace Sal.MRDTs.Paper1.CertifiedFugueVCAlgebra
 open Foundation Sal.EmbedRGA
 open Instances.SidedEmbedRGA Instances.SidedEmbedRGA.FugueMax
 open CertifiedFugueVCReplay
-attribute [local instance] Instances.SidedEmbedRGA.FugueMax.rc
+attribute [local instance] Instances.SidedEmbedRGA.FugueMax.replayOrder
 
 theorem membership (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdateSig)
     (H : Set (Op Payload)) (s : State) (rep : representation Γ C H s) (p : SRec) :
@@ -138,8 +138,8 @@ theorem killed_covered (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ)
     | del target =>
       have stamp : o.1 = target := by simpa only [killed,he,rec,written] using kill
       simpa only [stamp] using he
-  have vis := rc_visible K mint ha.2.1 (ha.2.2.2.1 ho) eligible
-    ((rc_before Γ o e).mpr ⟨ins,shape⟩)
+  have vis := replayOrder_visible K mint ha.2.1 (ha.2.2.2.1 ho) eligible
+    ((replayOrder_before Γ o e).mpr ⟨ins,shape⟩)
   apply (membership Γ K.replayContext _ b hb p).mpr
   refine ⟨⟨o,⟨Or.inr (.single vis),ho.2⟩,ins,rec⟩,?_⟩
   intro d hd

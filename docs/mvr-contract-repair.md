@@ -45,7 +45,7 @@ these choices.
 
 ## Evidence
 
-`MVRContract.lean` proves `issued_overwrite`, `rc_implies_visibility`, and
+`MVRContract.lean` proves `issued_overwrite`, `replayOrder_implies_visibility`, and
 `overwrite_iff_successor` from exact origin issuance. `version_maximal`
 characterizes every stored version, not just a selected fork. `fold_refines`
 and `chronological_legal` construct the public finite-set replay;

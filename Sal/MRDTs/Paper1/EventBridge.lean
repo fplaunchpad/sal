@@ -108,7 +108,7 @@ theorem event_versions_of_canonical_total {D : MRDTSig}
     (canonical : @CanonicalConfig D P.lift C)
     (compatible : CommutationCompatibility D id S) (sound : EventFoldHistorySound D S) :
     EventVersionsSpecificationRA D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro v s E hv q
   obtain ⟨π, hp, hr, hf⟩ := hasReplayWitness_of_canonical canonical v s E hv
   have ho : respects π (paperOrder P C.replayContext E) :=
@@ -124,7 +124,7 @@ theorem event_versions_of_canonical_issued {D : MRDTSig}
     (laws : RestrictedLaws D.toUpdateSig P) (canonical : @CanonicalConfig D P.lift C)
     (honest : MintHonest D I.CanIssue C) (history : EventIssuedHistoryAdequacy D P S I) :
     EventVersionsSpecificationRA D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro v s E hv q
   have hs := canonical.canonical v s E hv
   obtain ⟨π,hp,ho,hvSpec,accepted⟩ := history C honest E
@@ -143,7 +143,7 @@ theorem event_versions_of_canonical_execution {D : MRDTSig}
     (laws : RestrictedLaws D.toUpdateSig P) (canonical : @CanonicalConfig D P.lift C)
     (exec : CertifiedExecution D I C) (history : EventExecutionHistoryAdequacy D P S I) :
     EventVersionsSpecificationRA D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro v s E hv q
   obtain ⟨π,hp,ho,hs,accepted⟩ := history C exec v s E hv q
   have hr : respects π (@loOn D.toUpdateSig P.lift C.replayContext E) :=
@@ -173,7 +173,7 @@ theorem event_certified_of_join_total {D : MRDTSig}
     (join : ∀ C, MintHonest D I.CanIssue C → @JoinAt D P.lift C.replayContext)
     (compatible : CommutationCompatibility D id S) (sound : EventFoldHistorySound D S) :
     EventCertifiedSpecificationRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro C reach
   exact event_versions_of_canonical_total laws
     (canonicalConfig_of_mintCertifiedV join reach) compatible sound
@@ -184,7 +184,7 @@ theorem event_certified_of_join_issued {D : MRDTSig}
     (join : ∀ C, MintHonest D I.CanIssue C → @JoinAt D P.lift C.replayContext)
     (history : EventIssuedHistoryAdequacy D P S I) :
     EventCertifiedSpecificationRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro C reach
   exact event_versions_of_canonical_issued laws
     (canonicalConfig_of_mintCertifiedV join reach) reach.mintHonest history
@@ -195,7 +195,7 @@ theorem event_certified_of_join_execution {D : MRDTSig}
     (join : ∀ C, MintHonest D I.CanIssue C → @JoinAt D P.lift C.replayContext)
     (history : EventExecutionHistoryAdequacy D P S I) :
     EventCertifiedSpecificationRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro C reach
   exact event_versions_of_canonical_execution laws
     (canonicalConfig_of_mintCertifiedV join reach) (.virtual reach) history
@@ -205,7 +205,7 @@ theorem event_certified_of_fiveVCs_total {D : MRDTSig}
     {I : Issuance D} (laws : RestrictedLaws D.toUpdateSig P) (vcs : PaperMergeVCs D P)
     (compatible : CommutationCompatibility D id S) (sound : EventFoldHistorySound D S) :
     EventCertifiedSpecificationRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact event_certified_of_join_total laws
     (fun C _ => (vcs.toCanonical laws).join C.replayContext) compatible sound
 
@@ -214,7 +214,7 @@ theorem event_certified_of_fiveVCs_issued {D : MRDTSig}
     {I : Issuance D} (laws : RestrictedLaws D.toUpdateSig P) (vcs : PaperMergeVCs D P)
     (history : EventIssuedHistoryAdequacy D P S I) :
     EventCertifiedSpecificationRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact event_certified_of_join_issued laws
     (fun C _ => (vcs.toCanonical laws).join C.replayContext) history
 
@@ -223,7 +223,7 @@ theorem event_certified_of_fiveVCs_execution {D : MRDTSig}
     {I : Issuance D} (laws : RestrictedLaws D.toUpdateSig P) (vcs : PaperMergeVCs D P)
     (history : EventExecutionHistoryAdequacy D P S I) :
     EventCertifiedSpecificationRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact event_certified_of_join_execution laws
     (fun C _ => (vcs.toCanonical laws).join C.replayContext) history
 

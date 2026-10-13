@@ -10,7 +10,7 @@ open Sal.MRDTs Sal.MRDTs.Foundation Sal.MRDTs.Paper1
 
 /-- The event comparison used by the finite policy expansion. -/
 class PolicyData (D : MRDTSig) where
-  order : Op D.AppOp → Op D.AppOp → RcRes
+  order : Op D.AppOp → Op D.AppOp → OrderResult
 
 /-- Optional birth/kill description. Its presence selects semantic mask replay;
 without it, the frontend attempts to project an existing replay witness. -/

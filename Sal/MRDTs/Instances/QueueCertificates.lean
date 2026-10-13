@@ -96,7 +96,7 @@ def replayAdequacy : ReplayAdequacyCertificate Q generation :=
 
 theorem queue_replay_witness {C : Configuration Q}
     (h : MintCertifiedReach Q generation C) :
-    @HasReplayWitness Q rc C :=
+    @HasReplayWitness Q replayOrder C :=
   replayAdequacy.sound h
 
 def spec : SequentialMachine (Op QOp) where
@@ -137,7 +137,7 @@ def sequential : SequentialRefinement Q spec where
 
 noncomputable def replayAdequate : ReplayAdequateMRDT Q where
   issuance := generation
-  rc := rc
+  replayOrder := replayOrder
   replayAdequacy := replayAdequacy
   Machine := spec
   sequential := sequential

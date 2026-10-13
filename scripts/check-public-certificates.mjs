@@ -17,14 +17,14 @@ export function validateContracts(manifest, runtime) {
     assert.match(c.id, /^[a-z][a-z0-9-]*$/);
     assert.ok(!ids.has(c.id), `duplicate contract: ${c.id}`);
     ids.add(c.id);
-    for (const key of ['certificate', 'implementation', 'issuance', 'rc', 'spec', 'relation']) {
+    for (const key of ['certificate', 'implementation', 'issuance', 'replayOrder', 'spec', 'relation']) {
       assert.equal(typeof c[key], 'string', `${c.id}: missing ${key}`);
       assert.ok(c[key].trim().length > 0, `${c.id}: empty ${key}`);
       // These are trusted, source-controlled Lean terms, not inferred projections.
       assert.ok(!/[\n\r;]/.test(c[key]), `${c.id}: ${key} must be a single-line term`);
     }
     assert.match(c.certificate, /^Instances\.[A-Za-z0-9_.]+(?: |$)/);
-    for (const key of ['implementation', 'issuance', 'rc', 'spec', 'relation']) {
+    for (const key of ['implementation', 'issuance', 'replayOrder', 'spec', 'relation']) {
       assert.ok(!/verified|Verified|certificate/.test(c[key]),
         `${c.id}: select ${key} independently of the certificate`);
     }
@@ -61,23 +61,23 @@ export function contractSource(manifest) {
     (E : Set (Op implementation.AppOp)) (hver : C.ver v = some (s, E)) :
     ∃ π : List (Op implementation.AppOp),
       listPermOf π E ∧
-      respects π (@loOn implementation.toUpdateSig rc C.replayContext E) ∧
+      respects π (@loOn implementation.toUpdateSig replayOrder C.replayContext E) ∧
       spec.Legal π ∧ rel s (spec.run π) ∧
       ∀ q, implementation.query s q = spec.query (spec.run π) q`;
   const entries = manifest.contracts.map((c, i) => `
 namespace Entry${i}
 noncomputable def implementation : MRDTSig := ${c.implementation}
 noncomputable def issuance : Issuance implementation := ${c.issuance}
-noncomputable def rc : ReplayPolicy implementation.toUpdateSig := ${c.rc}
+noncomputable def replayOrder : EventOrder implementation.toUpdateSig := ${c.replayOrder}
 noncomputable def spec : SequentialSpec implementation := ${c.spec}
 noncomputable def rel : implementation.State → spec.State → Prop := ${c.relation}
 noncomputable def certificate : VerifiedMRDT implementation := ${c.certificate}
 example : certificate.issuance = issuance := by rfl
-example : certificate.rc = rc := by rfl
+example : certificate.replayOrder = replayOrder := by rfl
 example : certificate.Spec = spec := by rfl
 example : certificate.Rel = rel := by rfl
-example : @ReplayAdequacyCertificate implementation issuance rc := certificate.replayAdequacy
-example : SequentialCorrectnessCertificate implementation issuance rc spec rel :=
+example : @ReplayAdequacyCertificate implementation issuance replayOrder := certificate.replayAdequacy
+example : SequentialCorrectnessCertificate implementation issuance replayOrder spec rel :=
   certificate.sequentialCorrectness
 theorem ordinary {C : Configuration implementation}
     (h : MintCertifiedReach implementation issuance C)

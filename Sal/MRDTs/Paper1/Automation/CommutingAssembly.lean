@@ -6,7 +6,7 @@ theorem automatedJoinAt (commute : ∀ a b, D.toUpdateSig.commutes a b)
     (vcs : Raw.MergeVCs (commutingPolicy D.AppOp) (representation D) (scheme commute))
     (C : ReplayContext D.toUpdateSig) : JoinAt D C := by
   intro E₁ E₂ l a b trans irrefl sup₁ sup₂ closed₁ closed₂ hl ha hb
-  have rep : ∀ E s, Supported C E → @IsCanonicalState D.toUpdateSig (ReplayPolicy.default _) C E s → representation D C E s := by
+  have rep : ∀ E s, Supported C E → @IsCanonicalState D.toUpdateSig (EventOrder.default _) C E s → representation D C E s := by
     rintro E s sup ⟨π,hp,_,hf⟩
     exact ⟨sup,π,hp,hf⟩
   obtain ⟨π₁,hp₁,_,_⟩ := ha
@@ -22,7 +22,7 @@ theorem automatedJoinAt (commute : ∀ a b, D.toUpdateSig.commutes a b)
     (rep _ _ sup₁ ⟨π₁,hp₁,by assumption,by assumption⟩)
     (rep _ _ sup₂ ⟨π₂,hp₂,by assumption,by assumption⟩)
   obtain ⟨_,π,hp,hf⟩ := joined
-  exact ⟨π,hp,hp.1.imp (fun {_ _} _ => by simp [loOn,UpdateSig.rc,UpdateSig.replayOrder,ReplayPolicy.default,ReplayPolicy.unconstrained]),hf⟩
+  exact ⟨π,hp,hp.1.imp (fun {_ _} _ => by simp [loOn,UpdateSig.replayBefore,UpdateSig.replayOrder,EventOrder.default,EventOrder.unconstrained]),hf⟩
 
 theorem automatedCanonicalConfig (commute : ∀ a b, D.toUpdateSig.commutes a b)
     (vcs : Raw.MergeVCs (commutingPolicy D.AppOp) (representation D) (scheme commute))

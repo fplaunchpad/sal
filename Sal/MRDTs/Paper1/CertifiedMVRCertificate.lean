@@ -9,7 +9,7 @@ merge theorem. The scoped policy laws are stated explicitly; this is not an
 inhabitant of the old globally quantified guarded-law class. -/
 namespace Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.Certificate
 open Foundation ConcreteMRDT Instances.MVRLive
-local instance : ReplayPolicy D.toUpdateSig := rc
+local instance : EventOrder D.toUpdateSig := replayOrder
 abbrev language := CertifiedMVRHistory.language
 
 def representation : Representation D := fun _ E s => Represents E s

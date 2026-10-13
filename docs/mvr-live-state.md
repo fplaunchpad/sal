@@ -43,7 +43,7 @@ union, and presence of each branch's overwrite targets in that branch.
 `fold_live` connects chronological replay to the independent surviving-write
 history definition. It reuses the existing sequential-machine refinement,
 not the old all-commuting update or merge proofs. `spec_run_eq` preserves the
-existing abstract machine definition; `rc_acyclic` preserves the existing
+existing abstract machine definition; `replayOrder_acyclic` preserves the existing
 observed-supersession policy. The principal representation theorems use only
 the standard Lean axioms.
 

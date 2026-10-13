@@ -18,7 +18,7 @@ surface for `Join` datatypes does not move. That is the headline. -/
 
 section VirtualMergeBase
 variable {D : MRDTSig}
-variable [P : ReplayPolicy D.toUpdateSig]
+variable [P : EventOrder D.toUpdateSig]
 
 /-- The union of the registered event sets over a finite support. -/
 def unionEvents (C : Configuration D) (S : Finset Version) : Set (Op D.AppOp) :=

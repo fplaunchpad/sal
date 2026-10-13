@@ -264,7 +264,7 @@ theorem canonical_respects_specVisibility_of_evidence (strict : Bool)
     (hperm : listPermOf ops E) :
     respects (canonical ops)
       (projectedSpecVisibility project (machine strict).toSpec C.replayContext) := by
-  have combined := (canonical_ordered ops).and (canonical_respects_rc_of_evidence good honest hver hperm)
+  have combined := (canonical_ordered ops).and (canonical_respects_replayOrder_of_evidence good honest hver hperm)
   apply combined.imp
   intro a b h hspec
   obtain ⟨ats, ar, aop⟩ := a
@@ -283,7 +283,7 @@ theorem canonical_respects_specVisibility_of_evidence (strict : Bool)
               simpa only [project, Op.op, Op.time] using
                 HistorySpec.commutes_symm (insert_delete_commute strict ats anchor target outside))
           apply h.2
-          exact Or.inl ⟨hspec.1, Or.inr (by simpa [rc, rcOrder] using conflict)⟩
+          exact Or.inl ⟨hspec.1, Or.inr (by simpa [replayOrder, eventOrder] using conflict)⟩
   | remove target =>
       cases bop with
       | addAfter anchor => simp [WitnessLE, witnessLEBool] at h

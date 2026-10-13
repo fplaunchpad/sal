@@ -7,7 +7,7 @@ namespace Sal.MRDTs.Instances.MVR
 
 open Sal.MRDTs.Foundation
 open Classical
-attribute [local instance] rc
+attribute [local instance] replayOrder
 
 def writeValue (e : Op MVROp) : ℕ :=
   match e.2.2 with | .write v _ => v
@@ -76,20 +76,20 @@ theorem issued_overwrite_lt {C : Configuration MVR}
   simpa [ht] using C.causal_mono hv
 
 /-- On an issued write, the timestamp guard is already implied by the
-observed-overwrite payload. This is the client-facing form of rc. -/
-theorem rc_iff_overwrite_of_execution {C : Configuration MVR}
+observed-overwrite payload. This is the client-facing form of replayOrder. -/
+theorem replayOrder_iff_overwrite_of_execution {C : Configuration MVR}
     (exec : CertifiedExecution MVR generation C) {a b : Op MVROp}
     (hb : b ∈ C.events) :
-    MVR.toUpdateSig.rc a b ↔ a.1 ∈ overwrites b := by
-  rw [rc_before_iff]
+    MVR.toUpdateSig.replayBefore a b ↔ a.1 ∈ overwrites b := by
+  rw [replayOrder_before_iff]
   exact ⟨And.right, fun h => ⟨issued_overwrite_lt exec hb h, h⟩⟩
 
 /-- The payload-based policy cannot orient concurrent issued writes. -/
-theorem rc_implies_visibility {C : Configuration MVR}
+theorem replayOrder_implies_visibility {C : Configuration MVR}
     (exec : CertifiedExecution MVR generation C) {a b : Op MVROp}
     (ha : a ∈ C.events) (hb : b ∈ C.events)
-    (hrc : MVR.toUpdateSig.rc a b) : C.vis a b := by
-  obtain ⟨birth, hm, hv, ht⟩ := issued_overwrite exec hb ((rc_before_iff a b).mp hrc).2
+    (hrc : MVR.toUpdateSig.replayBefore a b) : C.vis a b := by
+  obtain ⟨birth, hm, hv, ht⟩ := issued_overwrite exec hb ((replayOrder_before_iff a b).mp hrc).2
   have heq := C.replayContext.ts_unique hm ha ht
   simpa [heq] using hv
 
@@ -175,7 +175,7 @@ theorem chronological_respects (C : Configuration MVR) (E : Set (Op MVROp))
   intro a b hab hlo
   rcases hlo with hvis | hrc
   · exact (not_lt_of_ge hab) (C.causal_mono hvis.1)
-  · exact (not_lt_of_ge hab) ((rc_before_iff b a).mp hrc.2.2.1).1
+  · exact (not_lt_of_ge hab) ((replayOrder_before_iff b a).mp hrc.2.2.1).1
 
 /-- Sorted witnesses fold to precisely the live finite set, without keeping
 births or overwrite logs in the abstract state. -/
@@ -245,7 +245,7 @@ theorem chronological_legal {C : Configuration MVR}
     have hle := (List.pairwise_cons.mp (List.pairwise_append.mp hsort).2.1).1 a ha
     exact ((not_lt_of_ge hle) (C.causal_mono hv)).elim
 
-def clientSequentialCorrectness : SequentialCorrectnessCertificate MVR generation rc clientSpec stateRel where
+def clientSequentialCorrectness : SequentialCorrectnessCertificate MVR generation replayOrder clientSpec stateRel where
   sound C exec replay := by
     intro v s E hver
     have hcfg := exec.canonicalConfig (fun C _ => mvrJoin C.replayContext)
@@ -273,14 +273,14 @@ def clientSequentialCorrectness : SequentialCorrectnessCertificate MVR generatio
 
 noncomputable def verified : VerifiedMRDT MVR where
   issuance := generation
-  rc := rc
+  replayOrder := replayOrder
   replayAdequacy := replayAdequacy
   Spec := clientSpec
   Rel := stateRel
   sequentialCorrectness := clientSequentialCorrectness
 
 theorem mvr_correct {C : Configuration MVR} (exec : CertifiedExecution MVR generation C) :
-    IsSpecLinearizable MVR rc clientSpec stateRel C ∧
+    IsSpecLinearizable MVR replayOrder clientSpec stateRel C ∧
     (∀ v s E, C.ver v = some (s, E) → ∀ p : ℕ × ℕ,
       (s.1 p = true ∧ s.2 p.1 = false) ↔
         ∃ a ∈ E, a.1 = p.1 ∧ writeValue a = p.2 ∧ ∀ b ∈ E, ¬ C.vis a b) := by

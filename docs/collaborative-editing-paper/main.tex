@@ -639,9 +639,14 @@ The sequential theorem matters independently of convergence. EmbedRGA and
 SidedEmbedRGA refine explicit list machines for a legal minted linear history.
 Each kernel also has the merged-history \lean{VerifiedMRDT} theorem: each
 replicated version has an exact, causally ordered, legal sequential witness
-with the intended list view. Each package supplies one \lean{ReplayPolicy}
-named \lean{rc}; \lean{loOn} combines it with visibility, retaining every
-causal edge whose operation pair conflicts according to $rc$. The proof-level
+with the intended list view. Each package supplies one \lean{EventOrder}
+stored in \lean{VerifiedMRDT.replayOrder}; write $\mathsf{ord}$ for its
+directed full-event relation. \lean{loOn} retains a visibility edge when
+$\mathsf{ord}$ relates its events in either direction, and uses the selected
+direction for concurrent pairs subject to its absorber condition. The
+submission manuscript reserves $rc$ for an operation-level conflict relation
+and its event lift; the independently selected event order here need not be
+that lift. The proof-level
 \lean{UpdateSig} is derived from the MRDT
 signature. The generation premise
 preserves the actual editor protocol rather than silently totalizing invalid

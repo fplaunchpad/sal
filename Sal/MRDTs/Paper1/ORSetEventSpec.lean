@@ -60,7 +60,7 @@ theorem foldHistorySound : EventFoldHistorySound (D α) (spec α) := simulation.
 bridge, including every stored ancestor version. -/
 theorem certifiedVersionsRAV :
     EventCertifiedSpecificationRAV (D α) (conflict α) (spec α) (issuance α) := by
-  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  letI : EventOrder (D α).toUpdateSig := (conflict α).lift
   apply event_certified_of_join_total restrictedLaws _ commutationCompatibility foldHistorySound
   intro C _
   rw [conflict_lift_eq]

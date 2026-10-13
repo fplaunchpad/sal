@@ -8,7 +8,7 @@ namespace Sal.MRDTs.Paper1.CertifiedFugueInvariantObstruction
 open Foundation Sal.EmbedRGA
 open Instances.SidedEmbedRGA Instances.SidedEmbedRGA.FugueMax
 open CertifiedFugueRawOrderObstruction
-attribute [local instance] Instances.SidedEmbedRGA.FugueMax.rc
+attribute [local instance] Instances.SidedEmbedRGA.FugueMax.replayOrder
 
 private theorem allOps_enum : listPermOf allOps (↑((indices 3).image event) : Set Event) := by
   refine ⟨by decide,?_⟩

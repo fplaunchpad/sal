@@ -35,7 +35,7 @@ origin witness needed after the issuer advances.
 `Legal` cannot inspect `D.State`. This keeps implementation metadata out of
 the sequential contract. A total datatype sets `Legal` to `True`.
 
-`VerifiedMRDT` supplies issuance, one public `rc : ReplayPolicy`, widened
+`VerifiedMRDT` supplies issuance, one public `rc : EventOrder`, widened
 convergence, the sequential specification, a representation relation, and one
 `SequentialCorrectnessCertificate`. Ordinary
 certified execution embeds in widened execution, so the package stores no
@@ -123,8 +123,8 @@ concurrent direction. EmbedRGA and SidedEmbedRGA carry immutable coordinates,
 so their replayed insertions do not need anchor state and commute with deletion
 of the anchor. Their public states remain ordinary lists.
 
-`RcSPOT.LWW.old_no_chain_refuted` checks that a valid LWW timestamp order
-contains a length-two edge chain, so the historical `no_rc_chain` condition
+`EventOrderSPOT.LWW.old_no_chain_refuted` checks that a valid LWW timestamp order
+contains a length-two edge chain, so the historical `no_replayOrder_chain` condition
 cannot be a framework requirement. `ReplayLaws` instead asks for acyclicity of
 the transitive closure of active `rc` edges.
 

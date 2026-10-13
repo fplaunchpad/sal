@@ -13,7 +13,7 @@ event set respecting one proof-local replay policy.
 This is an internal replay-adequacy property. It does not say that the
 witness is prefix-legal for a client-facing sequential specification. -/
 def HasReplayWitnessWith (D : MRDTSig)
-    (P : ReplayPolicy D.toUpdateSig) (C : Configuration D) : Prop :=
+    (P : EventOrder D.toUpdateSig) (C : Configuration D) : Prop :=
   ∀ (v : Version) (s : D.State) (E : Set (Op D.AppOp)),
     C.ver v = some (s, E) →
     ∃ π : List (Op D.AppOp),
@@ -21,10 +21,10 @@ def HasReplayWitnessWith (D : MRDTSig)
       respects π (@loOn D.toUpdateSig P C.replayContext E) ∧
       applySeq D.toUpdateSig D.init π = s
 
-/-- Acyclic `rc` plus the absorber clause yields a finite witness for the sole
-visibility-plus-`rc` order. -/
-theorem exists_loOn_respecting_perm_of_rcAcyclic {D : MRDTSig}
-    (P : ReplayPolicy D.toUpdateSig) (hRc : @RcAcyclic D.toUpdateSig P)
+/-- Acyclic `replayOrder` plus the absorber clause yields a finite witness for the sole
+visibility-plus-`replayOrder` order. -/
+theorem exists_loOn_respecting_perm_of_replayAcyclic {D : MRDTSig}
+    (P : EventOrder D.toUpdateSig) (hRc : @ReplayAcyclic D.toUpdateSig P)
     {C : ReplayContext D.toUpdateSig}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
       C.vis a b → C.vis b c → C.vis a c)
@@ -32,14 +32,14 @@ theorem exists_loOn_respecting_perm_of_rcAcyclic {D : MRDTSig}
     {E : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
     (hperm : listPermOf l E) (h_in_C : ∀ a ∈ E, a ∈ C.events) :
     ∃ ρ, listPermOf ρ E ∧ respects ρ (@loOn D.toUpdateSig P C E) := by
-  letI : ReplayPolicy D.toUpdateSig := P
+  letI : EventOrder D.toUpdateSig := P
   exact exists_loOn_respecting_perm_of_acyclic hperm
-    (loOnNe_acyclic_of_rcAcyclic hRc h_vis_trans h_vis_irrefl h_in_C)
+    (loOnNe_acyclic_of_replayAcyclic hRc h_vis_trans h_vis_irrefl h_in_C)
 
 /-- Client-facing sequential correctness. The witness contains exactly the events
 of the version, respects the framework order, is accepted by the independent
 sequential specification, and agrees with its state and observations. -/
-def IsSpecLinearizable (D : MRDTSig) (P : ReplayPolicy D.toUpdateSig)
+def IsSpecLinearizable (D : MRDTSig) (P : EventOrder D.toUpdateSig)
     (S : SequentialSpec D)
     (Rel : D.State → S.State → Prop)
     (C : Configuration D) : Prop :=
@@ -65,7 +65,7 @@ theorem CausalCanonical.toSpec {D : MRDTSig} {C : Configuration D}
     (observes : ∀ ops query,
       D.query (applySeq D.toUpdateSig D.init ops) query =
         S.query (S.run ops) query) :
-    IsSpecLinearizable D (ReplayPolicy.unconstrained D.toUpdateSig) S Rel C := by
+    IsSpecLinearizable D (EventOrder.unconstrained D.toUpdateSig) S Rel C := by
   intro v s E hver
   obtain ⟨π, hperm, hvis, hlo, hfold⟩ := h v s E hver
   refine ⟨π, hperm, hlo, legal π, ?_, ?_⟩
@@ -78,7 +78,7 @@ internal experiment may prove `HasReplayWitnessWith` for another policy
 directly; this bridge deliberately makes no stronger claim. -/
 theorem hasReplayWitnessWith_default (D : MRDTSig)
     (C : Configuration D) :
-    HasReplayWitnessWith D (ReplayPolicy.default D.toUpdateSig) C ↔
+    HasReplayWitnessWith D (EventOrder.default D.toUpdateSig) C ↔
       HasReplayWitness C := Iff.rfl
 
 /-- Internal replay adequacy for issuance-certified widened execution.
@@ -86,7 +86,7 @@ Ordinary execution embeds in this semantics, so its theorem is derived.
 Datatype-specific Join proofs derive any history facts they need directly from
 `MintHonest`. -/
 structure ReplayAdequacyCertificate (D : MRDTSig) (I : Issuance D)
-    [P : ReplayPolicy D.toUpdateSig] where
+    [P : EventOrder D.toUpdateSig] where
   soundV : ∀ {C},
     MintCertifiedReachV D (canonicalVirtualMergeBase D) I C →
       @HasReplayWitness D P C
@@ -95,13 +95,13 @@ namespace ReplayAdequacyCertificate
 
 /-- An all-context Join yields replay adequacy for any issuance policy. Issuance
 evidence is erased before applying the raw widened adequacy theorem. -/
-def ofJoin {D : MRDTSig} (I : Issuance D) {P : ReplayPolicy D.toUpdateSig}
+def ofJoin {D : MRDTSig} (I : Issuance D) {P : EventOrder D.toUpdateSig}
     (hJoin : @Join D P) : @ReplayAdequacyCertificate D I P where
   soundV := fun h => replayWitnessV_of_join hJoin _ h.toReachable
 
 /-- A Join theorem restricted by `Good` yields replay adequacy when issuance
 consistency establishes that replay-context predicate. -/
-def ofJoinOn {D : MRDTSig} {I : Issuance D} {P : ReplayPolicy D.toUpdateSig}
+def ofJoinOn {D : MRDTSig} {I : Issuance D} {P : EventOrder D.toUpdateSig}
     {Good : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig → Prop}
     (hJoin : @JoinOn D P Good)
     (hEstablishes : IssuanceEstablishes D I Good) :
@@ -110,7 +110,7 @@ def ofJoinOn {D : MRDTSig} {I : Issuance D} {P : ReplayPolicy D.toUpdateSig}
     (fun C hMint => hJoin C.replayContext (hEstablishes C hMint)) h
 
 /-- Ordinary replay adequacy is the base case of widened replay adequacy. -/
-theorem sound {D : MRDTSig} {I : Issuance D} {P : ReplayPolicy D.toUpdateSig}
+theorem sound {D : MRDTSig} {I : Issuance D} {P : EventOrder D.toUpdateSig}
     (K : @ReplayAdequacyCertificate D I P) {C : Configuration D}
     (h : MintCertifiedReach D I C) : @HasReplayWitness D P C :=
   K.soundV h.toV
@@ -135,7 +135,7 @@ theorem CertifiedExecution.mintHonest {D : MRDTSig} {I : Issuance D}
   | virtual reach => exact reach.mintHonest
 
 theorem CertifiedExecution.canonicalConfig {D : MRDTSig}
-    {I : Issuance D} {P : ReplayPolicy D.toUpdateSig} {C : Configuration D}
+    {I : Issuance D} {P : EventOrder D.toUpdateSig} {C : Configuration D}
     (join : ∀ C, MintHonest D I.CanIssue C → @JoinAt D P C.replayContext)
     (h : CertifiedExecution D I C) : @CanonicalConfig D P C := by
   cases h with
@@ -146,7 +146,7 @@ theorem CertifiedExecution.canonicalConfig {D : MRDTSig}
 correctness. The framework applies this one theorem to both ordinary and virtual-merge-base
 executions, so the verification package does not store duplicate proofs. -/
 structure SequentialCorrectnessCertificate (D : MRDTSig)
-    (I : Issuance D) (P : ReplayPolicy D.toUpdateSig)
+    (I : Issuance D) (P : EventOrder D.toUpdateSig)
     (S : SequentialSpec D)
     (Rel : D.State → S.State → Prop) where
   sound : ∀ C, CertifiedExecution D I C → @HasReplayWitness D P C →
@@ -160,7 +160,7 @@ def SequentialCorrectnessCertificate.ofTotal {D : MRDTSig}
     (join : ∀ C, MintHonest D I.CanIssue C → JoinAt D C.replayContext)
     (hcomm : ∀ a b : Op D.AppOp, D.toUpdateSig.commutes a b)
     (hrc : ∀ a b : Op D.AppOp,
-      D.toUpdateSig.replayOrder a b = RcRes.Either)
+      D.toUpdateSig.replayOrder a b = OrderResult.Either)
     (legal : ∀ ops, S.Legal ops)
     (refines : ∀ ops,
       Rel (applySeq D.toUpdateSig D.init ops) (S.run ops))
@@ -168,18 +168,18 @@ def SequentialCorrectnessCertificate.ofTotal {D : MRDTSig}
       D.query (applySeq D.toUpdateSig D.init ops) query =
         S.query (S.run ops) query) :
     SequentialCorrectnessCertificate D I
-      (ReplayPolicy.unconstrained D.toUpdateSig) S Rel where
+      (EventOrder.unconstrained D.toUpdateSig) S Rel where
   sound _ exec _ := by
     have hG := exec.canonicalConfig join
-    have hCC := causalCanonical_of_all_comm_rc_either hcomm hrc hG
+    have hCC := causalCanonical_of_all_comm_replayOrder_either hcomm hrc hG
     exact hCC.toSpec legal refines observes
 
 /-- Internal compatibility package for raw-fold refinement. It remains while
 older instances migrate, but it is not the public sequential-correctness API. -/
 structure ReplayAdequateMRDT (D : MRDTSig) where
   issuance : Issuance D
-  rc : ReplayPolicy D.toUpdateSig
-  replayAdequacy : @ReplayAdequacyCertificate D issuance rc
+  replayOrder : EventOrder D.toUpdateSig
+  replayAdequacy : @ReplayAdequacyCertificate D issuance replayOrder
   Machine : SequentialMachine (Op D.AppOp)
   sequential : SequentialRefinement D Machine
   sequential_of_mint : ∀ ops,
@@ -187,17 +187,17 @@ structure ReplayAdequateMRDT (D : MRDTSig) where
 
 /-- Complete public sequential-correctness package. Issuance constrains only origin
 operation creation; `Spec.Legal` independently defines acceptable sequential
-histories. The `rc` policy supplies the sole event-ordering direction; it does
+histories. The `replayOrder` policy supplies the sole event-ordering direction; it does
 not leak implementation state into the sequential specification. Safety and state
 GC remain separate optional certificates. -/
 structure VerifiedMRDT (D : MRDTSig) where
   issuance : Issuance D
-  rc : ReplayPolicy D.toUpdateSig
-  replayAdequacy : @ReplayAdequacyCertificate D issuance rc
+  replayOrder : EventOrder D.toUpdateSig
+  replayAdequacy : @ReplayAdequacyCertificate D issuance replayOrder
   Spec : SequentialSpec D
   Rel : D.State → Spec.State → Prop
   sequentialCorrectness :
-    SequentialCorrectnessCertificate D issuance rc Spec Rel
+    SequentialCorrectnessCertificate D issuance replayOrder Spec Rel
 
 /-- The only admissible production-registry entry. Raw signatures,
 replay-only packages, SPOTs, and countermodels cannot inhabit this type unless
@@ -221,14 +221,14 @@ variable {D : MRDTSig} (V : ReplayAdequateMRDT D)
 
 theorem replay {C : Configuration D}
     (h : MintCertifiedReach D V.issuance C) :
-    @HasReplayWitness D V.rc C :=
-  @ReplayAdequacyCertificate.sound D V.issuance V.rc
+    @HasReplayWitness D V.replayOrder C :=
+  @ReplayAdequacyCertificate.sound D V.issuance V.replayOrder
     V.replayAdequacy C h
 
 theorem replayV {C : Configuration D}
     (h : MintCertifiedReachV D (canonicalVirtualMergeBase D) V.issuance C) :
-    @HasReplayWitness D V.rc C :=
-  @ReplayAdequacyCertificate.soundV D V.issuance V.rc
+    @HasReplayWitness D V.replayOrder C :=
+  @ReplayAdequacyCertificate.soundV D V.issuance V.replayOrder
     V.replayAdequacy C h
 
 theorem sequentially_correct (ops : List (Op D.AppOp))
@@ -244,18 +244,18 @@ variable {D : MRDTSig} (V : VerifiedMRDT D)
 
 theorem correct {C : Configuration D}
     (h : MintCertifiedReach D V.issuance C) :
-    IsSpecLinearizable D V.rc V.Spec V.Rel C :=
+    IsSpecLinearizable D V.replayOrder V.Spec V.Rel C :=
   V.sequentialCorrectness.sound C
     (.ordinary h)
-    (@ReplayAdequacyCertificate.sound D V.issuance V.rc
+    (@ReplayAdequacyCertificate.sound D V.issuance V.replayOrder
       V.replayAdequacy C h)
 
 theorem correctV {C : Configuration D}
     (h : MintCertifiedReachV D (canonicalVirtualMergeBase D) V.issuance C) :
-    IsSpecLinearizable D V.rc V.Spec V.Rel C :=
+    IsSpecLinearizable D V.replayOrder V.Spec V.Rel C :=
   V.sequentialCorrectness.sound C
     (.virtual h)
-    (@ReplayAdequacyCertificate.soundV D V.issuance V.rc
+    (@ReplayAdequacyCertificate.soundV D V.issuance V.replayOrder
       V.replayAdequacy C h)
 
 end VerifiedMRDT

@@ -67,6 +67,6 @@ theorem paperOrder_control :
     paperOrder (EventSpec.conflict Nat) context events older newer ∧
     ¬ @loOn (D Nat).toUpdateSig (EventSpec.conflict Nat).lift context events older newer := by
   refine ⟨Or.inl ⟨⟨rfl, rfl⟩, EventSpec.same_replica_adds_noncomm 7⟩, ?_⟩
-  simp [loOn, UpdateSig.rc, ReplayPolicy.Before, OperationPolicy.lift, EventSpec.conflict, Op.op]
+  simp [loOn, UpdateSig.replayBefore, EventOrder.Before, OperationPolicy.lift, EventSpec.conflict, Op.op]
 
 end Sal.MRDTs.Paper1.EfficientORSet.GuardedPolicyControls

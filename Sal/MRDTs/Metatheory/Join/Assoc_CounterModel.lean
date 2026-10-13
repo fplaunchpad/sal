@@ -17,7 +17,7 @@ fails on a two-event, visibly-reachable configuration.
 
 State = `AWState × Bool`. The base component is exactly `AWSet`
 (add-wins set skeleton: `add` inserts its timestamp, `rem` kills
-everything currently added, merge is pairwise union, `rc rem add =
+everything currently added, merge is pairwise union, `replayOrder rem add =
 Fst`). The extra component is a Boolean **flag written by every
 update**: `add` sets it `true`, `rem` sets it `false`; merge is `∨`;
 `init` is `false`. `(Bool, ∨, false)` is a semilattice with unit, so
@@ -26,7 +26,7 @@ history is just *the kind of the last op*. It has no memory.
 
 ## Why every `BinaryMergeLaws` field survives
 
-The update-level fields (`rc_non_comm_directional`, `no_rc_chain`,
+The update-level fields (`rc_non_comm_directional`, `no_replayOrder_chain`,
 `cond_comm_lift`) compare states produced by update sequences **ending
 in the same event**, so the flags agree trivially; the base components
 are `AWSet`'s, proved in `Convergence_CounterModel.lean`. (The flag
@@ -52,7 +52,7 @@ situations, where the flag is again invisible:
 canonical two-replica scenario, replica 0 does `a = add` then
 `e = rem` (`vis a e`); replica 1 merged replica 0's state in between,
 so its set is `{a}`. With `ev₁ = {a, e}`, `ev₂ = {a}`, `e` is
-`loOn(∪)`-maximal (its only potential rc-edge target `a` is
+`loOn(∪)`-maximal (its only potential replayOrder-edge target `a` is
 `vis`-before it) and both sides are backward-closed. Then
 
     merge σ(ev₁) σ(ev₂)              has flag  false ∨ true = true
@@ -124,7 +124,7 @@ join-semilattice (ACI with unit `((∅,∅), false)`). -/
 def awfMerge (σ τ : AWFState) : AWFState :=
   (awMerge σ.1 τ.1, σ.2 || τ.2)
 
-/-- `AWSet` enriched with the last-op flag. Same ops, same `rc`, same
+/-- `AWSet` enriched with the last-op flag. Same ops, same `replayOrder`, same
 base semantics; the merge is a genuine lattice join. -/
 noncomputable def AWSetF : UpdateSig where
   State := AWFState
@@ -137,12 +137,12 @@ noncomputable def AWSetF : UpdateSig where
 noncomputable instance AWSetFHistoricalBinaryMerge : HistoricalBinaryMerge AWSetF where
   binaryMerge := awfMerge
 
-local instance : ReplayPolicy AWSetF where
-  order := awRc
+local instance : EventOrder AWSetF where
+  order := awOrder
 
 @[simp] theorem AWSetF_update : AWSetF.update = awfUpdate := rfl
 @[simp] theorem AWSetF_merge : AWSetF.historicalMerge = awfMerge := rfl
-@[simp] theorem AWSetF_rc : AWSetF.replayOrder = awRc := rfl
+@[simp] theorem AWSetF_replayOrder : AWSetF.replayOrder = awOrder := rfl
 @[simp] theorem AWSetF_init :
     AWSetF.init = ((((∅ : Set Timestamp), (∅ : Set Timestamp))), false) := rfl
 
@@ -200,14 +200,14 @@ theorem AWSetF_not_comm_rem_add {e₁ e₂ : Op AWSetF.AppOp}
 
 /-! ### 3. `BinaryMergeLaws` holds for `AWSetF` -/
 
-theorem AWSetF_rc_non_comm_directional :
+theorem AWSetF_replayOrder_non_comm_directional :
     ∀ o₁ o₂ : Op AWSetF.AppOp,
       (¬ AWSetF.commutes o₁ o₂ ↔
-       (AWSetF.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
-        AWSetF.replayOrder o₂ o₁ = RcRes.Fst_then_snd)) := by
+       (AWSetF.replayOrder o₁ o₂ = OrderResult.Fst_then_snd ∨
+        AWSetF.replayOrder o₂ o₁ = OrderResult.Fst_then_snd)) := by
   intro o₁ o₂
   rcases h₁ : o₁.2.2 <;> rcases h₂ : o₂.2.2 <;>
-    simp only [AWSetF_rc, awRc_eq, h₁, h₂]
+    simp only [AWSetF_replayOrder, awOrder_eq, h₁, h₂]
   · constructor
     · intro h; exact absurd (AWSetF_comm_add_add h₁ h₂) h
     · rintro (h | h) <;>
@@ -223,14 +223,14 @@ theorem AWSetF_rc_non_comm_directional :
     · rintro (h | h) <;>
         exact absurd h (by first | exact fun h' => nomatch h' | decide)
 
-theorem AWSetF_no_rc_chain :
+theorem AWSetF_no_replayOrder_chain :
     ∀ o₁ o₂ o₃ : Op AWSetF.AppOp,
       distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (AWSetF.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
-         AWSetF.replayOrder o₂ o₃ = RcRes.Fst_then_snd) := by
+      ¬ (AWSetF.replayOrder o₁ o₂ = OrderResult.Fst_then_snd ∧
+         AWSetF.replayOrder o₂ o₃ = OrderResult.Fst_then_snd) := by
   rintro o₁ o₂ o₃ _ _ ⟨h₁₂, h₂₃⟩
   rcases ha : o₁.2.2 <;> rcases hb : o₂.2.2 <;> rcases hc : o₃.2.2 <;>
-    simp only [AWSetF_rc, awRc_eq, ha, hb, hc] at h₁₂ h₂₃ <;>
+    simp only [AWSetF_replayOrder, awOrder_eq, ha, hb, hc] at h₁₂ h₂₃ <;>
     first
       | exact absurd h₁₂ (by decide)
       | exact absurd h₂₃ (by decide)
@@ -241,21 +241,21 @@ theorem AWSetF_cond_comm_lift :
     ∀ (s : AWSetF.State) (e e' e'' : Op AWSetF.AppOp)
       (π : List (Op AWSetF.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      AWSetF.replayOrder e e' = RcRes.Fst_then_snd →
+      AWSetF.replayOrder e e' = OrderResult.Fst_then_snd →
       ¬ AWSetF.commutes e' e'' →
       AWSetF.update (applySeq AWSetF (AWSetF.update (AWSetF.update s e') e) π) e''
         = AWSetF.update (applySeq AWSetF (AWSetF.update (AWSetF.update s e) e') π) e'' := by
-  intro s e e' e'' π hd1 hd2 hd3 h_rc h_nc
-  -- rc e e' = Fst forces e = rem, e' = add.
+  intro s e e' e'' π hd1 hd2 hd3 h_replayOrder h_nc
+  -- replayOrder e e' = Fst forces e = rem, e' = add.
   rcases ha : e.2.2 <;> rcases hb : e'.2.2 <;>
-    simp only [AWSetF_rc, awRc_eq, ha, hb] at h_rc <;>
-    try exact absurd h_rc (by decide)
+    simp only [AWSetF_replayOrder, awOrder_eq, ha, hb] at h_replayOrder <;>
+    try exact absurd h_replayOrder (by decide)
   -- e'' cannot be add (add/add commute), so e'' = rem.
   rcases hc : e''.2.2
   · exact absurd (AWSetF_comm_add_add hb hc) h_nc
   · refine Prod.ext ?_ ?_
     · have hbase := AWSet_cond_comm_lift s.1 e e' e'' π hd1 hd2 hd3
-        (by simp only [AWSet_rc, awRc_eq, ha, hb])
+        (by simp only [AWSet_replayOrder, awOrder_eq, ha, hb])
         (AWSet_not_comm_add_rem hb hc)
       show awUpdate (applySeq AWSetF (AWSetF.update (AWSetF.update s e') e) π).1 e''
           = awUpdate (applySeq AWSetF (AWSetF.update (AWSetF.update s e) e') π).1 e''
@@ -332,7 +332,7 @@ theorem AWSetF_merge_peel_comm :
 
 /-- **`AWSetF` satisfies the full core bundle.** -/
 theorem AWSetF_binaryMergeLaws : BinaryMergeLaws AWSetF :=
-  ⟨AWSetF_rc_non_comm_directional, AWSetF_no_rc_chain,
+  ⟨AWSetF_replayOrder_non_comm_directional, AWSetF_no_replayOrder_chain,
    AWSetF_cond_comm_lift, AWSetF_merge_comm, AWSetF_merge_init,
    AWSetF_lem_0op, AWSetF_merge_peel_comm⟩
 
@@ -598,7 +598,7 @@ theorem AWSetF_not_binaryJoin : ¬ BinaryJoin AWSetF := by
     · -- ρ = [eF, aF]: violates the mandatory loOn-edge aF → eF.
       have hedge : loOn flagConfig (evF₁ ∪ evF₂) aF eF :=
         Or.inl ⟨⟨rfl, rfl⟩,
-          (AWSetF_rc_non_comm_directional aF eF).mp
+          (AWSetF_replayOrder_non_comm_directional aF eF).mp
             (AWSetF_not_comm_add_rem rfl rfl)⟩
       exact (List.pairwise_cons.mp hr).1 aF List.mem_cons_self hedge
     · exact absurd rfl hxy

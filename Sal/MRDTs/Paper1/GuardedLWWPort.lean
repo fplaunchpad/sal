@@ -19,11 +19,11 @@ abbrev language := GuardedHistory.language spec
 
 /-- The universal max equations are unchanged; only their replay-law field
 is specialized to the empty policy required by the commuting VC adapter. -/
-theorem emptyMergeLaws : @MergeLaws D (ReplayPolicy.default D.toUpdateSig) := by
+theorem emptyMergeLaws : @MergeLaws D (EventOrder.default D.toUpdateSig) := by
   refine ⟨ReplayLaws.of_all_comm all_comm ?_,?_,?_⟩
-  · apply rcAcyclic_of_noRcChain
+  · apply replayAcyclic_of_noReplayChain
     intro a b c
-    simp [UpdateSig.replayOrder,ReplayPolicy.default,ReplayPolicy.unconstrained]
+    simp [UpdateSig.replayOrder,EventOrder.default,EventOrder.unconstrained]
   · intro l a b
     simpa only [D] using (max_comm (α := State) a b)
   · intro s

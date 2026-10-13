@@ -4,7 +4,7 @@ import Sal.MRDTs.Metatheory.VirtualAdequacy
 namespace Sal.MRDTs.Instances.MVRLive
 open Sal.MRDTs.Foundation
 open Classical
-local instance : ReplayPolicy D.toUpdateSig := rc
+local instance : EventOrder D.toUpdateSig := replayOrder
 
 private def VRepAt (C : Configuration D) (n : ℕ) : Prop :=
   ∀ (S : Finset Version) (w : Version) (sw : State) (Ew : Set (Event)),

@@ -5,7 +5,7 @@ namespace Sal.MRDTs.Instances.EfficientORSet
 open Sal.MRDTs.Foundation
 open Classical
 variable {α : Type} [DecidableEq α]
-local instance : ReplayPolicy (D α).toUpdateSig := rc
+local instance : EventOrder (D α).toUpdateSig := replayOrder
 
 def RepConfig (C : Configuration (D α)) : Prop :=
   ∀ v s E, C.ver v = some (s,E) → Represents C.vis E s

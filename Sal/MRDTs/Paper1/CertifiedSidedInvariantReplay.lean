@@ -32,12 +32,12 @@ theorem concurrent_commutes (Γ : OrderedPrefixCode)
   cases ao <;> cases bo <;> simp only [Instances.ProductionRGA.sidedSemanticCommutes]
   · intro same
     apply notab
-    apply s_vis_of_rc_of_honest honest hb ha
-    simpa [UpdateSig.rc,ReplayPolicy.Before,SReplayPolicy,sRcOrder] using same
+    apply s_vis_of_replayOrder_of_honest honest hb ha
+    simpa [UpdateSig.replayBefore,EventOrder.Before,SEventOrder,sEventOrder] using same
   · intro same
     apply notba
-    apply s_vis_of_rc_of_honest honest ha hb
-    simpa [UpdateSig.rc,ReplayPolicy.Before,SReplayPolicy,sRcOrder] using same
+    apply s_vis_of_replayOrder_of_honest honest ha hb
+    simpa [UpdateSig.replayBefore,EventOrder.Before,SEventOrder,sEventOrder] using same
 
 theorem fullLaws (Γ : OrderedPrefixCode) (C : Configuration (S Γ))
     (mint : MintHonest (S Γ) (generation Γ).CanIssue C)

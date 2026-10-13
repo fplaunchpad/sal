@@ -239,9 +239,9 @@ theorem all_comm (a b : Event) : D.toUpdateSig.commutes a b := by
 
 theorem replayLaws : ReplayLaws D.toUpdateSig := by
   apply ReplayLaws.of_all_comm all_comm
-  apply rcAcyclic_of_noRcChain
+  apply replayAcyclic_of_noReplayChain
   intro a b c h
-  exact RcRes.noConfusion h.1
+  exact OrderResult.noConfusion h.1
 
 theorem mergeLaws : MergeLaws D := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -404,8 +404,8 @@ noncomputable def sequential : SequentialRefinement D spec where
 
 theorem lo_false (C : Configuration D) (a b : Event) :
     ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
-  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 theorem respects_lo (C : Configuration D) (ops : List Event) :
     respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
@@ -415,7 +415,7 @@ theorem respects_lo (C : Configuration D) (ops : List Event) :
       exact List.pairwise_cons.mpr ⟨fun b _ => lo_false C b e, ih⟩
 
 noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D generation
-    (ReplayPolicy.unconstrained D.toUpdateSig)
+    (EventOrder.unconstrained D.toUpdateSig)
     sequentialSpec stateRel where
   sound C exec replay := by
     have hgood := exec.canonicalConfig (fun C _ => join C.replayContext)
@@ -449,13 +449,13 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D gen
       subst b
       exact Nat.lt_irrefl _ (C.causal_mono hba)
     have hlo : respects π
-        (@loOn D.toUpdateSig (ReplayPolicy.unconstrained D.toUpdateSig)
+        (@loOn D.toUpdateSig (EventOrder.unconstrained D.toUpdateSig)
           C.replayContext E) := by
       unfold respects
       apply List.pairwise_of_forall
       intro a b
-      simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
-        ReplayPolicy.unconstrained]
+      simp [loOn, UpdateSig.replayBefore, EventOrder.Before,
+        EventOrder.unconstrained]
     have horigin : ∀ pre e post, π = pre ++ e :: post →
         ∃ origin : Finset Event, origin ⊆ pre.toFinset ∧ applicable e origin := by
       exact Paper1.Automation.mint_origin_prefix id applicable
@@ -484,7 +484,7 @@ def safety : SafetyCertificate D (canonicalVirtualMergeBase D) generation where
 
 noncomputable def verified : VerifiedMRDT D where
   issuance := generation
-  rc := ReplayPolicy.unconstrained D.toUpdateSig
+  replayOrder := EventOrder.unconstrained D.toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := sequentialSpec
   Rel := stateRel

@@ -36,7 +36,7 @@ theorem siblingBuildBefore_irrefl (a : FMEntry) : ¬ siblingBuildBefore a a := b
   · exact Nat.lt_irrefl _
 
 /-- Proof-local construction order: increasing depth, then farther siblings
-first. It does not replace the insertion-before-own-delete public `rc`. -/
+first. It does not replace the insertion-before-own-delete public `replayOrder`. -/
 def chainBuildBefore (a b : FMChain) : Prop :=
   a.length < b.length ∨
     ∃ p x y, a = p ++ [x] ∧ b = p ++ [y] ∧ siblingBuildBefore x y

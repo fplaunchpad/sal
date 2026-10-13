@@ -2,9 +2,11 @@
 
 Compared with Overleaf **`d3ad6ff` (13 October 2026)**, fetched and
 fast-forwarded into `sal_paper`. The comparison uses the retained `paper1`
-formalism: keep the existing event-level `rc-non-comm` guards. The alternative
-is archived on branch
-[`research/rc-non-comm-operation-guard`](https://github.com/fplaunchpad/sal/tree/research/rc-non-comm-operation-guard) (`93fc631`).
+formalism, with Kartik's agreed split presentation: operation-distinct
+`rc-non-comm` and separate equal-operation self-commutation. The equivalence
+with the existing laws is checked on research branch
+`research/rc-non-comm-operation-guard` at `47f943f`; its adapters are not yet
+integrated into `paper1`.
 
 The latest paper already adds fresh-child forks, causal timestamp growth,
 a greatest-common-ancestor definition, discussion of recursive bases, label
@@ -15,14 +17,19 @@ route; they do not need replacing with the certified route's guarded equations.
 
 ## Changes still needed
 
-1. **§4, replay laws (`ralin.tex:157–199`): use complete events in the laws,
-   while keeping `rc` on operation payloads.** The current operation-level
-   formulas do not express the retained guards. For `rc-non-comm`, use
-   `time(a) ≠ time(b) ∧ rep(a) ≠ rep(b)` before the equivalence between actual
-   event noncommutation and either payload `rc` direction. Keep the timestamp
-   guards of no-chain and conditional commutation too. Do not substitute
-   operation inequality. Otherwise repeated local adds in efficient OR-set
-   would require a forbidden self-edge. **Formal reference:** Definition 4.5.
+1. **§4, commutation and replay laws (`ralin.tex:31,157–199`): use
+   Kartik's split on eligible event pairs.** Keep `rc` on operation payloads. Reserve the term event replay order for the
+   separate generic `EventOrder` interface; it is not an alternative definition
+   of the paper’s `rc`.
+   State `rc-non-comm` for unequal payloads, and state self-commutation
+   separately for equal payloads. Both use the same event and state domain.
+   The raw route retains distinct timestamps and different replicas; the
+   certified route uses supported concurrent events and its specified invariant
+   or represented-prefix domain. In supported configurations concurrency and
+   distinctness supply the metadata guards. Do not universally lift
+   self-commutation to all metadata pairs and all states: repeated local adds
+   in efficient OR-set refute that claim. Preserve no-chain and conditional
+   commutation. **Formal reference:** Definitions 4.5 and 4.8.
 
 2. **§4, specification compatibility and RA definition
    (`ralin.tex:177–239`): apply the projection to the particular events.** Write
@@ -91,8 +98,8 @@ needed.
 ## Reference artifacts
 
 - [Formal reference PDF](paper1-formal-reference/main.pdf): numbered definitions
-  cited above. It remains based on `0450d48`; this comparison does not claim
-  the PDF has been rewritten for `d3ad6ff`.
+  cited above. The replay laws now use the agreed split formulation. The other manuscript
+  mappings remain based on `0450d48`; this is not a full rewrite for `d3ad6ff`.
 - [Earlier manuscript patch](paper1-manuscript-reconciliation.patch): applies
   to `0450d48`, **not** the newly fetched manuscript. Do not apply it wholesale;
   several changes are now present or have been rewritten by the authors.

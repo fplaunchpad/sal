@@ -2585,7 +2585,7 @@ noncomputable def inplaceSequential : SequentialRefinement D spec where
 
 noncomputable def inplaceReplayAdequate : ReplayAdequateMRDT D where
   issuance := AegisSheet.generation
-  rc := ReplayPolicy.unconstrained D.toUpdateSig
+  replayOrder := EventOrder.unconstrained D.toUpdateSig
   replayAdequacy := AegisSheet.replayAdequacy
   Machine := spec
   sequential := inplaceSequential
@@ -2599,8 +2599,8 @@ theorem inplace_sequentially_correct (ops : List Event)
 
 theorem rawLo_false (C : Configuration D) (a b : Event) :
     ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
-  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 theorem respects_rawLo (C : Configuration D) (ops : List Event) :
     respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
@@ -2616,7 +2616,7 @@ materializes exactly the replicated state, and both sides answer the same
 queries. -/
 noncomputable def sequentialCorrectness :
     SequentialCorrectnessCertificate D AegisSheet.generation
-      (ReplayPolicy.unconstrained D.toUpdateSig) clientSpec materializedStateRel where
+      (EventOrder.unconstrained D.toUpdateSig) clientSpec materializedStateRel where
   sound C exec replay := by
     intro v s E hver
     obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
@@ -2636,13 +2636,13 @@ noncomputable def sequentialCorrectness :
       rw [← canonicalState]
       exact refined
     have hlo : respects (canonical ops)
-        (@loOn D.toUpdateSig (ReplayPolicy.unconstrained D.toUpdateSig)
+        (@loOn D.toUpdateSig (EventOrder.unconstrained D.toUpdateSig)
           C.replayContext E) := by
       unfold respects
       apply List.pairwise_of_forall
       intro a b
-      simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
-        ReplayPolicy.unconstrained]
+      simp [loOn, UpdateSig.replayBefore, EventOrder.Before,
+        EventOrder.unconstrained]
     refine ⟨canonical ops, canonicalPerm, hlo,
       legal, refinedAtState, ?_⟩
     intro query
@@ -2805,7 +2805,7 @@ version and relates that history to the independent incremental spreadsheet
 machine. -/
 noncomputable def verified : VerifiedMRDT D where
   issuance := generation
-  rc := ReplayPolicy.unconstrained D.toUpdateSig
+  replayOrder := EventOrder.unconstrained D.toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := Sequential.clientSpec
   Rel := Sequential.materializedStateRel
@@ -2813,13 +2813,13 @@ noncomputable def verified : VerifiedMRDT D where
 
 theorem spec_linearizable {C : Configuration D}
     (h : MintCertifiedReach D generation C) :
-    IsSpecLinearizable D (ReplayPolicy.unconstrained D.toUpdateSig)
+    IsSpecLinearizable D (EventOrder.unconstrained D.toUpdateSig)
       Sequential.clientSpec Sequential.materializedStateRel C :=
   verified.correct h
 
 theorem spec_linearizableV {C : Configuration D}
     (h : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
-    IsSpecLinearizable D (ReplayPolicy.unconstrained D.toUpdateSig)
+    IsSpecLinearizable D (EventOrder.unconstrained D.toUpdateSig)
       Sequential.clientSpec Sequential.materializedStateRel C :=
   verified.correctV h
 

@@ -5,7 +5,7 @@ namespace Sal.MRDTs.Paper1.CertifiedFugueVCExecution
 open Foundation Sal.EmbedRGA
 open Instances.SidedEmbedRGA Instances.SidedEmbedRGA.FugueMax
 open CertifiedFugueVCReplay
-attribute [local instance] Instances.SidedEmbedRGA.FugueMax.rc
+attribute [local instance] Instances.SidedEmbedRGA.FugueMax.replayOrder
 
 theorem folds_equal (Γ : OrderedPrefixCode) (C : Configuration (datatype Γ))
     (mint : MintHonest (datatype Γ) (applicable Γ) C) (trans : Transitive C.vis)

@@ -37,8 +37,8 @@ theorem initial_agree (s : State α) (ta ra tb rb : Nat) (x : α) :
   grind
 
 theorem finish_remove {r : Nat} {x : α} {s t : State α}
-    (h : AgreeAway r x s t) (tc rc : Nat) :
-    update s (tc,rc,.remove x) = update t (tc,rc,.remove x) := by
+    (h : AgreeAway r x s t) (tc replayOrder : Nat) :
+    update s (tc,replayOrder,.remove x) = update t (tc,replayOrder,.remove x) := by
   ext p
   by_cases hp : p.2.2 = x
   · simp [update, hp]
@@ -65,7 +65,7 @@ theorem conditional (s : State α) (a b c : Event α) (between : List (Event α)
   have he := EventSpec.noncomm_same_element b c hn
   rcases a with ⟨ta,ra,ao⟩
   rcases b with ⟨tb,rb,bo⟩
-  rcases c with ⟨tc,rc,co⟩
+  rcases c with ⟨tc,replayOrder,co⟩
   change ao = .remove x at ha
   change bo = .add x at hb
   subst ao
@@ -75,14 +75,14 @@ theorem conditional (s : State α) (a b c : Event α) (between : List (Event α)
   | remove y =>
     change x = y at he
     subst y
-    exact finish_remove hh tc rc
+    exact finish_remove hh tc replayOrder
   | add y =>
     change x = y at he
     subst y
-    have hr : rb = rc := by
+    have hr : rb = replayOrder := by
       by_contra hne
-      exact hn (NeemScope.adds_commute_of_replica_ne tb rb tc rc x x hne)
-    subst rc
+      exact hn (NeemScope.adds_commute_of_replica_ne tb rb tc replayOrder x x hne)
+    subst replayOrder
     exact finish_add hh tc
 
 def laws : GuardedReplay.Laws (D α).toUpdateSig (EventSpec.conflict α) where

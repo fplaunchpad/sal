@@ -4,7 +4,7 @@ import Sal.MRDTs.Paper1.InvariantOrder
 namespace Sal.MRDTs.Paper1.CertifiedFugueInvariant
 open Foundation Sal.EmbedRGA
 open Instances.SidedEmbedRGA Instances.SidedEmbedRGA.FugueMax
-attribute [local instance] Instances.SidedEmbedRGA.FugueMax.rc
+attribute [local instance] Instances.SidedEmbedRGA.FugueMax.replayOrder
 
 def Valid (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdateSig) (s : State) : Prop :=
   SSorted s.live ∧

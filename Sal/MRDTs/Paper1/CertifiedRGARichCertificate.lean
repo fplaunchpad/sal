@@ -5,7 +5,7 @@ namespace Sal.MRDTs.Paper1.CertifiedRGARichCertificate
 open Foundation Classical Sal.EmbedRGA
 open Instances.SidedPeritext Instances.SidedEmbedRGA
 open CertifiedRGACoreVC CertifiedRGACoreCertificate
-attribute [local instance] richRc
+attribute [local instance] richOrder
 
 abbrev language (Γ : OrderedPrefixCode) := GuardedHistory.language (richClientSpec Γ)
 

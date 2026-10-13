@@ -41,7 +41,7 @@ open Sal.MRDTs Sal.MRDTs.Foundation Sal.MRDTs.Paper1
 open Sal.MRDTs.Paper1.ConcreteMRDT Classical
 
 /-- Forget only the query fields. No semantic assumption is added. -/
-def ofMRDT (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → RcRes) : Signature :=
+def ofMRDT (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → OrderResult) : Signature :=
   ⟨D.State,D.AppOp,D.init,D.update,D.merge,order⟩
 
 private theorem supported_distinct {D : MRDTSig}
@@ -55,7 +55,7 @@ private theorem supported_distinct {D : MRDTSig}
 coverage input is the nested L/O replay; the K replay is completely independent.
 Timestamp guards follow from the real ReplayContext and index exclusions. -/
 theorem local_of_indexed_replays (D : MRDTSig)
-    (order : Op D.AppOp → Op D.AppOp → RcRes)
+    (order : Op D.AppOp → Op D.AppOp → OrderResult)
     (kernels : (ofMRDT D order).LocalKernels)
     (C : ReplayContext D.toUpdateSig) (L K O : Set (Op D.AppOp))
     (l B b : D.State) (e : Op D.AppOp)
@@ -107,7 +107,7 @@ replay theorem; neither merge correctness nor an implementation invariant is
 used to identify states. The nested replay's existence is the precise remaining
 order coverage fact supplied separately. -/
 theorem local_of_canonical_nested (D : MRDTSig)
-    (order : Op D.AppOp → Op D.AppOp → RcRes)
+    (order : Op D.AppOp → Op D.AppOp → OrderResult)
     (kernels : (ofMRDT D order).LocalKernels)
     (P : OperationPolicy D.AppOp) (laws : GuardedReplay.Laws D.toUpdateSig P)
     (C : ReplayContext D.toUpdateSig) (L K O : Set (Op D.AppOp))
@@ -139,7 +139,7 @@ theorem local_of_canonical_nested (D : MRDTSig)
 an acyclic combined scope-sensitive order. The independent past replay is
 then assembled from singleton equations. No alignment premise remains. -/
 theorem local_from_context (D : MRDTSig)
-    (order : Op D.AppOp → Op D.AppOp → RcRes)
+    (order : Op D.AppOp → Op D.AppOp → OrderResult)
     (kernels : (ofMRDT D order).LocalKernels)
     (P : OperationPolicy D.AppOp) (laws : GuardedReplay.Laws D.toUpdateSig P)
     (noChain : ∀ x y z : Op D.AppOp,
@@ -172,7 +172,7 @@ theorem local_from_context (D : MRDTSig)
 representations. The extra reconstructed-side/smaller-union evidence remains
 in the unchanged field signature and is not replaced by a Join assumption. -/
 theorem raw_local_redistribute (D : MRDTSig)
-    (order : Op D.AppOp → Op D.AppOp → RcRes)
+    (order : Op D.AppOp → Op D.AppOp → OrderResult)
     (kernels : (ofMRDT D order).LocalKernels)
     (P : OperationPolicy D.AppOp) (laws : GuardedReplay.Laws D.toUpdateSig P)
     (noChain : ∀ x y z : Op D.AppOp,

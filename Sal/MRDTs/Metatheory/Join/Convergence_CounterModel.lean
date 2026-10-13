@@ -7,7 +7,7 @@ This file machine-checks that convergence over merely backward-closed
 reachable replica event sets (w.r.t. the configuration-global `lo C`)
 is **false**, even for a `D` that satisfies every property the
 `convergence` proof machinery consumes (`rc_non_comm` +
-`rc_non_comm_directional` + `no_rc_chain` + `cond_comm_base` +
+`rc_non_comm_directional` + `no_replayOrder_chain` + `cond_comm_base` +
 `cond_comm_lift` + `merge_comm/idem/init` + `lem_0op`).
 
 ## The model
@@ -20,7 +20,7 @@ is **false**, even for a `D` that satisfies every property the
 * `rem` kills everything currently added: `dead := added ∪ dead`
   (state-dependent: this is what makes `add`/`rem` non-commuting).
 * `merge` is the pairwise union (a join-semilattice).
-* `rc rem add = Fst_then_snd` (add wins over a concurrent remove),
+* `replayOrder rem add = Fst_then_snd` (add wins over a concurrent remove),
   the paper's OR-set resolution.
 
 ## The configuration
@@ -30,7 +30,7 @@ is **false**, even for a `D` that satisfies every property the
   `ev = {y, e}`, it merged replica 0's state *between* `e` and `e₃`.
 
 In the full configuration, `lo C` orders **neither** `y, e`: the
-rc-edge `y →lo e` is cancelled because `e` has the absorber `e₃ ∈
+replayOrder-edge `y →lo e` is cancelled because `e` has the absorber `e₃ ∈
 C.events` (`lo`'s overwriter existential is configuration-global).
 So `[y, e]` and `[e, y]` both respect `lo C`, yet
 
@@ -51,7 +51,7 @@ this: `loOn C ev` *keeps* the edge `y → e` (no absorber inside
 bundle as a crutch for the shared-event peel, is **false for
 `AWSet`** (`AWSet_shared_peel_1op_false`): the current bundle
 excludes exactly the state-dependent RDTs (the paper's own OR-set
-among them) whose non-trivial `rc` the metatheorem is about.
+among them) whose non-trivial `replayOrder` the metatheorem is about.
 -/
 
 namespace Sal.MRDTs.Foundation
@@ -76,12 +76,12 @@ def awUpdate (σ : AWState) (e : Op AWOp) : AWState :=
 /-- Pairwise union, a join-semilattice. -/
 def awMerge (σ τ : AWState) : AWState := (σ.1 ∪ τ.1, σ.2 ∪ τ.2)
 
-/-- `rc rem add = Fst_then_snd`: add wins over a concurrent remove. -/
-def awRc (e₁ e₂ : Op AWOp) : RcRes :=
+/-- `replayOrder rem add = Fst_then_snd`: add wins over a concurrent remove. -/
+def awOrder (e₁ e₂ : Op AWOp) : OrderResult :=
   match e₁.2.2, e₂.2.2 with
-  | .rem, .add => RcRes.Fst_then_snd
-  | .add, .rem => RcRes.Snd_then_fst
-  | _, _ => RcRes.Either
+  | .rem, .add => OrderResult.Fst_then_snd
+  | .add, .rem => OrderResult.Snd_then_fst
+  | _, _ => OrderResult.Either
 
 /-- Add-wins set skeleton over one implicit key. See file header. -/
 noncomputable def AWSet : UpdateSig where
@@ -95,14 +95,14 @@ noncomputable def AWSet : UpdateSig where
 noncomputable instance AWSetHistoricalBinaryMerge : HistoricalBinaryMerge AWSet where
   binaryMerge := awMerge
 
-local instance AWSetReplayPolicy : ReplayPolicy AWSet where
-  order := awRc
+local instance AWSetEventOrder : EventOrder AWSet where
+  order := awOrder
 
 @[simp] theorem AWSet_update : AWSet.update = awUpdate := rfl
 @[simp] theorem AWSet_merge : AWSet.historicalMerge = awMerge := rfl
-@[simp] theorem AWSet_rc : AWSet.replayOrder = awRc := rfl
-@[simp] theorem AWSet_rc_apply (e₁ e₂ : Op AWOp) : AWSet.rc e₁ e₂ ↔
-    awRc e₁ e₂ = RcRes.Fst_then_snd := Iff.rfl
+@[simp] theorem AWSet_replayOrder : AWSet.replayOrder = awOrder := rfl
+@[simp] theorem AWSet_replayOrder_apply (e₁ e₂ : Op AWOp) : AWSet.replayBefore e₁ e₂ ↔
+    awOrder e₁ e₂ = OrderResult.Fst_then_snd := Iff.rfl
 @[simp] theorem AWSet_init : AWSet.init = ((∅ : Set Timestamp), (∅ : Set Timestamp)) := rfl
 
 theorem awUpdate_add {e : Op AWOp} (h : e.2.2 = AWOp.add) (σ : AWState) :
@@ -113,12 +113,12 @@ theorem awUpdate_rem {e : Op AWOp} (h : e.2.2 = AWOp.rem) (σ : AWState) :
     awUpdate σ e = (σ.1, σ.1 ∪ σ.2) := by
   unfold awUpdate; rw [h]
 
-theorem awRc_eq {e₁ e₂ : Op AWOp} :
-    awRc e₁ e₂ =
+theorem awOrder_eq {e₁ e₂ : Op AWOp} :
+    awOrder e₁ e₂ =
       match e₁.2.2, e₂.2.2 with
-      | .rem, .add => RcRes.Fst_then_snd
-      | .add, .rem => RcRes.Snd_then_fst
-      | _, _ => RcRes.Either := rfl
+      | .rem, .add => OrderResult.Fst_then_snd
+      | .add, .rem => OrderResult.Snd_then_fst
+      | _, _ => OrderResult.Either := rfl
 
 /-! ### Basic op algebra -/
 
@@ -159,13 +159,13 @@ theorem AWSet_not_comm_rem_add {e₁ e₂ : Op AWSet.AppOp}
 
 /-! ### The `convergence`-toolkit properties hold for `AWSet` -/
 
-theorem AWSet_rc_non_comm :
+theorem AWSet_replayOrder_non_comm :
     ∀ o₁ o₂ : Op AWSet.AppOp,
       distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
-      (AWSet.replayOrder o₁ o₂ = RcRes.Either ↔ AWSet.commutes o₁ o₂) := by
+      (AWSet.replayOrder o₁ o₂ = OrderResult.Either ↔ AWSet.commutes o₁ o₂) := by
   intro o₁ o₂ _ _
   rcases h₁ : o₁.2.2 <;> rcases h₂ : o₂.2.2 <;>
-    simp only [AWSet_rc, awRc_eq, h₁, h₂]
+    simp only [AWSet_replayOrder, awOrder_eq, h₁, h₂]
   · exact ⟨fun _ => AWSet_comm_add_add h₁ h₂, fun _ => by trivial⟩
   · constructor
     · intro h; exact absurd h (by first | exact fun h' => nomatch h' | decide)
@@ -175,14 +175,14 @@ theorem AWSet_rc_non_comm :
     · intro h; exact absurd h (AWSet_not_comm_rem_add h₁ h₂)
   · exact ⟨fun _ => AWSet_comm_rem_rem h₁ h₂, fun _ => by trivial⟩
 
-theorem AWSet_rc_non_comm_directional :
+theorem AWSet_replayOrder_non_comm_directional :
     ∀ o₁ o₂ : Op AWSet.AppOp,
       (¬ AWSet.commutes o₁ o₂ ↔
-       (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
-        AWSet.replayOrder o₂ o₁ = RcRes.Fst_then_snd)) := by
+       (AWSet.replayOrder o₁ o₂ = OrderResult.Fst_then_snd ∨
+        AWSet.replayOrder o₂ o₁ = OrderResult.Fst_then_snd)) := by
   intro o₁ o₂
   rcases h₁ : o₁.2.2 <;> rcases h₂ : o₂.2.2 <;>
-    simp only [AWSet_rc, awRc_eq, h₁, h₂]
+    simp only [AWSet_replayOrder, awOrder_eq, h₁, h₂]
   · constructor
     · intro h; exact absurd (AWSet_comm_add_add h₁ h₂) h
     · rintro (h | h) <;>
@@ -201,17 +201,17 @@ theorem AWSet_rc_non_comm_directional :
 
 private theorem awConflict_of_noncomm {a b : Op AWOp}
     (hnc : ¬ AWSet.commutes a b) :
-    AWSet.rc a b ∨ AWSet.rc b a :=
-  (AWSet_rc_non_comm_directional a b).mp hnc
+    AWSet.replayBefore a b ∨ AWSet.replayBefore b a :=
+  (AWSet_replayOrder_non_comm_directional a b).mp hnc
 
-theorem AWSet_no_rc_chain :
+theorem AWSet_no_replayOrder_chain :
     ∀ o₁ o₂ o₃ : Op AWSet.AppOp,
       distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
-         AWSet.replayOrder o₂ o₃ = RcRes.Fst_then_snd) := by
+      ¬ (AWSet.replayOrder o₁ o₂ = OrderResult.Fst_then_snd ∧
+         AWSet.replayOrder o₂ o₃ = OrderResult.Fst_then_snd) := by
   rintro o₁ o₂ o₃ _ _ ⟨h₁₂, h₂₃⟩
   rcases ha : o₁.2.2 <;> rcases hb : o₂.2.2 <;> rcases hc : o₃.2.2 <;>
-    simp only [AWSet_rc, awRc_eq, ha, hb, hc] at h₁₂ h₂₃ <;>
+    simp only [AWSet_replayOrder, awOrder_eq, ha, hb, hc] at h₁₂ h₂₃ <;>
     first
       | exact absurd h₁₂ (by decide)
       | exact absurd h₂₃ (by decide)
@@ -250,23 +250,23 @@ theorem AWSet_lem_0op :
     simp only [Set.mem_union]
     tauto
 
-/-- `cond_comm_base`: `rc o₁ o₂ = Fst` forces `(o₁, o₂) = (rem, add)`;
-`rc o₂ o₃ ≠ Either` with `o₂ = add` forces `o₃ = rem`, which re-kills
+/-- `cond_comm_base`: `replayOrder o₁ o₂ = Fst` forces `(o₁, o₂) = (rem, add)`;
+`replayOrder o₂ o₃ ≠ Either` with `o₂ = add` forces `o₃ = rem`, which re-kills
 the timestamp on which the two sides differ. -/
 theorem AWSet_cond_comm_base :
     ∀ (s : AWSet.State) (o₁ o₂ o₃ : Op AWSet.AppOp),
       distinctOps o₁ o₂ → distinctOps o₂ o₃ → distinctOps o₁ o₃ →
-      AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd →
-      AWSet.replayOrder o₂ o₃ ≠ RcRes.Either →
+      AWSet.replayOrder o₁ o₂ = OrderResult.Fst_then_snd →
+      AWSet.replayOrder o₂ o₃ ≠ OrderResult.Either →
       AWSet.update (AWSet.update (AWSet.update s o₁) o₂) o₃
         = AWSet.update (AWSet.update (AWSet.update s o₂) o₁) o₃ := by
-  intro s o₁ o₂ o₃ _ _ _ h_rc h_ne
-  -- every branch except (o₁, o₂) = (rem, add) is killed by h_rc
+  intro s o₁ o₂ o₃ _ _ _ h_replayOrder h_ne
+  -- every branch except (o₁, o₂) = (rem, add) is killed by h_replayOrder
   rcases ha : o₁.2.2 <;> rcases hb : o₂.2.2 <;>
-    simp only [AWSet_rc, awRc_eq, ha, hb] at h_rc <;>
-    try exact absurd h_rc (by decide)
+    simp only [AWSet_replayOrder, awOrder_eq, ha, hb] at h_replayOrder <;>
+    try exact absurd h_replayOrder (by decide)
   rcases hc : o₃.2.2
-  · exact absurd (by simp only [AWSet_rc, awRc_eq, hb, hc]) h_ne
+  · exact absurd (by simp only [AWSet_replayOrder, awOrder_eq, hb, hc]) h_ne
   · simp only [AWSet_update, awUpdate_rem ha, awUpdate_add hb,
       awUpdate_rem hc]
     refine Prod.ext rfl ?_
@@ -334,15 +334,15 @@ theorem AWSet_cond_comm_lift :
     ∀ (s : AWSet.State) (e e' e'' : Op AWSet.AppOp)
       (π : List (Op AWSet.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      AWSet.replayOrder e e' = RcRes.Fst_then_snd →
+      AWSet.replayOrder e e' = OrderResult.Fst_then_snd →
       ¬ AWSet.commutes e' e'' →
       AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e') e) π) e''
         = AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e) e') π) e'' := by
-  intro s e e' e'' π _ _ _ h_rc h_nc
-  -- rc e e' = Fst forces e = rem, e' = add.
+  intro s e e' e'' π _ _ _ h_replayOrder h_nc
+  -- replayOrder e e' = Fst forces e = rem, e' = add.
   rcases ha : e.2.2 <;> rcases hb : e'.2.2 <;>
-    simp only [AWSet_rc, awRc_eq, ha, hb] at h_rc <;>
-    try exact absurd h_rc (by decide)
+    simp only [AWSet_replayOrder, awOrder_eq, ha, hb] at h_replayOrder <;>
+    try exact absurd h_replayOrder (by decide)
   -- e'' cannot be add (add/add commute), so e'' = rem.
   rcases hc : e''.2.2
   · exact absurd (AWSet_comm_add_add hb hc) h_nc
@@ -459,21 +459,21 @@ theorem counterEv_closed :
   rcases hb with h | h <;> simp [evRem0, evRem1, evAdd] at h
 
 /-- `[y, e]` respects `lo C`: there is no `lo`-edge `evAdd → evRem1`
-(`rc add rem = Snd_then_fst`, no vis). -/
+(`replayOrder add rem = Snd_then_fst`, no vis). -/
 theorem respects_ye :
     respects [evRem1, evAdd] (lo counterConfig) := by
   simp [respects, lo, counterConfig, evAdd, evRem0, evRem1,
-    AWSetReplayPolicy, UpdateSig.rc, ReplayPolicy.Before, awRc_eq,
+    AWSetEventOrder, UpdateSig.replayBefore, EventOrder.Before, awOrder_eq,
     AWSet_not_comm_add_rem]
 
 /-- **The absorber cancellation**: `[e, y]` also respects `lo C`.
-The rc-edge `evRem1 → evAdd` (`rc rem add = Fst`) is cancelled by the
+The replayOrder-edge `evRem1 → evAdd` (`replayOrder rem add = Fst`) is cancelled by the
 configuration-global overwriter `evRem0` (`vis evAdd evRem0`,
 `¬commutes`). -/
 theorem respects_ey :
     respects [evAdd, evRem1] (lo counterConfig) := by
   simp [respects, lo, counterConfig, evAdd, evRem0, evRem1,
-    AWSetReplayPolicy, UpdateSig.rc, ReplayPolicy.Before, awRc_eq]
+    AWSetEventOrder, UpdateSig.replayBefore, EventOrder.Before, awOrder_eq]
 
 /-- The two folds differ: `[y, e]` leaves timestamp 0 alive,
 `[e, y]` kills it. -/
@@ -546,17 +546,17 @@ theorem convergence_over_backward_closed_subsets_false :
       (π₁ π₂ : List (Op AWSet.AppOp)),
       -- the convergence toolkit holds for AWSet
       (∀ o₁ o₂ : Op AWSet.AppOp, distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
-        (AWSet.replayOrder o₁ o₂ = RcRes.Either ↔ AWSet.commutes o₁ o₂)) ∧
+        (AWSet.replayOrder o₁ o₂ = OrderResult.Either ↔ AWSet.commutes o₁ o₂)) ∧
       (∀ o₁ o₂ : Op AWSet.AppOp, distinctOps o₁ o₂ →
         (¬ AWSet.commutes o₁ o₂ ↔
-         (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
-          AWSet.replayOrder o₂ o₁ = RcRes.Fst_then_snd))) ∧
+         (AWSet.replayOrder o₁ o₂ = OrderResult.Fst_then_snd ∨
+          AWSet.replayOrder o₂ o₁ = OrderResult.Fst_then_snd))) ∧
       (∀ o₁ o₂ o₃ : Op AWSet.AppOp, distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-        ¬ (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
-           AWSet.replayOrder o₂ o₃ = RcRes.Fst_then_snd)) ∧
+        ¬ (AWSet.replayOrder o₁ o₂ = OrderResult.Fst_then_snd ∧
+           AWSet.replayOrder o₂ o₃ = OrderResult.Fst_then_snd)) ∧
       (∀ (s : AWSet.State) (e e' e'' : Op AWSet.AppOp) (π : List (Op AWSet.AppOp)),
         distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-        AWSet.replayOrder e e' = RcRes.Fst_then_snd →
+        AWSet.replayOrder e e' = OrderResult.Fst_then_snd →
         ¬ AWSet.commutes e' e'' →
         AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e') e) π) e''
           = AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e) e') π) e'') ∧
@@ -573,8 +573,8 @@ theorem convergence_over_backward_closed_subsets_false :
       respects π₁ (lo C) ∧ respects π₂ (lo C) ∧
       applySeq AWSet AWSet.init π₁ ≠ applySeq AWSet AWSet.init π₂ :=
   ⟨counterConfig, counterEv, [evRem1, evAdd], [evAdd, evRem1],
-    AWSet_rc_non_comm, (fun a b _ => AWSet_rc_non_comm_directional a b),
-    AWSet_no_rc_chain,
+    AWSet_replayOrder_non_comm, (fun a b _ => AWSet_replayOrder_non_comm_directional a b),
+    AWSet_no_replayOrder_chain,
     AWSet_cond_comm_lift, AWSet_merge_comm, AWSet_merge_idem,
     AWSet_merge_init, AWSet_lem_0op,
     counterEv_in_C, counterEv_closed, perm_ye, perm_ey,
@@ -592,8 +592,8 @@ theorem loOn_keeps_the_edge :
     refine Or.inr ⟨?_, ?_, ?_, ?_⟩
     · rintro ⟨h, _⟩; simp [evRem1, evAdd] at h
     · rintro ⟨_, h⟩; simp [evRem0, evRem1] at h
-    · change AWSet.replayOrder evRem1 evAdd = RcRes.Fst_then_snd
-      rw [AWSet_rc]
+    · change AWSet.replayOrder evRem1 evAdd = OrderResult.Fst_then_snd
+      rw [AWSet_replayOrder]
       rfl
     · rintro ⟨e₃, h_mem, h_vis, _⟩
       obtain ⟨_, rfl⟩ := h_vis
@@ -610,7 +610,7 @@ state-dependent removes it fails: with `a = (∅,∅)`, `b = ({2},∅)`,
 timestamp 2, but the right-hand side's `rem` (applied after the
 merge) kills it. Since `AWSet` is the two-op skeleton of the paper's
 own OR-set, the current `HistoricalReplayVCs` bundle is unsatisfiable for
-precisely the RDTs with non-trivial `rc`, the bundle is *stronger*
+precisely the RDTs with non-trivial `replayOrder`, the bundle is *stronger*
 than the paper's 24 VCs, and `distinct_last_case`'s reliance on
 `shared_peel_1op` needs to be re-examined. -/
 theorem AWSet_shared_peel_1op_false :
@@ -648,13 +648,13 @@ proof threads a sandwich invariant along any `loOn C ev`-respecting
 enumeration: adds absorbed within the processed prefix are already
 dead (the vis-edge to the absorber is mandatory), and everything
 dead is absorbed within `ev` (a rem cannot precede an unabsorbed
-concurrent add, the rc-edge `rem → add` would be mandatory).
+concurrent add, the replayOrder-edge `rem → add` would be mandatory).
 
 The peel identities then reduce to set algebra plus the
 trichotomy (`awAdds_killed_of_rem_max`): under union-maximality of a
 rem `e` and backward closure, *every* add of `ev₁ ∪ ev₂` is absorbed
 on the side that owns it. This yields `AWSet_binaryJoin`, the Join
-Lemma, hence the full merge case, for a CRDT with non-trivial `rc`,
+Lemma, hence the full merge case, for a CRDT with non-trivial `replayOrder`,
 on exactly the class of instances where the paper's own proof
 breaks. -/
 
@@ -701,7 +701,7 @@ theorem AWSet_merge_peel_comm :
 
 /-- `AWSet` satisfies the core bundle (though not the full one). -/
 theorem AWSet_binaryMergeLaws : BinaryMergeLaws AWSet :=
-  ⟨AWSet_rc_non_comm_directional, AWSet_no_rc_chain,
+  ⟨AWSet_replayOrder_non_comm_directional, AWSet_no_replayOrder_chain,
    AWSet_cond_comm_lift, AWSet_merge_comm, AWSet_merge_init,
    AWSet_lem_0op, AWSet_merge_peel_comm⟩
 
@@ -829,17 +829,17 @@ private theorem AWSet_char_aux {C : ReplayContext AWSet}
             exact AWOp.noConfusion hadd
           have h1 : ¬ C.vis x a := fun hv =>
             h_noedge (Or.inl ⟨hv, awConflict_of_noncomm h_nc⟩)
-          have h_rc : AWSet.replayOrder x a = RcRes.Fst_then_snd := by
-            simp only [AWSet_rc, awRc_eq, hx_op, hadd]
+          have h_replayOrder : AWSet.replayOrder x a = OrderResult.Fst_then_snd := by
+            simp only [AWSet_replayOrder, awOrder_eq, hx_op, hadd]
           by_cases h2 : C.vis a x
           · exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht',
               x, hx_ev, h2, hx_op⟩
           · have h_abs : ∃ z ∈ ev,
-                C.vis a z ∧ (AWSet.rc a z ∨ AWSet.rc z a) := by
+                C.vis a z ∧ (AWSet.replayBefore a z ∨ AWSet.replayBefore z a) := by
               by_contra h_no
-              exact h_noedge (Or.inr ⟨h1, h2, h_rc, h_no⟩)
-            obtain ⟨z, hz_ev, hz_vis, hz_rc⟩ := h_abs
-            have hz_nc := (AWSet_rc_non_comm_directional a z).mpr hz_rc
+              exact h_noedge (Or.inr ⟨h1, h2, h_replayOrder, h_no⟩)
+            obtain ⟨z, hz_ev, hz_vis, hz_replayOrder⟩ := h_abs
+            have hz_nc := (AWSet_replayOrder_non_comm_directional a z).mpr hz_replayOrder
             rcases hz_op : z.2.2
             · exact absurd (AWSet_comm_add_add hadd hz_op) hz_nc
             · exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht',
@@ -980,18 +980,18 @@ theorem awAdds_killed_of_rem_max {C : ReplayContext AWSet}
   have h_noedge := h_max a ha_U ha_ne
   have h1 : ¬ C.vis e a := fun hv => h_noedge (Or.inl ⟨hv,
     awConflict_of_noncomm h_nc⟩)
-  have h_rc : AWSet.replayOrder e a = RcRes.Fst_then_snd := by
-    simp only [AWSet_rc, awRc_eq, he_rem, hadd]
+  have h_replayOrder : AWSet.replayOrder e a = OrderResult.Fst_then_snd := by
+    simp only [AWSet_replayOrder, awOrder_eq, he_rem, hadd]
   by_cases h2 : C.vis a e
   · have ha₁ : a ∈ ev₁ :=
       h_cl₁ a e h2 (fun hc => h_nc (commutes_symm hc)) he₁
     exact Or.inl ⟨a, ha₁, hadd, ht', e, he₁, h2, he_rem⟩
   · have h_abs : ∃ z ∈ ev₁ ∪ ev₂,
-        C.vis a z ∧ (AWSet.rc a z ∨ AWSet.rc z a) := by
+        C.vis a z ∧ (AWSet.replayBefore a z ∨ AWSet.replayBefore z a) := by
       by_contra h_no
-      exact h_noedge (Or.inr ⟨h1, h2, h_rc, h_no⟩)
-    obtain ⟨z, hz_U, hz_vis, hz_rc⟩ := h_abs
-    have hz_nc := (AWSet_rc_non_comm_directional a z).mpr hz_rc
+      exact h_noedge (Or.inr ⟨h1, h2, h_replayOrder, h_no⟩)
+    obtain ⟨z, hz_U, hz_vis, hz_replayOrder⟩ := h_abs
+    have hz_nc := (AWSet_replayOrder_non_comm_directional a z).mpr hz_replayOrder
     have hz_rem : z.2.2 = AWOp.rem := by
       rcases hz_op : z.2.2
       · exact absurd (AWSet_comm_add_add hadd hz_op) hz_nc
@@ -1073,7 +1073,7 @@ theorem AWSet_binaryPeelLaws : BinaryPeelLaws AWSet := by
           · exact Or.inr (awKilled_mono (fun a ha => ha.1) h)
 
 /-- **The Join Lemma holds for `AWSet`**, a CRDT with non-trivial
-`rc`, state-dependent updates, and instances (the defeater shape)
+`replayOrder`, state-dependent updates, and instances (the defeater shape)
 on which the paper's own bottom-up proof breaks. -/
 theorem AWSet_binaryJoin : BinaryJoin AWSet :=
   binaryJoin_of_peel AWSet_binaryMergeLaws AWSet_binaryPeelLaws

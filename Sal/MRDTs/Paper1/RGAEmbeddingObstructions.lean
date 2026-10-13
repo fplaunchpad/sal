@@ -32,13 +32,13 @@ open Sal.MRDTs.Instances.RGA
 /-- The production sibling resolver has a chain on three ordinary root
 insertions, although their concrete grow-only updates commute. -/
 theorem production_chain_control :
-    @UpdateSig.rc RGAM.toUpdateSig Sal.MRDTs.Instances.RGA.rc
+    @UpdateSig.replayBefore RGAM.toUpdateSig Sal.MRDTs.Instances.RGA.replayOrder
       (1,0,.addAfter 0) (2,0,.addAfter 0) ∧
-    @UpdateSig.rc RGAM.toUpdateSig Sal.MRDTs.Instances.RGA.rc
+    @UpdateSig.replayBefore RGAM.toUpdateSig Sal.MRDTs.Instances.RGA.replayOrder
       (2,0,.addAfter 0) (3,0,.addAfter 0) ∧
     RGAM.toUpdateSig.commutes (1,0,.addAfter 0) (2,0,.addAfter 0) := by
   refine ⟨?_,?_,RGAM_all_comm _ _⟩ <;>
-    simp [UpdateSig.rc, ReplayPolicy.Before, Sal.MRDTs.Instances.RGA.rc, rcOrder]
+    simp [UpdateSig.replayBefore, EventOrder.Before, Sal.MRDTs.Instances.RGA.replayOrder, eventOrder]
 
 end Plain
 
@@ -66,13 +66,13 @@ theorem no_restricted_policy (Γ : OrderedPrefixCode) :
 raw commutation restriction. -/
 theorem production_no_chain (Γ : OrderedPrefixCode)
     (a b c : Op (EOp α)) :
-    ¬ (@UpdateSig.rc (E Γ α).toUpdateSig (EReplayPolicy Γ) a b ∧
-       @UpdateSig.rc (E Γ α).toUpdateSig (EReplayPolicy Γ) b c) := by
+    ¬ (@UpdateSig.replayBefore (E Γ α).toUpdateSig (EEventOrder Γ) a b ∧
+       @UpdateSig.replayBefore (E Γ α).toUpdateSig (EEventOrder Γ) b c) := by
   obtain ⟨ats,ar,ao⟩ := a
   obtain ⟨bt,br,bo⟩ := b
   obtain ⟨ct,cr,co⟩ := c
   cases ao <;> cases bo <;> cases co <;>
-    simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder] <;>
+    simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder] <;>
       split_ifs <;> simp_all
 
 end Embedded
@@ -95,13 +95,13 @@ theorem no_restricted_policy (Γ : OrderedPrefixCode) :
     rfl (same_label_not_commute Γ)
 
 theorem production_no_chain (Γ : OrderedPrefixCode) (a b c : Op SOp) :
-    ¬ (@UpdateSig.rc (S Γ).toUpdateSig (SReplayPolicy Γ) a b ∧
-       @UpdateSig.rc (S Γ).toUpdateSig (SReplayPolicy Γ) b c) := by
+    ¬ (@UpdateSig.replayBefore (S Γ).toUpdateSig (SEventOrder Γ) a b ∧
+       @UpdateSig.replayBefore (S Γ).toUpdateSig (SEventOrder Γ) b c) := by
   obtain ⟨ats,ar,ao⟩ := a
   obtain ⟨bt,br,bo⟩ := b
   obtain ⟨ct,cr,co⟩ := c
   cases ao <;> cases bo <;> cases co <;>
-    simp [UpdateSig.rc, ReplayPolicy.Before, SReplayPolicy, sRcOrder] <;>
+    simp [UpdateSig.replayBefore, EventOrder.Before, SEventOrder, sEventOrder] <;>
       split_ifs <;> simp_all
 
 end Sided
@@ -126,13 +126,13 @@ theorem no_restricted_policy (Γ : OrderedPrefixCode) :
     rfl (same_label_not_commute Γ)
 
 theorem production_no_chain (Γ : OrderedPrefixCode) (a b c : Op FOp) :
-    ¬ (@UpdateSig.rc (FMSig Γ).toUpdateSig (FMReplayPolicy Γ) a b ∧
-       @UpdateSig.rc (FMSig Γ).toUpdateSig (FMReplayPolicy Γ) b c) := by
+    ¬ (@UpdateSig.replayBefore (FMSig Γ).toUpdateSig (FMEventOrder Γ) a b ∧
+       @UpdateSig.replayBefore (FMSig Γ).toUpdateSig (FMEventOrder Γ) b c) := by
   obtain ⟨ats,ar,ao⟩ := a
   obtain ⟨bt,br,bo⟩ := b
   obtain ⟨ct,cr,co⟩ := c
   cases ao <;> cases bo <;> cases co <;>
-    simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] <;>
+    simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder] <;>
       split_ifs <;> simp_all
 
 end FugueMax

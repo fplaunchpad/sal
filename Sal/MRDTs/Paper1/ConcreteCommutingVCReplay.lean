@@ -113,18 +113,18 @@ theorem mergeVCs (commute : ∀ a b, D.toUpdateSig.commutes a b)
   · intro C E s _ _ _
     exact merge.merge_init s
   · intro C U s B e trans irrefl sup _ he max _ hs ht _ _
-    have hs' : @IsCanonicalState D.toUpdateSig (ReplayPolicy.default _) C (U \ {e}) s := by
+    have hs' : @IsCanonicalState D.toUpdateSig (EventOrder.default _) C (U \ {e}) s := by
       obtain ⟨_,π,hp,hf⟩ := hs
-      exact ⟨π,hp,hp.1.imp (fun {_ _} _ => by simp [loOn,UpdateSig.rc,UpdateSig.replayOrder,ReplayPolicy.default,ReplayPolicy.unconstrained]),hf⟩
-    have ht' : @IsCanonicalState D.toUpdateSig (ReplayPolicy.default _) C (downset C e \ {e}) B := by
+      exact ⟨π,hp,hp.1.imp (fun {_ _} _ => by simp [loOn,UpdateSig.replayBefore,UpdateSig.replayOrder,EventOrder.default,EventOrder.unconstrained]),hf⟩
+    have ht' : @IsCanonicalState D.toUpdateSig (EventOrder.default _) C (downset C e \ {e}) B := by
       obtain ⟨_,π,hp,hf⟩ := ht
       rw [past_eq] at hp
       rw [raw_downset_eq commute]
-      exact ⟨π,hp,hp.1.imp (fun {_ _} _ => by simp [loOn,UpdateSig.rc,UpdateSig.replayOrder,ReplayPolicy.default,ReplayPolicy.unconstrained]),hf⟩
+      exact ⟨π,hp,hp.1.imp (fun {_ _} _ => by simp [loOn,UpdateSig.replayBefore,UpdateSig.replayOrder,EventOrder.default,EventOrder.unconstrained]),hf⟩
     exact causalDeltaLaw_of_all_comm merge peel commute C U s B e
       (fun {_ _ _} h k => trans h k) irrefl sup
       (fun a b _ nc _ => (nc (commute a b)).elim) he
-      (fun _ _ _ => by simp [loOn,UpdateSig.rc,UpdateSig.replayOrder,ReplayPolicy.default,ReplayPolicy.unconstrained]) hs' ht'
+      (fun _ _ _ => by simp [loOn,UpdateSig.replayBefore,UpdateSig.replayOrder,EventOrder.default,EventOrder.unconstrained]) hs' ht'
   · intro C E₁ E₂ l B t b e _ _ _ _ _ _ _ _ _ _
     exact delta.local_redistribute l B t (D.update B e) b
   · intro C E₁ E₂ t₀ t₁ t₂ B e _ _ _ _ _ _ _ _ _ _ _ _
@@ -134,7 +134,7 @@ theorem vcJoinAt (commute : ∀ a b, D.toUpdateSig.commutes a b)
     (merge : MergeLaws D) (delta : DeltaLaws D) (peel : CommutingPeelLaw D)
     (C : ReplayContext D.toUpdateSig) : JoinAt D C := by
   intro E₁ E₂ l a b trans irrefl sup₁ sup₂ closed₁ closed₂ hl ha hb
-  have rep : ∀ E s, Supported C E → @IsCanonicalState D.toUpdateSig (ReplayPolicy.default _) C E s → representation D C E s := by
+  have rep : ∀ E s, Supported C E → @IsCanonicalState D.toUpdateSig (EventOrder.default _) C E s → representation D C E s := by
     rintro E s sup ⟨π,hp,_,hf⟩
     exact ⟨sup,π,hp,hf⟩
   obtain ⟨π₁,hp₁,_,_⟩ := ha
@@ -150,7 +150,7 @@ theorem vcJoinAt (commute : ∀ a b, D.toUpdateSig.commutes a b)
     (rep _ _ sup₁ ⟨π₁,hp₁,by assumption,by assumption⟩)
     (rep _ _ sup₂ ⟨π₂,hp₂,by assumption,by assumption⟩)
   obtain ⟨_,π,hp,hf⟩ := joined
-  exact ⟨π,hp,hp.1.imp (fun {_ _} _ => by simp [loOn,UpdateSig.rc,UpdateSig.replayOrder,ReplayPolicy.default,ReplayPolicy.unconstrained]),hf⟩
+  exact ⟨π,hp,hp.1.imp (fun {_ _} _ => by simp [loOn,UpdateSig.replayBefore,UpdateSig.replayOrder,EventOrder.default,EventOrder.unconstrained]),hf⟩
 
 theorem vcCanonicalConfig (commute : ∀ a b, D.toUpdateSig.commutes a b)
     (merge : MergeLaws D) (delta : DeltaLaws D) (peel : CommutingPeelLaw D)

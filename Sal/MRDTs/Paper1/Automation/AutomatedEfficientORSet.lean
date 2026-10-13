@@ -14,8 +14,8 @@ open ConcreteMRDT
 variable {α : Type} [DecidableEq α]
 set_option maxHeartbeats 4000000
 
-def signature : Signature := LocalAssembly.ofMRDT (D α) rc.order
-attribute [local policy_expansion_simps] signature LocalAssembly.ofMRDT D update merge rc
+def signature : Signature := LocalAssembly.ofMRDT (D α) replayOrder.order
+attribute [local policy_expansion_simps] signature LocalAssembly.ofMRDT D update merge replayOrder
   EfficientORSet.EventSpec.conflict Op.op Op.rep Op.time
 
 theorem diagonal (l a : State α) : merge l a l = a := by
@@ -104,7 +104,7 @@ theorem commute_distinct_elements (a b : Op (SetOp α))
 
 theorem conflict_classification (a b : Op (SetOp α))
     (nc : ¬ (D α).toUpdateSig.commutes a b) :
-    rc.order a b = .Fst_then_snd ∨ rc.order b a = .Fst_then_snd ∨ a.rep = b.rep := by
+    replayOrder.order a b = .Fst_then_snd ∨ replayOrder.order b a = .Fst_then_snd ∨ a.rep = b.rep := by
   policy_auto
 
 theorem remove_add_noncomm (et er ct cr : Nat) (x : α) :
@@ -112,18 +112,18 @@ theorem remove_add_noncomm (et er ct cr : Nat) (x : α) :
   policy_auto
 
 theorem absorber_classification (e h c : Op (SetOp α))
-    (prior : rc.order e h = .Fst_then_snd)
+    (prior : replayOrder.order e h = .Fst_then_snd)
     (nc : ¬ (D α).toUpdateSig.commutes h c) :
-    rc.order c h = .Fst_then_snd ∨
-      (rc.order e c = .Fst_then_snd ∧ ¬ (D α).toUpdateSig.commutes e c) := by
+    replayOrder.order c h = .Fst_then_snd ∨
+      (replayOrder.order e c = .Fst_then_snd ∧ ¬ (D α).toUpdateSig.commutes e c) := by
   policy_auto
 
-theorem strict_asymmetric (a b : Op (SetOp α)) (prior : rc.order a b = .Fst_then_snd) :
-    rc.order b a ≠ .Fst_then_snd := by
+theorem strict_asymmetric (a b : Op (SetOp α)) (prior : replayOrder.order a b = .Fst_then_snd) :
+    replayOrder.order b a ≠ .Fst_then_snd := by
   policy_auto
 
 theorem policy_order (a b : Op (SetOp α)) :
-    rc.order a b = .Fst_then_snd ↔ (EfficientORSet.EventSpec.conflict α).before a.op b.op := by
+    replayOrder.order a b = .Fst_then_snd ↔ (EfficientORSet.EventSpec.conflict α).before a.op b.op := by
   policy_auto
 
 omit [DecidableEq α] in
@@ -147,7 +147,7 @@ theorem conditional_base : (signature (α := α)).ConditionalBase := by
 theorem kernel_stable : (signature (α := α)).KernelStable := by
   policy_auto
 
-def kit : PolicyExpansion.Kit (D α) (EfficientORSet.EventSpec.conflict α) rc.order := by
+def kit : PolicyExpansion.Kit (D α) (EfficientORSet.EventSpec.conflict α) replayOrder.order := by
   derive_policy_kit
 
 end Sal.MRDTs.Paper1.Automation.AutomatedEfficientORSet

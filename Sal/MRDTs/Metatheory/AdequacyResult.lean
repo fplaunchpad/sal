@@ -3,7 +3,7 @@ import Sal.MRDTs.Metatheory.Adequacy
 namespace Sal.MRDTs
 open Sal.MRDTs.Foundation
 open Classical
-variable {D : MRDTSig} [ReplayPolicy D.toUpdateSig]
+variable {D : MRDTSig} [EventOrder D.toUpdateSig]
 
 /-- Store bookkeeping needs only the actual merge result's witness,
 not a join theorem about arbitrary triples of replay witnesses. -/

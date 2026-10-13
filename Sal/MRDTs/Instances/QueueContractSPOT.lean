@@ -70,7 +70,7 @@ def fork (choices : List ℕ) : List Record × QState :=
 def visible (history : List Record) (a b : Op QOp) : Bool :=
   history.any (fun r => r.1.1 == b.1 && r.2.contains a.1)
 
-def directed (a b : Op QOp) : Bool := decide (qRcOrder a b = .Fst_then_snd)
+def directed (a b : Op QOp) : Bool := decide (qEventOrder a b = .Fst_then_snd)
 def conflict (a b : Op QOp) : Bool := directed a b || directed b a
 
 /-- Literal executable spelling of the public `loOn` definition. -/
@@ -85,8 +85,8 @@ theorem lo_eq_loOn (history : List Record) (R : ReplayContext Q.toUpdateSig)
     (hv : ∀ a b, R.vis a b ↔ visible history a b = true) (a b : Op QOp) :
     lo history a b = true ↔
       loOn R {e | e ∈ history.map Prod.fst} a b := by
-  simp [lo, conflict, directed, loOn, UpdateSig.rc, ReplayPolicy.Before,
-    QReplayPolicy, rc, hv, List.mem_map, and_assoc]
+  simp [lo, conflict, directed, loOn, UpdateSig.replayBefore, EventOrder.Before,
+    QEventOrder, replayOrder, hv, List.mem_map, and_assoc]
   rfl
 
 def respectsB (history : List Record) : List (Op QOp) → Bool

@@ -4,7 +4,7 @@ import Sal.MRDTs.Paper1.CertifiedRGARichVC
 namespace Sal.MRDTs.Paper1.CertifiedRGACoreExecution
 open Foundation Classical Sal.EmbedRGA
 open Instances.SidedPeritext Instances.SidedEmbedRGA CertifiedRGACoreVC
-attribute [local instance] coreRc
+attribute [local instance] coreOrder
 
 theorem represented_of_canonical (Γ : OrderedPrefixCode)
     (C : ReplayContext (Core Γ).toUpdateSig) (honest : SHonestCore Γ (projReplayContext₁ C))
@@ -47,7 +47,7 @@ theorem canonical_of_represented (Γ : OrderedPrefixCode)
     refine ⟨projList₂ xs,listPermOf_projList₂ perm,?_,?_⟩
     · unfold respects
       exact List.pairwise_of_forall fun _ _ => by
-        simp [loOn,UpdateSig.rc,ReplayPolicy.Before,ReplayPolicy.default,ReplayPolicy.unconstrained]
+        simp [loOn,UpdateSig.replayBefore,EventOrder.Before,EventOrder.default,EventOrder.unconstrained]
     · exact congrArg Prod.snd ((applySeq_prod (Core Γ).init xs).symm.trans fold)
 
 theorem closedJoinAt (Γ : OrderedPrefixCode) (C : Configuration (Core Γ))
@@ -83,12 +83,12 @@ theorem representedVersions (Γ : OrderedPrefixCode) {C : Configuration (Core Γ
     (good.version_events_causal v s H hv) (good.canonical v s H hv)
 
 namespace Rich
-attribute [local instance] richRc
+attribute [local instance] richOrder
 
 theorem closedJoinAt (Γ : OrderedPrefixCode) (C : Configuration (RichCore Γ))
     (mint : MintHonest (RichCore Γ) (richGeneration Γ).CanIssue C) :
     CertifiedClosedExecution.ClosedJoinAt (RichCore Γ) C.replayContext := by
-  simpa only [RichCore,richRc,asCoreConfig] using
+  simpa only [RichCore,richOrder,asCoreConfig] using
     CertifiedRGACoreExecution.closedJoinAt Γ (asCoreConfig C) (mintHonest_to_core mint)
 
 theorem canonicalConfig (Γ : OrderedPrefixCode) {C : Configuration (RichCore Γ)}
@@ -108,7 +108,7 @@ theorem representedVersions (Γ : OrderedPrefixCode) {C : Configuration (RichCor
     (fun _ _ _ h k => good.vis_trans h k) good.vis_irrefl H s
     (fun e he => good.version_events_supported v s H hv e he)
     (good.version_events_causal v s H hv)
-  simpa only [richRc] using good.canonical v s H hv
+  simpa only [richOrder] using good.canonical v s H hv
 
 #print axioms canonicalConfig
 #print axioms representedVersions

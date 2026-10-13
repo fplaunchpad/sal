@@ -6,7 +6,7 @@ No direct datatype Join theorem or client-supplied merge premise is used. -/
 namespace Sal.MRDTs.Paper1.ORSet.PaperContract
 open Foundation
 variable {α : Type} [DecidableEq α]
-noncomputable local instance : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+noncomputable local instance : EventOrder (D α).toUpdateSig := (conflict α).lift
 
 theorem specificationCertifiedRAV {C : Configuration (D α)}
     (reach : MintCertifiedReachV (D α) (canonicalVirtualMergeBase (D α)) (issuance α) C) :

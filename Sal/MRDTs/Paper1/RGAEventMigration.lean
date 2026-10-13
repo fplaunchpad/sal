@@ -45,8 +45,8 @@ theorem history :
 
 theorem joinAt (C : Configuration RGAM) :
     @JoinAt RGAM emptyPolicy.lift C.replayContext := by
-  have policy_eq : emptyPolicy.lift = ReplayPolicy.default RGAM.toUpdateSig := by
-    unfold OperationPolicy.lift ReplayPolicy.default ReplayPolicy.unconstrained
+  have policy_eq : emptyPolicy.lift = EventOrder.default RGAM.toUpdateSig := by
+    unfold OperationPolicy.lift EventOrder.default EventOrder.unconstrained
     congr 1
     funext a b
     simp [emptyPolicy]

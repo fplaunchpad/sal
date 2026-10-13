@@ -5,7 +5,7 @@ import Sal.MRDTs.Metatheory.CertifiedAdequacy
 namespace Sal.MRDTs.Instances.MVRLive
 open Sal.MRDTs.Foundation
 open Classical
-local instance : ReplayPolicy D.toUpdateSig := rc
+local instance : EventOrder D.toUpdateSig := replayOrder
 set_option maxHeartbeats 1000000
 
 theorem repConfig_init : RepConfig (initConfig D) := by
@@ -104,7 +104,7 @@ theorem represented_of_mintCertifiedV {C : Configuration D}
       exact ⟨canonicalConfig_merge_result hh₁ hv₁ hv₂ hL hvis hver hG
         (canonical_union hG mint hv₁ hv₂ hm),repConfig_store hver hR hm⟩
 
-noncomputable def replayAdequacy : @ReplayAdequacyCertificate D issuance rc where
+noncomputable def replayAdequacy : @ReplayAdequacyCertificate D issuance replayOrder where
   soundV reach := hasReplayWitness_of_canonical (represented_of_mintCertifiedV reach).2.1
 
 theorem represented_of_execution {C : Configuration D}

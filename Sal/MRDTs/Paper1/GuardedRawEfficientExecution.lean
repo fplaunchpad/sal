@@ -10,7 +10,7 @@ open Classical
 variable {α : Type} [DecidableEq α]
 open EfficientORSet.ConcreteRep
 variable (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α)))
-local instance : ReplayPolicy (D α).toUpdateSig := rc
+local instance : EventOrder (D α).toUpdateSig := replayOrder
 
 theorem version_enumerated {C : Configuration (D α)} (good : CanonicalConfig C)
     {v : Version} {s : State α} {E : Set (Event α)} (hv : C.ver v = some (s,E)) :
@@ -64,7 +64,7 @@ open Classical
 variable {α : Type} [DecidableEq α]
 open EfficientORSet.ConcreteRep
 variable (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α)))
-local instance : ReplayPolicy (D α).toUpdateSig := rc
+local instance : EventOrder (D α).toUpdateSig := replayOrder
 
 def RepConfig (C : Configuration (D α)) : Prop :=
   ∀ v s E, C.ver v = some (s,E) → Represents C.vis E s
@@ -235,7 +235,7 @@ open Sal.MRDTs.Instances.EfficientORSet
 variable {α : Type} [DecidableEq α]
 open EfficientORSet.ConcreteRep
 variable (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α)))
-local instance : ReplayPolicy (D α).toUpdateSig := rc
+local instance : EventOrder (D α).toUpdateSig := replayOrder
 
 theorem vcRepresentedConfig (rawJoin : ConcreteMRDT.RepresentationJoin (representation (α := α))) {C : Configuration (D α)}
     (reach : MintCertifiedReachV (D α) (canonicalVirtualMergeBase (D α)) issuance C) :

@@ -1,7 +1,7 @@
 import Sal.MRDTs.Instances.MVR
 import Sal.MRDTs.Metatheory.Countermodels.TaggedORSet
 import Sal.MRDTs.Instances.QueueConditioningSPOT
-import Sal.MRDTs.Instances.RcSPOT
+import Sal.MRDTs.Instances.EventOrderSPOT
 import Sal.MRDTs.Instances.FugueMaxBackward
 import Sal.MRDTs.Instances.FugueMaxContractSPOT
 import Sal.MRDTs.Metatheory.ConditioningSPOT
@@ -14,7 +14,7 @@ import Sal.MRDTs.Metatheory.Join.HistoricalVCs
 
 These declarations are deliberately excluded from `Production.registry`.
 They record refuted client specifications, framework countermodels, focused
-`rc` SPOTs, and internal proof signatures that do not yet supply the
+`replayOrder` SPOTs, and internal proof signatures that do not yet supply the
 complete public package.
 -/
 
@@ -23,8 +23,8 @@ namespace Sal.MRDTs.Negative
 #check Instances.MVR.replayAdequate
 #check Instances.MVR.concurrentState_no_sequential_register
 #check Instances.Queue.ConditioningSPOT.duplicate_dequeue_not_fifo
-#check Instances.RcSPOT.LWW.old_no_chain_refuted
-#check Instances.RcSPOT.ObservedRemove.rc
+#check Instances.EventOrderSPOT.LWW.old_no_chain_refuted
+#check Instances.EventOrderSPOT.ObservedRemove.replayOrder
 #check Instances.SidedEmbedRGA.fuguemax_backward_ni
 #check Instances.SidedEmbedRGA.FugueMaxContractSPOT.short_reachable
 #check Instances.SidedEmbedRGA.FugueMaxContractSPOT.deleted_reachable

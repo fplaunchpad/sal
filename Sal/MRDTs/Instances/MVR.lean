@@ -6,7 +6,7 @@ import Sal.MRDTs.Metatheory.Correctness
 Production uses `MVRLiveContract.verified`, whose concrete state contains only
 live tagged writes. This module retains the operation type, historical
 algebraic model, and negative single-register control used by the proof suite.
-The raw `MRDTSig` exposes its live value set. Its sole `rc` records observed
+The raw `MRDTSig` exposes its live value set. Its selected event `replayOrder` records observed
 supersession. `MVRContract` supplies the finite-live-set specification and
 complete public certificate; the single-register counterexample below rules
 out only the old concurrent target, not the ordinary sequential special case.
@@ -73,24 +73,24 @@ def overwrites (o : Op MVROp) : List ℕ :=
 
 /-- Observed supersession, not a timestamp winner among concurrent writes.
 The timestamp guard excludes malformed cyclic payloads outside executions. -/
-def rc : ReplayPolicy MVR.toUpdateSig where
+def replayOrder : EventOrder MVR.toUpdateSig where
   order a b := if a.1 < b.1 ∧ a.1 ∈ overwrites b then .Fst_then_snd
     else if b.1 < a.1 ∧ b.1 ∈ overwrites a then .Snd_then_fst else .Either
 
-attribute [local instance] rc
+attribute [local instance] replayOrder
 
-theorem rc_before_iff (a b : Op MVROp) :
-    MVR.toUpdateSig.rc a b ↔ a.1 < b.1 ∧ a.1 ∈ overwrites b := by
-  change (if a.1 < b.1 ∧ a.1 ∈ overwrites b then RcRes.Fst_then_snd
+theorem replayOrder_before_iff (a b : Op MVROp) :
+    MVR.toUpdateSig.replayBefore a b ↔ a.1 < b.1 ∧ a.1 ∈ overwrites b := by
+  change (if a.1 < b.1 ∧ a.1 ∈ overwrites b then OrderResult.Fst_then_snd
     else if b.1 < a.1 ∧ b.1 ∈ overwrites a then .Snd_then_fst else .Either) =
       .Fst_then_snd ↔ _
   split <;> simp_all
   split <;> simp_all
 
-theorem rc_acyclic : RcAcyclic MVR.toUpdateSig := by
+theorem replayOrder_acyclic : ReplayAcyclic MVR.toUpdateSig := by
   intro a h
   have hlt : Relation.TransGen (fun a b : Op MVROp => a.1 < b.1) a a :=
-    h.lift id (fun a b h => ((rc_before_iff a b).mp h).1)
+    h.lift id (fun a b h => ((replayOrder_before_iff a b).mp h).1)
   rw [Relation.transGen_eq_self (show Transitive
     (fun a b : Op MVROp => a.1 < b.1) from fun _ _ _ => lt_trans)] at hlt
   exact (Nat.lt_irrefl _) hlt
@@ -124,7 +124,7 @@ theorem MVR_all_comm (o₁ o₂ : Op MVROp) : MVR.toUpdateSig.commutes o₁ o₂
           cases hd₂ : decide (n ∈ O₂) <;> rfl
 
 theorem replayLaws : ReplayLaws MVR.toUpdateSig := by
-  exact ReplayLaws.of_all_comm MVR_all_comm rc_acyclic
+  exact ReplayLaws.of_all_comm MVR_all_comm replayOrder_acyclic
 
 theorem MVR_merge_comm (l a b : MVR.State) :
     MVR.merge l a b = MVR.merge l b a := by
@@ -506,7 +506,7 @@ def sequential : SequentialRefinement MVR spec where
 
 noncomputable def replayAdequate : ReplayAdequateMRDT MVR where
   issuance := generation
-  rc := rc
+  replayOrder := replayOrder
   replayAdequacy := replayAdequacy
   Machine := spec
   sequential := sequential

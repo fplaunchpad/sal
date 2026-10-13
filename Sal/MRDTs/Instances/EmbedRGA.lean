@@ -100,7 +100,7 @@ def E (Γ : OrderedPrefixCode) (α : Type := ℕ)
 theorem E_core_update (Γ : OrderedPrefixCode) (s : EState α) (o : Op (EOp α)) :
     (E Γ α).toUpdateSig.update s o = eUpdate Γ s o := rfl
 
-def eRcOrder (a b : Op (EOp α)) : RcRes :=
+def eEventOrder (a b : Op (EOp α)) : OrderResult :=
   match a.2.2, b.2.2 with
   | .ins _ _ _, .del target =>
       if a.1 = target then .Fst_then_snd else .Either
@@ -108,9 +108,9 @@ def eRcOrder (a b : Op (EOp α)) : RcRes :=
       if b.1 = target then .Snd_then_fst else .Either
   | _, _ => .Either
 
-instance EReplayPolicy (Γ : OrderedPrefixCode) :
-    ReplayPolicy (E Γ α).toUpdateSig where
-  order := eRcOrder
+instance EEventOrder (Γ : OrderedPrefixCode) :
+    EventOrder (E Γ α).toUpdateSig where
+  order := eEventOrder
 
 /-! ## §1½  First list algebra -/
 
@@ -599,27 +599,27 @@ theorem e_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r : ℕ) (el : α)
     if_false, List.filter_nil] at h0
   simp at h0
 
-theorem e_not_comm_of_rc {Γ : OrderedPrefixCode} {a b : Op (EOp α)}
-    (h : (E Γ α).toUpdateSig.rc a b ∨
-      (E Γ α).toUpdateSig.rc b a) :
+theorem e_not_comm_of_replayOrder {Γ : OrderedPrefixCode} {a b : Op (EOp α)}
+    (h : (E Γ α).toUpdateSig.replayBefore a b ∨
+      (E Γ α).toUpdateSig.replayBefore b a) :
     ¬ (E Γ α).toUpdateSig.commutes a b := by
   obtain ⟨ats, ar, aop⟩ := a
   obtain ⟨bts, br, bop⟩ := b
   cases aop <;> cases bop
-  · simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder] at h
+  · simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder] at h
   · rename_i el π anchor target
     by_cases heq : ats = target
     · subst target
       exact e_ins_del_not_comm (α := α) Γ ats ar el π anchor bts br
-    · simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder, heq] at h
+    · simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder, heq] at h
   · rename_i target el π anchor
     by_cases heq : bts = target
     · subst target
       intro hc
       exact e_ins_del_not_comm (α := α) Γ bts br el π anchor ats ar
         (fun s => (hc s).symm)
-    · simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder, heq] at h
-  · simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder] at h
+    · simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder, heq] at h
+  · simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder] at h
 
 /-- Honest histories. -/
 structure EHonestCore (Γ : OrderedPrefixCode)
@@ -636,15 +636,15 @@ structure EHonestCore (Γ : OrderedPrefixCode)
       eCoord Γ o = coordOf Γ (chainOf o.1) ∧
       (chainOf o.1).sum = o.1
 
-theorem e_vis_of_rc_of_honest {Γ : OrderedPrefixCode}
+theorem e_vis_of_replayOrder_of_honest {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (E Γ α).toUpdateSig}
     (hHon : EHonestCore Γ C) {a b : Op (EOp α)}
     (ha : a ∈ C.events) (hb : b ∈ C.events)
-    (hrc : (E Γ α).toUpdateSig.rc b a) : C.vis b a := by
+    (hrc : (E Γ α).toUpdateSig.replayBefore b a) : C.vis b a := by
   obtain ⟨bts, br, bop⟩ := b
   obtain ⟨ats, ar, aop⟩ := a
   cases bop <;> cases aop
-  · simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder] at hrc
+  · simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder] at hrc
   · rename_i el π anchor target
     by_cases heq : bts = target
     · obtain ⟨c, hc, hvis, hct, _⟩ :=
@@ -652,11 +652,11 @@ theorem e_vis_of_rc_of_honest {Γ : OrderedPrefixCode}
       have hcb : c = (bts, br, .ins el π anchor) :=
         C.ts_unique hc hb (hct.trans heq.symm)
       simpa [hcb] using hvis
-    · simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder, heq] at hrc
+    · simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder, heq] at hrc
   · rename_i target el π anchor
     by_cases heq : ats = target <;>
-      simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder, heq] at hrc
-  · simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder] at hrc
+      simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder, heq] at hrc
+  · simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder] at hrc
 
 /-- Honesty + backward closure: a delete's insert lies in the same closed
 event set, `vis`-before it. -/
@@ -724,7 +724,7 @@ theorem e_wf_of_enum {Γ : OrderedPrefixCode}
     cases aop with
     | del y => simp [eIsIns] at hins
     | ins el π anc =>
-        simp [UpdateSig.rc, ReplayPolicy.Before, EReplayPolicy, eRcOrder]
+        simp [UpdateSig.replayBefore, EventOrder.Before, EEventOrder, eEventOrder]
   keys_inj := by
     obtain ⟨chainOf, hch⟩ := hHon.chain_gen
     intro o₁ h₁ o₂ h₂ hi₁ hi₂ hne hkey
@@ -920,13 +920,13 @@ Witness enumeration for the union: the GCA's enumeration, then branch one's
 delta (in branch order), then branch two's news. Its `respects` obligation
 falls to CLOSURE, a `loOn`-later event sitting in an earlier block would
 have been pulled into the earlier event set, and `loOn` is event-set
-independent under `rc = Either`, so within-block orders transfer verbatim. -/
+independent under `replayOrder = Either`, so within-block orders transfer verbatim. -/
 
 open LabeledTS in
 theorem e_join_at {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (E Γ α).toUpdateSig}
     (hHon : EHonestCore Γ C) :
-    @JoinAt (E Γ α) (EReplayPolicy Γ) C := by
+    @JoinAt (E Γ α) (EEventOrder Γ) C := by
   intro ev₁ ev₂ s₀ s₁ s₂ _htr _hir hin₁ hin₂ hcl₁ hcl₂ h₀ h₁ h₂
   classical
   obtain ⟨ρ₀, hp₀, hr₀, hf₀⟩ := h₀
@@ -1016,10 +1016,10 @@ theorem e_join_at {Γ : OrderedPrefixCode}
       -- cross δ₁ × δ₂: a loOn-later δ₂ event before a δ₁ event would be in ev₁
       intro a ha b hb hl
       rcases hl with ⟨hvis, hrc⟩ | ⟨hnv, _, hrc, _⟩
-      · have hb1 : b ∈ ev₁ := hcl₁ b a hvis (e_not_comm_of_rc hrc)
+      · have hb1 : b ∈ ev₁ := hcl₁ b a hvis (e_not_comm_of_replayOrder hrc)
           ((hp₁.2 a).mp (hmemδ₁.mp ha).1)
         exact (hmemδ₂.mp hb).2 hb1
-      · exact hnv (e_vis_of_rc_of_honest hHon
+      · exact hnv (e_vis_of_replayOrder_of_honest hHon
           (hin₁ a ((hp₁.2 a).mp (hmemδ₁.mp ha).1))
           (hin₂ b ((hp₂.2 b).mp (hmemδ₂.mp hb).1)) hrc)
     · -- cross ρ₀ × deltas: a loOn-later delta event before an GCA event
@@ -1031,11 +1031,11 @@ theorem e_join_at {Γ : OrderedPrefixCode}
         · exact hin₁ b ((hp₁.2 b).mp (hmemδ₁.mp h).1)
         · exact hin₂ b ((hp₂.2 b).mp (hmemδ₂.mp h).1)
       rcases hl with ⟨hvis, hrc⟩ | ⟨hnv, _, hrc, _⟩
-      · have hb0 : b ∈ ev₀ := hcl₀ b a hvis (e_not_comm_of_rc hrc) ha0
+      · have hb0 : b ∈ ev₀ := hcl₀ b a hvis (e_not_comm_of_replayOrder hrc) ha0
         rcases List.mem_append.mp hb with h | h
         · exact (hmemδ₁.mp h).2 hb0
         · exact (hmemδ₂.mp h).2 hb0.1
-      · exact hnv (e_vis_of_rc_of_honest hHon (hin₀ a ha0) hbC hrc)
+      · exact hnv (e_vis_of_replayOrder_of_honest hHon (hin₀ a ha0) hbC hrc)
   have hwfU : EWf Γ ρᵤ := e_wf_of_enum hHon hinU hclU hpU hrU
   -- the fold of the witness IS the merge, by canonical-form extensionality
   refine ⟨ρᵤ, hpU, hrU, ?_⟩

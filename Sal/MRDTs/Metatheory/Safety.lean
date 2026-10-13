@@ -16,7 +16,7 @@ def CausalFold {D' : UpdateSig} (C : Sal.MRDTs.Foundation.ReplayContext D')
 
 section
 variable {D : MRDTSig}
-variable [ReplayPolicy D.toUpdateSig]
+variable [EventOrder D.toUpdateSig]
 
 /-- The ∃-form honesty over an explicit guard `A`: every event satisfies `A`
 at some causal fold of its causal past. Existential because the issuer holds
@@ -230,12 +230,12 @@ theorem version_inv_on_of_causal_canonical
     rw [applySeq_append_single]
     exact hstep
 
-/-! ## §3  The pointwise `CausalCanonical` discharge (all-comm + rc-Either)
+/-! ## §3  The pointwise `CausalCanonical` discharge (all-comm + replayOrder-Either)
 
 Any finite enumeration reorders into a vis-linearizing one (peel a
 vis-minimal element, exists since `vis` is transitive and irreflexive on a
-finite list), and all-comm makes folds permutation-invariant; `rc ≡ Either`
-kills the `loOn` rc-arm, so the `loOn`-respect conjunct is free. -/
+finite list), and all-comm makes folds permutation-invariant; `replayOrder ≡ Either`
+kills the `loOn` replayOrder-arm, so the `loOn`-respect conjunct is free. -/
 
 
 
@@ -257,13 +257,13 @@ theorem applySeq_perm_of_all_comm {D' : UpdateSig}
   | trans _ _ ih₁ ih₂ => intro s; exact (ih₁ s).trans (ih₂ s)
 
 /-- **The pointwise `CausalCanonical` discharge** (first species): all-comm +
-`rc ≡ Either` upgrade `CanonicalConfig.canonical` to a causal witness. Reorder the
+`replayOrder ≡ Either` upgrade `CanonicalConfig.canonical` to a causal witness. Reorder the
 canonical enumeration into a vis-linearization (same fold by all-comm); the
-`loOn`-respect conjunct is vacuous (`loOn = ∅`: vis-arm dead by all-comm, rc-arm
+`loOn`-respect conjunct is vacuous (`loOn = ∅`: vis-arm dead by all-comm, replayOrder-arm
 dead by `Either`). No reachability induction. -/
-theorem causalCanonical_of_all_comm_rc_either
+theorem causalCanonical_of_all_comm_replayOrder_either
     (hcomm : ∀ a b : Op D.AppOp, D.toUpdateSig.commutes a b)
-    (hrc : ∀ a b : Op D.AppOp, D.toUpdateSig.replayOrder a b = RcRes.Either)
+    (hrc : ∀ a b : Op D.AppOp, D.toUpdateSig.replayOrder a b = OrderResult.Either)
     {C : Configuration D} (hG : CanonicalConfig C) :
     CausalCanonical C := by
   intro v s E hv
@@ -272,19 +272,19 @@ theorem causalCanonical_of_all_comm_rc_either
     (fun hab hbc => hG.vis_trans hab hbc) hG.vis_irrefl ρ
   refine ⟨ρ', ⟨hp.nodup hperm.1,
     fun a => (hp.mem_iff (a := a)).symm.trans (hperm.2 a)⟩, hr, ?_, ?_⟩
-  · -- `loOn` has no edges at all under all-comm + rc-Either
+  · -- `loOn` has no edges at all under all-comm + replayOrder-Either
     exact hr.imp (fun _ hlo => by
       rcases hlo with ⟨_, hnc⟩ | ⟨_, _, hfs, _⟩
       · rcases hnc with hfs | hfs
-        · change D.toUpdateSig.replayOrder _ _ = RcRes.Fst_then_snd at hfs
+        · change D.toUpdateSig.replayOrder _ _ = OrderResult.Fst_then_snd at hfs
           rw [hrc] at hfs
-          exact RcRes.noConfusion hfs
-        · change D.toUpdateSig.replayOrder _ _ = RcRes.Fst_then_snd at hfs
+          exact OrderResult.noConfusion hfs
+        · change D.toUpdateSig.replayOrder _ _ = OrderResult.Fst_then_snd at hfs
           rw [hrc] at hfs
-          exact RcRes.noConfusion hfs
-      · change D.toUpdateSig.replayOrder _ _ = RcRes.Fst_then_snd at hfs
+          exact OrderResult.noConfusion hfs
+      · change D.toUpdateSig.replayOrder _ _ = OrderResult.Fst_then_snd at hfs
         rw [hrc] at hfs
-        exact RcRes.noConfusion hfs)
+        exact OrderResult.noConfusion hfs)
   · exact (applySeq_perm_of_all_comm hcomm hp D.init).symm.trans hfold
 
 /-! ## §4  Sub-enumerations, the registered-store fact, and the honesty

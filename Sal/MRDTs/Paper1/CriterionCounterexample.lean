@@ -95,7 +95,7 @@ theorem canonical_mem_adds {C : ReplayContext D.toUpdateSig}
 /-- The unchanged OR-set merge satisfies Join even when removals do nothing.
 Timestamp uniqueness makes the retained-add image preserve intersections. -/
 theorem mutant_join : @Join D emptyPolicy.lift := by
-  letI : ReplayPolicy D.toUpdateSig := emptyPolicy.lift
+  letI : EventOrder D.toUpdateSig := emptyPolicy.lift
   intro C E1 E2 s0 s1 s2 _ _ hs1 hs2 _ _ h0 h1 h2
   have hbase : s0 = s1 ∩ s2 := by
     ext t
@@ -213,7 +213,7 @@ private theorem removalsFirst_accepted (π : List (Op Update)) :
 theorem raw_replay_witness {C : Configuration D}
     (reach : (labeledTS D).ReachableFrom (initConfig D) C) :
     @HasReplayWitness D emptyPolicy.lift C := by
-  letI : ReplayPolicy D.toUpdateSig := emptyPolicy.lift
+  letI : EventOrder D.toUpdateSig := emptyPolicy.lift
   exact replayWitness_of_join mutant_join C reach
 
 /-- The mutant converges on every raw execution, including historical versions. -/
@@ -257,7 +257,7 @@ theorem raw_cross_store_convergence {C C' : Configuration D}
 theorem canonical_reachableV {C : Configuration D}
     (reach : (labeledTSV D (canonicalVirtualMergeBase D)).ReachableFrom (initConfig D) C) :
     @CanonicalConfig D emptyPolicy.lift C := by
-  letI : ReplayPolicy D.toUpdateSig := emptyPolicy.lift
+  letI : EventOrder D.toUpdateSig := emptyPolicy.lift
   exact canonicalConfig_reachableV mutant_join reach
 
 /-- Equal event sets converge even in the widened raw execution semantics. -/
@@ -265,7 +265,7 @@ theorem virtual_store_convergence {C : Configuration D}
     (reach : (labeledTSV D (canonicalVirtualMergeBase D)).ReachableFrom (initConfig D) C)
     {v w : Version} {s t : D.State} {E : Set (Op Update)}
     (hv : C.ver v = some (s, E)) (hw : C.ver w = some (t, E)) : s = t := by
-  letI : ReplayPolicy D.toUpdateSig := emptyPolicy.lift
+  letI : EventOrder D.toUpdateSig := emptyPolicy.lift
   have canonical := canonical_reachableV reach
   ext timestamp
   exact (canonical_mem_adds (canonical.canonical v s E hv) timestamp).trans

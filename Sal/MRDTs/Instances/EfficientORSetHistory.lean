@@ -1,7 +1,7 @@
 import Sal.MRDTs.Instances.EfficientORSet
 
 /-! Execution-history characterization for Neem's efficient OR-set.
-No new public resolve-conflict policy is introduced here. The history
+No new selected event replay order is introduced here. The history
 predicate records the causal replacements that the representation performs.
 -/
 namespace Sal.MRDTs.Instances.EfficientORSet
@@ -292,31 +292,31 @@ theorem exists_sorted (vis : Event α → Event α → Prop) (E : Set (Event α)
         · exact Or.inl h) ops
     simpa [cmp] using hh
 
-theorem rc_iff (a b : Event α) :
-    @UpdateSig.rc (D α).toUpdateSig rc a b ↔
+theorem replayOrder_iff (a b : Event α) :
+    @UpdateSig.replayBefore (D α).toUpdateSig replayOrder a b ↔
       ∃ x, a.2.2 = .remove x ∧ b.2.2 = .add x := by
   rcases a with ⟨ta,ra,oa⟩
   rcases b with ⟨tb,rb,ob⟩
-  cases oa <;> cases ob <;> simp [UpdateSig.replayOrder,rc,eq_comm]
+  cases oa <;> cases ob <;> simp [UpdateSig.replayOrder,replayOrder,eq_comm]
   split <;> simp
 
 theorem before_of_loOn (C : ReplayContext (D α).toUpdateSig)
     (E : Set (Event α)) (ht : Transitive C.vis)
     (hm : ∀ a b, C.vis a b → a.1 < b.1)
     {a b : Event α} (hb : b ∈ E)
-    (h : @loOn (D α).toUpdateSig rc C E a b) : Before C.vis E a b := by
+    (h : @loOn (D α).toUpdateSig replayOrder C E a b) : Before C.vis E a b := by
   rcases h with ⟨hv,hr | hr⟩ | ⟨_,_,hr,hn⟩
-  · obtain ⟨x,ha,hb'⟩ := (rc_iff a b).mp hr
+  · obtain ⟨x,ha,hb'⟩ := (replayOrder_iff a b).mp hr
     exact before_of_vis C.vis E ht hm hb hv (by simp [element,ha,hb'])
-  · obtain ⟨x,hb',ha⟩ := (rc_iff b a).mp hr
+  · obtain ⟨x,hb',ha⟩ := (replayOrder_iff b a).mp hr
     exact before_of_vis C.vis E ht hm hb hv (by simp [element,ha,hb'])
-  · obtain ⟨x,ha,hb'⟩ := (rc_iff a b).mp hr
+  · obtain ⟨x,ha,hb'⟩ := (replayOrder_iff a b).mp hr
     have hea : Early C.vis E a := Or.inl ⟨x,ha⟩
     have heb : ¬ Early C.vis E b := by
       rintro (⟨y,hy⟩ | ⟨z,hz,hvz,hzop⟩)
       · rw [hb'] at hy; cases hy
       · apply hn ⟨z,hz,hvz,Or.inr ?_⟩
-        apply (rc_iff z b).mpr
+        apply (replayOrder_iff z b).mpr
         exact ⟨x,by simpa [element,hb'] using hzop,hb'⟩
     simp [Before,rank,hea,heb]
 
@@ -326,7 +326,7 @@ theorem canonical_of_represents (C : ReplayContext (D α).toUpdateSig)
     (total : ∀ a ∈ E, ∀ b ∈ E, a ≠ b → a.2.1 = b.2.1 → C.vis a b ∨ C.vis b a)
     (ops : List (Event α)) (hp : listPermOf ops E)
     {s : State α} (hs : Represents C.vis E s) :
-    @IsCanonicalState (D α).toUpdateSig rc C E s := by
+    @IsCanonicalState (D α).toUpdateSig replayOrder C E s := by
   obtain ⟨sorted,hperm,hsort⟩ := exists_sorted C.vis E ops hp
   refine ⟨sorted,hperm,?_,?_⟩
   · apply hsort.imp_of_mem

@@ -79,8 +79,8 @@ theorem BC_init_fst (k : ℕ) : BC.init.1 k = 0 := rfl
 
 theorem BC_init_snd (k : ℕ) : BC.init.2 k = 0 := rfl
 
-theorem BC_rc_either : ∀ o₁ o₂ : Op BC.AppOp,
-    BC.toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := fun _ _ => rfl
+theorem BC_replayOrder_either : ∀ o₁ o₂ : Op BC.AppOp,
+    BC.toUpdateSig.replayOrder o₁ o₂ = OrderResult.Either := fun _ _ => rfl
 
 /-- Two `BCState`s with equal slot values are equal. -/
 theorem bcState_ext {s t : BCState}
@@ -104,9 +104,9 @@ theorem BC_all_comm : ∀ a b : Op BC.AppOp, BC.toUpdateSig.commutes a b := by
 
 theorem replayLaws : ReplayLaws BC.toUpdateSig := by
   apply ReplayLaws.of_all_comm BC_all_comm
-  apply rcAcyclic_of_noRcChain
+  apply replayAcyclic_of_noReplayChain
   intro a b c h
-  exact RcRes.noConfusion h.1
+  exact OrderResult.noConfusion h.1
 
 theorem BC_mergeLaws : MergeLaws BC := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -289,7 +289,7 @@ private theorem honestApp_of_mint {C : Configuration BC}
 theorem versions_safe {C : Configuration BC}
     (h : MintCertifiedReach BC generation C) : VersionsSatisfy BCInv C := by
   have hG := canonicalConfig_of_mintCertified (fun _ _ => bcJoin _) h
-  have hCC := causalCanonical_of_all_comm_rc_either BC_all_comm BC_rc_either hG
+  have hCC := causalCanonical_of_all_comm_replayOrder_either BC_all_comm BC_replayOrder_either hG
   exact version_inv_on_of_causal_canonical bc_inv_init bc_safetyStep hG hCC
     (honestApp_of_mint h.mintHonest)
 
@@ -297,7 +297,7 @@ theorem versions_safeV {C : Configuration BC}
     (h : MintCertifiedReachV BC (canonicalVirtualMergeBase BC) generation C) :
     VersionsSatisfy BCInv C := by
   have hG := canonicalConfig_of_mintCertifiedV (fun _ _ => bcJoin _) h
-  have hCC := causalCanonical_of_all_comm_rc_either BC_all_comm BC_rc_either hG
+  have hCC := causalCanonical_of_all_comm_replayOrder_either BC_all_comm BC_replayOrder_either hG
   exact version_inv_on_of_causal_canonical bc_inv_init bc_safetyStep hG hCC
     (honestApp_of_mint h.mintHonest)
 
@@ -357,8 +357,8 @@ theorem canonical_fold (ops : List (Op BCOp)) :
 
 theorem lo_false (C : Configuration BC) (a b : Op BCOp) :
     ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
-  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 theorem respects_lo (C : Configuration BC) (ops : List (Op BCOp)) :
     respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
@@ -410,13 +410,13 @@ def sequential : SequentialRefinement BC sequentialSpec where
   sound := fun ops h => ⟨h ops [] (by simp), sequential_run ops⟩
 
 noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate BC generation
-    (ReplayPolicy.unconstrained BC.toUpdateSig)
+    (EventOrder.unconstrained BC.toUpdateSig)
     clientSpec sequential.Rel where
   sound C exec _ := by
     intro v s E hver
     have hG := exec.canonicalConfig (fun _ _ => bcJoin _)
-    have hCC := causalCanonical_of_all_comm_rc_either
-      BC_all_comm BC_rc_either hG
+    have hCC := causalCanonical_of_all_comm_replayOrder_either
+      BC_all_comm BC_replayOrder_either hG
     obtain ⟨π, hperm, hvis, hlo, hπfold⟩ := hCC v s E hver
     have hlegal : ClientLegal π := by
       exact prefix_inv_of_causal_witness bc_inv_init bc_safetyStep hG
@@ -436,7 +436,7 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate BC ge
 
 noncomputable def verified : VerifiedMRDT BC where
   issuance := generation
-  rc := ReplayPolicy.unconstrained BC.toUpdateSig
+  replayOrder := EventOrder.unconstrained BC.toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := clientSpec
   Rel := sequential.Rel

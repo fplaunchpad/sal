@@ -9,7 +9,7 @@ open CertifiedRGARawOrderObstruction
 /-- The production correctness theorem inherited unchanged from main accepts
 all stored versions of exactly the configuration rejected by paperOrder. -/
 theorem main_accepts_same_execution :
-    IsSpecLinearizable RGAM (embedRc unaryCode)
+    IsSpecLinearizable RGAM (embedOrder unaryCode)
       (embedClientSpec (α := Nat) unaryCode) embedRel (config 6) :=
   (embed (α := Nat) unaryCode).correct mint_certified
 
@@ -17,7 +17,7 @@ theorem main_accepts_same_execution :
 same original-issuer certified execution, with the same client specification. -/
 theorem contracts_differ (P : OperationPolicy RGAM.AppOp) :
     MintCertifiedReach RGAM issuance (config 6) ∧
-    IsSpecLinearizable RGAM (embedRc unaryCode)
+    IsSpecLinearizable RGAM (embedOrder unaryCode)
       (embedClientSpec (α := Nat) unaryCode) embedRel (config 6) ∧
     ¬ EventVersionsSpecificationRA RGAM P
       (GuardedHistory.language (embedClientSpec (α := Nat) unaryCode)) (config 6) :=
@@ -27,22 +27,22 @@ theorem contracts_differ (P : OperationPolicy RGAM.AppOp) :
 deleted identifier is 1 and the inserted identifier is 3. -/
 theorem main_pair_independent :
     embedSemanticCommutes (event 1) (event 2) ∧
-    eRcOrder (event 1) (event 2) = RcRes.Either ∧
-    eRcOrder (event 2) (event 1) = RcRes.Either := by
-  simp [embedSemanticCommutes,eRcOrder,event]
+    eEventOrder (event 1) (event 2) = OrderResult.Either ∧
+    eEventOrder (event 2) (event 1) = OrderResult.Either := by
+  simp [embedSemanticCommutes,eEventOrder,event]
 
 theorem main_has_no_extra_edge :
-    ¬ @loOn RGAM.toUpdateSig (embedRc unaryCode) (config 6).replayContext
+    ¬ @loOn RGAM.toUpdateSig (embedOrder unaryCode) (config 6).replayContext
       (↑((indices 6).image event) : Set Event) (event 1) (event 2) := by
-  simp [loOn, UpdateSig.rc, ReplayPolicy.Before, embedRc, EReplayPolicy,
-    eRcOrder, event]
+  simp [loOn, UpdateSig.replayBefore, EventOrder.Before, embedOrder, EEventOrder,
+    eEventOrder, event]
 
 /-- The hand-described explaining history also respects main's actual order. -/
 theorem goodHistory_respects_main :
-    respects goodHistory (@loOn RGAM.toUpdateSig (embedRc unaryCode)
+    respects goodHistory (@loOn RGAM.toUpdateSig (embedOrder unaryCode)
       (config 6).replayContext (↑((indices 6).image event) : Set Event)) := by
-  simp [respects,goodHistory,loOn,UpdateSig.rc,ReplayPolicy.Before,embedRc,
-    EReplayPolicy,eRcOrder,event]
+  simp [respects,goodHistory,loOn,UpdateSig.replayBefore,EventOrder.Before,embedOrder,
+    EEventOrder,eEventOrder,event]
   change ¬ vis 6 (event 1) (event 0)
   decide
 

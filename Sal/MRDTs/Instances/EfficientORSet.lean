@@ -41,7 +41,7 @@ def D (α : Type) [DecidableEq α] : MRDTSig where
   merge := merge
   query s x := decide (x ∈ elements s)
 
-def rc : ReplayPolicy (D α).toUpdateSig where
+def replayOrder : EventOrder (D α).toUpdateSig where
   order a b := match a.2.2, b.2.2 with
     | .remove x, .add y => if x = y then .Fst_then_snd else .Either
     | .add x, .remove y => if x = y then .Snd_then_fst else .Either
@@ -142,7 +142,7 @@ theorem sequential_refinement (ops : List (Op (SetOp α))) :
 /-- Public sequential refinement for any replay witness supplied by the
 execution proof. This does not assert the missing replay-adequacy premise. -/
 def sequentialCorrectness :
-    SequentialCorrectnessCertificate (D α) issuance rc spec stateRel where
+    SequentialCorrectnessCertificate (D α) issuance replayOrder spec stateRel where
   sound := by
     intro C _exec replay v state E hver
     obtain ⟨ops, hp, hr, hf⟩ := replay v state E hver
@@ -155,15 +155,15 @@ def sequentialCorrectness :
     change elements state = ops.foldl setStep (∅ : Finset α) at hrel
     exact congrArg (fun (q : Finset α) => decide ((x : α) ∈ q)) hrel
 
-theorem rc_acyclic : @RcAcyclic (D α).toUpdateSig rc := by
-  letI : ReplayPolicy (D α).toUpdateSig := rc
-  apply rcAcyclic_of_noRcChain
+theorem replayOrder_acyclic : @ReplayAcyclic (D α).toUpdateSig replayOrder := by
+  letI : EventOrder (D α).toUpdateSig := replayOrder
+  apply replayAcyclic_of_noReplayChain
   rintro a b c ⟨hab, hbc⟩
   rcases a with ⟨ta, ra, oa⟩
   rcases b with ⟨tb, rb, ob⟩
-  rcases c with ⟨tc, rc', oc⟩
+  rcases c with ⟨tc, replayOrder', oc⟩
   cases oa <;> cases ob <;> cases oc <;>
-    simp_all [UpdateSig.replayOrder, rc]
+    simp_all [UpdateSig.replayOrder, replayOrder]
   all_goals first
     | (split at hab <;> simp_all)
     | (split at hbc <;> simp_all)
@@ -195,11 +195,11 @@ theorem same_replica_adds_not_commuting :
   exact ne bad
 
 theorem all_state_replay_laws_unavailable :
-    ¬ @ReplayLaws (D Nat).toUpdateSig rc := by
-  letI : ReplayPolicy (D Nat).toUpdateSig := rc
+    ¬ @ReplayLaws (D Nat).toUpdateSig replayOrder := by
+  letI : EventOrder (D Nat).toUpdateSig := replayOrder
   intro laws
   have h := laws.noncomm_covered a a' same_replica_adds_not_commuting
-  simpa [UpdateSig.rc, ReplayPolicy.Before, rc, a, a'] using h
+  simpa [UpdateSig.replayBefore, EventOrder.Before, replayOrder, a, a'] using h
 
 /-- Arbitrary independent replay choices cannot be used as merge premises.
 All three singleton states are folds of permutations of the same three adds,
@@ -223,7 +223,7 @@ end SPOT
 
 #print axioms sequential_refinement
 #print axioms sequentialCorrectness
-#print axioms rc_acyclic
+#print axioms replayOrder_acyclic
 #print axioms keyUnique_fold
 #print axioms SPOT.incompatible_replays_merge_not_a_fold
 end Sal.MRDTs.Instances.EfficientORSet

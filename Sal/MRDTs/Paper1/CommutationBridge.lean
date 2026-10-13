@@ -68,7 +68,7 @@ theorem specificationRA_of_fiveVCs_compatible {D : MRDTSig}
     {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) I C) :
     SpecificationRALinearizable D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact specificationRA_of_canonical_total restricted
     (canonicalConfig_of_mintCertifiedV
       (fun C _ => (vcs.toCanonical restricted).join C.replayContext) reach)

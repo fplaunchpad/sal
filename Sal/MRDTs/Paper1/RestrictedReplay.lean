@@ -19,17 +19,17 @@ structure OperationPolicy (Update : Type) where
 
 namespace OperationPolicy
 
-noncomputable def lift {D : UpdateSig} (P : OperationPolicy D.AppOp) : ReplayPolicy D where
+noncomputable def lift {D : UpdateSig} (P : OperationPolicy D.AppOp) : EventOrder D where
   order a b := if P.before a.op b.op then .Fst_then_snd
     else if P.before b.op a.op then .Snd_then_fst else .Either
 
-@[simp] theorem lift_rc_iff {D : UpdateSig} (P : OperationPolicy D.AppOp)
+@[simp] theorem lift_replayOrder_iff {D : UpdateSig} (P : OperationPolicy D.AppOp)
     (a b : Op D.AppOp) :
-    @UpdateSig.rc D P.lift a b ↔ P.before a.op b.op := by
+    @UpdateSig.replayBefore D P.lift a b ↔ P.before a.op b.op := by
   by_cases hab : P.before a.op b.op
-  · simp [UpdateSig.rc, ReplayPolicy.Before, lift, hab]
+  · simp [UpdateSig.replayBefore, EventOrder.Before, lift, hab]
   · by_cases hba : P.before b.op a.op <;>
-      simp [UpdateSig.rc, ReplayPolicy.Before, lift, hab, hba]
+      simp [UpdateSig.replayBefore, EventOrder.Before, lift, hab, hba]
 
 end OperationPolicy
 
@@ -47,22 +47,22 @@ namespace RestrictedLaws
 
 theorem replayLaws {D : UpdateSig} {P : OperationPolicy D.AppOp}
     (L : RestrictedLaws D P) : @ReplayLaws D P.lift := by
-  letI : ReplayPolicy D := P.lift
+  letI : EventOrder D := P.lift
   refine ⟨?_, ?_, ?_⟩
   · intro a b h
     rcases (L.noncomm_exact a b).mp h with h | h
-    · exact Or.inl ((P.lift_rc_iff a b).mpr h)
-    · exact Or.inr ((P.lift_rc_iff b a).mpr h)
-  · apply rcAcyclic_of_noRcChain
+    · exact Or.inl ((P.lift_replayOrder_iff a b).mpr h)
+    · exact Or.inr ((P.lift_replayOrder_iff b a).mpr h)
+  · apply replayAcyclic_of_noReplayChain
     intro a b c h
     apply L.no_chain a.op b.op c.op
-    exact ⟨(P.lift_rc_iff a b).mp h.1, (P.lift_rc_iff b c).mp h.2⟩
+    exact ⟨(P.lift_replayOrder_iff a b).mp h.1, (P.lift_replayOrder_iff b c).mp h.2⟩
   · intro s a b c between _ _ _ hab hbc
     apply L.conditional_commutation s a b c between
-    · exact (P.lift_rc_iff a b).mp hab
+    · exact (P.lift_replayOrder_iff a b).mp hab
     · exact (L.noncomm_exact b c).mpr
-        (hbc.elim (fun h => Or.inl ((P.lift_rc_iff b c).mp h))
-          (fun h => Or.inr ((P.lift_rc_iff c b).mp h)))
+        (hbc.elim (fun h => Or.inl ((P.lift_replayOrder_iff b c).mp h))
+          (fun h => Or.inr ((P.lift_replayOrder_iff c b).mp h)))
 
 end RestrictedLaws
 
@@ -77,6 +77,6 @@ theorem paperOrder_iff_loOn {D : UpdateSig} {P : OperationPolicy D.AppOp}
     (L : RestrictedLaws D P) (C : ReplayContext D) (events : Set (Op D.AppOp))
     (a b : Op D.AppOp) :
     paperOrder P C events a b ↔ @loOn D P.lift C events a b := by
-  simp only [paperOrder, loOn, OperationPolicy.lift_rc_iff, ← L.noncomm_exact]
+  simp only [paperOrder, loOn, OperationPolicy.lift_replayOrder_iff, ← L.noncomm_exact]
 
 end Sal.MRDTs.Paper1

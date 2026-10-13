@@ -5,7 +5,7 @@ namespace Sal.MRDTs.Instances.SidedEmbedRGA.FugueMax
 open Sal.MRDTs.Foundation
 open Sal.EmbedRGA (OrderedPrefixCode)
 
-attribute [local instance] rc
+attribute [local instance] replayOrder
 
 /-- Ordinary list legality. An insertion names root or a previously allocated
 parent that has not been deleted. A delete names root (the total-index no-op)
@@ -131,18 +131,18 @@ theorem staged_respects {Γ : OrderedPrefixCode}
   have noBirth : ∀ a ∈ L, ∀ b ∈ L ++ D,
       ¬ loOn C.replayContext E (eventOf b) (eventOf a) := by
     intro a ha b hb hlo
-    have hrc := (lo_iff_rc C hmint htrans E (hsub b hb)
+    have hrc := (lo_iff_replayOrder C hmint htrans E (hsub b hb)
       (hsub a (List.mem_append_left _ ha))).mp hlo
-    obtain ⟨_, hdel⟩ := (rc_before Γ _ _).mp hrc
+    obtain ⟨_, hdel⟩ := (replayOrder_before Γ _ _).mp hrc
     have hop : a.op = .del b.ts := hdel
     have hia := hi a ha
     simp [mIsIns, hop] at hia
   have noDelete : ∀ a ∈ L ++ D, ∀ b ∈ D,
       ¬ loOn C.replayContext E (eventOf b) (eventOf a) := by
     intro a ha b hb hlo
-    have hrc := (lo_iff_rc C hmint htrans E
+    have hrc := (lo_iff_replayOrder C hmint htrans E
       (hsub b (List.mem_append_right _ hb)) (hsub a ha)).mp hlo
-    have hib := (rc_before Γ _ _).mp hrc |>.1
+    have hib := (replayOrder_before Γ _ _).mp hrc |>.1
     simp [hd b hb] at hib
   unfold respects
   rw [List.pairwise_map, List.pairwise_append]
@@ -160,7 +160,7 @@ theorem records_events (K : KnowM) : (K.map eventOf).map recordOf = K := by
   | cons g K ih => simp only [List.map_cons, recordOf_eventOf, ih]
 
 def listSequentialCorrectness (Γ : OrderedPrefixCode) :
-    SequentialCorrectnessCertificate (datatype Γ) (generation Γ) (rc Γ) (listSpec Γ) listRel where
+    SequentialCorrectnessCertificate (datatype Γ) (generation Γ) (replayOrder Γ) (listSpec Γ) listRel where
   sound C exec replay := by
     intro v s E hver
     have hc := exec.canonicalConfig (fun C hm => join_of_mint C hm)
@@ -238,7 +238,7 @@ def listSequentialCorrectness (Γ : OrderedPrefixCode) :
 
 def verified (Γ : OrderedPrefixCode) : VerifiedMRDT (datatype Γ) where
   issuance := generation Γ
-  rc := rc Γ
+  replayOrder := replayOrder Γ
   replayAdequacy := replayAdequacy Γ
   Spec := listSpec Γ
   Rel := listRel
@@ -254,7 +254,7 @@ theorem correct {Γ : OrderedPrefixCode} {C : Configuration (datatype Γ)}
         listRel s ((listSpec Γ).run ops) ∧
         (∀ q, (datatype Γ).query s q = (listSpec Γ).query ((listSpec Γ).run ops) q) ∧
         MaxNonInterleavingM Γ (ops.map recordOf) := by
-  have hspec : IsSpecLinearizable (datatype Γ) (rc Γ) (listSpec Γ) listRel C := by
+  have hspec : IsSpecLinearizable (datatype Γ) (replayOrder Γ) (listSpec Γ) listRel C := by
     cases exec with
     | ordinary h => exact (verified Γ).correct h
     | virtual h => exact (verified Γ).correctV h

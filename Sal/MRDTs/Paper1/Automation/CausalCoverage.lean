@@ -8,10 +8,10 @@ state invariant or an existing VC proof. -/
 namespace Sal.MRDTs.Paper1.Automation.CausalCoverage
 open Sal.MRDTs Sal.MRDTs.Foundation Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT Classical
 
-def signatureOf (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → RcRes) : Signature :=
+def signatureOf (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → OrderResult) : Signature :=
   ⟨D.State,D.AppOp,D.init,D.update,D.merge,order⟩
 
-structure EventCertificate (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → RcRes) : Prop where
+structure EventCertificate (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → OrderResult) : Prop where
   conflict_classification : ∀ a b, ¬ D.toUpdateSig.commutes a b →
     order a b = .Fst_then_snd ∨ order b a = .Fst_then_snd ∨ a.rep = b.rep
   absorber_classification : ∀ e h c, order e h = .Fst_then_snd →
@@ -30,7 +30,7 @@ structure Kernels (D : Signature) : Prop where
   freshStep : D.fresh_step
 
 theorem reset_of_context
-    (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → RcRes)
+    (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → OrderResult)
     (certificate : EventCertificate D order) (P : OperationPolicy D.AppOp)
     (policy : ∀ a b, order a b = .Fst_then_snd ↔ P.before a.op b.op)
     (C : ReplayContext D.toUpdateSig) (M : MetadataDependencies C)
@@ -103,7 +103,7 @@ theorem reset_of_context
 remainder replay comes from the generic order theorem; canonical convergence
 identifies its states. The proof then invokes the last-bad equation induction. -/
 theorem causal_from_context
-    (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → RcRes)
+    (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → OrderResult)
     (certificate : EventCertificate D order) (kernels : Kernels (signatureOf D order))
     (P : OperationPolicy D.AppOp) (laws : GuardedReplay.Laws D.toUpdateSig P)
     (policy : ∀ a b, order a b = .Fst_then_snd ↔ P.before a.op b.op)
@@ -162,7 +162,7 @@ theorem causal_from_context
 /-- The unchanged original Raw.causal_delta field, including both reconstructed
 representation premises. No merge/Join premise is added. -/
 theorem raw_causal_delta
-    (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → RcRes)
+    (D : MRDTSig) (order : Op D.AppOp → Op D.AppOp → OrderResult)
     (certificate : EventCertificate D order) (kernels : Kernels (signatureOf D order))
     (P : OperationPolicy D.AppOp) (laws : GuardedReplay.Laws D.toUpdateSig P)
     (policy : ∀ a b, order a b = .Fst_then_snd ↔ P.before a.op b.op)

@@ -33,9 +33,9 @@ theorem all_comm (a b : Op (D α).AppOp) :
 
 theorem replayLaws : ReplayLaws (D α).toUpdateSig := by
   apply ReplayLaws.of_all_comm all_comm
-  apply rcAcyclic_of_noRcChain
+  apply replayAcyclic_of_noReplayChain
   intro a b c h
-  exact RcRes.noConfusion h.1
+  exact OrderResult.noConfusion h.1
 
 theorem mergeLaws : MergeLaws (D α) := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -91,7 +91,7 @@ def sequential : SequentialRefinement (D α) spec.toSequentialMachine where
 
 noncomputable def verified : VerifiedMRDT (D α) where
   issuance := generation
-  rc := ReplayPolicy.unconstrained (D α).toUpdateSig
+  replayOrder := EventOrder.unconstrained (D α).toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := spec
   Rel := (· = ·)

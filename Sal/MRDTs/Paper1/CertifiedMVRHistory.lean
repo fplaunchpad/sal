@@ -49,12 +49,12 @@ theorem replay_history (C : Configuration D) (execution : CertifiedExecution D i
   have hp : listPermOf π E :=
     ⟨(Instances.MVR.chronological_perm ops).symm.nodup perm.1,
       fun e => (Instances.MVR.chronological_perm ops).mem_iff.trans (perm.2 e)⟩
-  have oldOrder : @respects Event π (@loOn D.toUpdateSig rc C.replayContext E) := by
+  have oldOrder : @respects Event π (@loOn D.toUpdateSig replayOrder C.replayContext E) := by
     apply (Instances.MVR.chronological_sorted ops).imp
     intro a b le edge
     rcases edge with causal | resolved
     · exact (not_lt_of_ge le) (C.causal_mono causal.1)
-    · exact (not_lt_of_ge le) ((Instances.MVR.rc_before_iff b a).mp resolved.2.2.1).1
+    · exact (not_lt_of_ge le) ((Instances.MVR.replayOrder_before_iff b a).mp resolved.2.2.1).1
   have legal := replay_legal execution.mintHonest supported closed hp oldOrder
   refine ⟨π,hp,chronological_vis C ops,chronological_paperOrder C E ops,?_,?_,?_⟩
   · exact (chronological_vis C ops).imp (fun {_ _} no edge => no edge.1)

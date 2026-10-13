@@ -451,9 +451,9 @@ theorem all_comm (a b : Event) : D.toUpdateSig.commutes a b := by
 
 theorem replayLaws : ReplayLaws D.toUpdateSig := by
   apply ReplayLaws.of_all_comm all_comm
-  apply rcAcyclic_of_noRcChain
+  apply replayAcyclic_of_noReplayChain
   intro a b c h
-  exact RcRes.noConfusion h.1
+  exact OrderResult.noConfusion h.1
 
 theorem mergeLaws : MergeLaws D := by
   refine ⟨replayLaws, ?_, ?_⟩

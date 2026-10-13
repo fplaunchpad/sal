@@ -15,7 +15,7 @@ const tex = fs.readFileSync('docs/formal-reference/main.tex', 'utf8');
 const section = tex.split('\\subsection{Formal instance profiles}')[1]
   ?.split('\\subsection{Proof routes and evidence status}')[0];
 if (!section) throw new Error('Missing instance-profile section');
-const labels = ['Datatype $D$.', 'Resolve-conflict relation $rc$.',
+const labels = ['Datatype $D$.', 'Replay-order relation $ord$.',
   'Issuance.', 'Sequential specification.'];
 for (const profile of section.split('\\paragraph{').slice(1)) {
   let previous = -1;
@@ -108,7 +108,7 @@ test -s docs/formal-reference/main.pdf
 formal_reference_text="${TMPDIR:-/tmp}/sal-formal-reference.txt"
 pdftotext -layout docs/formal-reference/main.pdf "$formal_reference_text"
 # The former summary table was folded into per-datatype formal profiles.
-# Check the current presentation and semantic-rc criterion, not the retired
+# Check the current presentation and event-order criterion, not the retired
 # table heading.
 for required_instance_text in \
     'Formal instance profiles' \

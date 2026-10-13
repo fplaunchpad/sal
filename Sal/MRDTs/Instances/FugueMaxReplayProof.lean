@@ -6,7 +6,7 @@ open Sal.MRDTs.Foundation
 open Sal.EmbedRGA (OrderedPrefixCode fmCoordOf fmCoordOf_append fmCoordOf_inj
   fmδ PosFMChain TagsOK sKey)
 
-attribute [local instance] rc
+attribute [local instance] replayOrder
 
 def project (Γ : OrderedPrefixCode) (e : Op Payload) : Op FOp :=
   fOpOfM Γ (recordOf e)
@@ -40,13 +40,13 @@ theorem project_coord (Γ : OrderedPrefixCode) (e : Op Payload)
       rw [show (recordOf e).chain.getLast? = some ent from hl]
       simp [fCoord, recordOf, heq, fmCoordOf_append, fmCoordOf]
 
-theorem rc_before (Γ : OrderedPrefixCode) (a b : Op Payload) :
-    (datatype Γ).toUpdateSig.rc a b ↔
+theorem replayOrder_before (Γ : OrderedPrefixCode) (a b : Op Payload) :
+    (datatype Γ).toUpdateSig.replayBefore a b ↔
       mIsIns (recordOf a) = true ∧ b.2.2.op = .del a.1 := by
   rcases a with ⟨ta, ra, ⟨oa, la, roa, ca⟩⟩
   rcases b with ⟨tb, rb, ⟨ob, lb, rob, cb⟩⟩
   cases oa <;> cases ob <;> cases ha : ca.getLast? <;> cases hb : cb.getLast? <;>
-    simp [UpdateSig.rc, ReplayPolicy.Before, rc, fRcOrder, fOpOfM, recordOf,
+    simp [UpdateSig.replayBefore, EventOrder.Before, replayOrder, fEventOrder, fOpOfM, recordOf,
       mIsIns, ha, hb, eq_comm] <;> split <;> simp_all
 
 theorem insert_delete_noncommuting (Γ : OrderedPrefixCode) (a b : Op Payload)
@@ -60,31 +60,31 @@ theorem insert_delete_noncommuting (Γ : OrderedPrefixCode) (a b : Op Payload)
   change a.2.2.op = .ins p sd at hop
   simp [mStep, recordOf, hop, hb, sIds, sInsert] at h0
 
-theorem rc_visible {Γ : OrderedPrefixCode}
+theorem replayOrder_visible {Γ : OrderedPrefixCode}
     (C : Configuration (datatype Γ))
     (hmint : MintHonest (datatype Γ) (applicable Γ) C) (htrans : Transitive C.vis)
     {a b : Op Payload} (ha : a ∈ C.events) (hb : b ∈ C.events)
-    (hrc : (datatype Γ).toUpdateSig.rc a b) : C.vis a b := by
-  obtain ⟨hi, hd⟩ := (rc_before Γ a b).mp hrc
+    (hrc : (datatype Γ).toUpdateSig.replayBefore a b) : C.vis a b := by
+  obtain ⟨hi, hd⟩ := (replayOrder_before Γ a b).mp hrc
   rcases delete_birth_of_mint C hmint htrans b hb a.1 hd with hz | ⟨c, hc, hv, _, ht⟩
   · have hp := (event_chain_of_mint C hmint htrans a ha).1
     exact False.elim ((Nat.ne_of_gt hp) hz)
   · have heq : c = a := C.replayContext.ts_unique hc ha ht
     simpa [heq] using hv
 
-theorem lo_iff_rc {Γ : OrderedPrefixCode}
+theorem lo_iff_replayOrder {Γ : OrderedPrefixCode}
     (C : Configuration (datatype Γ))
     (hmint : MintHonest (datatype Γ) (applicable Γ) C) (htrans : Transitive C.vis)
     (E : Set (Op Payload)) {a b : Op Payload} (ha : a ∈ C.events) (hb : b ∈ C.events) :
-    loOn C.replayContext E a b ↔ (datatype Γ).toUpdateSig.rc a b := by
+    loOn C.replayContext E a b ↔ (datatype Γ).toUpdateSig.replayBefore a b := by
   constructor
   · rintro (⟨hv, h | h⟩ | ⟨hn, _, h, _⟩)
     · exact h
-    · have hr := rc_visible C hmint htrans hb ha h
+    · have hr := replayOrder_visible C hmint htrans hb ha h
       exact False.elim (Nat.lt_irrefl a.1 (Nat.lt_trans (C.causal_mono hv) (C.causal_mono hr)))
     · exact h
   · intro h
-    exact Or.inl ⟨rc_visible C hmint htrans ha hb h, Or.inl h⟩
+    exact Or.inl ⟨replayOrder_visible C hmint htrans ha hb h, Or.inl h⟩
 
 private theorem chain_nonempty {Γ : OrderedPrefixCode}
     (C : Configuration (datatype Γ))
@@ -136,8 +136,8 @@ theorem projected_wf {Γ : OrderedPrefixCode}
       apply hr.imp_of_mem
       intro a b ha hb hn hi hd
       apply hn
-      apply (lo_iff_rc C hmint htrans E (hev b hb) (hev a ha)).mpr
-      apply (rc_before Γ b a).mpr
+      apply (lo_iff_replayOrder C hmint htrans E (hev b hb) (hev a ha)).mpr
+      apply (replayOrder_before Γ b a).mpr
       exact ⟨(project_ins Γ b) ▸ hi,
         (project_del Γ a b.1).mp (by simpa only [project_time] using hd)⟩
     intro pre e post heq hi hd
@@ -259,7 +259,7 @@ theorem birthsFirst_respects {Γ : OrderedPrefixCode}
   intro a b ha hb hab hlo
   have haC := hsub a ((birthsFirst_perm ops).mem_iff.mpr ha)
   have hbC := hsub b ((birthsFirst_perm ops).mem_iff.mpr hb)
-  obtain ⟨hi, hd⟩ := (rc_before Γ b a).mp ((lo_iff_rc C hmint htrans E hbC haC).mp hlo)
+  obtain ⟨hi, hd⟩ := (replayOrder_before Γ b a).mp ((lo_iff_replayOrder C hmint htrans E hbC haC).mp hlo)
   have hia : mIsIns (recordOf a) = false := by simp [mIsIns, recordOf, hd]
   simp [hi, hia] at hab
 

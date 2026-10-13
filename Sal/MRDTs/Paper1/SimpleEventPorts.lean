@@ -152,8 +152,8 @@ theorem certifiedV : EventCertifiedSpecificationRAV (D (A := A)) (emptyPolicy A)
     setMachine.toSpec generation := by
   apply event_certified_of_join_total laws _ compatible simulation.sound
   intro C _
-  simpa [emptyPolicy, OperationPolicy.lift, ReplayPolicy.default,
-    ReplayPolicy.unconstrained] using Instances.AddStore.join C.replayContext
+  simpa [emptyPolicy, OperationPolicy.lift, EventOrder.default,
+    EventOrder.unconstrained] using Instances.AddStore.join C.replayContext
 
 theorem certified : EventCertifiedSpecificationRA (D (A := A)) (emptyPolicy A)
     setMachine.toSpec generation := certifiedV.ordinary
@@ -185,8 +185,8 @@ theorem certifiedV : EventCertifiedSpecificationRAV (D (A := A)) (emptyPolicy A)
     finiteMachine.toSpec generation := by
   apply event_certified_of_join_total laws _ compatible simulation.sound
   intro C _
-  simpa [emptyPolicy, OperationPolicy.lift, ReplayPolicy.default,
-    ReplayPolicy.unconstrained] using Instances.FinsetStore.join C.replayContext
+  simpa [emptyPolicy, OperationPolicy.lift, EventOrder.default,
+    EventOrder.unconstrained] using Instances.FinsetStore.join C.replayContext
 
 theorem certified : EventCertifiedSpecificationRA (D (A := A)) (emptyPolicy A)
     finiteMachine.toSpec generation := certifiedV.ordinary
@@ -219,8 +219,8 @@ theorem certifiedV : EventCertifiedSpecificationRAV (D (A := A)) (emptyPolicy A)
     booleanMachine.toSpec generation := by
   apply event_certified_of_join_total laws _ compatible simulation.sound
   intro C _
-  simpa [emptyPolicy, OperationPolicy.lift, ReplayPolicy.default,
-    ReplayPolicy.unconstrained] using Instances.FlatGrowOnly.join C.replayContext
+  simpa [emptyPolicy, OperationPolicy.lift, EventOrder.default,
+    EventOrder.unconstrained] using Instances.FlatGrowOnly.join C.replayContext
 
 theorem certified : EventCertifiedSpecificationRA (D (A := A)) (emptyPolicy A)
     booleanMachine.toSpec generation := certifiedV.ordinary
@@ -256,8 +256,8 @@ theorem certifiedV : EventCertifiedSpecificationRAV (D delta) (emptyPolicy A)
     (deltaMachine delta).toSpec (generation delta) := by
   apply event_certified_of_join_total (laws delta) _ (compatible delta) (simulation delta).sound
   intro C _
-  simpa [emptyPolicy, OperationPolicy.lift, ReplayPolicy.default,
-    ReplayPolicy.unconstrained] using Instances.FlatCounters.join delta C.replayContext
+  simpa [emptyPolicy, OperationPolicy.lift, EventOrder.default,
+    EventOrder.unconstrained] using Instances.FlatCounters.join delta C.replayContext
 
 theorem certified : EventCertifiedSpecificationRA (D delta) (emptyPolicy A)
     (deltaMachine delta).toSpec (generation delta) := (certifiedV delta).ordinary

@@ -10,7 +10,7 @@ test('the contract selection and runtime mappings are well formed', () => {
 });
 
 test('missing obligations, duplicate identities and certificate-derived specs are rejected', () => {
-  for (const key of ['certificate', 'implementation', 'issuance', 'rc', 'spec', 'relation']) {
+  for (const key of ['certificate', 'implementation', 'issuance', 'replayOrder', 'spec', 'relation']) {
     const bad = structuredClone(contracts);
     delete bad.contracts[0][key];
     assert.throws(() => validateContracts(bad, runtime), new RegExp(`missing ${key}`));
@@ -63,14 +63,14 @@ test('Lean rejects a missing registry entry, even if all remaining contracts typ
   assert.match(result.stdout, /Production.registry/);
 });
 
-test('Lean rejects a changed semantic rc without changing the public certificate', () => {
+test('Lean rejects a changed semantic replayOrder without changing the public certificate', () => {
   const bad = structuredClone(contracts);
   const lww = bad.contracts.find((c) => c.id === 'lww-register');
-  lww.rc = 'ReplayPolicy.unconstrained Instances.LWWRegister.D.toUpdateSig';
+  lww.replayOrder = 'EventOrder.unconstrained Instances.LWWRegister.D.toUpdateSig';
   const result = runLean(contractSource(bad));
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stdout, /error:/);
-  assert.match(result.stdout, /certificate.rc = rc|SequentialCorrectnessCertificate/);
+  assert.match(result.stdout, /certificate.replayOrder = replayOrder|SequentialCorrectnessCertificate/);
 });
 
 test('Lean rejects the older OR-set certificate for the efficient implementation', () => {

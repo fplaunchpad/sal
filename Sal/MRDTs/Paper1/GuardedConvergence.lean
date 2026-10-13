@@ -19,7 +19,7 @@ theorem applySeq_swap_via_cond_comm_lift_guarded
     (h_dist_ab : distinctOps a b)
     (h_dist_be : distinctOps b e₃)
     (h_dist_ae : distinctOps a e₃)
-    (h_rc_ab : P.before a.op b.op)
+    (h_replayOrder_ab : P.before a.op b.op)
     (h_abs_be : ¬ D.commutes b e₃)
     (pfx α β : List (Op D.AppOp)) (s : D.State) :
     applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
@@ -35,7 +35,7 @@ theorem applySeq_swap_via_cond_comm_lift_guarded
   rw [hexp1, hexp2]
   exact congrArg (fun t => applySeq D t β)
     (hU.conditional_commutation (applySeq D s pfx) a b e₃ α
-      h_dist_ab h_dist_ae h_dist_be h_rc_ab h_abs_be).symm
+      h_dist_ab h_dist_ae h_dist_be h_replayOrder_ab h_abs_be).symm
 
 theorem applySeq_swap_loOn_incomparable_guarded
     (hU : GuardedReplay.Laws D P) {C : Sal.MRDTs.Foundation.ReplayContext D}
@@ -69,12 +69,12 @@ theorem applySeq_swap_loOn_incomparable_guarded
     ·
       obtain ⟨e₃, α, β, h_sfx, h_dae, h_dbe, h_case⟩ := h_ov h_comm h_same
       subst h_sfx
-      rcases h_case with ⟨h_rc_ab, h_nc_be⟩ | ⟨h_rc_ba, h_nc_ae⟩
+      rcases h_case with ⟨h_replayOrder_ab, h_nc_be⟩ | ⟨h_replayOrder_ba, h_nc_ae⟩
       · exact applySeq_swap_via_cond_comm_lift_guarded hU h_dist_ab h_dbe h_dae
-          h_rc_ab h_nc_be pfx α β s
+          h_replayOrder_ab h_nc_be pfx α β s
       · have h_dist_ba : distinctOps b a := Ne.symm h_dist_ab
         exact (applySeq_swap_via_cond_comm_lift_guarded hU h_dist_ba h_dae h_dbe
-          h_rc_ba h_nc_ae pfx α β s).symm
+          h_replayOrder_ba h_nc_ae pfx α β s).symm
 
 /-- Bubble an event past an incomparable prefix, retaining each absorber. -/
 theorem applySeq_bubble_to_front_loOn_guarded
@@ -229,9 +229,9 @@ theorem convergence_on_guarded
             distinctOps_of_events hy_in_C he_in_C hy_ne_e
           have h_not_lo_ye : ¬ paperOrder P C ev y e := h_not_lo_bwd y hy_in_σ
           have h_not_lo_ey : ¬ paperOrder P C ev e y := h_not_lo_fwd y hy_in_σ
-          have h_rc_disj :=
+          have h_replayOrder_disj :=
             (hU.noncomm_exact y e h_dist_ye h_diff_rep).mp h_nc
-          rcases h_rc_disj with h_rc_ye | h_rc_ey
+          rcases h_replayOrder_disj with h_replayOrder_ye | h_replayOrder_ey
           · have h_not_vis_ye : ¬ C.vis y e := fun hv =>
               h_not_lo_ye (Or.inl ⟨hv, h_nc⟩)
             have h_not_vis_ey : ¬ C.vis e y := by
@@ -241,7 +241,7 @@ theorem convergence_on_guarded
                 ∃ e₃ ∈ ev, C.vis e e₃ ∧ ¬ D.commutes e e₃ := by
               by_contra h_no_ow
               exact h_not_lo_ye
-                (Or.inr ⟨h_not_vis_ye, h_not_vis_ey, h_rc_ye, h_no_ow⟩)
+                (Or.inr ⟨h_not_vis_ye, h_not_vis_ey, h_replayOrder_ye, h_no_ow⟩)
             obtain ⟨e₃, h_e₃_ev, h_vis_ee₃, h_rc_ee₃⟩ := h_overwriter_e
             have h_e₃_in_evC : e₃ ∈ evC :=
               h_abs e he_in_ev e₃ h_e₃_ev h_vis_ee₃ h_rc_ee₃
@@ -280,7 +280,7 @@ theorem convergence_on_guarded
               distinctOps_of_events hy_in_C h_e₃_in_C
                 (fun h => h_e₃_ne_y h.symm)
             refine ⟨e₃, β ++ τ_a, τ_b, ?_, h_dist_ye₃, h_dist_ee₃,
-                    Or.inl ⟨h_rc_ye, h_rc_ee₃⟩⟩
+                    Or.inl ⟨h_replayOrder_ye, h_rc_ee₃⟩⟩
             rw [hτ_split, List.append_assoc]
           · have h_not_vis_ey : ¬ C.vis e y := fun hv =>
               h_not_lo_ey
@@ -291,7 +291,7 @@ theorem convergence_on_guarded
                 ∃ e₃ ∈ ev, C.vis y e₃ ∧ ¬ D.commutes y e₃ := by
               by_contra h_no_ow
               exact h_not_lo_ey
-                (Or.inr ⟨h_not_vis_ey, h_not_vis_ye, h_rc_ey, h_no_ow⟩)
+                (Or.inr ⟨h_not_vis_ey, h_not_vis_ye, h_replayOrder_ey, h_no_ow⟩)
             obtain ⟨e₃, h_e₃_ev, h_vis_ye₃, h_rc_ye₃⟩ := h_overwriter_y
             have h_e₃_in_evC : e₃ ∈ evC :=
               h_abs y hy_in_ev e₃ h_e₃_ev h_vis_ye₃ h_rc_ye₃
@@ -328,7 +328,7 @@ theorem convergence_on_guarded
                 · exact List.mem_append.mpr (Or.inr h_τ)
             obtain ⟨γ_a, γ_b, hγ_split⟩ := List.append_of_mem h_e₃_in_βτ
             exact ⟨e₃, γ_a, γ_b, hγ_split, h_dist_ye₃, h_dist_ee₃,
-                    Or.inr ⟨h_rc_ey, h_rc_ye₃⟩⟩
+                    Or.inr ⟨h_replayOrder_ey, h_rc_ye₃⟩⟩
         exact applySeq_bubble_to_front_loOn_guarded (D := D) (ev := ev) hU e σ τ
           he_in_C h_σ_in_C he_notin_σ h_not_lo_fwd h_not_lo_bwd h_ov s
       have h_len_new : π₁'.length < n := by

@@ -63,15 +63,15 @@ namespace Sal.MRDTs
 #check ReplayAdequateMRDT
 #check ReplayAdequateMRDT.sequentially_correct
 #check SequentialSpec
-#check Foundation.ReplayPolicy
+#check Foundation.EventOrder
 #check Foundation.loOn
 #check IsSpecLinearizable
 
--- LWW uses one timestamp-directed rc even though representation updates commute.
+-- LWW uses one timestamp-directed replayOrder even though representation updates commute.
 #check Instances.LWWRegister.verified
 #check Instances.LWWRegister.replayLaws
 #check Instances.LWWRegister.ordered_updates_commute
-#check Instances.LWWRegister.concrete_noncomm_iff_rc_refuted
+#check Instances.LWWRegister.concrete_noncomm_iff_replayOrder_refuted
 #check Instances.LWWRegister.reversed_assignments_wrong_winner
 #check Instances.LWWRegister.canonical_respects
 #check Instances.LWWRegister.timestamp_chain
@@ -90,7 +90,7 @@ namespace Sal.MRDTs
 -- typed production registry and checked by `NegativeLedger`.
 #check Foundation.convergence_over_backward_closed_subsets_false
 #check Foundation.binaryLaws_insufficient
-#check Instances.RcSPOT.LWW.old_no_chain_refuted
+#check Instances.EventOrderSPOT.LWW.old_no_chain_refuted
 #check Instances.MVR.concurrentState_no_sequential_register
 #check Instances.Queue.ConditioningSPOT.duplicate_dequeue_not_fifo
 

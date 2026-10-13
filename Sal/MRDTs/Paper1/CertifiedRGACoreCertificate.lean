@@ -8,7 +8,7 @@ namespace Sal.MRDTs.Paper1.CertifiedRGACoreCertificate
 open Foundation Classical Sal.EmbedRGA
 open Instances.SidedPeritext Instances.SidedEmbedRGA
 open CertifiedRGACoreVC
-attribute [local instance] coreRc
+attribute [local instance] coreOrder
 
 abbrev language (Γ : OrderedPrefixCode) := GuardedHistory.language (clientSpec Γ)
 def chronological (ops : List (Op (Core Γ).AppOp)) :=

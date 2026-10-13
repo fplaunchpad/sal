@@ -59,7 +59,7 @@ check_symbol 'R_C' 'Write $R_C=\mathsf{replayContext}(C)$'
 check_symbol '\mathsf{distinct}' '\mathsf{distinct}(a,b)\Longleftrightarrow'
 check_symbol 'NoncommCovered' '\mathsf{NoncommCovered}(D,P)\Longleftrightarrow'
 check_symbol '\mathsf{Acyclic}' '\mathsf{Acyclic}(Q)\Longleftrightarrow'
-check_symbol 'RcAcyclic' '\mathsf{RcAcyclic}(D,P)\Longleftrightarrow'
+check_symbol 'ReplayAcyclic' '\mathsf{ReplayAcyclic}(D,P)\Longleftrightarrow'
 check_symbol 'CondCommLift' '\mathsf{CondCommLift}(D,P)\Longleftrightarrow'
 check_symbol 'ReplayLaws' '\mathsf{ReplayLaws}(D,P)\Longleftrightarrow'
 check_symbol '\loOn^{\ne}' 'a\;\loOn^{\ne}_{R,E}\;b'
@@ -95,7 +95,7 @@ check_symbol 'SemanticSteps' 'Write $\mathsf{SemanticSteps}_V$ for'
 check_symbol 'CombinedSteps' '$\mathsf{CombinedSteps}$ for the list-labelled closure'
 
 # The sufficient laws use the absorber introduced by the linearization relation.
-linearization_line=$(rg -n -F '\subsection{Resolve-conflict relation and set-relative linearization}' "$doc" | cut -d: -f1)
+linearization_line=$(rg -n -F '\subsection{Replay-order relation and set-relative linearization}' "$doc" | cut -d: -f1)
 absorber_line=$(rg -n -F '\emph{absorber}' "$doc" | head -1 | cut -d: -f1)
 laws_line=$(rg -n -F '\subsection{Sufficient replay laws and convergence}' "$doc" | cut -d: -f1)
 if [ -z "$linearization_line" ] || [ -z "$absorber_line" ] || [ -z "$laws_line" ] ||
@@ -105,7 +105,7 @@ if [ -z "$linearization_line" ] || [ -z "$absorber_line" ] || [ -z "$laws_line" 
 fi
 
 if rg -n 'RcNonComm|rc\\_non\\_comm' "$doc"; then
-  echo 'formal-reference check: concrete noncommutation returned as the definition of semantic rc' >&2
+  echo 'formal-reference check: concrete noncommutation returned as the definition of event replay order ord' >&2
   exit 1
 fi
 

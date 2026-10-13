@@ -35,13 +35,13 @@ def D : MRDTSig where
   merge := merge
   query := fun s _ => MVR.queryValues s
 
-def rc : ReplayPolicy D.toUpdateSig where
-  order := MVR.rc.order
+def replayOrder : EventOrder D.toUpdateSig where
+  order := MVR.replayOrder.order
 
 def issuance : Issuance D where
   CanIssue := canIssue
 
-theorem rc_acyclic : @RcAcyclic D.toUpdateSig rc := MVR.rc_acyclic
+theorem replayOrder_acyclic : @ReplayAcyclic D.toUpdateSig replayOrder := MVR.replayOrder_acyclic
 
 theorem issued_write_singleton (e : Event) (s : State) (h : canIssue e s) :
     update s e = {(e.1, MVR.writeValue e)} := by

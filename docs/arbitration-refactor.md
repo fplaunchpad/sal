@@ -34,14 +34,14 @@ ledger targets instead.
 `scripts/check-working-papers.sh` also passes after rebuilding all three PDFs
 with cached TeX resources outside the macOS sandbox. Its checks now follow
 the current per-datatype profiles rather than the retired summary table.
-The historical binary-law adapter now asks for full `RcAcyclic` explicitly:
+The historical binary-law adapter now asks for full `ReplayAcyclic` explicitly:
 its old timestamp-guarded no-chain premise alone cannot exclude self edges
 or cycles on arbitrary equal-timestamp inputs.
 
 ## Claim
 
 The public framework has one design-supplied ordering policy, `rc :
-ReplayPolicy`. There is no second event-order datatype or policy. For a replay
+EventOrder`. There is no second event-order datatype or policy. For a replay
 context `C` and finite event set `E`, `loOn C E` is the sole order:
 
 - a visibility edge is included exactly when `rc` classifies its pair as
@@ -57,13 +57,13 @@ for that pair.
 
 Status: machine-checked and migrated.
 
-Formal oracle: `Instances/RcSPOT.lean`, the
+Formal oracle: `Instances/EventOrderSPOT.lean`, the
 `Sal.MRDTs.Metatheory.RefactorLedger` build, and the public `VerifiedMRDT`
 theorem ledger.
 
-The reusable replay laws require `RcAcyclic`, defined by the absence of a
+The reusable replay laws require `ReplayAcyclic`, defined by the absence of a
 nonempty `Relation.TransGen rc` cycle, including self edges. This replaces the historical
-`no_rc_chain` law. Acyclicity allows useful chains, including three LWW writes
+`no_replayOrder_chain` law. Acyclicity allows useful chains, including three LWW writes
 in increasing timestamp order, while excluding cycles.
 
 The public relation is semantic: concurrent LWW writes are resolved in
@@ -98,21 +98,21 @@ Filtering visibility by conflict restores ordinary sequential specifications:
 
 ## Checked controls
 
-- `RcSPOT.LWW.old_no_chain_refuted` exhibits an allowed length-two `rc` chain.
-- `LWWRegister.rc_order_acyclic` proves the timestamp policy has no cycle.
+- `EventOrderSPOT.LWW.old_no_chain_refuted` exhibits an allowed length-two `rc` chain.
+- `LWWRegister.replayOrder_order_acyclic` proves the timestamp policy has no cycle.
 - `LWWRegister.replayLaws` instantiates the generalized laws with its public
   timestamp relation and concrete max updates.
 - `LWWRegister.ordered_updates_commute` and
-  `concrete_noncomm_iff_rc_refuted` pin the separation between semantic
+  `concrete_noncomm_iff_replayOrder_refuted` pin the separation between semantic
   resolution and concrete noncommutation.
 - `LWWRegister.reversed_assignments_wrong_winner` checks that the ordinary
   overwrite machine still needs the selected replay direction.
 - `LWWRegister.canonical_respects` constructs a `loOn`-respecting sorted
   witness refining to the total overwrite register.
-- `loOn_iff_of_rc_either` proves that the all-`Either` policy yields no edge.
-- `ORSet.cross_key_rc_either` and `ORSet.same_key_rc_add_wins` distinguish
+- `loOn_iff_of_replayOrder_either` proves that the all-`Either` policy yields no edge.
+- `ORSet.cross_key_replayOrder_either` and `ORSet.same_key_replayOrder_add_wins` distinguish
   commuting from conflicting set operations.
-- `RGA.canonical_respects_rc` proves that the ordinary-list witness respects
+- `RGA.canonical_respects_replayOrder` proves that the ordinary-list witness respects
   the single RGA relation.
 - `RGA.GC.future_after_dead_anchor_not_applicable` checks the issuer-side
   live-anchor rule.

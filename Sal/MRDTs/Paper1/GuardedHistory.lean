@@ -74,15 +74,15 @@ concrete updates commute, so the paper replay order is empty. -/
 theorem event_versions_of_guarded_certificate {D : MRDTSig} {I : Issuance D}
     {S : SequentialSpec D} {Rel : D.State → S.State → Prop}
     (certificate : SequentialCorrectnessCertificate D I
-      (ReplayPolicy.unconstrained D.toUpdateSig) S Rel)
+      (EventOrder.unconstrained D.toUpdateSig) S Rel)
     (prefixClosed : ∀ pre suf, S.Legal (pre ++ suf) → S.Legal pre)
     (commute : ∀ a b, D.toUpdateSig.commutes a b)
     (join : ∀ C, MintHonest D I.CanIssue C →
-      @JoinAt D (ReplayPolicy.unconstrained D.toUpdateSig) C.replayContext)
+      @JoinAt D (EventOrder.unconstrained D.toUpdateSig) C.replayContext)
     (visible : ∀ C : Configuration D, ∀ ops, S.Legal ops → respects ops C.vis)
     {C : Configuration D} (exec : CertifiedExecution D I C) :
     EventVersionsSpecificationRA D (commutingPolicy D.AppOp) (GuardedHistory.language S) C := by
-  letI : ReplayPolicy D.toUpdateSig := ReplayPolicy.unconstrained D.toUpdateSig
+  letI : EventOrder D.toUpdateSig := EventOrder.unconstrained D.toUpdateSig
   have replay := hasReplayWitness_of_canonical (exec.canonicalConfig join)
   intro v s E hv q
   obtain ⟨π,hp,_,legal,_,observes⟩ := certificate.sound C exec replay v s E hv

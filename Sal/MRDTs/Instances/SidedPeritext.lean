@@ -7,7 +7,7 @@ import Sal.MRDTs.Instances.PeritextRender
 
 The logical state has three components: sided text, a grow-only set of
 character deletions, and a grow-only set of immutable mark events. The sole
-public resolve-conflict relation lifts the sided-RGA conflicts on text events;
+selected event replay order lifts the sided-RGA conflicts on text events;
 the evidence-store and cross-component pairs commute and therefore receive
 \`Either\`.
 -/
@@ -285,119 +285,119 @@ theorem coreSemanticCommutes_symm
     simp [coreSemanticCommutes,
       ProductionRGA.sidedSemanticCommutes_symm]
 
-def coreRcOrder
-    (a b : Op (SOp ⊕ (Nat ⊕ MarkEvent))) : RcRes :=
+def coreEventOrder
+    (a b : Op (SOp ⊕ (Nat ⊕ MarkEvent))) : OrderResult :=
   match a.2.2, b.2.2 with
   | .inl x, .inl y =>
-      ProductionRGA.sidedRcOrder
+      ProductionRGA.sidedEventOrder
         (a.1, a.2.1, x) (b.1, b.2.1, y)
   | _, _ => .Either
 
-noncomputable def coreRc (Γ : OrderedPrefixCode) :
-    ReplayPolicy (Core Γ).toUpdateSig where
-  order := coreRcOrder
+noncomputable def coreOrder (Γ : OrderedPrefixCode) :
+    EventOrder (Core Γ).toUpdateSig where
+  order := coreEventOrder
 
-@[simp] theorem coreRc_order_inl (Γ : OrderedPrefixCode)
+@[simp] theorem coreOrder_order_inl (Γ : OrderedPrefixCode)
     (a b : Op SOp) :
-    (coreRc Γ).order
+    (coreOrder Γ).order
         (inlOp (A₂ := Nat ⊕ MarkEvent) a)
         (inlOp (A₂ := Nat ⊕ MarkEvent) b) =
-      (ProductionRGA.sidedRc Γ).order a b := by
+      (ProductionRGA.sidedOrder Γ).order a b := by
   rcases a with ⟨ta, ra, a⟩
   rcases b with ⟨tb, rb, b⟩
   rfl
 
-@[simp] theorem coreRc_conflict_inl (Γ : OrderedPrefixCode)
+@[simp] theorem coreOrder_conflict_inl (Γ : OrderedPrefixCode)
     (a b : Op SOp) :
-    ((coreRc Γ).Before (inlOp (A₂ := Nat ⊕ MarkEvent) a)
+    ((coreOrder Γ).Before (inlOp (A₂ := Nat ⊕ MarkEvent) a)
         (inlOp (A₂ := Nat ⊕ MarkEvent) b) ∨
-      (coreRc Γ).Before (inlOp (A₂ := Nat ⊕ MarkEvent) b)
+      (coreOrder Γ).Before (inlOp (A₂ := Nat ⊕ MarkEvent) b)
         (inlOp (A₂ := Nat ⊕ MarkEvent) a)) ↔
-      ((ProductionRGA.sidedRc Γ).Before a b ∨
-        (ProductionRGA.sidedRc Γ).Before b a) := by
+      ((ProductionRGA.sidedOrder Γ).Before a b ∨
+        (ProductionRGA.sidedOrder Γ).Before b a) := by
   simp
 
-@[simp] theorem coreRc_conflicts_inl_inr (Γ : OrderedPrefixCode)
+@[simp] theorem coreOrder_conflicts_inl_inr (Γ : OrderedPrefixCode)
     (a : Op SOp) (b : Op (Nat ⊕ MarkEvent)) :
-    ¬ ((coreRc Γ).Before (inlOp (A₂ := Nat ⊕ MarkEvent) a)
+    ¬ ((coreOrder Γ).Before (inlOp (A₂ := Nat ⊕ MarkEvent) a)
         (inrOp (A₁ := SOp) b) ∨
-      (coreRc Γ).Before (inrOp (A₁ := SOp) b)
+      (coreOrder Γ).Before (inrOp (A₁ := SOp) b)
         (inlOp (A₂ := Nat ⊕ MarkEvent) a)) := by
   rcases a with ⟨ta, ra, a⟩
   rcases b with ⟨tb, rb, b⟩
-  simp [coreRc, coreRcOrder, inlOp, inrOp, ReplayPolicy.Before]
+  simp [coreOrder, coreEventOrder, inlOp, inrOp, EventOrder.Before]
 
-@[simp] theorem coreRc_conflicts_inr_inl (Γ : OrderedPrefixCode)
+@[simp] theorem coreOrder_conflicts_inr_inl (Γ : OrderedPrefixCode)
     (a : Op (Nat ⊕ MarkEvent)) (b : Op SOp) :
-    ¬ ((coreRc Γ).Before (inrOp (A₁ := SOp) a)
+    ¬ ((coreOrder Γ).Before (inrOp (A₁ := SOp) a)
         (inlOp (A₂ := Nat ⊕ MarkEvent) b) ∨
-      (coreRc Γ).Before (inlOp (A₂ := Nat ⊕ MarkEvent) b)
+      (coreOrder Γ).Before (inlOp (A₂ := Nat ⊕ MarkEvent) b)
         (inrOp (A₁ := SOp) a)) := by
   rcases a with ⟨ta, ra, a⟩
   rcases b with ⟨tb, rb, b⟩
-  simp [coreRc, coreRcOrder, inlOp, inrOp, ReplayPolicy.Before]
+  simp [coreOrder, coreEventOrder, inlOp, inrOp, EventOrder.Before]
 
-@[simp] theorem coreRc_conflicts_inr_inr (Γ : OrderedPrefixCode)
+@[simp] theorem coreOrder_conflicts_inr_inr (Γ : OrderedPrefixCode)
     (a b : Op (Nat ⊕ MarkEvent)) :
-    ¬ ((coreRc Γ).Before (inrOp (A₁ := SOp) a)
+    ¬ ((coreOrder Γ).Before (inrOp (A₁ := SOp) a)
         (inrOp (A₁ := SOp) b) ∨
-      (coreRc Γ).Before (inrOp (A₁ := SOp) b)
+      (coreOrder Γ).Before (inrOp (A₁ := SOp) b)
         (inrOp (A₁ := SOp) a)) := by
   rcases a with ⟨ta, ra, a⟩
   rcases b with ⟨tb, rb, b⟩
-  simp [coreRc, coreRcOrder, inrOp, ReplayPolicy.Before]
+  simp [coreOrder, coreEventOrder, inrOp, EventOrder.Before]
 
-theorem coreRc_inl_iff {Γ : OrderedPrefixCode}
+theorem coreOrder_inl_iff {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (Core Γ).toUpdateSig}
     (E : Set (Op (SOp ⊕ (Nat ⊕ MarkEvent))))
     (a b : Op SOp) :
-    @loOn _ (coreRc Γ) C E (inlOp a) (inlOp b) ↔
-      @loOn _ (ProductionRGA.sidedRc Γ) (projReplayContext₁ C)
+    @loOn _ (coreOrder Γ) C E (inlOp a) (inlOp b) ↔
+      @loOn _ (ProductionRGA.sidedOrder Γ) (projReplayContext₁ C)
         (evRes₁ E) a b := by
   constructor
   · rintro (⟨hvis, hconf⟩ | ⟨hnv, hnv', hrc, habs⟩)
-    · exact Or.inl ⟨hvis, (coreRc_conflict_inl Γ _ _).mp hconf⟩
+    · exact Or.inl ⟨hvis, (coreOrder_conflict_inl Γ _ _).mp hconf⟩
     · refine Or.inr ⟨hnv, hnv', by simpa using hrc, ?_⟩
       rintro ⟨e₃, he₃, hvis₃, hconf₃⟩
       exact habs ⟨inlOp e₃, he₃, hvis₃,
-        (coreRc_conflict_inl Γ _ _).mpr hconf₃⟩
+        (coreOrder_conflict_inl Γ _ _).mpr hconf₃⟩
   · rintro (⟨hvis, hconf⟩ | ⟨hnv, hnv', hrc, habs⟩)
-    · exact Or.inl ⟨hvis, (coreRc_conflict_inl Γ _ _).mpr hconf⟩
+    · exact Or.inl ⟨hvis, (coreOrder_conflict_inl Γ _ _).mpr hconf⟩
     · refine Or.inr ⟨hnv, hnv', by simpa using hrc, ?_⟩
       rintro ⟨e₃, he₃, hvis₃, hconf₃⟩
       rcases op_sum_cases e₃ with ⟨c, rfl⟩ | ⟨c, rfl⟩
       · exact habs ⟨c, he₃, hvis₃,
-          (coreRc_conflict_inl Γ _ _).mp hconf₃⟩
-      · exact (coreRc_conflicts_inl_inr Γ b c) hconf₃
+          (coreOrder_conflict_inl Γ _ _).mp hconf₃⟩
+      · exact (coreOrder_conflicts_inl_inr Γ b c) hconf₃
 
-theorem coreRc_inr_false {Γ : OrderedPrefixCode}
+theorem coreOrder_inr_false {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (Core Γ).toUpdateSig}
     (E : Set (Op (SOp ⊕ (Nat ⊕ MarkEvent))))
     (a b : Op (Nat ⊕ MarkEvent)) :
-    ¬ @loOn _ (coreRc Γ) C E (inrOp a) (inrOp b) := by
+    ¬ @loOn _ (coreOrder Γ) C E (inrOp a) (inrOp b) := by
   rintro (⟨_, hconf⟩ | ⟨_, _, hrc, _⟩)
-  · exact (coreRc_conflicts_inr_inr Γ a b) hconf
+  · exact (coreOrder_conflicts_inr_inr Γ a b) hconf
   · rcases a with ⟨ta, ra, a⟩
     rcases b with ⟨tb, rb, b⟩
-    simpa [coreRc, coreRcOrder, inrOp] using hrc
+    simpa [coreOrder, coreEventOrder, inrOp] using hrc
 
-theorem coreRc_cross_rl_false {Γ : OrderedPrefixCode}
+theorem coreOrder_cross_rl_false {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (Core Γ).toUpdateSig}
     (E : Set (Op (SOp ⊕ (Nat ⊕ MarkEvent))))
     (b : Op (Nat ⊕ MarkEvent)) (a : Op SOp) :
-    ¬ @loOn _ (coreRc Γ) C E (inrOp b) (inlOp a) := by
+    ¬ @loOn _ (coreOrder Γ) C E (inrOp b) (inlOp a) := by
   rintro (⟨_, hconf⟩ | ⟨_, _, hrc, _⟩)
-  · exact (coreRc_conflicts_inr_inl Γ b a) hconf
+  · exact (coreOrder_conflicts_inr_inl Γ b a) hconf
   · rcases a with ⟨ta, ra, a⟩
     rcases b with ⟨tb, rb, b⟩
-    simpa [coreRc, coreRcOrder, inlOp, inrOp] using hrc
+    simpa [coreOrder, coreEventOrder, inlOp, inrOp] using hrc
 
 theorem coreRespects_projList₁ {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (Core Γ).toUpdateSig}
     {E : Set (Op (Core Γ).AppOp)} {ops : List (Op (Core Γ).AppOp)}
-    (h : respects ops (@loOn _ (coreRc Γ) C E)) :
+    (h : respects ops (@loOn _ (coreOrder Γ) C E)) :
     respects (projList₁ ops)
-      (@loOn _ (ProductionRGA.sidedRc Γ) (projReplayContext₁ C) (evRes₁ E)) := by
+      (@loOn _ (ProductionRGA.sidedOrder Γ) (projReplayContext₁ C) (evRes₁ E)) := by
   unfold respects at h ⊢
   unfold projList₁
   rw [List.pairwise_filterMap]
@@ -406,13 +406,13 @@ theorem coreRespects_projList₁ {Γ : OrderedPrefixCode}
   rw [oplOp_eq_some] at hxa hyb
   subst x
   subst y
-  exact fun hlo => hxy ((coreRc_inl_iff E b a).mpr hlo)
+  exact fun hlo => hxy ((coreOrder_inl_iff E b a).mpr hlo)
 
 theorem coreIsCanonicalState_proj₁ {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (Core Γ).toUpdateSig}
     {E : Set (Op (Core Γ).AppOp)} {s : (Core Γ).State}
-    (h : @IsCanonicalState _ (coreRc Γ) C E s) :
-    @IsCanonicalState _ (ProductionRGA.sidedRc Γ)
+    (h : @IsCanonicalState _ (coreOrder Γ) C E s) :
+    @IsCanonicalState _ (ProductionRGA.sidedOrder Γ)
       (projReplayContext₁ C) (evRes₁ E) s.1 := by
   obtain ⟨ops, hp, hr, hf⟩ := h
   exact ⟨projList₁ ops, listPermOf_projList₁ hp,
@@ -422,24 +422,24 @@ theorem coreIsCanonicalState_proj₁ {Γ : OrderedPrefixCode}
 theorem coreIsCanonicalState_proj₂ {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (Core Γ).toUpdateSig}
     {E : Set (Op (Core Γ).AppOp)} {s : (Core Γ).State}
-    (h : @IsCanonicalState _ (coreRc Γ) C E s) :
+    (h : @IsCanonicalState _ (coreOrder Γ) C E s) :
     IsCanonicalState (projReplayContext₂ C) (evRes₂ E) s.2 := by
   obtain ⟨ops, hp, _, hf⟩ := h
   refine ⟨projList₂ ops, listPermOf_projList₂ hp, ?_,
     congrArg Prod.snd ((applySeq_prod (Core Γ).init ops).symm.trans hf)⟩
   unfold respects
   exact List.pairwise_of_forall fun _ _ => by
-    simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
-      ReplayPolicy.default, ReplayPolicy.unconstrained]
+    simp [loOn, UpdateSig.replayBefore, EventOrder.Before,
+      EventOrder.default, EventOrder.unconstrained]
 
 theorem coreCanonical_glue {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (Core Γ).toUpdateSig}
     {E : Set (Op (Core Γ).AppOp)}
     {s₁ : (S Γ).State} {s₂ : Stores.State}
-    (h₁ : @IsCanonicalState _ (ProductionRGA.sidedRc Γ)
+    (h₁ : @IsCanonicalState _ (ProductionRGA.sidedOrder Γ)
       (projReplayContext₁ C) (evRes₁ E) s₁)
     (h₂ : IsCanonicalState (projReplayContext₂ C) (evRes₂ E) s₂) :
-    @IsCanonicalState _ (coreRc Γ) C E (s₁, s₂) := by
+    @IsCanonicalState _ (coreOrder Γ) C E (s₁, s₂) := by
   obtain ⟨ops₁, hp₁, hr₁, hf₁⟩ := h₁
   obtain ⟨ops₂, hp₂, _, hf₂⟩ := h₂
   refine ⟨ops₁.map inlOp ++ ops₂.map inrOp, ⟨?_, ?_⟩, ?_, ?_⟩
@@ -464,14 +464,14 @@ theorem coreCanonical_glue {Γ : OrderedPrefixCode}
     rw [List.pairwise_append]
     refine ⟨?_, ?_, ?_⟩
     · rw [List.pairwise_map]
-      exact hr₁.imp fun {x y} h hlo => h ((coreRc_inl_iff E y x).mp hlo)
+      exact hr₁.imp fun {x y} h hlo => h ((coreOrder_inl_iff E y x).mp hlo)
     · rw [List.pairwise_map]
-      exact List.pairwise_of_forall fun x y => coreRc_inr_false E y x
+      exact List.pairwise_of_forall fun x y => coreOrder_inr_false E y x
     · intro x hx y hy
       rw [List.mem_map] at hx hy
       obtain ⟨a, _, rfl⟩ := hx
       obtain ⟨b, _, rfl⟩ := hy
-      exact coreRc_cross_rl_false E b a
+      exact coreOrder_cross_rl_false E b a
   · rw [applySeq_prod, projList₁_append, projList₂_append,
       projList₁_map_inlOp, projList₁_map_inrOp,
       projList₂_map_inlOp, projList₂_map_inrOp, List.append_nil]
@@ -482,7 +482,7 @@ theorem coreCanonical_glue {Γ : OrderedPrefixCode}
 theorem core_join_at {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (Core Γ).toUpdateSig}
     (h : SHonestCore Γ (projReplayContext₁ C)) :
-    @JoinAt (Core Γ) (coreRc Γ) C := by
+    @JoinAt (Core Γ) (coreOrder Γ) C := by
   intro ev₁ ev₂ s₀ s₁ s₂ htr hir hin₁ hin₂ hcl₁ hcl₂ h₀ hc₁ hc₂
   have hJ₁ := (@s_join_at Γ _ h) (evRes₁ ev₁) (evRes₁ ev₂)
     s₀.1 s₁.1 s₂.1
@@ -514,7 +514,7 @@ theorem core_join_at {Γ : OrderedPrefixCode}
   exact coreCanonical_glue hJ₁ hJ₂
 
 def replayAdequacy (Γ : OrderedPrefixCode) :
-    @ReplayAdequacyCertificate (Core Γ) (generation Γ) (coreRc Γ) :=
+    @ReplayAdequacyCertificate (Core Γ) (generation Γ) (coreOrder Γ) :=
   ReplayAdequacyCertificate.ofJoinOn
     (fun _ hGood => core_join_at hGood)
     (fun C hMint => by
@@ -523,8 +523,8 @@ def replayAdequacy (Γ : OrderedPrefixCode) :
 
 theorem coreCanonicalConfig_proj₁ {Γ : OrderedPrefixCode}
     {C : Configuration (Core Γ)}
-    (h : @CanonicalConfig _ (coreRc Γ) C) :
-    @CanonicalConfig _ (ProductionRGA.sidedRc Γ) (projConf₁ C) where
+    (h : @CanonicalConfig _ (coreOrder Γ) C) :
+    @CanonicalConfig _ (ProductionRGA.sidedOrder Γ) (projConf₁ C) where
   canonical := by
     intro v s E hv
     change (C.ver v).map (fun p => (p.1.1, evRes₁ p.2)) = some (s, E) at hv
@@ -534,11 +534,11 @@ theorem coreCanonicalConfig_proj₁ {Γ : OrderedPrefixCode}
     subst s
     subst E
     exact coreIsCanonicalState_proj₁ (C := C.replayContext)
-      ((@CanonicalConfig.canonical _ (coreRc Γ) C h) v p.1 p.2 hp)
+      ((@CanonicalConfig.canonical _ (coreOrder Γ) C h) v p.1 p.2 hp)
   vis_trans := fun hab hbc =>
-    (@CanonicalConfig.vis_trans _ (coreRc Γ) C h) hab hbc
+    (@CanonicalConfig.vis_trans _ (coreOrder Γ) C h) hab hbc
   vis_irrefl := fun a =>
-    (@CanonicalConfig.vis_irrefl _ (coreRc Γ) C h) (inlOp a)
+    (@CanonicalConfig.vis_irrefl _ (coreOrder Γ) C h) (inlOp a)
   version_events_supported := by
     intro v s E hv a ha
     rw [mem_projConf₁_events]
@@ -546,7 +546,7 @@ theorem coreCanonicalConfig_proj₁ {Γ : OrderedPrefixCode}
     obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
     have hE : evRes₁ p.2 = E := congrArg Prod.snd hpeq
     subst E
-    exact (@CanonicalConfig.version_events_supported _ (coreRc Γ) C h)
+    exact (@CanonicalConfig.version_events_supported _ (coreOrder Γ) C h)
       v p.1 p.2 hp (inlOp a) ha
   version_events_causal := by
     intro v s E hv a b hab hb
@@ -554,7 +554,7 @@ theorem coreCanonicalConfig_proj₁ {Γ : OrderedPrefixCode}
     obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
     have hE : evRes₁ p.2 = E := congrArg Prod.snd hpeq
     subst E
-    exact (@CanonicalConfig.version_events_causal _ (coreRc Γ) C h)
+    exact (@CanonicalConfig.version_events_causal _ (coreOrder Γ) C h)
       v p.1 p.2 hp
       (inlOp a) (inlOp b) hab hb
 
@@ -574,7 +574,7 @@ def coreRel (s : (Core Γ).State) (q : RichState) : Prop :=
 
 theorem coreCanonical_respects_of {Γ : OrderedPrefixCode}
     {C : Configuration (Core Γ)}
-    (hgood : @CanonicalConfig _ (coreRc Γ) C)
+    (hgood : @CanonicalConfig _ (coreOrder Γ) C)
     (hmintText : MintHonest (S Γ) sApplicable (projConf₁ C))
     {v : Version} {s : (Core Γ).State}
     {E : Set (Op (Core Γ).AppOp)}
@@ -582,7 +582,7 @@ theorem coreCanonical_respects_of {Γ : OrderedPrefixCode}
     {ops : List (Op (Core Γ).AppOp)}
     (hperm : listPermOf ops E) :
     respects (coreCanonical ops)
-      (@loOn _ (coreRc Γ) C.replayContext E) := by
+      (@loOn _ (coreOrder Γ) C.replayContext E) := by
   have hpver : (projConf₁ C).ver v = some (s.1, evRes₁ E) := by
     simp [projConf₁, hver]
   have htext := ProductionRGA.sidedCanonical_respects_of
@@ -597,20 +597,20 @@ theorem coreCanonical_respects_of {Γ : OrderedPrefixCode}
     exact htext.imp fun {a b} hab hba =>
       hab (by
         simpa only [projConf₁_core] using
-          ((coreRc_inl_iff (C := C.replayContext) E b a).mp hba))
+          ((coreOrder_inl_iff (C := C.replayContext) E b a).mp hba))
   · induction projList₂ ops with
     | nil => exact List.Pairwise.nil
     | cons a rest ih =>
         rw [List.pairwise_map, List.pairwise_cons]
         refine ⟨?_, ?_⟩
         · intro b hb
-          exact coreRc_inr_false E b a
+          exact coreOrder_inr_false E b a
         · simpa [List.pairwise_map] using ih
   · intro x hx y hy
     rw [List.mem_map] at hx hy
     obtain ⟨a, _, rfl⟩ := hx
     obtain ⟨b, _, rfl⟩ := hy
-    exact coreRc_cross_rl_false E b a
+    exact coreOrder_cross_rl_false E b a
 
 theorem coreCanonical_respects {Γ : OrderedPrefixCode}
     {C : Configuration (Core Γ)}
@@ -621,7 +621,7 @@ theorem coreCanonical_respects {Γ : OrderedPrefixCode}
     {ops : List (Op (Core Γ).AppOp)}
     (hperm : listPermOf ops E) :
     respects (coreCanonical ops)
-      (@loOn _ (coreRc Γ) C.replayContext E) := by
+      (@loOn _ (coreOrder Γ) C.replayContext E) := by
   apply coreCanonical_respects_of
     (exec.canonicalConfig (fun _ hmint =>
       core_join_at (by simpa only [projConf₁_core] using
@@ -630,10 +630,10 @@ theorem coreCanonical_respects {Γ : OrderedPrefixCode}
 
 theorem coreLegalizationSound (Γ : OrderedPrefixCode)
     {C : Configuration (Core Γ)}
-    (hgood : @CanonicalConfig _ (coreRc Γ) C)
+    (hgood : @CanonicalConfig _ (coreOrder Γ) C)
     (hmint : MintHonest (Core Γ) (coreGuard Γ) C)
-    (replay : @HasReplayWitness _ (coreRc Γ) C) :
-    IsSpecLinearizable (Core Γ) (coreRc Γ)
+    (replay : @HasReplayWitness _ (coreOrder Γ) C) :
+    IsSpecLinearizable (Core Γ) (coreOrder Γ)
       (clientSpec Γ) coreRel C := by
     intro v s E hver
     obtain ⟨ops, hperm, hresp, hfold⟩ := replay v s E hver
@@ -654,7 +654,7 @@ theorem coreLegalizationSound (Γ : OrderedPrefixCode)
     have hwholePerm : listPermOf (coreCanonical ops) E := by
       apply listPermOf_glue htextPerm (listPermOf_projList₂ hperm)
     have hrespText : respects (projList₁ ops)
-        (@loOn _ (ProductionRGA.sidedRc Γ)
+        (@loOn _ (ProductionRGA.sidedOrder Γ)
           (projReplayContext₁ C.replayContext) (evRes₁ E)) :=
       coreRespects_projList₁ hresp
     have hgoodText := coreCanonicalConfig_proj₁ hgood
@@ -721,7 +721,7 @@ theorem coreLegalizationSound (Γ : OrderedPrefixCode)
 
 noncomputable def coreSequentialCorrectness (Γ : OrderedPrefixCode) :
     SequentialCorrectnessCertificate (Core Γ) (generation Γ)
-      (coreRc Γ) (clientSpec Γ) coreRel where
+      (coreOrder Γ) (clientSpec Γ) coreRel where
   sound C exec replay :=
     coreLegalizationSound Γ
       (exec.canonicalConfig (fun _ hmint =>
@@ -731,7 +731,7 @@ noncomputable def coreSequentialCorrectness (Γ : OrderedPrefixCode) :
 
 noncomputable def verified (Γ : OrderedPrefixCode) : VerifiedMRDT (Core Γ) where
   issuance := generation Γ
-  rc := coreRc Γ
+  replayOrder := coreOrder Γ
   replayAdequacy := replayAdequacy Γ
   Spec := clientSpec Γ
   Rel := coreRel
@@ -739,7 +739,7 @@ noncomputable def verified (Γ : OrderedPrefixCode) : VerifiedMRDT (Core Γ) whe
 
 noncomputable def replayAdequate (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (Core Γ) where
   issuance := generation Γ
-  rc := coreRc Γ
+  replayOrder := coreOrder Γ
   replayAdequacy := replayAdequacy Γ
   Machine := richSpec
   sequential := sequential Γ
@@ -802,9 +802,9 @@ noncomputable def richClientSpec (Γ : OrderedPrefixCode) :
 def richRel (s : (RichCore Γ).State) (q : RichState) : Prop :=
   coreRel s q
 
-noncomputable def richRc (Γ : OrderedPrefixCode) :
-    ReplayPolicy (RichCore Γ).toUpdateSig :=
-  coreRc Γ
+noncomputable def richOrder (Γ : OrderedPrefixCode) :
+    EventOrder (RichCore Γ).toUpdateSig :=
+  coreOrder Γ
 
 theorem documentOf_eq_richDocumentOf {Γ : OrderedPrefixCode}
     {s : (Core Γ).State} {q : RichState} (h : coreRel s q) :
@@ -827,27 +827,27 @@ theorem mintHonest_to_core {Γ : OrderedPrefixCode}
 
 theorem canonicalConfig_to_core {Γ : OrderedPrefixCode}
     {C : Configuration (RichCore Γ)}
-    (h : @CanonicalConfig _ (richRc Γ) C) :
-    @CanonicalConfig _ (coreRc Γ) (asCoreConfig C) := by
-  letI : ReplayPolicy (Core Γ).toUpdateSig := coreRc Γ
+    (h : @CanonicalConfig _ (richOrder Γ) C) :
+    @CanonicalConfig _ (coreOrder Γ) (asCoreConfig C) := by
+  letI : EventOrder (Core Γ).toUpdateSig := coreOrder Γ
   refine {
     canonical := ?_
-    vis_trans := (@CanonicalConfig.vis_trans _ (richRc Γ) C h)
-    vis_irrefl := (@CanonicalConfig.vis_irrefl _ (richRc Γ) C h)
+    vis_trans := (@CanonicalConfig.vis_trans _ (richOrder Γ) C h)
+    vis_irrefl := (@CanonicalConfig.vis_irrefl _ (richOrder Γ) C h)
     version_events_supported := ?_
     version_events_causal := ?_ }
   ·
     intro v s E hver
-    simpa [richRc, RichCore, asCoreConfig] using
-      ((@CanonicalConfig.canonical _ (richRc Γ) C h)
+    simpa [richOrder, RichCore, asCoreConfig] using
+      ((@CanonicalConfig.canonical _ (richOrder Γ) C h)
         v s E (by simpa [asCoreConfig] using hver))
   ·
     intro v s E hver
-    exact (@CanonicalConfig.version_events_supported _ (richRc Γ) C h)
+    exact (@CanonicalConfig.version_events_supported _ (richOrder Γ) C h)
       v s E (by simpa [asCoreConfig] using hver)
   ·
     intro v s E hver
-    exact (@CanonicalConfig.version_events_causal _ (richRc Γ) C h)
+    exact (@CanonicalConfig.version_events_causal _ (richOrder Γ) C h)
       v s E (by simpa [asCoreConfig] using hver)
 
 def richGeneration (Γ : OrderedPrefixCode) : Issuance (RichCore Γ) where
@@ -864,13 +864,13 @@ def asCoreFoundation {Γ : OrderedPrefixCode}
 theorem rich_join_at {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (RichCore Γ).toUpdateSig}
     (h : SHonestCore Γ (projReplayContext₁ (asCoreFoundation C))) :
-    @JoinAt (RichCore Γ) (richRc Γ) C := by
+    @JoinAt (RichCore Γ) (richOrder Γ) C := by
   have hc := core_join_at (Γ := Γ) h
   simpa [RichCore, asCoreFoundation] using hc
 
 def richReplayAdequacy (Γ : OrderedPrefixCode) :
     @ReplayAdequacyCertificate (RichCore Γ) (richGeneration Γ)
-      (richRc Γ) :=
+      (richOrder Γ) :=
   ReplayAdequacyCertificate.ofJoinOn
     (fun _ hGood => rich_join_at hGood)
     (fun C hMint => by
@@ -889,13 +889,13 @@ def richSequential (Γ : OrderedPrefixCode) :
 
 theorem richLegalizationSound (Γ : OrderedPrefixCode)
     {C : Configuration (RichCore Γ)}
-    (hgood : @CanonicalConfig _ (richRc Γ) C)
+    (hgood : @CanonicalConfig _ (richOrder Γ) C)
     (hmint : MintHonest (RichCore Γ) (coreGuard Γ) C)
-    (replay : @HasReplayWitness _ (richRc Γ) C) :
-    IsSpecLinearizable (RichCore Γ) (richRc Γ)
+    (replay : @HasReplayWitness _ (richOrder Γ) C) :
+    IsSpecLinearizable (RichCore Γ) (richOrder Γ)
       (richClientSpec Γ) richRel C := by
-  have replayCore : @HasReplayWitness _ (coreRc Γ) (asCoreConfig C) := by
-    simpa [richRc, RichCore, asCoreConfig] using replay
+  have replayCore : @HasReplayWitness _ (coreOrder Γ) (asCoreConfig C) := by
+    simpa [richOrder, RichCore, asCoreConfig] using replay
   have certifiedCore := coreLegalizationSound Γ
     (canonicalConfig_to_core hgood) (mintHonest_to_core hmint) replayCore
   intro v s E hver
@@ -904,7 +904,7 @@ theorem richLegalizationSound (Γ : OrderedPrefixCode)
   obtain ⟨ops, hperm, hresp, hlegal, hrel, _⟩ :=
     certifiedCore v s E hverCore
   refine ⟨ops, hperm, ?_, ?_, hrel, ?_⟩
-  · simpa [richRc, asCoreConfig, RichCore] using hresp
+  · simpa [richOrder, asCoreConfig, RichCore] using hresp
   · simpa [richClientSpec, clientSpec] using hlegal
   · intro kind
     change renderState s kind =
@@ -917,7 +917,7 @@ theorem richLegalizationSound (Γ : OrderedPrefixCode)
 
 noncomputable def richSequentialCorrectness (Γ : OrderedPrefixCode) :
     SequentialCorrectnessCertificate (RichCore Γ) (richGeneration Γ)
-      (richRc Γ) (richClientSpec Γ) richRel where
+      (richOrder Γ) (richClientSpec Γ) richRel where
   sound C exec replay :=
     richLegalizationSound Γ
       (exec.canonicalConfig (fun C' hmint => rich_join_at (by
@@ -931,7 +931,7 @@ noncomputable def richSequentialCorrectness (Γ : OrderedPrefixCode) :
 noncomputable def richVerified (Γ : OrderedPrefixCode) :
     VerifiedMRDT (RichCore Γ) where
   issuance := richGeneration Γ
-  rc := richRc Γ
+  replayOrder := richOrder Γ
   replayAdequacy := richReplayAdequacy Γ
   Spec := richClientSpec Γ
   Rel := richRel
@@ -948,7 +948,7 @@ theorem linearMint_to_core {Γ : OrderedPrefixCode}
 
 noncomputable def richReplayAdequate (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (RichCore Γ) where
   issuance := richGeneration Γ
-  rc := richRc Γ
+  replayOrder := richOrder Γ
   replayAdequacy := richReplayAdequacy Γ
   Machine := richSpec
   sequential := richSequential Γ

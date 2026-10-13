@@ -20,9 +20,9 @@ namespace Sal.MRDTs
 #check Foundation.UpdateSig
 #check Foundation.HistoricalBinaryMerge
 #check Foundation.UpdateSig.historicalMerge
-#check Foundation.ReplayPolicy
-#check Foundation.ReplayPolicy.Before
-#check Foundation.UpdateSig.rc
+#check Foundation.EventOrder
+#check Foundation.EventOrder.Before
+#check Foundation.UpdateSig.replayBefore
 #check Foundation.UpdateSig.commutes
 #check MRDTSig.toUpdateSig
 #check MRDTSig.historicalBinaryMerge
@@ -65,16 +65,16 @@ namespace Sal.MRDTs
 #check ReplayLaws
 #check ReplayLaws.noncomm_covered
 #check ReplayLaws.of_all_comm
-#check RcEdge
+#check ReplayEdge
 #check Foundation.loOnNe_acyclic_of_policy_paths
 #check Foundation.exists_loOn_respecting_perm_of_acyclic
 #check Foundation.exists_loOn_maximal_of_acyclic
-#check Instances.MVRLive.rc_iff_overwrite_of_execution
-#check RcAcyclic
-#check ReplayLaws.rc_acyclic
-#check rcAcyclic_of_noRcChain
-#check ReplayLaws.rcAcyclic
-#check loOnNe_acyclic_of_rcAcyclic
+#check Instances.MVRLive.replayOrder_iff_overwrite_of_execution
+#check ReplayAcyclic
+#check ReplayLaws.replayOrder_acyclic
+#check replayAcyclic_of_noReplayChain
+#check ReplayLaws.replayAcyclic
+#check loOnNe_acyclic_of_replayAcyclic
 #check loOnNe_acyclic_of_replayLaws
 #check exists_loOn_respecting_perm_of_replayLaws
 #check convergence_on_of_replayLaws
@@ -112,8 +112,8 @@ namespace Sal.MRDTs
 #check MintCertifiedReachV.toReachable
 #check IssuanceEstablishes
 #check replayWitness_of_mintCertified
-#check Foundation.RcRes
-#check Foundation.ReplayPolicy
+#check Foundation.OrderResult
+#check Foundation.EventOrder
 #check Foundation.loOn
 #check SequentialMachine
 #check SequentialSpec
@@ -163,33 +163,33 @@ namespace Sal.MRDTs
 #check Instances.BoundedCounter.clientSpec
 #check Instances.BoundedCounter.verified
 #check Instances.LWWRegister.D
-#check Instances.LWWRegister.rc
+#check Instances.LWWRegister.replayOrder
 #check Instances.LWWRegister.spec
 #check Instances.LWWRegister.stateRel
 #check Instances.LWWRegister.replayLaws
 #check Instances.LWWRegister.ordered_updates_commute
-#check Instances.LWWRegister.concrete_noncomm_iff_rc_refuted
+#check Instances.LWWRegister.concrete_noncomm_iff_replayOrder_refuted
 #check Instances.LWWRegister.reversed_assignments_wrong_winner
 
 -- Type-ascribed controls: these must use the public timestamp relation,
 -- not silently elaborate with the default empty policy.
 example : @ReplayLaws Instances.LWWRegister.D.toUpdateSig
-    Instances.LWWRegister.rc := Instances.LWWRegister.replayLaws
-example : @MergeLaws Instances.LWWRegister.D Instances.LWWRegister.rc :=
+    Instances.LWWRegister.replayOrder := Instances.LWWRegister.replayLaws
+example : @MergeLaws Instances.LWWRegister.D Instances.LWWRegister.replayOrder :=
   Instances.LWWRegister.mergeLaws
-example : @Join Instances.LWWRegister.D Instances.LWWRegister.rc :=
+example : @Join Instances.LWWRegister.D Instances.LWWRegister.replayOrder :=
   Instances.LWWRegister.join
 #check Instances.LWWRegister.canonical_respects
-#check Instances.LWWRegister.rc_order_acyclic
+#check Instances.LWWRegister.replayOrder_order_acyclic
 #check Instances.LWWRegister.verified
 #check Instances.ORSet.canIssue
-#check Instances.ORSet.rc
+#check Instances.ORSet.replayOrder
 #check Instances.ORSet.spec
 #check Instances.ORSet.stateRel
 #check Instances.ORSet.verified
 #check Instances.EfficientORSet.update
 #check Instances.EfficientORSet.merge
-#check Instances.EfficientORSet.rc
+#check Instances.EfficientORSet.replayOrder
 #check Instances.EfficientORSet.issuance
 #check Instances.EfficientORSet.spec
 #check Instances.EfficientORSet.stateRel
@@ -200,8 +200,8 @@ example : @Join Instances.LWWRegister.D Instances.LWWRegister.rc :=
 #check Instances.RGA.listLegal
 #check Instances.RGA.listSpec
 #check Instances.RGA.listRel
-#check Instances.RGA.rc
-#check Instances.RGA.canonical_respects_rc
+#check Instances.RGA.replayOrder
+#check Instances.RGA.canonical_respects_replayOrder
 #check Instances.RGA.verified
 #check Instances.TreeMove.applicable
 #check Instances.TreeMove.SequentialLegal
@@ -209,7 +209,7 @@ example : @Join Instances.LWWRegister.D Instances.LWWRegister.rc :=
 #check Instances.TreeMove.clientLegal_origin
 #check Instances.TreeMove.clientLegal_rejects_reserved
 #check Instances.TreeMove.sequentialSpec
-#check Instances.TreeMove.verified.rc
+#check Instances.TreeMove.verified.replayOrder
 #check Instances.TreeMove.verified
 #check Instances.AegisSheet.applicable
 #check Instances.AegisSheet.ClockedAt.fresh
@@ -217,29 +217,29 @@ example : @Join Instances.LWWRegister.D Instances.LWWRegister.rc :=
 #check Instances.AegisSheet.join
 #check Instances.AegisSheet.Sequential.CausalOriginLegal
 #check Instances.AegisSheet.Sequential.clientSpec
-#check Instances.AegisSheet.verified.rc
+#check Instances.AegisSheet.verified.replayOrder
 #check Instances.AegisSheet.verified
 #check Instances.EmbedRGA.EHonestCore
 #check Instances.EmbedRGA.eApplicable
 #check Instances.EmbedRGA.e_join_at
 #check Instances.ProductionRGA.embedClientSpec
 #check Instances.ProductionRGA.embedRel
-#check Instances.ProductionRGA.embedRc
+#check Instances.ProductionRGA.embedOrder
 #check Instances.ProductionRGA.embed
 #check Instances.Peritext.verified
 #check Instances.SidedEmbedRGA.SHonestCore
 #check Instances.SidedEmbedRGA.sApplicable
 #check Instances.SidedEmbedRGA.s_join_at
-#check Instances.ProductionRGA.sidedRc
+#check Instances.ProductionRGA.sidedOrder
 #check Instances.SidedPeritext.coreGuard
 #check Instances.SidedPeritext.core_join_at
-#check Instances.SidedPeritext.coreRc
+#check Instances.SidedPeritext.coreOrder
 #check Instances.SidedPeritext.clientSpec
 #check Instances.SidedPeritext.verified
-#check Instances.SidedPeritext.richRc
+#check Instances.SidedPeritext.richOrder
 #check Instances.SidedPeritext.richVerified
-#check Instances.Queue.qRcOrder
-#check Instances.Queue.rc
+#check Instances.Queue.qEventOrder
+#check Instances.Queue.replayOrder
 #check Instances.Queue.q_join_at
 #check Instances.Queue.queue_replay_witness
 #check Instances.Queue.replayAdequate
@@ -250,14 +250,14 @@ example : @Join Instances.LWWRegister.D Instances.LWWRegister.rc :=
 #check Instances.Queue.queue_correct
 #check Instances.MVRLive.D
 #check Instances.MVRLive.canIssue
-#check Instances.MVRLive.rc
+#check Instances.MVRLive.replayOrder
 #check Instances.MVRLive.spec
 #check Instances.MVRLive.issued_write_singleton
 #check Instances.MVRLive.represented_of_mintCertifiedV
 #check Instances.MVRLive.verified
 #check Instances.MVRLive.mvr_correct
 #check Instances.MVRLive.linear_register
-#check Instances.SidedEmbedRGA.fRcOrder
+#check Instances.SidedEmbedRGA.fEventOrder
 #check Instances.SidedEmbedRGA.fmReplayAdequacy
 #check Instances.SidedEmbedRGA.fuguemax_replay_witness
 
@@ -320,8 +320,8 @@ example : @Join Instances.LWWRegister.D Instances.LWWRegister.rc :=
 #check Instances.RGA.GC.unpack
 #check Instances.RGA.GC.packedWords_pack_lt_of_live_lt_grave
 #check Instances.RGA.GC.all_live_conversion_grows
-#check Instances.RGA.rc_insert_iff
-#check Instances.RGA.rc_insert_iff_original_of_execution
+#check Instances.RGA.replayOrder_insert_iff
+#check Instances.RGA.replayOrder_insert_iff_original_of_execution
 #check Instances.RGA.GC.all_deleted_conversion_shrinks
 #check Instances.RGA.GC.certificate
 #check Instances.RGA.GC.future_after_dead_anchor_not_applicable

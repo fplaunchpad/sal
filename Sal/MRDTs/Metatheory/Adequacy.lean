@@ -29,7 +29,7 @@ open Classical
 
 section
 variable {D : MRDTSig}
-variable [P : ReplayPolicy D.toUpdateSig]
+variable [P : EventOrder D.toUpdateSig]
 
 /-- Every stored version has a replay witness for the proof-local order. This
 is derived from `CanonicalConfig`; it is not the client correctness target. -/
@@ -405,7 +405,7 @@ end
 section
 variable {D : MRDTSig}
 
-variable [ReplayPolicy D.toUpdateSig]
+variable [EventOrder D.toUpdateSig]
 
 theorem causalDeltaLaw_of_all_comm (hVC : MergeLaws D)
     (hPeel : CommutingPeelLaw D)
@@ -438,7 +438,7 @@ end
 
 section
 variable {D : MRDTSig}
-variable [P : ReplayPolicy D.toUpdateSig]
+variable [P : EventOrder D.toUpdateSig]
 
 /-- The original `Join`-driven form, as a thin wrapper over
 `canonicalConfig_merge_at`. -/
@@ -496,7 +496,7 @@ end
 section
 variable {D : MRDTSig}
 
-variable [ReplayPolicy D.toUpdateSig]
+variable [EventOrder D.toUpdateSig]
 
 /-- The arbitrary-state contract implies the feasible one (context discarded);
 `merge_init` supplies the unit law. The universal-law route is thereby an
@@ -913,7 +913,7 @@ end
 
 section Bridge
 variable {D : MRDTSig}
-variable [P : ReplayPolicy D.toUpdateSig]
+variable [P : EventOrder D.toUpdateSig]
 
 /-- Merge preservation from a full-closure join lemma (the `CanonicalConfig`
 merge case verbatim, passing `version_events_causal` un-weakened). -/

@@ -357,20 +357,20 @@ theorem lo_source_enq {C : Configuration Q} (hh : QHonest C)
     obtain ⟨bts, br, bo⟩ := b
     cases bo with
     | deq other =>
-      simp [loOn, UpdateSig.rc, ReplayPolicy.Before, QReplayPolicy, rc, qRcOrder] at h
+      simp [loOn, UpdateSig.replayBefore, EventOrder.Before, QEventOrder, replayOrder, qEventOrder] at h
     | enq value =>
       rcases h with ⟨hv, hc⟩ | ⟨_, _, hdir, _⟩
       · have ht : bts = target := by
           by_contra hn
-          simp [UpdateSig.rc, ReplayPolicy.Before, QReplayPolicy, rc, qRcOrder, hn] at hc
+          simp [UpdateSig.replayBefore, EventOrder.Before, QEventOrder, replayOrder, qEventOrder, hn] at hc
         obtain ⟨birth, hbirth, hba, htag, _⟩ := hh _ ha target rfl
         have heq : birth = (bts, br, .enq value) :=
           C.replayContext.ts_unique hbirth hb (htag.trans ht.symm)
         rw [heq] at hba
         exact False.elim (Nat.lt_asymm (C.causal_mono hv) (C.causal_mono hba))
       · have : False := by
-          change (if bts = target then RcRes.Snd_then_fst else RcRes.Either) =
-            RcRes.Fst_then_snd at hdir
+          change (if bts = target then OrderResult.Snd_then_fst else OrderResult.Either) =
+            OrderResult.Fst_then_snd at hdir
           split at hdir <;> contradiction
         exact this.elim
 
@@ -383,7 +383,7 @@ theorem lo_to_deq_tag {C : Configuration Q} {E : Set (Op QOp)}
   | enq value =>
     by_contra hn
     rcases h with ⟨_, hc⟩ | ⟨_, _, hc, _⟩ <;>
-      simp [UpdateSig.rc, ReplayPolicy.Before, QReplayPolicy, rc, qRcOrder, hbd, hn] at hc
+      simp [UpdateSig.replayBefore, EventOrder.Before, QEventOrder, replayOrder, qEventOrder, hbd, hn] at hc
 
 theorem lo_into_removed_vis {C : Configuration Q} (hh : QHonest C)
     {E : Set (Op QOp)} (hin : ∀ e ∈ E, e ∈ C.events)
@@ -405,7 +405,7 @@ theorem lo_into_removed_vis {C : Configuration Q} (hh : QHonest C)
     cases op with
     | deq target => simp [qIsEnq] at hbi
     | enq value =>
-      simp [UpdateSig.rc, ReplayPolicy.Before, QReplayPolicy, rc, qRcOrder, hdd]
+      simp [UpdateSig.replayBefore, EventOrder.Before, QEventOrder, replayOrder, qEventOrder, hdd]
 
 theorem removed_strict_sorted {ops : List (Op QOp)} (hwf : QWf ops) :
     (removedEnqs ops).Pairwise (fun a b => a.1 < b.1) := by
@@ -501,7 +501,7 @@ theorem legalize_respects {C : Configuration Q}
 the same event identities, the sole public order, and exact tagged contents. -/
 theorem queue_legal_witness {C : Configuration Q}
     (exec : CertifiedExecution Q generation C)
-    (replay : @HasReplayWitness Q rc C)
+    (replay : @HasReplayWitness Q replayOrder C)
     {v : Version} {s : QState} {E : Set (Op QOp)}
     (hver : C.ver v = some (s, E)) :
     ∃ ops, listPermOf ops E ∧ respects ops (loOn C.replayContext E) ∧
@@ -525,7 +525,7 @@ theorem queue_legal_witness {C : Configuration Q}
   rw [legalize_fold, ← q_fold_canon ops hwf]
   exact hfold
 
-def clientSequentialCorrectness : SequentialCorrectnessCertificate Q generation rc clientSpec Eq where
+def clientSequentialCorrectness : SequentialCorrectnessCertificate Q generation replayOrder clientSpec Eq where
   sound C exec replay := by
     intro v s E hver
     obtain ⟨ops, hp, hr, hl, hs⟩ := queue_legal_witness exec replay hver
@@ -533,7 +533,7 @@ def clientSequentialCorrectness : SequentialCorrectnessCertificate Q generation 
 
 noncomputable def verified : VerifiedMRDT Q where
   issuance := generation
-  rc := rc
+  replayOrder := replayOrder
   replayAdequacy := replayAdequacy
   Spec := clientSpec
   Rel := Eq
@@ -541,11 +541,11 @@ noncomputable def verified : VerifiedMRDT Q where
 
 theorem queue_spec_linearizable {C : Configuration Q}
     (h : MintCertifiedReach Q generation C) :
-    IsSpecLinearizable Q rc clientSpec Eq C := verified.correct h
+    IsSpecLinearizable Q replayOrder clientSpec Eq C := verified.correct h
 
 theorem queue_spec_linearizableV {C : Configuration Q}
     (h : MintCertifiedReachV Q (canonicalVirtualMergeBase Q) generation C) :
-    IsSpecLinearizable Q rc clientSpec Eq C := verified.correctV h
+    IsSpecLinearizable Q replayOrder clientSpec Eq C := verified.correctV h
 
 #print axioms queue_legal_witness
 #print axioms verified

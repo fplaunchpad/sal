@@ -2,7 +2,7 @@ label	module	declaration
 def:events	Sal.MRDTs.Framework.Base.UpdateSignature	Sal.MRDTs.Foundation.Op
 def:events	Sal.MRDTs.Framework.Base.UpdateSignature	Sal.MRDTs.Foundation.UpdateSig.commutes
 def:events	Sal.MRDTs.Paper1.RestrictedReplay	Sal.MRDTs.Paper1.OperationPolicy
-def:events	Sal.MRDTs.Paper1.RestrictedReplay	Sal.MRDTs.Paper1.OperationPolicy.lift_rc_iff
+def:events	Sal.MRDTs.Paper1.RestrictedReplay	Sal.MRDTs.Paper1.OperationPolicy.lift_replayOrder_iff
 def:events	Sal.MRDTs.Metatheory.Join.HistoricalReplay	Sal.MRDTs.Foundation.distinctOps
 def:guards	Sal.MRDTs.Paper1.GuardedReplay	Sal.MRDTs.Paper1.GuardedReplay.Laws
 def:invariant	Sal.MRDTs.Paper1.InvariantOrder	Sal.MRDTs.Paper1.InvariantOrder.Commutes

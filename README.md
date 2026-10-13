@@ -307,11 +307,18 @@ from the manuscript build and is not an included paper appendix.
 The current framework is under [`Sal/MRDTs`](Sal/MRDTs). Its raw `MRDTSig`
 contains only datatype operations. Client minting discipline is supplied by a
 single `Issuance.CanIssue` relation. An independent `SequentialSpec` supplies
-the abstract state, legal histories, and queries. A single `ReplayPolicy`,
-stored as `VerifiedMRDT.rc`, supplies any design-specific direction between
-concurrent events. The sole linearization order `loOn` is derived from that policy and
-visibility: visibility is retained exactly for conflicting pairs, while
-`Either` contributes no edge. `VerifiedMRDT` combines these with widened convergence, a representation relation, and a
+the abstract state, legal histories, and queries. The generic `EventOrder`,
+stored as `VerifiedMRDT.replayOrder`, supplies an explicitly selected ordering
+on complete events. It may inspect timestamps and replica IDs. Its derived
+`loOn` relation is used by that generic certificate.
+
+The paper1 conflict policy is instead `OperationPolicy.before`, written `rc`
+in the paper. It compares operation payloads; its event lift compares the
+payloads of the two events. An independently chosen `EventOrder` need not be
+that lift and must not be called the paper's `rc`. The paper1 certificates
+state their own policy, semantic order, and sequential-history obligations.
+
+`VerifiedMRDT` combines these with widened convergence, a representation relation, and a
 `SequentialCorrectnessCertificate`. Ordinary
 convergence is derived by embedding the ordinary trace in the widened
 semantics. Safety and datatype-state GC are separate optional certificates.

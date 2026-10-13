@@ -43,7 +43,7 @@ theorem canonical_ordered (ops : List (Op (EOp α))) :
     (canonical ops).Pairwise LE := by
   unfold canonical LE
   apply List.pairwise_mergeSort
-  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, rc, oc⟩ hab hbc
+  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, replayOrder, oc⟩ hab hbc
     cases oa <;> cases ob <;> cases oc <;> simp [leBool] at *
     exact Nat.le_trans hab hbc
   · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩
@@ -431,35 +431,35 @@ theorem embedSemanticCommutes_symm
   obtain ⟨bt, br, bop⟩ := b
   cases aop <;> cases bop <;> simp [embedSemanticCommutes, ne_comm]
 
-abbrev embedRcOrder :=
-  Sal.MRDTs.Instances.EmbedRGA.eRcOrder (α := α)
+abbrev embedEventOrder :=
+  Sal.MRDTs.Instances.EmbedRGA.eEventOrder (α := α)
 
-abbrev embedRc (Γ : OrderedPrefixCode) :=
-  Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy (α := α) Γ
+abbrev embedOrder (Γ : OrderedPrefixCode) :=
+  Sal.MRDTs.Instances.EmbedRGA.EEventOrder (α := α) Γ
 
-@[simp] theorem embedRc_noncomm (Γ : OrderedPrefixCode)
+@[simp] theorem embedOrder_noncomm (Γ : OrderedPrefixCode)
     (a b : Op (Sal.MRDTs.Instances.EmbedRGA.EOp α)) :
-    ((embedRc Γ).Before a b ∨ (embedRc Γ).Before b a) ↔
+    ((embedOrder Γ).Before a b ∨ (embedOrder Γ).Before b a) ↔
       ¬ embedSemanticCommutes a b := by
   obtain ⟨ats, ar, aop⟩ := a
   obtain ⟨bts, br, bop⟩ := b
   cases aop <;> cases bop <;>
-    simp [ReplayPolicy.Before, embedRc,
-      Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy,
-      Sal.MRDTs.Instances.EmbedRGA.eRcOrder,
+    simp [EventOrder.Before, embedOrder,
+      Sal.MRDTs.Instances.EmbedRGA.EEventOrder,
+      Sal.MRDTs.Instances.EmbedRGA.eEventOrder,
       embedSemanticCommutes, eq_comm] <;>
     split <;> simp_all
 
-@[simp] theorem embedRc_not_before (Γ : OrderedPrefixCode)
+@[simp] theorem embedOrder_not_before (Γ : OrderedPrefixCode)
     (a b : Op (Sal.MRDTs.Instances.EmbedRGA.EOp α)) :
     EmbedWitness.LE a b →
-      ¬ (embedRc Γ).order b a = RcRes.Fst_then_snd := by
+      ¬ (embedOrder Γ).order b a = OrderResult.Fst_then_snd := by
   obtain ⟨ats, ar, aop⟩ := a
   obtain ⟨bts, br, bop⟩ := b
   cases aop <;> cases bop <;>
-    simp [EmbedWitness.LE, EmbedWitness.leBool, embedRc,
-      Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy,
-      Sal.MRDTs.Instances.EmbedRGA.eRcOrder] <;>
+    simp [EmbedWitness.LE, EmbedWitness.leBool, embedOrder,
+      Sal.MRDTs.Instances.EmbedRGA.EEventOrder,
+      Sal.MRDTs.Instances.EmbedRGA.eEventOrder] <;>
     split <;> simp_all
 
 theorem embedCanonical_respects {Γ : OrderedPrefixCode}
@@ -472,7 +472,7 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
     {ops : List (Op (Sal.MRDTs.Instances.EmbedRGA.EOp α))}
     (hperm : listPermOf ops E) :
     respects (EmbedWitness.canonical ops)
-      (@loOn _ (embedRc Γ) C.replayContext E) := by
+      (@loOn _ (embedOrder Γ) C.replayContext E) := by
   open Sal.MRDTs.Instances.EmbedRGA in
     have hgood : CanonicalConfig C := exec.canonicalConfig (fun _ hmint =>
       e_join_at (eHonest_core (eHonest_of_mint hmint)))
@@ -507,17 +507,17 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
               | ins bel bpref banchor =>
                   simp [EmbedWitness.LE, EmbedWitness.leBool] at hab
               | del target =>
-                  simpa [embedRc, ReplayPolicy.Before,
-                    Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy,
-                    Sal.MRDTs.Instances.EmbedRGA.eRcOrder,
+                  simpa [embedOrder, EventOrder.Before,
+                    Sal.MRDTs.Instances.EmbedRGA.EEventOrder,
+                    Sal.MRDTs.Instances.EmbedRGA.eEventOrder,
                     embedSemanticCommutes] using
                     hconflict
           | ins ael apref aanchor =>
               cases bop with
               | ins bel bpref banchor =>
-                  simpa [embedRc, ReplayPolicy.Before,
-                    Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy,
-                    Sal.MRDTs.Instances.EmbedRGA.eRcOrder,
+                  simpa [embedOrder, EventOrder.Before,
+                    Sal.MRDTs.Instances.EmbedRGA.EEventOrder,
+                    Sal.MRDTs.Instances.EmbedRGA.eEventOrder,
                     embedSemanticCommutes] using
                     hconflict
               | del target =>
@@ -525,7 +525,7 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
                     have hncBA : ¬ embedSemanticCommutes
                         (bt, br, .del target)
                         (ats, ar, .ins ael apref aanchor) := by
-                      exact (embedRc_noncomm Γ _ _).mp hconflict
+                      exact (embedOrder_noncomm Γ _ _).mp hconflict
                     have hnc : ¬ embedSemanticCommutes
                         (ats, ar, .ins ael apref aanchor)
                         (bt, br, .del target) := fun hcomm =>
@@ -540,12 +540,12 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
                   subst creator
                   exact hgood.vis_irrefl _
                     (hgood.vis_trans hcreatorVis hvba)
-        · exact (embedRc_not_before Γ _ _ hab) hrc.2.2.1
+        · exact (embedOrder_not_before Γ _ _ hab) hrc.2.2.1
 
 noncomputable def embedSequentialCorrectness (Γ : OrderedPrefixCode) :
     SequentialCorrectnessCertificate (Sal.MRDTs.Instances.EmbedRGA.E Γ α)
       (Sal.MRDTs.Instances.EmbedRGA.generation Γ)
-      (embedRc Γ) (embedClientSpec Γ) embedRel where
+      (embedOrder Γ) (embedClientSpec Γ) embedRel where
   sound C exec replay := by
     open Sal.MRDTs.Instances.EmbedRGA in
       intro v s E hver
@@ -590,7 +590,7 @@ noncomputable def embedSequentialCorrectness (Γ : OrderedPrefixCode) :
 
 noncomputable def replayEmbed (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (Sal.MRDTs.Instances.EmbedRGA.E Γ α) where
   issuance := Sal.MRDTs.Instances.EmbedRGA.generation Γ
-  rc := embedRc Γ
+  replayOrder := embedOrder Γ
   replayAdequacy := Sal.MRDTs.Instances.EmbedRGA.replayAdequacy Γ
   Machine := embedSpec
   sequential := embedSequential Γ
@@ -599,7 +599,7 @@ noncomputable def replayEmbed (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (Sal
 noncomputable def embed (Γ : OrderedPrefixCode) :
     VerifiedMRDT (Sal.MRDTs.Instances.EmbedRGA.E Γ α) where
   issuance := Sal.MRDTs.Instances.EmbedRGA.generation Γ
-  rc := embedRc Γ
+  replayOrder := embedOrder Γ
   replayAdequacy := Sal.MRDTs.Instances.EmbedRGA.replayAdequacy Γ
   Spec := embedClientSpec Γ
   Rel := embedRel
@@ -633,7 +633,7 @@ theorem canonical_ordered (ops : List (Op SOp)) :
     (canonical ops).Pairwise LE := by
   unfold canonical LE
   apply List.pairwise_mergeSort
-  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, rc, oc⟩ hab hbc
+  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, replayOrder, oc⟩ hab hbc
     cases oa <;> cases ob <;> cases oc <;> simp [leBool] at *
     exact Nat.le_trans hab hbc
   · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩
@@ -981,34 +981,34 @@ theorem sidedSemanticCommutes_symm
   obtain ⟨bt, br, bop⟩ := b
   cases aop <;> cases bop <;> simp [sidedSemanticCommutes, ne_comm]
 
-abbrev sidedRcOrder := Sal.MRDTs.Instances.SidedEmbedRGA.sRcOrder
+abbrev sidedEventOrder := Sal.MRDTs.Instances.SidedEmbedRGA.sEventOrder
 
-abbrev sidedRc (Γ : OrderedPrefixCode) :=
-  Sal.MRDTs.Instances.SidedEmbedRGA.SReplayPolicy Γ
+abbrev sidedOrder (Γ : OrderedPrefixCode) :=
+  Sal.MRDTs.Instances.SidedEmbedRGA.SEventOrder Γ
 
-@[simp] theorem sidedRc_noncomm (Γ : OrderedPrefixCode)
+@[simp] theorem sidedOrder_noncomm (Γ : OrderedPrefixCode)
     (a b : Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp) :
-    ((sidedRc Γ).Before a b ∨ (sidedRc Γ).Before b a) ↔
+    ((sidedOrder Γ).Before a b ∨ (sidedOrder Γ).Before b a) ↔
       ¬ sidedSemanticCommutes a b := by
   obtain ⟨ats, ar, aop⟩ := a
   obtain ⟨bts, br, bop⟩ := b
   cases aop <;> cases bop <;>
-    simp [ReplayPolicy.Before, sidedRc,
-      Sal.MRDTs.Instances.SidedEmbedRGA.SReplayPolicy,
-      Sal.MRDTs.Instances.SidedEmbedRGA.sRcOrder,
+    simp [EventOrder.Before, sidedOrder,
+      Sal.MRDTs.Instances.SidedEmbedRGA.SEventOrder,
+      Sal.MRDTs.Instances.SidedEmbedRGA.sEventOrder,
       sidedSemanticCommutes, eq_comm] <;>
     split <;> simp_all
 
-@[simp] theorem sidedRc_not_before (Γ : OrderedPrefixCode)
+@[simp] theorem sidedOrder_not_before (Γ : OrderedPrefixCode)
     (a b : Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp) :
     SidedWitness.LE a b →
-      ¬ (sidedRc Γ).order b a = RcRes.Fst_then_snd := by
+      ¬ (sidedOrder Γ).order b a = OrderResult.Fst_then_snd := by
   obtain ⟨ats, ar, aop⟩ := a
   obtain ⟨bts, br, bop⟩ := b
   cases aop <;> cases bop <;>
-    simp [SidedWitness.LE, SidedWitness.leBool, sidedRc,
-      Sal.MRDTs.Instances.SidedEmbedRGA.SReplayPolicy,
-      Sal.MRDTs.Instances.SidedEmbedRGA.sRcOrder] <;>
+    simp [SidedWitness.LE, SidedWitness.leBool, sidedOrder,
+      Sal.MRDTs.Instances.SidedEmbedRGA.SEventOrder,
+      Sal.MRDTs.Instances.SidedEmbedRGA.sEventOrder] <;>
     split <;> simp_all
 
 theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
@@ -1021,7 +1021,7 @@ theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
     {ops : List (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     (hperm : listPermOf ops E) :
     respects (SidedWitness.canonical ops)
-      (@loOn _ (sidedRc Γ) C.replayContext E) := by
+      (@loOn _ (sidedOrder Γ) C.replayContext E) := by
   open Sal.MRDTs.Instances.SidedEmbedRGA in
     have hsub := hgood.version_events_supported v s E hver
     have hcan := SidedWitness.canonical_listPermOf hperm
@@ -1052,17 +1052,17 @@ theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
               | ins bel bpref banchor bside =>
                   simp [SidedWitness.LE, SidedWitness.leBool] at hab
               | del target =>
-                  simpa [sidedRc, ReplayPolicy.Before,
-                    Sal.MRDTs.Instances.SidedEmbedRGA.SReplayPolicy,
-                    Sal.MRDTs.Instances.SidedEmbedRGA.sRcOrder,
+                  simpa [sidedOrder, EventOrder.Before,
+                    Sal.MRDTs.Instances.SidedEmbedRGA.SEventOrder,
+                    Sal.MRDTs.Instances.SidedEmbedRGA.sEventOrder,
                     sidedSemanticCommutes] using
                     hconflict
           | ins ael apref aanchor aside =>
               cases bop with
               | ins bel bpref banchor bside =>
-                  simpa [sidedRc, ReplayPolicy.Before,
-                    Sal.MRDTs.Instances.SidedEmbedRGA.SReplayPolicy,
-                    Sal.MRDTs.Instances.SidedEmbedRGA.sRcOrder,
+                  simpa [sidedOrder, EventOrder.Before,
+                    Sal.MRDTs.Instances.SidedEmbedRGA.SEventOrder,
+                    Sal.MRDTs.Instances.SidedEmbedRGA.sEventOrder,
                     sidedSemanticCommutes] using
                     hconflict
               | del target =>
@@ -1070,7 +1070,7 @@ theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
                     have hncBA : ¬ sidedSemanticCommutes
                         (bt, br, .del target)
                         (ats, ar, .ins ael apref aanchor aside) := by
-                      exact (sidedRc_noncomm Γ _ _).mp hconflict
+                      exact (sidedOrder_noncomm Γ _ _).mp hconflict
                     have hnc : ¬ sidedSemanticCommutes
                         (ats, ar, .ins ael apref aanchor aside)
                         (bt, br, .del target) := fun hcomm =>
@@ -1085,7 +1085,7 @@ theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
                   subst creator
                   exact hgood.vis_irrefl _
                     (hgood.vis_trans hcreatorVis hvba)
-        · exact (sidedRc_not_before Γ _ _ hab) hrc.2.2.1
+        · exact (sidedOrder_not_before Γ _ _ hab) hrc.2.2.1
 
 theorem sidedCanonical_respects {Γ : OrderedPrefixCode}
     {C : Configuration (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)}
@@ -1097,7 +1097,7 @@ theorem sidedCanonical_respects {Γ : OrderedPrefixCode}
     {ops : List (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     (hperm : listPermOf ops E) :
     respects (SidedWitness.canonical ops)
-      (@loOn _ (sidedRc Γ) C.replayContext E) := by
+      (@loOn _ (sidedOrder Γ) C.replayContext E) := by
   apply sidedCanonical_respects_of
     (exec.canonicalConfig (fun _ hmint =>
       Sal.MRDTs.Instances.SidedEmbedRGA.s_join_at
@@ -1110,7 +1110,7 @@ theorem sidedCanonical_respects {Γ : OrderedPrefixCode}
 noncomputable def sidedSequentialCorrectness (Γ : OrderedPrefixCode) :
     SequentialCorrectnessCertificate (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)
       (Sal.MRDTs.Instances.SidedEmbedRGA.generation Γ)
-      (sidedRc Γ) (sidedClientSpec Γ) sidedRel where
+      (sidedOrder Γ) (sidedClientSpec Γ) sidedRel where
   sound C exec replay := by
     open Sal.MRDTs.Instances.SidedEmbedRGA in
       intro v s E hver
@@ -1157,7 +1157,7 @@ noncomputable def sidedSequentialCorrectness (Γ : OrderedPrefixCode) :
 
 noncomputable def replaySided (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ) where
   issuance := Sal.MRDTs.Instances.SidedEmbedRGA.generation Γ
-  rc := sidedRc Γ
+  replayOrder := sidedOrder Γ
   replayAdequacy := Sal.MRDTs.Instances.SidedEmbedRGA.replayAdequacy Γ
   Machine := sidedSpec
   sequential := sidedSequential Γ
@@ -1166,7 +1166,7 @@ noncomputable def replaySided (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (Sal
 noncomputable def sided (Γ : OrderedPrefixCode) :
     VerifiedMRDT (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ) where
   issuance := Sal.MRDTs.Instances.SidedEmbedRGA.generation Γ
-  rc := sidedRc Γ
+  replayOrder := sidedOrder Γ
   replayAdequacy := Sal.MRDTs.Instances.SidedEmbedRGA.replayAdequacy Γ
   Spec := sidedClientSpec Γ
   Rel := sidedRel

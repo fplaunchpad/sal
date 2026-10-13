@@ -30,7 +30,7 @@ theorem joint_maximal (C : ReplayContext (D α).toUpdateSig) (E : Set (Op (Updat
     ∃ e ∈ E,
       (∀ x ∈ E, x ≠ e → ¬ paperOrder (conflict α) C E e x) ∧
       (∀ x ∈ E, x ≠ e → ¬ (ConcreteMRDT.MetadataDependencies.ofConcrete C).before e x) := by
-  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  letI : EventOrder (D α).toUpdateSig := (conflict α).lift
   obtain ⟨π,hp,hr,_⟩ := rep
   have ordered : respects π (paperOrder (conflict α) C E) := by
     apply hr.imp
@@ -259,7 +259,7 @@ theorem peel_choice (C : ReplayContext (D α).toUpdateSig)
     Nonempty (ConcreteMRDT.Raw.PeelChoice (conflict α)
       representation C (ConcreteMRDT.MetadataDependencies.ofConcrete C) U) := by
   classical
-  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  letI : EventOrder (D α).toUpdateSig := (conflict α).lift
   let M := ConcreteMRDT.MetadataDependencies.ofConcrete C
   obtain ⟨e,he,semantic,metadata⟩ := joint_maximal C U s rep nonempty
   obtain ⟨π,hp,_,_⟩ := rep

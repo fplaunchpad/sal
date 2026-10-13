@@ -8,7 +8,7 @@ namespace Sal.MRDTs
 
 open Sal.MRDTs.Foundation
 
-variable {D : MRDTSig} [P : ReplayPolicy D.toUpdateSig]
+variable {D : MRDTSig} [P : EventOrder D.toUpdateSig]
 
 theorem canonicalConfig_of_mintCertified {I : Issuance D}
     (join : ∀ C, MintHonest D I.CanIssue C → JoinAt D C.replayContext)

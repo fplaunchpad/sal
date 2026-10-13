@@ -12,12 +12,12 @@ backward-closed reachable replica sets: `convergence` with the
 overwriter-closure hypothesis dropped.
 
 **That lemma is false.** Counter-model (OR-set, add-wins,
-`rem →rc add`, all 24 VCs hold): replica B executes `rem_a` (event
+`rem →replayOrder add`, all 24 VCs hold): replica B executes `rem_a` (event
 `y`), replica A executes `add_a` (event `e`), B merges A's state
 *before* A issues a later `rem_a` (event `e₃`, `vis e e₃`). Then B's
 event set is `{y, e}` (backward-closed) and in the final
 configuration `C` (which contains `e₃`) the relation `lo C` orders
-*neither* `y, e` (the rc-edge `y →lo e` is cancelled by the absorber
+*neither* `y, e` (the replayOrder-edge `y →lo e` is cancelled by the absorber
 `e₃ ∈ C.events`). Both `[y, e]` and `[e, y]` respect `lo C`, but they
 fold to different states (`{a-tag}` vs `∅`). Convergence over the
 replica set w.r.t. `lo C` therefore fails.
@@ -28,7 +28,7 @@ The absorber existential in `lo` must range over the *event set of
 the version being linearized*, not over the whole configuration:
 
     loOn C ev e₁ e₂  ⟺  (vis e₁ e₂ ∧ ¬commute)
-                       ∨ (concurrent ∧ rc e₁ e₂ = Fst
+                       ∨ (concurrent ∧ replayOrder e₁ e₂ = Fst
                           ∧ ¬∃ e₃ ∈ ev, vis e₂ e₃ ∧ ¬commute e₂ e₃)
 
 In the counter-model `loOn C {y,e}` *keeps* the edge `y → e` (no
@@ -38,7 +38,7 @@ convergence over `{y, e}` w.r.t. `loOn` holds. In general:
 * `lo C ⊆ loOn C ev` pointwise, so a witness respecting `loOn` also
   respects `lo C`, the strengthened invariant *implies* the paper's
   Def-lin obligation.
-* `loOn C ev` depends only on `vis`/`rc`/`commutes` restricted to
+* `loOn C ev` depends only on `vis`/`replayOrder`/`commutes` restricted to
   `ev`, it never changes as the configuration grows, so it is a
   *stable* per-version invariant.
 * Convergence w.r.t. `loOn C ev` needs **no closure hypotheses at
@@ -58,7 +58,7 @@ direction, the one needed for sub-witness compatibility, is exactly
 ## Contents
 
 1. `loOn`, monotonicity, transfer lemmas.
-2. Acyclicity of `loOn C T` on `T` (from `no_rc_chain` + the absorber
+2. Acyclicity of `loOn C T` on `T` (from `no_replayOrder_chain` + the absorber
    clause + `vis`-transitivity/irreflexivity, both reachability
    facts) and existence of `loOn`-maximal elements / respecting
    permutations of finite sets.
@@ -76,8 +76,8 @@ namespace Sal.MRDTs.Foundation
 open Classical
 
 section
-variable {D : UpdateSig} [ReplayPolicy D]
-variable [ReplayPolicy D]
+variable {D : UpdateSig} [EventOrder D]
+variable [EventOrder D]
 
 /-! ### 0. The core VC bundle
 
@@ -89,22 +89,22 @@ instantiate the Join-Lemma machinery. -/
 
 /-- The fields of `HistoricalReplayVCs` actually consumed by the set-relative
 linearization theory and the Join-Lemma induction. -/
-structure BinaryMergeLaws (D : UpdateSig) [ReplayPolicy D]
+structure BinaryMergeLaws (D : UpdateSig) [EventOrder D]
     [HistoricalBinaryMerge D] : Prop where
   rc_non_comm_directional :
     ∀ o₁ o₂ : Op D.AppOp,
       (¬ D.commutes o₁ o₂ ↔
-       (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
-        D.replayOrder o₂ o₁ = RcRes.Fst_then_snd))
-  no_rc_chain :
+       (D.replayOrder o₁ o₂ = OrderResult.Fst_then_snd ∨
+        D.replayOrder o₂ o₁ = OrderResult.Fst_then_snd))
+  no_replayOrder_chain :
     ∀ o₁ o₂ o₃ : Op D.AppOp,
       distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
-         D.replayOrder o₂ o₃ = RcRes.Fst_then_snd)
+      ¬ (D.replayOrder o₁ o₂ = OrderResult.Fst_then_snd ∧
+         D.replayOrder o₂ o₃ = OrderResult.Fst_then_snd)
   cond_comm_lift :
     ∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      D.replayOrder e e' = RcRes.Fst_then_snd →
+      D.replayOrder e e' = OrderResult.Fst_then_snd →
       ¬ D.commutes e' e'' →
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
@@ -128,7 +128,7 @@ theorem applySeq_swap_via_cond_comm_lift_core
     (h_dist_ab : distinctOps a b)
     (h_dist_be : distinctOps b e₃)
     (h_dist_ae : distinctOps a e₃)
-    (h_rc_ab : D.replayOrder a b = RcRes.Fst_then_snd)
+    (h_replayOrder_ab : D.replayOrder a b = OrderResult.Fst_then_snd)
     (h_nc_be : ¬ D.commutes b e₃)
     (pfx α β : List (Op D.AppOp)) (s : D.State) :
     applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
@@ -144,7 +144,7 @@ theorem applySeq_swap_via_cond_comm_lift_core
   rw [hexp1, hexp2]
   exact congrArg (fun t => applySeq D t β)
     (hVC.cond_comm_lift (applySeq D s pfx) a b e₃ α
-      h_dist_ab h_dist_ae h_dist_be h_rc_ab h_nc_be).symm
+      h_dist_ab h_dist_ae h_dist_be h_replayOrder_ab h_nc_be).symm
 
 /-! ### 1. The set-relative linearization relation -/
 
@@ -155,10 +155,10 @@ version being linearized instead of over the whole configuration.
 implied by `vis_tgt`). -/
 def loOn (C : ReplayContext D) (ev : Set (Op D.AppOp))
     (e₁ e₂ : Op D.AppOp) : Prop :=
-  (C.vis e₁ e₂ ∧ (D.rc e₁ e₂ ∨ D.rc e₂ e₁))
+  (C.vis e₁ e₂ ∧ (D.replayBefore e₁ e₂ ∨ D.replayBefore e₂ e₁))
   ∨ ( ¬ C.vis e₁ e₂ ∧ ¬ C.vis e₂ e₁
-      ∧ D.rc e₁ e₂
-      ∧ ¬ ∃ e₃ ∈ ev, C.vis e₂ e₃ ∧ (D.rc e₂ e₃ ∨ D.rc e₃ e₂) )
+      ∧ D.replayBefore e₁ e₂
+      ∧ ¬ ∃ e₃ ∈ ev, C.vis e₂ e₃ ∧ (D.replayBefore e₂ e₃ ∨ D.replayBefore e₃ e₂) )
 
 /-- The configuration-global `lo` is contained in every `loOn`:
 a `lo C`-edge asserts *no absorber anywhere*, hence none in `ev`. -/
@@ -169,7 +169,7 @@ theorem loOn_of_lo {C : ReplayContext D} {ev : Set (Op D.AppOp)}
   · exact Or.inr ⟨h₁, h₂, h₃, fun ⟨e₃, _, hv, hnc⟩ => h₄ ⟨e₃, hv, hnc⟩⟩
 
 /-- Antitonicity in the event set: growing the set adds absorbers and
-hence *removes* rc-edges. -/
+hence *removes* replayOrder-edges. -/
 theorem loOn_mono {C : ReplayContext D} {ev ev' : Set (Op D.AppOp)}
     (h_sub : ev ⊆ ev') {e₁ e₂ : Op D.AppOp}
     (h : loOn C ev' e₁ e₂) : loOn C ev e₁ e₂ := by
@@ -226,10 +226,10 @@ theorem distinctOps_of_events {C : ReplayContext D}
 
 `loOn C T`, restricted to distinct events of `T`, has no cycles:
 
-* an rc-flavored edge `x → y` cannot be followed by *any* edge
+* an replayOrder-flavored edge `x → y` cannot be followed by *any* edge
   `y → z` with `z ∈ T`, a vis-flavored successor makes `z` an
-  absorber of `y` inside `T` (contradicting the rc-edge's no-absorber
-  clause), and an rc-flavored successor violates `no_rc_chain`;
+  absorber of `y` inside `T` (contradicting the replayOrder-edge's no-absorber
+  clause), and an replayOrder-flavored successor violates `no_replayOrder_chain`;
 * hence a cycle would be all-vis-flavored, contradicting
   transitivity + irreflexivity of `vis` (both hold in reachable
   configurations; threaded as hypotheses, following the existing
@@ -246,25 +246,25 @@ private def LoVisEdge (C : Sal.MRDTs.Foundation.ReplayContext D)
     (T : Set (Op D.AppOp)) (a b : Op D.AppOp) : Prop :=
   loOnNe C T a b ∧ C.vis a b
 
-private def LoRcEdge (C : Sal.MRDTs.Foundation.ReplayContext D)
+private def LoReplayEdge (C : Sal.MRDTs.Foundation.ReplayContext D)
     (T : Set (Op D.AppOp)) (a b : Op D.AppOp) : Prop :=
   loOnNe C T a b ∧ ¬ C.vis a b
 
-private theorem loOnNe_vis_or_rc
+private theorem loOnNe_vis_or_replayOrder
     {C : Sal.MRDTs.Foundation.ReplayContext D}
     {T : Set (Op D.AppOp)} {a b : Op D.AppOp}
-    (h : loOnNe C T a b) : LoVisEdge C T a b ∨ LoRcEdge C T a b := by
+    (h : loOnNe C T a b) : LoVisEdge C T a b ∨ LoReplayEdge C T a b := by
   rcases h.2.2.2 with hvis | hrc
   · exact Or.inl ⟨h, hvis.1⟩
   · exact Or.inr ⟨h, hrc.1⟩
 
 /-- The absorber clause prevents an active replay-policy edge from being
 followed by a visibility-conflict edge.  This fact does not require
-`no_rc_chain`. -/
-private theorem loRcEdge_not_followed_by_loVisEdge
+`no_replayOrder_chain`. -/
+private theorem loReplayEdge_not_followed_by_loVisEdge
     {C : Sal.MRDTs.Foundation.ReplayContext D}
     {T : Set (Op D.AppOp)} {a b c : Op D.AppOp}
-    (hab : LoRcEdge C T a b) (hbc : LoVisEdge C T b c) : False := by
+    (hab : LoReplayEdge C T a b) (hbc : LoVisEdge C T b c) : False := by
   rcases hab with ⟨⟨_, _, _, hloab⟩, hnvisab⟩
   rcases hloab with hvisab | hrcab
   · exact hnvisab hvisab.1
@@ -274,27 +274,27 @@ private theorem loRcEdge_not_followed_by_loVisEdge
     · exact hrcbc.1 hvisbc
 
 /-- Every `loOnNe` path consists of a visibility prefix followed by a
-possibly nonempty replay-policy suffix.  The old `no_rc_chain` argument made
+possibly nonempty replay-policy suffix.  The old `no_replayOrder_chain` argument made
 that suffix a single edge; the absorber clause alone suffices for this more
 general decomposition. -/
-private theorem transGen_loOnNe_vis_then_rc
+private theorem transGen_loOnNe_vis_then_replayOrder
     {C : Sal.MRDTs.Foundation.ReplayContext D}
     {T : Set (Op D.AppOp)} {a b : Op D.AppOp}
     (h : Relation.TransGen (loOnNe C T) a b) :
     Relation.TransGen (LoVisEdge C T) a b ∨
       ∃ x, Relation.ReflTransGen (LoVisEdge C T) a x ∧
-        Relation.TransGen (LoRcEdge C T) x b := by
+        Relation.TransGen (LoReplayEdge C T) x b := by
   induction h with
   | single h =>
-      rcases loOnNe_vis_or_rc h with hvis | hrc
+      rcases loOnNe_vis_or_replayOrder h with hvis | hrc
       · exact Or.inl (.single hvis)
       · exact Or.inr ⟨_, .refl, .single hrc⟩
   | @tail mid c _ hmc ih =>
-      rcases loOnNe_vis_or_rc hmc with hmcvis | hmcrc
+      rcases loOnNe_vis_or_replayOrder hmc with hmcvis | hmcrc
       · rcases ih with hvis | ⟨x, hvis, hrc⟩
         · exact Or.inl (hvis.tail hmcvis)
         · rcases Relation.TransGen.tail'_iff.mp hrc with ⟨y, _, hymid⟩
-          exact False.elim (loRcEdge_not_followed_by_loVisEdge hymid hmcvis)
+          exact False.elim (loReplayEdge_not_followed_by_loVisEdge hymid hmcvis)
       · rcases ih with hvis | ⟨x, hvis, hrc⟩
         · exact Or.inr ⟨mid, hvis.to_reflTransGen, .single hmcrc⟩
         · exact Or.inr ⟨x, hvis, hrc.tail hmcrc⟩
@@ -313,7 +313,7 @@ theorem loOnNe_acyclic_of_policy_paths
     (a : Op D.AppOp) :
     ¬ Relation.TransGen (loOnNe C T) a a := by
   intro hcycle
-  rcases transGen_loOnNe_vis_then_rc hcycle with hvis | ⟨x, hvis, hrc⟩
+  rcases transGen_loOnNe_vis_then_replayOrder hcycle with hvis | ⟨x, hvis, hrc⟩
   · have hvis' : Relation.TransGen C.vis a a :=
       hvis.lift id (fun _ _ h => h.2)
     have htrans : Transitive C.vis := fun _ _ _ => h_vis_trans
@@ -324,7 +324,7 @@ theorem loOnNe_acyclic_of_policy_paths
       exact hRc a hrc
     · rcases Relation.TransGen.head'_iff.mp hvis' with ⟨y, hay, _⟩
       rcases Relation.TransGen.tail'_iff.mp hrc with ⟨z, _, hza⟩
-      exact loRcEdge_not_followed_by_loVisEdge hza hay
+      exact loReplayEdge_not_followed_by_loVisEdge hza hay
 
 /-- Finite enumeration depends only on acyclicity of the restricted order. -/
 theorem exists_loOn_respecting_perm_of_acyclic
@@ -407,29 +407,29 @@ theorem exists_loOn_maximal_of_acyclic
       exact ⟨cur, h_cur, fun x hx hx_ne h_lo =>
         (h_max x hx hx_ne) h_lo⟩
 
-/-- **rc-flavored edges have no successors inside the set.** -/
-theorem loOn_rc_no_succ [HistoricalBinaryMerge D]
+/-- **replayOrder-flavored edges have no successors inside the set.** -/
+theorem loOn_replayOrder_no_succ [HistoricalBinaryMerge D]
     (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     {T : Set (Op D.AppOp)}
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     {x y z : Op D.AppOp}
     (hxy_ne : x ≠ y) (hyz_ne : y ≠ z)
     (hx : x ∈ T) (hy : y ∈ T) (hz : z ∈ T)
-    (h_rc_edge : ¬ C.vis x y ∧ ¬ C.vis y x
-      ∧ D.replayOrder x y = RcRes.Fst_then_snd
-      ∧ ¬ ∃ e₃ ∈ T, C.vis y e₃ ∧ (D.rc y e₃ ∨ D.rc e₃ y))
+    (h_replayOrder_edge : ¬ C.vis x y ∧ ¬ C.vis y x
+      ∧ D.replayOrder x y = OrderResult.Fst_then_snd
+      ∧ ¬ ∃ e₃ ∈ T, C.vis y e₃ ∧ (D.replayBefore y e₃ ∨ D.replayBefore e₃ y))
     (h_edge : loOn C T y z) : False := by
-  obtain ⟨_, _, h_rc, h_no_abs⟩ := h_rc_edge
-  rcases h_edge with ⟨hv, hrc⟩ | ⟨_, _, h_rc', _⟩
+  obtain ⟨_, _, h_replayOrder, h_no_abs⟩ := h_replayOrder_edge
+  rcases h_edge with ⟨hv, hrc⟩ | ⟨_, _, h_replayOrder', _⟩
   · exact h_no_abs ⟨z, hz, hv, hrc⟩
-  · exact hVC.no_rc_chain x y z
+  · exact hVC.no_replayOrder_chain x y z
       (distinctOps_of_events (h_in_C x hx) (h_in_C y hy) hxy_ne)
       (distinctOps_of_events (h_in_C y hy) (h_in_C z hz) hyz_ne)
-      ⟨h_rc, h_rc'⟩
+      ⟨h_replayOrder, h_replayOrder'⟩
 
 /-- **Path structure:** every `loOnNe`-path is either vis-connected,
-or its *last* edge is rc-flavored (an rc-flavored edge strictly
-inside a path is killed by `loOn_rc_no_succ`). -/
+or its *last* edge is replayOrder-flavored (an replayOrder-flavored edge strictly
+inside a path is killed by `loOn_replayOrder_no_succ`). -/
 theorem transGen_loOnNe_structure [HistoricalBinaryMerge D]
     (hVC : BinaryMergeLaws D)
     {C : ReplayContext D}
@@ -442,24 +442,24 @@ theorem transGen_loOnNe_structure [HistoricalBinaryMerge D]
     C.vis a b ∨
     (∃ x, x ≠ b ∧ x ∈ T ∧
       (¬ C.vis x b ∧ ¬ C.vis b x
-        ∧ D.replayOrder x b = RcRes.Fst_then_snd
-        ∧ ¬ ∃ e₃ ∈ T, C.vis b e₃ ∧ (D.rc b e₃ ∨ D.rc e₃ b))) := by
+        ∧ D.replayOrder x b = OrderResult.Fst_then_snd
+        ∧ ¬ ∃ e₃ ∈ T, C.vis b e₃ ∧ (D.replayBefore b e₃ ∨ D.replayBefore e₃ b))) := by
   induction h with
   | single h_edge =>
     obtain ⟨hne, hxT, hyT, h_lo⟩ := h_edge
-    rcases h_lo with ⟨hv, _⟩ | h_rc
+    rcases h_lo with ⟨hv, _⟩ | h_replayOrder
     · exact Or.inl hv
-    · exact Or.inr ⟨a, hne, hxT, h_rc⟩
+    · exact Or.inr ⟨a, hne, hxT, h_replayOrder⟩
   | tail _ h_edge ih =>
     rename_i mid c h_path
     obtain ⟨hne, hmidT, hcT, h_lo⟩ := h_edge
-    rcases ih with h_vis_amid | ⟨x, hx_ne, hxT, h_rc_edge⟩
-    · rcases h_lo with ⟨hv, _⟩ | h_rc
+    rcases ih with h_vis_amid | ⟨x, hx_ne, hxT, h_replayOrder_edge⟩
+    · rcases h_lo with ⟨hv, _⟩ | h_replayOrder
       · exact Or.inl (h_vis_trans h_vis_amid hv)
-      · exact Or.inr ⟨mid, hne, hmidT, h_rc⟩
+      · exact Or.inr ⟨mid, hne, hmidT, h_replayOrder⟩
     · exact absurd h_lo
-        (fun h => loOn_rc_no_succ hVC h_in_C hx_ne hne hxT hmidT hcT
-          h_rc_edge h)
+        (fun h => loOn_replayOrder_no_succ hVC h_in_C hx_ne hne hxT hmidT hcT
+          h_replayOrder_edge h)
 
 /-- **`loOnNe` is acyclic** (no `TransGen`-cycle). -/
 theorem loOnNe_acyclic [HistoricalBinaryMerge D]
@@ -474,7 +474,7 @@ theorem loOnNe_acyclic [HistoricalBinaryMerge D]
   apply loOnNe_acyclic_of_policy_paths h_vis_trans h_vis_irrefl ?_ a
   intro x cycle
   have edgeRc : ∀ {u v}, loOnNe C T u v ∧ ¬ C.vis u v →
-      distinctOps u v ∧ D.rc u v := by
+      distinctOps u v ∧ D.replayBefore u v := by
     intro u v edge
     rcases edge with ⟨⟨hne, hu, hv, hvis | hrc⟩, hnvis⟩
     · exact (hnvis hvis.1).elim
@@ -483,7 +483,7 @@ theorem loOnNe_acyclic [HistoricalBinaryMerge D]
   | single edge => exact edge.1.1 rfl
   | @tail mid _ path last =>
       obtain ⟨prev, _, prior⟩ := Relation.TransGen.tail'_iff.mp path
-      exact hVC.no_rc_chain prev mid x (edgeRc prior).1 (edgeRc last).1
+      exact hVC.no_replayOrder_chain prev mid x (edgeRc prior).1 (edgeRc last).1
         ⟨(edgeRc prior).2, (edgeRc last).2⟩
 
 /-- **A `loOn`-maximal element exists in every finite nonempty set**
@@ -539,9 +539,9 @@ theorem applySeq_swap_loOn_incomparable
     (h_ov : ¬ D.commutes a b → a.rep ≠ b.rep →
       ∃ e₃ α β, sfx = α ++ e₃ :: β ∧
                 distinctOps a e₃ ∧ distinctOps b e₃ ∧
-                ((D.replayOrder a b = RcRes.Fst_then_snd ∧
+                ((D.replayOrder a b = OrderResult.Fst_then_snd ∧
                   ¬ D.commutes b e₃) ∨
-                 (D.replayOrder b a = RcRes.Fst_then_snd ∧
+                 (D.replayOrder b a = OrderResult.Fst_then_snd ∧
                   ¬ D.commutes a e₃))) :
     applySeq D s (pfx ++ a :: b :: sfx)
     = applySeq D s (pfx ++ b :: a :: sfx) := by
@@ -551,24 +551,24 @@ theorem applySeq_swap_loOn_incomparable
     obtain ⟨_, _, hL_b, h_b_in_s⟩ := h_b_in_C
     have h_dist_ab : distinctOps a b :=
       C.timestamps_distinct hL_a h_a_in_s hL_b h_b_in_s h_ne
-    have h_rc_pair := (hVC.rc_non_comm_directional a b).mp h_comm
+    have h_replayOrder_pair := (hVC.rc_non_comm_directional a b).mp h_comm
     by_cases h_same : a.rep = b.rep
     · exfalso
       have h_vis :=
         C.vis_total_same_replica hL_a h_a_in_s hL_b h_b_in_s h_ne h_same
       rcases h_vis with hvab | hvba
-      · exact h_not_lo_ab (Or.inl ⟨hvab, h_rc_pair⟩)
-      · exact h_not_lo_ba (Or.inl ⟨hvba, h_rc_pair.symm⟩)
+      · exact h_not_lo_ab (Or.inl ⟨hvab, h_replayOrder_pair⟩)
+      · exact h_not_lo_ba (Or.inl ⟨hvba, h_replayOrder_pair.symm⟩)
     · have h_dist_ab : distinctOps a b :=
         C.timestamps_distinct hL_a h_a_in_s hL_b h_b_in_s h_ne
       obtain ⟨e₃, α, β, h_sfx, h_dae, h_dbe, h_case⟩ := h_ov h_comm h_same
       subst h_sfx
-      rcases h_case with ⟨h_rc_ab, h_nc_be⟩ | ⟨h_rc_ba, h_nc_ae⟩
+      rcases h_case with ⟨h_replayOrder_ab, h_nc_be⟩ | ⟨h_replayOrder_ba, h_nc_ae⟩
       · exact applySeq_swap_via_cond_comm_lift_core hVC h_dist_ab h_dbe h_dae
-          h_rc_ab h_nc_be pfx α β s
+          h_replayOrder_ab h_nc_be pfx α β s
       · have h_dist_ba : distinctOps b a := Ne.symm h_dist_ab
         exact (applySeq_swap_via_cond_comm_lift_core hVC h_dist_ba h_dae h_dbe
-          h_rc_ba h_nc_ae pfx α β s).symm
+          h_replayOrder_ba h_nc_ae pfx α β s).symm
 
 /-- Bubble a `loOn`-minimal event to the front of a list (with tail). -/
 theorem applySeq_bubble_to_front_loOn
@@ -585,9 +585,9 @@ theorem applySeq_bubble_to_front_loOn
       ¬ D.commutes y e → y.rep ≠ e.rep →
       ∃ e₃ α' β', β ++ tail = α' ++ e₃ :: β' ∧
                   distinctOps y e₃ ∧ distinctOps e e₃ ∧
-                  ((D.replayOrder y e = RcRes.Fst_then_snd ∧
+                  ((D.replayOrder y e = OrderResult.Fst_then_snd ∧
                     ¬ D.commutes e e₃) ∨
-                   (D.replayOrder e y = RcRes.Fst_then_snd ∧
+                   (D.replayOrder e y = OrderResult.Fst_then_snd ∧
                     ¬ D.commutes y e₃)))
     (s : D.State) :
     applySeq D s (σ ++ e :: tail) = applySeq D s (e :: σ ++ tail) := by
@@ -627,7 +627,7 @@ The replacement for the false "convergence over backward-closed
 replica sets": any two `loOn C ev`-respecting permutations of `ev`
 fold to the same state. The overwriters demanded by the swap
 machinery are supplied by the *failed* `loOn`-edges themselves, a
-missing rc-edge means an absorber exists **inside `ev`**, so no
+missing replayOrder-edge means an absorber exists **inside `ev`**, so no
 forward/overwriter closure is assumed.
 
 The internal induction peels the head of `π₁` (a `loOn`-minimal
@@ -650,7 +650,7 @@ theorem convergence_on
       π₁.length = n →
       (∀ a ∈ evC, a ∈ C.events) →
       (∀ x ∈ evC, ∀ z ∈ ev, C.vis x z →
-        (D.rc x z ∨ D.rc z x) → z ∈ evC) →
+        (D.replayBefore x z ∨ D.replayBefore z x) → z ∈ evC) →
       listPermOf π₁ evC → listPermOf π₂ evC →
       respects π₁ (loOn C ev) → respects π₂ (loOn C ev) →
       applySeq D s π₁ = applySeq D s π₂ by
@@ -729,9 +729,9 @@ theorem convergence_on
             ¬ D.commutes y e → y.rep ≠ e.rep →
             ∃ e₃ α' β', β ++ τ = α' ++ e₃ :: β' ∧
                         distinctOps y e₃ ∧ distinctOps e e₃ ∧
-                        ((D.replayOrder y e = RcRes.Fst_then_snd ∧
+                        ((D.replayOrder y e = OrderResult.Fst_then_snd ∧
                           ¬ D.commutes e e₃) ∨
-                         (D.replayOrder e y = RcRes.Fst_then_snd ∧
+                         (D.replayOrder e y = OrderResult.Fst_then_snd ∧
                           ¬ D.commutes y e₃)) := by
           intro α β y h_σ_eq h_nc h_diff_rep
           subst h_σ_eq
@@ -744,21 +744,21 @@ theorem convergence_on
             distinctOps_of_events hy_in_C he_in_C hy_ne_e
           have h_not_lo_ye : ¬ loOn C ev y e := h_not_lo_bwd y hy_in_σ
           have h_not_lo_ey : ¬ loOn C ev e y := h_not_lo_fwd y hy_in_σ
-          have h_rc_disj :=
+          have h_replayOrder_disj :=
             (hVC.rc_non_comm_directional y e).mp h_nc
-          rcases h_rc_disj with h_rc_ye | h_rc_ey
-          · -- Case rc(y, e) = Fst. The failed edge `loOn ev y e`
+          rcases h_replayOrder_disj with h_replayOrder_ye | h_replayOrder_ey
+          · -- Case replayOrder(y, e) = Fst. The failed edge `loOn ev y e`
             -- yields an absorber of e inside ev.
             have h_not_vis_ye : ¬ C.vis y e := fun hv =>
-              h_not_lo_ye (Or.inl ⟨hv, Or.inl h_rc_ye⟩)
+              h_not_lo_ye (Or.inl ⟨hv, Or.inl h_replayOrder_ye⟩)
             have h_not_vis_ey : ¬ C.vis e y := by
               intro hv
-              exact h_not_lo_ey (Or.inl ⟨hv, Or.inr h_rc_ye⟩)
+              exact h_not_lo_ey (Or.inl ⟨hv, Or.inr h_replayOrder_ye⟩)
             have h_overwriter_e :
-                ∃ e₃ ∈ ev, C.vis e e₃ ∧ (D.rc e e₃ ∨ D.rc e₃ e) := by
+                ∃ e₃ ∈ ev, C.vis e e₃ ∧ (D.replayBefore e e₃ ∨ D.replayBefore e₃ e) := by
               by_contra h_no_ow
               exact h_not_lo_ye
-                (Or.inr ⟨h_not_vis_ye, h_not_vis_ey, h_rc_ye, h_no_ow⟩)
+                (Or.inr ⟨h_not_vis_ye, h_not_vis_ey, h_replayOrder_ye, h_no_ow⟩)
             obtain ⟨e₃, h_e₃_ev, h_vis_ee₃, h_rc_ee₃⟩ := h_overwriter_e
             have h_nc_ee₃ := (hVC.rc_non_comm_directional e e₃).mpr h_rc_ee₃
             have h_e₃_in_C : e₃ ∈ C.events := h_ev_in_C e₃ h_e₃_ev
@@ -796,18 +796,18 @@ theorem convergence_on
               distinctOps_of_events hy_in_C h_e₃_in_C
                 (fun h => h_e₃_ne_y h.symm)
             refine ⟨e₃, β ++ τ_a, τ_b, ?_, h_dist_ye₃, h_dist_ee₃,
-                    Or.inl ⟨h_rc_ye, h_nc_ee₃⟩⟩
+                    Or.inl ⟨h_replayOrder_ye, h_nc_ee₃⟩⟩
             rw [hτ_split, List.append_assoc]
-          · -- Case rc(e, y) = Fst. Absorber of y inside ev.
+          · -- Case replayOrder(e, y) = Fst. Absorber of y inside ev.
             have h_not_vis_ey : ¬ C.vis e y := fun hv =>
-              h_not_lo_ey (Or.inl ⟨hv, Or.inl h_rc_ey⟩)
+              h_not_lo_ey (Or.inl ⟨hv, Or.inl h_replayOrder_ey⟩)
             have h_not_vis_ye : ¬ C.vis y e := fun hv =>
-              h_not_lo_ye (Or.inl ⟨hv, Or.inr h_rc_ey⟩)
+              h_not_lo_ye (Or.inl ⟨hv, Or.inr h_replayOrder_ey⟩)
             have h_overwriter_y :
-                ∃ e₃ ∈ ev, C.vis y e₃ ∧ (D.rc y e₃ ∨ D.rc e₃ y) := by
+                ∃ e₃ ∈ ev, C.vis y e₃ ∧ (D.replayBefore y e₃ ∨ D.replayBefore e₃ y) := by
               by_contra h_no_ow
               exact h_not_lo_ey
-                (Or.inr ⟨h_not_vis_ey, h_not_vis_ye, h_rc_ey, h_no_ow⟩)
+                (Or.inr ⟨h_not_vis_ey, h_not_vis_ye, h_replayOrder_ey, h_no_ow⟩)
             obtain ⟨e₃, h_e₃_ev, h_vis_ye₃, h_rc_ye₃⟩ := h_overwriter_y
             have h_nc_ye₃ := (hVC.rc_non_comm_directional y e₃).mpr h_rc_ye₃
             have h_e₃_in_C : e₃ ∈ C.events := h_ev_in_C e₃ h_e₃_ev
@@ -845,7 +845,7 @@ theorem convergence_on
                 · exact List.mem_append.mpr (Or.inr h_τ)
             obtain ⟨γ_a, γ_b, hγ_split⟩ := List.append_of_mem h_e₃_in_βτ
             exact ⟨e₃, γ_a, γ_b, hγ_split, h_dist_ye₃, h_dist_ee₃,
-                    Or.inr ⟨h_rc_ey, h_nc_ye₃⟩⟩
+                    Or.inr ⟨h_replayOrder_ey, h_nc_ye₃⟩⟩
         exact applySeq_bubble_to_front_loOn (D := D) (ev := ev) hVC e σ τ
           he_in_C h_σ_in_C he_notin_σ h_not_lo_fwd h_not_lo_bwd h_ov s
       -- Peel e from both sides and recurse on evC \ {e}.
@@ -854,7 +854,7 @@ theorem convergence_on
       have h_evC'_in_C : ∀ a ∈ evC \ {e}, a ∈ C.events :=
         fun a ha => h_evC_in_C a ha.1
       have h_abs' : ∀ x ∈ evC \ {e}, ∀ z ∈ ev,
-          C.vis x z → (D.rc x z ∨ D.rc z x) → z ∈ evC \ {e} := by
+          C.vis x z → (D.replayBefore x z ∨ D.replayBefore z x) → z ∈ evC \ {e} := by
         intro x hx z hz hv hrc
         refine ⟨h_abs x hx.1 z hz hv hrc, ?_⟩
         intro hz_eq
@@ -955,7 +955,7 @@ theorem perm_ending_in_loOn_max
 /-- **Normalization after a tail peel.** Given a witness `ρ ++ [t]`
 of `ev` respecting `loOn C ev`, produce a front `ρ'` for `ev \ {t}`
 that respects the *shrunken-set* relation `loOn C (ev \ {t})`, the
-relation gains rc-edges whose only `ev`-absorber was `t` itself, so
+relation gains replayOrder-edges whose only `ev`-absorber was `t` itself, so
 `ρ` need not respect it, while preserving the fold of the full
 list. Fold preservation: both `ρ ++ [t]` and `ρ' ++ [t]` respect
 `loOn C ev` and enumerate `ev`, so `convergence_on` applies; the
@@ -1142,7 +1142,7 @@ theorem isCanonicalState_peel [HistoricalBinaryMerge D]
 that observed everything in `ev` extends the canonical state by one
 update. `e` has no outgoing `loOn`-edges, it is `vis`-after all of
 `ev`, so neither disjunct can fire, and adding it only removes
-rc-edges among the old events. -/
+replayOrder-edges among the old events. -/
 theorem isCanonicalState_extend {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {s : D.State} {e : Op D.AppOp}
     (h_e_fresh : e ∉ ev)
@@ -1175,7 +1175,7 @@ theorem isCanonicalState_extend {C : ReplayContext D}
       have hy_ev : y ∈ ev := (hp.2 y).mp hy
       rintro (⟨h_vis, _⟩ | ⟨_, h_nvis_ye, _, _⟩)
       · exact h_e_last y hy_ev h_vis
-      · -- the rc disjunct requires `e ∥ y`, but `e` observed `y`.
+      · -- the replayOrder disjunct requires `e ∥ y`, but `e` observed `y`.
         exact h_nvis_ye (h_e_sees y hy_ev)
   · rw [applySeq_append_single, hs]
 
@@ -1190,7 +1190,7 @@ irreducibly contextual: no unconditional per-CRDT equation
 captures them. Discharging it (from cond-comm-style leaf VCs via a
 contextual induction, or from lattice VCs (merge associativity +
 update inflation/monotonicity)) is the open obligation. -/
-def BinaryJoin (D : UpdateSig) [ReplayPolicy D]
+def BinaryJoin (D : UpdateSig) [EventOrder D]
     [HistoricalBinaryMerge D] : Prop :=
   ∀ (C : ReplayContext D) (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
@@ -1208,7 +1208,7 @@ set, hence in particular the paper's `lo C`. It stands in for
 `merge_linearization_exists` without the (false) forward-closure
 hypotheses and without the unsound re-permutation, using
 `isCanonicalState_peel`-based reasoning inside `BinaryJoin`. -/
-theorem merge_linearization_of_join {D : UpdateSig} [ReplayPolicy D]
+theorem merge_linearization_of_join {D : UpdateSig} [EventOrder D]
     [HistoricalBinaryMerge D]
     (hJoin : BinaryJoin D) {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -1303,7 +1303,7 @@ theorem listPermOf_length_eq {α : Type} {l₁ l₂ : List α}
     omega
 
 /-- Enumerate a union: side 1's list followed by side 2's leftovers. -/
-theorem listPermOf_union {D : UpdateSig} [ReplayPolicy D] {l₁ l₂ : List (Op D.AppOp)}
+theorem listPermOf_union {D : UpdateSig} [EventOrder D] {l₁ l₂ : List (Op D.AppOp)}
     {ev₁ ev₂ : Set (Op D.AppOp)}
     (h₁ : listPermOf l₁ ev₁) (h₂ : listPermOf l₂ ev₂) :
     listPermOf (l₁ ++ l₂.filter (fun a => decide (a ∉ l₁)))
@@ -1350,7 +1350,7 @@ theorem listPermOf_diff_length {α : Type} [DecidableEq α]
   exact List.length_erase_of_mem he
 
 /-- The empty set's canonical state is `init`. -/
-theorem isCanonicalState_empty {D : UpdateSig} [ReplayPolicy D] {C : ReplayContext D}
+theorem isCanonicalState_empty {D : UpdateSig} [EventOrder D] {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {s : D.State}
     (h_empty : ev = ∅) (h : IsCanonicalState C ev s) : s = D.init := by
   obtain ⟨ρ, hp, _, hf⟩ := h
@@ -1362,9 +1362,9 @@ theorem isCanonicalState_empty {D : UpdateSig} [ReplayPolicy D] {C : ReplayConte
 /-- Backward closure survives removing a union-maximal event: a
 `vis ∧ ¬commutes` edge out of `e` would be a `loOn`-edge in every
 relation, contradicting maximality. -/
-theorem closure_diff_of_max {D : UpdateSig} [ReplayPolicy D]
+theorem closure_diff_of_max {D : UpdateSig} [EventOrder D]
     (hrc : ∀ a b : Op D.AppOp,
-      ¬ D.commutes a b → (D.rc a b ∨ D.rc b a)) {C : ReplayContext D}
+      ¬ D.commutes a b → (D.replayBefore a b ∨ D.replayBefore b a)) {C : ReplayContext D}
     {ev evU : Set (Op D.AppOp)} {e : Op D.AppOp}
     (h_sub : ev ⊆ evU)
     (h_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev → a ∈ ev)
@@ -1381,7 +1381,7 @@ theorem closure_diff_of_max {D : UpdateSig} [ReplayPolicy D]
 
 /-- Re-attach a union-maximal event to a canonical state of the
 set-minus-it. -/
-theorem isCanonicalState_snoc {D : UpdateSig} [ReplayPolicy D] {C : ReplayContext D}
+theorem isCanonicalState_snoc {D : UpdateSig} [EventOrder D] {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {t : D.State} {e : Op D.AppOp}
     (h_e_in : e ∈ ev)
     (h_max : ∀ x ∈ ev, x ≠ e → ¬ loOn C ev e x)
@@ -1418,7 +1418,7 @@ theorem isCanonicalState_snoc {D : UpdateSig} [ReplayPolicy D] {C : ReplayContex
 Join Lemma's induction consumes, isolated as an explicit bundle.
 See the section header for why they are stated over canonical states
 with the union-maximality context. -/
-structure BinaryPeelLaws (D : UpdateSig) [ReplayPolicy D]
+structure BinaryPeelLaws (D : UpdateSig) [EventOrder D]
     [HistoricalBinaryMerge D] : Prop where
   /-- Peel a union-maximal event local to side 1. -/
   peel_local :
@@ -1450,7 +1450,7 @@ structure BinaryPeelLaws (D : UpdateSig) [ReplayPolicy D]
 induction: enumerate the union, select a `loOn(∪)`-maximal event,
 peel it with `BinaryPeelLaws`, recurse on the strictly smaller sets,
 and re-attach with `isCanonicalState_snoc`. -/
-theorem binaryJoin_of_peel {D : UpdateSig} [ReplayPolicy D]
+theorem binaryJoin_of_peel {D : UpdateSig} [EventOrder D]
     [HistoricalBinaryMerge D] (hVC : BinaryMergeLaws D)
     (hPeel : BinaryPeelLaws D) : BinaryJoin D := by
   intro C ev₁ ev₂ s₁ s₂ h_vis_trans h_vis_irrefl h_in₁ h_in₂
@@ -1622,25 +1622,25 @@ theorem binaryJoin_of_peel {D : UpdateSig} [ReplayPolicy D]
 
 For a `D` in which every pair of events commutes (G-Set and its
 relatives), `loOn` relates no two distinct events at all,
-`rc_non_comm_directional` kills the rc disjunct, so both peel
+`rc_non_comm_directional` kills the replayOrder disjunct, so both peel
 identities discharge from `applySeq_comm_extract`, `merge_peel_comm`
 and `lem_0op`, and the Join Lemma holds unconditionally. -/
 
 /-- With all events commuting, `loOn` has no edges between distinct
 events of the configuration. -/
-theorem loOn_empty_of_all_comm {D : UpdateSig} [ReplayPolicy D]
+theorem loOn_empty_of_all_comm {D : UpdateSig} [EventOrder D]
     [HistoricalBinaryMerge D] (hVC : BinaryMergeLaws D)
     {C : ReplayContext D} {ev : Set (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
     (hne : x ≠ y) :
     ¬ loOn C ev x y := by
-  rintro (⟨_, hrc⟩ | ⟨_, _, h_rc, _⟩)
+  rintro (⟨_, hrc⟩ | ⟨_, _, h_replayOrder, _⟩)
   · exact (hVC.rc_non_comm_directional x y).mpr hrc (h_comm x y)
-  · exact (hVC.rc_non_comm_directional x y).mpr (Or.inl h_rc) (h_comm x y)
+  · exact (hVC.rc_non_comm_directional x y).mpr (Or.inl h_replayOrder) (h_comm x y)
 
 /-- Any enumeration is canonical when all events commute. -/
-theorem isCanonicalState_of_all_comm {D : UpdateSig} [ReplayPolicy D]
+theorem isCanonicalState_of_all_comm {D : UpdateSig} [EventOrder D]
     [HistoricalBinaryMerge D]
     (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
@@ -1656,7 +1656,7 @@ theorem isCanonicalState_of_all_comm {D : UpdateSig} [ReplayPolicy D]
     (Ne.symm hne)
 
 /-- The peel bundle for the commuting class. -/
-theorem binaryPeelLaws_of_all_comm {D : UpdateSig} [ReplayPolicy D]
+theorem binaryPeelLaws_of_all_comm {D : UpdateSig} [EventOrder D]
     [HistoricalBinaryMerge D] (hVC : BinaryMergeLaws D)
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) :
     BinaryPeelLaws D := by
@@ -1705,7 +1705,7 @@ theorem binaryPeelLaws_of_all_comm {D : UpdateSig} [ReplayPolicy D]
     exact hVC.lem_0op t₁ t₂ e
 
 /-- **The Join Lemma, unconditionally, for the commuting class.** -/
-theorem binaryJoin_of_all_comm {D : UpdateSig} [ReplayPolicy D]
+theorem binaryJoin_of_all_comm {D : UpdateSig} [EventOrder D]
     [HistoricalBinaryMerge D] (hVC : BinaryMergeLaws D)
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) : BinaryJoin D :=
   binaryJoin_of_peel hVC (binaryPeelLaws_of_all_comm hVC h_comm)

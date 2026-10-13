@@ -1,5 +1,5 @@
 /-!
-# Update signatures and resolve-conflict policies
+# Update signatures and event replay orders
 
 `UpdateSig` is the merge-free algebra used to fold event histories and state
 the generic replay invariants. It is derived from an `MRDTSig`; implementers do
@@ -9,16 +9,17 @@ The optional `HistoricalBinaryMerge` class exists only so the retained binary
 VC and countermodel modules continue to state their old two-way merge laws. It
 is not part of `UpdateSig`, `MRDTSig`, operational execution, or `VerifiedMRDT`.
 
-`ReplayPolicy` is the carrier of the Sal/Neem resolve-conflict relation. A
-`VerifiedMRDT` stores its sole public `rc` explicitly; proof-local convergence
-arguments may instantiate the same carrier independently.
+`EventOrder` is an event-level replay-order carrier. A `VerifiedMRDT` stores
+its selected `replayOrder` explicitly; proof-local convergence arguments may
+instantiate the same carrier independently. The paper operation-level policy
+is represented separately by `OperationPolicy.before` and its lift.
 -/
 
 namespace Sal.MRDTs.Foundation
 
-/-- Resolve-conflict verdict used by the absorber-based replay construction
-and by the public `rc` stored in `VerifiedMRDT`. -/
-inductive RcRes : Type where
+/-- Event-order verdict used by the absorber-based replay construction
+and by the `replayOrder` stored in `VerifiedMRDT`. -/
+inductive OrderResult : Type where
   | Fst_then_snd
   | Snd_then_fst
   | Either
@@ -63,33 +64,32 @@ It is deliberately separate from `UpdateSig`. -/
 class HistoricalBinaryMerge (D : UpdateSig) where
   binaryMerge : D.State → D.State → D.State
 
-/-- Carrier of the intended resolve-conflict relation for concurrent events.
+/-- Carrier of an event-level order for replay.
 `VerifiedMRDT` stores the selected public policy explicitly. Its direction
 does not assert concrete noncommutativity: an implementation may realize the
 policy with commuting updates, as timestamp-max updates do for LWW.
 Algebraic replay laws are optional sufficient proof obligations, not fields
 of this carrier. -/
-class ReplayPolicy (D : UpdateSig) where
-  order : Op D.AppOp → Op D.AppOp → RcRes
+class EventOrder (D : UpdateSig) where
+  order : Op D.AppOp → Op D.AppOp → OrderResult
 
-namespace ReplayPolicy
+namespace EventOrder
 
-/-- The directed resolve-conflict relation induced by a three-valued policy.
-Paper notation: `a →rc b`. -/
-@[simp] def Before {D : UpdateSig} (P : ReplayPolicy D)
+/-- The directed event relation induced by a three-valued replay order. -/
+@[simp] def Before {D : UpdateSig} (P : EventOrder D)
     (a b : Op D.AppOp) : Prop :=
-  P.order a b = RcRes.Fst_then_snd
+  P.order a b = OrderResult.Fst_then_snd
 
-def unconstrained (D : UpdateSig) : ReplayPolicy D where
+def unconstrained (D : UpdateSig) : EventOrder D where
   order := fun _ _ => .Either
 
 /-- Generic replay proofs need no resolver for commuting datatypes. This
 low-priority default keeps the proof detail out of each MRDT declaration; a
 convergence proof for a noncommuting datatype installs its own policy. -/
-instance (priority := low) default (D : UpdateSig) : ReplayPolicy D :=
+instance (priority := low) default (D : UpdateSig) : EventOrder D :=
   unconstrained D
 
-end ReplayPolicy
+end EventOrder
 
 namespace UpdateSig
 
@@ -102,16 +102,16 @@ from the ternary `MRDTSig.merge`. -/
 def historicalMerge [HistoricalBinaryMerge D] : D.State → D.State → D.State :=
   HistoricalBinaryMerge.binaryMerge
 
-def replayOrder [P : ReplayPolicy D] : Op D.AppOp → Op D.AppOp → RcRes :=
+def replayOrder [P : EventOrder D] : Op D.AppOp → Op D.AppOp → OrderResult :=
   P.order
 
-/-- Directed resolve-conflict relation for the active replay policy. -/
-abbrev rc [P : ReplayPolicy D] (a b : Op D.AppOp) : Prop :=
+/-- Directed event relation for the active replay order. -/
+abbrev replayBefore [P : EventOrder D] (a b : Op D.AppOp) : Prop :=
   P.Before a b
 
 /-- Concrete-update commutation: applying events in either order from any
 implementation state yields the same state. This proof property neither
-defines semantic conflict nor excludes a resolve-conflict edge. -/
+defines semantic conflict nor excludes an event-order edge. -/
 def commutes (o₁ o₂ : Op D.AppOp) : Prop :=
   ∀ s, D.update (D.update s o₁) o₂ = D.update (D.update s o₂) o₁
 

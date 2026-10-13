@@ -15,7 +15,7 @@ open Sal.MRDTs.Foundation
 open Classical
 
 /-! Both components are grow-only. The internal all-commuting proof uses the
-unconstrained replay policy; the public `rc` and list certificate are defined
+unconstrained replay policy; the public `replayOrder` and list certificate are defined
 in `RGASequential.lean`. Merge includes ancestor and both branches. -/
 
 inductive RGAOp : Type where
@@ -77,23 +77,23 @@ noncomputable def RGAM : MRDTSig where
   merge := fun l a b =>
     (fun p => l.1 p || (a.1 p || b.1 p), fun x => l.2 x || (a.2 x || b.2 x))
 
-theorem RGAM_rc_either : ∀ o₁ o₂ : Op RGAM.AppOp,
-    RGAM.toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := fun _ _ => rfl
+theorem RGAM_replayOrder_either : ∀ o₁ o₂ : Op RGAM.AppOp,
+    RGAM.toUpdateSig.replayOrder o₁ o₂ = OrderResult.Either := fun _ _ => rfl
 
 theorem RGAM_all_comm : ∀ a b : Op RGAM.AppOp,
     RGAM.toUpdateSig.commutes a b := by
   rintro ⟨tsa, ra, opa⟩ ⟨tsb, rb, opb⟩ s
   cases opa <;> cases opb
-  · exact Prod.ext (funext fun p => bor_rc (s.1 p) _ _) rfl
+  · exact Prod.ext (funext fun p => bor_replayOrder (s.1 p) _ _) rfl
   · rfl
   · rfl
-  · exact Prod.ext rfl (funext fun x => bor_rc (s.2 x) _ _)
+  · exact Prod.ext rfl (funext fun x => bor_replayOrder (s.2 x) _ _)
 
 theorem replayLaws : ReplayLaws RGAM.toUpdateSig := by
   apply ReplayLaws.of_all_comm RGAM_all_comm
-  apply rcAcyclic_of_noRcChain
+  apply replayAcyclic_of_noReplayChain
   intro a b c h
-  exact RcRes.noConfusion h.1
+  exact OrderResult.noConfusion h.1
 
 theorem RGAM_mergeLaws : MergeLaws RGAM := by
   refine ⟨replayLaws, ?_, ?_⟩

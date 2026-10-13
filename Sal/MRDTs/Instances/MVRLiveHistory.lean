@@ -4,7 +4,7 @@ import Sal.MRDTs.Metatheory.VirtualAdequacy
 namespace Sal.MRDTs.Instances.MVRLive
 open Sal.MRDTs.Foundation
 open Classical
-local instance : ReplayPolicy D.toUpdateSig := rc
+local instance : EventOrder D.toUpdateSig := replayOrder
 set_option maxHeartbeats 1000000
 
 private theorem merge_logic (bl ba bb dl da db : Prop)
@@ -133,7 +133,7 @@ theorem canonical_of_represents (C : Configuration D)
     intro a b hab hlo
     rcases hlo with hv | hr
     · exact (not_lt_of_ge hab) (C.causal_mono hv.1)
-    · exact (not_lt_of_ge hab) ((MVR.rc_before_iff b a).mp hr.2.2.1).1
+    · exact (not_lt_of_ge hab) ((MVR.replayOrder_before_iff b a).mp hr.2.2.1).1
   · rw [fold_live sorted (MVR.chronological_sorted ops)
       (fun e he n hn => issued_overwrite_lt mint (sup ((hperm.2 e).mp he)) hn)]
     apply Finset.ext

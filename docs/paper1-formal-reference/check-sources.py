@@ -29,7 +29,17 @@ lines = [r'\section{Mechanization Traceability}', r'\label{app:traceability}',
          'links use the proof baseline; migrated and new declarations link to their',
          'accompanying files on \\texttt{paper1}. The declaration-check',
          'script supplied with this reference checks that every name resolves.',
-         'The theorem ledger separately audits final roots for permitted axioms.', '']
+         'The theorem ledger separately audits final roots for permitted axioms.',
+         r'For Definitions~\ref{def:guards} and \ref{def:scoped-laws}, the',
+         'production declarations below retain combined policy exactness. The split',
+         'presentation is equivalent under the same no-chain and domain premises.',
+         r'Its separately checked adapters are in research commit \texttt{47f943f},',
+         r'\texttt{SelfCommutationTheory.lean}:',
+         r'{\small\nolinkurl{guarded_iff_repaired}},',
+         r'{\small\nolinkurl{Certified.existing_iff_repaired}}, and',
+         r'{\small\nolinkurl{Invariant.existing_iff_repaired}} in namespace',
+         r'{\small\nolinkurl{Sal.MRDTs.Paper1.SelfCommutationTheory}}.',
+         'These research adapters are not part of the production name check.', '']
 for label, entries in groups.items():
     if label == 'sec:verification-templates':
         lines.append(r'\medskip\noindent\textbf{Reusable verification templates (Section~\ref{' + label + r'}).}\par\nobreak')

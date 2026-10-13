@@ -264,21 +264,24 @@ exotic property of that datatype: it is a mismatch between the events used to
 define the order and the events being replayed.
 
 The repair defines the replay order relative to both the configuration $C$ and
-the set $E$ under consideration. Fix a proof-local replay policy
-$\mathsf{rc}(e_1,e_2)\in
+the set $E$ under consideration. We write $\mathsf{ord}$ for an
+independently selected full-event replay order. The submission manuscript
+reserves $rc$ for its operation-level conflict relation and event lift;
+the event order here need not be that lift. Fix a proof-local event replay order
+$\mathsf{ord}(e_1,e_2)\in
 \{\mathsf{first},\mathsf{second},\mathsf{either}\}$. Write
 $e_1\parallel_C e_2$ when neither event sees the other,
 $e_1\rightleftarrows e_2$ when their updates commute, and
-$e_1\mathrel{\mathsf{rc}}e_2$ as an abbreviation for
-$\mathsf{rc}(e_1,e_2)=\mathsf{first}$. The set-relative replay relation is
+$e_1\mathrel{\mathsf{ord}}e_2$ as an abbreviation for
+$\mathsf{ord}(e_1,e_2)=\mathsf{first}$. The set-relative replay relation is
 then
 \begin{align*}
 e_1\mathrel{\lo_{C,E}}e_2\quad\Longleftrightarrow\quad
- &\bigl(e_1\vis e_2\land\neg(e_1\rightleftarrows e_2)\bigr)\\
+ &\bigl(e_1\vis e_2\land(e_1\mathrel{\mathsf{ord}}e_2\lor e_2\mathrel{\mathsf{ord}}e_1)\bigr)\\
  {}\lor{}&\bigl(e_1\parallel_C e_2\land
- e_1\mathrel{\mathsf{rc}}e_2\land
+ e_1\mathrel{\mathsf{ord}}e_2\land
  \neg\exists e_3\in E.\ e_2\vis e_3\land
-   \neg(e_2\rightleftarrows e_3)\bigr).
+   (e_2\mathrel{\mathsf{ord}}e_3\lor e_3\mathrel{\mathsf{ord}}e_2)\bigr).
 \end{align*}
 In the Lean sources, this relation is \lean{loOn C E}. Only an absorber inside
 $E$ may erase an edge needed to replay $E$. We reserve $\lo_C$ for the
@@ -297,7 +300,7 @@ $S\subseteq\mathbb T\times X$. An event $(t,r,\mathsf{add}(x))$ inserts the
 uniquely timestamped record $(t,x)$. An event
 $(t,r,\mathsf{rem}(x))$ removes every record $(t',x)$ currently in the state,
 regardless of $t'$. A remove and an add of the same element therefore do not
-commute; when they are concurrent, the replay policy orders the remove first,
+commute; when they are concurrent, the event replay order orders the remove first,
 giving add-wins behavior. The three-way merge is
 \[
  \merge(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l).
@@ -561,41 +564,43 @@ decomposition for delta-shaped ternary merges; an implementer may instead
 prove Join directly. We state the decomposition fully because its contextual
 premises are exactly what an arbitrary-state algebraic account loses.
 
-Recall the proof-local replay policy $\mathsf{rc}$ fixed above. Write
-$e\mathrel{\#}e'$ for distinct timestamps and
-$\mathsf{rep}(e)\ne\mathsf{rep}(e')$ for different issuers. For any relation
+Recall the proof-local event replay order $\mathsf{ord}$ fixed above. Write
+$e\mathrel{\#}e'$ for distinct timestamps. For any relation
 $R$, write $R^+(a,b)$ when a nonempty finite $R$-path leads from $a$ to $b$,
 and write
 \[
  \mathsf{Acyclic}(R)\Longleftrightarrow
  \forall a.\;\neg R^+(a,a).
 \]
-The three
-\lean{ReplayLaws} obligations are:
+The three \lean{ReplayLaws} obligations are universally quantified over
+all states $s$, events, and finite event lists $\pi$:
 \begin{align*}
- e_1\#e_2\land\mathsf{rep}(e_1)\ne\mathsf{rep}(e_2)
+ \neg(e_1\rightleftarrows e_2)
  &\Rightarrow
- \bigl(\neg(e_1\rightleftarrows e_2)\iff
-   \mathsf{rc}(e_1,e_2)=\mathsf{first}\lor
-   \mathsf{rc}(e_2,e_1)=\mathsf{first}\bigr),
+ \bigl(\mathsf{ord}(e_1,e_2)=\mathsf{first}\lor
+       \mathsf{ord}(e_2,e_1)=\mathsf{first}\bigr),
  \tag*{(U1)}\\
- \mathsf{RcEdge}(e_1,e_2)
- &\Longleftrightarrow e_1\#e_2\land
-   \mathsf{rc}(e_1,e_2)=\mathsf{first},
- \nonumber\\[-1mm]
- \mathsf{Acyclic}(\mathsf{RcEdge}),
+ \mathsf{Acyclic}\bigl(\lambda a\,b.\;
+       \mathsf{ord}(a,b)=\mathsf{first}\bigr),
  \tag*{(U2)}\\
- \mathsf{rc}(e,e')=\mathsf{first}\land
- \neg(e'\rightleftarrows e'')
+ e\#e'\land e\#e''\land e'\#e''&{}
+ \nonumber\\[-1mm]
+ {}\land\mathsf{ord}(e,e')=\mathsf{first}&{}
+ \nonumber\\[-1mm]
+ {}\land\bigl(\mathsf{ord}(e',e'')=\mathsf{first}
+       \lor\mathsf{ord}(e'',e')=\mathsf{first}\bigr)
  &\Rightarrow
  \mathsf{do}(\mathsf{fold}(\mathsf{do}(\mathsf{do}(s,e'),e),\pi),e'')
  \nonumber\\[-1mm]
  &=\mathsf{do}(\mathsf{fold}(\mathsf{do}(\mathsf{do}(s,e),e'),\pi),e'').
  \tag*{(U3)}
 \end{align*}
-(U2) permits arbitrarily long replay-order chains and excludes only cycles.
-Equation~(U3)
-also assumes pairwise-distinct $e,e',e''$. These obligations
+(U1) requires coverage of concretely noncommuting pairs; ordered pairs may
+also commute. (U2) excludes every nonempty event-order cycle, including cycles
+on raw events with equal timestamps. It permits arbitrarily long chains.
+(U3) uses pairwise-distinct timestamps and an order-related successor,
+the same successor condition used by the absorber in $\lo_{C,E}$.
+These obligations
 belong to this reusable proof constructor, not to \lean{MRDTSig} or the public
 client interface. \lean{JoinCoreLaws} packages (U1)--(U3) and branch symmetry
 \[
@@ -609,7 +614,10 @@ To state the remaining four obligations, define
    \bigl(\lambda a\,b.\ a\vis b\land
        \neg(a\rightleftarrows b)\bigr)^+(x,e)\}
 \]
-and let $\mathsf{Adm}(C,E_1,E_2,e)$ abbreviate:
+The downset deliberately follows noncommuting visibility, rather than
+the event-order relation used by $\lo_{C,E}$. This is Lean's
+\lean{visNC} and \lean{downset}.
+Let $\mathsf{Adm}(C,E_1,E_2,e)$ abbreviate:
 \begin{enumerate}
 \item $\mathsf{WF}(C)$, support and weak closure of $E_1,E_2$;
 \item $e\in E_1\cup E_2$; and
@@ -762,38 +770,38 @@ The legality predicate sees only the abstract event history. It cannot inspect
 the implementation state. A total datatype sets it to true.
 \end{definition}
 
-\begin{definition}[the sole $rc$ order]
-A verified datatype supplies one \lean{ReplayPolicy}, called $rc$. For a
+\begin{definition}[the sole $ord$ order]
+A verified datatype supplies one \lean{EventOrder}, called $ord$. For a
 version event set $E$, \lean{loOn} retains a visibility edge exactly when
-$rc$ classifies that pair as conflicting. It adds an edge between concurrent
-events when $rc$ returns first-before-second, subject to the set-relative
+$ord$ classifies that pair as conflicting. It adds an edge between concurrent
+events when $ord$ returns first-before-second, subject to the set-relative
 conflicting-absorber clause. Thus $\mathsf{Either}$ identifies a nonconflicting
 pair and contributes no edge; under the unconstrained all-$\mathsf{Either}$
 policy, \lean{loOn} is empty.
 \end{definition}
 
-The sufficient algebraic replay route requires $rc$ to be acyclic: no
+The sufficient algebraic replay route requires $ord$ to be acyclic: no
 nonempty \lean{Relation.TransGen} path returns to its starting event. Useful
 chains are allowed. Its coverage condition says that concretely noncommuting
 pairs must be ordered, not that ordered pairs must fail to commute. Its
-conditional-swap law uses the semantic $rc$ absorber. These are sufficient
-proof obligations, not the meaning of $rc$ or mandatory fields of the public
-certificate. All-commuting implementations support every acyclic $rc$ under
+conditional-swap law uses the event replay order $ord$ absorber. These are sufficient
+proof obligations, not the meaning of $ord$ or mandatory fields of the public
+certificate. All-commuting implementations support every acyclic $ord$ under
 these laws.
 
 LWW separates concrete and abstract commutation. Its concrete state stores the greatest
 timestamped write, and both update and merge compute a maximum, so its updates
-commute. Ordinary overwrite steps do not commute, and its sole public $rc$
+commute. Ordinary overwrite steps do not commute, and its sole public $ord$
 orders unequal writes by their timestamped keys. Sorting a witness by that key preserves the concrete fold,
-respects both visibility and the concurrent $rc$ edges, and yields an ordinary
+respects both visibility and the concurrent $ord$ edges, and yields an ordinary
 overwrite-register execution with the stored value. Concretely,
-\lean{rc\_order\_acyclic} derives acyclicity from strict key increase, while
+\lean{replayOrder\_order\_acyclic} derives acyclicity from strict key increase, while
 \lean{timestamp\_chain} confirms that a two-edge chain is valid. The same
 timestamp policy is used by its concrete replay laws, Join theorem, and
 sequential certificate; there is no auxiliary empty policy for LWW.
 
 \begin{definition}[specification linearizability]
-Given replay policy $P$, sequential specification $\mathit{Spec}$, and
+Given event replay order $P$, sequential specification $\mathit{Spec}$, and
 representation relation
 $\mathsf{Rel}\subseteq\state\times\mathit{Spec}.\mathsf{State}$,
 $\mathsf{SpecLin}(D,P,\mathit{Spec},\mathsf{Rel},C)$ holds when every
@@ -823,7 +831,7 @@ these extra clauses automatically.
 An implementer supplies:
 \begin{itemize}
 \item an issuance relation $I$;
-\item one replay policy $P$, exposed as $rc$;
+\item one event replay order $P$, exposed as $ord$;
 \item a convergence certificate proving internal replay linearizability for
 every $I$-certified virtual-merge-base execution;
 \item an independent sequential specification $\mathit{Spec}$ and representation
@@ -847,7 +855,7 @@ Layer & Framework supplies & Datatype supplies \\
 Raw execution & version DAG, apply, merge, query & state, update, merge, query \\
 Replay proof & canonical-state induction, virtual bases & merge-preservation proof \\
 Client protocol & certified transition schema & issuance predicate \\
-Client meaning & witness theorem schema & $rc$ and sequential proofs \\
+Client meaning & witness theorem schema & $ord$ and sequential proofs \\
 Commit GC & distributed protocol and refinement & --- \\
 State GC & trace-erasure theorem & physical collection protocol \\
 \bottomrule
@@ -1262,7 +1270,7 @@ Peritext builds rich text from an underlying character sequence and formatting
 spans whose endpoints refer to stable character boundaries~\cite{litt2022peritext}.
 These packages make freshness and anchor liveness explicit in their issuance
 predicates. The observed-remove set has an ordinary finite-set specification:
-its $rc$ orders a same-element remove before an add and leaves same-kind and
+its $ord$ orders a same-element remove before an add and leaves same-kind and
 cross-element operations as $\mathsf{Either}$. The base tombstone RGA has an
 ordinary-list specification; it retains tombstones internally for concurrent
 integration but rejects minting after an observed anchor deletion. The bounded
@@ -1328,7 +1336,7 @@ synchronous coordination by constraining state joins or delivered operations
 \cite{shapiro2011crdt}. Replication-aware linearizability strengthens a bare
 convergence statement by asking for a sequential explanation of each replica
 state~\cite{wang2019ralin}. Our client theorem uses the same broad explanatory
-goal while making causality, the single $rc$ policy, legality, abstract state,
+goal while making causality, the single $ord$ policy, legality, abstract state,
 and observations explicit in the public datatype theorem.
 
 MRDTs adapt replicated datatypes to branch-and-merge stores with ancestor-aware
@@ -1368,7 +1376,7 @@ store, replica heads, parent graph, and visibility relation used in
 Section~2. The functions \lean{Configuration.headState} and
 \lean{Configuration.headEvents} derive a replica's current observations from
 its head. Replay-only packages and
-alternative replay-policy hooks support migration and negative analysis in the
+alternative event-order hooks support migration and negative analysis in the
 artifact; production registry entries are the complete packages of Section~5.
 
 \section{Conclusion}
@@ -1382,7 +1390,7 @@ ancestor and two branches.
 
 That replay theorem is deliberately not the final client claim. A verified
 package must also explain where operations could be created, which concurrent
-directions $rc$ selects, which sequential histories are legal, how representation
+directions $ord$ selects, which sequential histories are legal, how representation
 states correspond to abstract states, and why queries agree. The same
 separation clarifies reclamation: commit-history collection preserves the DAG
 answers required by asynchronous execution, while datatype-state collection

@@ -22,13 +22,13 @@ open Classical
 
 section
 variable {D : MRDTSig}
-variable [ReplayPolicy D.toUpdateSig]
+variable [EventOrder D.toUpdateSig]
 
 /-- The semantic merge-preservation obligation at one replay context. Canonical
 states for the branch intersection and two branches must merge to a canonical
 state for their union. -/
 def JoinAt (D : MRDTSig)
-    [P : ReplayPolicy D.toUpdateSig]
+    [P : EventOrder D.toUpdateSig]
     (C : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig) : Prop :=
   ∀ (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
@@ -44,28 +44,28 @@ def JoinAt (D : MRDTSig)
 merge-preservation argument separate from the execution discipline that may
 later establish `Good`. -/
 def JoinOn (D : MRDTSig)
-    [P : ReplayPolicy D.toUpdateSig]
+    [P : EventOrder D.toUpdateSig]
     (Good : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig → Prop) : Prop :=
   ∀ C, Good C → JoinAt D (P := P) C
 
 /-- All-context Join: the contextual merge obligation holds in every replay
 context. -/
 def Join (D : MRDTSig)
-    [P : ReplayPolicy D.toUpdateSig] : Prop :=
+    [P : EventOrder D.toUpdateSig] : Prop :=
   ∀ C, JoinAt D (P := P) C
 
-theorem Join.at {D : MRDTSig} [P : ReplayPolicy D.toUpdateSig]
+theorem Join.at {D : MRDTSig} [P : EventOrder D.toUpdateSig]
     (h : Join D (P := P))
     (C : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig) :
     JoinAt D (P := P) C := h C
 
 /-- All-context Join supplies Join under any replay-context predicate. -/
-theorem Join.toJoinOn {D : MRDTSig} [P : ReplayPolicy D.toUpdateSig]
+theorem Join.toJoinOn {D : MRDTSig} [P : EventOrder D.toUpdateSig]
     (h : Join D (P := P))
     (Good : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig → Prop) :
     JoinOn D (P := P) Good := fun C _ => h C
 
-theorem joinOn_true_iff (D : MRDTSig) [P : ReplayPolicy D.toUpdateSig] :
+theorem joinOn_true_iff (D : MRDTSig) [P : EventOrder D.toUpdateSig] :
     JoinOn D (P := P) (fun _ => True) ↔ Join D (P := P) := by
   constructor
   · intro h C
@@ -75,7 +75,7 @@ theorem joinOn_true_iff (D : MRDTSig) [P : ReplayPolicy D.toUpdateSig] :
 
 /-- Universal merge laws used to construct the canonical-state Join contract.
 The equations quantify over all datatype states. -/
-structure MergeLaws (D : MRDTSig) [ReplayPolicy D.toUpdateSig] : Prop where
+structure MergeLaws (D : MRDTSig) [EventOrder D.toUpdateSig] : Prop where
   replay : ReplayLaws D.toUpdateSig
   merge_comm : ∀ l a b : D.State, D.merge l a b = D.merge l b a
   merge_init : ∀ s : D.State, D.merge D.init D.init s = s
@@ -121,7 +121,7 @@ Unlike the binary `BinaryCausalDeltaLaw` this is an *equation*, not a `⊑`-ineq
 degenerate order leaves no antisymmetry to combine two halves. The merge on the left sits
 at its honest GCA: the true GCA set of `U∖e` and `↓e` is `(U∖e) ∩ ↓e = ↓e∖{e}`, whose
 canonical state is `B`. -/
-def CausalDeltaLaw (D : MRDTSig) [ReplayPolicy D.toUpdateSig] : Prop :=
+def CausalDeltaLaw (D : MRDTSig) [EventOrder D.toUpdateSig] : Prop :=
   ∀ (C : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig) (U : Set (Op D.AppOp))
     (A B : D.State) (e : Op D.AppOp),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
@@ -136,7 +136,7 @@ def CausalDeltaLaw (D : MRDTSig) [ReplayPolicy D.toUpdateSig] : Prop :=
 
 /-- The common core consumed by the feasible-state derivation: update-layer
 laws plus commutativity of `merge` in its branch arguments. -/
-structure JoinCoreLaws (D : MRDTSig) [ReplayPolicy D.toUpdateSig] : Prop where
+structure JoinCoreLaws (D : MRDTSig) [EventOrder D.toUpdateSig] : Prop where
   replay : ReplayLaws D.toUpdateSig
   merge_comm : ∀ l a b : D.State, D.merge l a b = D.merge l b a
 
@@ -160,7 +160,7 @@ to canonical tuples at honest GCAs of a configuration. Field by field:
 * `redistribute`: the shared-peel instance, all three components
   decomposed through the downset delta; honest GCAs throughout
   (`t₀ = σ((E₁∩E₂)∖e)` is the decomposed GCA component). -/
-structure FeasibleDeltaLaws (D : MRDTSig) [ReplayPolicy D.toUpdateSig] : Prop where
+structure FeasibleDeltaLaws (D : MRDTSig) [EventOrder D.toUpdateSig] : Prop where
   init :
     ∀ (C : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig)
       (ev : Set (Op D.AppOp)) (s : D.State),
@@ -204,7 +204,7 @@ structure FeasibleDeltaLaws (D : MRDTSig) [ReplayPolicy D.toUpdateSig] : Prop wh
 /-- The single instance-facing law bundle for the reusable canonical-state
 Join induction. Datatypes may prove these laws natively or obtain them from
 stronger arbitrary-state equations. -/
-structure CanonicalJoinLaws (D : MRDTSig) [ReplayPolicy D.toUpdateSig] : Prop where
+structure CanonicalJoinLaws (D : MRDTSig) [EventOrder D.toUpdateSig] : Prop where
   core : JoinCoreLaws D
   delta : FeasibleDeltaLaws D
   causal_delta : CausalDeltaLaw D
@@ -213,7 +213,7 @@ structure CanonicalJoinLaws (D : MRDTSig) [ReplayPolicy D.toUpdateSig] : Prop wh
 `CanonicalConfig.version_events_causal` supplies. Counter-comparison merges need it: the weak
 (`¬commutes`) closure is defeated by commuting same-replica enables. -/
 def CausalJoin (D : MRDTSig)
-    [P : ReplayPolicy D.toUpdateSig] : Prop :=
+    [P : EventOrder D.toUpdateSig] : Prop :=
   ∀ (C : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig)
     (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
@@ -225,12 +225,12 @@ def CausalJoin (D : MRDTSig)
     @IsCanonicalState _ P C ev₁ s₁ → @IsCanonicalState _ P C ev₂ s₂ →
     @IsCanonicalState _ P C (ev₁ ∪ ev₂) (D.merge s₀ s₁ s₂)
 
-/-! ### The rc-free `loOn` collapse -/
+/-! ### The replayOrder-free `loOn` collapse -/
 
-/-- When `rc` is everywhere `Either`, `loOn` is empty. Visibility contributes
-an edge only for a pair that `rc` classifies as conflicting. -/
-theorem loOn_iff_of_rc_either {D' : UpdateSig}
-    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.replayOrder o₁ o₂ = RcRes.Either)
+/-- When `replayOrder` is everywhere `Either`, `loOn` is empty. Visibility contributes
+an edge only for a pair that `replayOrder` classifies as conflicting. -/
+theorem loOn_iff_of_replayOrder_either {D' : UpdateSig}
+    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.replayOrder o₁ o₂ = OrderResult.Either)
     (C : Sal.MRDTs.Foundation.ReplayContext D') (ev : Set (Op D'.AppOp))
     (e₁ e₂ : Op D'.AppOp) :
     loOn C ev e₁ e₂ ↔ False := by
@@ -238,27 +238,27 @@ theorem loOn_iff_of_rc_either {D' : UpdateSig}
   constructor
   · rintro (⟨_, hrc'⟩ | ⟨_, _, hfs, _⟩)
     · rcases hrc' with hfs | hfs
-      · change D'.replayOrder e₁ e₂ = RcRes.Fst_then_snd at hfs
+      · change D'.replayOrder e₁ e₂ = OrderResult.Fst_then_snd at hfs
         rw [hrc e₁ e₂] at hfs
-        exact RcRes.noConfusion hfs
-      · change D'.replayOrder e₂ e₁ = RcRes.Fst_then_snd at hfs
+        exact OrderResult.noConfusion hfs
+      · change D'.replayOrder e₂ e₁ = OrderResult.Fst_then_snd at hfs
         rw [hrc e₂ e₁] at hfs
-        exact RcRes.noConfusion hfs
-    · change D'.replayOrder e₁ e₂ = RcRes.Fst_then_snd at hfs
+        exact OrderResult.noConfusion hfs
+    · change D'.replayOrder e₁ e₂ = OrderResult.Fst_then_snd at hfs
       rw [hrc e₁ e₂] at hfs
-      exact RcRes.noConfusion hfs
+      exact OrderResult.noConfusion hfs
   · exact False.elim
 
-/-- With `rc` everywhere `Either`, `respects · (loOn C ev)` is independent of
+/-- With `replayOrder` everywhere `Either`, `respects · (loOn C ev)` is independent of
 `ev`. -/
-theorem respects_transfer_of_rc_either {D' : UpdateSig}
-    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.replayOrder o₁ o₂ = RcRes.Either)
+theorem respects_transfer_of_replayOrder_either {D' : UpdateSig}
+    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.replayOrder o₁ o₂ = OrderResult.Either)
     {C : Sal.MRDTs.Foundation.ReplayContext D'} {ev ev' : Set (Op D'.AppOp)}
     {ρ : List (Op D'.AppOp)}
     (h : respects ρ (loOn C ev)) : respects ρ (loOn C ev') := by
   unfold respects at h ⊢
   exact h.imp fun {a b} _ hab =>
-    ((loOn_iff_of_rc_either hrc C ev' b a).mp hab).elim
+    ((loOn_iff_of_replayOrder_either hrc C ev' b a).mp hab).elim
 
 end
 

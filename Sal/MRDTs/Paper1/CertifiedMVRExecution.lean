@@ -6,7 +6,7 @@ No legacy MVR representation-merge or execution correctness theorem is used. -/
 namespace Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.Execution
 open Foundation Instances.MVRLive
 open Classical
-local instance : ReplayPolicy D.toUpdateSig := rc
+local instance : EventOrder D.toUpdateSig := replayOrder
 
 def HistoryMerge : Prop :=
   ∀ (C : Configuration D), CertifiedExecution D issuance C → Transitive C.vis →

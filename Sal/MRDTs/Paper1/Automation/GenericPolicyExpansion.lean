@@ -9,7 +9,7 @@ namespace Sal.MRDTs.Paper1.Automation.PolicyExpansion
 open Sal.MRDTs Sal.MRDTs.Foundation Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT
 
 structure Kit (D : MRDTSig) (P : OperationPolicy D.AppOp)
-    (order : Op D.AppOp → Op D.AppOp → RcRes) : Prop where
+    (order : Op D.AppOp → Op D.AppOp → OrderResult) : Prop where
   comm : ∀l a b,D.merge l a b=D.merge l b a
   initial : ∀s,D.merge D.init D.init s=s
   shared : ∀t₀ t₁ t₂ B e,
@@ -27,7 +27,7 @@ structure Kit (D : MRDTSig) (P : OperationPolicy D.AppOp)
   kernelStable : (CausalCoverage.signatureOf D order).KernelStable
 
 variable {D : MRDTSig} {P : OperationPolicy D.AppOp}
-variable {order : Op D.AppOp → Op D.AppOp → RcRes}
+variable {order : Op D.AppOp → Op D.AppOp → OrderResult}
 
 /-- The sole log-valued policy field is built generically from two finite
 state equations, rather than supplied as a datatype history theorem. -/
@@ -53,7 +53,7 @@ theorem canonical_of_loWitness
   apply ordered.imp
   intro a b hn edge
   have eq : paperOrder P C E b a ↔ @loOn D.toUpdateSig P.lift C E b a := by
-    simp only [paperOrder,loOn,OperationPolicy.lift_rc_iff,←noncomm]
+    simp only [paperOrder,loOn,OperationPolicy.lift_replayOrder_iff,←noncomm]
   exact hn (eq.mp edge)
 
 /-- All unchanged Raw fields, with the two history-sensitive equations

@@ -8,7 +8,7 @@ Join premise. -/
 namespace Sal.MRDTs.Paper1.ORSet.RawExecution
 open Foundation
 variable {α : Type} [DecidableEq α]
-noncomputable local instance : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+noncomputable local instance : EventOrder (D α).toUpdateSig := (conflict α).lift
 
 theorem vcJoinAt (C : ReplayContext (D α).toUpdateSig) :
     @JoinAt (D α) (conflict α).lift C := by

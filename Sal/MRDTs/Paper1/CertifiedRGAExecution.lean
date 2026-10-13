@@ -35,7 +35,7 @@ theorem canonical_of_represented (Γ : OrderedPrefixCode)
   intro a b ha hb notvis edge
   rcases edge with causal | concurrent
   · exact notvis causal.1
-  · exact notvis (e_vis_of_rc_of_honest rep.1
+  · exact notvis (e_vis_of_replayOrder_of_honest rep.1
       (rep.2.2.2.1 ((perm.2 a).mp ha)) (rep.2.2.2.1 ((perm.2 b).mp hb)) concurrent.2.2.1)
 
 theorem merge_canonical (Γ : OrderedPrefixCode)
@@ -106,7 +106,7 @@ theorem canonical_of_represented (Γ : OrderedPrefixCode)
   intro a b ha hb notvis edge
   rcases edge with causal | concurrent
   · exact notvis causal.1
-  · exact notvis (s_vis_of_rc_of_honest rep.1
+  · exact notvis (s_vis_of_replayOrder_of_honest rep.1
       (rep.2.2.2.1 ((perm.2 a).mp ha)) (rep.2.2.2.1 ((perm.2 b).mp hb)) concurrent.2.2.1)
 
 theorem merge_canonical (Γ : OrderedPrefixCode)

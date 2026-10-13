@@ -214,7 +214,7 @@ theorem canonical_ordered (ops : List (Op RGAOp)) :
     (canonical ops).Pairwise WitnessLE := by
   unfold canonical WitnessLE
   apply List.pairwise_mergeSort
-  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, rc, oc⟩ hab hbc
+  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, replayOrder, oc⟩ hab hbc
     cases oa <;> cases ob <;> cases oc <;>
       simp [witnessLEBool] at *
     exact Nat.le_trans hab hbc
@@ -234,7 +234,7 @@ identifier or its non-root anchor. -/
 def insertDeleteConflict (anchor id target : ℕ) : Prop :=
   target = id ∨ (anchor ≠ 0 ∧ target = anchor)
 
-noncomputable def rcOrder (a b : Op RGAOp) : RcRes :=
+noncomputable def eventOrder (a b : Op RGAOp) : OrderResult :=
   match a.2.2, b.2.2 with
   | .addAfter aAnchor, .addAfter bAnchor =>
       if (aAnchor = bAnchor ∨ a.1 = bAnchor) ∧ a.1 < b.1 then .Fst_then_snd
@@ -247,30 +247,30 @@ noncomputable def rcOrder (a b : Op RGAOp) : RcRes :=
       if insertDeleteConflict anchor b.1 target then .Snd_then_fst else .Either
   | .remove _, .remove _ => .Either
 
-/-- The sole public resolve-conflict relation for RGA. -/
-noncomputable def rc : ReplayPolicy RGAM.toUpdateSig where
-  order := rcOrder
+/-- The selected event replay order for RGA. -/
+noncomputable def replayOrder : EventOrder RGAM.toUpdateSig where
+  order := eventOrder
 
 /-- The directed insertion edge mentions siblings and forward dependency only. -/
-theorem rc_insert_iff (i r a j s b : ℕ) :
-    rc.order (i, r, .addAfter a) (j, s, .addAfter b) = RcRes.Fst_then_snd ↔
+theorem replayOrder_insert_iff (i r a j s b : ℕ) :
+    replayOrder.order (i, r, .addAfter a) (j, s, .addAfter b) = OrderResult.Fst_then_snd ↔
       (a = b ∨ i = b) ∧ i < j := by
-  simp only [rc, rcOrder]
+  simp only [replayOrder, eventOrder]
   split
   · simp_all
   · split <;> simp_all
 
 /-- The former reverse-dependency disjunct contributes no forward edge when
 the first insertion's anchor is root or older than its identifier. -/
-theorem rc_insert_iff_original_of_anchor_valid (i r a j s b : ℕ)
+theorem replayOrder_insert_iff_original_of_anchor_valid (i r a j s b : ℕ)
     (anchorValid : a = 0 ∨ a < i) :
-    rc.order (i, r, .addAfter a) (j, s, .addAfter b) = RcRes.Fst_then_snd ↔
+    replayOrder.order (i, r, .addAfter a) (j, s, .addAfter b) = OrderResult.Fst_then_snd ↔
       (a = b ∨ i = b ∨ j = a) ∧ i < j := by
-  rw [rc_insert_iff]
+  rw [replayOrder_insert_iff]
   rcases anchorValid with h | h <;> omega
 
-@[simp] theorem rc_not_before (a b : Op RGAOp) :
-    WitnessLE a b → ¬ rc.order b a = RcRes.Fst_then_snd := by
+@[simp] theorem replayOrder_not_before (a b : Op RGAOp) :
+    WitnessLE a b → ¬ replayOrder.order b a = OrderResult.Fst_then_snd := by
   obtain ⟨ats, ar, aop⟩ := a
   obtain ⟨bts, br, bop⟩ := b
   cases aop with
@@ -279,17 +279,17 @@ theorem rc_insert_iff_original_of_anchor_valid (i r a j s b : ℕ)
       | addAfter bAnchor =>
           intro hle hbefore
           simp only [WitnessLE, witnessLEBool, decide_eq_true_eq] at hle
-          exact (Nat.not_lt_of_ge hle) ((rc_insert_iff _ _ _ _ _ _).mp hbefore).2
+          exact (Nat.not_lt_of_ge hle) ((replayOrder_insert_iff _ _ _ _ _ _).mp hbefore).2
       | remove target =>
           intro _ hbefore
           by_cases hc : insertDeleteConflict aAnchor ats target <;>
-            simp [rc, rcOrder, hc] at hbefore
+            simp [replayOrder, eventOrder, hc] at hbefore
   | remove target =>
       cases bop with
       | addAfter bAnchor =>
           simp [WitnessLE, witnessLEBool]
       | remove other =>
-          simp [WitnessLE, witnessLEBool, rc, rcOrder]
+          simp [WitnessLE, witnessLEBool, replayOrder, eventOrder]
 
 theorem creator_mem_prefix {whole pre suffix : List (Op RGAOp)}
     {ts replica id creatorTs creatorReplica creatorAnchor : ℕ}
@@ -333,8 +333,8 @@ theorem anchor_mem_prefix {whole pre suffix : List (Op RGAOp)}
 
 theorem lo_false (C : Configuration RGAM) (a b : Op RGAOp) :
     ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
-  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 theorem respects_lo (C : Configuration RGAM) :
     ∀ ops : List (Op RGAOp),
@@ -398,14 +398,14 @@ theorem versionWellFormed_of_execution {C : Configuration RGAM}
 
 /-- On certified version histories the simplified insertion edge agrees with
 the previous symmetric-conflict-then-timestamp definition. -/
-theorem rc_insert_iff_original_of_execution {C : Configuration RGAM}
+theorem replayOrder_insert_iff_original_of_execution {C : Configuration RGAM}
     (exec : CertifiedExecution RGAM generation C)
     {v : Version} {state : RGAM.State} {E : Set (Op RGAOp)}
     (hver : C.ver v = some (state, E))
     {i r a j s b : ℕ} (inserted : (i, r, .addAfter a) ∈ E) :
-    rc.order (i, r, .addAfter a) (j, s, .addAfter b) = RcRes.Fst_then_snd ↔
+    replayOrder.order (i, r, .addAfter a) (j, s, .addAfter b) = OrderResult.Fst_then_snd ↔
       (a = b ∨ i = b ∨ j = a) ∧ i < j := by
-  apply rc_insert_iff_original_of_anchor_valid
+  apply replayOrder_insert_iff_original_of_anchor_valid
   rcases (versionWellFormed_of_execution exec hver).add inserted with root | h
   · exact Or.inl root
   · obtain ⟨_, _, _, earlier⟩ := h
@@ -737,12 +737,12 @@ theorem canonical_refines_list {ops : List (Op RGAOp)}
   rw [read_eq_sequence_of_birthGraveRel (birthGraveSound (canonical ops)),
     list_run_eq_sequence hperm hwf]
 
-theorem canonical_respects_rc_of_evidence {C : Configuration RGAM}
+theorem canonical_respects_replayOrder_of_evidence {C : Configuration RGAM}
     (hgood : CanonicalConfig C) (hmint : MintHonest RGAM applicable C)
     {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
     (hver : C.ver v = some (s, E))
     {ops : List (Op RGAOp)} (hperm : listPermOf ops E) :
-    respects (canonical ops) (@loOn RGAM.toUpdateSig rc C.replayContext E) := by
+    respects (canonical ops) (@loOn RGAM.toUpdateSig replayOrder C.replayContext E) := by
   have hsub := hgood.version_events_supported v s E hver
   have hcan := canonical_listPermOf hperm
   have hordered := canonical_ordered ops
@@ -776,10 +776,10 @@ theorem canonical_respects_rc_of_evidence {C : Configuration RGAM}
                 have hconf : insertDeleteConflict anchor ats target := by
                   rcases hvisConflict.2 with hback | hforward
                   · change (if insertDeleteConflict anchor ats target then
-                        RcRes.Snd_then_fst else RcRes.Either) =
-                      RcRes.Fst_then_snd at hback
+                        OrderResult.Snd_then_fst else OrderResult.Either) =
+                      OrderResult.Fst_then_snd at hback
                     split at hback <;> contradiction
-                  · simpa [rc, rcOrder] using hforward
+                  · simpa [replayOrder, eventOrder] using hforward
                 obtain ⟨past, hpast, _, hguard⟩ :=
                   hmint (ats, ar, .addAfter anchor) haC
                 have hbPast : (bts, br, .remove target) ∈ past :=
@@ -798,35 +798,35 @@ theorem canonical_respects_rc_of_evidence {C : Configuration RGAM}
             | addAfter anchor =>
                 simp [WitnessLE, witnessLEBool] at hab
             | remove other =>
-                simpa [rc, rcOrder] using hvisConflict.2
-      · exact (rc_not_before a b hab) hconcurrent.2.2.1
+                simpa [replayOrder, eventOrder] using hvisConflict.2
+      · exact (replayOrder_not_before a b hab) hconcurrent.2.2.1
 
-theorem canonical_respects_rc {C : Configuration RGAM}
+theorem canonical_respects_replayOrder {C : Configuration RGAM}
     (exec : CertifiedExecution RGAM generation C)
     {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
     (hver : C.ver v = some (s, E))
     {ops : List (Op RGAOp)} (hperm : listPermOf ops E) :
-    respects (canonical ops) (@loOn RGAM.toUpdateSig rc C.replayContext E) :=
-  canonical_respects_rc_of_evidence
+    respects (canonical ops) (@loOn RGAM.toUpdateSig replayOrder C.replayContext E) :=
+  canonical_respects_replayOrder_of_evidence
     (exec.canonicalConfig (fun _ _ => join _)) exec.mintHonest hver hperm
 
 noncomputable def listReplayAdequacy :
-    @ReplayAdequacyCertificate RGAM generation rc := by
-  letI : ReplayPolicy RGAM.toUpdateSig := rc
+    @ReplayAdequacyCertificate RGAM generation replayOrder := by
+  letI : EventOrder RGAM.toUpdateSig := replayOrder
   refine { soundV := ?_ }
   intro C h v state E hver
   let exec : CertifiedExecution RGAM generation C := .virtual h
   have raw : @ReplayAdequacyCertificate RGAM generation
-      (ReplayPolicy.default RGAM.toUpdateSig) := replayAdequacy
+      (EventOrder.default RGAM.toUpdateSig) := replayAdequacy
   obtain ⟨ops, hperm, _, hfold⟩ :=
     (@ReplayAdequacyCertificate.soundV RGAM generation
-      (ReplayPolicy.default RGAM.toUpdateSig) raw C h) v state E hver
+      (EventOrder.default RGAM.toUpdateSig) raw C h) v state E hver
   exact ⟨canonical ops, canonical_listPermOf hperm,
-    canonical_respects_rc exec hver hperm,
+    canonical_respects_replayOrder exec hver hperm,
     (canonical_fold ops).trans hfold⟩
 
 noncomputable def listSequentialCorrectness : SequentialCorrectnessCertificate RGAM generation
-    rc
+    replayOrder
     listSpec listRel where
   sound C exec replay := by
     intro v s E hver
@@ -839,7 +839,7 @@ noncomputable def listSequentialCorrectness : SequentialCorrectnessCertificate R
       rw [← hstate]
       exact href
     refine ⟨canonical ops, canonical_listPermOf hperm,
-      canonical_respects_rc exec hver hperm,
+      canonical_respects_replayOrder exec hver hperm,
       canonical_legal hperm hwf, hrel, ?_⟩
     intro query
     cases query
@@ -849,7 +849,7 @@ noncomputable def listSequentialCorrectness : SequentialCorrectnessCertificate R
 ordinary-list witness and exact query agreement. -/
 noncomputable def verified : VerifiedMRDT RGAM where
   issuance := generation
-  rc := rc
+  replayOrder := replayOrder
   replayAdequacy := listReplayAdequacy
   Spec := listSpec
   Rel := listRel
@@ -857,13 +857,13 @@ noncomputable def verified : VerifiedMRDT RGAM where
 
 theorem rga_spec_linearizable {C : Configuration RGAM}
     (h : MintCertifiedReach RGAM generation C) :
-    IsSpecLinearizable RGAM rc
+    IsSpecLinearizable RGAM replayOrder
       listSpec listRel C :=
   verified.correct h
 
 theorem rga_spec_linearizableV {C : Configuration RGAM}
     (h : MintCertifiedReachV RGAM (canonicalVirtualMergeBase RGAM) generation C) :
-    IsSpecLinearizable RGAM rc
+    IsSpecLinearizable RGAM replayOrder
       listSpec listRel C :=
   verified.correctV h
 
@@ -880,23 +880,23 @@ def sibling : Op RGAOp := (5, 2, .addAfter 0)
 
 /-- Concurrent child insertion and parent deletion conflict; the child is
 resolved before the deletion so it survives integration. -/
-example : rc.order child deleteParentA = RcRes.Fst_then_snd := by
-  simp [rc, rcOrder, insertDeleteConflict, child, deleteParentA]
+example : replayOrder.order child deleteParentA = OrderResult.Fst_then_snd := by
+  simp [replayOrder, eventOrder, insertDeleteConflict, child, deleteParentA]
 
 /-- Deletion of an unrelated identifier does not constrain the insertion. -/
-example : rc.order sibling deleteParentA = RcRes.Either := by
-  simp [rc, rcOrder, insertDeleteConflict, sibling, deleteParentA]
+example : replayOrder.order sibling deleteParentA = OrderResult.Either := by
+  simp [replayOrder, eventOrder, insertDeleteConflict, sibling, deleteParentA]
 
 /-- Sibling insertions conflict and are resolved by timestamp. -/
-example : rc.order parent sibling = RcRes.Fst_then_snd := by
-  simp [rc, rcOrder, parent, sibling]
+example : replayOrder.order parent sibling = OrderResult.Fst_then_snd := by
+  simp [replayOrder, eventOrder, parent, sibling]
 
 /-- Parent/child dependency is represented in both resolver argument orders. -/
-example : rc.order parent child = RcRes.Fst_then_snd := by
-  simp [rc, rcOrder, parent, child]
+example : replayOrder.order parent child = OrderResult.Fst_then_snd := by
+  simp [replayOrder, eventOrder, parent, child]
 
-example : rc.order child parent = RcRes.Snd_then_fst := by
-  simp [rc, rcOrder, parent, child]
+example : replayOrder.order child parent = OrderResult.Snd_then_fst := by
+  simp [replayOrder, eventOrder, parent, child]
 
 /-- PASS: deletion removes the entry rather than retaining a tombstone. -/
 example : listSpec.run [parent, deleteParentA] = [] := by rfl

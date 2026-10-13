@@ -8,10 +8,10 @@ scratch state is canonical for its union history. No weak-conflict-closure
 JoinAt is required, and no datatype-specific Join theorem is invoked. -/
 namespace Sal.MRDTs.Paper1.CertifiedClosedExecution
 open Foundation Classical
-variable {D : MRDTSig} [P : ReplayPolicy D.toUpdateSig]
+variable {D : MRDTSig} [P : EventOrder D.toUpdateSig]
 
 /-- The usual canonical triple/union contract with full visibility closure. -/
-def ClosedJoinAt (D : MRDTSig) [P : ReplayPolicy D.toUpdateSig]
+def ClosedJoinAt (D : MRDTSig) [P : EventOrder D.toUpdateSig]
     (C : ReplayContext D.toUpdateSig) : Prop :=
   ∀ (E₁ E₂ : Set (Op D.AppOp)) (l a b : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →

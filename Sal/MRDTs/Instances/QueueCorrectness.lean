@@ -101,7 +101,7 @@ surviving identities and timestamp order, and the concurrency restriction
 on repeated dequeue targets. All parts concern the same certified execution. -/
 theorem queue_correct {C : Configuration Q}
     (exec : CertifiedExecution Q generation C) :
-    IsSpecLinearizable Q rc clientSpec Eq C ∧
+    IsSpecLinearizable Q replayOrder clientSpec Eq C ∧
     (∀ v s E, C.ver v = some (s, E) → s.Pairwise qEntryLE ∧
       ∀ target, target ∈ qTags s ↔ qEnqIn E target ∧ ¬ qDeqIn E target) ∧
     (∀ a ∈ C.events, ∀ b ∈ C.events, ∀ target,

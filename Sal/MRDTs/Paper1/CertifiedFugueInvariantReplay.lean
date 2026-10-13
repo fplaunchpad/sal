@@ -5,7 +5,7 @@ import Sal.MRDTs.Paper1.InvariantReplay
 namespace Sal.MRDTs.Paper1.CertifiedFugueInvariantReplay
 open Foundation Sal.EmbedRGA
 open Instances.SidedEmbedRGA Instances.SidedEmbedRGA.FugueMax
-attribute [local instance] Instances.SidedEmbedRGA.FugueMax.rc
+attribute [local instance] Instances.SidedEmbedRGA.FugueMax.replayOrder
 
 def policy : OperationPolicy Payload := commutingPolicy Payload
 noncomputable def scope (Γ : OrderedPrefixCode) (C : Configuration (datatype Γ))
@@ -23,10 +23,10 @@ theorem concurrent_commutes (Γ : OrderedPrefixCode) (C : Configuration (datatyp
   cases ao <;> cases bo <;> simp only [CertifiedFugueInvariant.SemanticCommutes]
   · intro same
     apply notab
-    exact rc_visible C mint trans ha hb ((rc_before Γ _ _).mpr ⟨rfl,by simpa only [same]⟩)
+    exact replayOrder_visible C mint trans ha hb ((replayOrder_before Γ _ _).mpr ⟨rfl,by simpa only [same]⟩)
   · intro same
     apply notba
-    exact rc_visible C mint trans hb ha ((rc_before Γ _ _).mpr ⟨rfl,by simpa only [same]⟩)
+    exact replayOrder_visible C mint trans hb ha ((replayOrder_before Γ _ _).mpr ⟨rfl,by simpa only [same]⟩)
 
 theorem fullLaws (Γ : OrderedPrefixCode) (C : Configuration (datatype Γ))
     (mint : MintHonest (datatype Γ) (applicable Γ) C) (trans : Transitive C.vis)

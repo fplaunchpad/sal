@@ -19,7 +19,7 @@ update history explaining all queries, including queries not taken in the trace.
 theorem rawUniformRA {C : Configuration (D α)}
     (reach : (labeledTS (D α)).ReachableFrom (initConfig (D α)) C) :
     UniformVersionsRALinearizable (D α) (conflict α) (spec α).toSpec C := by
-  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  letI : EventOrder (D α).toUpdateSig := (conflict α).lift
   have hjoin : @Join (D α) (conflict α).lift := by
     rw [conflict_lift_eq]
     exact join
@@ -30,7 +30,7 @@ theorem rawUniformRA {C : Configuration (D α)}
 theorem rawSpecificationRA {C : Configuration (D α)}
     (reach : (labeledTS (D α)).ReachableFrom (initConfig (D α)) C) :
     SpecificationRALinearizable (D α) (conflict α) (spec α).toSpec C := by
-  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  letI : EventOrder (D α).toUpdateSig := (conflict α).lift
   have hjoin : @Join (D α) (conflict α).lift := by
     rw [conflict_lift_eq]
     exact join

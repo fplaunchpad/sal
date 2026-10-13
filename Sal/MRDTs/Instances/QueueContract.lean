@@ -159,7 +159,7 @@ theorem queue_version_contents {C : Configuration Q}
     qGood_core (qHonest_of_mint C exec.mintHonest)
   have hcanonical : CanonicalConfig C :=
     exec.canonicalConfig (fun C hm => q_join_at (qGood_core (qHonest_of_mint C hm)))
-  have hreplay : @HasReplayWitness Q rc C := by
+  have hreplay : @HasReplayWitness Q replayOrder C := by
     cases exec with
     | ordinary h => exact replayAdequacy.sound h
     | virtual h => exact replayAdequacy.soundV h

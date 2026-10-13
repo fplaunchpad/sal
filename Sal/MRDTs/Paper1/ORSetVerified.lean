@@ -11,8 +11,8 @@ identifiers: remove x is before add x. -/
 def conflict (α : Type) : OperationPolicy (Update α) where
   before a b := ∃ x, a = .remove x ∧ b = .add x
 
-theorem conflict_lift_eq : (conflict α).lift = (policy : ReplayPolicy (D α).toUpdateSig) := by
-  apply congrArg (fun f => (⟨f⟩ : ReplayPolicy (D α).toUpdateSig))
+theorem conflict_lift_eq : (conflict α).lift = (policy : EventOrder (D α).toUpdateSig) := by
+  apply congrArg (fun f => (⟨f⟩ : EventOrder (D α).toUpdateSig))
   funext a b
   rcases a with ⟨t, r, ao⟩; rcases b with ⟨t', r', bo⟩
   dsimp only [OperationPolicy.lift, policy]
@@ -23,19 +23,19 @@ theorem conflict_lift_eq : (conflict α).lift = (policy : ReplayPolicy (D α).to
 theorem restrictedLaws : RestrictedLaws (D α).toUpdateSig (conflict α) := by
   constructor
   · intro a b
-    simpa only [rc_iff, conflict, Op.op] using noncomm_iff_rc a b
+    simpa only [replayOrder_iff, conflict, Op.op] using noncomm_iff_replayOrder a b
   · rintro a b c ⟨⟨x, ha, hb⟩, ⟨y, hb', hc⟩⟩
     rw [hb] at hb'; cases hb'
   · intro s e a r ops hea hnc
-    have hrc : (D α).toUpdateSig.rc e a := by
-      simpa only [rc_iff, conflict, Op.op] using hea
-    obtain ⟨x, he, ha⟩ := (rc_iff e a).mp hrc
-    have har := (noncomm_iff_rc a r).mp hnc
+    have hrc : (D α).toUpdateSig.replayBefore e a := by
+      simpa only [replayOrder_iff, conflict, Op.op] using hea
+    obtain ⟨x, he, ha⟩ := (replayOrder_iff e a).mp hrc
+    have har := (noncomm_iff_replayOrder a r).mp hnc
     have hr : r.2.2 = .remove x := by
       rcases har with h | h
-      · obtain ⟨y, ha', _⟩ := (rc_iff a r).mp h
+      · obtain ⟨y, ha', _⟩ := (replayOrder_iff a r).mp h
         rw [ha] at ha'; cases ha'
-      · obtain ⟨y, hr, ha'⟩ := (rc_iff r a).mp h
+      · obtain ⟨y, hr, ha'⟩ := (replayOrder_iff r a).mp h
         rw [ha] at ha'; injection ha' with hxy; subst y; exact hr
     have hbase : EqExcept x (step (step s a) e) (step (step s e) a) := by
       intro p hp; simp [step, he, ha, hp]

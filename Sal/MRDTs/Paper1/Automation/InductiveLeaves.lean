@@ -15,7 +15,7 @@ structure Signature where
   init : State
   step : State → Op AppOp → State
   merge : State → State → State → State
-  order : Op AppOp → Op AppOp → RcRes
+  order : Op AppOp → Op AppOp → OrderResult
 
 namespace Signature
 variable (D : Signature)

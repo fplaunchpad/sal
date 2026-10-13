@@ -69,8 +69,8 @@ def datatype (Γ : OrderedPrefixCode) : MRDTSig where
   merge := rawMerge
 
 /-- The same insertion-before-own-deletion relation as coordinate replay. -/
-def rc (Γ : OrderedPrefixCode) : ReplayPolicy (datatype Γ).toUpdateSig where
-  order a b := fRcOrder (fOpOfM Γ (recordOf a)) (fOpOfM Γ (recordOf b))
+def replayOrder (Γ : OrderedPrefixCode) : EventOrder (datatype Γ).toUpdateSig where
+  order a b := fEventOrder (fOpOfM Γ (recordOf a)) (fOpOfM Γ (recordOf b))
 
 /-- Enumeration is only a representation witness, not additional history or
 an assumed execution. The guard reads the stored births and live list. -/

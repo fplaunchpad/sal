@@ -7,7 +7,7 @@ namespace Sal.MRDTs.Paper1.CertifiedFugueVC
 open Foundation Sal.EmbedRGA
 open Instances.SidedEmbedRGA Instances.SidedEmbedRGA.FugueMax
 open CertifiedFugueVCReplay CertifiedFugueVCAlgebra
-attribute [local instance] Instances.SidedEmbedRGA.FugueMax.rc
+attribute [local instance] Instances.SidedEmbedRGA.FugueMax.replayOrder
 
 private theorem state_ext {s t : State} (live : s.live = t.live) (births : s.births = t.births) : s = t := by
   cases s; cases t; cases live; cases births; rfl

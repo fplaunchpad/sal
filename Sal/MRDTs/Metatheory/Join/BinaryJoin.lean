@@ -195,8 +195,8 @@ theorem downset_diff_closed {C : ReplayContext D} {e : Op D.AppOp}
 
 /-- **`e` is automatically `loOn(↓e)`-maximal**: no VC needed: an
 edge out of `e` into its own past closes a `vis`-cycle (first
-disjunct) or contradicts `vis x e` (rc disjunct). -/
-theorem downset_max [ReplayPolicy D] {C : ReplayContext D} {e : Op D.AppOp}
+disjunct) or contradicts `vis x e` (replayOrder disjunct). -/
+theorem downset_max [EventOrder D] {C : ReplayContext D} {e : Op D.AppOp}
     (h_tr : ∀ {a b c : Op D.AppOp},
       C.vis a b → C.vis b c → C.vis a c)
     (h_ir : ∀ a : Op D.AppOp, ¬ C.vis a a) :

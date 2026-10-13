@@ -359,36 +359,36 @@ theorem mem_projReplayContext₂_events {b : Op D₂.AppOp} :
 theorem loOn_prod_cross_lr {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a : Op D₁.AppOp) (b : Op D₂.AppOp) :
     ¬ loOn C ev (inlOp a) (inrOp b) := by
-  simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [loOn, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 theorem loOn_prod_cross_rl {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (b : Op D₂.AppOp) (a : Op D₁.AppOp) :
     ¬ loOn C ev (inrOp b) (inlOp a) := by
-  simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [loOn, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 theorem loOn_prod_inl_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a b : Op D₁.AppOp) :
     loOn C ev (inlOp a) (inlOp b) ↔
       loOn (projReplayContext₁ C) (evRes₁ ev) a b := by
-  simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [loOn, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 theorem loOn_prod_inr_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a b : Op D₂.AppOp) :
     loOn C ev (inrOp a) (inrOp b) ↔
       loOn (projReplayContext₂ C) (evRes₂ ev) a b := by
-  simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [loOn, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 /-- Global arbitration on a product restricts exactly to global arbitration
 on its left component. -/
 theorem lo_prod_inl_iff (a b : Op D₁.AppOp) :
     Sal.MRDTs.Foundation.lo C (inlOp a) (inlOp b) ↔
       Sal.MRDTs.Foundation.lo (projReplayContext₁ C) a b := by
-  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
-    ReplayPolicy.default, ReplayPolicy.unconstrained]
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.replayBefore, EventOrder.Before,
+    EventOrder.default, EventOrder.unconstrained]
 
 theorem respects_projList₁ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))}

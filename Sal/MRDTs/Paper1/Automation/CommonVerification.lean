@@ -54,7 +54,7 @@ inductive Input : (D : MRDTSig) → OperationPolicy D.AppOp → Representation D
       (metadata : M=CommutingPort.scheme commute) : Input D P R M
   | policy {D : MRDTSig} {P : OperationPolicy D.AppOp} {R : Representation D}
       {M : ∀C : ReplayContext D.toUpdateSig,MetadataDependencies C}
-      {order : Op D.AppOp → Op D.AppOp → RcRes}
+      {order : Op D.AppOp → Op D.AppOp → OrderResult}
       (kit : PolicyExpansion.Kit D P order)
       (contract : ReplayContract D P R) : Input D P R M
   | immutable {D : MRDTSig} {P : OperationPolicy D.AppOp} {R : Representation D}

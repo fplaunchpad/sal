@@ -11,9 +11,9 @@ private theorem loOn_implies_vis (Γ : OrderedPrefixCode)
     (C : ReplayContext (E Γ α).toUpdateSig) (honest : EHonestCore Γ C)
     (H : Set (Op (EOp α))) (a b : Op (EOp α))
     (ha : a ∈ C.events) (hb : b ∈ C.events) (edge : loOn C H a b) : C.vis a b := by
-  rcases edge with ⟨vis,_⟩ | ⟨noVis,_,rc,_⟩
+  rcases edge with ⟨vis,_⟩ | ⟨noVis,_,replayOrder,_⟩
   · exact vis
-  · exact False.elim (noVis (e_vis_of_rc_of_honest honest hb ha rc))
+  · exact False.elim (noVis (e_vis_of_replayOrder_of_honest honest hb ha replayOrder))
 
 def represented (Γ : OrderedPrefixCode) (C : ReplayContext (E Γ α).toUpdateSig)
     (H : Set (Op (EOp α))) (s : EState α) : Prop :=
@@ -104,9 +104,9 @@ private theorem loOn_implies_vis (Γ : OrderedPrefixCode)
     (C : ReplayContext (S Γ).toUpdateSig) (honest : SHonestCore Γ C)
     (H : Set (Op (SOp))) (a b : Op (SOp))
     (ha : a ∈ C.events) (hb : b ∈ C.events) (edge : loOn C H a b) : C.vis a b := by
-  rcases edge with ⟨vis,_⟩ | ⟨noVis,_,rc,_⟩
+  rcases edge with ⟨vis,_⟩ | ⟨noVis,_,replayOrder,_⟩
   · exact vis
-  · exact False.elim (noVis (s_vis_of_rc_of_honest honest hb ha rc))
+  · exact False.elim (noVis (s_vis_of_replayOrder_of_honest honest hb ha replayOrder))
 
 def represented (Γ : OrderedPrefixCode) (C : ReplayContext (S Γ).toUpdateSig)
     (H : Set (Op (SOp))) (s : SState) : Prop :=

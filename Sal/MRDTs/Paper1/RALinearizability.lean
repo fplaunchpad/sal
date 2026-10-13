@@ -106,7 +106,7 @@ theorem uniform_ra_of_replay_total
     (laws : RestrictedLaws D.toUpdateSig P)
     (replay : @HasReplayWitness D P.lift C) (sound : FoldHistorySound D S) :
     UniformVersionsRALinearizable D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro v s E hv
   obtain ⟨π, hp, hr, hf⟩ := replay v s E hv
   refine ⟨π, hp, ?_, ?_⟩
@@ -119,7 +119,7 @@ theorem ra_of_replay_total {D : MRDTSig} {P : OperationPolicy D.AppOp}
     (laws : RestrictedLaws D.toUpdateSig P)
     (replay : @HasReplayWitness D P.lift C) (sound : FoldHistorySound D S) :
     VersionsRALinearizable D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro v s E hv q
   obtain ⟨π, hp, hr, hf⟩ := replay v s E hv
   refine ⟨π, hp, ?_, ?_⟩
@@ -131,7 +131,7 @@ theorem ra_of_canonical_total {D : MRDTSig} {P : OperationPolicy D.AppOp}
     (laws : RestrictedLaws D.toUpdateSig P)
     (canonical : @CanonicalConfig D P.lift C) (sound : FoldHistorySound D S) :
     VersionsRALinearizable D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact ra_of_replay_total laws (hasReplayWitness_of_canonical canonical) sound
 
 /-- An issuance-sensitive bridge can select a suitable replay of a supported,
@@ -160,7 +160,7 @@ theorem ra_of_canonical_history {D : MRDTSig} {P : OperationPolicy D.AppOp}
     (canonical : @CanonicalConfig D P.lift C)
     (honest : MintHonest D I.CanIssue C) (adequacy : IssuedHistoryAdequacy D P S I) :
     VersionsRALinearizable D P S C := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro v s E hv q
   have hs := canonical.canonical v s E hv
   obtain ⟨π, hp, hr, accepted⟩ := adequacy C honest E
@@ -180,7 +180,7 @@ theorem certifiedRA_of_join {D : MRDTSig} {P : OperationPolicy D.AppOp}
     (laws : RestrictedLaws D.toUpdateSig P)
     (join : ∀ C, MintHonest D I.CanIssue C → @JoinAt D P.lift C.replayContext)
     (history : IssuedHistoryAdequacy D P S I) : CertifiedRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro C reach
   exact (ra_of_canonical_history laws
     (canonicalConfig_of_mintCertifiedV join reach) reach.mintHonest history).heads
@@ -190,7 +190,7 @@ theorem certifiedRA_of_join_total {D : MRDTSig} {P : OperationPolicy D.AppOp}
     (laws : RestrictedLaws D.toUpdateSig P)
     (join : ∀ C, MintHonest D I.CanIssue C → @JoinAt D P.lift C.replayContext)
     (sound : FoldHistorySound D S) : CertifiedRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   intro C reach
   exact (ra_of_canonical_total laws
     (canonicalConfig_of_mintCertifiedV join reach) sound).heads

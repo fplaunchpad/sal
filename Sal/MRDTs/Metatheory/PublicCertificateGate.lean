@@ -13,7 +13,7 @@ noncomputable section
 
 -- Positive control for every component-mismatch test below.
 example : SequentialCorrectnessCertificate Instances.LWWRegister.D
-    Instances.LWWRegister.issuance Instances.LWWRegister.rc
+    Instances.LWWRegister.issuance Instances.LWWRegister.replayOrder
     Instances.LWWRegister.spec Instances.LWWRegister.stateRel :=
   Instances.LWWRegister.verified.sequentialCorrectness
 
@@ -54,15 +54,15 @@ example : True := by
     have bad : VerifiedMRDT Instances.Queue.Q := Instances.RGA.verified
   trivial
 
--- Even a genuine public certificate must use the selected semantic rc.
-def wrongRc : ReplayPolicy Instances.LWWRegister.D.toUpdateSig :=
-  ReplayPolicy.unconstrained Instances.LWWRegister.D.toUpdateSig
+-- Even a genuine public certificate must use the selected semantic replayOrder.
+def wrongOrder : EventOrder Instances.LWWRegister.D.toUpdateSig :=
+  EventOrder.unconstrained Instances.LWWRegister.D.toUpdateSig
 
 example : True := by
   fail_if_success
     have bad : SequentialCorrectnessCertificate Instances.LWWRegister.D
         Instances.LWWRegister.issuance
-        wrongRc
+        wrongOrder
         Instances.LWWRegister.spec Instances.LWWRegister.stateRel :=
       Instances.LWWRegister.verified.sequentialCorrectness
   trivial
@@ -74,7 +74,7 @@ def wrongObservations : SequentialSpec Instances.LWWRegister.D :=
 example : True := by
   fail_if_success
     have bad : SequentialCorrectnessCertificate Instances.LWWRegister.D
-        Instances.LWWRegister.issuance Instances.LWWRegister.rc
+        Instances.LWWRegister.issuance Instances.LWWRegister.replayOrder
         wrongObservations Instances.LWWRegister.stateRel :=
       Instances.LWWRegister.verified.sequentialCorrectness
   trivial
@@ -85,7 +85,7 @@ def wrongIssuance : Issuance Instances.LWWRegister.D where
 example : True := by
   fail_if_success
     have bad : SequentialCorrectnessCertificate Instances.LWWRegister.D
-        wrongIssuance Instances.LWWRegister.rc
+        wrongIssuance Instances.LWWRegister.replayOrder
         Instances.LWWRegister.spec Instances.LWWRegister.stateRel :=
       Instances.LWWRegister.verified.sequentialCorrectness
   trivial
@@ -96,7 +96,7 @@ def wrongLegality : SequentialSpec Instances.LWWRegister.D :=
 example : True := by
   fail_if_success
     have bad : SequentialCorrectnessCertificate Instances.LWWRegister.D
-        Instances.LWWRegister.issuance Instances.LWWRegister.rc
+        Instances.LWWRegister.issuance Instances.LWWRegister.replayOrder
         wrongLegality Instances.LWWRegister.stateRel :=
       Instances.LWWRegister.verified.sequentialCorrectness
   trivial

@@ -4,7 +4,7 @@ import Sal.MRDTs.Paper1.ConcreteJoin
 namespace Sal.MRDTs.Paper1.CertifiedFugueVCReplay
 open Foundation Sal.EmbedRGA
 open Instances.SidedEmbedRGA Instances.SidedEmbedRGA.FugueMax
-attribute [local instance] Instances.SidedEmbedRGA.FugueMax.rc
+attribute [local instance] Instances.SidedEmbedRGA.FugueMax.replayOrder
 
 def representation (Γ : OrderedPrefixCode) (C : ReplayContext (datatype Γ).toUpdateSig)
     (H : Set (Op Payload)) (s : State) : Prop :=
@@ -29,7 +29,7 @@ theorem respects_lo (Γ : OrderedPrefixCode) (C : Configuration (datatype Γ))
   intro a b ha hb hn edge
   have ea := support ((perm.2 a).mp ha)
   have eb := support ((perm.2 b).mp hb)
-  exact hn (rc_visible C mint trans eb ea ((lo_iff_rc C mint trans H eb ea).mp edge))
+  exact hn (replayOrder_visible C mint trans eb ea ((lo_iff_replayOrder C mint trans H eb ea).mp edge))
 
 theorem unique (Γ : OrderedPrefixCode) : ConcreteMRDT.Raw.Unique (representation Γ) := by
   intro C H s t hs ht

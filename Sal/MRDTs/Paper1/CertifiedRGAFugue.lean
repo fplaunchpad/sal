@@ -6,7 +6,7 @@ including its insertion birth set and original executable issuer. -/
 namespace Sal.MRDTs.Paper1.CertifiedRGAFugue
 open Foundation Sal.EmbedRGA
 open Instances.SidedEmbedRGA Instances.SidedEmbedRGA.FugueMax
-attribute [local instance] Instances.SidedEmbedRGA.FugueMax.rc
+attribute [local instance] Instances.SidedEmbedRGA.FugueMax.replayOrder
 
 private theorem respects_lo (Γ : OrderedPrefixCode) (C : Configuration (datatype Γ))
     (mint : MintHonest (datatype Γ) (applicable Γ) C) (trans : Transitive C.vis)
@@ -17,7 +17,7 @@ private theorem respects_lo (Γ : OrderedPrefixCode) (C : Configuration (datatyp
   intro a b ha hb hn edge
   have ea := support ((perm.2 a).mp ha)
   have eb := support ((perm.2 b).mp hb)
-  exact hn (rc_visible C mint trans eb ea ((lo_iff_rc C mint trans H eb ea).mp edge))
+  exact hn (replayOrder_visible C mint trans eb ea ((lo_iff_replayOrder C mint trans H eb ea).mp edge))
 
 theorem unique (Γ : OrderedPrefixCode) (C : Configuration (datatype Γ))
     (mint : MintHonest (datatype Γ) (applicable Γ) C) (trans : Transitive C.vis) :

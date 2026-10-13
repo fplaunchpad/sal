@@ -8,7 +8,7 @@ import Mathlib.Data.List.MinMax
 # Last-writer-wins register
 
 The representation stores the greatest timestamped write. Updates and merge
-are `max`, so raw effectors commute. Its sole public `rc` policy orders writes
+are `max`, so raw effectors commute. Its selected event `replayOrder` orders writes
 by their timestamped key. A sorted overwrite history is therefore an ordinary
 sequential-register explanation of every stored state.
 -/
@@ -68,34 +68,34 @@ theorem all_comm (a b : Op D.AppOp) : D.toUpdateSig.commutes a b := by
   simp only [D, update]
   simp [max_comm, max_assoc, max_left_comm]
 
-def rc : ReplayPolicy D.toUpdateSig where
+def replayOrder : EventOrder D.toUpdateSig where
   order := fun first second =>
     if packedWrite first < packedWrite second then .Fst_then_snd
     else if packedWrite second < packedWrite first then .Snd_then_fst
     else .Either
 
-local instance : ReplayPolicy D.toUpdateSig := rc
+local instance : EventOrder D.toUpdateSig := replayOrder
 
-theorem rc_fst_iff (first second : Op LWWOp) :
-    rc.order first second = RcRes.Fst_then_snd ↔
+theorem replayOrder_fst_iff (first second : Op LWWOp) :
+    replayOrder.order first second = OrderResult.Fst_then_snd ↔
       packedWrite first < packedWrite second := by
   by_cases h₁₂ : packedWrite first < packedWrite second
-  · simp [rc, h₁₂]
+  · simp [replayOrder, h₁₂]
   · by_cases h₂₁ : packedWrite second < packedWrite first
-    · simp [rc, h₁₂, h₂₁]
-    · simp [rc, h₁₂, h₂₁]
+    · simp [replayOrder, h₁₂, h₂₁]
+    · simp [replayOrder, h₁₂, h₂₁]
 
 /-- The public LWW direction permits chains but cannot contain a cycle because
 every edge strictly increases the packed write key. -/
-theorem rc_order_acyclic (first : Op LWWOp) :
+theorem replayOrder_order_acyclic (first : Op LWWOp) :
     ¬ Relation.TransGen
-      (fun a b => rc.order a b = RcRes.Fst_then_snd)
+      (fun a b => replayOrder.order a b = OrderResult.Fst_then_snd)
       first first := by
   intro hcycle
   have hlt : Relation.TransGen
       (fun a b : Op LWWOp => packedWrite a < packedWrite b)
       first first :=
-    hcycle.lift id (fun a b h => (rc_fst_iff a b).mp h)
+    hcycle.lift id (fun a b h => (replayOrder_fst_iff a b).mp h)
   have htrans : Transitive
       (fun a b : Op LWWOp => packedWrite a < packedWrite b) :=
     fun _ _ _ => lt_trans
@@ -104,8 +104,8 @@ theorem rc_order_acyclic (first : Op LWWOp) :
 
 /-- The same public timestamp policy is used throughout the concrete replay
 and sequential-correctness proofs. Its ordered updates may commute. -/
-theorem replayLaws : @ReplayLaws D.toUpdateSig rc :=
-  ReplayLaws.of_all_comm all_comm rc_order_acyclic
+theorem replayLaws : @ReplayLaws D.toUpdateSig replayOrder :=
+  ReplayLaws.of_all_comm all_comm replayOrder_order_acyclic
 
 theorem mergeLaws : MergeLaws D := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -175,7 +175,7 @@ theorem canonical_pairwise (ops : List (Op LWWOp)) :
 
 theorem canonical_respects (C : Configuration D) (E : Set (Op LWWOp))
     (ops : List (Op LWWOp)) :
-    respects (canonical ops) (@loOn D.toUpdateSig rc C.replayContext E) := by
+    respects (canonical ops) (@loOn D.toUpdateSig replayOrder C.replayContext E) := by
   unfold respects
   exact (canonical_pairwise ops).imp fun {first second} hle hedge => by
     rcases hedge with hvisible | hconcurrent
@@ -183,10 +183,10 @@ theorem canonical_respects (C : Configuration D) (E : Set (Op LWWOp))
         apply Prod.Lex.toLex_lt_toLex.mpr
         exact Or.inl (C.causal_mono hvisible.1)
       exact (not_lt_of_ge hle) hlt
-    · have hlt := (rc_fst_iff second first).mp hconcurrent.2.2.1
+    · have hlt := (replayOrder_fst_iff second first).mp hconcurrent.2.2.1
       exact (not_lt_of_ge hle) hlt
 
-def replayAdequacy : @ReplayAdequacyCertificate D issuance rc :=
+def replayAdequacy : @ReplayAdequacyCertificate D issuance replayOrder :=
   ReplayAdequacyCertificate.ofJoin issuance join
 
 theorem fold_refines_sorted : ∀ ops : List (Op LWWOp),
@@ -216,7 +216,7 @@ theorem fold_refines_sorted : ∀ ops : List (Op LWWOp),
             ih htail
 
 noncomputable def sequentialCorrectness :
-    SequentialCorrectnessCertificate D issuance rc spec stateRel where
+    SequentialCorrectnessCertificate D issuance replayOrder spec stateRel where
   sound := by
     intro C _ replay v state E hver
     obtain ⟨base, hbasePerm, _, hbaseFold⟩ := replay v state E hver
@@ -242,7 +242,7 @@ noncomputable def sequentialCorrectness :
 
 noncomputable def verified : VerifiedMRDT D where
   issuance := issuance
-  rc := rc
+  replayOrder := replayOrder
   replayAdequacy := replayAdequacy
   Spec := spec
   Rel := stateRel
@@ -255,9 +255,9 @@ def w₂ : Op LWWOp := (2, 1, .write 20)
 def w₃ : Op LWWOp := (3, 2, .write 30)
 
 theorem timestamp_chain :
-    rc.order w₁ w₂ = RcRes.Fst_then_snd ∧
-    rc.order w₂ w₃ = RcRes.Fst_then_snd := by
-  constructor <;> rw [rc_fst_iff] <;>
+    replayOrder.order w₁ w₂ = OrderResult.Fst_then_snd ∧
+    replayOrder.order w₂ w₃ = OrderResult.Fst_then_snd := by
+  constructor <;> rw [replayOrder_fst_iff] <;>
     apply Prod.Lex.toLex_lt_toLex.mpr <;> exact Or.inl (by decide)
 
 theorem chronological_winner :
@@ -267,10 +267,10 @@ theorem chronological_winner :
   rw [max_eq_right bot_le]
   rw [max_eq_right (show (↑(packedWrite w₁) : State) ≤ ↑(packedWrite w₂) by
     exact_mod_cast (show packedWrite w₁ ≤ packedWrite w₂ by
-      exact le_of_lt ((rc_fst_iff w₁ w₂).mp timestamp_chain.1)))]
+      exact le_of_lt ((replayOrder_fst_iff w₁ w₂).mp timestamp_chain.1)))]
   rw [max_eq_right (show (↑(packedWrite w₂) : State) ≤ ↑(packedWrite w₃) by
     exact_mod_cast (show packedWrite w₂ ≤ packedWrite w₃ by
-      exact le_of_lt ((rc_fst_iff w₂ w₃).mp timestamp_chain.2)))]
+      exact le_of_lt ((replayOrder_fst_iff w₂ w₃).mp timestamp_chain.2)))]
   rfl
 
 theorem reversed_delivery_same_winner :
@@ -291,13 +291,13 @@ theorem lower_timestamp_does_not_win :
 
 /-- PASS: semantic resolution orders writes whose concrete updates commute. -/
 theorem ordered_updates_commute :
-    rc.Before w₁ w₂ ∧ D.toUpdateSig.commutes w₁ w₂ := by
-  exact ⟨(rc_fst_iff w₁ w₂).mpr (by decide), all_comm w₁ w₂⟩
+    replayOrder.Before w₁ w₂ ∧ D.toUpdateSig.commutes w₁ w₂ := by
+  exact ⟨(replayOrder_fst_iff w₁ w₂).mpr (by decide), all_comm w₁ w₂⟩
 
 /-- FAIL: concrete noncommutation cannot characterize the semantic policy. -/
-theorem concrete_noncomm_iff_rc_refuted :
+theorem concrete_noncomm_iff_replayOrder_refuted :
     ¬ (∀ a b : Op LWWOp,
-      ¬ D.toUpdateSig.commutes a b ↔ (rc.Before a b ∨ rc.Before b a)) := by
+      ¬ D.toUpdateSig.commutes a b ↔ (replayOrder.Before a b ∨ replayOrder.Before b a)) := by
   intro h
   exact ((h w₁ w₂).mpr (Or.inl ordered_updates_commute.1))
     ordered_updates_commute.2
@@ -314,13 +314,13 @@ theorem reversed_assignments_wrong_winner :
 
 #print axioms join
 #print axioms verified
-#print axioms rc_order_acyclic
+#print axioms replayOrder_order_acyclic
 #print axioms timestamp_chain
 #print axioms chronological_winner
 #print axioms lower_timestamp_does_not_win
 #print axioms replayLaws
 #print axioms ordered_updates_commute
-#print axioms concrete_noncomm_iff_rc_refuted
+#print axioms concrete_noncomm_iff_replayOrder_refuted
 #print axioms reversed_assignments_wrong_winner
 
 end Sal.MRDTs.Instances.LWWRegister

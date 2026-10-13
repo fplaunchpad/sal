@@ -12,7 +12,7 @@ open Foundation
 open Sal.MRDTs.Instances.EfficientORSet
 open Classical
 variable {α : Type} [DecidableEq α]
-local instance : ReplayPolicy (D α).toUpdateSig := rc
+local instance : EventOrder (D α).toUpdateSig := replayOrder
 
 def model (α : Type) [DecidableEq α] : DeterministicSpec (Op (SetOp α)) α Bool where
   State := Finset α
@@ -33,8 +33,8 @@ theorem no_chain (a b c : SetOp α) :
   cases k
 
 /-- The policy retains the production remove-before-add rule exactly. -/
-theorem conflict_lift_eq : (conflict α).lift = (rc : ReplayPolicy (D α).toUpdateSig) := by
-  unfold OperationPolicy.lift rc
+theorem conflict_lift_eq : (conflict α).lift = (replayOrder : EventOrder (D α).toUpdateSig) := by
+  unfold OperationPolicy.lift replayOrder
   congr 1
   funext a b
   rcases a with ⟨ta, ra, oa⟩

@@ -89,7 +89,7 @@ The current framework declaration elaborates as:
 Join : MRDTSig → Prop
 ```
 
-It does not retain the section-local `ReplayPolicy` parameter, even though
+It does not retain the section-local `EventOrder` parameter, even though
 canonicality depends on replay order. `JoinWithPolicy` makes that
 dictionary explicit so the premise and conclusion use the same policy.
 `HistoricalVCs24_not_imply_join` also checks that the implication fails
@@ -105,7 +105,7 @@ presentation.
 
 Trusted definitions: the transcription of the historical statements, the
 current definitions of `IsCanonicalState` and ternary merge, and the intended
-meaning of `ReplayPolicy`. Lean checks consequences of these definitions; it
+meaning of `EventOrder`. Lean checks consequences of these definitions; it
 does not validate that the transcription or the framework semantics match the
 historical implementation.
 

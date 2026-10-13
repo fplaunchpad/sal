@@ -104,7 +104,7 @@ theorem mem_run_iff_live {C : ReplayContext (D α).toUpdateSig}
     have hm : r ∈ pre ++ a :: post := (hp.2 r).mpr hre
     rcases List.mem_append.mp hm with hm | hm
     · apply not_edge_to_prefix hr hm
-      exact Or.inl ⟨hv, Or.inr ((rc_iff r a).mpr ⟨p.1, hrem, ha⟩)⟩
+      exact Or.inl ⟨hv, Or.inr ((replayOrder_iff r a).mpr ⟨p.1, hrem, ha⟩)⟩
     · rcases List.mem_cons.mp hm with heq | hm
       · rw [heq, ha] at hrem; cases hrem
       · exact hn r hm hrem
@@ -115,16 +115,16 @@ theorem mem_run_iff_live {C : ReplayContext (D α).toUpdateSig}
     intro r hm hrem
     apply not_edge_from_suffix hr hm
     have hre : r ∈ E := (hp.2 r).mp (by simp [hm])
-    have hrc : (D α).toUpdateSig.rc r a := (rc_iff r a).mpr ⟨p.1, hrem, ha⟩
+    have hrc : (D α).toUpdateSig.replayBefore r a := (replayOrder_iff r a).mpr ⟨p.1, hrem, ha⟩
     by_cases hva : C.vis r a
     · exact Or.inl ⟨hva, Or.inl hrc⟩
     · refine Or.inr ⟨hva, ?_, hrc, ?_⟩
       · exact fun hv => hn ⟨r, hre, hv, hrem⟩
       · rintro ⟨c, hce, hvc, hc⟩
         rcases hc with hc | hc
-        · obtain ⟨x, ha', _⟩ := (rc_iff a c).mp hc
+        · obtain ⟨x, ha', _⟩ := (replayOrder_iff a c).mp hc
           rw [ha] at ha'; cases ha'
-        · obtain ⟨x, hc, ha'⟩ := (rc_iff c a).mp hc
+        · obtain ⟨x, hc, ha'⟩ := (replayOrder_iff c a).mp hc
           rw [ha] at ha'; injection ha' with hx
           subst x
           exact hn ⟨c, hce, hvc, hc⟩
@@ -170,13 +170,13 @@ theorem live_join {C : ReplayContext (D α).toUpdateSig}
     have hk₁ : ¬ Survives C E₁ a p.1 → a ∈ E₁ := by
       intro hn
       obtain ⟨r, hr, hv, hop⟩ := Classical.not_not.mp hn
-      exact hclosed₁ a r hv ((noncomm_iff_rc a r).mpr
-        (Or.inr ((rc_iff r a).mpr ⟨p.1, hop, ha⟩))) hr
+      exact hclosed₁ a r hv ((noncomm_iff_replayOrder a r).mpr
+        (Or.inr ((replayOrder_iff r a).mpr ⟨p.1, hop, ha⟩))) hr
     have hk₂ : ¬ Survives C E₂ a p.1 → a ∈ E₂ := by
       intro hn
       obtain ⟨r, hr, hv, hop⟩ := Classical.not_not.mp hn
-      exact hclosed₂ a r hv ((noncomm_iff_rc a r).mpr
-        (Or.inr ((rc_iff r a).mpr ⟨p.1, hop, ha⟩))) hr
+      exact hclosed₂ a r hv ((noncomm_iff_replayOrder a r).mpr
+        (Or.inr ((replayOrder_iff r a).mpr ⟨p.1, hop, ha⟩))) hr
     have hu : Survives C (E₁ ∪ E₂) a p.1 ↔
         Survives C E₁ a p.1 ∧ Survives C E₂ a p.1 := by
       simp only [Survives, Set.mem_union]

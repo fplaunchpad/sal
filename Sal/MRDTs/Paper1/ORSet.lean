@@ -39,19 +39,19 @@ def D (α : Type) [DecidableEq α] : MRDTSig where
   query := query
   merge := merge
 
-def order (a b : Op (Update α)) : RcRes :=
+def order (a b : Op (Update α)) : OrderResult :=
   match a.2.2, b.2.2 with
   | .remove x, .add y => if x = y then .Fst_then_snd else .Either
   | .add x, .remove y => if x = y then .Snd_then_fst else .Either
   | _, _ => .Either
 
-instance policy : ReplayPolicy (D α).toUpdateSig where
+instance policy : EventOrder (D α).toUpdateSig where
   order := order
 
-@[simp] theorem rc_iff (a b : Op (Update α)) :
-    (D α).toUpdateSig.rc a b ↔ ∃ x, a.2.2 = .remove x ∧ b.2.2 = .add x := by
+@[simp] theorem replayOrder_iff (a b : Op (Update α)) :
+    (D α).toUpdateSig.replayBefore a b ↔ ∃ x, a.2.2 = .remove x ∧ b.2.2 = .add x := by
   rcases a with ⟨ta, ar, ao⟩; rcases b with ⟨bt, br, bo⟩
-  cases ao <;> cases bo <;> simp [UpdateSig.rc, ReplayPolicy.Before, policy, order]
+  cases ao <;> cases bo <;> simp [UpdateSig.replayBefore, EventOrder.Before, policy, order]
   all_goals first | (split <;> simp_all) | exact eq_comm
 
 @[simp] theorem mem_step (s : State α) (e : Op (Update α)) (p : α × Timestamp) :
@@ -61,26 +61,26 @@ instance policy : ReplayPolicy (D α).toUpdateSig where
   rcases e with ⟨t, r, op⟩; cases op <;> simp [step]
 
 theorem commute_of_no_conflict (a b : Op (Update α))
-    (h : ¬ ((D α).toUpdateSig.rc a b ∨ (D α).toUpdateSig.rc b a)) :
+    (h : ¬ ((D α).toUpdateSig.replayBefore a b ∨ (D α).toUpdateSig.replayBefore b a)) :
     (D α).toUpdateSig.commutes a b := by
-  have hh : ¬ ((∃ x, a.2.2 = .remove x ∧ b.2.2 = .add x) ∨ (∃ x, b.2.2 = .remove x ∧ a.2.2 = .add x)) := by simpa only [rc_iff] using h
+  have hh : ¬ ((∃ x, a.2.2 = .remove x ∧ b.2.2 = .add x) ∨ (∃ x, b.2.2 = .remove x ∧ a.2.2 = .add x)) := by simpa only [replayOrder_iff] using h
   intro s
   rcases a with ⟨ta, ar, ao⟩; rcases b with ⟨bt, br, bo⟩
   change step (step s (ta, ar, ao)) (bt, br, bo) = step (step s (bt, br, bo)) (ta, ar, ao)
   cases ao <;> cases bo <;> ext p <;>
     simp [step] at hh ⊢ <;> grind
 
-theorem noncomm_iff_rc (a b : Op (Update α)) :
+theorem noncomm_iff_replayOrder (a b : Op (Update α)) :
     ¬ (D α).toUpdateSig.commutes a b ↔
-      ((D α).toUpdateSig.rc a b ∨ (D α).toUpdateSig.rc b a) := by
+      ((D α).toUpdateSig.replayBefore a b ∨ (D α).toUpdateSig.replayBefore b a) := by
   constructor
   · exact fun hn => Classical.byContradiction (fun h => hn (commute_of_no_conflict a b h))
   · intro hr hc
     rcases hr with hr | hr
-    · obtain ⟨x, ha, hb⟩ := (rc_iff a b).mp hr
+    · obtain ⟨x, ha, hb⟩ := (replayOrder_iff a b).mp hr
       have h := Finset.ext_iff.mp (hc (∅ : State α)) (x, b.1)
       simp [D, step, ha, hb] at h
-    · obtain ⟨x, hb, ha⟩ := (rc_iff b a).mp hr
+    · obtain ⟨x, hb, ha⟩ := (replayOrder_iff b a).mp hr
       have h := Finset.ext_iff.mp (hc (∅ : State α)) (x, a.1)
       simp [D, step, ha, hb] at h
 
@@ -99,23 +99,23 @@ theorem eqExcept_fold {x : α} {a b : State α} (h : EqExcept x a b)
   | nil => exact h
   | cons e ops ih => exact ih (eqExcept_step h e)
 
-theorem no_rc_chain (a b c : Op (Update α)) :
-    ¬ ((D α).toUpdateSig.rc a b ∧ (D α).toUpdateSig.rc b c) := by
+theorem no_replayOrder_chain (a b c : Op (Update α)) :
+    ¬ ((D α).toUpdateSig.replayBefore a b ∧ (D α).toUpdateSig.replayBefore b c) := by
   rintro ⟨hab, hbc⟩
-  obtain ⟨x, _, hb⟩ := (rc_iff a b).mp hab
-  obtain ⟨y, hb', _⟩ := (rc_iff b c).mp hbc
+  obtain ⟨x, _, hb⟩ := (replayOrder_iff a b).mp hab
+  obtain ⟨y, hb', _⟩ := (replayOrder_iff b c).mp hbc
   rw [hb] at hb'; cases hb'
 
 theorem replayLaws : ReplayLaws (D α).toUpdateSig := by
-  refine ⟨fun a b => (noncomm_iff_rc a b).mp, ?_, ?_⟩
-  · exact rcAcyclic_of_noRcChain no_rc_chain
+  refine ⟨fun a b => (noncomm_iff_replayOrder a b).mp, ?_, ?_⟩
+  · exact replayAcyclic_of_noReplayChain no_replayOrder_chain
   · intro s e a r ops _ _ _ hea har
-    obtain ⟨x, he, ha⟩ := (rc_iff e a).mp hea
+    obtain ⟨x, he, ha⟩ := (replayOrder_iff e a).mp hea
     have hr : r.2.2 = .remove x := by
       rcases har with h | h
-      · obtain ⟨y, ha', _⟩ := (rc_iff a r).mp h
+      · obtain ⟨y, ha', _⟩ := (replayOrder_iff a r).mp h
         rw [ha] at ha'; cases ha'
-      · obtain ⟨y, hr, ha'⟩ := (rc_iff r a).mp h
+      · obtain ⟨y, hr, ha'⟩ := (replayOrder_iff r a).mp h
         rw [ha] at ha'; injection ha' with hxy; subst y; exact hr
     have hbase : EqExcept x (step (step s a) e) (step (step s e) a) := by
       intro p hp; simp [step, he, ha, hp]

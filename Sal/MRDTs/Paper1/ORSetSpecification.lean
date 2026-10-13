@@ -47,7 +47,7 @@ specification-visible criterion. This theorem does not redefine the active crite
 theorem specificationCertifiedRAV :
     ∀ C, MintCertifiedReachV (D α) (canonicalVirtualMergeBase (D α)) (issuance α) C →
       SpecificationRALinearizable (D α) (conflict α) (spec α).toSpec C := by
-  letI : ReplayPolicy (D α).toUpdateSig := (conflict α).lift
+  letI : EventOrder (D α).toUpdateSig := (conflict α).lift
   intro C reach
   have hjoin : ∀ C, MintHonest (D α) (issuance α).CanIssue C →
       @JoinAt (D α) (conflict α).lift C.replayContext := by

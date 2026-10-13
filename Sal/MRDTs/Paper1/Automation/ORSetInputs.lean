@@ -21,13 +21,13 @@ end OrdinaryORSet
 namespace EfficientORSet
 open Instances.EfficientORSet
 variable {α : Type} [DecidableEq α]
-local instance policyData : PolicyData (D α) := ⟨rc.order⟩
+local instance policyData : PolicyData (D α) := ⟨replayOrder.order⟩
 local instance maskData : MaskData (D α) (Sal.MRDTs.Paper1.EfficientORSet.EventSpec.conflict α) where
   Record := Record α
   recordDecidableEq := inferInstance
   description := AutomatedEfficientORSet.maskDescription
 attribute [local policy_expansion_simps] policyData LocalAssembly.ofMRDT D
-  update merge rc Sal.MRDTs.Paper1.EfficientORSet.EventSpec.conflict Op.op Op.rep Op.time
+  update merge replayOrder Sal.MRDTs.Paper1.EfficientORSet.EventSpec.conflict Op.op Op.rep Op.time
 attribute [local policy_expansion_simps] maskData
   AutomatedEfficientORSet.maskDescription AutomatedEfficientORSet.birth kills
 attribute [local mask_implementation] maskData

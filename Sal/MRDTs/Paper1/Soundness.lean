@@ -17,7 +17,7 @@ structure PaperMergeVCs (D : MRDTSig) (P : OperationPolicy D.AppOp) : Prop where
 def PaperMergeVCs.toCanonical {D : MRDTSig} {P : OperationPolicy D.AppOp}
     (vcs : PaperMergeVCs D P) (restricted : RestrictedLaws D.toUpdateSig P) :
     @CanonicalJoinLaws D P.lift := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact ⟨⟨restricted.replayLaws, vcs.merge_comm⟩, vcs.delta, vcs.causal_delta⟩
 
 private theorem execution_invariant (T : LabeledTS) (Good : T.State → Prop)
@@ -53,7 +53,7 @@ theorem rawRA_of_join_total {D : MRDTSig} {P : OperationPolicy D.AppOp}
     {S : HistorySpec D.AppOp D.Query D.Value}
     (laws : RestrictedLaws D.toUpdateSig P) (join : @Join D P.lift)
     (sound : FoldHistorySound D S) : RAImplementation D P S := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   apply raImplementation_of_reachable
   intro C reach
   exact (ra_of_replay_total laws (replayWitness_of_join join C reach) sound).heads
@@ -104,7 +104,7 @@ theorem certifiedRA_of_fiveVCs {D : MRDTSig} {P : OperationPolicy D.AppOp}
     (restricted : RestrictedLaws D.toUpdateSig P)
     (vcs : PaperMergeVCs D P)
     (sequential : FoldHistorySound D S) : CertifiedRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact certifiedRA_of_join_total restricted
     (fun C _ => (vcs.toCanonical restricted).join C.replayContext) sequential
 
@@ -113,7 +113,7 @@ theorem certifiedRA_of_fiveVCs_issued {D : MRDTSig} {P : OperationPolicy D.AppOp
     (restricted : RestrictedLaws D.toUpdateSig P)
     (vcs : PaperMergeVCs D P)
     (sequential : IssuedHistoryAdequacy D P S I) : CertifiedRAV D P S I := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   exact certifiedRA_of_join restricted
     (fun C _ => (vcs.toCanonical restricted).join C.replayContext) sequential
 
@@ -124,7 +124,7 @@ theorem certified_convergence_of_join {D : MRDTSig} {P : OperationPolicy D.AppOp
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) I C)
     {v w : Version} {s t : D.State} {E : Set (Op D.AppOp)}
     (hv : C.ver v = some (s, E)) (hw : C.ver w = some (t, E)) : s = t := by
-  letI : ReplayPolicy D.toUpdateSig := P.lift
+  letI : EventOrder D.toUpdateSig := P.lift
   have canonical := canonicalConfig_of_mintCertifiedV join reach
   exact isCanonicalState_unique_of_replayLaws laws.replayLaws
     (canonical.version_events_supported v s E hv)

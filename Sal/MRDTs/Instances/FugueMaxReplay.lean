@@ -76,7 +76,7 @@ def fUpdate (Γ : OrderedPrefixCode) (s : SState) (o : Op FOp) : SState :=
   | .del x => s.filter (fun r => decide (r.1 ≠ x))
 
 /-- The FugueMax embedded-chain RGA, parametric in the delta code. State,
-merge, query, and `rc` are the sided instance's verbatim (the state IS the
+merge, query, and `replayOrder` are the sided instance's verbatim (the state IS the
 same canonical sorted list); only the op alphabet and the block format
 differ. -/
 def FMSig (Γ : OrderedPrefixCode) : MRDTSig where
@@ -94,7 +94,7 @@ def FMSig (Γ : OrderedPrefixCode) : MRDTSig where
 theorem FMSig_core_update (Γ : OrderedPrefixCode) (s : SState) (o : Op FOp) :
     (FMSig Γ).toUpdateSig.update s o = fUpdate Γ s o := rfl
 
-def fRcOrder (a b : Op FOp) : RcRes :=
+def fEventOrder (a b : Op FOp) : OrderResult :=
   match a.2.2, b.2.2 with
   | .ins _ _ _, .del target =>
       if a.1 = target then .Fst_then_snd else .Either
@@ -102,11 +102,11 @@ def fRcOrder (a b : Op FOp) : RcRes :=
       if b.1 = target then .Snd_then_fst else .Either
   | _, _ => .Either
 
-/-- FugueMax has the same resolve-conflict shape as SidedEmbedRGA: an
+/-- FugueMax has the same event-order shape as SidedEmbedRGA: an
 insertion precedes deletion of the identifier allocated by that insertion. -/
-instance FMReplayPolicy (Γ : OrderedPrefixCode) :
-    ReplayPolicy (FMSig Γ).toUpdateSig where
-  order := fRcOrder
+instance FMEventOrder (Γ : OrderedPrefixCode) :
+    EventOrder (FMSig Γ).toUpdateSig where
+  order := fEventOrder
 
 /-! ## §3  Well-formed enumerations and fold-canonicity
 
@@ -398,26 +398,26 @@ theorem f_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r el : ℕ)
     if_false, List.filter_nil] at h0
   simp at h0
 
-theorem f_not_comm_of_rc {Γ : OrderedPrefixCode} {a b : Op FOp}
-    (h : (FMSig Γ).toUpdateSig.rc a b ∨ (FMSig Γ).toUpdateSig.rc b a) :
+theorem f_not_comm_of_replayOrder {Γ : OrderedPrefixCode} {a b : Op FOp}
+    (h : (FMSig Γ).toUpdateSig.replayBefore a b ∨ (FMSig Γ).toUpdateSig.replayBefore b a) :
     ¬ (FMSig Γ).toUpdateSig.commutes a b := by
   obtain ⟨ats, ar, aop⟩ := a
   obtain ⟨bts, br, bop⟩ := b
   cases aop <;> cases bop
-  · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] at h
+  · simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder] at h
   · rename_i el π ent target
     by_cases heq : ats = target
     · subst target
       exact f_ins_del_not_comm Γ ats ar el π ent bts br
-    · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder, heq] at h
+    · simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder, heq] at h
   · rename_i target el π ent
     by_cases heq : bts = target
     · subst target
       intro hc
       exact f_ins_del_not_comm Γ bts br el π ent ats ar
         (fun s => (hc s).symm)
-    · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder, heq] at h
-  · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] at h
+    · simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder, heq] at h
+  · simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder] at h
 
 /-- Honest histories. -/
 structure FMHonestCore (Γ : OrderedPrefixCode)
@@ -434,15 +434,15 @@ structure FMHonestCore (Γ : OrderedPrefixCode)
       fCoord Γ o = fmCoordOf Γ (chainOf o.1) ∧
       ((chainOf o.1).map fmδ).sum = o.1
 
-theorem f_vis_of_rc_of_honest {Γ : OrderedPrefixCode}
+theorem f_vis_of_replayOrder_of_honest {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.ReplayContext (FMSig Γ).toUpdateSig}
     (hHon : FMHonestCore Γ C) {a b : Op FOp}
     (ha : a ∈ C.events) (hb : b ∈ C.events)
-    (hrc : (FMSig Γ).toUpdateSig.rc b a) : C.vis b a := by
+    (hrc : (FMSig Γ).toUpdateSig.replayBefore b a) : C.vis b a := by
   obtain ⟨bts, br, bop⟩ := b
   obtain ⟨ats, ar, aop⟩ := a
   cases bop <;> cases aop
-  · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] at hrc
+  · simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder] at hrc
   · rename_i el π ent target
     by_cases heq : bts = target
     · obtain ⟨c, hc, hvis, hct, _⟩ :=
@@ -450,11 +450,11 @@ theorem f_vis_of_rc_of_honest {Γ : OrderedPrefixCode}
       have hcb : c = (bts, br, .ins el π ent) :=
         C.ts_unique hc hb (hct.trans heq.symm)
       simpa [hcb] using hvis
-    · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder, heq] at hrc
+    · simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder, heq] at hrc
   · rename_i target el π ent
     by_cases heq : ats = target <;>
-      simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder, heq] at hrc
-  · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] at hrc
+      simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder, heq] at hrc
+  · simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder] at hrc
 
 /-- Honesty + backward closure: a delete's insert lies in the same closed
 event set, `vis`-before it. -/
@@ -522,7 +522,7 @@ theorem f_wf_of_enum {Γ : OrderedPrefixCode}
     cases aop with
     | del y => simp [fIsIns] at hins
     | ins el π ent =>
-        simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder]
+        simp [UpdateSig.replayBefore, EventOrder.Before, FMEventOrder, fEventOrder]
   keys_inj := by
     obtain ⟨chainOf, hch⟩ := hHon.chain_gen
     intro o₁ h₁ o₂ h₂ hi₁ hi₂ hne hkey
@@ -813,10 +813,10 @@ theorem f_join_at {Γ : OrderedPrefixCode}
       -- cross δ₁ × δ₂: a loOn-later δ₂ event before a δ₁ event would be in ev₁
       intro a ha b hb hl
       rcases hl with ⟨hvis, hrc⟩ | ⟨hnv, _, hrc, _⟩
-      · have hb1 : b ∈ ev₁ := hcl₁ b a hvis (f_not_comm_of_rc hrc)
+      · have hb1 : b ∈ ev₁ := hcl₁ b a hvis (f_not_comm_of_replayOrder hrc)
           ((hp₁.2 a).mp (hmemδ₁.mp ha).1)
         exact (hmemδ₂.mp hb).2 hb1
-      · exact hnv (f_vis_of_rc_of_honest hHon
+      · exact hnv (f_vis_of_replayOrder_of_honest hHon
           (hin₁ a ((hp₁.2 a).mp (hmemδ₁.mp ha).1))
           (hin₂ b ((hp₂.2 b).mp (hmemδ₂.mp hb).1)) hrc)
     · -- cross ρ₀ × deltas: a loOn-later delta event before an GCA event
@@ -828,11 +828,11 @@ theorem f_join_at {Γ : OrderedPrefixCode}
         · exact hin₁ b ((hp₁.2 b).mp (hmemδ₁.mp h).1)
         · exact hin₂ b ((hp₂.2 b).mp (hmemδ₂.mp h).1)
       rcases hl with ⟨hvis, hrc⟩ | ⟨hnv, _, hrc, _⟩
-      · have hb0 : b ∈ ev₀ := hcl₀ b a hvis (f_not_comm_of_rc hrc) ha0
+      · have hb0 : b ∈ ev₀ := hcl₀ b a hvis (f_not_comm_of_replayOrder hrc) ha0
         rcases List.mem_append.mp hb with h | h
         · exact (hmemδ₁.mp h).2 hb0
         · exact (hmemδ₂.mp h).2 hb0.1
-      · exact hnv (f_vis_of_rc_of_honest hHon (hin₀ a ha0) hbC hrc)
+      · exact hnv (f_vis_of_replayOrder_of_honest hHon (hin₀ a ha0) hbC hrc)
   have hwfU : FWf Γ ρᵤ := f_wf_of_enum hHon hinU hclU hpU hrU
   -- the fold of the witness IS the merge, by canonical-form extensionality
   refine ⟨ρᵤ, hpU, hrU, ?_⟩
