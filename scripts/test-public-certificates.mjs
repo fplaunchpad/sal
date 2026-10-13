@@ -19,7 +19,7 @@ test('missing obligations, duplicate identities and certificate-derived specs ar
   duplicate.contracts.push(duplicate.contracts[0]);
   assert.throws(() => validateContracts(duplicate, runtime), /duplicate contract/);
   const circular = structuredClone(contracts);
-  circular.contracts[0].spec = 'Instances.GSet.verified.Spec';
+  circular.contracts[0].spec = 'Instances.AddStore.verified.Spec';
   assert.throws(() => validateContracts(circular, runtime), /independently/);
 });
 

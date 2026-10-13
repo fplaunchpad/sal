@@ -83,10 +83,8 @@ noncomputable def blocked (name : String) {D : MRDTSig}
 open Sal.EmbedRGA
 
 noncomputable def inventory : List Entry :=
-  [ proved "grow-only-set" Instances.GSet.verified
+  [ proved "grow-only-set" (Instances.AddStore.verified (α := Nat))
       (provedScoped Guarded.SimplePorts.gsetCertificate)
-  , proved "add-store" (Instances.AddStore.verified (α := Nat))
-      (provedScoped Guarded.SimplePorts.addStoreCertificate)
   , proved "finite-add-store" (Instances.FinsetStore.verified (α := Nat))
       (provedScoped Guarded.SimplePorts.finiteAddCertificate)
   , proved "counter" Instances.FlatCounters.counterVerified
@@ -136,10 +134,10 @@ theorem every_production_entry (original : PackagedMRDT)
 
 noncomputable def tags : List Tag := inventory.map (fun e => e.disposition.tag)
 
-theorem inventory_length : inventory.length = 22 := rfl
+theorem inventory_length : inventory.length = 21 := rfl
 
 theorem counts :
-    (tags.filter (· == .proved)).length = 14 ∧
+    (tags.filter (· == .proved)).length = 13 ∧
     (tags.filter (· == .blocked)).length = 8 := by decide
 
 /-- Additional exact-paper OR-set; the production registry remains unchanged. -/

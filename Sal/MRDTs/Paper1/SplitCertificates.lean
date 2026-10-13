@@ -12,8 +12,8 @@ import Sal.MRDTs.Paper1.CertifiedRGARichCertificate
 import Sal.MRDTs.Paper1.AnchoredQueueCertificate
 import Sal.MRDTs.Paper1.SelfCommutationInstancesCertified
 
-/-! Exactly the 23 automation cases. Shared aliases are intentionally separate
-named cases. Raw cases use split five-VC/certificate execution constructors;
+/-! Exactly the 22 automation cases after consolidating the grow-only set
+with the generic AddStore implementation. Raw cases use split five-VC/certificate execution constructors;
 scoped cases expose the split policy in the existing actual execution
 certificate. FugueMax remains scoped algebraic replay, with no RA claim. -/
 namespace Sal.MRDTs.Paper1.SplitCertificates
@@ -22,9 +22,6 @@ noncomputable section
 abbrev gset := Concrete.VCConditions.ofExisting ConcreteMRDT.SimplePorts.gsetConditions
 abbrev gsetExecutions := gset.executions
 abbrev gsetExecutionsV := gset.executionsV
-abbrev addStore := Concrete.VCConditions.ofExisting ConcreteMRDT.SimplePorts.addStoreConditions
-abbrev addStoreExecutions := addStore.executions
-abbrev addStoreExecutionsV := addStore.executionsV
 abbrev finiteAdd := Concrete.VCConditions.ofExisting ConcreteMRDT.SimplePorts.finiteAddConditions
 abbrev finiteAddExecutions := finiteAdd.executions
 abbrev finiteAddExecutionsV := finiteAdd.executionsV

@@ -201,10 +201,8 @@ def fugueObstruction : RawOrderObstruction (Instances.SidedEmbedRGA.FugueMax.dat
   impossible P := (CertifiedFugueRawOrderObstruction.certified_raw_criterion_failure P).2
 
 noncomputable def inventory : List Entry :=
-  [ guarded "grow-only-set" Instances.GSet.verified
+  [ guarded "grow-only-set" (Instances.AddStore.verified (α := Nat))
       (GuardedCoverage.provedScoped Guarded.SimplePorts.gsetCertificate)
-  , guarded "add-store" (Instances.AddStore.verified (α := Nat))
-      (GuardedCoverage.provedScoped Guarded.SimplePorts.addStoreCertificate)
   , guarded "finite-add-store" (Instances.FinsetStore.verified (α := Nat))
       (GuardedCoverage.provedScoped Guarded.SimplePorts.finiteAddCertificate)
   , guarded "counter" Instances.FlatCounters.counterVerified
@@ -251,8 +249,8 @@ theorem every_production_entry (original : PackagedMRDT) (member : original ∈ 
 
 noncomputable def tags : List Tag := inventory.map (fun e => e.disposition.tag)
 
-theorem counts : inventory.length = 22 ∧
-    (tags.filter (· == .guarded)).length = 14 ∧
+theorem counts : inventory.length = 21 ∧
+    (tags.filter (· == .guarded)).length = 13 ∧
     (tags.filter (· == .scoped)).length = 3 ∧
     (tags.filter (· == .canonicalOnly)).length = 0 ∧
     (tags.filter (· == .rawOrderObstruction)).length = 4 ∧

@@ -7,19 +7,29 @@ Join, represented-version and RA certificates consume those proofs. This
 directory contains the production audit tooling and effort reports.
 
 The migration preserves implementations, issuers, operation policies,
-representations, execution contracts and existing theorem statements. The 23
-named cases include aliases and specializations. Queue means anchored enqueue;
+representations, execution contracts and existing theorem statements. The current
+22 implementation/proof cases consolidate the grow-only set and generic AddStore
+into one entry. Counts describe proof configurations, not distinct abstract
+datatypes: FinsetStore and the pointwise Boolean FlatGrowOnly set implement the
+same grow-only set semantics. FinsetStore remains the enumerable carrier needed
+by Peritext. Queue means anchored enqueue;
 the historical unanchored queue is excluded. Core/RichCore retain native
 insert-only issuance. Fugue’s represented-version result uses the common VCs;
 its original issuer and independent sequential specification have a checked
-specification-visibility obstruction. The 23-case automation inventory is distinct
-from the 22-package production registry; the latter retains the historical queue.
+specification-visibility obstruction. The 22-case automation inventory is distinct
+from the 21-package production registry; the latter retains the historical queue.
 
 Kartik's split policy interfaces are integrated and checked for these same
-23 cases, with the original event/state scopes and five-VC dependencies.
+22 cases, with the original event/state scopes and five-VC dependencies.
 The additional transferable-counter candidate has separate proofs and is not
 included in the measured corpus or its effort columns. Existing `BoundedCounter`
-rows refer to independent nonnegative replica accounts.
+rows refer to independent nonnegative replica accounts. The submission's
+published Balegas matrix/max counter now has separate checked five-VC,
+sequential-history, local-safety and global-union proofs in
+[`BalegasBoundedCounterAudit`](../../Sal/MRDTs/Paper1/BalegasBoundedCounterAudit.lean).
+It is not yet a measured case in the automation effort tables below. Its
+[bounded exhaustive control](balegas-controls.py) checks 49,796 trace prefixes
+with zero failures; ten Lean PASS+FAIL controls exercise the actual definitions.
 
 ## What does the RDT author supply?
 
@@ -146,13 +156,14 @@ including statements and proof bodies, plus required annotations and explicitly
 identified proof-packaging fields. They measure source footprint, not human time or proof difficulty.
 Per-case totals overlap because instances share helpers, so do not sum the rows.
 
-The current audit passes **23 named cases, 69 distinct public endpoints and 95
-existing production roots**. These include aliases and family specializations.
+The recorded effort audit before consolidation covered **23 named cases,
+69 distinct public endpoints and 95 existing production roots**. Its JSON reports
+retain that historical inventory. The current audit scripts check 22 cases; the
+grow-only set keeps the original five-VC and sequential-bridge checks.
 
 | Instance | Before automation (lines) | With automation (lines) |
 |---|---:|---:|
 | Grow-only set | 40 | 12 |
-| Add-store | 40 | 12 |
 | Finite add-store | 28 | 12 |
 | Counter | 49 | 14 |
 | Increment-only counter | 49 | 14 |
@@ -336,14 +347,14 @@ five VCs or independently establish the datatype's sequential semantics.
 
 The current experiment reduces structural proof work beneath that interface:
 
-The following table covers all 23 registered cases; aliases sharing the same
-bridge are grouped. Counts are nonblank, noncomment lines in the transitive
+The following historical measurement table groups shared bridges; the duplicate
+AddStore row has been consolidated with the grow-only set. Counts are nonblank, noncomment lines in the transitive
 closure of each registered sequential-bridge theorem, including required helper
 proofs and annotations. They do not measure just the final wrapper.
 
 | Case | Classified proof/description lines | All concrete source lines | Main manual argument |
 |---|---:|---:|---|
-| Grow-only set / AddStore | 9 | 26 | Direct update simulation |
+| Grow-only set (`AddStore`) | 9 | 26 | Direct update simulation |
 | Finite AddStore | 5 | 22 | Direct update simulation |
 | Counter / increment-only / PN | 10 | 27 | Arithmetic update simulation |
 | Flat grow-only set / map | 7 | 24 | Pointwise update simulation |
@@ -438,7 +449,7 @@ nonempty RGA traces, illegal-origin controls and Fugue's genuine obstruction
 remain checked. Trusted model definitions are unchanged; these proof refactors
 do not constitute a new external validation of the source algorithms. The audit
 preserves 484 existing declarations, with two reviewed sound-only certificate
-proof replacements. The production audit passes 23 cases and 95 roots; both
+proof replacements. The recorded production audit covered 23 cases and 95 roots before consolidation; both
 repository gates pass, including 187 runtime tests and 569 benchmark records.
 
 ## Reproduction

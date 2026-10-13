@@ -132,9 +132,6 @@ theorem efficientORSet : Raw.MergeVCs (Sal.MRDTs.Paper1.EfficientORSet.EventSpec
 theorem gset : Raw.MergeVCs (commutingPolicy Nat)
     (CommutingPort.representation (Instances.AddStore.D Nat))
     (CommutingPort.scheme (Instances.AddStore.all_comm (α := Nat))) := by mrdt_verify
-theorem addStore : Raw.MergeVCs (commutingPolicy Nat)
-    (CommutingPort.representation (Instances.AddStore.D Nat))
-    (CommutingPort.scheme (Instances.AddStore.all_comm (α := Nat))) := by mrdt_verify
 theorem finiteAdd : Raw.MergeVCs (commutingPolicy Nat)
     (CommutingPort.representation (Instances.FinsetStore.D Nat))
     (CommutingPort.scheme (Instances.FinsetStore.all_comm (α := Nat))) := by mrdt_verify

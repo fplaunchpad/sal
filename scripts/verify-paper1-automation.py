@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Build and audit the existing production proof paths for all 23 named cases.
+"""Build and audit the existing production proof paths for all 22 named cases.
 
-Counts are named cases, not independent implementations: GSet/AddStore share a
-family; Counter/IOC share delta one. Queue's obstructed native API is outside
-this 23-case raw-VC coverage. Fugue is represented-state convergence plus a
+Counts are implementation/proof cases, not distinct abstract datatypes.
+The grow-only set uses generic AddStore; FinsetStore and FlatGrowOnly provide
+alternative set carriers. Counter/IOC share delta one. Queue's obstructed native API is outside
+this 22-case raw-VC coverage. Fugue is represented-state convergence plus a
 checked criterion obstruction, never an RA certificate.
 """
 from pathlib import Path
@@ -28,7 +29,7 @@ def case(identifier, endpoint, vc, bridge, suffixes=('executions', 'executionsV'
                       claim='existing production certificate'))
 
 for identifier, name, family in [
-        ('grow-only-set', 'gset', 'Add'), ('add-store', 'addStore', 'Add'),
+        ('grow-only-set', 'gset', 'Add'),
         ('finite-add-store', 'finiteAdd', 'Finite'), ('counter', 'counter', 'Delta'),
         ('increment-only-counter', 'ioc', 'Delta'), ('pn-counter', 'pn', 'Delta'),
         ('flat-grow-only-set', 'booleanSet', 'Boolean'), ('flat-grow-only-map', 'booleanMap', 'Boolean')]:
@@ -62,12 +63,12 @@ CASES.append(dict(id='fugue-max', endpoints=[P + 'CertifiedFugueVCExecution.repr
 # Also inspect existing facade endpoints; these once rebuilt the obsolete
 # scoped law bundle instead of reusing the concrete conditions.
 for c in CASES:
-    if c['id'] in {'grow-only-set','add-store','finite-add-store','counter','increment-only-counter','pn-counter','flat-grow-only-set','flat-grow-only-map'}:
+    if c['id'] in {'grow-only-set','finite-add-store','counter','increment-only-counter','pn-counter','flat-grow-only-set','flat-grow-only-map'}:
         c['endpoints'] += [n.replace('ConcreteMRDT.SimplePorts.', 'ConcreteMRDT.Guarded.SimplePorts.') for n in c['endpoints']]
     facade = {'bounded-counter':'bounded', 'tree-move':'tree', 'aegis-sheet':'sheet', 'rga':'rga'}.get(c['id'])
     if facade:
         c['endpoints'] += [P + 'ConcreteMRDT.Guarded.ScopedPorts.' + facade + 'Executions' + suffix for suffix in ('','V')]
-assert len(CASES) == 23 and len({c['id'] for c in CASES}) == 23
+assert len(CASES) == 22 and len({c['id'] for c in CASES}) == 22
 
 # Existing Ledger already rejects each family's old correctness path. This
 # standalone audit additionally checks every selected root, including bundle
@@ -426,7 +427,7 @@ def main():
     files = sorted({d['file'] for d in declarations.values()} | set(imported_hashes))
     source_hashes = {file: hashlib.sha256((ROOT / file).read_bytes()).hexdigest() for file in files}
     assert all(source_hashes[file] == digest for file, digest in imported_hashes.items()), 'Source changed during production audit'
-    report = dict(schema_version=1, status='pass', named_case_count=23,
+    report = dict(schema_version=1, status='pass', named_case_count=len(CASES),
         unique_endpoint_count=len({n for c in CASES for n in c['endpoints']}),
         counting_note=__doc__, cases=CASES, roots=audited,
         declaration_sources=declarations, vc_evidence_closures=evidence,
@@ -455,7 +456,7 @@ def main():
         import_audit=import_audit,
         experiments_imported=bool(import_audit['forbidden_imports']), fugue_ra_claim=False)
     (OUT / 'production-audit.json').write_text(json.dumps(report, indent=2) + '\n')
-    print(f'Production automation audit passed: 23 named cases, {len(roots)} roots.')
+    print(f'Production automation audit passed: 22 named cases, {len(roots)} roots.')
 
 
 if __name__ == '__main__':

@@ -269,8 +269,8 @@ claim must reconcile those two interfaces explicitly.
 % implementation_spec_separation; valid_execution_counterexample.
 
 \begin{example}[Transferable-budget candidate]\label{ex:transferable-counter}
-This additional design is not yet identified with the manuscript's intended
-bounded counter. The earlier \code{BoundedCounter} instance provides independent
+This additional design differs from the published matrix-based bounded counter
+of Balegas et al. The earlier \code{BoundedCounter} instance provides independent
 nonnegative replica accounts. Here a fixed initial capacity $B\in\mathbb N$
 is assigned to owner $r_0$ and can be transferred between accounts.
 
@@ -314,5 +314,74 @@ experimental implementation. Its source-specific model has a checked fork in
 which two donors each transfer three to one recipient: pointwise-max merge
 credits only three, whereas both serial orders credit six. That model abstracts
 machine overflow and the initialization sentinel; it does not prove full Scala
-source equivalence. The intended manuscript counter still needs to be identified.
+source equivalence. The published matrix-based design below is the submission target.
+\end{example}
+
+
+\begin{example}[Published bounded counter]\label{ex:balegas-counter}
+Balegas et al., SRDS 2015, Section III-B, Figure 1, define a lower-bounded
+counter for a fixed set $I=\{0,\ldots,n-1\}$ of replicas and bound $K\in\mathbb Z$.
+The state is $(R,U)\in\mathbb N^{I\times I}\times\mathbb N^I$, initially zero.
+The diagonal $R_{ii}$ counts increments; $R_{ij}$ for $i\ne j$ counts rights
+transferred from $i$ to $j$; $U_i$ counts decrements. Define
+\[
+ V(R,U)=K+\sum_{i\in I}R_{ii}-\sum_{i\in I}U_i,\qquad
+ B_i(R,U)=R_{ii}+\sum_{j\in I\setminus\{i\}}R_{ji}
+                 -\sum_{j\in I\setminus\{i\}}R_{ij}-U_i.
+\]
+Queries return $V$ and $B_i$, respectively. For an event issued by $i\in I$
+with amount $a\in\mathbb N$, the accepted updates are
+\[
+\begin{array}{lll}
+ \doop((R,U),\F{inc}(a),i)&=(R[(i,i)\mapsto R_{ii}+a],U),&\\
+ \doop((R,U),\F{dec}(a),i)&=(R,U[i\mapsto U_i+a]),&a\le B_i(R,U),\\
+ \doop((R,U),\F{transfer}(a,j),i)&=(R[(i,j)\mapsto R_{ij}+a],U),&
+ j\in I\setminus\{i\},\ a\le B_i(R,U).
+\end{array}
+\]
+Only issuer $i$ writes row $i$ and component $U_i$. Its updates are serialized.
+The conditions on the right are original-issuance conditions; the effect of an
+accepted operation is the displayed arithmetic update. Nonnegative amounts
+make the source's monotonicity assumption explicit; the distinct recipient
+follows its instruction to transfer to another replica. Merge is
+\[
+ \F{merge}(l,(R,U),(R',U'))=
+ \bigl((\max(R_{ij},R'_{ij}))_{i,j},(\max(U_i,U'_i))_i\bigr).
+\]
+Thus the ancestor is unused. Different donors write different cells even when
+they transfer to the same recipient.
+
+An independent sequential machine has a scalar $v\in\mathbb Z$ and balances
+$b:I\to\mathbb Z$, initially $(K,0)$. Its transitions are
+\[
+\begin{array}{lll}
+ (v,b)\xrightarrow{\F{inc}(a),i}(v+a,b[i\mapsto b_i+a]),&i\in I,&\\
+ (v,b)\xrightarrow{\F{dec}(a),i}(v-a,b[i\mapsto b_i-a]),&i\in I,&a\le b_i,\\
+ (v,b)\xrightarrow{\F{transfer}(a,j),i}
+ (v,b[i\mapsto b_i-a,j\mapsto b_j+a]),&i,j\in I,\ i\ne j,&a\le b_i.
+\end{array}
+\]
+The client value query returns $v$; the rights-accounting query returns $b_i$.
+The projection is $(R,U)\mapsto(V(R,U),B(R,U))$.
+Legal sequential runs preserve $v=K+\sum_i b_i$ and $b_i\ge0$, hence $v\ge K$.
+
+The five merge equations are checked with visibility as metadata dependence.
+For the causal-delta equation, same-replica visibility ensures that the issuing
+row in the remainder equals its row in the causal past; other rows dominate
+the past componentwise. The other four equations follow from maximum algebra.
+The checked sequential-history bridge transports original issuance funds to a
+causal replay prefix: that prefix contains every prior debit from the issuer,
+and additional events can only contribute incoming credits. Every certified
+stored version therefore has a legal explaining history and satisfies the
+local lower bound. The same argument applies to the finite union $E$ of all
+issued events, whether or not any stored version contains this union:
+\[
+ K+\sum_{e\in E}\Delta(e)\ge K,\qquad
+ \Delta(\F{inc}(a))=a,\quad \Delta(\F{dec}(a))=-a,\quad
+ \Delta(\F{transfer}(a,j))=0.
+\]
+Finiteness of $E$ is derived from execution. Both ordinary executions and
+executions with recursively reconstructed merge bases are covered. The public
+history, local-safety and global-bound theorem dependencies are audited to
+include all five VCs and the generic merge induction.
 \end{example}

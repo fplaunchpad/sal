@@ -25,9 +25,9 @@ seen = set()
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--transfer', action='store_true', help='Check all Track A instances')
 parser.add_argument('--certified', action='store_true', help='Also check the certified RGA-family routes')
-parser.add_argument('--automated', action='store_true', help='Use reusable templates for both OR-sets, MVR and RGA in the 23-case audit')
-parser.add_argument('--common', action='store_true', help='Check all 23 through the common declarative verification interface')
-parser.add_argument('--all', action='store_true', help='Check all 23 current named cases')
+parser.add_argument('--automated', action='store_true', help='Use reusable templates for both OR-sets, MVR and RGA in the 22-case audit')
+parser.add_argument('--common', action='store_true', help='Check all 22 through the common declarative verification interface')
+parser.add_argument('--all', action='store_true', help='Check all 22 current named cases')
 args = parser.parse_args()
 if args.common:
     # The current interface is production; all other flags retain historical
@@ -91,7 +91,7 @@ for name in order:
 theorems = ['NeemExpansion.Exact.expanded_vcs', 'NeemExpansion.Efficient.expanded_vcs']
 if args.transfer:
     theorems += ['NeemExpansion.TransferSimple.' + name for name in
-                 ['gset', 'addStore', 'finiteAdd', 'counter', 'ioc', 'pn', 'booleanSet', 'booleanMap']]
+                 ['gset', 'finiteAdd', 'counter', 'ioc', 'pn', 'booleanSet', 'booleanMap']]
     theorems += ['NeemExpansion.TransferLWW.expanded_vcs']
 audit = 'import ' + module + '\n' + (HERE / 'Audit.lean').read_text()
 if args.certified:
@@ -125,7 +125,7 @@ if args.automated:
     theorems = [replacements.get(t, t) for t in theorems]
 if args.common:
     audit = 'import CommonInstances\nimport AutomatedCore\nimport AutomatedFugue\n' + audit
-    common_names = ['ordinaryORSet', 'efficientORSet', 'gset', 'addStore', 'finiteAdd',
+    common_names = ['ordinaryORSet', 'efficientORSet', 'gset', 'finiteAdd',
                     'counter', 'ioc', 'pn', 'booleanSet', 'booleanMap', 'lww', 'sided',
                     'nativeRGA', None, None, 'embedded', 'anchored_queue', 'peritext',
                     None, 'bounded', 'tree', 'aegis', 'mvr']

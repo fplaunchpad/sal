@@ -95,7 +95,6 @@ open Instances.FlatGrowOnly
 end Boolean
 
 abbrev gset := Add.expanded_vcs (A := Nat)
-abbrev addStore := Add.expanded_vcs (A := Nat)
 abbrev finiteAdd := Finite.expanded_vcs (A := Nat)
 abbrev counter := Delta.expanded_vcs (A := Unit) (fun _ => 1)
 abbrev ioc := Delta.expanded_vcs (A := Instances.FlatCounters.IOCOp) (fun _ => 1)

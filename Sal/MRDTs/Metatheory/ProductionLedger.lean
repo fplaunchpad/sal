@@ -1,4 +1,3 @@
-import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.AddStore
 import Sal.MRDTs.Instances.FinsetStore
 import Sal.MRDTs.Instances.FlatCounters
@@ -29,8 +28,7 @@ namespace Sal.MRDTs.Production
 open Sal.EmbedRGA
 
 noncomputable def registry : List PackagedMRDT :=
-  [ PackagedMRDT.of "grow-only-set" Instances.GSet.verified
-  , PackagedMRDT.of "add-store" (Instances.AddStore.verified (α := Nat))
+  [ PackagedMRDT.of "grow-only-set" (Instances.AddStore.verified (α := Nat))
   , PackagedMRDT.of "finite-add-store"
       (Instances.FinsetStore.verified (α := Nat))
   , PackagedMRDT.of "counter" Instances.FlatCounters.counterVerified
@@ -65,7 +63,7 @@ noncomputable def registry : List PackagedMRDT :=
 
 noncomputable def names : List String := registry.map PackagedMRDT.name
 
-example : registry.length = 22 := by rfl
+example : registry.length = 21 := by rfl
 
 #check registry
 #check Instances.LWWRegister.verified

@@ -86,9 +86,7 @@ open Sal.EmbedRGA
 MVR stores only live tagged values. RGA has a representation compactor, while
 its stronger deleted-identifier reclamation problem remains open. -/
 noncomputable def registry : List PackagedStateGC :=
-  [ PackagedStateGC.ofExactState "grow-only-set" Instances.GSet.verified
-  , PackagedStateGC.ofExactState "add-store"
-      (Instances.AddStore.verified (α := Nat))
+  [ PackagedStateGC.ofExactState "grow-only-set" (Instances.AddStore.verified (α := Nat))
   , PackagedStateGC.ofExactState "finite-add-store"
       (Instances.FinsetStore.verified (α := Nat))
   , PackagedStateGC.ofExactState "counter"
@@ -132,7 +130,7 @@ noncomputable def registry : List PackagedStateGC :=
 noncomputable def names : List String :=
   registry.map (fun entry => entry.package.name)
 
-example : registry.length = 22 := by rfl
+example : registry.length = 21 := by rfl
 example : names = Production.names := by rfl
 
 end Production.StateGC

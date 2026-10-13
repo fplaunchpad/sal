@@ -1,6 +1,6 @@
 import Sal.MRDTs.Paper1.SplitCertificates
 
-/-! Production dependency audit for the split metatheory and all 23 named
+/-! Production dependency audit for the split metatheory and all 22 named
 cases in the automation inventory. The last case is FugueMax's scoped algebraic
 certificate; the audit does not promote it to a sequential/RA certificate. -/
 open Lean Elab Command in
@@ -8,7 +8,6 @@ elab "audit_split_policy" : command => do
   let env ← getEnv
   let roots := [
     ``Sal.MRDTs.Paper1.SplitCertificates.gsetExecutionsV,
-    ``Sal.MRDTs.Paper1.SplitCertificates.addStoreExecutionsV,
     ``Sal.MRDTs.Paper1.SplitCertificates.finiteAddExecutionsV,
     ``Sal.MRDTs.Paper1.SplitCertificates.counterExecutionsV,
     ``Sal.MRDTs.Paper1.SplitCertificates.iocExecutionsV,
@@ -30,7 +29,7 @@ elab "audit_split_policy" : command => do
     ``Sal.MRDTs.Paper1.SplitCertificates.rich,
     ``Sal.MRDTs.Paper1.SplitCertificates.anchoredQueue,
     ``Sal.MRDTs.Paper1.SplitCertificates.fugue]
-  unless roots.length == 23 do
+  unless roots.length == 22 do
     throwError "Incomplete split-policy case inventory"
   for root in roots do
     unless env.contains root do
@@ -72,6 +71,6 @@ elab "audit_split_policy" : command => do
       count := count + 1
   unless count > 100 do
     throwError "Incomplete split-policy metatheory audit: {count} declarations"
-  logInfo m!"Split-policy dependency audit passed: all 23 cases retain five-VC verification, merge induction and split laws; {count} declarations use standard logical axioms only."
+  logInfo m!"Split-policy dependency audit passed: all 22 cases retain five-VC verification, merge induction and split laws; {count} declarations use standard logical axioms only."
 
 audit_split_policy

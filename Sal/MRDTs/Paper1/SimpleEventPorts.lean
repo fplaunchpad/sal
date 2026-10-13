@@ -1,10 +1,10 @@
 import Sal.MRDTs.Paper1.EventBridge
-import Sal.MRDTs.Instances.GSet
+import Sal.MRDTs.Instances.AddStore
 import Sal.MRDTs.Instances.FinsetStore
 import Sal.MRDTs.Instances.FlatCounters
 import Sal.MRDTs.Instances.FlatGrowOnly
 
-/-! Independent full-input history languages for the eight production
+/-! Independent full-input history languages for the seven production
 instances built from grow-only stores and integer deltas. Abstract lists record
 application entries; their queries use set membership or a mathematical sum.
 They do not call concrete update, merge, or replay to define acceptance. -/

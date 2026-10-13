@@ -13,11 +13,6 @@ abbrev gsetVersionsV {C : Configuration (SimplePorts.Add.D (A := Nat))} := gsetC
 abbrev gsetExecutions := gsetCertificate.executions
 abbrev gsetExecutionsV := gsetCertificate.executionsV
 
-abbrev addStoreCertificate := Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.addStoreConditions.toCertificate
-abbrev addStoreVersions {C : Configuration (SimplePorts.Add.D (A := Nat))} := addStoreCertificate.versions (C := C)
-abbrev addStoreVersionsV {C : Configuration (SimplePorts.Add.D (A := Nat))} := addStoreCertificate.versionsV (C := C)
-abbrev addStoreExecutions := addStoreCertificate.executions
-abbrev addStoreExecutionsV := addStoreCertificate.executionsV
 
 abbrev finiteAddCertificate := Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.finiteAddConditions.toCertificate
 abbrev finiteAddVersions {C : Configuration (SimplePorts.Finite.D (A := Nat))} := finiteAddCertificate.versions (C := C)

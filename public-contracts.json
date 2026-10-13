@@ -4,13 +4,7 @@
   "note": "These are independently selected contract declarations, not a claim of human approval. Lean checks the exact public certificate and its ordinary and virtual conclusions against them. Review the sequential specification together with issuance, replayOrder and the observable API; do not weaken them merely to make this gate pass.",
   "contracts": [
     {
-      "id": "grow-only-set", "certificate": "Instances.GSet.verified",
-      "implementation": "Instances.GSet.D", "issuance": "Instances.GSet.generation",
-      "replayOrder": "EventOrder.unconstrained Instances.GSet.D.toUpdateSig",
-      "spec": "Instances.GSet.spec", "relation": "Eq"
-    },
-    {
-      "id": "add-store", "certificate": "Instances.AddStore.verified (α := Nat)",
+      "id": "grow-only-set", "certificate": "Instances.AddStore.verified (α := Nat)",
       "implementation": "Instances.AddStore.D Nat", "issuance": "Instances.AddStore.generation",
       "replayOrder": "EventOrder.unconstrained (Instances.AddStore.D Nat).toUpdateSig",
       "spec": "Instances.AddStore.spec", "relation": "Eq"

@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.BalegasBoundedCounterAudit
 import Sal.MRDTs.Paper1.TransferableBoundedCounterAudit
 import Sal.MRDTs.Paper1.SelfCommutationAudit
 import Sal.MRDTs.Framework.StateGC
@@ -111,10 +112,9 @@ namespace Sal.MRDTs
 #check GC.CombinedSteps.refinesV
 #check GC.CombinedSteps.refinesRaw
 
-#check Instances.GSet.generation
-#check Instances.GSet.sequential
-#check Instances.GSet.safety
-#check Instances.GSet.verified
+#check (Instances.AddStore.generation (α := Nat))
+#check (Instances.AddStore.sequential (α := Nat))
+#check (Instances.AddStore.verified (α := Nat))
 #check Instances.FlatCounters.counterVerified
 #check Instances.FlatCounters.iocVerified
 #check Instances.FlatCounters.pnVerified

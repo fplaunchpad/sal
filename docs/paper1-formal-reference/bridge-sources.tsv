@@ -29,3 +29,8 @@ ex:transferable-counter	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedEven
 ex:transferable-counter	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedBudget	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedEvent.versions_budgetV
 ex:transferable-counter	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedBudget	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedEvent.versions_allocations_nonnegativeV
 ex:transferable-counter	Sal.MRDTs.Paper1.TransferableBoundedCounterEvent	Sal.MRDTs.Paper1.TransferableBoundedCounterEvent.concurrent_credit_loss
+ex:balegas-counter	Sal.MRDTs.Instances.BalegasBoundedCounter	Sal.MRDTs.Instances.BalegasBoundedCounter.localRights
+ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterVC	Sal.MRDTs.Paper1.BalegasBoundedCounterVC.fiveVC
+ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterCertificate	Sal.MRDTs.Paper1.BalegasBoundedCounterEvent.certifiedV
+ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterCertificate	Sal.MRDTs.Paper1.BalegasBoundedCounterEvent.versions_safeV
+ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterGlobal	Sal.MRDTs.Paper1.BalegasBoundedCounterEvent.global_boundV

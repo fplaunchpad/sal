@@ -100,7 +100,7 @@ def main():
     def commuting(label,comm,merge,delta,peel,wrapper):
         expressions[label]=f'(ConcreteMRDT.CommutingPort.mergeVCs {comm} {merge} {delta} {peel})'
         wrappers[label]=[P+wrapper]
-    simple=[('grow-only-set','AddStore','(α := Nat)','Add'),('add-store','AddStore','(α := Nat)','Add'),
+    simple=[('grow-only-set','AddStore','(α := Nat)','Add'),
             ('finite-add-store','FinsetStore','(α := Nat)','Finite'),
             ('flat-grow-only-set','FlatGrowOnly','(A := Nat)','Boolean'),
             ('flat-grow-only-map','FlatGrowOnly','(A := Nat × Nat)','Boolean')]
@@ -124,7 +124,7 @@ def main():
     for label in labels:
         code+=(f'manual_expr "{label}" := {expressions[label]}\n' if label in expressions else f'manual_const "{label}" := {raw_roots[label]}\n')
     code+='\n'.join('manual_source '+n for n in sorted({n for names in wrappers.values() for n in names}))+'\n'
-    print('Extracting checked baseline raw-VC closures for23 named cases',flush=True)
+    print(f'Extracting checked baseline raw-VC closures for {len(labels)} named cases',flush=True)
     with tempfile.TemporaryDirectory(prefix='sal-manual-effort-') as tmp:
         path=Path(tmp)/'ManualEffortAudit.lean';path.write_text(code)
         result=subprocess.run(['lake','env','lean',str(path)],cwd=snapshot,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -195,7 +195,7 @@ def main():
     datatype={(e['file'],i) for e in inventory.values() if e['category']!='shared_framework' for i in e['code_lines']}
     wrapper_lines={(e['file'],i) for e in calls.values() for i in e['code_lines']}
     shared={(e['file'],i) for e in inventory.values() if e['category']=='shared_framework' for i in e['code_lines']}
-    report=dict(baseline=args.baseline,method=__doc__,status='pass',named_cases=23,cases=cases,
+    report=dict(baseline=args.baseline,method=__doc__,status='pass',named_cases=len(labels),cases=cases,
       unique_campaign=dict(baseline_combined_lines=len(datatype|wrapper_lines),baseline_datatype_proof_lines=len(datatype),baseline_wrapper_call_lines=len(wrapper_lines),baseline_excluded_shared_framework_lines=len(shared),current_combined_lines=sum(current['unique_campaign'][k] for k in ('instance_lines','retained_helper_lines','registration_annotation_lines'))),
       declarations=inventory,wrapper_calls=calls,source_sha256=hashes,
       standard_axioms_by_case={name:[a.strip() for a in axioms.split(',') if a.strip()] for name,axioms in rows},

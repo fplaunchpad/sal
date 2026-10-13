@@ -35,15 +35,15 @@ for distinct operation payloads, plus equal-payload self-commutation.
 [`SplitPolicy.lean`](Sal/MRDTs/Paper1/SplitPolicy.lean) proves equivalence with the
 combined laws on the same raw, represented-ready and invariant domains.
 [`SplitCertificates.lean`](Sal/MRDTs/Paper1/SplitCertificates.lean) exposes the
-23 existing cases through the split interfaces: 22 positive history cases and
+22 existing cases through the split interfaces: 21 positive history cases and
 Fugue's algebraic certificate with its separate specification obstruction.
 The dependency audit requires the five-VC verifier, merge induction and split
 laws; it does not count aliases as independent implementations.
 
 The [five-VC automation interface](experiments/vc-automation/README.md)
-now supplies the production proofs for all 23 current named cases through
+now supplies the production proofs for all 22 current named cases through
 the common `mrdt_verify` command. The named inventory includes anchored Queue
-and aliases; it differs from the historical 22-package production registry.
+and representation variants; it differs from the historical 21-package production registry.
 Registered inputs supply finite laws, datatype mappings and existing execution
 or issuance evidence. For both OR-sets, `derive_mrdt_input` constructs that input
 from proof-free annotations: `PolicyData` records the event comparison;
@@ -101,7 +101,7 @@ These full bridge closures include ordering and visibility and overlap the VC
 invariant costs; their counts should not be added to the VC totals.
 
 The [sequential-bridge table](experiments/vc-automation/README.md#sequential-bridges-beyond-or-sets)
-now reports all 23 named cases separately from the VC proofs, including required
+now reports all 22 named cases separately from the VC proofs, including required
 concrete helpers and remaining manual arguments. Guarded simulation derives
 query/history consequences, while structural rules share freshness and origin
 transport. The refreshed fixed-root comparison reduces the complete classified concrete
@@ -116,8 +116,8 @@ The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay
 in `GuardedConvergence`, `GuardedOrder`, and `ConcreteReplay`, and the full-event
 history bridge in `ConcreteHistoryBridge`. The typed
-[`GuardedCoverage.lean`](Sal/MRDTs/Paper1/GuardedCoverage.lean) matches all 22
-production packages: **14 have ordinary and virtual execution certificates,
+[`GuardedCoverage.lean`](Sal/MRDTs/Paper1/GuardedCoverage.lean) matches all 21
+production packages: **13 have ordinary and virtual execution certificates,
 all using concrete equality; eight have checked global-contract obstructions**.
 The ordinary paper OR-set is an additional positive result outside that registry.
 Every positive retains its original public datatype and issuance discipline,
@@ -132,7 +132,7 @@ by their original issuers. These are limitations of the globally quantified
 contract, not counterexamples to the original certified implementations.
 
 The completed raw-order certified-scope campaign is tracked separately in
-[`CertifiedCoverage.lean`](Sal/MRDTs/Paper1/CertifiedCoverage.lean): **14 retained
+[`CertifiedCoverage.lean`](Sal/MRDTs/Paper1/CertifiedCoverage.lean): **13 retained
 positive entries, three new scoped execution certificates (MVR, Core, RichCore),
 four certified raw-order obstructions, and one certified Queue policy
 obstruction**. All six embedded RGA signatures have checked scoped replay laws and five raw VCs, with stored
@@ -179,7 +179,7 @@ that the actual certified trace has no explaining history for **any invariant or
 policy**, using specification visibility alone. The relevant effectors now
 commute on valid implementation states, so this is a distinct obstruction.
 
-Across the retained and new certificate routes, **20 of 22 production packages
+Across the retained and new certificate routes, **19 of 21 production packages
 have positive certificates**; ordinary paper OR-set is additional. The remaining
 cases are Fugue's specification-visibility obstruction and Queue's policy
 obstruction. This count does not reclassify the retained raw-order registry.
@@ -202,7 +202,7 @@ public tagged-head query, respecting both invariant-scoped implementation
 order and specification visibility. Representation uses the new merge VCs and
 concrete equality. PASS+FAIL controls include actual public certified execution
 and the requested concurrency cases. This additional variant does not change
-the original Queue or the 20-of-22 production count; it has no JavaScript port.
+the original Queue or the 19-of-21 production count; it has no JavaScript port.
 
 An additional [transferable-counter candidate](Sal/MRDTs/Instances/TransferableBoundedCounterCorrected.lean)
 has five-VC, ordinary/recursive-virtual sequential-history, and
@@ -210,14 +210,34 @@ has five-VC, ordinary/recursive-virtual sequential-history, and
 It supports participant updates, allocation, transfer, prepared rebalance and
 available/reserved/allocated queries. Its independent balance specification
 requires funds before a debit; all allocations together remain within the
-initial capacity. This candidate is outside the original 23-case inventory and
+initial capacity. This candidate is outside the original 22-case inventory and
 differs from the published matrix-based bounded counter of Balegas et al.;
-that published algorithm is now the design target and remains to be ported. The older
+the published algorithm is verified separately below. The older
 `BoundedCounter` provides independent nonnegative replica accounts.
 The [Bismuth source model](Sal/MRDTs/Paper1/TransferableBoundedCounterEvent.lean)
 has checked shared-recipient credit loss under pointwise-max merge; the corrected
 candidate instead uses additive three-way accounting and nonnegative amounts.
 It is not a source-equivalence claim.
+
+The submission-facing bounded counter is now the [published Balegas design](Sal/MRDTs/Instances/BalegasBoundedCounter.lean):
+a sender–recipient transfer matrix, consumption vector, increment/decrement/transfer,
+and componentwise-max merge. Its [five VCs](Sal/MRDTs/Paper1/BalegasBoundedCounterVC.lean)
+feed the generic merge induction with full causal metadata. The
+[independent sequential bridge](Sal/MRDTs/Paper1/BalegasBoundedCounterCertificate.lean)
+proves legal scalar/rights histories and every stored version's lower bound;
+the [global theorem](Sal/MRDTs/Paper1/BalegasBoundedCounterGlobal.lean)
+covers the union of all issued events. Both ordinary and recursive-merge executions
+are covered. Nonnegative amounts, distinct transfer targets, sufficient local rights,
+and serialized issuance per replica are explicit. Ten Lean PASS+FAIL controls and
+[a bounded exhaustive model check](experiments/vc-automation/balegas-controls.py)
+exercise the design. The old independent-account instance and additive-budget
+alternative are separate implementations, not substitutes for this result.
+
+`GSet`'s alias module has been removed: the single mathematical grow-only-set
+implementation is `AddStore`, with one coverage entry. `FinsetStore` and
+`FlatGrowOnly` provide enumerable and Boolean representations of the same abstract
+set datatype. Coverage and automation counts refer to implementation/proof cases,
+not distinct abstract datatypes. The public reference groups these representations.
 
 The implementation metatheory is concrete throughout.
 [`ConcreteFormalism.lean`](Sal/MRDTs/Paper1/ConcreteFormalism.lean) defines

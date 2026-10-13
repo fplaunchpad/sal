@@ -56,7 +56,23 @@ concurrency/support and represented-ready or invariant state domains. The
 296 new declarations use only standard logical axioms. The earlier research
 history is retained independently.
 
-### Required: reconcile bounded-counter coverage with the paper
+### Active: port Neem's enable-wins and disable-wins flags
+
+KC explicitly requested both missing flags. Use the corrected Neem F* sources
+(`Enable-wins_flag` and `Disable-wins_flag`, not the divergent example) as the
+design authority. Prove the current five VCs and independent Boolean sequential
+bridges under ordinary and recursive executions, with source-derived positive
+and negative controls. Keep these claims separate from Neem's older VC theorem;
+the current Sal merge induction must appear in public proof dependencies.
+
+### Checked: consolidate grow-only-set aliases
+
+KC requested one datatype and no redundant alias module. Remove `GSet` (the
+`AddStore Nat` alias), migrate references to the generic implementation, and
+present one grow-only-set entry. Audit coverage counts and source links;
+representation variants must not be reported as independent datatype results.
+
+### Checked: published bounded-counter proofs; publication finishing
 
 The current `BoundedCounter` provides independent nonnegative replica accounts.
 The additional proved transferable-budget candidate uses aggregate accounting
@@ -69,11 +85,32 @@ single-writer/rights-conservatism argument. Use the transfer matrix `R[i,j]`,
 consumption vector `U[i]`, increment/decrement/transfer API, scalar value query
 and local-rights query, with componentwise-max merge. The original paper model
 is state-based; embedding its binary merge as an ancestor-ignoring ternary merge
-is a proposed Sal port, not yet a proved five-VC result. Preserve serialized
+now has a checked five-VC port. Preserve serialized
 per-replica issuance and sufficient local rights. Make nonnegative amounts and
 transfer to another replica explicit, consistent with monotonic counters and
 the prose. Keep client scalar semantics separate from any local-rights query
 contract. The Bismuth code is secondary evidence, not the design authority.
+
+Active published-design enquiry: does causal, single-writer issuance make the
+unchanged componentwise-max algorithm satisfy Sal's five VCs and independent
+rights-accounting history specification? The candidate claim includes every
+stored version and the global union of issued events, for ordinary and recursive
+merges. A supported execution violating a VC, query agreement, or lower bound
+would refute it. The formal oracles are `BalegasBoundedCounterVC`,
+`BalegasBoundedCounterEvent`, `BalegasBoundedCounterBudget`, and hand-derived
+PASS+FAIL controls in `BalegasBoundedCounterSPOT`; the reality oracles are SRDS
+§III-B Figure 1 and the companion technical report's single-writer argument.
+The implementation, ten concrete controls, five VCs, independent history bridge,
+local safety and global event-union bound are checked. Public ordinary and
+recursive roots consume `fiveVC` and `Raw.join_at_sizes`; 309 declarations pass
+the standard-axiom audit. The exhaustive executable model checked 49,796 trace
+prefixes, 115,979 snapshots and global accounting with zero failures/discards.
+Its two-replica depth-four and three-replica depth-three traces use amounts
+0, 1 and 2; this model is a refutation gate, not a Lean equivalence theorem. One control explicitly drops serial issuance: two stale
+same-issuer transfers overspend the donor and permit a global bound violation.
+This counterfactual is outside the supported execution model and records why
+serialization is necessary. The published example's printed cells yield 30,
+matching the technical report; SRDS's figure label of 20 is inconsistent.
 
 The source audit identified Bismuth commit `dd4c614adf03e57911630a4b73936a818a3d0860`,
 `Modules/RDTs/src/main/scala/rdts/experiments/BoundedCounter.scala`. Its
@@ -97,11 +134,10 @@ finite support containing all allocations. Its dependency audit checks the five
 VCs and merge induction and standard logical axioms across 552 declarations.
 Positive/negative controls cover shared-recipient transfers, overspending,
 negative requests, membership union and prepared rebalance. This completes the
-labelled candidate experiment; the published-design port remains the separate
-open item below.
+labelled candidate experiment; the published-design port now has its own checked proof package.
 
 - [x] Select the published bounded-counter paper as the design source with KC.
-- [ ] Port the published matrix-based counter and its full API, then prove the
+- [x] Port the published matrix-based counter and its full API, then prove the
   five VCs, independent sequential-history bridge and bound preservation. Do
   not substitute the already proved additive-budget candidate for this task.
 - [x] Label the current Site entry as independent nonnegative replica accounts.

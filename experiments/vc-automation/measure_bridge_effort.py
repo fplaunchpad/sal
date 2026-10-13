@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit complete required sequential bridge closures for the 23 registered cases.
+"""Audit complete required sequential bridge closures for the 22 registered cases.
 
 Nonblank noncomment source ranges are deduplicated, include all declaration kinds
 and preceding attribute annotations. The proof/descriptor subtotal additionally

@@ -77,20 +77,29 @@ have been removed from the active text.
    **Reference:** Definition 3.4 and Theorem 5.7.
 
 7. **Fill implementation/evaluation with the actual coverage.** Report
-   23 named five-VC cases, including aliases and anchored Queue, with 22 positive
-   history results and Fugue's checked specification obstruction. Report
-   [VC and bridge effort separately](../experiments/vc-automation/README.md).
-   The existing `BoundedCounter` is independent nonnegative replica accounts.
-   The additional transferable-budget candidate has completed five-VC, history
-   and budget proofs, but implements a different design from the published
-   bounded counter. Use **Balegas et al., SRDS 2015, §III-B/Figure 1** as the
-   design source: a sender–recipient transfer matrix, increment/decrement and
-   transfer operations, and componentwise-max merge. Our candidate instead has
-   aggregate accounting, additive three-way merge and no increment operation.
-   Port and verify the published design before claiming that coverage; the
-   Bismuth experimental implementation is not the authority.
-   [Published paper](https://asc.di.fct.unl.pt/~nmp/pubs/srds-2015.pdf).
-   **Reference:** Example 6.7 documents only the existing alternative candidate.
+   22 existing named five-VC cases after removing the duplicate GSet alias,
+   with 21 positive history results and Fugue's checked specification
+   obstruction; report the published bounded counter separately from this
+   inventory. Report [VC and bridge effort separately](../experiments/vc-automation/README.md).
+   The published **Balegas et al., SRDS 2015, §III-B/Figure 1** design now has
+   a checked five-VC and independent history bridge for ordinary and recursive
+   merges. It uses a sender–recipient matrix `R`, decrement vector `U`,
+   increment/decrement/transfer operations, and componentwise-max merge.
+   Its proof retains the single-writer discipline: each replica writes only
+   its row of `R` and entry of `U`; reconstruction retains those causal
+   predecessors even though the additive operation effects commute.
+   State the fixed replica universe, nonnegative amounts, valid issuer and
+   recipient, nonself transfers, and sufficient source rights for decrement
+   and transfer. The independent specification stores a scalar counter and
+   per-replica balances; transfers preserve the scalar value, and conservation
+   with nonnegative balances gives the lower bound. Distinguish the client
+   counter query from the separate local-rights query. The existing
+   `BoundedCounter` and additive transferable-budget candidate remain
+   alternative designs, not implementations of this published algorithm.
+   [Published paper](https://asc.di.fct.unl.pt/~nmp/pubs/srds-2015.pdf) and
+   [technical report, §III](https://asc.di.fct.unl.pt/~nmp/pubs/tr-corr-1-2015.pdf)
+   are the authority; the Bismuth experimental implementation is not.
+   **Reference:** Example 6.8, “Published bounded counter”; Example 6.7 documents the additive alternative.
 
 Small mathematical fixes: `proof_strategy.tex:49` should say that every
 *other* downset member precedes the event in a respecting linear extension,
@@ -107,7 +116,8 @@ Keep concrete implementation equality and the specification refinement function
   and certified results. Its manuscript correspondence appendix still targets
   `0450d48`; the updated lifting premise and VC numbering above supersede that map.
 - [Interactive datatype reference](https://sal-datatype-reference.fizzyearth10.chatgpt.site/):
-  implementation/specification equations and issuance guards. The transferable
-  candidate entry describes the alternative already proved, not the published algorithm.
+  implementation/specification equations and issuance guards. Its transferable
+  candidate entry describes the additive alternative; the published bounded
+  counter now has a separate matrix/max implementation and checked bridge.
 - [Earlier manuscript patch](paper1-manuscript-reconciliation.patch): targets
   `0450d48`; do not apply it wholesale to the current manuscript.
