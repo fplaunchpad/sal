@@ -1,4 +1,7 @@
 import Sal.MRDTs.Instances.AegisSheetGC
+import Sal.MRDTs.Framework.SequentialInduction
+import Sal.MRDTs.Framework.GuardedProjectionAutomation
+import Sal.MRDTs.Framework.CertifiedInvariant
 
 set_option maxHeartbeats 1000000
 
@@ -458,13 +461,9 @@ theorem eventTimes_mono {small large : Finset Event} (subset : small ⊆ large) 
 theorem seenValid_insert {events : Finset Event} {e : Event}
     (valid : SeenValid events) (seen : e.seen = eventTimes events) :
     SeenValid (insert e events) := by
-  intro candidate member
-  rcases Finset.mem_insert.mp member with rfl | old
-  · rw [seen]
-    exact eventTimes_mono (Finset.subset_insert _ events)
-  · exact fun timestamp timestampMember =>
-      eventTimes_mono (Finset.subset_insert e events)
-        (valid candidate old timestampMember)
+  apply all_insert (fun carrier (event : Event) => event.seen ⊆ eventTimes carrier)
+    (fun subset _ valid => Finset.Subset.trans valid (eventTimes_mono subset)) valid
+  rw [seen]
 
 theorem old_remove_does_not_see_fresh {events : Finset Event} {e : Event}
     (valid : SeenValid events) (fresh : e.1 ∉ eventTimes events)
@@ -1985,45 +1984,59 @@ theorem validUndo_cell_witness {events : Finset Event} {issuer : Replica}
         inverseFor_cell_coordinates inverse
       exact ⟨prior, member, source, isCell, sameRow, sameColumn⟩
 
+private theorem cellAxesKnown_insert_at_origin {events origin : Finset Event}
+    {e : Event} (old : CellAxesKnown events) (subset : origin ⊆ events)
+    (guard : applicable e origin) : CellAxesKnown (insert e events) := by
+  apply all_insert_of_origin
+    (fun carrier event => ∀ update, cellUpdate? event = some update →
+      axisKnown carrier .row update.row = true ∧
+        axisKnown carrier .column update.column = true)
+    (fun subset _ known update isCell => by
+      have axes := known update isCell
+      exact ⟨AegisSheet.GC.fold_or_true_mono subset _ axes.1,
+        AegisSheet.GC.fold_or_true_mono subset _ axes.2⟩)
+    old subset
+  intro originFacts update isCell
+  rcases guard with ⟨guard, _⟩
+  unfold applicableB at guard
+  simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
+  have commandGuard := guard.2
+  cases command : e.2.2.command with
+  | direct action =>
+      have actionEq : action = .cell update := by
+        simpa [Event.action, Command.effect, command] using
+          action_eq_cell_of_cellUpdate_some isCell
+      subst action
+      simp only [command, directApplicable] at commandGuard
+      simp only [Bool.and_eq_true] at commandGuard
+      have rowLive : axisLive origin .row update.row = true :=
+        commandGuard.1.1.1
+      have columnLive : axisLive origin .column update.column = true :=
+        commandGuard.1.1.2
+      unfold axisLive at rowLive columnLive
+      simp only [axisLive, Bool.and_eq_true] at rowLive columnLive
+      have rowKnown : axisKnown events .row update.row = true :=
+        AegisSheet.GC.fold_or_true_mono subset _ rowLive.1
+      have columnKnown : axisKnown events .column update.column = true :=
+        AegisSheet.GC.fold_or_true_mono subset _ columnLive.1
+      exact ⟨rowKnown,
+        columnKnown⟩
+  | undo target inverse =>
+      have inverseEq : inverse = .cell update := by
+        simpa [Event.action, Command.effect, command] using
+          action_eq_cell_of_cellUpdate_some isCell
+      subst inverse
+      simp only [command, Bool.and_eq_true, decide_eq_true_eq] at commandGuard
+      obtain ⟨prior, priorMember, priorUpdate, priorCell, sameRow, sameColumn⟩ :=
+        validUndo_cell_witness commandGuard.2
+      have priorKnown := originFacts prior priorMember priorUpdate priorCell
+      exact ⟨(sameRow ▸ priorKnown.1),
+        (sameColumn ▸ priorKnown.2)⟩
+
 theorem cellAxesKnown_insert {events : Finset Event} {e : Event}
     (old : CellAxesKnown events) (guard : applicable e events) :
     CellAxesKnown (insert e events) := by
-  intro event member update isCell
-  rcases Finset.mem_insert.mp member with rfl | oldMember
-  · rcases guard with ⟨guard, _⟩
-    unfold applicableB at guard
-    simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
-    have commandGuard := guard.2
-    cases command : event.2.2.command with
-    | direct action =>
-        have actionEq : action = .cell update := by
-          simpa [Event.action, Command.effect, command] using
-            action_eq_cell_of_cellUpdate_some isCell
-        subst action
-        simp only [command, directApplicable] at commandGuard
-        simp only [Bool.and_eq_true] at commandGuard
-        have rowLive : axisLive events .row update.row = true :=
-          commandGuard.1.1.1
-        have columnLive : axisLive events .column update.column = true :=
-          commandGuard.1.1.2
-        unfold axisLive at rowLive columnLive
-        simp only [axisLive, Bool.and_eq_true] at rowLive columnLive
-        exact ⟨axisKnown_insert_of_old rowLive.1,
-          axisKnown_insert_of_old columnLive.1⟩
-    | undo target inverse =>
-        have inverseEq : inverse = .cell update := by
-          simpa [Event.action, Command.effect, command] using
-            action_eq_cell_of_cellUpdate_some isCell
-        subst inverse
-        simp only [command, Bool.and_eq_true, decide_eq_true_eq] at commandGuard
-        obtain ⟨prior, priorMember, priorUpdate, priorCell, sameRow, sameColumn⟩ :=
-          validUndo_cell_witness commandGuard.2
-        have priorKnown := old prior priorMember priorUpdate priorCell
-        exact ⟨axisKnown_insert_of_old (sameRow ▸ priorKnown.1),
-          axisKnown_insert_of_old (sameColumn ▸ priorKnown.2)⟩
-  · have oldKnown := old event oldMember update isCell
-    exact ⟨axisKnown_insert_of_old oldKnown.1,
-      axisKnown_insert_of_old oldKnown.2⟩
+  exact cellAxesKnown_insert_at_origin old (Finset.Subset.refl _) guard
 
 theorem validUndo_purge_false (events : Finset Event) (issuer : Replica)
     (target : Timestamp) (marker : Purge) :
@@ -2057,9 +2070,9 @@ theorem purgeApplicable_covered_witness {events : Finset Event}
       simp only [found, decide_eq_true_eq] at accepted
       exact ⟨event, eventMember, update, found, accepted.1, accepted.2.1⟩
 
-theorem coveredWitnessed_insert {events : Finset Event} {e : Event}
-    (old : CoveredWitnessed events) (guard : applicable e events) :
-    CoveredWitnessed (insert e events) := by
+private theorem coveredWitnessed_insert_at_origin {events origin : Finset Event}
+    {e : Event} (old : CoveredWitnessed events) (subset : origin ⊆ events)
+    (guard : applicable e origin) : CoveredWitnessed (insert e events) := by
   intro entry member
   rw [AegisSheet.GC.markerCoveredEntries_insert] at member
   rcases Finset.mem_union.mp member with newMember | oldMember
@@ -2082,7 +2095,7 @@ theorem coveredWitnessed_insert {events : Finset Event} {e : Event}
             obtain ⟨event, eventMember, update, isCell, sameTime,
               sameCoordinate⟩ :=
               purgeApplicable_covered_witness commandGuard entry newMember
-            exact ⟨event, Finset.mem_insert_of_mem eventMember, update,
+            exact ⟨event, Finset.mem_insert_of_mem (subset eventMember), update,
               isCell, sameTime, sameCoordinate⟩
         | undo target inverse =>
             have inverseEq : inverse = .purge marker := by
@@ -2097,6 +2110,11 @@ theorem coveredWitnessed_insert {events : Finset Event} {e : Event}
       old entry oldMember
     exact ⟨event, Finset.mem_insert_of_mem eventMember, update,
       isCell, sameTime, sameCoordinate⟩
+
+theorem coveredWitnessed_insert {events : Finset Event} {e : Event}
+    (old : CoveredWitnessed events) (guard : applicable e events) :
+    CoveredWitnessed (insert e events) := by
+  exact coveredWitnessed_insert_at_origin old (Finset.Subset.refl _) guard
 
 theorem linearMintHistory_provenance {ops : List Event}
     (history : LinearMintHistory D AegisSheet.applicable ops) :
@@ -2205,32 +2223,18 @@ def CausalOriginLegal (ops : List Event) : Prop :=
 theorem causalOriginLegal_prefix {ops initial suffix : List Event}
     (legal : CausalOriginLegal ops) (split : ops = initial ++ suffix) :
     CausalOriginLegal initial := by
-  constructor
-  · intro pre e post initialSplit old oldMember
-    apply legal.1 pre e (post ++ suffix)
-    · calc
-        ops = initial ++ suffix := split
-        _ = (pre ++ e :: post) ++ suffix := by rw [initialSplit]
-        _ = pre ++ e :: (post ++ suffix) := by simp [List.append_assoc]
-    · exact oldMember
-  · intro pre e post initialSplit
-    apply legal.2 pre e (post ++ suffix)
-    calc
-      ops = initial ++ suffix := split
-      _ = (pre ++ e :: post) ++ suffix := by rw [initialSplit]
-      _ = pre ++ e :: (post ++ suffix) := by simp [List.append_assoc]
+  subst ops
+  exact ⟨split_guard_prefix legal.1, split_guard_prefix legal.2⟩
 
 theorem seenValid_insert_of_origin {events origin : Finset Event} {e : Event}
     (valid : SeenValid events) (subset : origin ⊆ events)
     (guard : applicable e origin) : SeenValid (insert e events) := by
-  intro candidate member
-  rcases Finset.mem_insert.mp member with rfl | old
-  · rw [applicable_seen guard]
-    exact eventTimes_mono (Finset.Subset.trans subset
-      (Finset.subset_insert candidate events))
-  · exact fun timestamp timestampMember =>
-      eventTimes_mono (Finset.subset_insert e events)
-        (valid candidate old timestampMember)
+  apply all_insert_of_origin (fun carrier (event : Event) => event.seen ⊆ eventTimes carrier)
+    (fun subset _ valid => Finset.Subset.trans valid (eventTimes_mono subset))
+    valid subset
+  intro _
+  rw [applicable_seen guard]
+  exact eventTimes_mono subset
 
 theorem fresh_of_clock_and_coveredWitnessed {events : Finset Event}
     {e : Event} (clock : ∀ old ∈ events, old.1 < e.1)
@@ -2252,134 +2256,125 @@ theorem fresh_of_clock_and_coveredWitnessed {events : Finset Event}
 theorem cellAxesKnown_insert_of_origin {events origin : Finset Event}
     {e : Event} (old : CellAxesKnown events) (subset : origin ⊆ events)
     (guard : applicable e origin) : CellAxesKnown (insert e events) := by
-  intro event member update isCell
-  rcases Finset.mem_insert.mp member with rfl | oldMember
-  · rcases guard with ⟨guard, _⟩
-    unfold applicableB at guard
-    simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
-    have commandGuard := guard.2
-    cases command : event.2.2.command with
-    | direct action =>
-        have actionEq : action = .cell update := by
-          simpa [Event.action, Command.effect, command] using
-            action_eq_cell_of_cellUpdate_some isCell
-        subst action
-        simp only [command, directApplicable] at commandGuard
-        simp only [Bool.and_eq_true] at commandGuard
-        have rowLive : axisLive origin .row update.row = true :=
-          commandGuard.1.1.1
-        have columnLive : axisLive origin .column update.column = true :=
-          commandGuard.1.1.2
-        unfold axisLive at rowLive columnLive
-        simp only [axisLive, Bool.and_eq_true] at rowLive columnLive
-        have rowKnown : axisKnown events .row update.row = true :=
-          AegisSheet.GC.fold_or_true_mono subset _ rowLive.1
-        have columnKnown : axisKnown events .column update.column = true :=
-          AegisSheet.GC.fold_or_true_mono subset _ columnLive.1
-        exact ⟨axisKnown_insert_of_old rowKnown,
-          axisKnown_insert_of_old columnKnown⟩
-    | undo target inverse =>
-        have inverseEq : inverse = .cell update := by
-          simpa [Event.action, Command.effect, command] using
-            action_eq_cell_of_cellUpdate_some isCell
-        subst inverse
-        simp only [command, Bool.and_eq_true, decide_eq_true_eq] at commandGuard
-        obtain ⟨prior, priorMember, priorUpdate, priorCell, sameRow, sameColumn⟩ :=
-          validUndo_cell_witness commandGuard.2
-        have priorKnown := old prior (subset priorMember) priorUpdate priorCell
-        exact ⟨axisKnown_insert_of_old (sameRow ▸ priorKnown.1),
-          axisKnown_insert_of_old (sameColumn ▸ priorKnown.2)⟩
-  · have oldKnown := old event oldMember update isCell
-    exact ⟨axisKnown_insert_of_old oldKnown.1,
-      axisKnown_insert_of_old oldKnown.2⟩
+  exact cellAxesKnown_insert_at_origin old subset guard
 
 theorem coveredWitnessed_insert_of_origin {events origin : Finset Event}
     {e : Event} (old : CoveredWitnessed events) (subset : origin ⊆ events)
     (guard : applicable e origin) : CoveredWitnessed (insert e events) := by
-  intro entry member
-  rw [AegisSheet.GC.markerCoveredEntries_insert] at member
-  rcases Finset.mem_union.mp member with newMember | oldMember
-  · cases found : purge? e with
-    | none => simp [found] at newMember
-    | some marker =>
-        simp only [found] at newMember
-        rcases guard with ⟨guard, _⟩
-        unfold applicableB at guard
-        simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
-        have commandGuard := guard.2
-        cases command : e.2.2.command with
-        | direct action =>
-            have actionEq : action = .purge marker := by
-              have effect : e.action = .purge marker :=
-                AegisSheet.GC.action_eq_purge_of_purge_some found
-              simpa [Event.action, Command.effect, command] using effect
-            subst action
-            simp only [command, directApplicable] at commandGuard
-            obtain ⟨event, eventMember, update, isCell, sameTime,
-              sameCoordinate⟩ :=
-              purgeApplicable_covered_witness commandGuard entry newMember
-            exact ⟨event, Finset.mem_insert_of_mem (subset eventMember), update,
-              isCell, sameTime, sameCoordinate⟩
-        | undo target inverse =>
-            have inverseEq : inverse = .purge marker := by
-              have effect : e.action = .purge marker :=
-                AegisSheet.GC.action_eq_purge_of_purge_some found
-              simpa [Event.action, Command.effect, command] using effect
-            subst inverse
-            simp only [command, Bool.and_eq_true, decide_eq_true_eq] at commandGuard
-            rw [validUndo_purge_false] at commandGuard
-            simp at commandGuard
-  · obtain ⟨event, eventMember, update, isCell, sameTime, sameCoordinate⟩ :=
-      old entry oldMember
-    exact ⟨event, Finset.mem_insert_of_mem eventMember, update,
-      isCell, sameTime, sameCoordinate⟩
+  exact coveredWitnessed_insert_at_origin old subset guard
+
+/-- Causally aware incremental spreadsheet semantics. This is independent of
+event-log replay, but it deliberately retains observed-remove tokens and
+active write identities: `AegisSheetAbstraction.no_view_only_step` proves that
+the visible sheet alone is not transition closed. Legality records the causal
+origin against which each operation was issued; the origin need only be a
+subset of the merged serialization prefix. -/
+noncomputable def clientSpec : SequentialSpec D where
+  toSequentialMachine := spec
+  Legal := CausalOriginLegal
+  query := fun state _ => view state
 
 structure CausalHistoryFacts (ops : List Event) extends HistoryFacts ops where
   cellAxesKnown : CellAxesKnown ops.toFinset
   coveredWitnessed : CoveredWitnessed ops.toFinset
 
+/-- The sheet-specific preservation obligation: an event issued at a retained
+causal origin can extend a chronological prefix. In particular this does not
+assume that the command is applicable against the full serialization prefix. -/
+theorem causalHistoryFacts_step (initial : List Event) (e : Event)
+    (initialFacts : CausalHistoryFacts initial)
+    (origin : Finset Event) (originSubset : origin ⊆ initial.toFinset)
+    (guard : applicable e origin)
+    (clock : ∀ old ∈ initial.toFinset, old.1 < e.1) :
+    CausalHistoryFacts (initial ++ [e]) := by
+  have fresh := fresh_of_clock_and_coveredWitnessed clock
+    initialFacts.coveredWitnessed
+  have metadata : metadataValidB initial.toFinset e = true :=
+    AegisSheet.GC.metadataValid_mono originSubset
+      (AegisSheet.GC.applicable_metadataValid guard)
+  apply CausalHistoryFacts.mk
+  · refine ⟨?_, ?_, ?_, ?_⟩
+    · simpa using AegisSheet.GC.stateValid_insert
+        initialFacts.stateValid metadata
+    · simpa using AegisSheet.GC.timestampUnique_insert
+        initialFacts.timestampUnique fresh
+    · simpa using seenValid_insert_of_origin initialFacts.seenValid
+        originSubset guard
+    · change spec.run (initial ++ [e]) = materialize (initial ++ [e]).toFinset
+      rw [SequentialMachine.run_append_single]
+      change step (run initial) e = materialize (initial ++ [e]).toFinset
+      rw [initialFacts.materialized]
+      simpa using materialize_insert_of_facts initialFacts.stateValid
+        initialFacts.timestampUnique initialFacts.seenValid fresh metadata clock
+  · simpa using cellAxesKnown_insert_of_origin
+      initialFacts.cellAxesKnown originSubset guard
+  · simpa using coveredWitnessed_insert_of_origin
+      initialFacts.coveredWitnessed originSubset guard
+
+/-- Structural facts needed by one materialization step and its observation. -/
+structure ProjectionInvariant (ops : List Event) (events : D.State) : Prop where
+  represented : events = ops.toFinset
+  stateValid : AegisSheet.GC.StateValid events
+  timestampUnique : AegisSheet.GC.TimestampUnique events
+  seenValid : SeenValid events
+  cellAxesKnown : CellAxesKnown events
+  coveredWitnessed : CoveredWitnessed events
+
+/-- Preservation concerns only replicated-state structure, not sequential replay. -/
+theorem projectionInvariant_step {initial : List Event} {events : D.State}
+    {e : Event} (facts : ProjectionInvariant initial events)
+    (legal : CausalOriginLegal (initial ++ [e])) :
+    ProjectionInvariant (initial ++ [e]) (D.update events e) := by
+  rcases facts with ⟨rfl, valid, unique, seen, known, witnessed⟩
+  obtain ⟨origin, subset, guard⟩ := legal.2 initial e [] (by simp)
+  have clock : ∀ old ∈ initial.toFinset, old.1 < e.1 := by
+    intro old member
+    exact legal.1 initial e [] (by simp) old (by simpa using member)
+  have fresh := fresh_of_clock_and_coveredWitnessed clock witnessed
+  have metadata := AegisSheet.GC.metadataValid_mono subset
+    (AegisSheet.GC.applicable_metadataValid guard)
+  constructor <;>
+    guarded_projection_step [D] using [AegisSheet.GC.stateValid_insert,
+      AegisSheet.GC.timestampUnique_insert, seenValid_insert_of_origin,
+      cellAxesKnown_insert_of_origin, coveredWitnessed_insert_of_origin]
+
+noncomputable def materializeProjection : GuardedStateProjection D clientSpec where
+  Inv := ProjectionInvariant
+  project := materialize
+  prefix_closed := fun _ _ legal => causalOriginLegal_prefix legal rfl
+  inv_initial := by
+    refine ⟨rfl, ?_, AegisSheet.GC.timestampUnique_empty, ?_, ?_, ?_⟩
+    · simp [D, AegisSheet.GC.StateValid]
+    · simp [D, SeenValid]
+    · simp [D, CellAxesKnown]
+    · simp [D, CoveredWitnessed, AegisSheet.GC.markerCoveredEntries]
+  inv_update := fun _ _ _ facts legal => projectionInvariant_step facts legal
+  initial := materialize_empty
+  update := by
+    intro initial events e facts legal
+    rcases facts with ⟨rfl, valid, unique, seen, known, witnessed⟩
+    obtain ⟨origin, subset, guard⟩ := legal.2 initial e [] (by simp)
+    have clock : ∀ old ∈ initial.toFinset, old.1 < e.1 := by
+      intro old member
+      exact legal.1 initial e [] (by simp) old (by simpa using member)
+    exact (materialize_insert_of_facts valid unique seen
+      (fresh_of_clock_and_coveredWitnessed clock witnessed)
+      (AegisSheet.GC.metadataValid_mono subset
+        (AegisSheet.GC.applicable_metadataValid guard)) clock).symm
+  observes := by
+    intro initial events facts q
+    exact (observationInvariant_of_facts facts.stateValid facts.cellAxesKnown
+      facts.coveredWitnessed).symm
+
 theorem causalOriginHistory_facts {ops : List Event}
     (legal : CausalOriginLegal ops) : CausalHistoryFacts ops := by
-  induction ops using List.reverseRecOn with
-  | nil =>
-      apply CausalHistoryFacts.mk
-      · refine ⟨?_, AegisSheet.GC.timestampUnique_empty, ?_, rfl⟩
-        · simp [AegisSheet.GC.StateValid]
-        · simp [SeenValid]
-      · simp [CellAxesKnown]
-      · simp [CoveredWitnessed, AegisSheet.GC.markerCoveredEntries]
-  | append_singleton initial e ih =>
-      have initialLegal := causalOriginLegal_prefix legal
-        (initial := initial) (suffix := [e]) rfl
-      have initialFacts := ih initialLegal
-      obtain ⟨origin, originSubset, guard⟩ :=
-        legal.2 initial e [] (by simp)
-      have clock : ∀ old ∈ initial.toFinset, old.1 < e.1 := by
-        intro old oldMember
-        exact legal.1 initial e [] (by simp) old (by simpa using oldMember)
-      have fresh := fresh_of_clock_and_coveredWitnessed clock
-        initialFacts.coveredWitnessed
-      have metadata : metadataValidB initial.toFinset e = true :=
-        AegisSheet.GC.metadataValid_mono originSubset
-          (AegisSheet.GC.applicable_metadataValid guard)
-      apply CausalHistoryFacts.mk
-      · refine ⟨?_, ?_, ?_, ?_⟩
-        · simpa using AegisSheet.GC.stateValid_insert
-            initialFacts.stateValid metadata
-        · simpa using AegisSheet.GC.timestampUnique_insert
-            initialFacts.timestampUnique fresh
-        · simpa using seenValid_insert_of_origin initialFacts.seenValid
-            originSubset guard
-        · change spec.run (initial ++ [e]) = materialize (initial ++ [e]).toFinset
-          rw [SequentialMachine.run_append_single]
-          change step (run initial) e = materialize (initial ++ [e]).toFinset
-          rw [initialFacts.materialized]
-          simpa using materialize_insert_of_facts initialFacts.stateValid
-            initialFacts.timestampUnique initialFacts.seenValid fresh metadata clock
-      · simpa using cellAxesKnown_insert_of_origin
-          initialFacts.cellAxesKnown originSubset guard
-      · simpa using coveredWitnessed_insert_of_origin
-          initialFacts.coveredWitnessed originSubset guard
+  have facts := materializeProjection.run_invariant ops legal
+  rw [AegisSheet.applySeq_eq_toFinset] at facts
+  refine ⟨⟨facts.stateValid, facts.timestampUnique, facts.seenValid, ?_⟩,
+    facts.cellAxesKnown, facts.coveredWitnessed⟩
+  have projected := materializeProjection.run_project ops legal
+  rw [AegisSheet.applySeq_eq_toFinset] at projected
+  exact projected.symm
 
 theorem causalOrigin_history_materializes {ops : List Event}
     (legal : CausalOriginLegal ops) :
@@ -2535,17 +2530,6 @@ theorem canonical_causalOriginLegal {C : Configuration D}
 def materializedStateRel (events : D.State) (state : State) : Prop :=
   inplaceStateRel events state ∧ state = materialize events ∧
     view state = AegisSheet.view events
-
-/-- Causally aware incremental spreadsheet semantics. This is independent of
-event-log replay, but it deliberately retains observed-remove tokens and
-active write identities: `AegisSheetAbstraction.no_view_only_step` proves that
-the visible sheet alone is not transition closed. Legality records the causal
-origin against which each operation was issued; the origin need only be a
-subset of the merged serialization prefix. -/
-noncomputable def clientSpec : SequentialSpec D where
-  toSequentialMachine := spec
-  Legal := CausalOriginLegal
-  query := fun state _ => view state
 
 theorem inplaceStateRel_empty : inplaceStateRel D.init empty := by
   intro ops chronological eventsEmpty

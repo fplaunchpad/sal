@@ -585,8 +585,8 @@ noncomputable def embedSequentialCorrectness (Γ : OrderedPrefixCode) :
       cases query
       change s.map (fun r => r.2.1) =
         ((embedClientSpec Γ).run (EmbedWitness.canonical ops)).map Prod.snd
-      simpa [eProj, List.map_map, Function.comp_def] using
-        congrArg (List.map Prod.snd) hrel
+      rw [← hstate]
+      exact (eStateProjection Γ).query_agrees (EmbedWitness.canonical ops) hseq ()
 
 noncomputable def replayEmbed (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (Sal.MRDTs.Instances.EmbedRGA.E Γ α) where
   issuance := Sal.MRDTs.Instances.EmbedRGA.generation Γ

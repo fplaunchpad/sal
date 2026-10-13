@@ -27,6 +27,15 @@ VC route; Embedded RGA uses that merge route with certified representation and
 an exact selected-history bridge. A [reviewable manuscript patch](docs/paper1-manuscript-reconciliation.patch)
 provides the corresponding revisions against Overleaf `0450d48`.
 
+The [distinct-operation guard investigation](docs/rc-non-comm-operation-guard.md)
+checks the proposed `rc-non-comm` change. It holds for efficient OR-set, but
+equal-payload concurrent events need an additional swap argument in the general
+replay theorem. A kernel-checked counterexample and repaired replay adapters
+make this boundary explicit; production laws remain unchanged.
+The [full soundness follow-up](docs/rc-non-comm-full-soundness.md) separates
+the total sequential bridge, which needs no replay uniqueness, from the
+existential scoped bridge, whose selected replay may differ from the stored one.
+
 The [five-VC automation interface](experiments/vc-automation/README.md)
 now supplies the production proofs for all 23 current named cases through
 the common `mrdt_verify` command.
@@ -66,14 +75,32 @@ proofs in the submitted Fugue VC input.
 Fugue's five-VC proof does not resolve its separate
 sequential-specification obstruction.
 
+Shared representation reasoning now discharges 40 finite equations across
+eight input families, covering sets, Boolean functions, scalar counters and
+products of integer maps as well as native RGA. The selected kernel proofs
+shrink from 70 to 16 lines using a 16-line generic tactic. TreeMove and
+AegisSheet also reuse an origin-to-prefix lemma; their sequential correctness
+arguments remain explicit. See the [cross-family results](experiments/vc-automation/README.md#shared-reasoning-across-datatype-families)
+for full costs, controls and remaining manual work.
+
 A separate [sequential-history bridge experiment](experiments/vc-automation/README.md#sequential-history-bridge-experiment)
 reduces the required concrete bridge source from 49 to 23 lines for ordinary
 OR-set and from 48 to 24 for efficient OR-set, against `052b8fb`, using a
-140-line generic projection/fold library. Embedded RGA remains a boundary
-experiment (2,021 to 2,013 lines): ordered-chain insertion adjacency and
+175-line generic projection/fold library. Embedded RGA remains a boundary
+experiment (2,021 to 2,001 lines): ordered-chain insertion adjacency and
 execution/issuance legal-history selection retain substantial concrete proofs.
 These full bridge closures include ordering and visibility and overlap the VC
 invariant costs; their counts should not be added to the VC totals.
+
+The [sequential-bridge table](experiments/vc-automation/README.md#sequential-bridges-beyond-or-sets)
+now reports all 23 named cases separately from the VC proofs, including required
+concrete helpers and remaining manual arguments. Guarded simulation derives
+query/history consequences, while structural rules share freshness and origin
+transport. The latest campaign reduces the complete classified concrete proof
+closure by only 21 lines; new shared machinery leaves just 11 fewer production
+source lines overall. Embedded RGA's independent production bridge grows.
+Further abstraction has limited returns: tree rendering, sheet materialization
+and RGA insertion semantics remain manual.
 
 The corrected core uses event-guarded laws in
 [`GuardedReplay.lean`](Sal/MRDTs/Paper1/GuardedReplay.lean), direct semantic replay

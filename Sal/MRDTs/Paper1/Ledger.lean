@@ -1,4 +1,7 @@
 import Sal.MRDTs.Paper1.PaperPresentation
+import Sal.MRDTs.Paper1.DistinctOperationControls
+import Sal.MRDTs.Paper1.DistinctOperationFullResult
+import Sal.MRDTs.Paper1.DistinctOperationFullControls
 import Sal.MRDTs.Paper1.ORSetPaperContract
 import Sal.MRDTs.Paper1.AnchoredQueueCertificate
 import Sal.MRDTs.Paper1.AnchoredQueuePublicControls

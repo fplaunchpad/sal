@@ -12,11 +12,6 @@ open Sal.MRDTs.Instances.AegisSheet
 
 /-- Finite equations checked directly against the executable carrier. -/
 theorem kernels : TransferSimple.EmptyPastKernels D := by
-  constructor
-  · intros; apply Finset.ext; intro x; simp [D,or_comm]
-  · intros; apply Finset.ext; intro x; simp [D]
-  · intros; apply Finset.ext; intro x; simp [D]
-  · intros; apply Finset.ext; intro x; simp [D,or_left_comm,or_comm]
-  · intros; apply Finset.ext; intro x; simp [D,or_left_comm,or_comm]
+  constructor <;> mrdt_representation [D]
 
 end Sal.MRDTs.Paper1.Automation.TransferAegisSheet

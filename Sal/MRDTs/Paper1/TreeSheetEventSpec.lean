@@ -20,9 +20,7 @@ theorem restricted : RestrictedLaws D.toUpdateSig (commutingPolicy D.AppOp) :=
 theorem legal_prefix (pre suf : List Event) (h : ClientLegal (pre ++ suf)) :
     ClientLegal pre := by
   refine ⟨⟨(List.nodup_append.mp h.1.1).1, (List.pairwise_append.mp h.1.2).1⟩, ?_⟩
-  intro before e after split
-  apply h.2 before e (after ++ suf)
-  simp [split, List.append_assoc]
+  exact split_guard_prefix h.2
 
 theorem legal_respects_vis (C : Configuration D) (ops : List Event)
     (h : ClientLegal ops) : respects ops C.vis := by

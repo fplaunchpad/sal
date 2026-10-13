@@ -30,6 +30,15 @@ That history proof supplements the VCs; it does not replace them.
   Keep global public-order uniqueness separate from scoped uniqueness for legal
   causal replays. The latter does not justify arbitrary public-order witnesses.
   **Reference:** Definitions 4.5, 4.7–4.8; Theorem 4.9.
+  **New guard investigation:** replacing metadata guards with operation
+  inequality needs an explicit argument for equal-operation concurrent pairs.
+  The [checked note](rc-non-comm-operation-guard.md) gives the equation,
+  counterexample and two sufficient repairs. This result is not yet incorporated
+  in the formal reference PDF or manuscript patch.
+  The [full soundness follow-up](rc-non-comm-full-soundness.md) distinguishes
+  total simulation from the existential scoped bridge: the former can use the
+  stored replay directly; the latter must justify agreement with its selected
+  specification history. The five VCs alone do not supply that agreement.
 - **§5, `proof_strategy.tex`:** expose representation, uniqueness, finite replay
   supply and metadata reconstruction alongside the five equations. These are
   instantiated obligations, not an assumed Join result. Distinguish the

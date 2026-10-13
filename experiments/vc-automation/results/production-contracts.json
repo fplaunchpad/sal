@@ -3,6 +3,69 @@
   "evidence": "source-header/body preservation; not kernel type equality",
   "files": [
     {
+      "path": "Sal/MRDTs/Instances/AegisSheetGC.lean",
+      "checked": 89,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Instances.AegisSheet.GC.timestampUnique_insert",
+        "Sal.MRDTs.Instances.AegisSheet.GC.stateValid_insert"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/AegisSheetSequential.lean",
+      "checked": 175,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Instances.AegisSheet.Sequential.seenValid_insert",
+        "Sal.MRDTs.Instances.AegisSheet.Sequential.cellAxesKnown_insert",
+        "Sal.MRDTs.Instances.AegisSheet.Sequential.coveredWitnessed_insert",
+        "Sal.MRDTs.Instances.AegisSheet.Sequential.causalOriginLegal_prefix",
+        "Sal.MRDTs.Instances.AegisSheet.Sequential.seenValid_insert_of_origin",
+        "Sal.MRDTs.Instances.AegisSheet.Sequential.cellAxesKnown_insert_of_origin",
+        "Sal.MRDTs.Instances.AegisSheet.Sequential.coveredWitnessed_insert_of_origin",
+        "Sal.MRDTs.Instances.AegisSheet.Sequential.causalOriginHistory_facts"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/EmbedRGA.lean",
+      "checked": 57,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
+      "checked": 20,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/ProductionRGA.lean",
+      "checked": 62,
+      "moved": [],
+      "proof_changes": [],
+      "certificate_changes": [],
+      "proof_definition_changes": [
+        "Sal.MRDTs.Instances.ProductionRGA.embedSequentialCorrectness"
+      ],
+      "preserved_data_descriptions": []
+    },
+    {
       "path": "Sal/MRDTs/Instances/RGAKernel/Code.lean",
       "checked": 7,
       "moved": [],
@@ -12,6 +75,21 @@
       ],
       "certificate_changes": [],
       "proof_definition_changes": [],
+      "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Instances/TreeMove.lean",
+      "checked": 71,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Instances.TreeMove.spec_run_tree",
+        "Sal.MRDTs.Instances.TreeMove.applySeq_eq_toFinset",
+        "Sal.MRDTs.Instances.TreeMove.sequentialSound"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [
+        "Sal.MRDTs.Instances.TreeMove.sequentialCorrectness"
+      ],
       "preserved_data_descriptions": []
     },
     {
@@ -197,7 +275,9 @@
       "moved": [],
       "proof_changes": [
         "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Bounded.history",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.originLegal",
         "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.history",
+        "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.originLegal",
         "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.history"
       ],
       "certificate_changes": [
@@ -278,6 +358,17 @@
       ],
       "proof_definition_changes": [],
       "preserved_data_descriptions": []
+    },
+    {
+      "path": "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean",
+      "checked": 18,
+      "moved": [],
+      "proof_changes": [
+        "Sal.MRDTs.Paper1.TreeMoveEvent.legal_prefix"
+      ],
+      "certificate_changes": [],
+      "proof_definition_changes": [],
+      "preserved_data_descriptions": []
     }
   ],
   "failures": [],
@@ -303,12 +394,15 @@
     "Sal/MRDTs/Paper1/Automation/CommutingInputs.lean",
     "Sal/MRDTs/Paper1/Automation/Controls.lean",
     "Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean",
+    "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean",
     "Sal/MRDTs/Paper1/Automation/FiniteLookupAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean",
     "Sal/MRDTs/Paper1/Automation/FugueCodePrimitives.lean",
     "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
     "Sal/MRDTs/Paper1/Automation/GenericCertifiedIssuance.lean",
     "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
     "Sal/MRDTs/Paper1/Automation/GenericCodeCombinators.lean",
+    "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean",
     "Sal/MRDTs/Paper1/Automation/GenericIssuanceAdapters.lean",
     "Sal/MRDTs/Paper1/Automation/GenericLexOrder.lean",
     "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
@@ -341,6 +435,8 @@
     "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean",
     "Sal/MRDTs/Paper1/Automation/PolicyExpansionRules.lean",
     "Sal/MRDTs/Paper1/Automation/PolicyKitAutomation.lean",
+    "Sal/MRDTs/Paper1/Automation/SequentialBridgeControls.lean",
+    "Sal/MRDTs/Paper1/Automation/SetBridgeAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean",
     "Sal/MRDTs/Paper1/Automation/SidedFugueAutomationControls.lean",
     "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean",
@@ -351,8 +447,9 @@
     "Sal/MRDTs/Paper1/Automation/TransferNativeRGA.lean",
     "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
     "Sal/MRDTs/Paper1/CertifiedMVRVCContract.lean",
-    "Sal/MRDTs/Paper1/CertifiedRGARichContract.lean"
+    "Sal/MRDTs/Paper1/CertifiedRGARichContract.lean",
+    "Sal/MRDTs/Paper1/ProjectedSimulation.lean"
   ],
-  "checked_declarations": 321,
+  "checked_declarations": 813,
   "status": "pass"
 }

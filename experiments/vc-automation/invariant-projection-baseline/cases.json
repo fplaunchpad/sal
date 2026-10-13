@@ -1,0 +1,48 @@
+{
+  "tree-originLegal": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.originLegal"
+  ],
+  "tree-history": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.history"
+  ],
+  "tree-conditions": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.conditions"
+  ],
+  "tree-executions": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.executions"
+  ],
+  "tree-executionsV": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.executionsV"
+  ],
+  "sheet-originLegal": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.originLegal"
+  ],
+  "sheet-history": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.history"
+  ],
+  "sheet-conditions": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.conditions"
+  ],
+  "sheet-executions": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.executions"
+  ],
+  "sheet-executionsV": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.executionsV"
+  ],
+  "sequentialSound-0": [
+    "Sal.MRDTs.Instances.TreeMove.sequentialSound"
+  ],
+  "causalOriginSequentialSound-1": [
+    "Sal.MRDTs.Instances.AegisSheet.Sequential.causalOriginSequentialSound"
+  ],
+  "legal_prefix-2": [
+    "Sal.MRDTs.Paper1.TreeMoveEvent.legal_prefix"
+  ],
+  "legal_prefix-3": [
+    "Sal.MRDTs.Paper1.AegisSheetEvent.legal_prefix"
+  ],
+  "orset": [
+    "Sal.MRDTs.Paper1.ORSet.EventSpec.foldHistorySound",
+    "Sal.MRDTs.Paper1.ORSet.EventSpec.commutationCompatibility"
+  ]
+}

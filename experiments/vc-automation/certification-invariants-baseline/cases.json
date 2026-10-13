@@ -1,0 +1,69 @@
+{
+  "tree-originLegal": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.originLegal"
+  ],
+  "tree-history": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.history"
+  ],
+  "tree-conditions": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.conditions"
+  ],
+  "tree-executions": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.executions"
+  ],
+  "tree-executionsV": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.executionsV"
+  ],
+  "sheet-originLegal": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.originLegal"
+  ],
+  "sheet-history": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.history"
+  ],
+  "sheet-conditions": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.conditions"
+  ],
+  "sheet-executions": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.executions"
+  ],
+  "sheet-executionsV": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Sheet.executionsV"
+  ],
+  "sequentialSound-0": [
+    "Sal.MRDTs.Instances.TreeMove.sequentialSound"
+  ],
+  "causalOriginSequentialSound-1": [
+    "Sal.MRDTs.Instances.AegisSheet.Sequential.causalOriginSequentialSound"
+  ],
+  "legal_prefix-2": [
+    "Sal.MRDTs.Paper1.TreeMoveEvent.legal_prefix"
+  ],
+  "legal_prefix-3": [
+    "Sal.MRDTs.Paper1.AegisSheetEvent.legal_prefix"
+  ],
+  "certified-embedded-rga": [
+    "Sal.MRDTs.Paper1.CertifiedRGAInvariantHistory.canonical_valid_history",
+    "Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.correct",
+    "Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.correctV",
+    "Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.executions",
+    "Sal.MRDTs.Paper1.CertifiedRGAInvariantCertificate.executionsV"
+  ],
+  "native-rga": [
+    "Sal.MRDTs.Paper1.RGA.EventSpec.certifiedRA",
+    "Sal.MRDTs.Paper1.RGA.EventSpec.certifiedRAV",
+    "Sal.MRDTs.Paper1.RGA.EventSpec.certifiedExecutions",
+    "Sal.MRDTs.Paper1.RGA.EventSpec.certifiedExecutionsV"
+  ],
+  "tree-production": [
+    "Sal.MRDTs.Instances.TreeMove.sequentialCorrectness"
+  ],
+  "sheet-production": [
+    "Sal.MRDTs.Instances.AegisSheet.Sequential.causalOriginHistory_facts",
+    "Sal.MRDTs.Instances.AegisSheet.Sequential.sequentialCorrectness"
+  ],
+  "embedded-production": [
+    "Sal.MRDTs.Instances.ProductionRGA.embedSequentialCorrectness",
+    "Sal.MRDTs.Instances.EmbedRGA.embed_seq_sound",
+    "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "excluded_unrelated_untracked_sources": [
+    "Sal/MRDTs/Instances/EfficientORSetHeadGCProtocol.lean",
+    "Sal/MRDTs/Instances/EfficientORSetHeadGC.lean",
+    "Sal/MRDTs/Instances/EfficientORSetHeadGCProtocolSPOT.lean",
+    "Sal/MRDTs/Instances/EfficientORSetHeadGCSPOT.lean",
+    "Sal/MRDTs/Instances/EfficientORSetRetirement.lean"
+  ],
+  "reason": "Independent untracked efficient OR-set GC research already present at campaign capture; retained in raw manifest provenance, outside this invariant projection campaign preservation scope."
+}

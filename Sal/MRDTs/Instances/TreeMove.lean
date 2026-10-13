@@ -1,4 +1,7 @@
 import Sal.MRDTs.Instances.FinsetStore
+import Sal.MRDTs.Framework.SequentialInduction
+import Sal.MRDTs.Framework.GuardedProjectionAutomation
+import Sal.MRDTs.Paper1.Automation.CertifiedOriginBridge
 
 /-!
 # Replicated tree move
@@ -301,20 +304,17 @@ noncomputable def spec : SequentialMachine Event where
 
 theorem spec_run_tree (ops : List Event) :
     spec.run ops = replayList ops := by
-  induction ops using List.reverseRecOn with
-  | nil => rfl
-  | append_singleton ops e ih =>
-      rw [SequentialMachine.run_append_single]
-      simpa [spec, replayList, List.foldl_append] using
-        congrArg (fun t => doMove t e.2.2) ih
+  exact snoc_fold_fusion spec.run replayList id
+    (fun t e => doMove t e.2.2) rfl
+    (fun pre e => SequentialMachine.run_append_single spec pre e)
+    (fun pre e => by simp [replayList, List.foldl_append]) ops
 
 theorem applySeq_eq_toFinset (ops : List Event) :
     applySeq D.toUpdateSig D.init ops = ops.toFinset := by
-  induction ops using List.reverseRecOn with
-  | nil => rfl
-  | append_singleton ops e ih =>
-      rw [applySeq_append_single]
-      simpa [D] using congrArg (fun s : Finset Event => insert e s) ih
+  exact snoc_fold_fusion (applySeq D.toUpdateSig D.init)
+    List.toFinset id (fun s e => insert e s) rfl
+    (fun pre e => by rw [applySeq_append_single]; rfl)
+    (fun pre e => by simp) ops
 
 def stateRel (s : D.State) (q : Tree) : Prop :=
   render s = q
@@ -350,10 +350,51 @@ theorem clientLegal_reserved (ops : List Event) (h : ClientLegal ops)
   obtain ⟨_, _, guard⟩ := h.2 pre e post split
   exact guard.2.2.2
 
+/-- Sorting legality is prefix closed independently of the client guard. -/
+theorem sequentialLegal_prefix (pre suf : List Event)
+    (h : SequentialLegal (pre ++ suf)) : SequentialLegal pre :=
+  ⟨(List.nodup_append.mp h.1).1, (List.pairwise_append.mp h.2).1⟩
+
+theorem clientLegal_prefix (pre suf : List Event)
+    (h : ClientLegal (pre ++ suf)) : ClientLegal pre :=
+  ⟨sequentialLegal_prefix pre suf h.1, split_guard_prefix h.2⟩
+
+/-- The local rendering obligation: an ordered fresh insertion extends the
+ordinary tree machine by one move. -/
+theorem render_insert (pre : List Event) (e : Event)
+    (h : SequentialLegal (pre ++ [e])) :
+    render (insert e pre.toFinset) = doMove (render pre.toFinset) e.2.2 := by
+  have hp := sequentialLegal_prefix pre [e] h
+  have hs : insert e pre.toFinset = (pre ++ [e]).toFinset := by simp
+  rw [hs, render, orderedEvents_toFinset _ h.1 h.2]
+  rw [render, orderedEvents_toFinset _ hp.1 hp.2]
+  simp [replayList, List.foldl_append]
+
+/-- The proof-only machine keeps the public tree semantics while accepting
+all sorting-legal histories, as required by the legacy theorem's assumptions. -/
+noncomputable def sortingSpec : SequentialSpec D where
+  toSequentialMachine := spec
+  Legal := SequentialLegal
+  query := fun q _ => visibleTree q
+
+noncomputable def sortingStateProjection : GuardedStateProjection D sortingSpec where
+  Inv pre s := s = pre.toFinset
+  project := render
+  prefix_closed := sequentialLegal_prefix
+  inv_initial := by guarded_projection_step [D] using []
+  inv_update := by guarded_projection_step [D] using []
+  initial := by simp [D, sortingSpec, spec, render, orderedEvents, replayList]
+  update := by guarded_projection_step [D, sortingSpec, spec] using [render_insert]
+  observes := by intro pre s hs q; rfl
+
+/-- The public adapter uses the full client history language. Its invariant
+records exactly which events constitute the concrete carrier. -/
+noncomputable def stateProjection : GuardedStateProjection D sequentialSpec :=
+  sortingStateProjection.restrict ClientLegal clientLegal_prefix (fun _ h => h.1)
+
 theorem sequentialSound (ops : List Event) (h : SequentialLegal ops) :
     stateRel (applySeq D.toUpdateSig D.init ops) (spec.run ops) := by
-  rw [stateRel, applySeq_eq_toFinset, spec_run_tree]
-  rw [render, orderedEvents_toFinset ops h.1 h.2]
+  exact sortingStateProjection.run_project ops h
 
 noncomputable def sequential : SequentialRefinement D spec where
   Honest := SequentialLegal
@@ -417,31 +458,19 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D gen
         ReplayPolicy.unconstrained]
     have horigin : ∀ pre e post, π = pre ++ e :: post →
         ∃ origin : Finset Event, origin ⊆ pre.toFinset ∧ applicable e origin := by
-      intro pre e post split
-      have heE : e ∈ E := hpermπ.2 e |>.mp (by simp [split])
-      have heC := hgood.version_events_supported v s E hver e heE
-      obtain ⟨past, hpast, _, hguard⟩ := exec.mintHonest e heC
-      refine ⟨past.toFinset, ?_, ?_⟩
-      · intro old hold
-        have hbefore := (hpast.2 old).mp (List.mem_toFinset.mp hold)
-        have holdE := hgood.version_events_causal v s E hver old e hbefore.2 heE
-        have member := (hpermπ.2 old).mpr holdE
-        rw [split] at member
-        rcases List.mem_append.mp member with inPre | inRest
-        · exact List.mem_toFinset.mpr inPre
-        · rcases List.mem_cons.mp inRest with same | inPost
-          · subst old
-            exact False.elim (Nat.lt_irrefl _ (C.causal_mono hbefore.2))
-          · have ordered := hvis
-            rw [split] at ordered
-            have noBack := (List.pairwise_cons.mp
-              (List.pairwise_append.mp ordered).2.1).1 old inPost
-            exact False.elim (noBack hbefore.2)
-      · simpa only [generation, applySeq_eq_toFinset] using hguard
+      exact Paper1.Automation.mint_origin_prefix id applicable
+        applySeq_eq_toFinset (fun _ _ h => h) exec.mintHonest
+        (hgood.version_events_supported v s E hver)
+        (fun a b edge member => hgood.version_events_causal v s E hver a b edge member)
+        hpermπ hvis
     refine ⟨π, hpermπ, hlo, ⟨hlegal, horigin⟩, href, ?_⟩
     intro query
     cases query
-    exact congrArg visibleTree href
+    have agrees := stateProjection.query_agrees π ⟨hlegal, horigin⟩ ()
+    rw [applySeq_eq_toFinset] at agrees
+    have carrier : π.toFinset = s := Finset.sort_toFinset s eventLE
+    rw [carrier] at agrees
+    exact agrees
 
 def safety : SafetyCertificate D (canonicalVirtualMergeBase D) generation where
   Safe := fun s => TreeSafe (render s)

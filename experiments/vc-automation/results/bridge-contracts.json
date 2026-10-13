@@ -2,6 +2,46 @@
   "baseline": "052b8fb",
   "checked": [
     {
+      "file": "Sal/MRDTs/Instances/AegisSheetGC.lean",
+      "declarations": 89
+    },
+    {
+      "file": "Sal/MRDTs/Instances/AegisSheetSequential.lean",
+      "declarations": 175
+    },
+    {
+      "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+      "declarations": 57
+    },
+    {
+      "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
+      "declarations": 20
+    },
+    {
+      "file": "Sal/MRDTs/Instances/ProductionRGA.lean",
+      "declarations": 62
+    },
+    {
+      "file": "Sal/MRDTs/Instances/TreeMove.lean",
+      "declarations": 71
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean",
+      "declarations": 1
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferGuardedCommuting.lean",
+      "declarations": 2
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferNativeRGA.lean",
+      "declarations": 1
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "declarations": 7
+    },
+    {
       "file": "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean",
       "declarations": 27
     },
@@ -14,6 +54,14 @@
       "declarations": 25
     },
     {
+      "file": "Sal/MRDTs/Paper1/IssuedConcretePorts.lean",
+      "declarations": 19
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/Ledger.lean",
+      "declarations": 0
+    },
+    {
       "file": "Sal/MRDTs/Paper1/ORSetEventSpec.lean",
       "declarations": 16
     },
@@ -24,6 +72,10 @@
     {
       "file": "Sal/MRDTs/Paper1/ORSetVerified.lean",
       "declarations": 8
+    },
+    {
+      "file": "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean",
+      "declarations": 18
     }
   ],
   "negative_controls": [
@@ -33,7 +85,8 @@
     "altered semantic definition",
     "deleted declaration",
     "altered variable context",
-    "proof-only positive control"
+    "proof-only positive control",
+    "sound-only bundle changed-type and added-data rejection"
   ],
   "failures": [],
   "status": "pass"

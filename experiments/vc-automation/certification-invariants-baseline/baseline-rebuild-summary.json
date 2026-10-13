@@ -1,0 +1,9 @@
+{
+  "full_original_log_sha256": "05b6ffe1536ad99fa31f13c634011024ee6129e2d44821a78051ac194e4695a4",
+  "command": "lake build Sal.MRDTs.Paper1.Ledger",
+  "exit_code": 0,
+  "completion": [
+    "Build completed successfully (3605 jobs)."
+  ],
+  "errors_or_sorry": []
+}

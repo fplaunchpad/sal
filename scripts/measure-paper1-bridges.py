@@ -106,7 +106,8 @@ def main():
  current['import_source_sha256']=before_imports
  bridge_library=['Sal/MRDTs/Paper1/ProjectedSimulation.lean',
   'Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean',
-  'Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean']
+  'Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean',
+  'Sal/MRDTs/Framework/SequentialInduction.lean']
  current['whole_generic_bridge_library']={f:dict(nonblank_noncomment_lines=sum(bool(x.strip()) for x in C.strip_comments((ROOT/f).read_text()).splitlines()),source_sha256=hashlib.sha256((ROOT/f).read_bytes()).hexdigest()) for f in bridge_library}
  current['whole_generic_bridge_library_total']=sum(v['nonblank_noncomment_lines'] for v in current['whole_generic_bridge_library'].values())
  forbidden={

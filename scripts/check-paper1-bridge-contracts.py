@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Preserve baseline theorem headers/contexts and semantic definition bodies.
 
-Proof bodies may change; only the three known simulation certificates may
-change non-theorem bodies. New Lean files are checked by kernel/axiom audit.
+Proof bodies may change; named simulation certificates preserve their data,
+and two sound-only certificate bundles preserve all type arguments.
+New Lean files are checked by kernel/axiom audit.
 This source check is complementary to kernel checking, not definitional equality.
 """
 import importlib.util,json,subprocess
@@ -16,6 +17,7 @@ def reason(name,before,after,current=None):
  if before['header']!=after['header']:return 'changed declaration header'
  if before['variables']!=after['variables']:return 'changed variable context'
  if before['body']!=after['body'] and before['kind'] not in ('theorem','lemma'):
+  if C.sequential_proof_bundle(name,before,after):return None
   if name not in PROOFS:return 'changed semantic definition'
   if not C.bridge_simulation_data(name,before,after,current or {}):return 'changed simulation relation or projection/generator wiring'
  return None
@@ -44,7 +46,16 @@ def controls():
   descriptor=name.rsplit('.',1)[0]+'.projectionDescription'
   poisoned={**current,descriptor:{**current[descriptor],'body':current[descriptor]['body'].replace('project := '+C.BRIDGE_SIMULATIONS[name],'project := fun _ => ∅')}}
   assert not C.bridge_simulation_data(name,before,after,poisoned)
- return ['mutated projection map','mutated simulation generator','weakened premise','altered semantic definition','deleted declaration','altered variable context','proof-only positive control']
+ for name in C.SEQUENTIAL_PROOF_BUNDLES:
+  path='Sal/MRDTs/Instances/'+('TreeMove' if '.TreeMove.' in name else 'ProductionRGA')+'.lean'
+  before=C.declarations(C.git('show',BASE+':'+path))[name]
+  after=C.declarations((ROOT/path).read_text())[name]
+  assert C.sequential_proof_bundle(name,before,after)
+  changed=dict(after);changed['header'] += ' → False'
+  assert reason(name,before,changed)
+  changed=dict(after);changed['body']=changed['body'].replace('where sound C exec replay := by','where model := other sound C exec replay := by',1)
+  assert reason(name,before,changed)
+ return ['mutated projection map','mutated simulation generator','weakened premise','altered semantic definition','deleted declaration','altered variable context','proof-only positive control','sound-only bundle changed-type and added-data rejection']
 
 def main():
  baseline=set(C.git('ls-tree','-r','--name-only',BASE,'--','Sal').splitlines())

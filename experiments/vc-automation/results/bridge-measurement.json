@@ -7883,274 +7883,274 @@
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.E",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 81,
-                "end": 97,
+                "start": 82,
+                "end": 98,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EHonest",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 1091,
-                "end": 1099,
+                "start": 1092,
+                "end": 1100,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EHonestCore",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 623,
-                "end": 636,
+                "start": 624,
+                "end": 637,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EHonestCore.mk",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 624,
-                "end": 624,
+                "start": 625,
+                "end": 625,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EOp",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 20,
-                "end": 23,
+                "start": 21,
+                "end": 24,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EOp.casesOn",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 20,
-                "end": 23,
+                "start": 21,
+                "end": 24,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EOp.del",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 22,
-                "end": 22,
+                "start": 23,
+                "end": 23,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EOp.del.noConfusion",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 22,
-                "end": 22,
+                "start": 23,
+                "end": 23,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EOp.ins",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 21,
-                "end": 21,
+                "start": 22,
+                "end": 22,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EOp.ins.noConfusion",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 21,
-                "end": 21,
+                "start": 22,
+                "end": 22,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EOp.noConfusion",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 20,
-                "end": 23,
+                "start": 21,
+                "end": 24,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EOp.rec",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 20,
-                "end": 23,
+                "start": 21,
+                "end": 24,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.ERec",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 25,
-                "end": 26,
+                "start": 26,
+                "end": 27,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EReplayPolicy",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 110,
-                "end": 112,
+                "start": 111,
+                "end": 113,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.ESorted",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 150,
-                "end": 152,
+                "start": 151,
+                "end": 153,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EState",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 28,
-                "end": 31,
+                "start": 29,
+                "end": 32,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EWf",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 379,
-                "end": 386,
+                "start": 380,
+                "end": 387,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EWf.mk",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 382,
-                "end": 382,
+                "start": 383,
+                "end": 383,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eApplicable",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 1126,
-                "end": 1132,
+                "start": 1127,
+                "end": 1133,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eCoord",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 37,
-                "end": 42,
+                "start": 38,
+                "end": 43,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eDels",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 347,
-                "end": 348,
+                "start": 348,
+                "end": 349,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eFold",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 326,
-                "end": 327,
+                "start": 327,
+                "end": 328,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eIds",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 35,
-                "end": 35,
+                "start": 36,
+                "end": 36,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eInsAfter",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 35,
-                "end": 39,
+                "start": 36,
+                "end": 40,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eInsIds",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 344,
-                "end": 345,
+                "start": 345,
+                "end": 346,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eInsert",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 44,
-                "end": 50,
+                "start": 45,
+                "end": 51,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eIsIns",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 335,
-                "end": 338,
+                "start": 336,
+                "end": 339,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eMerge",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 72,
-                "end": 79,
+                "start": 73,
+                "end": 80,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eMerge2",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 62,
-                "end": 70,
+                "start": 63,
+                "end": 71,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eProj",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 32,
-                "end": 33,
+                "start": 33,
+                "end": 34,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eRcOrder",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 102,
-                "end": 108,
+                "start": 103,
+                "end": 109,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eRecOf",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 340,
-                "end": 342,
+                "start": 341,
+                "end": 343,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eSeqOK",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 60,
-                "end": 70,
+                "start": 61,
+                "end": 71,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eSpecFold",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 49,
-                "end": 50,
+                "start": 50,
+                "end": 51,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eSpecStep",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 41,
-                "end": 47,
+                "start": 42,
+                "end": 48,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eUpdate",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 52,
-                "end": 60,
+                "start": 53,
+                "end": 61,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.generation",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 1237,
-                "end": 1238,
+                "start": 1226,
+                "end": 1227,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 23,
-                "end": 23,
+                "start": 24,
+                "end": 24,
                 "kind": "definition"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.instDecidableEqEOp.decEq",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 23,
-                "end": 23,
+                "start": 24,
+                "end": 24,
                 "kind": "definition"
               },
               {
@@ -8276,9 +8276,9 @@
           },
           "concrete_proof_annotation": {
             "declaration_count": 102,
-            "source_lines": 2094,
-            "nonblank_lines": 2094,
-            "nonblank_noncomment_lines": 2013,
+            "source_lines": 2082,
+            "nonblank_lines": 2082,
+            "nonblank_noncomment_lines": 2001,
             "declarations": [
               {
                 "name": "Sal.EmbedRGA.OrderedPrefixCode.mono",
@@ -8416,288 +8416,288 @@
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EHonestCore.chain_gen",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 632,
-                "end": 632,
+                "start": 633,
+                "end": 633,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EHonestCore.del_has_ins",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 627,
-                "end": 627,
+                "start": 628,
+                "end": 628,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EWf.del_late",
-                "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 384,
-                "end": 384,
-                "kind": "theorem"
-              },
-              {
-                "name": "Sal.MRDTs.Instances.EmbedRGA.EWf.ins_nodup",
-                "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 383,
-                "end": 383,
-                "kind": "theorem"
-              },
-              {
-                "name": "Sal.MRDTs.Instances.EmbedRGA.EWf.keys_inj",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
                 "start": 385,
                 "end": 385,
                 "kind": "theorem"
               },
               {
+                "name": "Sal.MRDTs.Instances.EmbedRGA.EWf.ins_nodup",
+                "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+                "start": 384,
+                "end": 384,
+                "kind": "theorem"
+              },
+              {
+                "name": "Sal.MRDTs.Instances.EmbedRGA.EWf.keys_inj",
+                "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
+                "start": 386,
+                "end": 386,
+                "kind": "theorem"
+              },
+              {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.EWf.prefix",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 388,
-                "end": 399,
+                "start": 389,
+                "end": 400,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.E_core_update",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 99,
-                "end": 100,
+                "start": 100,
+                "end": 101,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.chainBefore_inv'",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 241,
-                "end": 249,
+                "start": 242,
+                "end": 250,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.chainBefore_snoc_iff",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 251,
-                "end": 294,
+                "start": 252,
+                "end": 295,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eDels_append",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 375,
-                "end": 377,
+                "start": 376,
+                "end": 378,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eFold_snoc",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 329,
-                "end": 333,
+                "start": 330,
+                "end": 334,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eHonest_core",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 1101,
-                "end": 1114,
+                "start": 1102,
+                "end": 1115,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eHonest_of_applicable",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 1203,
-                "end": 1235,
+                "start": 1192,
+                "end": 1224,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eHonest_of_mint",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 1240,
-                "end": 1244,
+                "start": 1229,
+                "end": 1233,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eInsIds_append",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 371,
-                "end": 373,
+                "start": 372,
+                "end": 374,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eInsIds_lt_of_seqOK",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 134,
-                "end": 143,
+                "start": 135,
+                "end": 144,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eInsert_all_lt",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 298,
-                "end": 305,
+                "start": 299,
+                "end": 306,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eInsert_map_insAfter",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 307,
-                "end": 396,
+                "start": 308,
+                "end": 397,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eInsert_sorted",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 165,
-                "end": 188,
+                "start": 166,
+                "end": 189,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eSeqOK_prefix",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 72,
-                "end": 75,
+                "start": 73,
+                "end": 76,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eSpecFold_snoc",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 52,
-                "end": 56,
+                "start": 53,
+                "end": 57,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 145,
-                "end": 209,
+                "start": 146,
+                "end": 210,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 1134,
-                "end": 1201,
+                "start": 1135,
+                "end": 1190,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_del_ins_mem",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 660,
-                "end": 681,
+                "start": 661,
+                "end": 682,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_fold_canon",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 558,
-                "end": 577,
+                "start": 559,
+                "end": 578,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_fold_chain",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 413,
-                "end": 423,
+                "start": 414,
+                "end": 424,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_fold_fst_inj",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 222,
-                "end": 237,
+                "start": 223,
+                "end": 238,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_fold_guard_free",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 433,
-                "end": 448,
+                "start": 434,
+                "end": 449,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_fold_id_lt",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 425,
-                "end": 434,
+                "start": 426,
+                "end": 435,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_fold_mem",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 485,
-                "end": 556,
+                "start": 486,
+                "end": 557,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_fold_rec_sub",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 401,
-                "end": 431,
+                "start": 402,
+                "end": 432,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_fold_sorted",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 450,
-                "end": 483,
+                "start": 451,
+                "end": 484,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_ins_del_not_comm",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 589,
-                "end": 599,
+                "start": 590,
+                "end": 600,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_keys_inj_events",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 761,
-                "end": 779,
+                "start": 762,
+                "end": 780,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_seq_chains",
                 "file": "Sal/MRDTs/Instances/EmbedRGASequential.lean",
-                "start": 79,
-                "end": 130,
+                "start": 80,
+                "end": 131,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_vis_of_rc_of_honest",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 638,
-                "end": 658,
+                "start": 639,
+                "end": 659,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.e_wf_of_enum",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 683,
-                "end": 739,
+                "start": 684,
+                "end": 740,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.esorted_ext",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 207,
-                "end": 243,
+                "start": 208,
+                "end": 244,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.mem_eDels",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 359,
-                "end": 369,
+                "start": 360,
+                "end": 370,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.mem_eInsIds",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 350,
-                "end": 357,
+                "start": 351,
+                "end": 358,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Instances.EmbedRGA.mem_eInsert",
                 "file": "Sal/MRDTs/Instances/EmbedRGA.lean",
-                "start": 154,
-                "end": 163,
+                "start": 155,
+                "end": 164,
                 "kind": "theorem"
               },
               {
@@ -8997,10 +8997,10 @@
             ]
           },
           "shared_framework_or_kernel": {
-            "declaration_count": 182,
-            "source_lines": 807,
-            "nonblank_lines": 805,
-            "nonblank_noncomment_lines": 680,
+            "declaration_count": 184,
+            "source_lines": 840,
+            "nonblank_lines": 838,
+            "nonblank_noncomment_lines": 711,
             "declarations": [
               {
                 "name": "Sal.MRDTs.CanonicalConfig",
@@ -9437,6 +9437,20 @@
                 "kind": "definition"
               },
               {
+                "name": "Sal.MRDTs.Foundation.issued_event_induction",
+                "file": "Sal/MRDTs/Framework/CertifiedEventInduction.lean",
+                "start": 7,
+                "end": 27,
+                "kind": "theorem"
+              },
+              {
+                "name": "Sal.MRDTs.Foundation.legal_snoc_induction",
+                "file": "Sal/MRDTs/Framework/SequentialInduction.lean",
+                "start": 7,
+                "end": 17,
+                "kind": "theorem"
+              },
+              {
                 "name": "Sal.MRDTs.Foundation.listPermOf",
                 "file": "Sal/MRDTs/Framework/Base/Replay.lean",
                 "start": 24,
@@ -9755,14 +9769,14 @@
                 "name": "Sal.MRDTs.Paper1.Automation.guarded_fold_projection",
                 "file": "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean",
                 "start": 7,
-                "end": 21,
+                "end": 22,
                 "kind": "theorem"
               },
               {
                 "name": "Sal.MRDTs.Paper1.Automation.map_filter_project",
                 "file": "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean",
-                "start": 23,
-                "end": 31,
+                "start": 24,
+                "end": 32,
                 "kind": "theorem"
               },
               {
@@ -10393,6 +10407,8 @@
           "Sal.MRDTs.Foundation.UpdateSig.rc",
           "Sal.MRDTs.Foundation.UpdateSig.update",
           "Sal.MRDTs.Foundation.applySeq",
+          "Sal.MRDTs.Foundation.issued_event_induction",
+          "Sal.MRDTs.Foundation.legal_snoc_induction",
           "Sal.MRDTs.Foundation.listPermOf",
           "Sal.MRDTs.Foundation.loOn",
           "Sal.MRDTs.Foundation.respects",
@@ -10479,10 +10495,11 @@
           "Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK._simp_1_2",
           "Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK._simp_1_3",
           "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists",
+          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_2",
           "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_5",
+          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_6",
           "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_7",
-          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_8",
-          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_9",
+          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._simp_1_4",
           "Sal.MRDTs.Instances.EmbedRGA.e_del_ins_mem",
           "Sal.MRDTs.Instances.EmbedRGA.e_fold_canon",
           "Sal.MRDTs.Instances.EmbedRGA.e_fold_chain",
@@ -11442,6 +11459,8 @@
           "Sal.MRDTs.Foundation.UpdateSig.rc",
           "Sal.MRDTs.Foundation.UpdateSig.update",
           "Sal.MRDTs.Foundation.applySeq",
+          "Sal.MRDTs.Foundation.issued_event_induction",
+          "Sal.MRDTs.Foundation.legal_snoc_induction",
           "Sal.MRDTs.Foundation.listPermOf",
           "Sal.MRDTs.Foundation.loOn",
           "Sal.MRDTs.Foundation.respects",
@@ -11528,10 +11547,11 @@
           "Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK._simp_1_2",
           "Sal.MRDTs.Instances.EmbedRGA.eWf_of_seqOK._simp_1_3",
           "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists",
+          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_2",
           "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_5",
+          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_6",
           "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_7",
-          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_8",
-          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._proof_1_9",
+          "Sal.MRDTs.Instances.EmbedRGA.e_chain_exists._simp_1_4",
           "Sal.MRDTs.Instances.EmbedRGA.e_del_ins_mem",
           "Sal.MRDTs.Instances.EmbedRGA.e_fold_canon",
           "Sal.MRDTs.Instances.EmbedRGA.e_fold_chain",
@@ -11820,20 +11840,21 @@
       "Sal/MRDTs/Paper1/HistorySpec.lean": "a36559788da6c44331da11d827775da932834c5ce5043037e31ad51fadbd0481",
       "Sal/MRDTs/Paper1/SpecificationVisibility.lean": "5d93e4080445fbbddb663c3dce2a49fee25d910fb12ae0ceaa042e7b40c86042",
       "Sal/MRDTs/Framework/Base/Replay.lean": "9dde9390ae8c50a4d41c18699fb156beadfcf7783109439e9c3dfe988c6f8721",
-      "Sal/MRDTs/Instances/EmbedRGA.lean": "cecd02c8445a3c1157a61dfadd34c97d4bb1c9fd20a5ff82be31f99e37ee18b4",
+      "Sal/MRDTs/Instances/EmbedRGA.lean": "53610820267f4782d34b30765851d5fe94ba99b9cb7584bc75642b89aadb5d91",
       "Sal/MRDTs/Framework/Certificates.lean": "14659ccad800c9ead7583d9e718b040644393a05e29f8946889374d6c4f4e667",
       "Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean": "d510dcc0a9f7172c2fdc0d62d863d1d04cdca5f235f1e51fcdf5220fde01d6b0",
       "Sal/MRDTs/Instances/RGAKernel/EmbedState.lean": "b1f14c4d82cd4f5d6b3a58930a7df5c3f61d9aff3358b22a4866fbd6b5d6d828",
       "Sal/MRDTs/Instances/RGAKernel/Code.lean": "8717cd790100d1ca880ceac8c00e05fb86a8fe965b1214ac07c270a0df3b5bb0",
-      "Sal/MRDTs/Instances/ProductionRGA.lean": "8bbb2917907a9c411e45cb38dfa8185912448ce866fb1649de1baa3c0639155b",
+      "Sal/MRDTs/Instances/ProductionRGA.lean": "9abbc1e01258a555e07c1fba637a8a4fda62d1cca6526e92e98e3940b4289593",
       "Sal/MRDTs/Metatheory/Correctness.lean": "2bc66bdcb966b15ab5ff592dff6d3d8a360131b898a604ea9a6b9291e417a58c",
       "Sal/MRDTs/Metatheory/VirtualMergeBase.lean": "88c2ddbde6cd4669ddea8d249df6a12cf4aef5d2ba5bab71db4b684b81c68ec6",
       "Sal/MRDTs/Paper1/RestrictedReplay.lean": "501736d1a76573358576782fdd7487ae98dc0530bc09e23980fd842a62766bbf",
       "Sal/MRDTs/Paper1/InvariantOrder.lean": "063135f9b9d6c5614d3ea17cc3da2351fb4effa4cf17f348cbecfa6a01a4a976",
       "Sal/MRDTs/Paper1/GuardedHistory.lean": "04c80b59cd4fb1156167b8fe5846872f255c84f76a462039f7a253ea6ba324a6",
       "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean": "e3f16be201427f395e443cc6fa8413f00b56eb9c61fcf2d8623fcc32fb0d46ab",
+      "Sal/MRDTs/Framework/CertifiedEventInduction.lean": "02cf6d2e14e001d5ad5e441090eec09d7b9f419d2bf1ea683626fb4104545a03",
       "Sal/MRDTs/Framework/ReplayLaws.lean": "d53096e478ac44ec8c41db656e2925a1d19f44ed643b209141468c5f1c770372",
-      "Sal/MRDTs/Instances/EmbedRGASequential.lean": "98d3098be1b9648039275c4e4b91b81fa01c3e8584d64958a9bdd7a9d5094fcd",
+      "Sal/MRDTs/Instances/EmbedRGASequential.lean": "1920a1d3621c5a32f1ef6cffd13d50f612effc378efd71bb20b6147afcbb4b81",
       "Sal/MRDTs/Paper1/CertifiedRGAHistory.lean": "6768fb7faf92006f9ebf7c9aff2afa90040e43aaa82c03578bef5aac26e8da54",
       "Sal/MRDTs/Metatheory/Adequacy.lean": "46312c845d494c6a534e4da4fe7c8a6b4899efc743a283cc001664da91c9aed4",
       "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean": "9edada98cb1a22a9761803e9ae7951b9426e269a865300e4470f3cbf147940a5",
@@ -11841,7 +11862,8 @@
       "Sal/MRDTs/Paper1/CertifiedRGAScope.lean": "17b6b5772218df7e4469c35a0b8bfecfa4c1102d49cac4905522490cb8c4071f",
       "Sal/MRDTs/Paper1/CertifiedHistoryCommutation.lean": "ece9285963f873f90c22ae94d37e45de63396232a644291cbfc7ef2f0b57cca9",
       "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean": "d3a9fbdd6a76c62e2c00815f3ae5a498eca6a729d0588a36823fcafbd266ca39",
-      "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean": "fcf721a2d87bb0c1b5d9436ba1360cbc34ed390ad9d598ac43781d75ffcc1560",
+      "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean": "2e9ee2d3c73acb0017e5b8135e8c22fcaa36615c46b15a19b3b2181b096e3097",
+      "Sal/MRDTs/Framework/SequentialInduction.lean": "a52c9f9f4573d842a96ce333e812bce65bd7382ddbb0a1fc3e05138c2b5dddeb",
       "Sal/MRDTs/Paper1/CertifiedRGAInvariant.lean": "652938c26b95c95705fd9db8f0a9144ad18aa6d5797c443a3e6376b8e6cfd0c8",
       "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean": "d222453cb161cd36e4f4a7b92a8e21b4ca2f41716becd1d74ebb542aadc11485",
       "Sal/MRDTs/Paper1/ProjectedSimulation.lean": "e3aa9a945c4d7c4c9f508f986a5b4adacb118b1f1cbd20e1284fe959841e7ab6",
@@ -11947,7 +11969,8 @@
       "Sal/Interfaces/Map_Extended.lean": "b2b8c1dff4af2fe66edba5a488fac3f1eebfa374c8659eba18a2d1862443be42",
       "Sal/Interfaces/Set_Extended.lean": "0031736f903330db242b5bd551ad541e44ab3b2f825b9680a1f0fe6a7cf3e72b",
       "Sal/MRDTs/Paper1/Automation/EmbeddedOrderedPrimitives.lean": "249db8e1b88d4758757d799a2c3bb65814e0046d1dc5986c7cb1fb6dd86561d4",
-      "Sal/MRDTs/Instances/EmbedRGA.lean": "cecd02c8445a3c1157a61dfadd34c97d4bb1c9fd20a5ff82be31f99e37ee18b4",
+      "Sal/MRDTs/Instances/EmbedRGA.lean": "53610820267f4782d34b30765851d5fe94ba99b9cb7584bc75642b89aadb5d91",
+      "Sal/MRDTs/Framework/CertifiedEventInduction.lean": "02cf6d2e14e001d5ad5e441090eec09d7b9f419d2bf1ea683626fb4104545a03",
       "Sal/MRDTs/Paper1/Automation/PolicyExpansionAutomation.lean": "ebfb90064ec7fb1cb6511d7b06b617a9f7fded91c3a684ddc50a344f78620ff0",
       "Sal/MRDTs/Paper1/Automation/SharedExpansion.lean": "54a91177bee4724f1b7dfce5d05cd3a9a1336855a96b8fb6d32e76bf8c01f0b0",
       "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean": "f257684f41c467a48d1722675d798c64ebac4ac061b1a1cf6a896ecfee9e8988",
@@ -11986,8 +12009,10 @@
       "Sal/MRDTs/Instances/SidedEmbedRGA_Intent.lean": "e36cec04dd3741aacd18292fc9d7b7d517bc43a825c235b98e701f6ac4bf1bea",
       "Sal/MRDTs/Instances/SidedPeritext.lean": "8dea5cc11ffcc78441f5a6e9cc8b8c87187cb81b7dc8be39839dd946241c4f06",
       "Sal/MRDTs/Instances/PeritextRender.lean": "515f2ed726222fbb8e1c537db7f1da1546989bd84f0f3d06384c8a5f47ace912",
-      "Sal/MRDTs/Instances/ProductionRGA.lean": "8bbb2917907a9c411e45cb38dfa8185912448ce866fb1649de1baa3c0639155b",
-      "Sal/MRDTs/Instances/EmbedRGASequential.lean": "98d3098be1b9648039275c4e4b91b81fa01c3e8584d64958a9bdd7a9d5094fcd",
+      "Sal/MRDTs/Instances/ProductionRGA.lean": "9abbc1e01258a555e07c1fba637a8a4fda62d1cca6526e92e98e3940b4289593",
+      "Sal/MRDTs/Instances/EmbedRGASequential.lean": "1920a1d3621c5a32f1ef6cffd13d50f612effc378efd71bb20b6147afcbb4b81",
+      "Sal/MRDTs/Framework/GuardedStateProjection.lean": "6f3bfcd8e755995055ba509da64e580df172e63d9ab95adc8b62d8149024c3d7",
+      "Sal/MRDTs/Framework/SequentialInduction.lean": "a52c9f9f4573d842a96ce333e812bce65bd7382ddbb0a1fc3e05138c2b5dddeb",
       "Sal/MRDTs/Instances/FinsetStore.lean": "2143a6df2b6ad4a0c7c8029cb225cabe6e9dc24535dc2c5883ea6e12bf1a8b2f",
       "Sal/MRDTs/Framework/Product.lean": "20c88b88b80d4f8f3c094fdb3c48e04f3ed162e6de7b6faa204fbed6cf54c1d2",
       "Sal/MRDTs/Paper1/CertifiedPrefixScope.lean": "a22ba1d8efe6f60fde50a62da8891ad2b8c62d6467c9255842bdeb7704a0b09e",
@@ -11995,19 +12020,23 @@
       "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean": "4effb462db33163dc0cdfb16982402ee06153a152facb005950014d79aa4b551",
       "Sal/MRDTs/Paper1/Automation/InductiveMask.lean": "6d622c6eec1525b0750de2efd05b426bae0b2d468688d6aefc12c134c9547a66",
       "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean": "b082c70bb545104d12e55fc1918a955825c6a16c3bd1b7114eb1c8b982210202",
-      "Sal/MRDTs/Paper1/Automation/TransferSimple.lean": "ed83162b62e8e4a32c8ae7668c7e4700ac27cf6ecebe97d0880a9df5f9b49573",
+      "Sal/MRDTs/Paper1/Automation/TransferSimple.lean": "85f0fff37ed963c5a054e3d71b1fb743bea4fc29030db23e7f8c6f610d75eeb1",
       "Sal/MRDTs/Instances/FlatGrowOnly.lean": "4ab08116e5d0eea4350e681f5df66fdfb2025bcdfeb398003b46e78e31aa4f65",
       "Sal/MRDTs/Instances/FlatCounters.lean": "e80d80b593273f33c6de03167698a503c8539c830f96fed9f7da7f8dd9d0433e",
       "Sal/MRDTs/Instances/AddStore.lean": "0e434e830301c117dd2663da71bd6f992204fb07559f7799424a2c8f801ee826",
+      "Sal/MRDTs/Paper1/Automation/RepresentationAutomation.lean": "22c7c5bc8bb45a34771afcc49f17b6342d8ebd459937eb91684c49305972857a",
       "Sal/MRDTs/Paper1/Automation/CommonAlgebraAutomation.lean": "da92ced9daadf36396f6e3186381ee425d05677cdab3f3dacdc86f2009d02c03",
       "Sal/MRDTs/Paper1/Automation/CommonVerificationRules.lean": "1aa8656da7d2240af78c6fb74282802b034587308aaeab5978f9f30ef985776e",
       "Sal/MRDTs/Paper1/Automation/CommutingInputs.lean": "d09134aa08999c4c64c78af03cc00d070f4ef669aa3531154e1fc1ba617eab61",
-      "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean": "11a764b6e4f506ab8077709d5d1497be92c711b2bdce0dca516a0e0d00bccecf",
+      "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean": "98d63884f34016be67a4c0169dfe5fb4fcbe8c48f141c7c8190a4253625c6269",
       "Sal/MRDTs/Instances/AegisSheet.lean": "1ef6fc34ce1b75d782a2cd40d710d6815850a73987e655d389e3c48236638d95",
-      "Sal/MRDTs/Instances/TreeMove.lean": "9d155160f9b81840b7f2ea460c38c47a32a552a62b2c1c65327aa5c7772271c8",
+      "Sal/MRDTs/Instances/TreeMove.lean": "2f5d8448d1aeae863233fc582560ccfe2ba4297ea8a980371ea1c7090bd63c66",
+      "Sal/MRDTs/Paper1/Automation/CertifiedOriginBridge.lean": "3424c7e0d3924624cf166adc4723c257842d3126b0a1a66794766d803f463295",
+      "Sal/MRDTs/Paper1/Automation/OriginPrefixEvidence.lean": "aa141fc98a00db9a66033380689625cc7d6f7f0e4d13c5546c330ce9cfb60887",
+      "Sal/MRDTs/Framework/GuardedProjectionAutomation.lean": "a5ed021268958b3d01d81d84c17daf4b57e072232b998ca06e1558e825c1dad6",
       "Sal/MRDTs/Instances/BoundedCounter.lean": "2d877c0bab2c8394f3e7d372c4545386418a6854941c60a2c0ff7b9a1b5d5ee2",
-      "Sal/MRDTs/Paper1/Automation/TransferGuardedCommuting.lean": "ccdb69bb2bbc20424db1ff55c302b57bede027aebd6df034c7e7026c25777f20",
-      "Sal/MRDTs/Paper1/Automation/TransferNativeRGA.lean": "040cc690d50961cad15a4be22bd03b1288738632b88f3d218b9f42fc1ccf4ea0",
+      "Sal/MRDTs/Paper1/Automation/TransferGuardedCommuting.lean": "07bcd50e781fecf509cf5be03c0bd8860cbc6eee09a909fed2de9bf375d4b5f1",
+      "Sal/MRDTs/Paper1/Automation/TransferNativeRGA.lean": "bc2821d34b2c69fc06b963e5554532a86ad9b27c66d073ee3cd06dedb8cef2db",
       "Sal/MRDTs/Paper1/Automation/TransferLWW.lean": "ab6a7ed5ded0763755f9c31875e9e42512de4015e18acc0eb1199f2ff883e25c",
       "Sal/MRDTs/Paper1/GuardedLWWExclusion.lean": "260c164bcd065fb96037cfafb73e6350b7d55c3731b569a5e176444ca24f28d5",
       "Sal/MRDTs/Paper1/GuardedRGAObstructions.lean": "54e8cd9f698d35d390ef40f124e1179c78bdb869abdde78185bfab40e73fd63e",
@@ -12049,16 +12078,18 @@
       "Sal/MRDTs/Paper1/RGAStrict.lean": "3a0c4f57bf95eda4ec92b73809e7ac2a290661776680fd04e7cc2a92f3d2883f",
       "Sal/MRDTs/Paper1/RGACrossedExecution.lean": "6ace78bb6b1e84d0baf9d35739b756f784c9a1e1f932a7593bd817730c4794fa",
       "Sal/MRDTs/Paper1/RGAIdentified.lean": "f918fb4d32f8ad9e843c6fb99f14ef3257e4dc1a0f845db01c234ec1277a38a5",
-      "Sal/MRDTs/Paper1/IssuedConcretePorts.lean": "4d4ea0a0e5619e858b8541ccce111603f8bfd7aef1770ef40f90c7f21e39cd94",
-      "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean": "d59e758ed6eef02c5631dbb115168bb12fc7bbc2cf5da502de9b16deb75289f5",
-      "Sal/MRDTs/Instances/AegisSheetSequential.lean": "1e7ebe6f537a6e0781f83f70241ec2d3eb3a5fe51c51db2cf8639697510fa3d7",
-      "Sal/MRDTs/Instances/AegisSheetGC.lean": "c4301ae18d020cb827f2f2a65f5791b974c584843ed7ff11158628ed7fcdb9e4",
+      "Sal/MRDTs/Paper1/IssuedConcretePorts.lean": "33b8a12866ad797214163265e8cad71b50ee92d537e82641afbbe5042ba3f7bb",
+      "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean": "6fd5a62fb70e9470662091672242b09447202b78b9deb9c5af3ba731fa01b65c",
+      "Sal/MRDTs/Instances/AegisSheetSequential.lean": "7904c47dc0651b7618998e253aba3b7c4459d70081aad8f294766f016e4f2f4f",
+      "Sal/MRDTs/Framework/CertifiedInvariant.lean": "5facc21b310c34f4c24decf6e535444b136e2af0508749b3472597f5267c78ac",
+      "Sal/MRDTs/Instances/AegisSheetGC.lean": "34724d351cfae43b67d623becd9fba4cfd03c34ff45e8197b701e84b3065fd0f",
       "Sal/MRDTs/GC/Distributed.lean": "b4dc592b2afb150f2a16dc8a8965937b09638bbd42df0a27b24ae5bff606a0b3",
       "Sal/MRDTs/GC/CompressedDAG.lean": "3277d9fb620fbee3110985d34b88d94038dfeace91f4826d48058790393dc991",
       "Sal/MRDTs/Framework/StateGC.lean": "4cdb00576e331819772a205a8fada4d50748f6ea079029145d0e7a2722ee2624",
       "Sal/MRDTs/Paper1/BoundedCounterEvent.lean": "f975c381e6cb6ad73efd36e7025016b02ba82efb4c1fe3f68a962e29e223e3bd",
       "Sal/MRDTs/Paper1/SimpleEventPorts.lean": "8c8a38706bf8d3c704afd1aec7250c0017402759012eb36013686956312d96eb",
       "Sal/MRDTs/Instances/GSet.lean": "48a8611e558d488fcd3063d2346921058cc082ba9225153cc891910bf8fcf764",
+      "Sal/MRDTs/Paper1/GuardedProjectionHistory.lean": "5eac356408c9e5d3d00c4a9cc7edfd8aa1ad15147040582e0bce1d3336552027",
       "Sal/MRDTs/Paper1/SimpleConcretePorts.lean": "c9290eb96e97a2f3db215f31b2d9c2eb248a24d560d51fcd33a124e0a37180e5",
       "Sal/MRDTs/Paper1/Automation/SimpleInputs.lean": "a9bfac53dd413e9ae1c6c45b9d61fb6070951a27cfd31f0b57b0debc3c9a0ddc",
       "Sal/MRDTs/Metatheory/ProductionLedger.lean": "4cc482300bcae8ed40ff53c0c0fd27f7fe3f2b45760e3ba73adb1187772bddde",
@@ -12121,7 +12152,7 @@
       "Sal/MRDTs/Paper1/CertifiedHistoryCommutation.lean": "ece9285963f873f90c22ae94d37e45de63396232a644291cbfc7ef2f0b57cca9",
       "Sal/MRDTs/Paper1/CertifiedRGAHistory.lean": "6768fb7faf92006f9ebf7c9aff2afa90040e43aaa82c03578bef5aac26e8da54",
       "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean": "d3a9fbdd6a76c62e2c00815f3ae5a498eca6a729d0588a36823fcafbd266ca39",
-      "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean": "fcf721a2d87bb0c1b5d9436ba1360cbc34ed390ad9d598ac43781d75ffcc1560",
+      "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean": "2e9ee2d3c73acb0017e5b8135e8c22fcaa36615c46b15a19b3b2181b096e3097",
       "Sal/MRDTs/Paper1/CertifiedSidedRawOrderObstruction.lean": "8cf147e79b29c9607c002f8cd8a4321c745c56028e101cf11589c4c39c3a8645",
       "Sal/MRDTs/Paper1/CertifiedRGARawOrderObstruction.lean": "f9595190052814bd1f9bbc65c47aca1abd6954c9f23816bf8d0b78a4293a29ea",
       "Sal/MRDTs/Paper1/CertifiedRGARichCertificate.lean": "cb5e3b9f8b30d1dd6f07a05113ab1b06de9b8461e75ada5aa0282f8677159621",
@@ -12190,11 +12221,15 @@
         "source_sha256": "7d23d85b320147e04a99226926d7cf59bf520228b0d8c831da8ffc1f5a92122b"
       },
       "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean": {
-        "nonblank_noncomment_lines": 26,
-        "source_sha256": "fcf721a2d87bb0c1b5d9436ba1360cbc34ed390ad9d598ac43781d75ffcc1560"
+        "nonblank_noncomment_lines": 27,
+        "source_sha256": "2e9ee2d3c73acb0017e5b8135e8c22fcaa36615c46b15a19b3b2181b096e3097"
+      },
+      "Sal/MRDTs/Framework/SequentialInduction.lean": {
+        "nonblank_noncomment_lines": 34,
+        "source_sha256": "a52c9f9f4573d842a96ce333e812bce65bd7382ddbb0a1fc3e05138c2b5dddeb"
       }
     },
-    "whole_generic_bridge_library_total": 140,
+    "whole_generic_bridge_library_total": 175,
     "old_dispatch_controls": {
       "ordinary-or-set": {
         "forbidden": [
