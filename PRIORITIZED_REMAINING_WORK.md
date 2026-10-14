@@ -18,7 +18,7 @@ sole active bounded counter is the published Balegas matrix/max design.
   execution facts needed by its per-replica merge and sequential bridge.
 - [x] Independently check each five-VC/Join route, ordinary and recursive
   execution theorem, axiom dependencies, and positive/negative concrete tests.
-- [ ] Add completed cases to the catalogue, measured paper table, and public
+- [x] Add completed cases to the catalogue, measured paper table, and public
   datatype reference Site. JSON is outside this campaign.
 
 ## Notion catalogue integration and paper handoff

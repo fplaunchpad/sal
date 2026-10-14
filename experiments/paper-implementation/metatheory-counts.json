@@ -1,0 +1,5225 @@
+{
+  "repo_head": "c9e945d62cb04e26515e35a7792ff91d0b7addf0",
+  "roots": [
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.representationJoin_of_vcs",
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions.executionsV",
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions.executionsV",
+    "Sal.MRDTs.Paper1.ConcreteMRDT.replay_equal",
+    "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_mintCertifiedV",
+    "Sal.MRDTs.Paper1.PaperPresentation.uniform_versionsRA_of_paperOrder_witness",
+    "Sal.MRDTs.Paper1.InvariantReplay.convergence_on",
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.executionsV",
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.verify",
+    "Sal.MRDTs.Paper1.event_certified_of_fiveVCs_execution"
+  ],
+  "method": "Union of Lean-reported declaration source ranges in transitive kernel dependency closure of listed roots; count nonblank lines after repository nested-comment stripper; theorem kind includes complete statement and proof, definition kind includes structures, definitions, generated recursors/projections; shared automation and framework separately. Generated declaration ranges are deduplicated; overlaps between theorem and definition ranges are assigned to theorem source. Not whole-repo LOC.",
+  "metrics": {
+    "generic_metatheory.theorem": {
+      "nonblank_noncomment_lines": 3261,
+      "files": 29,
+      "declarations": 191,
+      "file_counts": {
+        "Sal/MRDTs/Paper1/ConcreteJoin.lean": 321,
+        "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean": 24,
+        "Sal/MRDTs/Paper1/ConcreteMetadata.lean": 33,
+        "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean": 349,
+        "Sal/MRDTs/Paper1/ConcreteVCExecution.lean": 23,
+        "Sal/MRDTs/Paper1/ConcreteReplay.lean": 18,
+        "Sal/MRDTs/Paper1/GuardedConvergence.lean": 365,
+        "Sal/MRDTs/Paper1/GuardedReplay.lean": 3,
+        "Sal/MRDTs/Metatheory/VirtualMergeBase.lean": 105,
+        "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean": 32,
+        "Sal/MRDTs/Paper1/ExecutionTrace.lean": 13,
+        "Sal/MRDTs/Paper1/CommutationBridge.lean": 7,
+        "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean": 189,
+        "Sal/MRDTs/Metatheory/AdequacyResult.lean": 73,
+        "Sal/MRDTs/Metatheory/Adequacy.lean": 658,
+        "Sal/MRDTs/Metatheory/StoreInvariant.lean": 417,
+        "Sal/MRDTs/Metatheory/VirtualAdequacy.lean": 281,
+        "Sal/MRDTs/Paper1/PaperPresentation.lean": 15,
+        "Sal/MRDTs/Paper1/InvariantReplay.lean": 102,
+        "Sal/MRDTs/Paper1/SplitSoundness.lean": 15,
+        "Sal/MRDTs/Paper1/SplitPolicy.lean": 5,
+        "Sal/MRDTs/Paper1/RestrictedReplay.lean": 33,
+        "Sal/MRDTs/Paper1/GuardedOrder.lean": 54,
+        "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean": 11,
+        "Sal/MRDTs/Metatheory/Correctness.lean": 6,
+        "Sal/MRDTs/Paper1/EventBridge.lean": 33,
+        "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean": 40,
+        "Sal/MRDTs/Paper1/Soundness.lean": 3,
+        "Sal/MRDTs/Metatheory/CertifiedAdequacy.lean": 33
+      }
+    },
+    "shared_framework_interfaces.definition": {
+      "nonblank_noncomment_lines": 431,
+      "files": 10,
+      "declarations": 146,
+      "file_counts": {
+        "Sal/MRDTs/Framework/Base/UpdateSignature.lean": 35,
+        "Sal/MRDTs/Framework/Base/ReplayContext.lean": 11,
+        "Sal/MRDTs/Framework/Signature.lean": 21,
+        "Sal/MRDTs/Framework/Base/Replay.lean": 7,
+        "Sal/MRDTs/Framework/Execution.lean": 177,
+        "Sal/MRDTs/Framework/Certificates.lean": 49,
+        "Sal/MRDTs/Framework/Base/LabeledTS.lean": 9,
+        "Sal/MRDTs/Framework/Product.lean": 45,
+        "Sal/MRDTs/Framework/MergeLaws.lean": 66,
+        "Sal/MRDTs/Framework/ReplayLaws.lean": 11
+      }
+    },
+    "generic_metatheory.definition": {
+      "nonblank_noncomment_lines": 486,
+      "files": 30,
+      "declarations": 140,
+      "file_counts": {
+        "Sal/MRDTs/Paper1/ConcreteJoin.lean": 44,
+        "Sal/MRDTs/Paper1/ConcreteFormalism.lean": 19,
+        "Sal/MRDTs/Paper1/ConcreteMetadata.lean": 8,
+        "Sal/MRDTs/Paper1/RestrictedReplay.lean": 16,
+        "Sal/MRDTs/Paper1/ConcreteVCExecution.lean": 33,
+        "Sal/MRDTs/Paper1/GuardedReplay.lean": 10,
+        "Sal/MRDTs/Metatheory/Join/HistoricalReplay.lean": 2,
+        "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean": 34,
+        "Sal/MRDTs/Paper1/EventBridge.lean": 23,
+        "Sal/MRDTs/Paper1/ProjectedCriterion.lean": 7,
+        "Sal/MRDTs/Paper1/HistorySpec.lean": 8,
+        "Sal/MRDTs/Paper1/SpecificationVisibility.lean": 4,
+        "Sal/MRDTs/Metatheory/Correctness.lean": 5,
+        "Sal/MRDTs/Metatheory/VirtualMergeBase.lean": 69,
+        "Sal/MRDTs/Paper1/Soundness.lean": 13,
+        "Sal/MRDTs/Paper1/CommutationBridge.lean": 3,
+        "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean": 26,
+        "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean": 20,
+        "Sal/MRDTs/Metatheory/Adequacy.lean": 15,
+        "Sal/MRDTs/Metatheory/StoreInvariant.lean": 5,
+        "Sal/MRDTs/Metatheory/VirtualAdequacy.lean": 18,
+        "Sal/MRDTs/Paper1/RALinearizability.lean": 12,
+        "Sal/MRDTs/Paper1/InvariantReplay.lean": 11,
+        "Sal/MRDTs/Paper1/CertifiedReplay.lean": 9,
+        "Sal/MRDTs/Paper1/InvariantOrder.lean": 7,
+        "Sal/MRDTs/Paper1/SplitSoundness.lean": 27,
+        "Sal/MRDTs/Paper1/SplitPolicy.lean": 23,
+        "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean": 7,
+        "Sal/MRDTs/Paper1/GuardedOrder.lean": 3,
+        "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean": 5
+      }
+    },
+    "shared_framework_interfaces.theorem": {
+      "nonblank_noncomment_lines": 759,
+      "files": 8,
+      "declarations": 63,
+      "file_counts": {
+        "Sal/MRDTs/Framework/Base/ReplayContext.lean": 2,
+        "Sal/MRDTs/Framework/Execution.lean": 55,
+        "Sal/MRDTs/Framework/Certificates.lean": 52,
+        "Sal/MRDTs/Framework/Base/Replay.lean": 4,
+        "Sal/MRDTs/Framework/ReplayLaws.lean": 473,
+        "Sal/MRDTs/Framework/Base/FiniteOrder.lean": 67,
+        "Sal/MRDTs/Framework/Product.lean": 98,
+        "Sal/MRDTs/Framework/MergeLaws.lean": 8
+      }
+    },
+    "automation.theorem": {
+      "nonblank_noncomment_lines": 1688,
+      "files": 19,
+      "declarations": 172,
+      "file_counts": {
+        "Sal/MRDTs/Paper1/Automation/CommonVerification.lean": 29,
+        "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean": 43,
+        "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean": 54,
+        "Sal/MRDTs/Paper1/Automation/InductiveMask.lean": 5,
+        "Sal/MRDTs/Paper1/Automation/TransferSimple.lean": 27,
+        "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean": 219,
+        "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean": 204,
+        "Sal/MRDTs/Paper1/Automation/CertifiedReplayExpansion.lean": 55,
+        "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean": 35,
+        "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean": 122,
+        "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean": 11,
+        "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean": 11,
+        "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean": 149,
+        "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean": 32,
+        "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean": 27,
+        "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean": 181,
+        "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean": 154,
+        "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean": 94,
+        "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean": 236
+      }
+    },
+    "automation.definition": {
+      "nonblank_noncomment_lines": 258,
+      "files": 19,
+      "declarations": 120,
+      "file_counts": {
+        "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean": 27,
+        "Sal/MRDTs/Paper1/Automation/CommonVerification.lean": 58,
+        "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean": 10,
+        "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean": 14,
+        "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean": 5,
+        "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean": 6,
+        "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean": 8,
+        "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean": 8,
+        "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean": 12,
+        "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean": 9,
+        "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean": 23,
+        "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean": 8,
+        "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean": 3,
+        "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean": 2,
+        "Sal/MRDTs/Paper1/Automation/TransferSimple.lean": 5,
+        "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean": 14,
+        "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean": 24,
+        "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean": 18,
+        "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean": 4
+      }
+    },
+    "datatype.definition": {
+      "nonblank_noncomment_lines": 11,
+      "files": 1,
+      "declarations": 1,
+      "file_counts": {
+        "Sal/MRDTs/Instances/FinsetStore.lean": 11
+      }
+    }
+  },
+  "declarations": {
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.representationJoin_of_vcs": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 374,
+      "end": 393,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.Timestamp": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 31,
+      "end": 33,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.ReplayContext.vis": {
+      "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.Op": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 35,
+      "end": 36,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.Replica": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 28,
+      "end": 29,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.ReplayContext": {
+      "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+      "start": 17,
+      "end": 33,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.ReplayContext.mk": {
+      "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.AppOp": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 58,
+      "end": 58,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 50,
+      "end": 60,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.mk": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 54,
+      "end": 54,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.MergeVCs": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 34,
+      "end": 67,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.MergeVCs.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 39,
+      "end": 39,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Representation": {
+      "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
+      "start": 10,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.toUpdateSig": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 33,
+      "end": 40,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.dec_state": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 15,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.mk": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.State": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.AppOp": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.dec_op": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.init": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.update": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Supported": {
+      "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
+      "start": 23,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.ReplayContext.events": {
+      "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+      "start": 37,
+      "end": 39,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.ReplayContext.L": {
+      "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.before": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 11,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 10,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 10,
+      "end": 10,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.commutes": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 112,
+      "end": 116,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.State": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 55,
+      "end": 55,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.update": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 60,
+      "end": 60,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.Closed": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 22,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 8,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 8,
+      "end": 8,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.OperationPolicy": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 17,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.OperationPolicy.mk": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.paperOrder": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 69,
+      "end": 74,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.OperationPolicy.before": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.Op.op": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 45,
+      "end": 46,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.merge": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 26,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.Past": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 26,
+      "end": 28,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.JoinAtSize": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 93,
+      "end": 98,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.listPermOf": {
+      "file": "Sal/MRDTs/Framework/Base/Replay.lean",
+      "start": 24,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.join_at_sizes": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 212,
+      "end": 371,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.remainder_rep": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 29,
+      "end": 29,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.event": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 20,
+      "end": 32,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.remainder": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.filter_ne_listPermOf_basic": {
+      "file": "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean",
+      "start": 45,
+      "end": 53,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.dec_op": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 59,
+      "end": 59,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.semantic_maximal": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.metadata_maximal": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 26,
+      "end": 26,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.member": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.MergeVCs.merge_comm": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 41,
+      "end": 41,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.MergeVCs.init": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 44,
+      "end": 44,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Unique": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 69,
+      "end": 69,
+      "kind": "definition"
+    },
+    "_private.Sal.MRDTs.Paper1.ConcreteJoin.0.Sal.MRDTs.Paper1.ConcreteMRDT.Raw.local_step": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 167,
+      "end": 186,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.trans": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 11,
+      "end": 11,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.ConcreteJoin.0.Sal.MRDTs.Paper1.ConcreteMRDT.Raw.causal_frame": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 78,
+      "end": 91,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.MergeVCs.causal_delta": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 46,
+      "end": 46,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.reconstructed_union": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 32,
+      "end": 32,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.reconstructed_past": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 31,
+      "end": 31,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.past": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 28,
+      "end": 28,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.PeelChoice.past_rep": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 30,
+      "end": 30,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.MergeVCs.local_redistribute": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 53,
+      "end": 53,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.supported\u2082": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.supported\u2081": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.closed\u2081": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.irrefl": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.closed\u2082": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.closed_diff_of_max": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 39,
+      "end": 50,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.ConcreteJoin.0.Sal.MRDTs.Paper1.ConcreteMRDT.Raw.shared_step": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 188,
+      "end": 210,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.MergeVCs.shared": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 60,
+      "end": 60,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.listPermOf_diff_length": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1343,
+      "end": 1350,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.listPermOf_length_eq": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1261,
+      "end": 1303,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.erase_listPermOf": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1331,
+      "end": 1341,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.enumeration_subset": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 59,
+      "end": 66,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.side_decomposition": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 116,
+      "end": 164,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.ConcreteJoin.0.Sal.MRDTs.Paper1.ConcreteMRDT.Raw.enumeration_length_lt": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 100,
+      "end": 114,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.past_closed": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 96,
+      "end": 100,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.past_subset": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 30,
+      "end": 37,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.ReplaySupply.represented": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 74,
+      "end": 74,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.ReplaySupply": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 71,
+      "end": 76,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.ReplaySupply.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 71,
+      "end": 71,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.RepresentationJoin": {
+      "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
+      "start": 13,
+      "end": 20,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.EventOrder.default": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 86,
+      "end": 90,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.EventOrder": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 67,
+      "end": 74,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.EventOrder.mk": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 73,
+      "end": 73,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.OrderResult": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 20,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.OrderResult.Fst_then_snd": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.OrderResult.Either": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.OrderResult.Snd_then_fst": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.EventOrder.unconstrained": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 83,
+      "end": 84,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.ReplaySupply.peel": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 75,
+      "end": 75,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.causal": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.listPermOf_union": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1305,
+      "end": 1329,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions.executionsV": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 91,
+      "end": 95,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions.toCertificate": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 58,
+      "end": 65,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Version": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.canonical_unique": {
+      "file": "Sal/MRDTs/Paper1/ConcreteReplay.lean",
+      "start": 21,
+      "end": 28,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.respects": {
+      "file": "Sal/MRDTs/Framework/Base/Replay.lean",
+      "start": 28,
+      "end": 30,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Canonical": {
+      "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
+      "start": 29,
+      "end": 32,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.applySeq": {
+      "file": "Sal/MRDTs/Framework/Base/Replay.lean",
+      "start": 13,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.Laws": {
+      "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
+      "start": 20,
+      "end": 32,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.Laws.mk": {
+      "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.Op.rep": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 43,
+      "end": 44,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.distinctOps": {
+      "file": "Sal/MRDTs/Metatheory/Join/HistoricalReplay.lean",
+      "start": 86,
+      "end": 90,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.Op.time": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 41,
+      "end": 42,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.replay_equal": {
+      "file": "Sal/MRDTs/Paper1/ConcreteReplay.lean",
+      "start": 10,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.convergence_on_guarded": {
+      "file": "Sal/MRDTs/Paper1/GuardedConvergence.lean",
+      "start": 129,
+      "end": 386,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.commutes_symm": {
+      "file": "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean",
+      "start": 18,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.distinctOps_of_events": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 214,
+      "end": 223,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.ReplayContext.timestamps_distinct": {
+      "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.applySeq_bubble_to_front_loOn_guarded": {
+      "file": "Sal/MRDTs/Paper1/GuardedConvergence.lean",
+      "start": 79,
+      "end": 127,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.applySeq_swap_loOn_incomparable_guarded": {
+      "file": "Sal/MRDTs/Paper1/GuardedConvergence.lean",
+      "start": 40,
+      "end": 77,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.ReplayContext.vis_total_same_replica": {
+      "file": "Sal/MRDTs/Framework/Base/ReplayContext.lean",
+      "start": 30,
+      "end": 30,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.applySeq_swap_commute_basic": {
+      "file": "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean",
+      "start": 23,
+      "end": 29,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.applySeq_swap_via_cond_comm_lift_guarded": {
+      "file": "Sal/MRDTs/Paper1/GuardedConvergence.lean",
+      "start": 16,
+      "end": 38,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.Laws.conditional_commutation": {
+      "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.Laws.noncomm_exact": {
+      "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.MRDTSig.Query": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 33,
+      "end": 36,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Issuance": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 26,
+      "end": 31,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Issuance.mk": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 30,
+      "end": 30,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.Value": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 33,
+      "end": 33,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ExecutionHistoryAdequacy": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 10,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.EventExecutionHistoryAdequacy": {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "start": 93,
+      "end": 103,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.projectedSpecVisibility": {
+      "file": "Sal/MRDTs/Paper1/ProjectedCriterion.lean",
+      "start": 13,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.HistorySpec": {
+      "file": "Sal/MRDTs/Paper1/HistorySpec.lean",
+      "start": 20,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.HistorySpec.mk": {
+      "file": "Sal/MRDTs/Paper1/HistorySpec.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SeqLabel": {
+      "file": "Sal/MRDTs/Paper1/HistorySpec.lean",
+      "start": 15,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SeqLabel.query": {
+      "file": "Sal/MRDTs/Paper1/HistorySpec.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SeqLabel.update": {
+      "file": "Sal/MRDTs/Paper1/HistorySpec.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.HistorySpec.Commutes": {
+      "file": "Sal/MRDTs/Paper1/SpecificationVisibility.lean",
+      "start": 17,
+      "end": 20,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.HistorySpec.admits": {
+      "file": "Sal/MRDTs/Paper1/HistorySpec.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.ver": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 108,
+      "end": 108,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 104,
+      "end": 134,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.mk": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 106,
+      "end": 106,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.headEventsFrom": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 98,
+      "end": 102,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IsGCA": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 27,
+      "end": 32,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Reaches": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 24,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.projectedLabels": {
+      "file": "Sal/MRDTs/Paper1/ProjectedCriterion.lean",
+      "start": 9,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CertifiedExecution": {
+      "file": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "start": 120,
+      "end": 128,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CertifiedExecution.virtual": {
+      "file": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "start": 127,
+      "end": 128,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintCertifiedReachV": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 89,
+      "end": 98,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintCertifiedReachV.init": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 92,
+      "end": 92,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.initConfig": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 261,
+      "end": 305,
+      "kind": "definition"
+    },
+    "_private.Sal.MRDTs.Framework.Execution.0.Sal.MRDTs.initVer_decompose": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 250,
+      "end": 259,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.VirtualMergeBaseResolver": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 411,
+      "end": 416,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.VirtualMergeBaseResolver.mk": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 415,
+      "end": 415,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintCertifiedReachV.step": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 93,
+      "end": 98,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStepV": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 57,
+      "end": 68,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStepV.virtual": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 65,
+      "end": 68,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.StepV": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 418,
+      "end": 437,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.StepV.mergeVirtual": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 424,
+      "end": 437,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.parents": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 110,
+      "end": 110,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.head": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 109,
+      "end": 109,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.VirtualMergeBaseResolver.state": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 416,
+      "end": 416,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Label.merge": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 310,
+      "end": 310,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Label": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 307,
+      "end": 311,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Label.apply": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 309,
+      "end": 309,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Label.fork": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 308,
+      "end": 308,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Label.query": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 311,
+      "end": 311,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.vis": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 107,
+      "end": 107,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.StepV.base": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 422,
+      "end": 423,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Step": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 313,
+      "end": 361,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Step.apply": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 328,
+      "end": 341,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.events": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 221,
+      "end": 222,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.headEvents": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 143,
+      "end": 145,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Step.fork": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 316,
+      "end": 327,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Step.query": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 358,
+      "end": 361,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.headState": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 140,
+      "end": 141,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.headStateFrom": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 93,
+      "end": 96,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MRDTSig.query": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Step.merge": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 342,
+      "end": 357,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStepV.base": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 63,
+      "end": 64,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStep": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 33,
+      "end": 48,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStep.nonApply": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 38,
+      "end": 41,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStep.apply": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 42,
+      "end": 48,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Issuance.CanIssue": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 31,
+      "end": 31,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintHonest": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 16,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.canonicalVirtualMergeBase": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 261,
+      "end": 263,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.virtualMergeBaseState": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 253,
+      "end": 258,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.virtualBaseAux": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 195,
+      "end": 204,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.stateD": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 23,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.vfoldAux": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 135,
+      "end": 192,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.mem_supportOf_of": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 64,
+      "end": 68,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.reaches_le": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 86,
+      "end": 91,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.supportOf": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 58,
+      "end": 61,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.maximalCommonAncestorsWithAny_eq_singleton_of_mem_support": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 94,
+      "end": 113,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CommonAncestorsWithAny": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 45,
+      "end": 49,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IsMaximalCommonAncestorWithAny": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 51,
+      "end": 56,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.mem_maximalCommonAncestorsWithAny": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 38,
+      "end": 41,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.maximalCommonAncestorsWithAny": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 29,
+      "end": 35,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.maximalCommonAncestorsWithAny_le": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 44,
+      "end": 46,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.exists_of_mem_supportOf": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 71,
+      "end": 73,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.supportOf_maximalCommonAncestorsWithAny_subset": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 83,
+      "end": 92,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.supportOf_mono": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 75,
+      "end": 81,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Configuration.parents_lt": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 111,
+      "end": 111,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CertifiedExecution.ordinary": {
+      "file": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "start": 126,
+      "end": 126,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintCertifiedReach": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 77,
+      "end": 87,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintCertifiedReach.step": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 82,
+      "end": 87,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintCertifiedReach.init": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 81,
+      "end": 81,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.replayContext": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 230,
+      "end": 236,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.vis_total_same_replica": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 126,
+      "end": 126,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Configuration.timestamps_distinct": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 120,
+      "end": 120,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCReplayConditions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 11,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCReplayConditions.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 11,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions.history": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 36,
+      "end": 36,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCReplayConditions.supported": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCReplayConditions.representation": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCReplayConditions.representedVersions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.ConcreteVCExecution.0.Sal.MRDTs.Paper1.ConcreteMRDT.virtual_reach": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 42,
+      "end": 47,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.MintCertifiedReach.toV": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 100,
+      "end": 109,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.MintCertifiedReach.rec": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 77,
+      "end": 87,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CertifiedExecution.casesOn": {
+      "file": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "start": 120,
+      "end": 128,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CertifiedExecution.rec": {
+      "file": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "start": 120,
+      "end": 128,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCReplayConditions.canonical": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions.toVCReplayConditions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 33,
+      "end": 36,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCReplayConditions.laws": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 43,
+      "end": 51,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 43,
+      "end": 43,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.CanonicalUnique": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 14,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS.Execution": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 41,
+      "end": 47,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS.Execution.nil": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 45,
+      "end": 45,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS.State": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 19,
+      "end": 33,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS.mk": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS.Label": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 29,
+      "end": 29,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS.Execution.cons": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 46,
+      "end": 47,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS.step": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 31,
+      "end": 31,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate.executionsV": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 111,
+      "end": 120,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VersionsWitness": {
+      "file": "Sal/MRDTs/Paper1/ConcreteFormalism.lean",
+      "start": 34,
+      "end": 36,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.EventVersionsSpecificationRA": {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "start": 65,
+      "end": 71,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ExecutionCorrect": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 96,
+      "end": 99,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate.versions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 73,
+      "end": 78,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.versions_of_scoped_history": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 30,
+      "end": 41,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate.history": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 51,
+      "end": 51,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate.supportedVersions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 47,
+      "end": 47,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate.unique": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 46,
+      "end": 46,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate.canonicalVersions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 49,
+      "end": 49,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.certifiedTSV": {
+      "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "start": 80,
+      "end": 86,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ExecutionTrace.visited": {
+      "file": "Sal/MRDTs/Paper1/ExecutionTrace.lean",
+      "start": 7,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.LabeledTS.Execution.rec": {
+      "file": "Sal/MRDTs/Framework/Base/LabeledTS.lean",
+      "start": 41,
+      "end": 47,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions.executionsV": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 73,
+      "end": 77,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions.toCertificate": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 49,
+      "end": 56,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions.toVCReplayConditions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 27,
+      "end": 31,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 27,
+      "end": 31,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions.mk": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CommutationCompatibility": {
+      "file": "Sal/MRDTs/Paper1/CommutationBridge.lean",
+      "start": 18,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.EventFoldHistorySound": {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "start": 34,
+      "end": 37,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedCertificate.ofTotal": {
+      "file": "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean",
+      "start": 53,
+      "end": 71,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.projectedSpecVisibility_sub_paperOrder": {
+      "file": "Sal/MRDTs/Paper1/CommutationBridge.lean",
+      "start": 37,
+      "end": 43,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions.historySound": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 31,
+      "end": 31,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions.compatibility": {
+      "file": "Sal/MRDTs/Paper1/ConcreteVCExecution.lean",
+      "start": 30,
+      "end": 30,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_mintCertifiedV": {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "start": 202,
+      "end": 251,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.CertifiedClosedExecution.0.Sal.MRDTs.Paper1.CertifiedClosedExecution.VJoinHook": {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "start": 26,
+      "end": 33,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.IsCanonicalState": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1051,
+      "end": 1057,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.loOn": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 151,
+      "end": 161,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.replayBefore": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 108,
+      "end": 110,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.EventOrder.Before": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 78,
+      "end": 81,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.EventOrder.order": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 74,
+      "end": 74,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.init": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 57,
+      "end": 57,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.canonicalConfig_merge_result": {
+      "file": "Sal/MRDTs/Metatheory/AdequacyResult.lean",
+      "start": 8,
+      "end": 82,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Configuration.headEvents_eq_of_head_ver": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 153,
+      "end": 157,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalConfig.mk": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 50,
+      "end": 50,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CanonicalConfig": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 44,
+      "end": 58,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.updateRep": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 19,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CanonicalConfig.version_events_causal": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 57,
+      "end": 57,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalConfig.canonical": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 51,
+      "end": 51,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Configuration.replayContext_vis": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 241,
+      "end": 242,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalConfig.version_events_supported": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 55,
+      "end": 55,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalConfig.vis_irrefl": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 54,
+      "end": 54,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalConfig.vis_trans": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 53,
+      "end": 53,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.isCanonicalState_congr": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1059,
+      "end": 1077,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Step.casesOn": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 313,
+      "end": 361,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Step.rec": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 313,
+      "end": 361,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.storeInv_stepV": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 577,
+      "end": 588,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.storeInv_merge_extend": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 265,
+      "end": 369,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.StoreInv.events_mono": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.StoreInv": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 15,
+      "end": 31,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.StoreInv.mk": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.StoreInv.origin": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 29,
+      "end": 29,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.StoreInv.parents_alloc": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.reaches_new_of_old": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 128,
+      "end": 145,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.storeInv_step": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 555,
+      "end": 575,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.storeInv_apply_extend": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 371,
+      "end": 472,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.storeInv_fork_extend": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 176,
+      "end": 263,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.StepV.casesOn": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 418,
+      "end": 437,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.StepV.rec": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 418,
+      "end": 437,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintCertifiedReachV.rec": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 89,
+      "end": 98,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Configuration.gca_events": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 131,
+      "end": 131,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.CertifiedClosedExecution.0.Sal.MRDTs.Paper1.CertifiedClosedExecution.vJoinHook_of_closedJoinAt": {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "start": 35,
+      "end": 38,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.CertifiedClosedExecution.ClosedJoinAt": {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "start": 13,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedClosedExecution.virtualMergeBaseState_canonical": {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "start": 183,
+      "end": 199,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.CertifiedClosedExecution.0.Sal.MRDTs.Paper1.CertifiedClosedExecution.virtualBaseAux_canonical_at": {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "start": 119,
+      "end": 181,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.virtualBaseAux_of_sort_cons": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 218,
+      "end": 232,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.unionEvents_empty": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 27,
+      "end": 34,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.unionEvents": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 23,
+      "end": 25,
+      "kind": "definition"
+    },
+    "_private.Sal.MRDTs.Paper1.CertifiedClosedExecution.0.Sal.MRDTs.Paper1.CertifiedClosedExecution.VCanonAt": {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "start": 40,
+      "end": 46,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.maximalCommonAncestorsWithAny_unionEvents": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 62,
+      "end": 81,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.maximalCommonAncestorsWithAny_events_cover": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 514,
+      "end": 540,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.storeInv_events_mono_reaches": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 33,
+      "end": 51,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.reaches_alloc": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 505,
+      "end": 512,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.commonAncestorWithAny_reaches_maximal": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 476,
+      "end": 493,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.mem_maximalCommonAncestorsWithAny_iff": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 49,
+      "end": 55,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.vfoldAux_nil": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 234,
+      "end": 239,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.unionEvents_singleton": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 36,
+      "end": 48,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.supportOf_maximalCommonAncestorsWithAny_ssubset": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 115,
+      "end": 132,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.CertifiedClosedExecution.0.Sal.MRDTs.Paper1.CertifiedClosedExecution.vfold_canonical": {
+      "file": "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean",
+      "start": 48,
+      "end": 117,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.vfoldAux_cons": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 241,
+      "end": 249,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.unionEvents_union": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 50,
+      "end": 60,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.virtualBaseAux_of_sort_nil": {
+      "file": "Sal/MRDTs/Metatheory/VirtualMergeBase.lean",
+      "start": 206,
+      "end": 216,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Configuration.headEvents_update_of_store_head_update": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 169,
+      "end": 193,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Configuration.head_alloc": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 113,
+      "end": 113,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.storeInv_init": {
+      "file": "Sal/MRDTs/Metatheory/StoreInvariant.lean",
+      "start": 542,
+      "end": 553,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.IssuedStepV.toRaw": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 70,
+      "end": 75,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.IssuedStep.toRaw": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 50,
+      "end": 55,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.IssuedStep.casesOn": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 33,
+      "end": 48,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStep.rec": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 33,
+      "end": 48,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStepV.casesOn": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 57,
+      "end": 68,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.IssuedStepV.rec": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 57,
+      "end": 68,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.canonicalConfig_init": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 66,
+      "end": 93,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.canonicalConfig_fork": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 95,
+      "end": 160,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.canonicalConfig_apply": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 162,
+      "end": 299,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Configuration.vis_tgt": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 116,
+      "end": 116,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.isCanonicalState_extend": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1141,
+      "end": 1180,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.applySeq_append_single": {
+      "file": "Sal/MRDTs/Framework/Base/Replay.lean",
+      "start": 18,
+      "end": 22,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.loOn_mono": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 171,
+      "end": 179,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Configuration.vis_src": {
+      "file": "Sal/MRDTs/Framework/Execution.lean",
+      "start": 114,
+      "end": 114,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.PaperPresentation.uniform_versionsRA_of_paperOrder_witness": {
+      "file": "Sal/MRDTs/Paper1/PaperPresentation.lean",
+      "start": 11,
+      "end": 32,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.FoldHistorySound": {
+      "file": "Sal/MRDTs/Paper1/RALinearizability.lean",
+      "start": 97,
+      "end": 101,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.projectedUpdates": {
+      "file": "Sal/MRDTs/Paper1/RALinearizability.lean",
+      "start": 17,
+      "end": 19,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.UniformVersionsRALinearizable": {
+      "file": "Sal/MRDTs/Paper1/RALinearizability.lean",
+      "start": 40,
+      "end": 47,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.convergence_on": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 181,
+      "end": 195,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.Laws": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 15,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.Laws.mk": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Scope.represented": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Scope": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 12,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Scope.mk": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantOrder.order": {
+      "file": "Sal/MRDTs/Paper1/InvariantOrder.lean",
+      "start": 30,
+      "end": 34,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantOrder.Commutes": {
+      "file": "Sal/MRDTs/Paper1/InvariantOrder.lean",
+      "start": 12,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.Ready": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Ready": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 17,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Scope.events": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Scope.context": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.Scope": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 11,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.Order": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 24,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.Legal": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Legal": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 20,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Legal.cons": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Legal.nil": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.convergence": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 138,
+      "end": 179,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.InvariantReplay.0.Sal.MRDTs.Paper1.InvariantReplay.legal_cons_iff": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 38,
+      "end": 42,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Legal.casesOn": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 20,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.CertifiedReplay.Legal.rec": {
+      "file": "Sal/MRDTs/Paper1/CertifiedReplay.lean",
+      "start": 20,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.Laws.update_closed": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.InvariantReplay.0.Sal.MRDTs.Paper1.InvariantReplay.bubble": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 106,
+      "end": 136,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.Laws.diamond": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.InvariantReplay.legal_swap": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 44,
+      "end": 51,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.InvariantReplay.0.Sal.MRDTs.Paper1.InvariantReplay.ready_insert": {
+      "file": "Sal/MRDTs/Paper1/InvariantReplay.lean",
+      "start": 27,
+      "end": 30,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.executionsV": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 106,
+      "end": 110,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.toExisting": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 71,
+      "end": 75,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.history": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 40,
+      "end": 40,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 37,
+      "end": 40,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.mk": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 37,
+      "end": 37,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 15,
+      "end": 29,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.mk": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Laws": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 66,
+      "end": 68,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Laws.mk": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 67,
+      "end": 67,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.EqualOperationCommutes": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 13,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.EventDistinctLaws": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 17,
+      "end": 28,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.EventDistinctLaws.mk": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.toExisting": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 43,
+      "end": 55,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.replaySupply": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.scheme": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.representation": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.vcs": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.supported": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.initial": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.laws": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Laws.toGuarded": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 70,
+      "end": 71,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Laws.self_commutation": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 68,
+      "end": 68,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Laws.toEventDistinctLaws": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 67,
+      "end": 68,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.distinct_to_guarded": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 49,
+      "end": 59,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.EventDistinctLaws.noncomm_exact": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.EventDistinctLaws.conditional_commutation": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.EventDistinctLaws.no_chain": {
+      "file": "Sal/MRDTs/Paper1/SplitPolicy.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.representedVersions": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 28,
+      "end": 28,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.finite": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.canonical": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.VCReplayConditions.unique": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.toVCReplayConditions": {
+      "file": "Sal/MRDTs/Paper1/SplitSoundness.lean",
+      "start": 37,
+      "end": 40,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.verify": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 94,
+      "end": 115,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.representation": {
+      "file": "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean",
+      "start": 9,
+      "end": 10,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.ReplayEvidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 54,
+      "end": 55,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.canonical": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 34,
+      "end": 42,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.witness": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 24,
+      "end": 29,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 20,
+      "end": 32,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.mask": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 30,
+      "end": 32,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Shape": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 65,
+      "end": 68,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.kill": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 12,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.birth": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.OperationPolicy.lift": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 22,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.canonical_of_loWitness": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 43,
+      "end": 57,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.OperationPolicy.lift_replayOrder_iff": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 26,
+      "end": 32,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.OrderResult.casesOn": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 20,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.OrderResult.rec": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 20,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.casesOn": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 20,
+      "end": 32,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.ReplayContract.rec": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 20,
+      "end": 32,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.canonical": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 70,
+      "end": 82,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.order_certificate": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 29,
+      "end": 55,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.commutes_notkill": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.noncomm_kill": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.ReplayContext.ts_unique": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 643,
+      "end": 652,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.killer_shape": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.step": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.projection_run": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 57,
+      "end": 63,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.projection": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.empty": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.exists_paperOrder_enumeration": {
+      "file": "Sal/MRDTs/Paper1/GuardedOrder.lean",
+      "start": 61,
+      "end": 78,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.paperOrder_acyclic": {
+      "file": "Sal/MRDTs/Paper1/GuardedOrder.lean",
+      "start": 50,
+      "end": 59,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.GuardedOrder.0.Sal.MRDTs.Paper1.GuardedReplay.path_causal_or_terminal": {
+      "file": "Sal/MRDTs/Paper1/GuardedOrder.lean",
+      "start": 32,
+      "end": 48,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.GuardedOrder.0.Sal.MRDTs.Paper1.GuardedReplay.concurrent_terminal": {
+      "file": "Sal/MRDTs/Paper1/GuardedOrder.lean",
+      "start": 21,
+      "end": 30,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.Laws.payload_no_chain": {
+      "file": "Sal/MRDTs/Paper1/GuardedOrder.lean",
+      "start": 11,
+      "end": 15,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.Laws.no_chain": {
+      "file": "Sal/MRDTs/Paper1/GuardedReplay.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.GuardedReplay.supportedOrder": {
+      "file": "Sal/MRDTs/Paper1/GuardedOrder.lean",
+      "start": 17,
+      "end": 19,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.exists_respecting_perm": {
+      "file": "Sal/MRDTs/Framework/Base/FiniteOrder.lean",
+      "start": 78,
+      "end": 85,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Framework.Base.FiniteOrder.0.Sal.MRDTs.exists_respecting_perm_aux": {
+      "file": "Sal/MRDTs/Framework/Base/FiniteOrder.lean",
+      "start": 42,
+      "end": 76,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Framework.Base.FiniteOrder.0.Sal.MRDTs.exists_rel_min": {
+      "file": "Sal/MRDTs/Framework/Base/FiniteOrder.lean",
+      "start": 11,
+      "end": 40,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.injective": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.Automation.InductiveMask.0.InductiveMask.exists_last": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveMask.lean",
+      "start": 24,
+      "end": 28,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MaskCanonical.Kit.update": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMaskCanonical.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Representation": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 36,
+      "end": 38,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 13,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.merge": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 12,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.Semantic": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 32,
+      "end": 34,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.target": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.tag": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.written": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 14,
+      "end": 48,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.cell": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 15,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 11,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 11,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 23,
+      "end": 30,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 12,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.init": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.State": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.causal_common_kernel": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
+      "start": 20,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.step": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.AppOp": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.merge": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.causal_strict_kernel": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+      "start": 13,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.FreshEquation": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 34,
+      "end": 37,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.CausalEquation": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+      "start": 10,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.order": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.fresh_step": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 41,
+      "end": 42,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.distinct": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveLeaves.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.causal_commuting_kernel": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
+      "start": 25,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.Commutes": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
+      "start": 11,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.fresh_base": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 39,
+      "end": 39,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.causal_absorber_kernel": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductiveSupplement.lean",
+      "start": 29,
+      "end": 31,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.ConditionalBase": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
+      "start": 16,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.commutes": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
+      "start": 9,
+      "end": 10,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 14,
+      "end": 21,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 13,
+      "end": 20,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.local_common_opposite": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 23,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalEquation": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 9,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.local_past_singleton": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 55,
+      "end": 58,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.local_opposite_fresh": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 48,
+      "end": 50,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.local_empty_sides": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
+      "start": 9,
+      "end": 10,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.local_empty_past": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 52,
+      "end": 53,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.KernelStable": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
+      "start": 12,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.LocalAssembly.ofMRDT": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 43,
+      "end": 45,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.signatureOf": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 11,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.TransferSimple.assemble": {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "start": 26,
+      "end": 49,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.initial": {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels": {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "start": 15,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.shared": {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.localEquation": {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.past_eq": {
+      "file": "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean",
+      "start": 23,
+      "end": 33,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.CommutingPort.scheme": {
+      "file": "Sal/MRDTs/Paper1/ConcreteCommutingVCReplay.lean",
+      "start": 12,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.causalSeed": {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.commutingPolicy": {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "start": 10,
+      "end": 10,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.TransferSimple.EmptyPastKernels.comm": {
+      "file": "Sal/MRDTs/Paper1/Automation/TransferSimple.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 19,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 9,
+      "end": 37,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 9,
+      "end": 9,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.product": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 12,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.prodSig": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 222,
+      "end": 239,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Instances.FinsetStore.D": {
+      "file": "Sal/MRDTs/Instances/FinsetStore.lean",
+      "start": 17,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.target": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.IssuerEvidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 46,
+      "end": 49,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.IssuerEvidence.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 46,
+      "end": 46,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.Key": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.key": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.insertion": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.written": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.ReplayEvidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 43,
+      "end": 44,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.projReplayContext\u2081": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 309,
+      "end": 322,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.inlOp_injective": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 30,
+      "end": 35,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.inlOp": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 11,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.evRes\u2081": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.IssuerEvidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 57,
+      "end": 60,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.IssuerEvidence.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 57,
+      "end": 57,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.Key": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.insertion": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.key": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.written": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 26,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.target": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.assemble": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 187,
+      "end": 260,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.unite": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Norm": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.eq_of_normalize": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 106,
+      "end": 110,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.normalize": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 10,
+      "end": 10,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.ext": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 37,
+      "end": 37,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.replay": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.merge_sorted": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 100,
+      "end": 104,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.issuer": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.merged_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 175,
+      "end": 179,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.merge_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 35,
+      "end": 35,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.represented_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 128,
+      "end": 132,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.replay_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 109,
+      "end": 126,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Born": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 41,
+      "end": 41,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.provenance": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 70,
+      "end": 73,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.update_provenance": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.init_carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CertifiedReplay.provenance": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedReplayExpansion.lean",
+      "start": 6,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.init_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.IssuerEvidence.unique_keys": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 48,
+      "end": 48,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.update_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 26,
+      "end": 26,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.keys_compatible": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 154,
+      "end": 162,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.id": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 11,
+      "end": 11,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.membership": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 102,
+      "end": 107,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.replay_alive": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 75,
+      "end": 100,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.IssuerEvidence.creator": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 47,
+      "end": 47,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CertifiedReplay.alive": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedReplayExpansion.lean",
+      "start": 21,
+      "end": 63,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.written_id": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.birth_not_killed": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 28,
+      "end": 28,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.update_mem": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.text_replay": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 25,
+      "end": 35,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.projList\u2081": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.oplOp": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 14,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.applySeq_prod": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 295,
+      "end": 305,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.projList\u2082": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.oprOp": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 19,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.listPermOf_projList\u2081": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 143,
+      "end": 150,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.mem_projList\u2081": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 78,
+      "end": 86,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.oplOp_inlOp": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 55,
+      "end": 56,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.oplOp_eq_some": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 64,
+      "end": 69,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.nodup_projList\u2081": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 131,
+      "end": 135,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.mem_projReplayContext\u2081_events": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 341,
+      "end": 348,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.respects_projList\u2081_of": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 188,
+      "end": 202,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.sorted": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 95,
+      "end": 98,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.normalize_update": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 139,
+      "end": 154,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.step": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 133,
+      "end": 137,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.textStep": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 130,
+      "end": 131,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.Evidence.native": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.fresh": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 181,
+      "end": 188,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.initial": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 182,
+      "end": 185,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.normalize_merge": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 112,
+      "end": 128,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.merge_mem": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 18,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.merge_carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 164,
+      "end": 173,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.compatible": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 145,
+      "end": 152,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.Kit.merge_mem": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 29,
+      "end": 29,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.mono": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 79,
+      "end": 93,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.inrOp": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.text_membership": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 37,
+      "end": 45,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.stores_membership": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 57,
+      "end": 77,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.store_fold_mem": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 47,
+      "end": 55,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.listPermOf_projList\u2082": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 152,
+      "end": 159,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.mem_projList\u2082": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 88,
+      "end": 96,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.oprOp_inrOp": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 61,
+      "end": 62,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.oprOp_eq_some": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 71,
+      "end": 76,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.nodup_projList\u2082": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 137,
+      "end": 141,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.evRes\u2082": {
+      "file": "Sal/MRDTs/Framework/Product.lean",
+      "start": 28,
+      "end": 28,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.MonotoneProduct.step_union": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericMonotoneProduct.lean",
+      "start": 156,
+      "end": 181,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.five_vcs": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 92,
+      "end": 164,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.empty": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.LocalEvidence.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 29,
+      "end": 29,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.LocalEvidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 29,
+      "end": 31,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.initial": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 38,
+      "end": 39,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.comm": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 33,
+      "end": 36,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.shared": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 61,
+      "end": 66,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.update_cell": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.carrier_injective": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.written_tag": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.DeltaEvidence.mk": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.DeltaEvidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 22,
+      "end": 27,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.merge_cell": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 23,
+      "end": 23,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.causal": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 41,
+      "end": 51,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.DeltaEvidence.killedCovered": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.DeltaEvidence.birthFresh": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 26,
+      "end": 26,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.survive_subset": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 83,
+      "end": 90,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.birth_fresh": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 72,
+      "end": 81,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.represented": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 67,
+      "end": 70,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.local_redistribute": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 53,
+      "end": 59,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.LocalEvidence.common": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 30,
+      "end": 30,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Certified.LocalEvidence.newborn": {
+      "file": "Sal/MRDTs/Paper1/Automation/CertifiedExpansion.lean",
+      "start": 31,
+      "end": 31,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.target_visible": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 59,
+      "end": 65,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CertifiedExecution.mintHonest": {
+      "file": "Sal/MRDTs/Metatheory/Correctness.lean",
+      "start": 130,
+      "end": 135,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.MintCertifiedReachV.mintHonest": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 128,
+      "end": 144,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.MintCertifiedReachV.casesOn": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 89,
+      "end": 98,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.MintCertifiedReach.mintHonest": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 111,
+      "end": 126,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.MintCertifiedReach.casesOn": {
+      "file": "Sal/MRDTs/Framework/Certificates.lean",
+      "start": 77,
+      "end": 87,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.issued_birth": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 47,
+      "end": 57,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.issuer_cell": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.GenericCertifiedRecords.Model.provenance": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericCertifiedRecords.lean",
+      "start": 40,
+      "end": 45,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.laws": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 32,
+      "end": 41,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.noncomm_exact": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.policy_order": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.conditional_log": {
+      "file": "Sal/MRDTs/Paper1/Automation/InductivePolicy.lean",
+      "start": 20,
+      "end": 32,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.kernelStable": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.noChain": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.conditionalBase": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 26,
+      "end": 26,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.QueryLift.transport": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean",
+      "start": 28,
+      "end": 38,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.QueryLift.withQuery": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean",
+      "start": 8,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.QueryLift.scheme": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean",
+      "start": 20,
+      "end": 26,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.MetadataDependencies.covers": {
+      "file": "Sal/MRDTs/Paper1/ConcreteMetadata.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.semantic": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.Context.metadata": {
+      "file": "Sal/MRDTs/Paper1/ConcreteJoin.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.assemble": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 59,
+      "end": 72,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.LocalAssembly.raw_local_redistribute": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 171,
+      "end": 192,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.LocalAssembly.local_from_context": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 138,
+      "end": 169,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.LocalAssembly.local_of_canonical_nested": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 105,
+      "end": 136,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.Automation.LocalAssembly.0.Sal.MRDTs.Paper1.Automation.LocalAssembly.restricted_perm": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 95,
+      "end": 103,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.LocalAssembly.local_of_indexed_replays": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 54,
+      "end": 93,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.Automation.LocalAssembly.0.Sal.MRDTs.Paper1.Automation.LocalAssembly.supported_distinct": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 47,
+      "end": 52,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.local_two_replays": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 22,
+      "end": 35,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.local_independent_past": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 136,
+      "end": 151,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.common": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.freshBase": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.freshStep": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.seed": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.opposite": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.fresh_restrictedReplay": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 77,
+      "end": 89,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.restrictedReplay_append": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 70,
+      "end": 75,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.restrictedReplay": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalExpansion.lean",
+      "start": 66,
+      "end": 68,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.emptyPast": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.LocalKernels.pastSingleton": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalAssembly.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.local_singleton_restrictedReplay": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalSingleton.lean",
+      "start": 17,
+      "end": 46,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.LocalCoverage.nested_enumeration": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
+      "start": 229,
+      "end": 271,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.LocalCoverage.nested_order_acyclic": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
+      "start": 181,
+      "end": 226,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.LocalCoverage.nested_graph_acyclic": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
+      "start": 99,
+      "end": 172,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.LocalCoverage.add_sink_edges": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
+      "start": 76,
+      "end": 97,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.Automation.LocalCoverage.0.Sal.MRDTs.Paper1.LocalCoverage.no_path_from_sink": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
+      "start": 70,
+      "end": 74,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.LocalCoverage.Acyclic": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
+      "start": 68,
+      "end": 68,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.LocalCoverage.jointOrder": {
+      "file": "Sal/MRDTs/Paper1/Automation/LocalCoverage.lean",
+      "start": 175,
+      "end": 179,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.shared": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.comm": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.eventCertificate": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.raw_causal_delta": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 162,
+      "end": 182,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.causal_from_context": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 102,
+      "end": 160,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels.commuting": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 26,
+      "end": 26,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels.common": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 25,
+      "end": 25,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels.absorber": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 28,
+      "end": 28,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels.strict": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 27,
+      "end": 27,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels.freshStep": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 30,
+      "end": 30,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.Bad": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+      "start": 20,
+      "end": 21,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.Good": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+      "start": 17,
+      "end": 18,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels.base": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 24,
+      "end": 24,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.causal_restrictedReplay": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+      "start": 84,
+      "end": 122,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Paper1.Automation.CausalExpansion.0.Sal.MRDTs.Paper1.Automation.Signature.last_bad": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+      "start": 23,
+      "end": 41,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.causal_good_tail": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+      "start": 63,
+      "end": 82,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.Signature.causal_restricted_step": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalExpansion.lean",
+      "start": 43,
+      "end": 61,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.reset_of_context": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 32,
+      "end": 100,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.conflict_classification": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.absorber_classification": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.EventCertificate.strict_asymmetric": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CausalCoverage.Kernels.freshBase": {
+      "file": "Sal/MRDTs/Paper1/Automation/CausalCoverage.lean",
+      "start": 29,
+      "end": 29,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.localKernels": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.causalKernels": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.PolicyExpansion.Kit.initial": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericPolicyExpansion.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.assemble": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 253,
+      "end": 321,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.init_carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 29,
+      "end": 29,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 21,
+      "end": 21,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 139,
+      "end": 143,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 28,
+      "end": 28,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 120,
+      "end": 137,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.IssuerEvidence.unique_keys": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 59,
+      "end": 59,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.init_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 30,
+      "end": 30,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.provenance": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 81,
+      "end": 84,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.update_provenance": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 32,
+      "end": 32,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Born": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 52,
+      "end": 52,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.update_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 37,
+      "end": 37,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.archive_subset": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 246,
+      "end": 251,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.archive_written": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 16,
+      "end": 16,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.archive": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.archive_add": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 17,
+      "end": 17,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.represented_archive": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 239,
+      "end": 244,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.archive_membership": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 231,
+      "end": 237,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.archive_init": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 18,
+      "end": 18,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.archive_update": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 19,
+      "end": 19,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.archive_merge": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 20,
+      "end": 20,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.id": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 22,
+      "end": 22,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.delta_evidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 192,
+      "end": 210,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.written_id": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 31,
+      "end": 31,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.IssuerEvidence.creator": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 58,
+      "end": 58,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.fresh": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 183,
+      "end": 190,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.membership": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 113,
+      "end": 118,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.replay_alive": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 86,
+      "end": 111,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.birth_not_killed": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 39,
+      "end": 39,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.update_mem": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 34,
+      "end": 34,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.local_evidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 212,
+      "end": 229,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.merged_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 177,
+      "end": 181,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.keys_compatible": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 156,
+      "end": 164,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.merge_ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 46,
+      "end": 46,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.merge_carrier": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 166,
+      "end": 175,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.merge_mem": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 40,
+      "end": 40,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.compatible": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 145,
+      "end": 154,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.ArchivedOrderedRecords.Kit.ext": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericArchivedOrderedRecords.lean",
+      "start": 48,
+      "end": 48,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.assemble": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 229,
+      "end": 287,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.local_evidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 210,
+      "end": 227,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.OrderedRecords.delta_evidence": {
+      "file": "Sal/MRDTs/Paper1/Automation/GenericOrderedRecords.lean",
+      "start": 190,
+      "end": 208,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.rec": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 44,
+      "end": 92,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.policy": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 55,
+      "end": 59,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 44,
+      "end": 92,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.commuting": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 48,
+      "end": 54,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.archived": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 81,
+      "end": 88,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.product": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 73,
+      "end": 80,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.immutable": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 60,
+      "end": 65,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.queryLift": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 89,
+      "end": 92,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.Automation.CommonVerification.Input.ordered": {
+      "file": "Sal/MRDTs/Paper1/Automation/CommonVerification.lean",
+      "start": 66,
+      "end": 72,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.event_certified_of_fiveVCs_execution": {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "start": 221,
+      "end": 228,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalJoinLaws.join": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 891,
+      "end": 894,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalJoinLaws.delta": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 209,
+      "end": 209,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalJoinLaws": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 204,
+      "end": 210,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CanonicalJoinLaws.mk": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 207,
+      "end": 207,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.JoinCoreLaws": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 137,
+      "end": 141,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.JoinCoreLaws.mk": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 139,
+      "end": 139,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.ReplayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 36,
+      "end": 51,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.ReplayLaws.mk": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 40,
+      "end": 40,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.ReplayAcyclic": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 32,
+      "end": 34,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CausalDeltaLaw": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 114,
+      "end": 135,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.downset": {
+      "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "start": 138,
+      "end": 141,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.visNC": {
+      "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "start": 134,
+      "end": 136,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.FeasibleDeltaLaws": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 149,
+      "end": 202,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.FeasibleDeltaLaws.mk": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 163,
+      "end": 163,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.CanonicalJoinLaws.core": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 208,
+      "end": 208,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.CanonicalJoinLaws.causal_delta": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 210,
+      "end": 210,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Join": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 51,
+      "end": 55,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.JoinAt": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 27,
+      "end": 41,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.JoinProof.ofFeasibleStateLaws": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 646,
+      "end": 881,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.diff_inter_diff": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 630,
+      "end": 635,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.inter_diff_left_of_not_mem": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 612,
+      "end": 619,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.ReplayLaws.noncomm_covered": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 41,
+      "end": 41,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.isCanonicalState_unique_of_replayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 532,
+      "end": 541,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.convergence_on_of_replayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 271,
+      "end": 530,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.applySeq_bubble_to_front_loOn_of_replayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 221,
+      "end": 269,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.applySeq_swap_loOn_incomparable_of_replayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 180,
+      "end": 219,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.UpdateSig.replayOrder": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 105,
+      "end": 106,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.applySeq_swap_via_cond_comm_lift_of_replayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 114,
+      "end": 138,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.ReplayLaws.cond_comm_lift": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 45,
+      "end": 45,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.ReplayLaws.replayOrder_acyclic": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 44,
+      "end": 44,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.FeasibleDeltaLaws.local_redistribute": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 170,
+      "end": 170,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.Adequacy.0.Sal.MRDTs.FeasibleJoinAtSize": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 544,
+      "end": 555,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.filter_ne_listPermOf": {
+      "file": "Sal/MRDTs/Metatheory/Join/ReplayOrderBasics.lean",
+      "start": 73,
+      "end": 77,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.isCanonicalState_snoc": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1382,
+      "end": 1415,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.respects_loOn_mono": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 181,
+      "end": 187,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.isCanonicalState_exists_of_replayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 543,
+      "end": 555,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.exists_loOn_respecting_perm_of_replayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 166,
+      "end": 178,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.ReplayLaws.replayAcyclic": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 78,
+      "end": 80,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.exists_loOn_respecting_perm_of_acyclic": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 329,
+      "end": 361,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.loOnNe": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 238,
+      "end": 243,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.loOnNe_acyclic_of_replayAcyclic": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 82,
+      "end": 101,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.loOnNe_acyclic_of_policy_paths": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 302,
+      "end": 327,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.Join.SetRelativeReplay.0.Sal.MRDTs.Foundation.transGen_loOnNe_vis_then_replayOrder": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 276,
+      "end": 300,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.Join.SetRelativeReplay.0.Sal.MRDTs.Foundation.LoVisEdge": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 245,
+      "end": 247,
+      "kind": "definition"
+    },
+    "_private.Sal.MRDTs.Metatheory.Join.SetRelativeReplay.0.Sal.MRDTs.Foundation.loOnNe_vis_or_replayOrder": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 253,
+      "end": 259,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.Join.SetRelativeReplay.0.Sal.MRDTs.Foundation.LoReplayEdge": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 249,
+      "end": 251,
+      "kind": "definition"
+    },
+    "_private.Sal.MRDTs.Metatheory.Join.SetRelativeReplay.0.Sal.MRDTs.Foundation.loReplayEdge_not_followed_by_loVisEdge": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 261,
+      "end": 274,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.MRDTSig.historicalBinaryMerge": {
+      "file": "Sal/MRDTs/Framework/Signature.lean",
+      "start": 42,
+      "end": 46,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.HistoricalBinaryMerge.mk": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 64,
+      "end": 64,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.HistoricalBinaryMerge": {
+      "file": "Sal/MRDTs/Framework/Base/UpdateSignature.lean",
+      "start": 62,
+      "end": 65,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Foundation.downset_subset": {
+      "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "start": 147,
+      "end": 158,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.JoinCoreLaws.merge_comm": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 141,
+      "end": 141,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.FeasibleDeltaLaws.init": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 164,
+      "end": 164,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.Adequacy.0.Sal.MRDTs.side_decomposition": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 557,
+      "end": 642,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.downset_closed": {
+      "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "start": 160,
+      "end": 166,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.Adequacy.0.Sal.MRDTs.listPermOf_length_lt_feasible": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 514,
+      "end": 530,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.downset_max": {
+      "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "start": 196,
+      "end": 208,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.downset_vis": {
+      "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "start": 168,
+      "end": 179,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.self_mem_downset": {
+      "file": "Sal/MRDTs/Metatheory/Join/BinaryJoin.lean",
+      "start": 143,
+      "end": 145,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.JoinCoreLaws.replay": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 140,
+      "end": 140,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.closure_diff_of_max": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1362,
+      "end": 1380,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.exists_loOn_maximal_of_replayLaws": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 152,
+      "end": 164,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.exists_loOn_maximal_of_acyclic": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 363,
+      "end": 408,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Foundation.isCanonicalState_empty": {
+      "file": "Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean",
+      "start": 1352,
+      "end": 1360,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.Adequacy.0.Sal.MRDTs.exists_listPermOf_subset_feasible": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 532,
+      "end": 542,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.FeasibleDeltaLaws.redistribute": {
+      "file": "Sal/MRDTs/Framework/MergeLaws.lean",
+      "start": 186,
+      "end": 186,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.inter_diff_right_of_not_mem": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 621,
+      "end": 628,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.PaperMergeVCs.toCanonical": {
+      "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "start": 17,
+      "end": 21,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.PaperMergeVCs.delta": {
+      "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "start": 14,
+      "end": 14,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.PaperMergeVCs": {
+      "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "start": 9,
+      "end": 15,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.PaperMergeVCs.mk": {
+      "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "start": 12,
+      "end": 12,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.RestrictedLaws.replayLaws": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 48,
+      "end": 65,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.RestrictedLaws.conditional_commutation": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 40,
+      "end": 40,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.RestrictedLaws": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 36,
+      "end": 44,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.RestrictedLaws.mk": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 36,
+      "end": 36,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.RestrictedLaws.noncomm_exact": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 37,
+      "end": 37,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.RestrictedLaws.no_chain": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 39,
+      "end": 39,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.replayAcyclic_of_noReplayChain": {
+      "file": "Sal/MRDTs/Framework/ReplayLaws.lean",
+      "start": 62,
+      "end": 76,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.PaperMergeVCs.merge_comm": {
+      "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "start": 13,
+      "end": 13,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.PaperMergeVCs.causal_delta": {
+      "file": "Sal/MRDTs/Paper1/Soundness.lean",
+      "start": 15,
+      "end": 15,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.event_certified_of_join_execution": {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "start": 192,
+      "end": 201,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.EventCertifiedSpecificationRAV": {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "start": 160,
+      "end": 163,
+      "kind": "definition"
+    },
+    "Sal.MRDTs.Paper1.event_versions_of_canonical_execution": {
+      "file": "Sal/MRDTs/Paper1/EventBridge.lean",
+      "start": 140,
+      "end": 154,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.Paper1.paperOrder_iff_loOn": {
+      "file": "Sal/MRDTs/Paper1/RestrictedReplay.lean",
+      "start": 76,
+      "end": 80,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.canonicalConfig_of_mintCertifiedV": {
+      "file": "Sal/MRDTs/Metatheory/CertifiedAdequacy.lean",
+      "start": 42,
+      "end": 74,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.canonicalConfig_mergeVirtual_at": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 276,
+      "end": 366,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.virtualMergeBaseState_canonical": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 258,
+      "end": 274,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.VirtualAdequacy.0.Sal.MRDTs.vJoinHook_of_joinAt": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 98,
+      "end": 104,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.VirtualAdequacy.0.Sal.MRDTs.VJoinHook": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 83,
+      "end": 96,
+      "kind": "definition"
+    },
+    "_private.Sal.MRDTs.Metatheory.VirtualAdequacy.0.Sal.MRDTs.virtualBaseAux_canonical_at": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 194,
+      "end": 256,
+      "kind": "theorem"
+    },
+    "_private.Sal.MRDTs.Metatheory.VirtualAdequacy.0.Sal.MRDTs.VCanonAt": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 113,
+      "end": 121,
+      "kind": "definition"
+    },
+    "_private.Sal.MRDTs.Metatheory.VirtualAdequacy.0.Sal.MRDTs.vfold_canonical": {
+      "file": "Sal/MRDTs/Metatheory/VirtualAdequacy.lean",
+      "start": 123,
+      "end": 192,
+      "kind": "theorem"
+    },
+    "Sal.MRDTs.canonicalConfig_merge_at": {
+      "file": "Sal/MRDTs/Metatheory/Adequacy.lean",
+      "start": 301,
+      "end": 394,
+      "kind": "theorem"
+    }
+  },
+  "axioms": [
+    [
+      "Sal.MRDTs.Paper1.ConcreteMRDT.Raw.representationJoin_of_vcs",
+      "propext, Quot.sound, Classical.choice"
+    ],
+    [
+      "Sal.MRDTs.Paper1.ConcreteMRDT.ScopedVCConditions.executionsV",
+      "Quot.sound, propext, Classical.choice"
+    ],
+    [
+      "Sal.MRDTs.Paper1.ConcreteMRDT.VCConditions.executionsV",
+      "Quot.sound, propext, Classical.choice"
+    ],
+    [
+      "Sal.MRDTs.Paper1.ConcreteMRDT.replay_equal",
+      "Quot.sound, propext, Classical.choice"
+    ],
+    [
+      "Sal.MRDTs.Paper1.CertifiedClosedExecution.canonicalConfig_of_mintCertifiedV",
+      "Quot.sound,\n propext,\n Classical.choice"
+    ],
+    [
+      "Sal.MRDTs.Paper1.PaperPresentation.uniform_versionsRA_of_paperOrder_witness",
+      ""
+    ],
+    [
+      "Sal.MRDTs.Paper1.InvariantReplay.convergence_on",
+      "propext, Quot.sound, Classical.choice"
+    ],
+    [
+      "Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.executionsV",
+      "Quot.sound, propext, Classical.choice"
+    ],
+    [
+      "Sal.MRDTs.Paper1.Automation.CommonVerification.verify",
+      "Classical.choice, propext, Quot.sound"
+    ],
+    [
+      "Sal.MRDTs.Paper1.event_certified_of_fiveVCs_execution",
+      "Classical.choice, propext, Quot.sound"
+    ]
+  ]
+}
