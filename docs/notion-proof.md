@@ -8,11 +8,11 @@
 
 **Falsifiers:** for (1), one two-request result outside both sequential orders; for (2), a split/delete order mismatch or boundary insertion outcome outside the independent identity specification; for (3), a locally issued ordinary edit with the wrong visible effect, or a version with no legal witness satisfying both required orders.
 
-**Formal oracle:** `Sal/MRDTs/Instances/NotionSplitSpec.lean`, checked with `lake env lean Sal/MRDTs/Instances/NotionSplitSpec.lean`.
+**Formal oracle:** the `Sal/MRDTs/Instances/Notion*.lean` modules, built by `scripts/check-notion-research.sh`. The initial `NotionSplitSpec` fragment and the later full core machine have different scopes, described below.
 
 **Reality oracle:** the separately fetched, hash-pinned published JavaScript demo and the literal traces in `experiments/notion-oracle/`. The Lean definitions below are independent specifications, not a translation or verification of that JavaScript.
 
-## Checked fragment
+## Initial small fragment
 
 The positional specification stores a list of blocks, each a list of characters. A split replaces the addressed original block by its prefix and suffix. A delete removes the requested range in that block, with clamping. The concrete theorem `no_positional_serialization` checks both orders of splitting `abcd` at 2 and deleting `[1,3)`. The resulting serial documents are `a | cd` and `ad | empty`; neither is the measured `a | d`. A strict bounds discipline would reject one or both orders and cannot restore a witness. This refutes this request-level replay contract. It does not refute an identity-addressed message specification or the framework.
 
@@ -40,7 +40,7 @@ The framework offers ordinary and recursive execution theorems (`executions` and
 
 ## Status
 
-The positional-request bridge is **refuted** by a kernel-checked finite counterexample. The identity split/delete law and the boundary insertion controls are **machine-checked** within the explicitly limited independent fragment. Agreement with the source is **measured** on the external traces, not proved. Complete local preparation and full sequential-history refinement remain **staged** pending the source model and reachable-state invariants. See `docs/notion-research.md` for the investigation's overall conclusion and source/oracle evidence.
+The positional-request bridge is **refuted** by a kernel-checked finite counterexample. The identity split/delete law and the boundary insertion controls are **machine-checked** within the explicitly limited independent fragment. Agreement with the source is **measured** on the external traces, not proved. The later independent core machine below proves universal local preparation effects. Source issuance correspondence, reachable execution invariants, and full sequential-history refinement remain **staged**. See `docs/notion-research.md` for the investigation's overall conclusion and source/oracle evidence.
 
 ## Reachable local formatting obstruction
 
@@ -59,3 +59,64 @@ The additional `local_split_zero` theorem states the independent ordinary split-
 The theorem is about storage convergence. Its renderer is an arbitrary parameter; it has no natural-text history or correctness contract. The issuance policy is unrestricted transaction insertion, not a verified translation of the demo's client. `adapter_union_agrees` checks equality with the runtime adapter's base-inclusive union when its accepted-input base-subset guard holds. It does not verify JavaScript parsing, object equality, or the guard implementation.
 
 `Consistent`, `consistent_insert`, and `consistent_union` separately express the runtime adapter's key/payload discipline. The whole-value finite set can otherwise contain different payloads with one key. `identity_collision_control` checks individually consistent branches whose union conflicts. Deriving this property from fresh sessions and the actual issuer remains absent. These generic shell results establish neither a faithful Notion adaptation nor its independent sequential-history bridge.
+
+## Full independent core machine and local clients
+
+`NotionCoreSpec.lean` extends the initial fragment to an executable partial sequential machine. A document is an ordered list of identified blocks. Each block contains semantic slots with an instance name, a compound session/counter character or boundary name, a character value, and visibility. Distinct names express stable editing references; their numerical encodings carry no ordering. The framework's outer event time is separate from these payload names.
+
+The machine supports creating a block after another identified block, inserting a character run after an origin found across all blocks, hiding a list of character identities globally, and splitting the current origin-owner block into a separately created target. The target's list position comes from creation after the request's original block. It need not be next to the origin's current owner in a concurrent witness. `concurrent_split_witness_control` pins that distinction with `a | cd | b` and rejects `a | b | cd`.
+
+The machine has no transactions, replay sorting, clocks, source parent trees, source slices, or search labels. A grouped command sequence can represent one client update; it is not retained in the machine's state. `step` and `execute` return `none` on missing owners, absent predecessors/targets, reused block names, a split into its source block, or a visible split marker. Fresh character and marker names remain issuance obligations; the command executor deliberately does not certify them by accepting a command.
+
+The positional preparation APIs are `prepareInsert`, `prepareDeleteRequest`, and `prepareSplit`. They find the requested block, validate visible bounds, and produce semantic commands. The valid deletion contract chooses `0 ≤ start ≤ stop ≤ visible length`; it does not inherit JavaScript's oversized or negative `slice` behavior. Preparation uses a retained head at index zero or the selected visible predecessor at a positive index. `prepareGap_succeeds` derives that the scan returns an address. `prepareInsert_success`, `prepareDelete_success`, and `prepareSplit_success` connect each executable API to its command(s).
+
+`prepared_insert_effect`, `prepared_delete_effect`, and `prepared_split_effect` prove the complete local prepare/execute visible effects over arbitrary surrounding documents. The hypotheses are structural: globally unique semantic addresses and block names, a hidden head anchor, valid indices, and fresh new block/root names for splitting. The insertion theorem compares with the caller's requested character values. The deletion theorem proves exactly `take start ++ drop stop`. The split theorem executes creation followed by splitting and proves exactly the requested prefix/suffix in adjacent blocks. All three preserve the other blocks' displayed values. Their proofs derive ownership separation from address uniqueness and derive fresh-target uniqueness from the original structural conditions; none assumes the editing effect as an invariant.
+
+`PreparedGap` permits a more general source-selected origin: it names an existing retained slot whose prefix contains exactly the requested number of visible characters. `preparedGap_visible` derives the split effect from that count and address uniqueness. This allows the source's active-leaf boundary at visible index zero even when the independent helper chooses the empty title root before it. The canonical helper is an independent local client, not a proof that the published client chooses the same origin under concurrent delivery.
+
+These results do not yet derive the structural invariants from every source-generated execution. In particular they do not establish freshness of each inserted run/marker, global preservation after all generated concurrent histories, full source-document projection, or one RA witness satisfying all history orders. They prove local client correctness of the independent machine under structural hypotheses, rather than source correctness or the whole core milestone. The source normal-form/RGA files and `docs/notion-core-correspondence.md` track the separate correspondence investigation.
+
+Run `lake build Sal.MRDTs.Instances.NotionCoreSpec`. The module includes hand-derived PASS+FAIL controls for split, crossing deletion, boundary insertion, global origin lookup with concurrent splits, and valid/invalid request bounds. It introduces no axioms or admissions; the local-effect theorems depend only on Lean's standard `propext`, `Classical.choice`, and `Quot.sound` where used.
+
+## Derived independent-core structural invariant
+
+`NotionCoreInvariant.lean` defines `Admissible` semantic commands and `Reach` from the empty document using the actual successful `NotionCoreSpec.step`. The guards describe input structure and freshness; none refers to the next document or assumes its visible effect or `WellFormed` status.
+
+Creation requires a fresh block name and a fresh title-root address. Insertion requires a present semantic origin and a `FreshRun`: pairwise distinct inserted addresses disjoint from all current addresses. Deletion needs no additional freshness guard. Splitting requires a known origin-owner, a distinct allocated empty-root destination, a fresh hidden same-instance marker, and the destination's membership. Origins can be hidden. These are sufficient structural conditions, not a complete encoding of source issuance: insertion guards intentionally cover arbitrary fresh slot runs and do not assert source character-run shape; a split destination need not carry a proof that it was created in the same transaction.
+
+`step_preserves` proves that every successful admitted command preserves the independent specification's actual `WellFormed` predicate: unique block names, globally unique slot addresses, and an invisible retained head in every block. The proof handles arbitrary split source/destination positions. Its key lemma, `trim_preserves_and_fresh`, derives that removing the source suffix leaves a well-formed remainder and makes the removed suffix plus a new marker a fresh run relative to that remainder. Appending this run to the empty title-root target then preserves unique ownership. This does not assume a split projection or visible result.
+
+`admissible_progress` separately proves that admitted commands cannot get stuck on a well-formed input. `reachable_wellFormed` derives the invariant for every `Reach` document from `[]`; invariant preservation is not a guard of `Reach`. `hidden_origin_control` exhibits an actual admitted create/insert/delete/create/split execution, splitting after a deleted character and moving the following live character into the new block. Its negative control rejects moving that character into the old block. `freshness_control` accepts fresh character names and rejects reuse of an existing invisible root identity.
+
+Run `lake build Sal.MRDTs.Instances.NotionCoreInvariant`. The theorem dependencies contain only standard Lean logical axioms. The remaining source obligation is to establish these semantic guards and the command projection from allocation and source editing executions. This module derives the invariant for the independent guarded semantic machine; it does not assert that every pinned demo execution maps to `Reach`, nor prove RA histories or a source/MRDT renderer correspondence.
+
+## Source origin guards derived from uniqueness
+
+`NotionCoreSourceGuards.lean` removes the manually supplied `OriginSafe` premise from accepted materialized-source steps. `originSafe_of_active` proves that an active origin cannot equal any attached block's inactive empty-title root: projected address uniqueness excludes both a duplicate within its own block and a collision with another block. `originSafe_of_owner` obtains the needed active membership from a successful owner lookup. Neither theorem requires a live origin.
+
+`accepted_guard` derives the earlier source guard from input projected `WellFormed` and source acceptance. `step_sound` then projects each accepted source command to the exact independent semantic step, without assuming observation equality or supplying origin separation by hand. A source `Reach` relation starts at `[]` and uses semantic `Admissible` input checks plus actual accepted source transitions. `reachable_invariants` derives independent semantic reachability and projected `WellFormed`; it does not put either invariant in a transition guard.
+
+PASS+FAIL controls distinguish a deleted character's active ownership from an attached block's inactive own root, check effective insertion after the hidden character, reject the inactive-root insertion, and exhibit an allocated-root reachable source state. Run `lake build Sal.MRDTs.Instances.NotionCoreSourceGuards`.
+
+This closes one internal correspondence guard. The source `Reach` relation still requires semantic freshness/shape admission, which must be derived from the actual issuer; it does not turn semantic progress into source progress. Extracting the materialized model from the pinned JavaScript origin/endpoint structures and completing the RA history bridge remain separate obligations.
+
+## Grouped physical history refinement
+
+`NotionCoreHistory` gives the independent machine a prefix-closed history
+language. Updates are atomic command groups; queries observe the current view
+without changing state. `updates_query_iff` identifies acceptance with execution
+of those same groups and the resulting answer. No ordering or replay condition
+is embedded in this specification.
+
+`NotionCoreSourceHistory` defines a physical renderer directly from text/deletion
+and split-marker atoms, then proves `render_projection`. `runs_sound` maps every
+guarded physical history to the independent history on the same ordered labels,
+preserving queries between arbitrary update groups. `history_sound` lifts this
+to language admission. Its source update relation uses the independently defined
+physical `Execution`; it does not assume an accepted semantic history or answer
+equality. The nonempty create/insert control rejects an empty answer.
+
+This is a refinement theorem for the materialized source model. It has no
+premise purporting to be a proved JavaScript extraction, no RA event enumeration,
+and no issuance certificate connecting it to the transaction-set store. Those
+remain separate from this checked history theorem.

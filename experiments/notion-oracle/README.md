@@ -52,6 +52,8 @@ python3 experiments/notion-oracle/run.py --minimize
 python3 experiments/notion-oracle/run.py --trace regressions.mjs
 python3 experiments/notion-oracle/run.py --trace identity-check.mjs
 python3 experiments/notion-oracle/run.py --trace identity-controls.mjs
+python3 experiments/notion-oracle/run.py --trace core-adversarial.mjs
+python3 experiments/notion-oracle/run.py --trace allocation-controls.mjs
 ```
 
 The full reachable run intentionally exits 1 when it discovers the saved local
@@ -152,3 +154,33 @@ theorem for the ordinary visible split/bold contract on those reachable states.
 They do not establish a defect in Notion production, and they do not refute the
 restricted split/insert/delete-only milestone. Fixing the demo semantics would
 create a different implementation requiring a separate correspondence claim.
+
+## Core correspondence challenge
+
+`core-adversarial.mjs` extends the same independent decoder/spec comparison to
+multiscalar insertions, Unicode sessions, empty text, deleted anchors, repeated
+zero-position splits, unused clock reservations, fresh block creation and three
+concurrent branches. Three fixed seeds generate 360 joined states; 420 directed
+pairs and four deleted-anchor histories supply boundary cases. All 5,348
+comparisons pass, with zero discarded histories. The suite detects a mutant
+that truncates multiscalar runs. Its UTF-16 control distinguishes JavaScript
+session order from Unicode scalar order.
+
+The same run checks 43,005 block shapes and title owners, 62,849 retained-slot
+intervals and 19,844 physically empty title roots. Every observed core block has
+at most two nodes, one child and one populated slice. These are bounded checks
+of a proposed source invariant, not an inductive proof. Exact seeds and bounds
+are in `core-adversarial-observations.jsonl` and `suite-summary.json`.
+
+`allocation-controls.mjs` preserves a deliberately fabricated message that
+shows why transaction-first sorting alone is insufficient. A `Z@10` run `ab`
+contains internal child `Z@11`; inserting `X` after `Z@10` with fabricated
+`A@11` produces `abX`, whereas immediate semantic splicing gives `aXb`.
+The honest control receives the complete run and issues `A@12`, producing
+`aXb`. This is an allocation proof diagnostic, not a reachable-client failure.
+The new Lean allocation proof uses whole-run receipt to exclude that case.
+
+The research gate also builds the independent core machine, local-effect and
+invariant proofs, grouped history language, allocation/sibling-order lemmas,
+and physical interval projection/refinement. These artifacts still lack the
+complete pinned-source replay extraction and Sal document-history bridge.

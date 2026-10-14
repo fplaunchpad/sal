@@ -24,5 +24,39 @@
     "seedText": "a",
     "claim": "one-minimal under deletion of fixed requests; not globally minimal"
   },
-  "scope": "Finite executable evidence about pinned public demo only; no production correspondence, universal correctness, or sequential bridge claim."
+  "scope": "Finite executable evidence about pinned public demo only; no production correspondence, universal correctness, or sequential bridge claim.",
+  "adversarialCore": {
+    "name": "core-adversarial-summary",
+    "seeds": [
+      "0x134ab912",
+      "0x514a2d19",
+      "0xabcdef01"
+    ],
+    "trialsPerSeed": 20,
+    "rounds": 6,
+    "branches": 3,
+    "localRequestsPerBranch": 3,
+    "directedPairs": 420,
+    "deletedAnchorRepeatedSplitHistories": 4,
+    "generatedJoinStates": 360,
+    "checks": 5348,
+    "structuralChecks": 43005,
+    "slotIntervalChecks": 62849,
+    "permanentlyEmptyRootChecks": 19844,
+    "titleOwnershipChecks": 43005,
+    "maxPopulatedSlices": 1,
+    "maxBranching": 1,
+    "maxNodes": 2,
+    "discarded": 0,
+    "result": "pass",
+    "scope": "core create/split/run-insert/delete; observed no-merge tree-chain and populated-slice bounds are finite evidence, not proofs; candidate ID-sorted atomic-transaction witness"
+  },
+  "allocationControl": {
+    "file": "allocation-controls-observations.jsonl",
+    "fabricatedFirstCounter": 11,
+    "honestFirstCounter": 12,
+    "fabricatedView": "abX",
+    "honestView": "aXb",
+    "claim": "Raw countermodel is not honestly issuable; complete-run receipt is necessary."
+  }
 }

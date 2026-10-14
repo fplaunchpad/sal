@@ -9,9 +9,11 @@ educational demo, not Notion's production implementation or a limitation of
 Sal's five-VC theorem.
 
 The narrower split/insertion/deletion-only milestone remains open. An independent
-identity-based sequential model passes a bounded differential gate, and Lean
-checks useful semantic laws and counterexamples. Neither testing nor the
-transaction-set adaptation supplies the missing general refinement proof.
+identity-based sequential model passes bounded differential gates. Lean proves
+its local preparation effects and invariant preservation, and refines guarded
+physical interval executions into its grouped history language. The missing
+connection is from actual source issuance and sorted replay to those executions,
+followed by the Sal event/history bridge.
 
 ## Enquiry and evidence boundaries
 
@@ -123,7 +125,11 @@ same user intent. The latter occur in the minimized split trace.
 | Source boundary | All seven pinned modules audited; article and executable evidence separated |
 | Distinguishing oracle | 575 directed cases, including IDs, clock gaps, boundaries, causal order, repeat delivery, split/merge and bold |
 | Core local effects | 560 generated states, 18,053 local split/insert/delete checks, one fixed seed, no failure |
-| Independent core semantics | Executable slot machine; 4,500 comparisons; kernel split/delete laws and boundary controls |
+| Independent core semantics | Complete Lean slot machine and prefix-closed grouped history language; 4,500 original plus 5,348 adversarial comparisons |
+| Independent local preparation | Universal insert/delete/split effects, structural invariant preservation and progress; hidden origins allowed |
+| Allocation | Receipt-derived clock bounds, disjoint run ownership, transaction-key uniqueness and local child dominance; UTF-16 session comparison |
+| Materialized source model | Physical interval transitions project to semantic steps; guarded grouped histories preserve all query answers |
+| Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks; extraction and issuance derivation still open |
 | Local effects with merges/formatting | Refuted by fresh-client executable traces; restricted kernel formatting counterparts |
 | Three-way adaptation | Executable transaction-set shell preserving source preparation and rendering |
 | Five VCs | Reused finite-store proof, key-consistency lemmas and arbitrary-render convergence; storage only |
@@ -135,3 +141,34 @@ same user intent. The latter occur in the minimized split trace.
 The only development task list is `PRIORITIZED_REMAINING_WORK.md`. This record
 states evidence and semantic choices; it is not a second queue. GC, the paper,
 formal-reference PDF and public Site are outside this branch's changes.
+
+## Core proof increment
+
+The research question sharpened to a source provenance obligation: does every
+honestly prepared origin, when replayed among concurrent transactions, still
+select a unique active interval whose RGA insertion is an immediate retained-slot
+splice? Sorting transaction-first IDs alone is insufficient. The preserved raw
+`Z@10`/`A@11` countermodel demonstrates the missing whole-run knowledge premise;
+honest receipt rules it out by advancing the next counter to 12.
+
+The allocation network derives clock bounds, disjoint run ownership, freshness,
+and complete-run provenance from publication and receipt. Source sessions use
+UTF-16 units; comparing Lean strings would reverse some Unicode ties. Those
+results are operational allocation facts, not assumptions about editing answers.
+Their integration with actual source origin selection remains separate.
+
+The full independent machine proves ordinary local request effects. Its
+structural admission rules preserve unique block/address names and invisible
+anchors from the empty document and guarantee that admitted commands execute.
+The materialized physical source machine has a separately defined renderer and
+projects accepted guarded transitions to the independent machine. Its grouped
+history refinement preserves queries at every transaction boundary on the same
+ordered label sequence. This supplies an intermediate refinement theorem;
+it does not select an RA event permutation or derive the source normal form.
+
+The [correspondence analysis](notion-core-correspondence.md) identifies the
+remaining extraction obligations. The [independent review](notion-core-review.md)
+checks definitions, theorem strength, mutation sensitivity and the separation
+between allocation, semantic guards, physical source operations and JavaScript.
+Ordinary and recursive-base natural editing correctness both remain open;
+the existing five-VC storage result covers both only at the transaction-set level.

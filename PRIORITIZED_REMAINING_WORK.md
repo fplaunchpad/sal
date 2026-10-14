@@ -23,10 +23,16 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
 - [x] Define an independent slot-based split/insert/delete specification
   candidate, test it differentially, and check semantic laws/counterexamples.
 - [x] Implement a source-preserving experimental transaction-set ternary adapter.
-- [ ] Finish the split/insert/delete-only milestone: formalize the full candidate
-  and adapter correspondence, derive issuance/execution invariants, prove local
-  preparation and the same-witness history bridge with required order and
-  specification visibility. State ordinary and recursive coverage separately.
+- [x] Formalize the full independent core machine and grouped history language;
+  prove local preparation effects, structural invariant preservation and progress.
+- [x] Derive run allocation bounds and uniqueness; prove guarded physical-model
+  projection and history refinement; challenge Unicode runs and source intervals.
+- [ ] Finish the split/insert/delete-only milestone: connect actual source
+  issuance and sorted replay to the physical interval model, deriving structural
+  guards and prepared gap correspondence. Instantiate the same-witness RA bridge
+  with event enumeration, required order and specification visibility. Keep
+  source compound IDs distinct from Sal event labels. State ordinary and recursive
+  coverage separately; existing five-VC coverage is storage convergence only.
 - [ ] Resolve the extension design boundary before a positive full-editor claim:
   the unchanged demo violates ordinary local split and bold effects after merges.
   A repaired issuer/transition or restricted contract is a different target and

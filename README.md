@@ -25,8 +25,9 @@ assumptions at that lifting step.
 The separate `research/notion-mrdt` branch contains a
 [Notion demo investigation](docs/notion-research.md): pinned executable
 counterexamples to local split/formatting effects after merges, an independent
-split-only specification candidate, and checked semantic fragments. This is
-research evidence, not an addition to the verified datatype registry or a
+core specification with checked local effects and invariant preservation,
+and guarded physical-model history refinement. Full source replay correspondence
+and the Notion RA bridge remain open. This is research evidence, not an addition to the verified datatype registry or a
 verification of Notion production.
 
 The [natural-specification audit](docs/natural-sequential-specifications.md)
