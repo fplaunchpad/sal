@@ -276,6 +276,8 @@ sequential specification or a proof of intent. A prospective result should say
 implementation requires a further correspondence argument. No Notion theorem
 or completed case study is claimed yet. This remains outside GC.
 
+The [reproducible oracle probes](../experiments/notion-oracle/README.md)
+record the source hashes, literal transactions and observed results.
 Initial demo probes (14 October snapshot): from `abcd`, split at index 2
 concurrently with inserting `X` there. Split session A / insert session B
 produces `abX | cd`; swapping the sessions produces `ab | Xcd`. Deleting the

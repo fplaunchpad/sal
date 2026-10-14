@@ -10,7 +10,7 @@ sole active bounded counter is the published Balegas matrix/max design.
 
 ## Paper1: specialize the framework to the submission formalism
 
-### Active: one ordinary Counter
+### Checked: one ordinary Counter
 
 Consolidate the former Counter/IOC/PN entries to one unrestricted integer
 increment/decrement Counter, keeping the published bounded counter separate.
@@ -18,8 +18,8 @@ Update active Lean endpoints, registries, automation inputs, reference PDFs and
 Site; preserve historical measurement snapshots and unrelated GC work. Independent review and the final release gate passed: 3,694 Lean jobs,
 18 exact public contracts, 187 runtime tests and 569 benchmark records.
 The reference checks 131 declarations; both changed PDF pages were inspected.
-Site content has 20 grouped entries and 946 valid equations; publication
-follows the code commit.
+Code commit `924808e` is pushed. Public Site version 13 is live against that
+snapshot, with 20 grouped entries and 946 valid equations.
 
 ### Checked: natural sequential specifications and client bridges
 
