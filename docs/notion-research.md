@@ -424,3 +424,50 @@ then detachment briefly breaks coverage, before append restores both. These
 are internal stages of a single atomic transaction, not editor failures. The
 three confirmed demo bugs remain unchanged. Source wire/label correspondence
 and the same-witness RA theorem are still open.
+
+
+## Bootstrap, marker progress and the active-instance boundary
+
+Actual bootstrap now executes and establishes the all-reference partition for
+arbitrary initial atom lists, including empty text. Canonical create derives
+its destination's freshness from earlier creator provenance. The actual split
+transaction then reaches its checked marker phase: raw integration preserves
+the old intervals, and those intervals derive recursive search and bounds
+success. The structural atomic-result helper additionally derives the actual
+move target check rather than assuming the checked operation succeeded.
+
+A new countermodel identifies the stronger invariant needed for full replay.
+Creator admission accepts a fabricated insertion into an attached block's own
+title. The resulting forest retains normal tree shape and the same visible
+text as a corresponding honest insertion, but its inactive title is no longer
+empty. Both the pinned source trace and a kernel-checked counterpart preserve
+this distinction. It is a model-admission counterexample, not a new honest
+client bug; the confirmed demo count remains three.
+
+The actual client selection proof now supplies an active-instance witness for
+insert and split in its reconstructed document, assuming normal shape and
+empty inactive titles there. Fresh creation retains old active instances, and
+a structural atomic split preserves exactly their set. Updating an active
+instance preserves the stronger shape invariant. These facts isolate the
+remaining provenance obligation: transport honest selection from the issuer's
+version into the transaction's canonical replay prefix. Creator knowledge
+alone cannot discharge it. Full reconstruction, joint display/partition
+refinement, source wire/label correspondence and the same-witness RA bridge
+remain unfinished.
+
+
+## Complete atomic split preservation
+
+The conditional complete-split case is now checked. Canonical source execution
+creates its fresh destination, inserts and locates the marker, detaches the
+right interval and moves it to the new owner. The final state preserves both
+the all-reference physical partition and the normal-tree/empty-title invariant.
+The theorem assumes these relations for the old accepted prefix and that the
+source instance is active there. It derives all new execution checks and the
+final relations; no chosen owner or successful next transaction is supplied.
+
+This connects the previously separate phase proofs without asserting ownership
+uniqueness during the transient split or coverage during detachment. The next
+research step is the honest-history induction that supplies active-instance
+provenance across issuer and replay versions, then connects the resulting
+execution to the independent specification on the required RA witness.

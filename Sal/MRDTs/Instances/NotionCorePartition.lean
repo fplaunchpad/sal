@@ -429,7 +429,7 @@ theorem insert_physical (before after : List Cell) (cell : Cell) (origin : Addre
   simpa [flatten, insertCell, NotionCoreSource.insertSlice, Cell.physical, boundary,
     spliceAfterBy, NotionCoreSource.Slice.traversal, List.append_assoc] using context
 
-private theorem splice_nodup {α β : Type} [BEq β] [LawfulBEq β] (key : α → β)
+theorem splice_nodup {α β : Type} [BEq β] [LawfulBEq β] (key : α → β)
     (items fresh : List α) (origin : β)
     (unique : (items.map key).Nodup) (newUnique : (fresh.map key).Nodup)
     (apart : List.Disjoint (items.map key) (fresh.map key)) :

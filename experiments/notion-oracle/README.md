@@ -62,6 +62,8 @@ python3 experiments/notion-oracle/run.py --trace search-label-controls.mjs
 python3 experiments/notion-oracle/run.py --trace endpoint-adjacency-controls.mjs
 python3 experiments/notion-oracle/run.py --trace client-provenance-controls.mjs
 python3 experiments/notion-oracle/run.py --trace delete-group-controls.mjs
+python3 experiments/notion-oracle/run.py --trace split-phase-controls.mjs
+python3 experiments/notion-oracle/run.py --trace inactive-title-controls.mjs
 ```
 
 The full reachable run intentionally exits 1 when it discovers the saved local
@@ -280,3 +282,20 @@ empty title cell. Treating the post-split state as final is rejected. A second
 trace splits an all-deleted inherited interval and keeps its empty titles.
 `split-phase-observations.jsonl` records literal transactions and snapshots.
 These are internal atomic phases, not additional confirmed editor bugs.
+
+
+## Inactive title and honest selection
+
+`inactive-title-controls.mjs` contrasts an honestly prepared insertion with a
+separately fabricated raw insertion after splitting `ab` at 1. Both display
+`Xb` and retain two tree nodes. Honest preparation selects the inherited split
+marker; the raw message names the new block's own START instance and populates
+its inactive title. Assertions distinguish the actual character-instance lists
+and physical title rows, not only rendered text.
+
+`inactive-title-observations.jsonl` preserves the complete trace. This is an
+admission-model counterexample, not an honest client failure or an additional
+confirmed demo bug. The Lean counterpart in
+`NotionCoreMachineInactiveTitleBoundary` proves creator admission and normal
+tree shape can coexist with failure of inactive-title emptiness. It uses the
+same instance-choice distinction with a different fresh session allocation.

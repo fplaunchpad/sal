@@ -1597,3 +1597,157 @@ those saved records and fresh pinned execution. The production gate passed
 3,694 Lean jobs, 18 exact public contracts with axiom audit, 187 runtime tests
 and validation of 569 benchmark records. No Notion document certificate was
 added to the production ledger.
+
+## Inactive-title boundary and canonical marker phase
+
+The pinned inactive-title control and kernel countermodel agree on the semantic
+boundary: bootstrap ab, split at 1, then a fabricated raw insertion into the
+fresh block's own START instance. Creator admission accepts that raw choice;
+NormalForest survives but EmptyInactive fails. Honest zero-gap preparation
+selects the inherited marker in the original instance. Both alternatives can
+display Xb and retain two nodes, so visible text and node count do not prove
+inactive-title emptiness. The source probe uses a separate raw session R and
+honest session H, while the typed witness uses S for the raw next key; those
+literal traces are not asserted identical. Their instance/selection distinction
+is the same. The kernel module checks the actual negative EmptyInactive
+predicate and actual positive NormalForest, not an informal node-count proxy.
+This is a raw admission-domain countermodel, not a newly found valid-client bug.
+
+CanonicalCreate was independently checked: actual prior instance and block
+absence for the next issued destination follow storage provenance, earlier
+creator providers, injective names, and strict transaction ordering. Actual
+fresh creation supplies empty target physical storage and exact old-instance
+frames without caller absence or next-step acceptance guards. Its arbitrary
+predecessor argument is a raw create-phase interface, including source's missing
+predecessor fallback, rather than a public request-validity theorem.
+
+The composed MachineMarkerProgress independently checks cleanly with standard
+axioms. `canonical_split_marker_phase` derives source-instance existence and
+its distinction from the fresh target, actual create success, raw marker
+integration, and unchanged target/old storage frames from the accepted prior
+canonical prefix. Old Partitioned is explicit; freshness, physical uniqueness,
+marker presence, and recursive checked marker success are derived. No successful
+next marker operation or desired physical output is assumed. MarkerStage names
+the state after integration but **before** tree splitting. The subsequent
+checked marker operation succeeds, but its post-tree state is not claimed
+Partitioned; detach/move owner restoration and stronger active-title normal
+shape remain separate. The inactive-title countermodel explains why creator
+admission alone cannot supply that stronger active-selection property.
+
+The research gate now includes CanonicalCreate, MarkerProgress,
+InactiveTitleBoundary, PartitionSplit, and the planned MachineShape module,
+plus the inactive-title source trace. Shell syntax checks pass. The gate lists
+58 Lean modules and 16 result series; the full gate was not run during this
+review and awaits the owner's readiness signal.
+
+## Bootstrap initial case and current gate inventory
+
+MachineBootstrap closes the actual initial partition case for every atom list.
+`bootstrap_executes` derives the concrete create-plus-insert result from literal
+decoded row uniqueness/rank and the actual checked integration loop; neither
+acceptance nor a desired next-state equation is an input. `seeded_partitioned`
+constructs the sole physical START-to-END cell from actual traversal, and
+`bootstrap_partitioned` packages success and the all-owned partition. Empty
+bootstrap still creates the displayed title and physical START; the kernel
+PASS+FAIL control rejects omitting that instance. This proves the partition
+initial case, without duplicating the separate stronger shape development.
+The frozen module's narrow build completed 707 jobs cleanly, with standard
+printed axioms. The parent independently reviewed the proof's literal-run and
+single-cell construction.
+
+The latest atomic-to-transaction bridge in MarkerProgress was independently
+checked cleanly. It derives interpreter bound/target checks and complete
+transaction dispatch from accepted structural atomicSplit plus the previously
+derived creation/integration stage. That atomic acceptance is an explicit bridge
+premise, not silently relabelled unconditional split progress.
+
+The inactive-title source trace was independently rerun through run.py with all
+seven fetched module hashes verified. Its single output record is **byte-for-byte
+identical** to saved inactive-title-observations.jsonl (`cmp` exits zero).
+The gate now lists 60 Lean modules, including seven modules added in this
+increment, and 16 result series. ClientShape was added to the gate; its separate
+source-agent review is not certified by this paragraph. Shell syntax and
+whitespace checks pass. The full gate has not been run during these reviews.
+
+An independent source-audit read of `MachineClientShape` found no proof or
+scope defect. The attached-root case derives empty extraction from the actual
+stored title and its empty physical instance, then reduces zero fallback and
+positive predecessor selection to the inherited leaf. This includes an
+all-deleted leaf. Atom-instance membership comes from checked slice extraction;
+internal decoding uses accepted replay's actual typed instance provenance.
+`prepared_insert_active` and `prepared_split_active` therefore derive local
+active-instance selection without an assumed selection guard. Normal forest
+shape and empty inactive titles remain explicit issuer-state premises. These
+are local successful-preparation theorems; they do not establish request
+progress, derive those issuer invariants throughout honest client history, or
+transport the selected instance into a different canonical replay prefix.
+
+## Independent whole-split composition review
+
+The proof agent independently read and directly kernel-checked the latest
+MachineShape and MachineCanonicalSplit modules. Both checks exit zero; printed
+axioms are `propext`, `Classical.choice`, and `Quot.sound`. No hidden next-replay
+acceptance or desired output partition premise was found. The canonical split
+composition derives fresh creation, raw singleton integration, actual recursive
+atomic split/detach/move, complete transaction success, and the final partition
+and shape. The accepted structural atomic phase used by the generic shape lemma
+is supplied by the derived routing theorem in this composition.
+
+`ShapeInvariant` concerns normal root/leaf structure, profile ownership, and
+empty inactive titles. Its active-instance update lemma deliberately permits
+arbitrary contents of the selected active instance; it is not a physical
+interval-validity theorem. Physical coverage and endpoint ownership come from
+the separately composed `Partitioned` invariant. The final canonical theorem
+still assumes shape, partition, and active-instance membership in the old
+canonical state. Local honest client selection proves active membership in its
+issuer state under those issuer invariants; transporting that fact to this
+canonical prefix and deriving the invariants throughout honest history remain
+open. The present theorem is complete conditional transaction progress and
+preservation, not unconditional honest-replay progress or source refinement.
+
+## Independent atomic partition and canonical full split review
+
+PartitionSplit and CanonicalSplit independently check cleanly with standard
+printed axioms. PartitionSplit derives actual recursive search, leaf detachment,
+and destination append from the raw post-marker partition, old normal trees,
+fresh starts/names, and empty target. The selected owner and preorder context
+are recovered from search; no chosen next forest or output partition is an
+input. Literal split-marker presence plus unique physical IDs identifies the
+scanned atom as that boundary before cutting its cell. Reference permutations
+then restore per-instance owner uniqueness while retaining empty title cells.
+Generic reference-replacement equations are interfaces internally; the public
+atomic theorem derives them from the actual tree operation. Hand-derived
+controls reject both a no-op split and a transient duplicate old owner.
+
+CanonicalSplit discharges creation, marker freshness, old/target instance
+distinction, integration, and recursive routing from the accepted prior
+canonical prefix. Complete actual transaction success, Partitioned, and strong
+ShapeInvariant are conclusions, not premises. It uses the structural atomic
+result to discharge the previously conditional checked transaction bridge.
+No next acceptance, selected owner, or fresh-name guard is supplied by callers.
+Old Partitioned, old ShapeInvariant, and ActiveInstance in that **canonical
+prefix** remain explicit. The inactive-title countermodel demonstrates why
+creator admission alone cannot eliminate the latter. ClientShape proves active
+selection in the issuer's local state; transport to a different canonical prefix
+is still an open history-provenance obligation. This is not yet unconditional
+whole-version replay progress or an RA-linearizability certificate.
+
+The gate's CanonicalSplit entry brings its inventory to 61 modules, eight added
+in this increment. Syntax checks pass; the parent owns the full gate execution.
+
+
+## Integrated atomic split checkpoint validation
+
+The parent reviewed the structural cut/permutation proof, actual bootstrap
+integration, shape adapters, inactive-title source fixture and canonical
+composition, including their explicit old-state premises. Independent source,
+oracle and proof reviews above agree on the remaining active-instance
+transport boundary.
+
+Both integrated gates passed: 61 research modules (3,472 Lean jobs), all sixteen
+oracle result groups, the unchanged production ledger build (3,694 jobs),
+18 exact public contracts with their axiom audit, 187 runtime tests, and 569
+validated benchmark records. All research output records matched the saved
+JSON evidence; replay-prefix records are distributed across the existing table,
+partition and structural-instrumentation evidence files. No new Notion module
+is registered as a verified document datatype.

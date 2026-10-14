@@ -764,3 +764,108 @@ and ownership. Two pinned, honestly issued traces preserve these observations
 and a hand-derived wrong-final-owner control. They support the phase model,
 not a universal preservation theorem. Source wire/label correspondence and
 the same-witness RA bridge remain separate.
+
+
+## Canonical create and checked marker composition
+
+`NotionCoreMachineCanonicalCreate.canonical_destination_fresh` derives absence
+of the next issued block name from both actual instances and forest blocks.
+Earlier used names have earlier archived creators; canonical transaction-key
+uniqueness excludes their equality with the next ID. Actual create success,
+partition preservation, exact storage frames and a START-only destination
+follow without caller-supplied name freshness.
+
+`NotionCoreMachineMarkerProgress.canonical_split_marker_phase` composes this
+actual create with canonical marker-row integration. It derives that the
+selected source instance differs from the fresh destination, transports its
+actual rows through creation, and derives the raw physical marker splice.
+That intermediate state retains the old intervals, has unique physical IDs,
+contains the literal split-boundary atom, and has no stored interval starting
+at the fresh marker. Recursive search and the marker opcode's endpoint check
+therefore succeed. Only acceptance and `Partitioned` for the old prefix are
+assumed; next marker acceptance is a conclusion.
+
+`split_transaction_of_atomic` connects a successful structural `atomicSplit`
+result to the actual three-operation transaction. Its marker stage derives
+checked bounds; split preserves forest block IDs, which derives existence of
+the move destination. The helper takes the structural atomic result as input;
+it does not itself prove partition restoration after movement. The following
+preservation layer must establish that result and the final partition.
+
+The pre-tree marker stage is intentionally distinct from the later tree-split
+state, whose two references temporarily share one owner. No theorem here
+claims `Partitioned` for that intermediate tree-split state.
+
+## Inactive-title admission boundary
+
+The new pinned `inactive-title-controls.mjs` trace starts with an honest split
+of `ab` at 1. A separately fabricated raw insertion writes X into the new
+block's own START instance. Honest zero-gap preparation instead selects the
+inherited split marker in the original instance. Both display `Xb` and have
+two tree nodes, but only the raw trace populates the inactive title.
+
+`NotionCoreMachineInactiveTitleBoundary` checks that the raw choice satisfies
+creator admission and preserves `NormalForest`, while refuting `EmptyInactive`.
+Its positive control checks honest selection of the inherited marker. The
+Lean counterpart uses a fresh next counter in the splitting session; the
+source trace uses a fresh session at that counter. They test the same admission
+boundary, not literal transaction equality. This countermodel explains why
+honest client selection must enter the stronger invariant; it is not a fourth
+confirmed demo bug.
+
+
+## Bootstrap and actual active-instance selection
+
+`NotionCoreMachineBootstrap.bootstrap_executes` derives successful atomic
+bootstrap create/insert from the literal decoded run for any atom list.
+`bootstrap_partitioned` proves its single title owns the whole physical
+instance. Empty seeds retain a displayed empty block and virtual START; a
+kernel PASS+FAIL control rejects omission of that physical instance.
+
+`NotionCoreMachineShape` projects the combined interpreter onto the existing
+normal-tree/profile/empty-title invariant. Fresh actual creation preserves
+this invariant, and raw storage updates preserve it when the updated instance
+is active. `atomic_split_active` establishes exact equality of the old and
+new active-instance sets for accepted structural atomic split. In particular,
+the fresh destination inherits the source instance; its own title instance
+does not become active. These are structural preservation facts, not a whole
+reachable-machine invariant.
+
+`NotionCoreMachineClientShape.prepared_insert_active` and
+`prepared_split_active` derive the active-instance premise from actual local
+preparation, normal tree shape and physically empty inactive titles. They
+inspect actual extraction and zero/positive index selection, including the
+all-deleted inherited leaf. Accepted issuer replay supplies canonical internal
+name provenance so decoding retains the selected instance. Neither theorem
+assumes the next transaction's effect or selection from an unrelated replay.
+The outstanding history transport must retain this instance in the canonical
+prefix where the transaction later executes.
+
+
+## Complete canonical split preservation
+
+`NotionCoreMachinePartitionSplit.atomicSplit_partitioned` derives the actual
+atomic tree result and its final all-instance partition. It finds a containing
+reference from coverage, rejects the fresh empty title as a routing candidate,
+and follows actual split/detach/move to recover the reference replacement.
+Physical ID uniqueness and literal split-marker membership identify the exact
+boundary atom inside the old cell. Cutting there preserves the raw traversal;
+the fresh owner restores per-instance owner uniqueness. The right reference
+moves to a different forest enumeration position, so the proof preserves the
+per-instance reference permutation rather than assuming enumeration equality.
+
+`NotionCoreMachineCanonicalSplit.canonical_split_preserves` composes this with
+the canonical create/marker phase and checked interpreter bridge. Given a
+creator-reachable archive, an accepted old canonical prefix, its `Partitioned`
+and `ShapeInvariant` relations, and an active source instance in that state,
+it derives actual complete transaction success and both invariants afterward.
+It assumes no next acceptance, chosen owner, desired output forest, name
+freshness or successful routing. The marker opcode's transient duplicate
+ownership is never asserted to satisfy the final invariant.
+
+The active-instance premise remains explicit and material. Actual local
+preparation proves it in the issuer's reconstructed state; carrying it into a
+different canonical prefix requires the honest-history provenance argument.
+The raw inactive-title countermodel prevents dropping this obligation in favor
+of creator knowledge. This theorem closes the conditional complete-split case,
+not full reconstruction or the document-history/RA certificate.

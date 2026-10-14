@@ -36,8 +36,14 @@ and next-row integration checks. A relation covering every stored forest ref,
 including empty titles, derives checked slice extraction, successful recursive
 split search and valid resulting bounds. Canonical next nonempty insert and
 erase transactions now execute and preserve that partition, deriving instance
-presence, freshness and ordering from issuance. Preservation across complete
-split transactions and full replay remains open. Actual positional requests
+presence, freshness and ordering from issuance. Canonical creation now derives
+its fresh destination, and split execution reaches the checked marker phase
+from the old partition. A preserved raw-admission countermodel shows why
+inactive-title emptiness additionally needs honest client selection. Complete
+canonical split transactions now execute and preserve partition and shape when
+the selected instance is active in the old replay state. Local client selection
+establishes this in the issuer state; transport to other canonical prefixes and
+full replay preservation remain open. Actual positional requests
 now reconstruct the peer's received, sorted archive and derive item and creator knowledge for typed
 issuance. Single-instance deletion includes the source range codec; the old
 underconstrained admission has a preserved counterexample. Joint replay

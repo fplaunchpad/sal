@@ -66,6 +66,24 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
   insertion readiness/freshness and persistent creator instances from actual
   canonical replay. Prove next nonempty insert and erase transactions execute
   and preserve the all-reference partition from that prior invariant.
+- [x] Derive fresh destination names and exact create-phase storage from the
+  accepted canonical prefix. Compose actual create and raw marker integration
+  with checked recursive search; preserve the pre-tree partition and derive
+  marker freshness and physical uniqueness. Connect the structural atomic tree
+  result to the actual marker/move interpreter, deriving its checks.
+- [x] Preserve a pinned-source and kernel-checked inactive-title countermodel:
+  raw creator-aware admission can retain normal tree shape while violating
+  inactive-title emptiness; honest insertion selects the inherited leaf.
+- [x] Prove actual bootstrap success and partition preservation for arbitrary
+  initial atom lists, including empty seeds. Derive honest local insert/split
+  selection of active instances under normal shape and empty inactive titles;
+  derive fresh-create and raw active-update shape preservation, and exact
+  active-instance-set preservation across structural atomic split.
+- [x] Derive complete actual canonical split success and joint partition/shape
+  preservation from the old invariants and active source-instance premise.
+  Recover the physical cut from recursive search and restore unique ownership
+  after detach/move, retaining every empty title root. Derive all intermediate
+  operation checks instead of assuming next acceptance.
 - [ ] Finish the split/insert/delete-only milestone: connect actual source
   issuance and sorted replay to the physical interval model, deriving structural
   guards. Preserve the joint slice endpoint partition, empty inactive titles
@@ -73,13 +91,19 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
   empty title roots as well as active slices. Per-instance owner uniqueness
   belongs at atomic boundaries: the split opcode temporarily gives both new
   refs the old owner, until movement assigns the right ref to its fresh block.
-  Finish the bootstrap/create and complete split-transaction preservation
-  cases, including transient duplicate ownership and the detached subtree gap.
+  Bootstrap and canonical creation establish the partition; complete split now
+  preserves partition and shape assuming the source instance is active in that
+  canonical prefix. Derive this premise from actual issuance across versions.
   Derive complete reconstruction success, not only accepted-prefix representation
   and the now-checked insert/erase successor cases. Connect those
   invariants to the actual preparation rule; the weaker creator-aware issuer
-  still permits populating an inactive title and cannot establish normal shape.
-  Prove total core deletion preparation from the derived normal shape; the
+  still permits populating an inactive title and cannot establish inactive-title
+  emptiness, even when normal tree shape survives.
+  Transport locally selected active instances from issuer versions to their
+  canonical replay prefixes: distinguish bootstrap/ordinary-create providers
+  of active instances from split-created inactive titles, and prove persistence
+  through actual replay. Prove total core deletion preparation from the derived
+  normal shape; the
   single-instance validator must never reject an honest supported request. Connect
   source name/range decoding and search-label validation. Creator knowledge
   alone does not imply active slice selection or successful replay. Instantiate

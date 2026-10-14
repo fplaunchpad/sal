@@ -160,14 +160,26 @@ correspondence. The [research record](notion-research.md),
 [proof boundary](notion-proof.md), and [source correspondence analysis](notion-core-correspondence.md)
 provide theorem and assumption details.
 
+The current increment proves actual bootstrap success and partition preservation,
+canonical fresh-create and checked marker progress, and complete canonical split
+success with joint partition/shape preservation. The split theorem retains an
+explicit active-source-instance premise in the old canonical state. Actual local
+client preparation derives active selection in the issuer state; transporting
+that fact across canonical versions remains open. A new pinned-source and
+kernel-checked raw inactive-title countermodel explains why creator knowledge
+alone is insufficient. This is not a fourth demo bug. The structural split proof
+retains empty titles and restores ownership after the transient detach/move phases.
+
 Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the canonical insert/erase preservation increment:
-53 Notion modules (3,464 Lean jobs), fifteen research result groups, the production
+Both gates passed for the complete atomic split preservation increment:
+61 Notion modules (3,472 Lean jobs), sixteen research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
-187 runtime tests, and validation of 569 stored benchmark records. Known-failure regression assertions passed by
+187 runtime tests, and validation of 569 stored benchmark records. All current
+research result records exactly match the saved evidence, including the
+separately stored table and partition instrumentation records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or
 Notion certification by the production gate.
 The merge-enabled exploratory `--reachable` command exits 1 when it rediscovers
