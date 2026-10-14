@@ -1,3 +1,4 @@
+import Sal.MRDTs.Metatheory.NotionCoreLedger
 import Sal.MRDTs.Paper1.NeemFlagAudit
 import Sal.MRDTs.Paper1.AnchoredQueueClient
 import Sal.MRDTs.Paper1.ORSetSharedSpecification
@@ -350,3 +351,6 @@ end Sal.MRDTs
 
 #check Sal.MRDTs.Paper1.RGA.Client.Physical.certified_query_prepared
 #check Sal.MRDTs.Paper1.RGA.Client.Physical.certified_query_preparedV
+
+#check Sal.MRDTs.Research.NotionCoreLedger.registry
+#check Sal.MRDTs.Research.NotionCoreLedger.entry

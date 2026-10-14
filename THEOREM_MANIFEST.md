@@ -175,3 +175,24 @@ Its general certificate and same-witness contract use only standard logical axio
 
 Run `./scripts/check-mrdt-refactor.sh` to check the manifest’s imported ledger,
 forbidden-import and proof-hole scans, and all runtime conformance tests.
+
+## Notion core: protocol-scoped catalogue entry
+
+`Sal.MRDTs.Metatheory.NotionCoreLedger` is imported by the build ledger. It is
+separate from the eighteen `Production.registry` packages: its execution
+premise is the explicit factory/client `NotionCoreProtocol.Reach` with injective
+session assignment, not unrestricted carrier issuance.
+
+- `Sal.MRDTs.Instances.NotionCoreMRDT.fiveVCs`
+- `Sal.MRDTs.Instances.NotionCoreProtocol.versions_witness`
+- `Sal.MRDTs.Instances.NotionCoreProtocol.specification_ra`
+- `Sal.MRDTs.Instances.NotionCoreMRDTClient.issued_update`
+- `Sal.MRDTs.Instances.NotionCoreMRDTClient.insert_effect`
+- `Sal.MRDTs.Instances.NotionCoreMRDTClient.split_effect`
+- `Sal.MRDTs.Instances.NotionCoreMRDTClient.erase_effect`
+
+The same witness covers required order, specification visibility and the actual
+query for ordinary and canonical recursive merge bases. The independent
+specification and external JavaScript correspondence limits are recorded in
+[the catalogue entry](docs/notion-catalogue.md). Merge-block editing and
+formatting retain the three pinned demo counterexamples.

@@ -1992,7 +1992,7 @@ Nonempty source sessions, valid UTF-16 units, safe-integer decimal printing and
 JSON decoding/equality retain the documented external runtime boundary. These
 are scope limits, not additional observed demo bugs.
 
-## Final integration validation
+## Research checkpoint validation (`986cc36`)
 
 The final research gate passed 3,515 Lean jobs and all seventeen pinned-source
 oracle groups, including 575 systematic cases with zero failures. The retained
@@ -2000,4 +2000,48 @@ known-failure regressions reproduce the three catalogued demo bugs; their
 success is not a claim that those behaviors are correct. The production gate
 passed 3,694 Lean jobs, eighteen exact public contracts and axiom checks,
 thirteen contract controls, 187 runtime tests, and 569 benchmark records.
-The research protocol remains outside the production theorem ledger.
+The research protocol remains outside the eighteen-entry `Production.registry`.
+The later catalogue integration adds a distinct protocol entry to the build ledger.
+
+## Independent catalogue and public-claim review — 14 October 2026
+
+An independent review checked the new README section, theorem manifest,
+`notion-catalogue.md`, paper handoff, `NotionCoreLedger` and its import in
+`RefactorLedger`, alongside the public reference's `content/notion.json` and
+`dist/app.js`. The recorded conclusions were checked against the actual
+`NotionCoreProtocol`, `NotionCoreIssuanceGuard`, `NotionCoreMRDTClient`,
+`NotionCoreMRDT`, and independent `NotionCoreSpec` definitions.
+
+The catalogue retains injective session assignment and actual protocol
+reachability, including the globally initial factory constructor and locally
+prepared ordinary issuance guard. It registers a distinct research proof
+entry in the build ledger without adding a nineteenth `Production.registry`
+package. Its exact fields retain the five VCs, every-version witness,
+current-head RA theorem, concrete local insert/split/erase effects and an
+inhabited factory control. The negative type gates reject treating this entry
+as a `VerifiedMRDT` or `PackagedMRDT`.
+
+Ordinary and canonical recursive-base coverage agrees with the actual
+protocol steps. One source-sorted Sal event witness supplies enumeration,
+required order, specification visibility and admission of the actual query.
+The independent specification retains semantic slots and invisible anchors;
+its state and transition do not contain the implementation's transaction
+archive, replay sort or physical slice tree. Positional local effects retain
+their nonempty and in-range premises, and concurrent histories interpret the
+prepared identity-addressed command groups.
+
+The README and site keep all three demo failures visible, distinguish editor
+merge-block requests from Sal version merging, and preserve JavaScript
+extraction and production-service limits. Their automation claim is confined
+to finite-store VC/query-lift reuse and routine tactics around explicit
+document and issuance proofs; it does not import the existing nineteen-case
+automation measurements. Every public source path and listed declaration
+exists in the site's fixed `986cc36` snapshot.
+
+The narrow ledger build passed 3,509 jobs; printed endpoint and entry axioms
+were only `propext`, `Classical.choice`, and `Quot.sound`. The public renderer
+passed JavaScript syntax checking and rendered 957 expressions without KaTeX
+errors. Stale statements about ledger registration were corrected to
+distinguish the build ledger from `Production.registry` and label prior gate
+counts as the `986cc36` research checkpoint. These narrow checks do not claim
+that the separate integration gates or publication have completed.

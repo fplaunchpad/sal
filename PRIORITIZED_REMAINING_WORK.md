@@ -8,6 +8,15 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Notion catalogue integration and paper handoff
+
+- [ ] Integrate the checked research branch into `paper1`, preserving unrelated work.
+- [x] Register a distinct protocol-scoped Notion entry in the theorem ledger,
+  catalogue and public site; retain the 18-package registry's exact contract.
+- [ ] Validate public claims, run repository/research gates, and push integration.
+- [ ] Finish the paper-writing handoff and switch to paper work. Defer extraction,
+  proof compression and editor extensions unless essential to a paper claim.
+
 ## Notion published-demo MRDT investigation (separate research branch)
 
 Research question: can a faithful adaptation satisfy ordinary client effects
