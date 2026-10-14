@@ -106,3 +106,9 @@ recorded finite search; its universal proof remains incomplete. Preserve the
 original traces if a repair is explored, and record repaired behaviour under a
 separate implementation identity. Outstanding development work remains solely
 in `PRIORITIZED_REMAINING_WORK.md`.
+
+The focused deletion controls found no additional demo bug. They preserve a
+useful distinction: source range expansion has counter/session order, which
+can differ from visible selection order while retaining exactly the same
+selected IDs (`delete-group-controls.mjs`). Do not count this ordering
+counterexample as an editing failure.

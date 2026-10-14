@@ -38,6 +38,11 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreCreatorNetwork \
   Sal.MRDTs.Instances.NotionCoreMachineCreators \
   Sal.MRDTs.Instances.NotionCoreMachineClient \
+  Sal.MRDTs.Instances.NotionCoreMachineBirths \
+  Sal.MRDTs.Instances.NotionCoreRanges \
+  Sal.MRDTs.Instances.NotionCoreMachineDelete \
+  Sal.MRDTs.Instances.NotionCoreReconstruction \
+  Sal.MRDTs.Instances.NotionCoreMachineNetwork \
   Sal.MRDTs.Instances.NotionCoreSliceForest
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")
@@ -54,13 +59,14 @@ python3 experiments/notion-oracle/run.py --trace payload-provenance-controls.mjs
 python3 experiments/notion-oracle/run.py --trace search-label-controls.mjs > "$check_dir/search-label-controls.jsonl"
 python3 experiments/notion-oracle/run.py --trace endpoint-adjacency-controls.mjs > "$check_dir/endpoint-adjacency-controls.jsonl"
 python3 experiments/notion-oracle/run.py --trace client-provenance-controls.mjs > "$check_dir/client-provenance-controls.jsonl"
+python3 experiments/notion-oracle/run.py --trace delete-group-controls.mjs > "$check_dir/delete-group-controls.jsonl"
 node experiments/notion-oracle/identity-controls.mjs > "$check_dir/identity-controls.jsonl"
 python3 - "$check_dir" <<'PY'
 import json
 from pathlib import Path
 import sys
 root = Path(sys.argv[1])
-for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation', 'payload-provenance-controls', 'search-label-controls', 'endpoint-adjacency-controls', 'client-provenance-controls']:
+for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation', 'payload-provenance-controls', 'search-label-controls', 'endpoint-adjacency-controls', 'client-provenance-controls', 'delete-group-controls']:
     rows = [json.loads(line) for line in (root / (name + '.jsonl')).read_text().splitlines()]
     print(f'{name}: {len(rows)} result records; executable assertions passed')
 print('Known-failure regression success means the counterexamples reproduce.')

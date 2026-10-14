@@ -44,13 +44,20 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
   instance creator provenance through actual accepted replay, and derive
   metadata guards for actual create/insert/split preparation. Connect actual
   root/leaf selection to an independent prepared gap under physical invariants.
+- [x] Derive actual stored-item births through accepted machine replay, connect
+  physical client selection to same-instance reference knowledge, and prove
+  canonical per-peer reconstruction projects to the issuance replay order.
+  Prove exact sorted range-codec roundtrip and retain directed deletion evidence.
+- [x] Connect positional create/insert/core-delete/split issuance to canonical
+  reconstruction, deriving item and creator guards instead of accepting them
+  from the caller. Preserve source early no-op order and whole-run allocation.
 - [ ] Finish the split/insert/delete-only milestone: connect actual source
   issuance and sorted replay to the physical interval model, deriving structural
   guards. Prove each actual machine table represents deletion-aware prefix
   births; preserve the joint slice endpoint partition, empty inactive titles
   and display alignment through complete atomic transactions. Connect those
-  invariants to the actual preparation rule. Derive selected item providers
-  from actual table execution and finish grouped deletion preparation. Connect
+  invariants to the actual preparation rule. Prove total core deletion preparation from the derived normal shape; the
+  single-instance validator must never reject an honest supported request. Connect
   source name/range decoding and search-label validation. Creator knowledge
   alone does not imply active slice selection or successful replay. Instantiate
   the same-witness RA bridge

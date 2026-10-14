@@ -61,6 +61,7 @@ python3 experiments/notion-oracle/run.py --trace payload-provenance-controls.mjs
 python3 experiments/notion-oracle/run.py --trace search-label-controls.mjs
 python3 experiments/notion-oracle/run.py --trace endpoint-adjacency-controls.mjs
 python3 experiments/notion-oracle/run.py --trace client-provenance-controls.mjs
+python3 experiments/notion-oracle/run.py --trace delete-group-controls.mjs
 ```
 
 The full reachable run intentionally exits 1 when it discovers the saved local
@@ -250,3 +251,10 @@ deletes a future ID, then distinguishes tombstoned text birth from an undeleted
 split marker. That fixture tests primitive semantics, not honest issuance.
 `payload-provenance-observations.jsonl` preserves the literal inputs and outputs.
 These controls do not add to the three confirmed bugs in `docs/notion-bugs.md`.
+
+The five `delete-group-controls.mjs` records check inherited-instance deletion
+with concurrent runs from emoji and U+E000 sessions. The source range codec
+sorts IDs differently from physical selection, preserves the selected set,
+and excludes markers and prior tombstones. Equal, reversed, and beyond-end
+nonnegative ranges reserve no clock ticks. Expected IDs and ranges are
+hand-derived; this is a focused control, not an additional confirmed bug.

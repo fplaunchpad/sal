@@ -137,6 +137,7 @@ same user intent. The latter occur in the minimized split trace.
 | Materialized source model | Physical interval transitions project to semantic steps; guarded grouped histories preserve all query answers |
 | Global structural components | Recursive origin search and raw parent-table extraction; endpoint partition/ownership; slice-tree root/leaf and inactive-title induction |
 | Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks, 238 instrumented sorted prefixes, 144 directed endpoint-adjacency checks; joint execution and source decoding proof still open |
+| Positional request admission | Actual per-peer sorted reconstruction; create/insert/single-instance delete/split derive item and creator guards; total replay and core deletion progress remain open |
 | Combined typed interpreter | Kernel controls pass; typed prefix provenance derives checked row insertion; structural cells derive checked slice extraction; whole replay refinement remains open |
 | Local effects with merges/formatting | Refuted by fresh-client executable traces; restricted kernel formatting counterparts |
 | Three-way adaptation | Executable transaction-set shell preserving source preparation and rendering |
@@ -300,8 +301,8 @@ alphabet-valid but noncanonical labels can alias and are not claimed injective.
 These results remove component guard assumptions, not the remaining whole-state
 induction. Actual replay tables must still be coupled to deletion-aware typed
 prefix births; slice endpoint ownership, empty inactive titles and display
-alignment must hold for that same execution. Actual client selection must
-supply reference and creator provenance. The same-witness RA bridge, source
+alignment must hold for that same execution. The later positional issuance
+increment supplies reference and creator provenance. The same-witness RA bridge, source
 codec and label proof remain open. The first milestone is still incomplete,
 and the confirmed demo bug count remains three.
 
@@ -321,8 +322,8 @@ replay progress. A two-transaction kernel counterexample preserves the failure.
 Creator-aware admission now derives metadata providers, and actual interpreter
 provenance connects created forest blocks and touched text instances to received
 creator transactions. Actual create/insert/split preparation discharges these
-metadata guards from the reconstructed document. Whole replay success and
-selected item providers are separate remaining claims.
+metadata guards from the reconstructed document. The following increment
+derives selected item providers; whole replay success remains open.
 
 The source comparison also rules out an excessive repair: an edit's replay
 origin owner need not equal the block selected at issuance. Honest concurrent
@@ -330,3 +331,27 @@ splits of `abc` exhibit the difference and render `a|c|b`. Preparation must
 validate the local selection, while replay must retain global interval routing.
 A source guard counterexample and an underconstrained model counterexample are
 both research evidence; neither increases the confirmed demo bug count of three.
+
+
+## Actual item provenance and positional issuance
+
+The candidate claim was that successful source-style client selection derives
+same-instance birth knowledge without a supplied reference guard. MachineBirths
+and MachineClient now prove it through actual storage and traversal. The
+falsifiers remain wrong-instance items, fabricated births, and selecting an
+empty destination title instead of its inherited marker. Kernel PASS+FAIL
+controls distinguish these cases.
+
+Canonical per-peer reconstruction now projects exactly to the earlier sorted
+run replay. The positional request network uses it directly and derives both
+item and creator admission conditions. Deletion selects one core active
+instance and emits the exact sorted range-codec expansion. Five new pinned
+source controls distinguish physical selection order from wire ID order and
+check no-op clocks, markers and prior tombstones. They found no additional bug.
+
+This closes the free-reference-guard gap in issuance; it does not close the
+research question. The largest remaining obligation is a joint invariant for
+actual replay tables, endpoint ownership, inactive titles and display order,
+including unconditional reconstruction and supported-request progress. Source
+wire/name/label correspondence and the full same-witness RA theorem remain
+separate. The confirmed published-demo bug count is still three.

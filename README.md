@@ -32,8 +32,9 @@ freshness and same-instance provider provenance in sorted replay, and exact
 parent rows determine the ordered insertion traversal. The combined typed
 interpreter has checked concrete executions; canonical-prefix provenance derives
 its row-integration checks, and structural partition cells derive successful
-checked slice extraction. Actual client selection now supplies block and text
-instance creator knowledge for create/insert/split preparation; the old
+checked slice extraction. Actual positional requests now reconstruct the peer's
+received, sorted archive and derive item and creator knowledge for typed
+issuance. Single-instance deletion includes the source range codec; the old
 underconstrained admission has a preserved counterexample. Joint replay
 correspondence and the Notion RA bridge remain open. This is research evidence, not an addition to the verified datatype registry or a
 verification of Notion production.

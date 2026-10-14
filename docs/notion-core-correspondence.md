@@ -524,8 +524,9 @@ presence from actual selection and checked extraction. `prepared_create_creators
 `prepared_insert_creators`, and `prepared_split_creators` combine this result
 with actual replay provenance to discharge metadata guards. No creator assertion
 is supplied by the caller. The previous received transaction list and successful
-current reconstruction remain explicit inputs. Actual item-provider guards,
-delete message construction and complete replay progress remain open.
+current reconstruction remain explicit inputs to these component theorems.
+The request network below supplies the canonical receipt list and derives item
+guards and core delete messages. Complete replay progress remains open.
 
 `own_selection_prepared` and `attached_selection_prepared` derive successful
 actual location and the independent `PreparedGap` from unique block membership,
@@ -544,3 +545,55 @@ into the first split's destination before replay. This refutes requiring replay
 owner to equal requested block; it preserves global source routing and is not
 an ordinary local-effect bug. The canonical replay remains source-key ordered,
 while creator theorem membership works for any accepted received replay list.
+
+
+## Positional issuance from canonical reconstruction
+
+`NotionCoreMachineBirths.replay_row_birth` follows actual accepted integration,
+erasure, creation and slice movement. Every stored row ID has a decoded birth
+in an actual replayed transaction and the same instance. Deletion cannot change
+that birth identity. `traversal_row_member` holds for arbitrary finite traversal
+fuel, including malformed tables: traversal cannot invent a row. These are
+retrospective provenance statements, not completeness or progress assumptions.
+
+MachineClient now proves physical membership for extracted boundaries and
+atoms. `physical_decode_progress` derives internal decoding from canonical
+names produced by replay. `physical_decoded_known` combines actual row birth,
+instance-name injectivity and receipt provenance. Successful insertion and
+split preparation therefore supply every located reference guard, including
+hidden origins and inherited split markers. START supplies no item reference.
+
+`NotionCoreRanges.expand_compress` proves exact sequence equality with ascending
+source-ID sorting, including duplicates. The codec changes physical target
+order but preserves deletion flags. Pending-target membership is preserved;
+raw pending-list equality is not asserted. This is a typed codec theorem:
+positive safe JS counters, nonempty sessions, bounded UTF-16 units and wire
+validation remain external boundaries.
+
+`NotionCoreMachineDelete.selectErase` selects visible addresses, takes the first
+address's instance, and validates every selected address in that instance.
+It emits the expanded compressed IDs in source order and derives both item and
+creator knowledge. Mixed-instance selections fail explicitly; generic source
+grouping after merges is not implemented here. The supported core normal form
+has one active instance, but total preparation from that invariant remains to
+be proved. Positive and negative controls check sorted targets, inherited
+instances and complete rejection of mixed input.
+
+`NotionCoreReconstruction.transactions` filters the archive by a peer's actual
+whole-run receipts and sorts by source ID. `transactions_runs` proves exact
+projection to `NotionCoreIssuance.replay`; strict ordering follows from reachable
+issuance. `transactions_received` supplies the receipt/archive correspondence
+previously passed by callers. The list represents document-constructor order,
+not the intermediate Replica Map enumeration. Wire parsing and conflicting-key
+JSON equality remain separate; whole-version receipt is the adaptation domain.
+
+`NotionCoreMachineNetwork.issue` checks source early no-ops, reconstructs that
+canonical received version, prepares positional create/insert/delete/split,
+reserves the issuing peer's clock and publishes the decoded transaction.
+Its `Reach` has no item-knowledge or creator-knowledge premise. The checked
+`creator_reachable` and `issuance_reachable` derive the existing archive and
+allocation invariants from these concrete transitions. This is no longer an
+arbitrary selected-payload issuer. It is still partial: `none` combines no-op,
+invalid request and failed reconstruction. Successful issuance does not prove
+its next reconstruction succeeds. The joint replay invariant, source label
+validation and same-witness RA bridge remain open.

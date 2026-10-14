@@ -1204,3 +1204,129 @@ Attached selection additionally checks the empty inactive title. The internal
 codec roundtrips remain separate from source wire names, and deletion still
 models selected nonnegative addresses before source operation grouping and
 range encoding. These limits are unchanged by the creator coupling.
+
+## Focused deletion grouping and range evidence
+
+The pinned `delete-group-controls.mjs` saves five passing literal records.
+An honest inherited interval receives concurrent XY and UV runs from sessions
+😀 and U+E000 at the same counter. Its physical text is UVXYcd, whereas ID range
+compression sorts selected IDs by counter and UTF-16 session order. Clamped
+selection [1,99) produces exactly seed@4..5, 😀@7..8, U+E000@8 after range
+expansion: this order differs from physical selection, but the ID sets agree.
+The sole emitted group names the inherited original instance, excludes the
+empty destination title and split marker, and leaves U. A second deletion
+selects only visible U, excluding the prior tombstones.
+
+Equal, beyond-end, and reversed nonnegative ranges emit no transaction and
+leave both clock and archive unchanged. Marker kind and undeleted status are
+pinned with negatives. The expected IDs, ranges, and text are hand-derived;
+all seven pinned source hashes are checked by run.py. This is focused evidence
+for target selection/encoding, not a new broad campaign.
+
+Source grouping uses a Map keyed by text instance in first occurrence order,
+then compresses each group's IDs independently, reserving one transaction key.
+Under the core normal form, a block has one populated active instance plus at
+most an empty inactive title, so each nonempty honest core deletion has one
+group. This fixture does not claim coverage of multi-instance selection after
+merge/move extensions. Negative/fractional JS indices and wire parser validity
+remain outside the nonnegative typed client domain.
+
+## Actual selected-item birth guards
+
+MachineBirths and the latest MachineClient independently check cleanly with
+standard printed axioms. MachineBirths follows actual successful storage updates,
+including duplicate integration, append, text erasure, and inherited marker
+integration. It derives that every resulting stored ID has a birth in the same
+instance from a transaction of that replay. Finite traversal membership then
+traces back to an actual row without graph uniqueness or closure assumptions.
+Receipt/archive linkage supplies located item knowledge; no birth provider or
+known-item guard is a premise.
+
+MachineClient now proves that successful checked extraction includes only
+physical atoms and a physically present start, and that actual location selects
+a physical address in its selected instance. For a decoded non-START address,
+MachineBirths and internal decoder injectivity derive the corresponding received
+located birth. The virtual START case cannot masquerade as an item. Consequently
+actual prepared insert/split payloads discharge every located-reference guard;
+START origins correctly have no item-reference requirement. This closes the
+previous caller-supplied selected-item membership boundary for accepted current
+Machine reconstructions. It does not establish acceptance of the next edit or
+future merge, source wire decoding, or a global endpoint partition invariant.
+The accepted current replay premise is explicitly retrospective, and concrete
+machine/client controls supply nonempty instances of that domain.
+
+## Reconstruction, deletion codec, and concrete network review
+
+Reconstruction and Ranges independently check cleanly with standard printed
+axioms. Reconstruction filters actual published typed transactions by whole-run
+receipt and sorts by source transaction key, erasing archive/Replica Map
+enumeration differences. Its transaction-to-run projection equals the existing
+canonical replay exactly, and receipt linkage is derived internally. Reachable
+archive uniqueness supplies the source immutable transaction-map discipline;
+arbitrary duplicate fabricated archives and JSON payload equality remain outside
+this correspondence.
+
+Ranges follows source counter/session sorting and the same-session consecutive
+range extension condition. The reverse accumulator changes storage only.
+Expansion after compression equals the entire sorted input list, including
+duplicates, rather than merely its set. Erasure and pending-deletion membership
+then transport through that permutation. Source safe integer/positive-ID and
+string decoding remain typed-wire boundaries.
+
+The current deletion definitions select actual visible clamped addresses,
+decode the first instance, and validate every target in that same instance.
+Mixed-instance input fails as a whole rather than truncating a prefix. This is
+an explicitly partial core preparation, not the generic source's Map grouping
+for multiple populated instances. Sorted expanded targets intentionally differ
+from physical character order. Physical membership and decoder provenance
+derive every target's located birth and required creator. The focused Unicode
+range fixture above supplies direct source evidence for this distinction.
+The final deletion module independently checks cleanly, including controls
+repaired by proving actual replay equals their explicit hand-derived states
+and using codec roundtrip equations. Its draft control failures are resolved.
+
+MachineNetwork's initial draft reconstructed before empty-request checks. The
+review identified source's empty insert and equal-range delete early returns;
+the owner added Request.earlyNoop before reconstruction. This is a corrected
+model draft, not a demo defect. Other empty clamped ranges still require actual
+selection. Concrete issue combines reconstruction, selection, and reservation,
+and its successful transition derives item/creator admission rather than asking
+for those guards. Its Reach relation admits successful requests, whole-version
+exchange, bootstrap, and clock gaps; it does not prove reconstruction or valid
+request progress. Source raw individual receipt, wire exceptions, and arbitrary
+malformed-state execution are not equated with this successful typed network.
+
+
+The frozen deletion controls retain source-sorted target order, inherited
+instance ownership, and explicit whole-selection rejection for mixed instances.
+Their literal states are connected to actual replay by kernel proofs, not
+supplied as execution assumptions. The Network definitions' early-noop ordering
+is now source-aligned. A current independent draft compile found multiline
+case-expression parser failures in its admission composition and reported them
+to the owner. These draft failures are now resolved: the final Network
+independently checks cleanly with standard printed axioms and no warnings.
+Its early_noop theorem holds for every network without a reconstruction
+acceptance premise. The request control additionally pins the complete two-item
+reservation ending at clock 4, excluding START-origin selection. Successful
+request reachability derives creator and issuance reachability; reconstruction
+and future replay progress remain explicit open obligations.
+
+
+## Parent integration and repository gates
+
+The parent inspected the stored-ID induction, exact range codec and literal
+source fixtures, then connected selection to actual received reconstruction.
+All positional request branches derive item and creator knowledge; no branch
+accepts those guards from its caller. Independent review caught the early-noop
+ordering mismatch, which was corrected before verification. The final request
+control checks a nonempty positional insertion, its two-item clock reservation
+and a negative against selecting START. The mixed-instance deletion control
+asserts full rejection rather than merely excluding one truncated result.
+
+The complete research gate passed 40 modules (3,451 Lean jobs) and fourteen
+result groups, including five new deletion records. The production gate passed
+3,694 Lean jobs, 18 exact public contracts and their axiom audit, 187 runtime
+tests and validation of 569 stored benchmark records. No admits, custom axioms
+or native decision shortcuts were introduced. These gates do not establish
+whole replay progress, source wire/label correspondence or the Notion RA
+certificate. The three confirmed demo bugs still reproduce.

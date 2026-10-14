@@ -1,6 +1,7 @@
 import Sal.MRDTs.Instances.NotionCoreMachineSlices
 import Sal.MRDTs.Instances.NotionCorePreparation
 import Sal.MRDTs.Instances.NotionCoreMachineCreators
+import Sal.MRDTs.Instances.NotionCoreMachineBirths
 
 /-! Client selection from the actual combined interpreter's slice forest.
 Indices here are nonnegative character indices, not UTF-16 string offsets.
@@ -186,6 +187,21 @@ theorem slice_storage (state : State) (ref : NotionCoreSliceForest.Ref) (atoms :
   simp only [physical, NotionCorePhysicalReplay.physical, List.mem_cons, List.mem_map] at present
   rcases present with rfl | ⟨item, _, rfl⟩ <;> rfl
 
+/-- Successful extraction retains a physically stored start and only physical atoms. -/
+theorem slice_physical (state : State) (ref : NotionCoreSliceForest.Ref) (atoms : List Atom)
+    (extracted : sliceAtoms state ref = some atoms) :
+    ref.start ∈ (physical state ref.start.1).map Atom.address ∧
+      ∀ atom ∈ atoms, atom ∈ physical state ref.start.1 := by
+  have existsInstance : state.instances.any (fun entry => entry.1 == ref.start.1) = true := by
+    simpa using (slice_storage state ref atoms extracted).1
+  have startMember : ref.start ∈ (physical state ref.start.1).map Atom.address := by
+    cases stopEq : ref.stop <;> simp [sliceAtoms, stopEq, existsInstance] at extracted
+    all_goals simp_all
+  have same : atoms = NotionCorePartition.extract (physical state ref.start.1) ref.start ref.stop := by
+    cases stopEq : ref.stop <;> simp [sliceAtoms, stopEq, existsInstance] at extracted
+    all_goals simp_all
+  exact ⟨startMember, fun atom member => extract_member _ _ _ atom (same ▸ member)⟩
+
 private theorem mapM_member {α β : Type} (f : α → Option β) (xs : List α) (ys : List β)
     (mapped : xs.mapM f = some ys) (y : β) (member : y ∈ ys) :
     ∃ x ∈ xs, f x = some y := by
@@ -217,6 +233,40 @@ theorem materialized_storage (state : State) (tree : NotionCoreSliceForest.Tree)
       subst slice
       exact slice_storage state ref atoms selected
 
+theorem materialized_physical (state : State) (tree : NotionCoreSliceForest.Tree) (slices : List Slice)
+    (materialized : materialize state tree = some slices) (slice : Slice) (member : slice ∈ slices) :
+    slice.start ∈ (physical state slice.start.1).map Atom.address ∧
+      ∀ atom ∈ slice.atoms, atom ∈ physical state slice.start.1 := by
+  obtain ⟨ref, _, extracted⟩ := mapM_member _ _ _ materialized slice member
+  cases selected : sliceAtoms state ref with
+  | none => simp [selected] at extracted
+  | some atoms =>
+      have same : (⟨ref.start, atoms⟩ : Slice) = slice := by simpa [selected] using extracted
+      subst slice
+      exact slice_physical state ref atoms selected
+
+theorem locate_physical (state : State) (block : BlockKey) (index : Nat) (address : Address)
+    (selected : locateAddress state block index = some address) :
+    address ∈ (physical state address.1).map Atom.address := by
+  cases found : state.forest.find? (fun entry => entry.id == blockName block) with
+  | none => simp [locateAddress, blockSlices, found] at selected
+  | some tree =>
+      cases extracted : materialize state tree.title with
+      | none => simp [locateAddress, blockSlices, found, extracted] at selected
+      | some slices =>
+          have location : locateSlices slices index = some address := by
+            simpa [locateAddress, blockSlices, found, extracted] using selected
+          obtain ⟨slice, member, placement⟩ := locate_member slices index address location
+          have stored := materialized_physical state tree.title slices extracted slice member
+          rcases placement with rfl | member
+          · exact stored.1
+          · obtain ⟨atom, member, same⟩ := List.mem_map.mp member
+            have frame := (materialized_storage state tree.title slices extracted slice
+              (by assumption)).2 atom member
+            have name : address.1 = slice.start.1 := (congrArg Prod.fst same).symm.trans frame
+            rw [name]
+            exact List.mem_map.mpr ⟨atom, stored.2 atom member, same⟩
+
 /-- Successful actual location witnesses both the requested block and the
 selected instance in interpreter storage; creator provenance can then be
 derived from execution rather than supplied as a client guard. -/
@@ -240,6 +290,85 @@ theorem locate_storage (state : State) (block : BlockKey) (index : Nat) (origin 
           · exact name
           · obtain ⟨atom, member, same⟩ := List.mem_map.mp member
             exact name.trans ((atoms atom member).symm.trans (congrArg Prod.fst same))
+
+/-- Canonical internal decoding succeeds for every physically selected item
+or boundary of an instance actually stored by accepted replay. -/
+theorem physical_decode_progress (txs : List NotionCorePayload.Transaction) (state : State)
+    (accepted : replay {} txs = some state) (address : Address)
+    (instanceMember : address.1 ∈ NotionCoreMachineCreators.instanceKeys state)
+    (member : address ∈ (physical state address.1).map Atom.address) :
+    ∃ inst origin, decodeAddress address = some (inst,origin) := by
+  obtain ⟨_, _, key, _, name⟩ := NotionCoreMachineCreators.replay_instance_used
+    txs state accepted address.1 instanceMember
+  simp only [physical, NotionCorePhysicalReplay.physical, List.map_cons, List.mem_cons,
+    List.mem_map] at member
+  rcases member with start | ⟨atom, ⟨item, _, same⟩, addressEq⟩
+  · refine ⟨key, .start, ?_⟩
+    have equal : NotionCorePhysicalReplay.originAddress (blockName key) .start = address := by
+      simpa [NotionCorePhysicalReplay.originAddress, name] using start.symm
+    rw [← equal]
+    exact decode_originAddress key .start
+  · subst atom
+    refine ⟨key, .item item.id, ?_⟩
+    have equal : NotionCorePhysicalReplay.originAddress (blockName key) (.item item.id) = address := by
+      simpa [NotionCorePhysicalReplay.originAddress, name] using addressEq
+    rw [← equal]
+    exact decode_originAddress key (.item item.id)
+
+theorem located_decode_progress (txs : List NotionCorePayload.Transaction) (state : State)
+    (accepted : replay {} txs = some state) (block : BlockKey) (index : Nat) (address : Address)
+    (located : locateAddress state block index = some address) :
+    ∃ inst origin, decodeAddress address = some (inst,origin) := by
+  obtain ⟨_, entry, stored, name⟩ := locate_storage state block index address located
+  exact physical_decode_progress txs state accepted address
+    (List.mem_map.mpr ⟨entry, stored, name⟩) (locate_physical state block index address located)
+
+/-- An actual physical non-START address decodes to an item born in a received
+transaction in precisely the selected instance. No network reachability or
+client item-knowledge guard is needed for this storage provenance statement. -/
+theorem physical_decoded_known (network : NotionCorePayloadNetwork.State)
+    (session : NotionRunAllocation.Session) (txs : List NotionCorePayload.Transaction) (state : State)
+    (received : ∀ tx ∈ txs, ∃ entry ∈ network.entries, entry.tx = tx ∧
+      NotionCorePayload.reservation tx ∈ (network.allocation.peers session).received)
+    (accepted : replay {} txs = some state) (address : Address)
+    (member : address ∈ (physical state address.1).map Atom.address)
+    (inst : BlockKey) (id : NotionRunAllocation.Id)
+    (decoded : decodeAddress address = some (inst,.item id)) :
+    NotionCorePayloadNetwork.Known network session (inst,id) := by
+  simp only [physical, NotionCorePhysicalReplay.physical, List.map_cons, List.mem_cons,
+    List.mem_map] at member
+  rcases member with start | ⟨atom, ⟨item, present, same⟩, addressEq⟩
+  · have startId : address.2 = .start := congrArg Prod.snd start
+    simp [decodeAddress, startId, decodeOrigin] at decoded
+    cases blockDecoded : decodeBlock address.1 <;> simp [blockDecoded] at decoded
+  · subst atom
+    obtain ⟨row, rowMember, itemEq⟩ := NotionCoreMachineBirths.traversal_row_member
+      _ _ _ item present
+    obtain ⟨tx, txMember, key, keyName, born⟩ := NotionCoreMachineBirths.replay_row_birth
+      txs state accepted address.1 row rowMember
+    have encoded : NotionCorePhysicalReplay.originAddress (blockName key) (.item item.id) = address := by
+      simpa [NotionCorePhysicalReplay.originAddress, keyName] using addressEq
+    have decodeSame := decode_originAddress key (.item item.id)
+    rw [encoded, decoded] at decodeSame
+    have pairEq : (inst, NotionCoreOriginTree.Origin.item id) = (key, .item item.id) :=
+      Option.some.inj decodeSame
+    have instEq : inst = key := congrArg Prod.fst pairEq
+    have idEq : id = item.id := NotionCoreOriginTree.Origin.item.inj (congrArg Prod.snd pairEq)
+    obtain ⟨entry, entryMember, txEq, receipt⟩ := received tx txMember
+    refine ⟨entry, entryMember, txEq ▸ receipt, ?_⟩
+    simpa only [txEq, instEq, idEq, itemEq] using born
+
+theorem located_item_known (network : NotionCorePayloadNetwork.State)
+    (session : NotionRunAllocation.Session) (txs : List NotionCorePayload.Transaction) (state : State)
+    (received : ∀ tx ∈ txs, ∃ entry ∈ network.entries, entry.tx = tx ∧
+      NotionCorePayload.reservation tx ∈ (network.allocation.peers session).received)
+    (accepted : replay {} txs = some state) (block : BlockKey) (index : Nat) (address : Address)
+    (located : locateAddress state block index = some address)
+    (inst : BlockKey) (id : NotionRunAllocation.Id)
+    (decoded : decodeAddress address = some (inst,.item id)) :
+    NotionCorePayloadNetwork.Known network session (inst,id) :=
+  physical_decoded_known network session txs state received accepted address
+    (locate_physical state block index address located) inst id decoded
 
 /-- Metadata admission for the requested block and the selected text instance
 is derived from actual client selection and received replay provenance. The
@@ -321,6 +450,61 @@ theorem prepared_insert_creators (network : NotionCorePayloadNetwork.State)
               have known := located_creators network reachable session txs state received accepted
                 block index address selected inst origin decoded
               simpa [NotionCoreCreatorNetwork.requiredBlocks] using known
+
+/-- Actual split preparation supplies every located item-reference guard. -/
+theorem prepared_split_references (network : NotionCorePayloadNetwork.State)
+    (session : NotionRunAllocation.Session) (txs : List NotionCorePayload.Transaction) (state : State)
+    (received : ∀ tx ∈ txs, ∃ entry ∈ network.entries, entry.tx = tx ∧
+      NotionCorePayload.reservation tx ∈ (network.allocation.peers session).received)
+    (accepted : replay {} txs = some state) (block : BlockKey) (index : Nat) (payload : Payload)
+    (prepared : prepareSplit state block index = some payload) :
+    ∀ address ∈ NotionCorePayloadNetwork.locatedReferences payload,
+      NotionCorePayloadNetwork.Known network session address := by
+  cases selected : locateAddress state block index with
+  | none => simp [prepareSplit, selected] at prepared
+  | some address =>
+      cases decoded : decodeAddress address with
+      | none => simp [prepareSplit, selected, decoded] at prepared
+      | some location =>
+          obtain ⟨inst,origin⟩ := location
+          have same : Payload.split block inst origin = payload := by
+            simpa [prepareSplit, selected, decoded] using prepared
+          subst payload
+          cases origin with
+          | start => simp [NotionCorePayloadNetwork.locatedReferences, NotionCorePayload.originReference]
+          | item id =>
+              have known := located_item_known network session txs state received accepted
+                block index address selected inst id decoded
+              simpa [NotionCorePayloadNetwork.locatedReferences, NotionCorePayload.originReference] using known
+
+/-- Actual insert preparation supplies every located item-reference guard. -/
+theorem prepared_insert_references (network : NotionCorePayloadNetwork.State)
+    (session : NotionRunAllocation.Session) (txs : List NotionCorePayload.Transaction) (state : State)
+    (received : ∀ tx ∈ txs, ∃ entry ∈ network.entries, entry.tx = tx ∧
+      NotionCorePayload.reservation tx ∈ (network.allocation.peers session).received)
+    (accepted : replay {} txs = some state) (block : BlockKey) (index : Nat) (atoms : List Nat) (payload : Payload)
+    (prepared : prepareInsert state block index atoms = some payload) :
+    ∀ address ∈ NotionCorePayloadNetwork.locatedReferences payload,
+      NotionCorePayloadNetwork.Known network session address := by
+  cases empty : atoms.isEmpty with
+  | true => simp [prepareInsert, empty] at prepared
+  | false =>
+      cases selected : locateAddress state block index with
+      | none => simp [prepareInsert, selected, empty] at prepared
+      | some address =>
+          cases decoded : decodeAddress address with
+          | none => simp [prepareInsert, selected, decoded, empty] at prepared
+          | some location =>
+              obtain ⟨inst,origin⟩ := location
+              have same : Payload.insert block inst origin atoms = payload := by
+                simpa [prepareInsert, selected, decoded, empty] using prepared
+              subst payload
+              cases origin with
+              | start => simp [NotionCorePayloadNetwork.locatedReferences, NotionCorePayload.originReference]
+              | item id =>
+                  have known := located_item_known network session txs state received accepted
+                    block index address selected inst id decoded
+                  simpa [NotionCorePayloadNetwork.locatedReferences, NotionCorePayload.originReference] using known
 
 theorem prepared_create_creators (network : NotionCorePayloadNetwork.State)
     (session : NotionRunAllocation.Session) (txs : List NotionCorePayload.Transaction) (state : State)
@@ -431,6 +615,11 @@ theorem deletion_selection_control :
 #print axioms materialize_attached
 #print axioms attached_selection_prepared
 #print axioms locate_member
+#print axioms locate_physical
+#print axioms physical_decode_progress
+#print axioms physical_decoded_known
+#print axioms prepared_insert_references
+#print axioms prepared_split_references
 #print axioms locate_storage
 #print axioms prepared_insert_creators
 #print axioms prepared_split_creators

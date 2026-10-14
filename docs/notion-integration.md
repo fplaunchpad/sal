@@ -67,14 +67,25 @@ returns the intended interior, including under an empty inactive title.
 Directed source checks validate endpoint adjacency in 144 instances and
 canonical label encoding on 8,191 bounded paths plus twelve repeated splits.
 
-The remaining correspondence is still global. The source's actual selection
-must establish item-provider membership for typed emission. Deletion-aware
-prefix rows, slice forest and endpoint ownership must describe the same
-execution together with displayed block order. The new creator results are
-retrospective; they do not replace that joint progress invariant. The typed
-interpreter takes ordered transactions; source constructor sorting and runtime
-validation still need the complete correspondence proof. Name/range decoding and
-search-label uniqueness/runtime validation also remain source boundaries. Raw isolated receipt
+The latest positional issuance increment removes the free item-provider and
+creator guards. MachineBirths follows actual stored IDs back to same-instance
+birth transactions. Actual client selection derives those reference guards;
+core deletion validates one selected instance and emits source-codec sorted
+IDs. Canonical per-peer reconstruction filters actual receipts and projects
+exactly to the earlier sorted run replay. MachineNetwork now takes positional
+requests, reconstructs the peer's document, selects identities, reserves the
+issuing clock and publishes the transaction. Its Reach relation derives the
+older typed issuance invariants without caller-supplied knowledge premises.
+
+The remaining correspondence is still global. Deletion-aware prefix rows,
+slice forest and endpoint ownership must describe the same execution together
+with displayed block order. The new network is partial: a successful request
+transition does not establish that the resulting archive reconstructs. Core
+deletion must also be proved total on the supported normal shape; general
+multi-instance grouping after merge is not implemented in this core model.
+The typed range codec now has exact sorted roundtrip and deletion-effect proofs;
+JS wire/name decoding and search-label uniqueness/runtime validation remain
+source boundaries. Raw isolated receipt
 permits unresolved origins; the adaptation's whole versions preserve closure.
 Independent payload values are opaque atoms, so rendering and string
 encoding remain explicit. The Sal witness still needs finite event enumeration,
@@ -106,6 +117,9 @@ network: 238 full-transaction prefixes and 646 actual RGA entry calls. It preser
 controls for dependency omission, duplicate allocators sharing a session,
 child dominance and non-item reservations, plus a witness refuting an unnecessary
 global-maximum clock premise.
+Five focused deletion controls additionally check inherited-instance grouping,
+physical versus range-ID order, Unicode session ties, skipped empty ranges and
+exclusion of markers and prior tombstones.
 Three additional pinned-source controls validate same-instance birth ownership,
 empty-request clock preservation and pending-tombstone birth behavior. The
 pending-delete case is a fabricated raw primitive control; the other two use
@@ -122,8 +136,8 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the actual-client and creator-provenance increment:
-35 Notion modules (3,446 Lean jobs), thirteen research result groups, the production
+Both gates passed for the positional-issuance increment:
+40 Notion modules (3,451 Lean jobs), fourteen research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
 187 runtime tests, and validation of 569 stored benchmark records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or
