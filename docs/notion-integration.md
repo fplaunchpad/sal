@@ -216,3 +216,27 @@ the known failure; permanent regression success means that failure reproduces.
 This branch is suitable as research evidence, not an addition to the paper's
 verified datatype inventory. No manuscript edits are proposed. Only
 `PRIORITIZED_REMAINING_WORK.md` records outstanding development work.
+
+
+Typed-core history integration: `MachineHistory.honest_history` now derives a
+successful actual answer admitted by the independent specification on exactly
+the canonical atomic transaction order. All payload cases, including non-first
+bootstrap and split, derive their execution and projection guards. Valid
+insertion and bounded deletion also have local effects through actual issuance
+and issuer reconstruction. Independent history/insertion review passed.
+
+This does not complete the first milestone: the local split request theorem,
+source wire/search-label correspondence, and Sal event enumeration with required
+order and specification visibility remain open. No ordinary or recursive
+document RA certificate is registered; merge/movement/formatting extensions
+retain the three recorded source counterexamples. The paper and site are untouched.
+
+Validation for the typed-core history increment: the research gate passed
+82 selected modules (3,493 Lean jobs) and all seventeen oracle result groups.
+The subsequently completed issuance-level deletion module passed its separate
+736-job integration build and is now registered as the 83rd research module.
+All oracle records match the saved evidence (including the partition/table
+instrumentation subsets). The production gate passed 3,694 Lean jobs, 18 exact
+contracts and axiom checks, 13 contract regression controls, 187 runtime tests,
+and validation of 569 benchmark records. No production document certificate
+was added. Local split issuance work continues separately.

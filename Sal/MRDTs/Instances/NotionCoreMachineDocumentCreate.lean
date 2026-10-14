@@ -228,6 +228,39 @@ theorem canonical_create_document (network : NotionCorePayloadNetwork.State)
     freshBlock created aligned document materialized predecessor
   exact ⟨result,next,created,projected,step⟩
 
+/-- Standalone creation supplies an atomic source-history update from honest
+canonical reconstruction, without caller-supplied partition or predecessor guards. -/
+theorem canonical_create_execution (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (replayed : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
+    (after : Option BlockKey) (payload : tx.payload = .create after) :
+    ∃ result next, applyTransaction state tx = some result ∧
+      materializeDocument result = some next ∧
+      NotionCoreSourceDocument.Execution document
+        [.create (blockName (.issued tx.id)) (blockName (.issued tx.id)) (after.map blockName)] next := by
+  obtain ⟨checked,checkedReplay,part,_,_⟩ :=
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+  have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
+  subst checked
+  obtain ⟨result,next,operation,projected,stepped⟩ := canonical_create_document network
+    (NotionCoreMachineNetwork.creator_reachable reachable) peer pre suffix tx position state replayed part
+    document materialized after (by
+      intro previous selected
+      simp [payload,NotionCoreCreatorNetwork.requiredBlocks,selected])
+  have transaction : applyTransaction state tx = some result := by
+    simp [applyTransaction,NotionCorePayload.operations,payload,applyOperations,operation]
+  have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) replayed
+  have names : (document.map NotionCoreSource.Block.id).Nodup := by
+    rw [materialized_ids state document materialized]
+    exact aligned.2.nodup_iff.mpr aligned.1
+  exact ⟨result,next,transaction,projected,.cons ⟨names,True.intro⟩ stepped (.nil next)⟩
+
+#print axioms canonical_create_execution
+
 #print axioms canonical_create_document
 
 #print axioms fresh_create_document

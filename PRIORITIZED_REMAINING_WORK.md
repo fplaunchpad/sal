@@ -18,8 +18,8 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
 
 Current priority: connect the existing actual machine directly to the existing
 independent document specification and RA bridge. Parallel proof work covers
-delete preparation totality, display/materialization correspondence, and fresh
-text visibility. Broad oracle expansion and model proliferation are deferred;
+local insertion effects, atomic split simulation, and independent review of
+actual document effects. Broad oracle expansion and model proliferation are deferred;
 use focused builds during development and full gates at integration checkpoints.
 
 - [x] Audit the seven pinned source modules and distinguish positional requests
@@ -104,8 +104,22 @@ use focused builds during development and full gates at integration checkpoints.
 - [x] Prove actual create and erase transitions simulate the existing source
   document. Derive canonical create freshness and predecessor presence; retain
   exact display splice order and erasure's physical endpoint identities.
-- [ ] Finish the split/insert/delete-only milestone: complete actual insertion
-  and atomic split transition simulation and positional editing effects, deriving
+- [x] Derive global projected retained-address uniqueness from all physical
+  partition cells, including inactive title anchors. Derive source-step guards
+  from actual display alignment and uniqueness, and unique active origin owners.
+  Prove canonical actual insertion simulates source insertion with live fresh
+  text, and honest bounded deletion has its exact effect on the actual renderer.
+  Canonical create, insert and erase now construct guarded atomic source-history
+  updates. Bootstrap also supplies this execution, including empty seeds and
+  non-first placement. A shared typed transaction-to-command translation preserves
+  grouping; history composition and actual terminal-query transport are checked.
+  These focused builds pass; the new modules await the next integration gate.
+- [x] Complete every typed canonical transaction case, including atomic split,
+  and instantiate the history composition: honest reconstruction returns an answer
+  admitted by the independent specification on the same grouped transaction order.
+  Prove valid insertion and bounded deletion through actual issuance and issuer
+  reconstruction.
+- [ ] Finish the split/insert/delete-only milestone: complete remaining positional split effects, deriving
   projected structural invariants. Connect source name/range decoding and
   search-label validation. Instantiate the same-witness RA bridge with event
   enumeration, required order and specification visibility. Keep source IDs

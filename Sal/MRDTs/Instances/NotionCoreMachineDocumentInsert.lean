@@ -1,0 +1,613 @@
+import Sal.MRDTs.Instances.NotionCoreMachineDocument
+import Sal.MRDTs.Instances.NotionCoreMachineDocumentInvariant
+import Sal.MRDTs.Instances.NotionCoreMachineFreshText
+import Sal.MRDTs.Instances.NotionCoreMachinePartitionUpdates
+import Sal.MRDTs.Instances.NotionCoreMachineHonestReplay
+
+/-! Checked materialization under the actual physical insertion splice. The
+interval factorization is the old partition witness; no next extraction or
+materialized output is a premise. Fresh atoms may include a split marker. -/
+namespace Sal.MRDTs.Instances.NotionCoreMachineDocumentInsert
+open NotionCoreSpec (Address)
+open NotionCoreSource (Atom)
+open NotionCorePartition (Cell flatten insertCell)
+open NotionCoreMachine
+
+/-- Source insertion into a represented interval is obtained by checked
+extraction after the global physical splice, including hidden origins. -/
+theorem sliceAtoms_splice (state next : State) (before after : List Cell)
+    (cell : Cell) (origin : Address) (fresh : List Atom)
+    (oldPhysical : physical state cell.slice.start.1 = flatten (before ++ cell :: after))
+    (oldUnique : ((physical state cell.slice.start.1).map Atom.address).Nodup)
+    (present : origin ∈ cell.slice.traversal)
+    (changed : physical next cell.slice.start.1 =
+      NotionCorePartition.spliceAfterBy Atom.address origin fresh
+        (physical state cell.slice.start.1))
+    (nextExists : next.instances.any (fun entry => entry.1 == cell.slice.start.1) = true)
+    (nextUnique : ((physical next cell.slice.start.1).map Atom.address).Nodup) :
+    sliceAtoms next ⟨cell.slice.start, after.head?.map (fun following => following.slice.start)⟩ =
+      some (NotionCoreSource.insertSlice cell.slice
+        (cell.slice.traversal.idxOf origin) fresh).atoms := by
+  have updated : physical next cell.slice.start.1 =
+      flatten (before ++ insertCell cell origin fresh :: after) := by
+    rw [changed, oldPhysical]
+    exact NotionCorePartition.insert_physical before after cell origin fresh
+      (by simpa [oldPhysical] using oldUnique) present
+  exact NotionCoreMachineSlices.sliceAtoms_cell next before after
+    (insertCell cell origin fresh) nextExists updated nextUnique
+
+/-- The actual block projection changes by the source interval insertion;
+forest shape and attached-title tag are read from the same stored block. -/
+theorem materializeBlock_splice (state next : State) (block : NotionCoreSliceForest.Block)
+    (before after : List Cell) (cell : Cell) (origin : Address) (fresh : List Atom)
+    (selected : NotionCoreSliceForest.active block.title =
+      ⟨cell.slice.start, after.head?.map (fun following => following.slice.start)⟩)
+    (oldPhysical : physical state cell.slice.start.1 = flatten (before ++ cell :: after))
+    (oldExists : state.instances.any (fun entry => entry.1 == cell.slice.start.1) = true)
+    (oldUnique : ((physical state cell.slice.start.1).map Atom.address).Nodup)
+    (present : origin ∈ cell.slice.traversal)
+    (changed : physical next cell.slice.start.1 =
+      NotionCorePartition.spliceAfterBy Atom.address origin fresh (physical state cell.slice.start.1))
+    (nextExists : next.instances.any (fun entry => entry.1 == cell.slice.start.1) = true)
+    (nextUnique : ((physical next cell.slice.start.1).map Atom.address).Nodup) :
+    let source : NotionCoreSource.Block := ⟨block.id,
+      if NotionCoreSliceForest.attached block.title then .attached block.id else .own, cell.slice⟩
+    NotionCoreMachineDocument.materializeBlock state block = some source ∧
+    NotionCoreMachineDocument.materializeBlock next block =
+      some (NotionCoreSourceDocument.insertBlock source origin fresh) := by
+  have old := NotionCoreMachineSlices.sliceAtoms_cell state before after cell oldExists oldPhysical oldUnique
+  have updated := sliceAtoms_splice state next before after cell origin fresh oldPhysical oldUnique
+    present changed nextExists nextUnique
+  simp [NotionCoreMachineDocument.materializeBlock, selected, old, updated,
+    NotionCoreSourceDocument.insertBlock, NotionCoreSource.insertSlice]
+
+def updateCell (origin : Address) (fresh : List Atom) (cell : Cell) : Cell :=
+  if origin ∈ cell.slice.traversal then insertCell cell origin fresh else cell
+
+@[simp] theorem updateCell_start (origin : Address) (fresh : List Atom) (cell : Cell) :
+    (updateCell origin fresh cell).slice.start = cell.slice.start := by
+  unfold updateCell
+  split <;> rfl
+
+/-- The splice updates exactly the cell owning its origin, so endpoint
+factorizations for all other cells remain available without a frame premise. -/
+theorem updateCells_focus (before after : List Cell) (cell : Cell)
+    (origin : Address) (fresh : List Atom)
+    (unique : ((flatten (before ++ cell :: after)).map Atom.address).Nodup)
+    (owners : ((before ++ cell :: after).map Cell.owner).Nodup)
+    (present : origin ∈ cell.slice.traversal) :
+    (before ++ cell :: after).map (updateCell origin fresh) =
+      before ++ insertCell cell origin fresh :: after := by
+  have excluded : ∀ other ∈ before ++ after, origin ∉ other.slice.traversal := by
+    intro other member active
+    have equal : other = cell := NotionCorePartition.unique_cell unique
+      (by rcases List.mem_append.mp member with h | h
+          · exact List.mem_append_left _ h
+          · exact List.mem_append_right _ (List.mem_cons_of_mem _ h))
+      (by simp) active present
+    have absent : cell.owner ∉ (before ++ after).map Cell.owner := by
+      have nd : (before.map Cell.owner ++ cell.owner :: after.map Cell.owner).Nodup := by
+        simpa using owners
+      have no := (List.nodup_cons.mp (List.nodup_middle.mp nd)).1
+      simpa only [List.map_append] using no
+    exact absent (List.mem_map.mpr ⟨other, member, congrArg Cell.owner equal⟩)
+  have left : before.map (updateCell origin fresh) = before := by
+    conv_rhs => rw [← List.map_id before]
+    apply List.map_congr_left
+    intro other member
+    simp [updateCell, excluded other (List.mem_append_left _ member)]
+  have right : after.map (updateCell origin fresh) = after := by
+    conv_rhs => rw [← List.map_id after]
+    apply List.map_congr_left
+    intro other member
+    simp [updateCell, excluded other (List.mem_append_right _ member)]
+  simp [List.map_append, left, right, updateCell, present]
+
+/-- Every old interval extracts its cellwise update after the splice. This
+includes same-instance intervals on either side of the insertion. -/
+theorem sliceAtoms_updated_cells (next : State) (before after : List Cell)
+    (cell : Cell) (origin : Address) (fresh : List Atom)
+    (physicalEq : physical next cell.slice.start.1 =
+      flatten ((before ++ cell :: after).map (updateCell origin fresh)))
+    (existsInstance : next.instances.any (fun entry => entry.1 == cell.slice.start.1) = true)
+    (unique : ((physical next cell.slice.start.1).map Atom.address).Nodup) :
+    sliceAtoms next ⟨cell.slice.start, after.head?.map (fun following => following.slice.start)⟩ =
+      some (updateCell origin fresh cell).slice.atoms := by
+  have extracted := NotionCoreMachineSlices.sliceAtoms_cell next
+    (before.map (updateCell origin fresh)) (after.map (updateCell origin fresh))
+    (updateCell origin fresh cell) (by simpa using existsInstance)
+    (by simpa only [List.map_append,List.map_cons,updateCell_start] using physicalEq)
+    (by simpa using unique)
+  have ending : (after.map (updateCell origin fresh)).head?.map
+      (fun following => following.slice.start) =
+      after.head?.map (fun following => following.slice.start) := by
+    cases after <;> simp
+  simpa only [updateCell_start, ending] using extracted
+
+/-- Whole-instance cell ownership determines each stored reference's result;
+no selected source block or next materialization is supplied. -/
+theorem ownedRef_splice (state next : State)
+    (partitioned : NotionCoreMachinePartition.Partitioned state)
+    (owned : Nat × NotionCoreSliceForest.Ref)
+    (member : owned ∈ NotionCoreForestRefs.ownedRefs state.forest)
+    (origin : Address) (fresh : List Atom)
+    (oldUnique : ((physical state owned.2.start.1).map Atom.address).Nodup)
+    (present : origin ∈ (physical state owned.2.start.1).map Atom.address)
+    (changed : physical next owned.2.start.1 =
+      NotionCorePartition.spliceAfterBy Atom.address origin fresh (physical state owned.2.start.1))
+    (nextExists : next.instances.any (fun entry => entry.1 == owned.2.start.1) = true)
+    (nextUnique : ((physical next owned.2.start.1).map Atom.address).Nodup) :
+    ∃ slice : NotionCoreSource.Slice,
+      slice.start = owned.2.start ∧ sliceAtoms state owned.2 = some slice.atoms ∧
+      sliceAtoms next owned.2 = some
+        (if origin ∈ slice.traversal then
+          (NotionCoreSource.insertSlice slice (slice.traversal.idxOf origin) fresh).atoms
+         else slice.atoms) := by
+  obtain ⟨cells, phys, owners, permutation⟩ := partitioned.partitions owned.2.start.1
+    (partitioned.refsExist owned member)
+  have representation : NotionCorePartition.Represents
+      ⟨physical state owned.2.start.1,cells.map Cell.entry⟩ cells := ⟨phys,rfl,oldUnique,owners⟩
+  obtain ⟨selected,⟨selectedMember,selectedOwns⟩,_⟩ :=
+    NotionCorePartition.physical_unique_owner origin representation present
+  obtain ⟨left,right,focus⟩ := List.append_of_mem selectedMember
+  have mapped : physical next owned.2.start.1 = flatten (cells.map (updateCell origin fresh)) := by
+    rw [changed,phys,focus,updateCells_focus left right selected origin fresh
+      (by simpa [← focus,← phys] using oldUnique) (by simpa [← focus] using owners) selectedOwns]
+    exact NotionCorePartition.insert_physical left right selected origin fresh
+      (by simpa [← focus,← phys] using oldUnique) selectedOwns
+  have refMember := permutation.mem_iff.mp (List.mem_filter.mpr ⟨member,by simp⟩)
+  obtain ⟨before,cell,after,shape,equal⟩ :=
+    (NotionCoreMachinePartition.cellRefs_member cells owned).mp refMember
+  have oldExists : state.instances.any (fun entry => entry.1 == owned.2.start.1) = true := by
+    simpa using partitioned.refsExist owned member
+  subst owned
+  refine ⟨cell.slice,rfl,?_,?_⟩
+  · exact NotionCoreMachineSlices.sliceAtoms_cell state before after cell oldExists
+      (shape ▸ phys) oldUnique
+  · have result := sliceAtoms_updated_cells next before after cell origin fresh
+      (shape ▸ mapped) nextExists nextUnique
+    by_cases owns : origin ∈ cell.slice.traversal <;> simpa [updateCell,insertCell,owns] using result
+
+/-- Per-block materialization commuting, including other physical instances.
+The supplied source is only the old materialization. -/
+theorem materializeBlock_insert (state next : State)
+    (partitioned : NotionCoreMachinePartition.Partitioned state)
+    (block : NotionCoreSliceForest.Block) (source : NotionCoreSource.Block)
+    (owned : (block.id,NotionCoreSliceForest.active block.title) ∈
+      NotionCoreForestRefs.ownedRefs state.forest)
+    (old : NotionCoreMachineDocument.materializeBlock state block = some source)
+    (inst : Nat) (origin : Address) (fresh : List Atom) (originInst : origin.1 = inst)
+    (unique : ∀ key, ((physical state key).map Atom.address).Nodup)
+    (nextUnique : ∀ key, ((physical next key).map Atom.address).Nodup)
+    (nextExists : ∀ key, state.instances.any (fun entry => entry.1 == key) = true →
+      next.instances.any (fun entry => entry.1 == key) = true)
+    (present : origin ∈ (physical state inst).map Atom.address)
+    (changed : physical next inst = NotionCorePartition.spliceAfterBy Atom.address origin fresh (physical state inst))
+    (frames : ∀ key, key ≠ inst → physical next key = physical state key) :
+    NotionCoreMachineDocument.materializeBlock next block = some
+      (if NotionCoreSourceDocument.owns source origin then
+        NotionCoreSourceDocument.insertBlock source origin fresh else source) := by
+  let ref := NotionCoreSliceForest.active block.title
+  cases extracted : sliceAtoms state ref with
+  | none => simp [NotionCoreMachineDocument.materializeBlock,ref,extracted] at old
+  | some atoms =>
+    have sourceEq : source = ⟨block.id,
+        if NotionCoreSliceForest.attached block.title then .attached block.id else .own,
+        ⟨ref.start,atoms⟩⟩ := by
+      simpa [NotionCoreMachineDocument.materializeBlock,ref,extracted] using old.symm
+    subst source
+    have oldExists : state.instances.any (fun entry => entry.1 == ref.start.1) = true := by
+      simpa using partitioned.refsExist _ owned
+    by_cases same : ref.start.1 = inst
+    · obtain ⟨slice,startEq,prior,updated⟩ := ownedRef_splice state next partitioned
+        (block.id,ref) owned origin fresh (unique _) (same ▸ present)
+        (same ▸ changed) (nextExists _ oldExists) (nextUnique _)
+      have atomsEq : slice.atoms = atoms := Option.some.inj (prior.symm.trans extracted)
+      have sliceEq : slice = ⟨ref.start,atoms⟩ := by
+        cases slice; simp_all
+      subst slice
+      by_cases owns : origin ∈ (⟨ref.start,atoms⟩ : NotionCoreSource.Slice).traversal
+      all_goals simp [NotionCoreMachineDocument.materializeBlock,ref,updated,
+        NotionCoreSourceDocument.owns,NotionCoreSourceDocument.insertBlock,
+        NotionCoreSource.insertSlice,owns]
+    · have physicalFrame := frames ref.start.1 same
+      have nextSelected : sliceAtoms next ref = some atoms := by
+        simpa only [sliceAtoms,physicalFrame,nextExists _ oldExists,oldExists] using extracted
+      have physicalMembers := NotionCoreMachineClient.slice_physical state ref atoms extracted
+      have originAbsent : origin ∉ (⟨ref.start,atoms⟩ : NotionCoreSource.Slice).traversal := by
+        intro member
+        have memberPhysical : origin ∈ (physical state ref.start.1).map Atom.address := by
+          rcases List.mem_cons.mp member with equal | member
+          · simpa [equal] using physicalMembers.1
+          · obtain ⟨atom,member,equal⟩ := List.mem_map.mp member
+            exact List.mem_map.mpr ⟨atom,physicalMembers.2 atom member,equal⟩
+        obtain ⟨atom,member,equal⟩ := List.mem_map.mp memberPhysical
+        have atomInst : atom.address.1 = ref.start.1 := by
+          simp only [physical,NotionCorePhysicalReplay.physical,List.mem_cons,List.mem_map] at member
+          rcases member with rfl | ⟨item,_,rfl⟩ <;> rfl
+        exact same (atomInst.symm.trans ((congrArg Prod.fst equal).trans originInst))
+      simp [NotionCoreMachineDocument.materializeBlock,ref,nextSelected,
+        NotionCoreSourceDocument.owns,originAbsent]
+
+private theorem mapM_transform {α β : Type} (xs : List α) (f g : α → Option β) (h : β → β)
+    (transform : ∀ x value, f x = some value → g x = some (h value))
+    (ys : List β) (before : xs.mapM f = some ys) : xs.mapM g = some (ys.map h) := by
+  induction xs generalizing ys with
+  | nil => simp at before; subst ys; rfl
+  | cons head rest ih =>
+    cases first : f head with
+    | none => simp [List.mapM_cons,first] at before
+    | some value =>
+      cases later : rest.mapM f with
+      | none => simp [List.mapM_cons,first,later] at before
+      | some tail =>
+        have equal : value :: tail = ys := by simpa [List.mapM_cons,first,later] using before
+        subst ys
+        have next := transform head value first
+        have following := ih tail later
+        simp [List.mapM_cons,next,following]
+
+/-- Actual display-ordered materialization follows the existing source
+insertion map. The unchanged display and forest are operational frames. -/
+theorem materializeDocument_insert (state next : State)
+    (partitioned : NotionCoreMachinePartition.Partitioned state)
+    (normal : NotionCoreSliceForest.NormalForest state.forest)
+    (document : NotionCoreSourceDocument.Document)
+    (old : NotionCoreMachineDocument.materializeDocument state = some document)
+    (inst : Nat) (origin : Address) (fresh : List Atom) (originInst : origin.1 = inst)
+    (unique : ∀ key, ((physical state key).map Atom.address).Nodup)
+    (nextUnique : ∀ key, ((physical next key).map Atom.address).Nodup)
+    (nextExists : ∀ key, state.instances.any (fun entry => entry.1 == key) = true →
+      next.instances.any (fun entry => entry.1 == key) = true)
+    (present : origin ∈ (physical state inst).map Atom.address)
+    (changed : physical next inst = NotionCorePartition.spliceAfterBy Atom.address origin fresh (physical state inst))
+    (frames : ∀ key, key ≠ inst → physical next key = physical state key)
+    (forestFrame : next.forest = state.forest) (displayFrame : next.display = state.display) :
+    NotionCoreMachineDocument.materializeDocument next = some
+      (document.map (fun source => if NotionCoreSourceDocument.owns source origin then
+        NotionCoreSourceDocument.insertBlock source origin fresh else source)) := by
+  unfold NotionCoreMachineDocument.materializeDocument at old ⊢
+  rw [displayFrame]
+  apply mapM_transform state.display _ _ _ ?_ document old
+  intro bid source extracted
+  rw [forestFrame]
+  cases found : state.forest.find? (fun old => old.id == bid) with
+  | none => simp [found] at extracted
+  | some block =>
+    have blockMember := List.mem_of_find?_eq_some found
+    have activeMember : NotionCoreSliceForest.active block.title ∈
+        NotionCoreSliceForest.preorderTree block.title := by
+      have statement (bid : Nat) (tree : NotionCoreSliceForest.Tree)
+          (h : NotionCoreSliceForest.Normal bid tree) :
+          NotionCoreSliceForest.active tree ∈ NotionCoreSliceForest.preorderTree tree := by
+        cases h <;> simp [NotionCoreSliceForest.active,NotionCoreSliceForest.preorderTree,
+        NotionCoreSliceForest.preorderChildren,NotionCoreSliceForest.Tree.children,
+        NotionCoreSliceForest.Tree.slice]
+      exact statement block.id block.title (normal block blockMember)
+    have owned : (block.id,NotionCoreSliceForest.active block.title) ∈
+        NotionCoreForestRefs.ownedRefs state.forest :=
+      List.mem_flatMap.mpr ⟨block,blockMember,List.mem_map.mpr ⟨_,activeMember,rfl⟩⟩
+    have before : NotionCoreMachineDocument.materializeBlock state block = some source := by
+      simpa [found] using extracted
+    have result := materializeBlock_insert state next partitioned block source owned before
+      inst origin fresh originInst unique nextUnique nextExists present changed frames
+    simpa [found] using result
+
+/-- An available source origin makes the derived materialization map the
+literal independent document transition. Origin availability is explicit;
+this low-level interface does not assume a next document equation. -/
+theorem insert_source_step (state next : State)
+    (partitioned : NotionCoreMachinePartition.Partitioned state)
+    (normal : NotionCoreSliceForest.NormalForest state.forest)
+    (document : NotionCoreSourceDocument.Document)
+    (old : NotionCoreMachineDocument.materializeDocument state = some document)
+    (inst : Nat) (origin : Address) (fresh : List Atom) (originInst : origin.1 = inst)
+    (unique : ∀ key, ((physical state key).map Atom.address).Nodup)
+    (nextUnique : ∀ key, ((physical next key).map Atom.address).Nodup)
+    (nextExists : ∀ key, state.instances.any (fun entry => entry.1 == key) = true →
+      next.instances.any (fun entry => entry.1 == key) = true)
+    (present : origin ∈ (physical state inst).map Atom.address)
+    (changed : physical next inst = NotionCorePartition.spliceAfterBy Atom.address origin fresh (physical state inst))
+    (frames : ∀ key, key ≠ inst → physical next key = physical state key)
+    (forestFrame : next.forest = state.forest) (displayFrame : next.display = state.display)
+    (available : ∃ source ∈ document, NotionCoreSourceDocument.owns source origin = true) :
+    ∃ after, NotionCoreMachineDocument.materializeDocument next = some after ∧
+      NotionCoreSourceDocument.step document (.insert origin fresh) = some after := by
+  refine ⟨_,materializeDocument_insert state next partitioned normal document old inst origin fresh
+    originInst unique nextUnique nextExists present changed frames forestFrame displayFrame,?_⟩
+  cases ownerEq : NotionCoreSourceDocument.owner document origin with
+  | none =>
+    obtain ⟨source,member,owns⟩ := available
+    have rejected := List.find?_eq_none.mp ownerEq source member
+    exact False.elim (rejected owns)
+  | some source => simp [NotionCoreSourceDocument.step,ownerEq]
+
+theorem normal_ref_active (bid : Nat) (tree : NotionCoreSliceForest.Tree)
+    (normal : NotionCoreSliceForest.Normal bid tree) (ref : NotionCoreSliceForest.Ref)
+    (member : ref ∈ NotionCoreSliceForest.preorderTree tree)
+    (excludeTitle : NotionCoreSliceForest.attached tree = true → ref.start.1 ≠ bid) :
+    ref = NotionCoreSliceForest.active tree := by
+  cases normal with
+  | own stop =>
+    simpa [NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,
+      NotionCoreSliceForest.active,NotionCoreSliceForest.Tree.children,
+      NotionCoreSliceForest.Tree.slice] using member
+  | attached leaf =>
+    simp [NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren] at member
+    rcases member with rfl | rfl
+    · exact False.elim (excludeTitle rfl rfl)
+    · rfl
+
+/-- Active-instance classification excludes the unused own-title reference
+before searching which represented interval contains an origin. -/
+theorem active_owned_ref (state : State)
+    (shape : NotionCoreMachineShape.ShapeInvariant state) (inst : Nat)
+    (activeInst : NotionCoreMachineShape.ActiveInstance state inst)
+    (owned : Nat × NotionCoreSliceForest.Ref)
+    (member : owned ∈ NotionCoreForestRefs.ownedRefs state.forest)
+    (same : owned.2.start.1 = inst) :
+    ∃ block ∈ state.forest, owned = (block.id,NotionCoreSliceForest.active block.title) := by
+  obtain ⟨block,blockMember,refMapped⟩ := List.mem_flatMap.mp member
+  obtain ⟨ref,refMember,equal⟩ := List.mem_map.mp refMapped
+  subst owned
+  have exclude : NotionCoreSliceForest.attached block.title = true → ref.start.1 ≠ block.id := by
+    intro attached equal
+    obtain ⟨activeBlock,activeMember,activeSame⟩ := activeInst
+    have valid := shape.2.1.2
+      (activeBlock.id,(NotionCoreSliceForest.active activeBlock.title).start,
+        NotionCoreSliceForest.attached activeBlock.title)
+      (List.mem_map.mpr ⟨activeBlock,activeMember,rfl⟩)
+    have excluded := valid.2
+      (block.id,(NotionCoreSliceForest.active block.title).start,NotionCoreSliceForest.attached block.title)
+      (List.mem_map.mpr ⟨block,blockMember,rfl⟩) attached
+    exact excluded (activeSame.trans (same.symm.trans equal))
+  have refEq := normal_ref_active block.id block.title (shape.1 block blockMember) ref refMember exclude
+  exact ⟨block,blockMember,by rw [refEq]⟩
+
+#print axioms active_owned_ref
+private theorem stored_find (forest : NotionCoreSliceForest.Forest)
+    (unique : (forest.map NotionCoreSliceForest.Block.id).Nodup)
+    (block : NotionCoreSliceForest.Block) (member : block ∈ forest) :
+    forest.find? (fun old => old.id == block.id) = some block := by
+  induction forest with
+  | nil => simp at member
+  | cons head rest ih =>
+    rcases List.mem_cons.mp member with rfl | member
+    · simp
+    · have distinct : head.id ≠ block.id := by
+        intro same
+        exact (List.nodup_cons.mp unique).1 (List.mem_map.mpr ⟨block,member,same.symm⟩)
+      simpa [distinct] using ih (List.nodup_cons.mp unique).2 member
+
+private theorem mapM_member_input {α β : Type} (f : α → Option β)
+    (xs : List α) (ys : List β) (accepted : xs.mapM f = some ys)
+    (x : α) (member : x ∈ xs) : ∃ y ∈ ys, f x = some y := by
+  induction xs generalizing ys with
+  | nil => simp at member
+  | cons head rest ih =>
+    cases first : f head with
+    | none => simp [List.mapM_cons,first] at accepted
+    | some value =>
+      cases later : rest.mapM f with
+      | none => simp [List.mapM_cons,first,later] at accepted
+      | some tail =>
+        have equal : value :: tail = ys := by simpa [List.mapM_cons,first,later] using accepted
+        subst ys
+        rcases List.mem_cons.mp member with rfl | member
+        · exact ⟨value,by simp,first⟩
+        · obtain ⟨y,member,eq⟩ := ih tail later member
+          exact ⟨y,List.mem_cons_of_mem _ member,eq⟩
+
+/-- Every physical origin of an active instance is owned by a materialized
+source block. Empty attached titles are excluded by the shape profile. -/
+theorem materialized_origin_available (state : State)
+    (partitioned : NotionCoreMachinePartition.Partitioned state)
+    (shape : NotionCoreMachineShape.ShapeInvariant state)
+    (aligned : NotionCoreMachineDisplay.Aligned state)
+    (unique : ∀ key, ((physical state key).map Atom.address).Nodup)
+    (document : NotionCoreSourceDocument.Document)
+    (old : NotionCoreMachineDocument.materializeDocument state = some document)
+    (inst : Nat) (activeInst : NotionCoreMachineShape.ActiveInstance state inst)
+    (origin : Address) (present : origin ∈ (physical state inst).map Atom.address) :
+    ∃ source ∈ document, NotionCoreSourceDocument.owns source origin = true := by
+  obtain ⟨activeBlock,activeMember,activeEq⟩ := activeInst
+  have activeRefMember : NotionCoreSliceForest.active activeBlock.title ∈
+      NotionCoreSliceForest.preorderTree activeBlock.title := by
+    have statement (bid : Nat) (tree : NotionCoreSliceForest.Tree)
+        (h : NotionCoreSliceForest.Normal bid tree) :
+        NotionCoreSliceForest.active tree ∈ NotionCoreSliceForest.preorderTree tree := by
+      cases h <;> simp [NotionCoreSliceForest.active,NotionCoreSliceForest.preorderTree,
+        NotionCoreSliceForest.preorderChildren,NotionCoreSliceForest.Tree.children,
+        NotionCoreSliceForest.Tree.slice]
+    exact statement _ _ (shape.1 activeBlock activeMember)
+  have activeOwned : (activeBlock.id,NotionCoreSliceForest.active activeBlock.title) ∈
+      NotionCoreForestRefs.ownedRefs state.forest :=
+    List.mem_flatMap.mpr ⟨activeBlock,activeMember,List.mem_map.mpr ⟨_,activeRefMember,rfl⟩⟩
+  have existsInstance : ∃ entry ∈ state.instances, entry.1 = inst :=
+    activeEq ▸ partitioned.refsExist _ activeOwned
+  obtain ⟨cells,phys,owners,permutation⟩ := partitioned.partitions inst existsInstance
+  have representation : NotionCorePartition.Represents
+      ⟨physical state inst,cells.map Cell.entry⟩ cells := ⟨phys,rfl,unique _,owners⟩
+  obtain ⟨cell,⟨cellMember,owns⟩,_⟩ :=
+    NotionCorePartition.physical_unique_owner origin representation present
+  obtain ⟨before,after,focus⟩ := List.append_of_mem cellMember
+  let owned : Nat × NotionCoreSliceForest.Ref :=
+    (cell.owner,⟨cell.slice.start,after.head?.map (fun following => following.slice.start)⟩)
+  have ownedCells : owned ∈ NotionCoreMachinePartition.cellRefs cells :=
+    (NotionCoreMachinePartition.cellRefs_member cells owned).mpr ⟨before,cell,after,focus,rfl⟩
+  have ownedFilter := List.mem_filter.mp (permutation.mem_iff.mpr ownedCells)
+  have same : owned.2.start.1 = inst := by simpa using ownedFilter.2
+  obtain ⟨block,member,selected⟩ := active_owned_ref state shape inst
+    ⟨activeBlock,activeMember,activeEq⟩ owned ownedFilter.1 same
+  have displayed : block.id ∈ state.display := aligned.2.mem_iff.mpr (List.mem_map.mpr ⟨block,member,rfl⟩)
+  obtain ⟨source,sourceMember,lookup⟩ := mapM_member_input _ state.display document old block.id displayed
+  have found := stored_find state.forest aligned.1 block member
+  have materialized : NotionCoreMachineDocument.materializeBlock state block = some source := by
+    simpa [NotionCoreMachineDocument.materializeDocument,found] using lookup
+  have cellInst : cell.slice.start.1 = inst := same
+  have extracted := NotionCoreMachineSlices.sliceAtoms_cell state before after cell
+    (by simpa [cellInst] using existsInstance) (by simpa only [cellInst,focus] using phys)
+    (by simpa only [cellInst] using unique inst)
+  have refEq : NotionCoreSliceForest.active block.title = owned.2 := congrArg Prod.snd selected.symm
+  have sourceEq : source = ⟨block.id,
+      if NotionCoreSliceForest.attached block.title then .attached block.id else .own,cell.slice⟩ := by
+    simpa [NotionCoreMachineDocument.materializeBlock,refEq,owned,extracted] using materialized.symm
+  exact ⟨source,sourceMember,by simp [sourceEq,NotionCoreSourceDocument.owns,owns]⟩
+
+#print axioms materialized_origin_available
+private theorem replay_append (state : State) (a b : List NotionCorePayload.Transaction) :
+    replay state (a ++ b) = (replay state a >>= fun next => replay next b) := by
+  induction a generalizing state with
+  | nil => rfl
+  | cons tx rest ih =>
+    simp only [List.cons_append,replay]
+    cases step : applyTransaction state tx <;> simp [ih]
+
+/-- Honest canonical insertion executes and simulates the independent source
+insert with statically live fresh text. All freshness, physical/spatial frames,
+active-origin availability and next uniqueness are derived. -/
+theorem canonical_insert_source_step (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (old : NotionCoreMachineDocument.materializeDocument state = some document)
+    (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
+    (payload : tx.payload = .insert block inst origin atoms) :
+    ∃ next after, applyTransaction state tx = some next ∧
+      NotionCoreMachineDocument.materializeDocument next = some after ∧
+      NotionCoreSourceDocument.step document (.insert
+        (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
+        ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map
+          (NotionCorePhysicalReplay.atom (blockName inst)))) = some after := by
+  have creators := NotionCoreMachineNetwork.creator_reachable reachable
+  have networkReach := NotionCoreCreatorNetwork.payload_reachable creators
+  obtain ⟨checked,checkedReplay,part,shape,rootActive⟩ :=
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+  have stateEq : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
+  subst checked
+  have nonempty := NotionCoreMachineRootReplay.canonical_insert_nonempty network creators peer tx
+    (position ▸ List.mem_append_right pre (by simp)) block inst origin atoms payload
+  obtain ⟨provider,providerMember,root,_⟩ := NotionCoreRootCreators.canonical_selected_root_provider
+    network creators (NotionCoreMachineHonestReplay.honest_root_provenance network reachable)
+    peer pre suffix tx position inst (by simp [payload,NotionCoreRootCreators.selectedInstances])
+  have activeInst : NotionCoreMachineShape.ActiveInstance state (blockName inst) :=
+    (rootActive _).mpr ⟨provider,providerMember,inst,root,rfl⟩
+  obtain ⟨next,operation,changed⟩ := NotionCoreMachineCanonicalForest.canonical_insert_physical
+    network networkReach peer pre suffix tx position state accepted block inst origin atoms payload nonempty
+  have transaction : applyTransaction state tx = some next := by
+    simp [applyTransaction,NotionCorePayload.operations,payload,applyOperations,operation]
+  have nextEq : ∃ rows, next = putInstance state (blockName inst)
+      {getInstance state (blockName inst) with rows := rows} := by
+    cases integrated : integrateRows (getInstance state (blockName inst)).rows
+        (NotionCoreParentMap.runRows origin (NotionCorePayload.textItems tx.id atoms
+          (fun id => decide (id ∈ (getInstance state (blockName inst)).pending)))) with
+    | none => simp [applyOperation,integrated] at operation
+    | some rows => exact ⟨rows,by simpa [applyOperation,integrated] using operation.symm⟩
+  obtain ⟨rows,nextEq⟩ := nextEq
+  have stored := NotionCoreMachineCreatorPresence.canonical_required_instance network creators
+    peer pre suffix tx position state accepted inst (by simp [payload,NotionCoreCreatorNetwork.requiredBlocks])
+  have nextReplay : replay {} (pre ++ [tx]) = some next := by
+    rw [replay_append,accepted]
+    simp [replay,transaction]
+  have nextPosition : NotionCoreReconstruction.transactions network peer = (pre ++ [tx]) ++ suffix := by
+    simpa [List.append_assoc] using position
+  have unique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network networkReach
+    peer pre (tx :: suffix) position state accepted
+  have nextUnique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network networkReach
+    peer (pre ++ [tx]) suffix nextPosition next nextReplay
+  have present := NotionCoreMachineCanonicalForest.canonical_insert_origin_present network networkReach
+    peer pre suffix tx position state accepted block inst origin atoms payload
+  have static := NotionCoreMachineFreshText.canonical_textItems_pending_false network networkReach
+    peer pre suffix tx position state accepted inst atoms
+  rw [static] at changed
+  have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) accepted
+  have available := materialized_origin_available state part shape aligned unique document old
+    (blockName inst) activeInst _ present
+  obtain ⟨after,materialized,sourceStep⟩ := insert_source_step state next part shape.1 document old
+    (blockName inst) (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
+    ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map
+      (NotionCorePhysicalReplay.atom (blockName inst)))
+    (by cases origin <;> rfl) unique nextUnique (by
+      intro key oldExists
+      rw [nextEq]
+      have storedKey : ∃ entry ∈ state.instances, entry.1 = key := by simpa using oldExists
+      have result := (NotionCoreMachinePartitionUpdates.putInstance_exists_iff state (blockName inst)
+        key {getInstance state (blockName inst) with rows := rows} stored).mpr storedKey
+      simpa using result) present changed (by
+        intro key distinct
+        rw [nextEq]
+        simp [physical,NotionCoreMachineTables.getInstance_put,distinct])
+    (by rw [nextEq]; unfold putInstance; split <;> rfl)
+    (by rw [nextEq]; unfold putInstance; split <;> rfl) available
+  exact ⟨next,after,transaction,materialized,sourceStep⟩
+
+/-- Canonical insertion supplies a guarded atomic source-history update;
+origin safety and block uniqueness follow from the actual old projection. -/
+theorem canonical_insert_execution (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (replayed : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (materialized : NotionCoreMachineDocument.materializeDocument state = some document)
+    (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
+    (payload : tx.payload = .insert block inst origin atoms) :
+    ∃ result after, applyTransaction state tx = some result ∧
+      NotionCoreMachineDocument.materializeDocument result = some after ∧
+      NotionCoreSourceDocument.Execution document
+        [.insert (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
+          ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map
+            (NotionCorePhysicalReplay.atom (blockName inst)))] after := by
+  obtain ⟨result,after,transaction,projected,stepped⟩ := canonical_insert_source_step
+    network reachable peer pre suffix tx position state replayed document materialized block inst origin atoms payload
+  obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+  have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
+  subst checked
+  have unique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network
+    (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
+    peer pre (tx :: suffix) position state replayed
+  have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) replayed
+  have guard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part unique shape aligned
+    document after materialized _ stepped
+  exact ⟨result,after,transaction,projected,.cons guard stepped (.nil after)⟩
+
+#print axioms canonical_insert_execution
+
+#print axioms canonical_insert_source_step
+namespace SPOT
+private def first : NotionRunAllocation.Id := ⟨1,[65]⟩
+private def second : NotionRunAllocation.Id := ⟨2,[65]⟩
+private def third : NotionRunAllocation.Id := ⟨3,[65]⟩
+private def storedBlock : NotionCoreSliceForest.Block := ⟨0,.node ⟨(0,.start),none⟩ .nil⟩
+private def after : State := {instances := [(0,⟨[
+  ⟨⟨first,.text 97 false⟩,.start⟩,
+  ⟨⟨second,.text 98 false⟩,.item first⟩,
+  ⟨⟨third,.text 88 false⟩,.item first⟩],[]⟩)],forest := [storedBlock],display := [0]}
+private def aa : Address := NotionCorePhysicalReplay.address 0 first
+private def bb : Address := NotionCorePhysicalReplay.address 0 second
+private def xx : Address := NotionCorePhysicalReplay.address 0 third
+/-- A fresh sibling is rendered immediately after its origin; the older
+sibling stays after the whole fresh run, rather than before it. -/
+theorem insertion_control :
+    NotionCoreMachineDocument.materializeDocument after = some
+      [⟨0,.own,⟨(0,.start),[⟨aa,.text 97 false⟩,⟨xx,.text 88 false⟩,⟨bb,.text 98 false⟩]⟩⟩] ∧
+    (NotionCoreMachineDocument.materializeDocument after).map
+      (fun doc => doc.flatMap (fun block => block.active.atoms.flatMap atomText)) ≠ some [97,98,88] := by
+  decide +kernel
+end SPOT
+
+#print axioms insert_source_step
+#print axioms SPOT.insertion_control
+#print axioms materializeDocument_insert
+#print axioms materializeBlock_insert
+#print axioms ownedRef_splice
+#print axioms sliceAtoms_updated_cells
+#print axioms updateCells_focus
+#print axioms sliceAtoms_splice
+#print axioms materializeBlock_splice
+end Sal.MRDTs.Instances.NotionCoreMachineDocumentInsert

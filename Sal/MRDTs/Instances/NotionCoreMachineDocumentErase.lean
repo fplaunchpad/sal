@@ -221,6 +221,45 @@ theorem erase_spec_step (state result : State) (block inst : BlockKey)
   rw [materializeDocument_erase state result block inst targets document accepted before]
   exact NotionCoreSourceDocument.project_delete document _
 
+/-- Honest canonical deletion executes an atomic source history update.
+The old projection is the only materialization premise; target decoding and
+all source-history guards are derived. -/
+theorem canonical_erase_execution (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (replayed : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (materialized : materializeDocument state = some document)
+    (block inst : BlockKey) (targets : List NotionRunAllocation.Id)
+    (payload : tx.payload = .erase block inst targets) :
+    ∃ result after, applyTransaction state tx = some result ∧
+      materializeDocument result = some after ∧
+      NotionCoreSourceDocument.Execution document
+        [.delete (targets.map (NotionCorePhysicalReplay.address (blockName inst)))] after := by
+  obtain ⟨checked,checkedReplay,part,_,_⟩ :=
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+  have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
+  subst checked
+  have creators := NotionCoreMachineNetwork.creator_reachable reachable
+  have stored := NotionCoreMachineCreatorPresence.canonical_required_instance network creators
+    peer pre suffix tx position state replayed inst
+    (by simp [payload,NotionCoreCreatorNetwork.requiredBlocks])
+  obtain ⟨result,operation,_⟩ := NotionCoreMachinePartitionUpdates.erase_operation_partitioned
+    state block inst targets part stored
+  have transaction : applyTransaction state tx = some result := by
+    simp [applyTransaction,NotionCorePayload.operations,payload,applyOperations,operation]
+  obtain ⟨after,projected,stepped⟩ := erase_source_step state result block inst targets document operation materialized
+  have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) replayed
+  have names : (document.map NotionCoreSource.Block.id).Nodup := by
+    rw [materialized_ids state document materialized]
+    exact aligned.2.nodup_iff.mpr aligned.1
+  exact ⟨result,after,transaction,projected,
+    .cons ⟨names,True.intro⟩ stepped (.nil after)⟩
+
+#print axioms canonical_erase_execution
+
 #print axioms sliceAtoms_erase
 #print axioms materializeDocument_erase
 #print axioms erase_source_step

@@ -28,3 +28,20 @@ The key-consistency lemmas correctly require cross-branch payload agreement. Ind
 `docs/notion-research.md` accurately separates the refuted unrestricted local split/formatting contract, open split/insert/delete-only milestone, measured slot-machine gate, and storage-only theorem. Its negative conclusion is supported by local counterexamples and does not require proving the missing sequential-history bridge. The stated lack of production correspondence is appropriate.
 
 No reviewed artifact proves the full split/insert/delete milestone or a Notion document sequential-history bridge. Generic storage convergence covers ordinary and canonical recursive bases; document-history correctness for either remains open. The source findings do not justify production claims.
+
+## Typed-core history and issued local edits
+
+Independent review and direct Lean checks covered the all-reference address
+invariant, actual document-client projection, bounded deletion, insertion
+issuance, full canonical split simulation, and history composition. Review
+found no desired-output premises or assumed next-step acceptance. In particular,
+concurrent split routing derives its actual owner without equating that owner
+to the request's original block, and creation retains the requested display
+predecessor. Parent review also checked the bootstrap and emitted deletion chain.
+
+The new terminal-history theorem exhausts the typed payload cases and preserves
+one atomic history update per transaction. Its query answer is derived from the
+actual renderer on that same order. This remains terminal sequential admission,
+not a Sal RA event/order certificate or arbitrary multi-query RA history theorem.
+Local insertion/deletion results cover their stated iterator-atom bounds; local
+split issuance and wire/search-label correspondence remain open.

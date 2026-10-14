@@ -76,6 +76,16 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreMachineDocument \
   Sal.MRDTs.Instances.NotionCoreMachineDocumentCreate \
   Sal.MRDTs.Instances.NotionCoreMachineDocumentErase \
+  Sal.MRDTs.Instances.NotionCoreMachineCommands \
+  Sal.MRDTs.Instances.NotionCoreMachineDocumentClient \
+  Sal.MRDTs.Instances.NotionCoreMachineDocumentInvariant \
+  Sal.MRDTs.Instances.NotionCoreMachineDocumentInsert \
+  Sal.MRDTs.Instances.NotionCoreMachineDocumentBootstrap \
+  Sal.MRDTs.Instances.NotionCoreMachineDocumentSplit \
+  Sal.MRDTs.Instances.NotionCoreMachineClientEffects \
+  Sal.MRDTs.Instances.NotionCoreMachineInsertEffects \
+  Sal.MRDTs.Instances.NotionCoreMachineHistory \
+  Sal.MRDTs.Instances.NotionCoreMachineEraseIssueEffects \
   Sal.MRDTs.Instances.NotionCoreSliceForest
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")

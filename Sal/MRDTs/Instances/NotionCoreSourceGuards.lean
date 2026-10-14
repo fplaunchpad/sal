@@ -27,6 +27,30 @@ private theorem attached_root_not_active (block : Block) (inst : Nat)
       NotionCoreSourceDocument.active_addresses] using unique
   exact (List.nodup_cons.mp shape).1
 
+/-- Global retained-address uniqueness gives a unique active block owner,
+including when the origin is a tombstone or an interval anchor. -/
+theorem active_owner_unique {doc : Document} {left right : Block} {origin : Address}
+    (unique : (addresses (project doc)).Nodup)
+    (leftMember : left ∈ doc) (rightMember : right ∈ doc)
+    (leftActive : origin ∈ left.active.traversal)
+    (rightActive : origin ∈ right.active.traversal) : left = right := by
+  obtain ⟨pre, post, shape⟩ := List.append_of_mem leftMember
+  subst doc
+  have focused := NotionCoreSpec.address_focus (project pre) (project post)
+    left.project origin
+    (by simpa only [addresses, project, List.map_append, List.map_cons] using unique)
+    (active_project_member left origin leftActive)
+  by_contra different
+  have outside : right ∈ pre ++ post := by
+    rcases List.mem_append.mp rightMember with member | member
+    · exact List.mem_append_left _ member
+    · rcases List.mem_cons.mp member with equal | member
+      · exact False.elim (different equal.symm)
+      · exact List.mem_append_right _ member
+  have projectedOutside : right.project ∈ project pre ++ project post := by
+    simpa only [project, ← List.map_append] using List.mem_map.mpr ⟨right,outside,rfl⟩
+  exact focused.2 right.project projectedOutside (active_project_member right origin rightActive)
+
 /-- An active origin cannot be the otherwise unused title root of any attached
 block. The proof handles its own block separately from all other blocks;
 global address uniqueness excludes both collisions. -/
@@ -66,24 +90,34 @@ theorem originSafe_of_owner {doc : Document} {source : Block} {origin : Address}
   apply originSafe_of_active unique (List.mem_of_find?_eq_some owned)
   simpa only [NotionCoreSourceDocument.owns, decide_eq_true_eq] using List.find?_some owned
 
-/-- Accepted insert/split commands derive their source address guard from the
-projected invariant. Creation/deletion require no address-origin guard. -/
-theorem accepted_guard {doc next : Document} (command : NotionCoreSourceDocument.Command)
-    (wf : NotionCoreSpec.WellFormed (project doc))
+/-- Projection guards require unique block names and retained addresses;
+accepted source ownership supplies the origin premise. -/
+theorem accepted_guard_of_unique {doc next : Document} (command : NotionCoreSourceDocument.Command)
+    (names : (doc.map Block.id).Nodup)
+    (unique : (addresses (project doc)).Nodup)
     (accepted : NotionCoreSourceDocument.step doc command = some next) :
     NotionCoreSourceDocument.Guard doc command := by
-  refine ⟨by simpa only [NotionCoreSourceDocument.project_ids] using wf.1, ?_⟩
+  refine ⟨names, ?_⟩
   cases command with
   | create id inst after => trivial
   | delete targets => trivial
   | insert origin fresh =>
       cases owned : owner doc origin with
       | none => simp [NotionCoreSourceDocument.step, owned] at accepted
-      | some source => exact originSafe_of_owner wf.2.1 owned
+      | some source => exact originSafe_of_owner unique owned
   | split origin marker target =>
       cases owned : owner doc origin with
       | none => simp [NotionCoreSourceDocument.step, owned] at accepted
-      | some source => exact originSafe_of_owner wf.2.1 owned
+      | some source => exact originSafe_of_owner unique owned
+
+/-- Accepted insert/split commands derive their source address guard from the
+projected invariant. Creation/deletion require no address-origin guard. -/
+theorem accepted_guard {doc next : Document} (command : NotionCoreSourceDocument.Command)
+    (wf : NotionCoreSpec.WellFormed (project doc))
+    (accepted : NotionCoreSourceDocument.step doc command = some next) :
+    NotionCoreSourceDocument.Guard doc command :=
+  accepted_guard_of_unique command
+    (by simpa only [NotionCoreSourceDocument.project_ids] using wf.1) wf.2.1 accepted
 
 /-- The materialized source's step projection needs no manually supplied
 `OriginSafe` premise on invariant inputs. Acceptance derives origin membership

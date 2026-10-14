@@ -529,6 +529,76 @@ its exact existing source-document create transition, including display order.
 `MachineDocumentErase.erase_source_step` and `erase_spec_step` derive source and
 independent-spec deletion from actual erasure and old materialization. They
 preserve parent/marker identities and endpoints; no new materialization or
-rendering equation is assumed. Insertion, atomic split, positional edit effects,
-source runtime correspondence and the same-witness RA/history bridge remain open.
+rendering equation is assumed. The subsequent focused proof results below extend
+these transition facts; the same-witness RA/history bridge remains open.
 No fourth demo bug is claimed and no document certificate enters the ledger.
+
+### Actual address uniqueness and atomic insertion/deletion (focused checks)
+
+`MachineDocumentInvariant.projected_addresses_unique` derives global semantic
+address uniqueness from the complete physical partition and display alignment.
+This includes inactive title anchors, not just visible characters.
+`SourceGuards.active_owner_unique` consequently identifies the unique block
+owning an active origin. `accepted_source_guard` derives the existing source
+history guards; `honest_prefix_source_step` lifts accepted source steps at honest
+canonical prefixes into the independent specification without assumed guards.
+
+`MachineDocumentCreate.canonical_create_execution`,
+`MachineDocumentInsert.canonical_insert_execution`, and
+`MachineDocumentErase.canonical_erase_execution` derive successful actual
+transactions, their after-document projections, and atomic source-history
+updates. Insertion derives live fresh text and origin availability. These are
+individual transaction cases, not yet an induction over every payload.
+`MachineCommands.commands` supplies their shared static label translation;
+bootstrap and split remain single atomic groups of source commands. This
+translation executes no document operations and changes no specification.
+
+`MachineClientEffects.honest_erase_effect` derives actual positional selection,
+erasure, and the renderer's exact local range effect, preserving other displayed
+blocks. Its domain is valid nonempty natural-number ranges bounded by the
+selected block's visible length. It proves immediate local execution; coupling
+that effect to the emitted archive and full history remains separate.
+
+Independent review and focused Lean checks pass for the deletion, client
+projection, address-invariant and source-guard modules. The insertion execution
+build passes with standard axioms. These additions await the next full integration
+gate. Atomic split simulation, bootstrap history composition, local insertion and
+split effects, source runtime correspondence, and the same-witness RA theorem
+remain incomplete. The confirmed demo bug count remains three.
+
+`MachineDocumentBootstrap.canonical_bootstrap_source_execution` now also derives
+its atomic create/insert history update, including an empty seed and bootstrap
+after an earlier independent creation. Its public result uses the shared command
+translation. The focused build and independent review of the create/insert/erase
+execution wrappers pass.
+
+`MachineHistory.compose` checks the history induction from canonical per-step
+simulation, and `observed_history` attaches the actual renderer's answer on the
+same ordered updates. These remain composition lemmas: the full theorem still
+requires the canonical split case and instantiation of every step. Neither lemma
+constructs the Sal event enumeration or proves the RA ordering requirements.
+
+### Typed-core terminal history theorem
+
+`MachineHistory.honest_history` now closes the canonical typed-core sequential
+history argument. For every honestly reachable network and peer, reconstruction
+and rendering succeed, and the resulting answer is admitted by the independent
+specification after exactly the canonical list of atomic command groups. The
+proof dispatches all five payload forms, including bootstrap and split, derives
+each source execution, and transports the actual terminal observation. No
+per-transaction simulation or desired answer is a caller premise.
+
+`MachineInsertEffects.honest_insert_request_effect` and
+`MachineEraseIssueEffects.honest_issue_erase_effect` prove valid nonempty local
+requests through real issuance and issuer reconstruction. The allocator and
+archive derive the appended canonical transaction order. Insertion covers
+bounded gaps; deletion covers bounded nonempty ranges. Attached zero-gap
+insertion is checked against the wrong-block and wrong-end alternatives.
+
+Independent review checked history composition and insertion issuance, including
+the absence of assumed outputs and preservation of atomic grouping. This is a
+typed-core terminal-query theorem, not the Sal RA certificate: source runtime
+correspondence, the local split request effect, and the event enumeration,
+required ordering, and specification visibility on the same Sal witness remain
+open. Generic storage convergence still supplies the only ordinary/recursive
+merge-base certificate. The three documented demo bugs remain unchanged.

@@ -38,10 +38,13 @@ Actual honest reconstruction now admits a display-ordered projection into the
 existing independent document model, with exactly the same visible rendering.
 Valid bounded insert/split/delete requests and create requests with an existing
 predecessor issue successfully. Fresh text cannot inherit earlier pending
-tombstones. Actual create and erase operations simulate the existing document
-transitions; insertion and split simulation, positional edit effects, source
-wire/search-label correspondence, and the same-witness RA/history bridge remain
-open. Existing five-VC results certify transaction storage only.
+tombstones. Every typed core transaction now simulates its atomic independent
+command group, and the actual reconstructed answer is admitted by that same
+ordered sequential history. Honest insertion and bounded deletion have their requested effects through
+issuance and reconstruction.
+Local split effects, source wire/search-label correspondence, and the Sal event
+witness with RA ordering remain open. Existing five-VC results certify
+transaction storage only.
 This research branch is outside the verified datatype registry and makes no
 claim about Notion production. The [bug catalogue](docs/notion-bugs.md) preserves
 the three confirmed demo failures and distinguishes admission countermodels.
