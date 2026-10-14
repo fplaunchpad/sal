@@ -1,5 +1,4 @@
 import Sal.MRDTs.Paper1.Automation.TransferSimple
-import Sal.MRDTs.Instances.BoundedCounter
 import Sal.MRDTs.Instances.TreeMove
 import Sal.MRDTs.Instances.AegisSheet
 

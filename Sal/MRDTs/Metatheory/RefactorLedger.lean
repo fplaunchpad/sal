@@ -1,6 +1,5 @@
 import Sal.MRDTs.Paper1.NeemFlagAudit
 import Sal.MRDTs.Paper1.BalegasBoundedCounterAudit
-import Sal.MRDTs.Paper1.TransferableBoundedCounterAudit
 import Sal.MRDTs.Paper1.SelfCommutationAudit
 import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Paper1.Ledger
@@ -121,15 +120,6 @@ namespace Sal.MRDTs
 #check Instances.FlatCounters.pnVerified
 #check Instances.FlatGrowOnly.gosetVerified
 #check Instances.FlatGrowOnly.gomapVerified
-#check Instances.BoundedCounter.BC
-#check Instances.BoundedCounter.BC_mergeLaws
-#check Instances.BoundedCounter.replay_linearizable
-#check Instances.BoundedCounter.bcApplicable
-#check Instances.BoundedCounter.bc_safetyStep
-#check Instances.BoundedCounter.versions_safe
-#check Instances.BoundedCounter.versions_safeV
-#check Instances.BoundedCounter.sequential
-#check Instances.BoundedCounter.verified
 #check Instances.LWWRegister.replayOrder
 #check Instances.LWWRegister.replayLaws
 #check Instances.LWWRegister.ordered_updates_commute

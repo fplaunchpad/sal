@@ -46,12 +46,6 @@
       "spec": "Instances.FlatGrowOnly.spec", "relation": "Eq"
     },
     {
-      "id": "bounded-counter", "certificate": "Instances.BoundedCounter.verified",
-      "implementation": "Instances.BoundedCounter.BC", "issuance": "Instances.BoundedCounter.generation",
-      "replayOrder": "EventOrder.unconstrained Instances.BoundedCounter.BC.toUpdateSig",
-      "spec": "Instances.BoundedCounter.clientSpec", "relation": "Instances.BoundedCounter.sequential.Rel"
-    },
-    {
       "id": "lww-register", "certificate": "Instances.LWWRegister.verified",
       "implementation": "Instances.LWWRegister.D", "issuance": "Instances.LWWRegister.issuance",
       "replayOrder": "Instances.LWWRegister.replayOrder", "spec": "Instances.LWWRegister.spec", "relation": "Instances.LWWRegister.stateRel"

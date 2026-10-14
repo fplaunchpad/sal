@@ -2,7 +2,6 @@ import Sal.MRDTs.Instances.AddStore
 import Sal.MRDTs.Instances.FinsetStore
 import Sal.MRDTs.Instances.FlatCounters
 import Sal.MRDTs.Instances.FlatGrowOnly
-import Sal.MRDTs.Instances.BoundedCounter
 import Sal.MRDTs.Instances.LWWRegister
 import Sal.MRDTs.Instances.RGASequential
 import Sal.MRDTs.Instances.ProductionRGA
@@ -39,7 +38,6 @@ noncomputable def registry : List PackagedMRDT :=
       Instances.FlatGrowOnly.gosetVerified
   , PackagedMRDT.of "flat-grow-only-map"
       Instances.FlatGrowOnly.gomapVerified
-  , PackagedMRDT.of "bounded-counter" Instances.BoundedCounter.verified
   , PackagedMRDT.of "lww-register" Instances.LWWRegister.verified
   , PackagedMRDT.of "rga" Instances.RGA.verified
   , PackagedMRDT.of "embed-rga"
@@ -63,7 +61,7 @@ noncomputable def registry : List PackagedMRDT :=
 
 noncomputable def names : List String := registry.map PackagedMRDT.name
 
-example : registry.length = 21 := by rfl
+example : registry.length = 20 := by rfl
 
 #check registry
 #check Instances.LWWRegister.verified

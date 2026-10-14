@@ -233,7 +233,6 @@ elab "assert_commuting_vc_dependencies " n:ident : command => do
     "Sal.MRDTs.Instances.RGA.versionWellFormed_of_execution",
     "Sal.MRDTs.Instances.RGA.canonical_respects_replayOrder",
     "Sal.MRDTs.Paper1.RGA.Identified.canonical_respects_specVisibility",
-    "Sal.MRDTs.Instances.BoundedCounter.sequentialCorrectness",
     "Sal.MRDTs.Instances.TreeMove.join",
     "Sal.MRDTs.Instances.TreeMove.sequentialCorrectness",
     "Sal.MRDTs.Instances.AegisSheet.join",
@@ -244,7 +243,7 @@ elab "assert_commuting_vc_dependencies " n:ident : command => do
     pending := pending.tail!
     unless seen.contains current do
       seen := seen.insert current
-      if forbidden.contains current || current.toString.endsWith ".BoundedCounter.bcJoin" then
+      if forbidden.contains current then
         throwError "{n} uses earlier concrete proof route {current}"
       if let some info := env.find? current then
         pending := info.getUsedConstantsAsSet.toList ++ pending
@@ -413,10 +412,6 @@ assert_paper_axioms SimpleEventPorts.boolean_control
 assert_paper_axioms SimpleEventPorts.immutable_map_control
 assert_paper_axioms SimpleEventPorts.increment_control
 assert_paper_axioms SimpleEventPorts.pn_control
-assert_paper_axioms BoundedCounterEvent.certifiedV
-assert_paper_axioms BoundedCounterEvent.account_control
-assert_paper_axioms BoundedCounterEvent.initial_decrement_rejected
-assert_paper_axioms BoundedCounterEvent.commutationCompatibility_fails
 assert_paper_axioms TreeMoveEvent.certifiedV
 assert_paper_axioms TreeMoveEvent.origin_control
 assert_paper_axioms AegisSheetEvent.certifiedV
@@ -476,10 +471,6 @@ assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.booleanMapExecutions
 assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.booleanMapExecutions
 assert_paper_axioms ConcreteMRDT.Guarded.SimplePorts.booleanMapExecutionsV
 assert_commuting_vc_dependencies ConcreteMRDT.Guarded.SimplePorts.booleanMapExecutionsV
-assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.boundedExecutions
-assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.boundedExecutions
-assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.boundedExecutionsV
-assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.boundedExecutionsV
 assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.treeExecutions
 assert_commuting_vc_dependencies ConcreteMRDT.Guarded.ScopedPorts.treeExecutions
 assert_paper_axioms ConcreteMRDT.Guarded.ScopedPorts.treeExecutionsV

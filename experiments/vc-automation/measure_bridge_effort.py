@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit complete required sequential bridge closures for the 22 registered cases.
+"""Audit complete required sequential bridge closures for the 21 registered cases.
 
 Nonblank noncomment source ranges are deduplicated, include all declaration kinds
 and preceding attribute annotations. The proof/descriptor subtotal additionally
@@ -22,7 +22,7 @@ CONCRETE_STEMS={'EmbeddedOrderedPrimitives','SidedOrderedPrimitives','TransferAe
  'ConcreteSimplePorts','ConcreteProductPorts','ConcreteBooleanPorts','ConcreteGuardedPorts','IssuedConcretePorts'}
 def category(name,d):
     stem=Path(d['file']).stem
-    if stem in CONCRETE_STEMS or (stem=='TransferGuardedCommuting' and any('.'+ns+'.' in name for ns in ('Tree','Bounded'))):
+    if stem in CONCRETE_STEMS or (stem=='TransferGuardedCommuting' and any('.'+ns+'.' in name for ns in ('Tree',))):
         return 'concrete_proof_annotation'
     return prior(name,d)
 B.category=category

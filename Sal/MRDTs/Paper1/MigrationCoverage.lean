@@ -1,6 +1,5 @@
 import Sal.MRDTs.Metatheory.ProductionLedger
 import Sal.MRDTs.Paper1.SimpleEventPorts
-import Sal.MRDTs.Paper1.BoundedCounterEvent
 import Sal.MRDTs.Paper1.TreeSheetEventSpec
 import Sal.MRDTs.Paper1.RGAEventMigration
 import Sal.MRDTs.Paper1.RGAEmbeddingObstructions
@@ -81,9 +80,7 @@ noncomputable def inventory : List Entry :=
   , compatible "flat-grow-only-map" Instances.FlatGrowOnly.gomapVerified
       ⟨SimpleEventPorts.emptyPolicy (Nat × Nat), SimpleEventPorts.booleanMachine.toSpec,
         SimpleEventPorts.Boolean.laws, SimpleEventPorts.booleanMapCertifiedV⟩
-  , compatible "bounded-counter" Instances.BoundedCounter.verified
-      ⟨BoundedCounterEvent.policy, BoundedCounterEvent.spec,
-        BoundedCounterEvent.laws, BoundedCounterEvent.certifiedV⟩
+
   , ⟨PackagedMRDT.of "lww-register" Instances.LWWRegister.verified, .excludedLWW rfl⟩
   , compatible "rga" Instances.RGA.verified
       ⟨RGA.emptyPolicy, RGA.EventSpec.spec, RGA.restrictedLaws, RGA.EventMigration.certifiedV⟩
@@ -128,7 +125,7 @@ theorem every_production_entry (original : PackagedMRDT)
 noncomputable def count (tag : Tag) : Nat :=
   (inventory.filter (fun e => e.disposition.tag == tag)).length
 
-theorem counts : inventory.length = 21 ∧ count .compatible = 11 ∧
+theorem counts : inventory.length = 20 ∧ count .compatible = 10 ∧
     count .incompatible = 9 ∧ count .excludedLWW = 1 := by
   exact ⟨rfl,rfl,rfl,rfl⟩
 

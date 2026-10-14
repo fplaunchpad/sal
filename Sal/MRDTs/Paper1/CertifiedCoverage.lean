@@ -215,8 +215,7 @@ noncomputable def inventory : List Entry :=
       (GuardedCoverage.provedScoped Guarded.SimplePorts.booleanSetCertificate)
   , guarded "flat-grow-only-map" Instances.FlatGrowOnly.gomapVerified
       (GuardedCoverage.provedScoped Guarded.SimplePorts.booleanMapCertificate)
-  , guarded "bounded-counter" Instances.BoundedCounter.verified
-      (GuardedCoverage.provedScoped Guarded.ScopedPorts.boundedCertificate)
+
   , guarded "lww-register" Instances.LWWRegister.verified
       (GuardedCoverage.provedScoped LWW.GuardedPort.certificate)
   , guarded "rga" Instances.RGA.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.rgaCertificate)
@@ -249,8 +248,8 @@ theorem every_production_entry (original : PackagedMRDT) (member : original ∈ 
 
 noncomputable def tags : List Tag := inventory.map (fun e => e.disposition.tag)
 
-theorem counts : inventory.length = 21 ∧
-    (tags.filter (· == .guarded)).length = 13 ∧
+theorem counts : inventory.length = 20 ∧
+    (tags.filter (· == .guarded)).length = 12 ∧
     (tags.filter (· == .scoped)).length = 3 ∧
     (tags.filter (· == .canonicalOnly)).length = 0 ∧
     (tags.filter (· == .rawOrderObstruction)).length = 4 ∧

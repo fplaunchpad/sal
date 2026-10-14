@@ -64,13 +64,7 @@ def input : Input RGAM (commutingPolicy RGAOp)
   .commuting RGAM_all_comm TransferProduct.NativeRGA.kernels rfl rfl rfl
 register_mrdt_input input
 end NativeRGA
-namespace Bounded
-open Instances.BoundedCounter
-def input : Input BC (commutingPolicy BC.AppOp)
-    (CommutingPort.representation BC) (CommutingPort.scheme BC_all_comm) :=
-  .commuting BC_all_comm TransferGuardedCommuting.Bounded.kernels rfl rfl rfl
-register_mrdt_input input
-end Bounded
+
 namespace Tree
 open Instances.TreeMove
 def input : Input D (commutingPolicy D.AppOp)
@@ -156,9 +150,6 @@ theorem lww : Raw.MergeVCs Sal.MRDTs.Paper1.LWW.GuardedPort.policy
 theorem nativeRGA : Raw.MergeVCs (commutingPolicy Instances.RGA.RGAOp)
     (CommutingPort.representation Instances.RGA.RGAM)
     (CommutingPort.scheme Instances.RGA.RGAM_all_comm) := by mrdt_verify
-theorem bounded : Raw.MergeVCs (commutingPolicy Instances.BoundedCounter.BC.AppOp)
-    (CommutingPort.representation Instances.BoundedCounter.BC)
-    (CommutingPort.scheme Instances.BoundedCounter.BC_all_comm) := by mrdt_verify
 theorem tree : Raw.MergeVCs (commutingPolicy Instances.TreeMove.D.AppOp)
     (CommutingPort.representation Instances.TreeMove.D)
     (CommutingPort.scheme Instances.TreeMove.all_comm) := by mrdt_verify

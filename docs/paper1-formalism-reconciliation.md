@@ -77,8 +77,8 @@ have been removed from the active text.
    **Reference:** Definition 3.4 and Theorem 5.7.
 
 7. **Fill implementation/evaluation with the actual coverage.** Report
-   22 existing named five-VC cases after removing the duplicate GSet alias,
-   with 21 positive history results and Fugue's checked specification
+   21 existing named five-VC cases after removing the duplicate GSet alias,
+   with 20 positive history results and Fugue's checked specification
    obstruction; report the published bounded counter separately from this
    inventory. Report [VC and bridge effort separately](../experiments/vc-automation/README.md).
    The published **Balegas et al., SRDS 2015, §III-B/Figure 1** design now has
@@ -94,17 +94,17 @@ have been removed from the active text.
    per-replica balances; transfers preserve the scalar value, and conservation
    with nonnegative balances gives the lower bound. Distinguish the client
    counter query from the separate local-rights query. The existing
-   `BoundedCounter` and additive transferable-budget candidate remain
-   alternative designs, not implementations of this published algorithm.
+   published matrix/max design is the sole active bounded counter; the earlier
+   independent-account and additive-budget experiments have been removed.
    [Published paper](https://asc.di.fct.unl.pt/~nmp/pubs/srds-2015.pdf) and
    [technical report, §III](https://asc.di.fct.unl.pt/~nmp/pubs/tr-corr-1-2015.pdf)
    are the authority; the Bismuth experimental implementation is not.
    Neem’s corrected enable-wins and disable-wins flags now also have five-VC
    and independent Boolean-history proofs for ordinary and recursive executions.
    Include them in implementation coverage; their queries are explicit additions
-   to the F* source API. See Example 6.9 for both equations and policies.
+   to the F* source API. See Example 6.8 for both equations and policies.
 
-   **Reference:** Example 6.8, “Published bounded counter”; Example 6.7 documents the additive alternative.
+   **Reference:** Example 6.7, “Published bounded counter”.
 
 Small mathematical fixes: `proof_strategy.tex:49` should say that every
 *other* downset member precedes the event in a respecting linear extension,
@@ -121,8 +121,7 @@ Keep concrete implementation equality and the specification refinement function
   and certified results. Its manuscript correspondence appendix still targets
   `0450d48`; the updated lifting premise and VC numbering above supersede that map.
 - [Interactive datatype reference](https://sal-datatype-reference.fizzyearth10.chatgpt.site/):
-  implementation/specification equations and issuance guards. Its transferable
-  candidate entry describes the additive alternative; the published bounded
-  counter now has a separate matrix/max implementation and checked bridge.
+  implementation/specification equations and issuance guards. Its sole bounded
+  counter entry is the published matrix/max design with its checked bridge.
 - [Earlier manuscript patch](paper1-manuscript-reconciliation.patch): targets
   `0450d48`; do not apply it wholesale to the current manuscript.

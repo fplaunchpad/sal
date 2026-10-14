@@ -2,10 +2,9 @@ import Sal.MRDTs.Paper1.GuardedProjectionHistory
 import Sal.MRDTs.Paper1.Automation.CommutingInputs
 import Sal.MRDTs.Paper1.Automation.CommutingAssembly
 import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
-import Sal.MRDTs.Paper1.BoundedCounterEvent
 import Sal.MRDTs.Paper1.TreeSheetEventSpec
 
-/-! Concrete VC ports for the three guarded commuting production datatypes.
+/-! Concrete VC ports for the two guarded commuting production datatypes.
 Their languages and issuers are unchanged. Canonical version evidence comes
 from the VC induction; origin legality is reconstructed from that evidence and
 honest issuance. No production Join theorem is used by these ports. -/
@@ -19,56 +18,7 @@ private theorem virtual_reach {D : MRDTSig} {I : Issuance D} {C : Configuration 
   | ordinary reach => exact reach.toV
   | virtual reach => exact reach
 
-namespace Bounded
-open Instances.BoundedCounter
 
-private theorem issuanceHonest {C : Configuration BC}
-    (mint : MintHonest BC bcApplicable C) : HonestAppOn BC bcApplicable C := by
-  intro e he
-  obtain ⟨ops,perm,visible,guard⟩ := mint e he
-  exact ⟨applySeq BC.toUpdateSig BC.init ops,⟨ops,perm,visible,rfl⟩,guard⟩
-
-theorem history : EventExecutionHistoryAdequacy BC (commutingPolicy BC.AppOp)
-    BoundedCounterEvent.spec generation := by
-  intro C exec v s E hv q
-  have good := CommutingPort.automatedCanonicalConfig BC_all_comm (by mrdt_verify) (virtual_reach exec)
-  have causal := causalCanonical_of_all_comm_replayOrder_either BC_all_comm
-    (fun _ _ => rfl) good
-  obtain ⟨ops,hperm,hvis,_,_⟩ := causal v s E hv
-  have legal : SequentialHonest ops :=
-    prefix_inv_of_causal_witness bc_inv_init bc_safetyStep good
-      (issuanceHonest exec.mintHonest) hv hperm hvis
-  refine ⟨ops,hperm,?_,hvis.imp (fun {_ _} h edge => h edge.1),?_⟩
-  · apply List.pairwise_of_forall
-    intro a b
-    exact paperOrder_false_of_all_commute BC_all_comm C.replayContext E b a
-  · have accepted := BoundedCounterEvent.accepted_of_prefix_safety ops legal q
-    have answer : BoundedCounterEvent.run ops q =
-        BC.query (applySeq BC.toUpdateSig BC.init ops) q := by
-      rw [BoundedCounterEvent.run_refines]
-      rfl
-    simpa only [projectedLabels, List.map_id_fun, answer] using accepted
-
-noncomputable def conditions : ScopedVCConditions (commutingPolicy BC.AppOp)
-    BoundedCounterEvent.spec generation :=
-  CommutingPort.automatedScopedConditions BC_all_comm (by mrdt_verify) generation history
-
-theorem versionsV {C : Configuration BC}
-    (reach : MintCertifiedReachV BC (canonicalVirtualMergeBase BC) generation C) :
-    VersionsWitness (commutingPolicy BC.AppOp) BoundedCounterEvent.spec C :=
-  conditions.versionsV reach
-
-theorem executions (trace : List (Label BC × Configuration BC))
-    (exec : (certifiedTS BC generation).Execution (initConfig BC) trace) :
-    ExecutionCorrect (commutingPolicy BC.AppOp) BoundedCounterEvent.spec trace :=
-  conditions.executions trace exec
-
-theorem executionsV (trace : List (Label BC × Configuration BC))
-    (exec : (certifiedTSV BC generation).Execution (initConfig BC) trace) :
-    ExecutionCorrect (commutingPolicy BC.AppOp) BoundedCounterEvent.spec trace :=
-  conditions.executionsV trace exec
-
-end Bounded
 
 namespace Tree
 open Instances.TreeMove
@@ -195,10 +145,8 @@ theorem executionsV (trace : List (Label D × Configuration D))
 
 end Sheet
 
-#print axioms Bounded.conditions
 #print axioms Tree.conditions
 #print axioms Sheet.conditions
-#print axioms Bounded.executionsV
 #print axioms Tree.executionsV
 #print axioms Sheet.executionsV
 end Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts

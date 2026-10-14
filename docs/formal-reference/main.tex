@@ -2121,7 +2121,7 @@ An identifier may occur in both rules without making either rule redundant.
 Each profile below records the information needed to interpret the package:
 the representation, issuance predicate, sole $ord$ relation, merge scope,
 public sequential state and legality predicate, representation relation, and
-proof route. The typed production registry contains 22 \lean{PackagedMRDT}
+proof route. The typed production registry contains 20 \lean{PackagedMRDT}
 values; the profiles name the released entries belonging to each family.
 Queue, MVR, and the enriched FugueMax implementation are included. Helper
 lemmas remain in the cited instance modules.
@@ -2140,7 +2140,7 @@ chain assignments and induction invariants are not additional client state.
 \anchor{Sal/MRDTs/Metatheory/ProductionLedger.lean}
   {Production.registry, Production.names}
 
-The typed \lean{Production.StateGC.registry} follows the same 22-entry
+The typed \lean{Production.StateGC.registry} follows the same 20-entry
 order as the released-instance registry.  Its four constructors distinguish
 an exact-state baseline, a representation-changing local certificate, an
 operational protocol, and a staged collector.  Thus registry coverage means
@@ -2420,63 +2420,81 @@ storage and history-collection obligations.
 
 \paragraph{Bounded counter.}
 
-\emph{Datatype $D$.} The operations are $\mathsf{inc}$ and $\mathsf{dec}$, with no additional
-payload. An event $(t,r,o)$ changes the counts of its issuing replica $r$.
-The state is $s=(s_1,s_2)$, where $s_1(r)$ counts increments and $s_2(r)$
-counts decrements at replica $r$, so $\State=(\N\to\mathbb Z)^2$.
-Both concrete count functions start at zero. Writing $f[r\mapsto z]$ for
-functional replacement at $r$,
+Balegas et al., SRDS 2015, Section III-B, Figure 1, define a lower-bounded
+counter for a fixed set $I=\{0,\ldots,n-1\}$ of replicas and bound $K\in\mathbb Z$.
+The state is $(R,U)\in\mathbb N^{I\times I}\times\mathbb N^I$, initially zero.
+The diagonal $R_{ii}$ counts increments; $R_{ij}$ for $i\ne j$ counts rights
+transferred from $i$ to $j$; $U_i$ counts decrements. Define
 \[
-\begin{aligned}
- \doop((s_1,s_2),(t,r,\mathsf{inc}))&=(s_1[r\mapsto s_1(r)+1],s_2),\\
- \doop((s_1,s_2),(t,r,\mathsf{dec}))&=(s_1,s_2[r\mapsto s_2(r)+1]),\\
- \merge(l,a,b)&=(a_1+b_1-l_1,a_2+b_2-l_2),\\
- \mathsf{query}((s_1,s_2),r)&=s_1(r)-s_2(r).
-\end{aligned}
+ V(R,U)=K+\sum_{i\in I}R_{ii}-\sum_{i\in I}U_i,\qquad
+ B_i(R,U)=R_{ii}+\sum_{j\in I\setminus\{i\}}R_{ji}
+                 -\sum_{j\in I\setminus\{i\}}R_{ij}-U_i.
 \]
-Arithmetic on functions is pointwise. Thus $Q=\Replica$, not a singleton read.
-
-\emph{Replay-order relation $ord$.} $\forall a,b.\;\neg(a\ord b)$.
-
-\emph{Issuance.}
+Queries return $V$ and $B_i$, respectively. For an event issued by $i\in I$
+with amount $a\in\mathbb N$, the accepted updates are
 \[
- \mathsf{bcApplicable}(e,s)\Longleftrightarrow
- \begin{cases}
-  \mathsf{True},&e.\mathsf{op}=\mathsf{inc},\\
-  s_2(e.\mathsf{rep})+1\le s_1(e.\mathsf{rep}),&e.\mathsf{op}=\mathsf{dec}.
- \end{cases}
+\begin{array}{lll}
+ \doop((R,U),\mathsf{inc}(a),i)&=(R[(i,i)\mapsto R_{ii}+a],U),&\\
+ \doop((R,U),\mathsf{dec}(a),i)&=(R,U[i\mapsto U_i+a]),&a\le B_i(R,U),\\
+ \doop((R,U),\mathsf{transfer}(a,j),i)&=(R[(i,j)\mapsto R_{ij}+a],U),&
+ j\in I\setminus\{i\},\ a\le B_i(R,U).
+\end{array}
 \]
-
-\emph{Sequential specification.}
+Only issuer $i$ writes row $i$ and component $U_i$. Its updates are serialized.
+The conditions on the right are original-issuance conditions; the effect of an
+accepted operation is the displayed arithmetic update. Nonnegative amounts
+make the source's monotonicity assumption explicit; the distinct recipient
+follows its instruction to transfer to another replica. Merge is
 \[
- \mathsf{ClientLegal}(\pi)\Longleftrightarrow
- \forall\pi_0,\pi_1,r.\;\pi=\pi_0{+\!+}\pi_1\Longrightarrow
- \#\mathsf{dec}_r(\pi_0)\le\#\mathsf{inc}_r(\pi_0).
+ \mathsf{merge}(l,(R,U),(R',U'))=
+ \bigl((\max(R_{ij},R'_{ij}))_{i,j},(\max(U_i,U'_i))_i\bigr).
 \]
-The sequential state is $\Sigma_{\rm seq}=\N\to\mathbb Z$ with $q_0(r)=0$.
-Writing $q[r\mapsto z]$ for replacement of the coordinate at $r$,
-\[
-\begin{aligned}
- \mathsf{step}(q,(t,r,\mathsf{inc}))&=q[r\mapsto q(r)+1],\\
- \mathsf{step}(q,(t,r,\mathsf{dec}))&=q[r\mapsto q(r)-1],\\
- \mathsf{query}_{\rm seq}(q,r)&=q(r),\\
- \mathsf{Legal}(\pi)&\Longleftrightarrow\mathsf{ClientLegal}(\pi),\\
- \mathsf{Rel}((s_1,s_2),q)&\Longleftrightarrow
- \forall r.\;0\le s_2(r)\le s_1(r)\land q(r)=s_1(r)-s_2(r).
-\end{aligned}
-\]
-The step is total: decrement at zero produces $-1$, but such a prefix is illegal.
-Legality checks every prefix, not an increment-before-decrement normal form.
-Its value at $r$ is increments
-minus decrements at $r$. The relation requires the representation invariant
-$0\le s_2(r)\le s_1(r)$ and equality with those differences. Join is
-all-context by the universal-law route; issuance establishes sequential
-legality and the separate safety certificate.
-\anchor{Sal/MRDTs/Instances/BoundedCounter.lean}
-  {BoundedCounter.bcApplicable, BoundedCounter.ClientLegal,
-   BoundedCounter.clientSpec, BoundedCounter.verified}
+Thus the ancestor is unused. Different donors write different cells even when
+they transfer to the same recipient.
 
-\emph{Datatype-state collection.} The exact-state baseline preserves both per-replica count functions. No representation-changing collector or replica-retirement protocol is provided.
+An independent sequential machine has a scalar $v\in\mathbb Z$ and balances
+$b:I\to\mathbb Z$, initially $(K,0)$. Its transitions are
+\[
+\begin{array}{lll}
+ (v,b)\xrightarrow{\mathsf{inc}(a),i}(v+a,b[i\mapsto b_i+a]),&i\in I,&\\
+ (v,b)\xrightarrow{\mathsf{dec}(a),i}(v-a,b[i\mapsto b_i-a]),&i\in I,&a\le b_i,\\
+ (v,b)\xrightarrow{\mathsf{transfer}(a,j),i}
+ (v,b[i\mapsto b_i-a,j\mapsto b_j+a]),&i,j\in I,\ i\ne j,&a\le b_i.
+\end{array}
+\]
+The client value query returns $v$; the rights-accounting query returns $b_i$.
+The projection is $(R,U)\mapsto(V(R,U),B(R,U))$.
+Legal sequential runs preserve $v=K+\sum_i b_i$ and $b_i\ge0$, hence $v\ge K$.
+
+The five merge equations are checked with visibility as metadata dependence.
+For the causal-delta equation, same-replica visibility ensures that the issuing
+row in the remainder equals its row in the causal past; other rows dominate
+the past componentwise. The other four equations follow from maximum algebra.
+The checked sequential-history bridge transports original issuance funds to a
+causal replay prefix: that prefix contains every prior debit from the issuer,
+and additional events can only contribute incoming credits. Every certified
+stored version therefore has a legal explaining history and satisfies the
+local lower bound. The same argument applies to the finite union $E$ of all
+issued events, whether or not any stored version contains this union:
+\[
+ K+\sum_{e\in E}\Delta(e)\ge K,\qquad
+ \Delta(\mathsf{inc}(a))=a,\quad \Delta(\mathsf{dec}(a))=-a,\quad
+ \Delta(\mathsf{transfer}(a,j))=0.
+\]
+Finiteness of $E$ is derived from execution. Both ordinary executions and
+executions with recursively reconstructed merge bases are covered. The public
+history, local-safety and global-bound theorem dependencies are audited to
+include all five VCs and the generic merge induction.
+\anchor{Sal/MRDTs/Instances/BalegasBoundedCounter.lean}
+  {BalegasBoundedCounter.localRights, BalegasBoundedCounter.value,
+   BalegasBoundedCounter.applicable}
+\anchor{Sal/MRDTs/Paper1/BalegasBoundedCounterCertificate.lean}
+  {certifiedV, versions\_safeV (BalegasBoundedCounterEvent)}
+\anchor{Sal/MRDTs/Paper1/BalegasBoundedCounterGlobal.lean}
+  {global\_boundV (BalegasBoundedCounterEvent)}
+
+\emph{Datatype-state collection.} No collector or replica-retirement
+protocol is supplied for this published counter.
 
 \paragraph{Efficient observed-remove set.}
 \emph{Datatype $D$.} The operations are $\mathsf{add}(x)$ and

@@ -875,9 +875,9 @@ typed \lean{Production.registry} contains these complete packages.
 The public capstones \lean{VerifiedMRDT.correct} and
 \lean{VerifiedMRDT.correctV} prove (Spec-Lin) for ordinary and virtual-merge-base
 executions. A datatype may also supply a \lean{SafetyCertificate} for a client
-invariant not implied by sequential correctness. The bounded counter, for
-example, proves that observable values remain non-negative by carrying a
-global history invariant.
+invariant not implied by sequential correctness. The published Balegas bounded
+counter has a concrete five-VC certificate, independent scalar/rights histories,
+and a separate global theorem preserving its declared lower bound.
 
 \section{Canonical virtual merge bases}
 \label{sec:virtual-base}

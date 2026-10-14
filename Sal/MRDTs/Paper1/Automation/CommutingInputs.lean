@@ -22,13 +22,7 @@ def input : Input RGAM (commutingPolicy RGAM.AppOp)
   .commuting RGAM_all_comm TransferProduct.NativeRGA.kernels rfl rfl rfl
 register_mrdt_input input
 end NativeRGA
-namespace Bounded
-open Instances.BoundedCounter
-def input : Input BC (commutingPolicy BC.AppOp)
-    (CommutingPort.representation BC) (CommutingPort.scheme BC_all_comm) :=
-  .commuting BC_all_comm TransferGuardedCommuting.Bounded.kernels rfl rfl rfl
-register_mrdt_input input
-end Bounded
+
 namespace Tree
 open Instances.TreeMove
 def input : Input D (commutingPolicy D.AppOp)

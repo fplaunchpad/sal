@@ -1,4 +1,5 @@
 import Sal.MRDTs.Paper1.SplitPolicy
+import Sal.MRDTs.Instances.BalegasBoundedCounter
 import Sal.MRDTs.Paper1.Automation.CommutingInputs
 import Sal.MRDTs.Paper1.Automation.SimpleInputs
 import Sal.MRDTs.Paper1.ORSet
@@ -6,7 +7,7 @@ import Sal.MRDTs.Paper1.NeemScope
 import Sal.MRDTs.Paper1.CertifiedMVRReplay
 
 /-! Raw same-payload audit. Quantification includes arbitrary concrete states.
-Named commuting families account for thirteen cases in the automation roster.
+Named commuting families account for twelve cases in the automation roster.
 The compact live MVR is distinguished from the historical tombstone MVR. -/
 namespace Sal.MRDTs.Paper1.SelfCommutationInstances
 open Foundation
@@ -35,8 +36,9 @@ theorem lww : Unrestricted Instances.LWWRegister.D.toUpdateSig :=
   unrestricted_of_all Instances.LWWRegister.all_comm
 theorem rga : Unrestricted Instances.RGA.RGAM.toUpdateSig :=
   unrestricted_of_all Instances.RGA.RGAM_all_comm
-theorem bounded : Unrestricted Instances.BoundedCounter.BC.toUpdateSig :=
-  unrestricted_of_all Instances.BoundedCounter.BC_all_comm
+theorem balegasBounded (n : Nat) (K : Int) :
+    Unrestricted (Instances.BalegasBoundedCounter.D n K).toUpdateSig :=
+  unrestricted_of_all (Instances.BalegasBoundedCounter.all_comm n K)
 theorem tree : Unrestricted Instances.TreeMove.D.toUpdateSig :=
   unrestricted_of_all Instances.TreeMove.all_comm
 theorem aegis : Unrestricted Instances.AegisSheet.D.toUpdateSig :=
@@ -118,7 +120,7 @@ theorem mvr_empty_overwrite_not_projection :
 #print axioms boolean
 #print axioms lww
 #print axioms rga
-#print axioms bounded
+#print axioms balegasBounded
 #print axioms tree
 #print axioms aegis
 #print axioms ordinary_or_set

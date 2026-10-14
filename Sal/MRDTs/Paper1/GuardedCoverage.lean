@@ -97,8 +97,7 @@ noncomputable def inventory : List Entry :=
       (provedScoped Guarded.SimplePorts.booleanSetCertificate)
   , proved "flat-grow-only-map" Instances.FlatGrowOnly.gomapVerified
       (provedScoped Guarded.SimplePorts.booleanMapCertificate)
-  , proved "bounded-counter" Instances.BoundedCounter.verified
-      (provedScoped Guarded.ScopedPorts.boundedCertificate)
+
   , proved "lww-register" Instances.LWWRegister.verified
       (provedScoped LWW.GuardedPort.certificate)
   , proved "rga" Instances.RGA.verified (provedScoped Guarded.ScopedPorts.rgaCertificate)
@@ -134,10 +133,10 @@ theorem every_production_entry (original : PackagedMRDT)
 
 noncomputable def tags : List Tag := inventory.map (fun e => e.disposition.tag)
 
-theorem inventory_length : inventory.length = 21 := rfl
+theorem inventory_length : inventory.length = 20 := rfl
 
 theorem counts :
-    (tags.filter (· == .proved)).length = 13 ∧
+    (tags.filter (· == .proved)).length = 12 ∧
     (tags.filter (· == .blocked)).length = 8 := by decide
 
 /-- Additional exact-paper OR-set; the production registry remains unchanged. -/

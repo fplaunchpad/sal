@@ -29,3 +29,7 @@ with the same eligible-event and state domains. `SplitPolicy.lean` supplies the 
 equivalence to the combined contracts. `SplitSoundness.lean` exposes soundness
 through these interfaces; the source appendix checks the production declarations. The remaining manuscript mapping
 retains the October 8 baseline.
+
+The sole bounded-counter example is the published Balegas matrix/max design
+(Example 6.7); the Neem flags follow as Example 6.8. The current source appendix
+resolves 113 declarations across 30 reference anchors.

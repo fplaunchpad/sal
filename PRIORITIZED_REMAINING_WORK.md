@@ -4,6 +4,10 @@ This is the canonical development task list for Sal. This repository owns
 Lean, JavaScript, executable validation, benchmark artifacts, and the two
 anonymous long-form working papers under `docs/`.
 
+Completed campaign records below retain historical counts and measurements;
+they do not restore removed datatypes or describe the current inventory. The
+sole active bounded counter is the published Balegas matrix/max design.
+
 ## Paper1: specialize the framework to the submission formalism
 
 Manuscript comparison refreshed against fetched Overleaf `179d763`
@@ -30,16 +34,16 @@ of 125 changed Lean files found only identifier/comment changes.
 
 ### Checked submission campaign
 
-- [x] Integrate the proved split-law interfaces and check all 23 certificates.
-- [x] Trace and mechanize a labelled transferable-counter candidate, including
-  its independent sequential specification and five-VC/bridge proof attempts.
+- [x] Integrate the proved split-law interfaces and check the retained certificates.
+- [x] Port the published Balegas bounded counter; remove alternative bounded
+  counters from the active tree and submission coverage.
 - [x] Reconcile submission coverage claims across README, formal reference and Site.
 - [x] Run final gates, commit and push completed work without unrelated GC edits.
 
-The production automation audit passes all 23 named cases and 95 existing
-roots, including 344 source hashes, source-preservation and negative controls.
-The refreshed author-cost measurement remains 650 concrete lines and 4,003
-shared-library lines; the additional counter is outside that corpus.
+The current retained automation inventory has 21 cases, 85 proof/audit roots,
+and 61 public endpoints. The published bounded counter is checked separately
+and is not measured in the archived author-cost corpus. Historical campaign
+measurements below describe their original checkpoint.
 Final repository gate passed on 13 October: 3,648 Lean build jobs, 187 runtime
 tests and 569 benchmark records. The formal reference checks 111 declarations;
 its 25-page PDF was rebuilt and visually inspected. Site validation renders
@@ -69,7 +73,7 @@ Both certificates now check for ordinary and recursive executions. The shared
 five-VC proof preserves Neem’s integer counter and ancestor-subtracting merge.
 The independent audit checks 321 declarations and both public theorem roots.
 Nine Lean PASS+FAIL examples and 55,987 exhaustive trace prefixes per polarity
-pass; the old scalar-flag mutant fails as expected. Formal reference Example 6.9
+pass; the old scalar-flag mutant fails as expected. Formal reference Example 6.8
 documents the explicit query interpretation (absent from the F* application).
 These cases remain outside the measured automation inventory.
 
@@ -82,9 +86,9 @@ representation variants must not be reported as independent datatype results.
 
 ### Checked and published: Balegas bounded counter
 
-The current `BoundedCounter` provides independent nonnegative replica accounts.
-The additional proved transferable-budget candidate uses aggregate accounting
-and additive three-way merge. Neither is a port of the published bounded counter.
+KC requested the published Balegas design as the sole active bounded counter.
+The earlier independent-account and additive-budget experiments are removed;
+historical measurements retain only their original campaign context.
 
 KC selected the published paper as the design source: Balegas et al.,
 [Extending Eventually Consistent Cloud Databases for Enforcing Numeric Invariants](https://asc.di.fct.unl.pt/~nmp/pubs/srds-2015.pdf),
@@ -120,34 +124,10 @@ This counterfactual is outside the supported execution model and records why
 serialization is necessary. The published example's printed cells yield 30,
 matching the technical report; SRDS's figure label of 20 is inconsistent.
 
-The source audit identified Bismuth commit `dd4c614adf03e57911630a4b73936a818a3d0860`,
-`Modules/RDTs/src/main/scala/rdts/experiments/BoundedCounter.scala`. Its
-pointwise-max reservation maps allow different donors to update the same
-recipient component. A checked candidate-model fork starts with ten rights,
-distributes five to a second donor, and transfers three from each donor to a
-third replica: max join credits three instead of six. Negative transfers also
-debit the recipient without checking its rights. These observations concern
-the source-specific model, not every transferable counter or the paper.
-
-Research question: can additive three-way transfer accounting retain all five
-merge VCs and prove the independent rights-conserving account specification
-under the original issuance evidence? The corrected candidate uses nonnegative
-amounts and prepares rebalance into an explicit transfer. Its source correspondence
-is intentionally partial; the published matrix-based target is now identified and differs from this candidate.
-The candidate now has checked five-VC, independent issued-history and global
-budget certificates for ordinary and recursive-virtual executions. Every stored
-version has nonnegative balances and allocations, total allocation at most the
-initial capacity, and exact conservation of balance plus consumed budget on a
-finite support containing all allocations. Its dependency audit checks the five
-VCs and merge induction and standard logical axioms across 552 declarations.
-Positive/negative controls cover shared-recipient transfers, overspending,
-negative requests, membership union and prepared rebalance. This completes the
-labelled candidate experiment; the published-design port now has its own checked proof package.
-
 Publication and verification: commit `f67aea8` is pushed to `paper1`.
 The full gate passed (3,657 Lean jobs, 187 runtime tests, 569 benchmark records).
 The formal reference has 116 resolved declaration anchors and a visually checked
-26-page PDF; Example 6.8 states the published counter. Public Site version 7,
+formal-reference PDF; Example 6.7 states the published counter. Public Site version 7,
 source `af23b69bfcdf4aa468f9bb1dd11a4b54fb10bf7d`, is deployed with the
 matrix/max counter and grouped grow-only-set representation variants. Its 990
 LaTeX expressions pass rendering checks. Unrelated GC files were excluded.
@@ -155,8 +135,8 @@ LaTeX expressions pass rendering checks. Unrelated GC files were excluded.
 - [x] Select the published bounded-counter paper as the design source with KC.
 - [x] Port the published matrix-based counter and its full API, then prove the
   five VCs, independent sequential-history bridge and bound preservation. Do
-  not substitute the already proved additive-budget candidate for this task.
-- [x] Label the current Site entry as independent nonnegative replica accounts.
+  retain this as the sole active bounded-counter implementation.
+- [x] Keep only the published matrix/max bounded counter on the Site.
 - [x] Correct the Site typography: readable body, source text and declaration
   names without progressively shrinking sizes.
 
@@ -1699,7 +1679,7 @@ Migration inventory (targeted instance proofs and typed coverage are checked):
 | grow-only-set, add-store, finite-add-store | Compatible | `SimpleEventPorts.Add/Finite` independent list-based set observation |
 | counter, increment-only-counter, pn-counter | Compatible | `SimpleEventPorts.Delta` independent sum observation |
 | flat-grow-only-set, flat-grow-only-map | Compatible | `SimpleEventPorts.Boolean` membership; map retains immutable bindings |
-| bounded-counter | Compatible, issued chosen-history route | `BoundedCounterEvent` guarded independent per-replica balances |
+| bounded-counter (historical experiment, removed) | Issued chosen-history experiment | Superseded by the published Balegas scalar/rights certificate |
 | rga | Compatible, execution-scoped route | `RGA.EventMigration.history`, exact supplied insertion IDs |
 | tree-move, aegis-sheet | Compatible, causal-origin history route | `TreeSheetEventSpec`, public legality preserved |
 | efficient-or-set | Incompatible with exact operation-level replay restriction; direct full-input history result also proved | `EfficientORSet.EventSpec.noncommutation_does_not_factor`, `restrictedLaws_impossible`, `certifiedVersionsRAV` |
@@ -1714,9 +1694,9 @@ operation-level exactness. Embedded RGA variants have same-application-label
 event pairs that do not commute, forcing a forbidden self conflict under
 exactness/no-chain. These raw-state policy obstructions do not assert an
 honestly issuable bad execution or invalidate the broader production proofs.
-BoundedCounter demonstrates why global commutation compatibility remains an
-optional sufficient route: its guarded abstract language fails that VC while
-issued causal witnesses establish the stronger criterion.
+The historical independent-account counter experiment, now removed, showed
+why global commutation compatibility is an optional sufficient route. Current
+bounded-counter coverage uses only the published Balegas certificate.
 
 ## Retired experiment: query-relative implementation replay (2026-10-07)
 
@@ -1900,7 +1880,7 @@ make observable replay sound without an unrestricted quotient merge.
   | pn-counter | Proved | `SimplePorts.pnConditions`; independent sum language |
   | flat-grow-only-set | Proved | `SimplePorts.booleanSetConditions`; independent membership language |
   | flat-grow-only-map | Proved | `SimplePorts.booleanMapConditions`; immutable binding membership |
-  | bounded-counter | Proved | `GuardedPorts.Bounded.conditions`; issued causal history and prefix balance safety |
+  | bounded-counter (historical experiment, removed) | Superseded | Current coverage is the published Balegas five-VC/scalar-rights certificate |
   | rga | Proved | `RGA.AbstractPort.conditions`; strict identified list/registry, execution-scoped history |
   | tree-move | Proved | `GuardedPorts.Tree.conditions`; causal-origin legality |
   | aegis-sheet | Proved | `GuardedPorts.Sheet.conditions`; causal-origin legality |
@@ -2390,10 +2370,9 @@ paired controls, and proof-route dependency audits.
     witness. `Queue.verified` now proves a legal head-only abstract replay
     allowing repeated absent targets; issuance excludes causally ordered
     duplicate targets. No exactly-once suppression protocol is required;
-  - [x] migrate the total counters/stores, TreeMove, and BoundedCounter to
-    `VerifiedMRDT`. BoundedCounter uses a canonical increments-before-decrements
-    witness and a client legality predicate that records the per-replica
-    resource bound;
+  - [x] migrate the total counters/stores and TreeMove to `VerifiedMRDT`.
+    The historical independent-account counter experiment from this checkpoint
+    has since been removed; the sole current bounded counter is published Balegas;
   - [x] classify the current MVR against its ordinary single-value register
     specification: two concurrent writes expose both values, so no state of
     that sequential machine can refine the merge. Keep the raw package named

@@ -268,56 +268,6 @@ claim must reconcile those two interfaces explicitly.
 % CertifiedFugueInvariantObstruction.lean: certified_failure;
 % implementation_spec_separation; valid_execution_counterexample.
 
-\begin{example}[Transferable-budget candidate]\label{ex:transferable-counter}
-This additional design differs from the published matrix-based bounded counter
-of Balegas et al. The earlier \code{BoundedCounter} instance provides independent
-nonnegative replica accounts. Here a fixed initial capacity $B\in\mathbb N$
-is assigned to owner $r_0$ and can be transferred between accounts.
-
-The concrete state is $(C,D,A,M)$: integer-valued credit, debit and allocation
-maps, and a finite participant delta. Initially $C(k)=B[k=r_0]$, $D=A=0$ and
-$M=\varnothing$; the participants are $\{r_0\}\cup M$. Put
-$v(k)=C(k)-D(k)-A(k)$. For an event issued by replica $r$, allocation of
-$n\in\mathbb N$ increments $A(r)$ by $n$, and transfer of $n$ to $j$ increments
-$C(j)$ and $D(r)$ by $n$. Participant updates take union. Rebalance prepares a
-recipient and half-gap amount from the original state and carries them in the
-issued operation; its replay effect is the fixed transfer. Original issuance
-requires sufficient funds, and rebalance also records the original extremum
-conditions. Each numeric map merges by $X_a+X_b-X_l$; participants merge by
-union. The operation policy is empty and raw effectors commute. The five VCs
-feed the same merge induction as the other concrete instances.
-
-The independent state is $(b,u)$, available balances and consumed budget,
-initially $(B[k=r_0],0)$. Allocation changes $(b(r),u(r))$ to
-$(b(r)-n,u(r)+n)$; transfer changes $b$ by $n[k=j]-n[k=r]$.
-Both require $n\le b(r)$ and nonnegative successor balances. Prepared rebalance
-has this transfer semantics; it does not repeat extremum selection in the
-sequential witness. Queries return $b(k)$, $b(k)+u(k)$ and $u(k)$ for available,
-reserved and allocated amounts respectively.
-
-Same-replica causal order fixes all prior debits of an issuing account.
-Additional events in a causal replay prefix can only increase its incoming
-credits. Thus original funding implies funding at that prefix, which supplies
-the sequential transition guard. Every certified stored version, including
-recursive-virtual versions, has an explaining causal history. If $F$ contains
-the owner and all accounts touched by that history, the checked budget result is
-\[
- \forall k.\ b(k)\ge0\ \land\ u(k)\ge0,\qquad
- \sum_{k\in F}(b(k)+u(k))=B,\qquad
- \sum_{k\in F}u(k)\le B,\qquad
- \forall k\notin F.\ u(k)=0.
-\]
-The finite-support condition ensures that the bound covers all allocations.
-
-This is a corrected candidate, not a correctness claim for the Bismuth
-experimental implementation. Its source-specific model has a checked fork in
-which two donors each transfer three to one recipient: pointwise-max merge
-credits only three, whereas both serial orders credit six. That model abstracts
-machine overflow and the initialization sentinel; it does not prove full Scala
-source equivalence. The published matrix-based design below is the submission target.
-\end{example}
-
-
 \begin{example}[Published bounded counter]\label{ex:balegas-counter}
 Balegas et al., SRDS 2015, Section III-B, Figure 1, define a lower-bounded
 counter for a fixed set $I=\{0,\ldots,n-1\}$ of replicas and bound $K\in\mathbb Z$.

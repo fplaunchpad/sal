@@ -1,32 +1,17 @@
 {
   "schemaVersion": 1,
-  "scope": "All 22 production registry entries, the ordinary OR-set paper example, and the distinct anchored-queue paper variant.",
+  "scope": "Current 21 measured automation cases after grow-only-set consolidation and retirement of non-Balegas counters. Historical transfer statuses describe the original transfer experiment; Balegas and the Neem flags are separately checked and unmeasured.",
   "counts": {
-    "registry_entries": 22,
-    "registry_without_state_dependent_issuance": 10,
-    "registry_with_state_dependent_issuance": 12,
+    "production_registry_entries": 20,
+    "measured_automation_cases": 21,
+    "automation_without_state_dependent_issuance": 10,
+    "automation_with_state_dependent_issuance": 11,
     "paper_examples_outside_registry": 2,
-    "current_named_cases": 23
+    "historical_queue_excluded": true
   },
   "entries": [
     {
       "id": "grow-only-set",
-      "implementation": "Instances.GSet.D",
-      "issuance": "Instances.GSet.generation",
-      "registry": "public-contracts.json",
-      "state_dependent_issuance": false,
-      "issuer_evidence": {
-        "path": "Sal/MRDTs/Instances/AddStore.lean",
-        "declaration": "generation",
-        "predicate": "CanIssue := fun _ _ => True"
-      },
-      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Add.conditions",
-      "transfer_theorem": "NeemExpansion.CommonInstances.gset",
-      "status": "checked-transfer",
-      "transfer_status": "independently-checked-common-interface"
-    },
-    {
-      "id": "add-store",
       "implementation": "Instances.AddStore.D Nat",
       "issuance": "Instances.AddStore.generation",
       "registry": "public-contracts.json",
@@ -37,7 +22,7 @@
         "predicate": "CanIssue := fun _ _ => True"
       },
       "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Add.conditions",
-      "transfer_theorem": "NeemExpansion.CommonInstances.addStore",
+      "transfer_theorem": "NeemExpansion.CommonInstances.gset",
       "status": "checked-transfer",
       "transfer_status": "independently-checked-common-interface"
     },
@@ -135,22 +120,6 @@
       "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Boolean.conditions",
       "transfer_theorem": "NeemExpansion.CommonInstances.booleanMap",
       "status": "checked-transfer",
-      "transfer_status": "independently-checked-common-interface"
-    },
-    {
-      "id": "bounded-counter",
-      "implementation": "Instances.BoundedCounter.BC",
-      "issuance": "Instances.BoundedCounter.generation",
-      "registry": "public-contracts.json",
-      "state_dependent_issuance": true,
-      "issuer_evidence": {
-        "path": "Sal/MRDTs/Instances/BoundedCounter.lean",
-        "declaration": "bcApplicable",
-        "state_dependency": "decrement requires the issuing replica balance to cover one decrement"
-      },
-      "selected_existing_vc_route": "CommutingPort.mergeVCs instantiated by GuardedPorts.Bounded.conditions",
-      "status": "checked-transfer",
-      "transfer_theorem": "NeemExpansion.CommonInstances.bounded",
       "transfer_status": "independently-checked-common-interface"
     },
     {
@@ -318,22 +287,6 @@
       "transfer_status": "independently-checked-common-interface"
     },
     {
-      "id": "queue",
-      "implementation": "Instances.Queue.Q",
-      "issuance": "Instances.Queue.generation",
-      "registry": "public-contracts.json",
-      "state_dependent_issuance": true,
-      "issuer_evidence": {
-        "path": "Sal/MRDTs/Instances/QueueCertificates.lean",
-        "declaration": "qApplicable",
-        "state_dependency": "dequeue requires named current head; enqueue requires fresh tag"
-      },
-      "selected_existing_vc_route": null,
-      "status": "excluded-track-a",
-      "scope_note": "Historical registry carrier, retained for provenance. Current Queue means the separate anchored-enqueue implementation; its operation signature/specification differs.",
-      "preferred_name": "historical unanchored Queue"
-    },
-    {
       "id": "mvr",
       "implementation": "Instances.MVRLive.D",
       "issuance": "Instances.MVRLive.issuance",
@@ -397,5 +350,10 @@
       "preferred_name": "Queue (current anchored-enqueue implementation)",
       "automation_route": "reusable certified template; finite obligations and existing representation projections"
     }
+  ],
+  "unmeasured_checked_instances": [
+    "published Balegas bounded counter",
+    "Neem enable-wins flag",
+    "Neem disable-wins flag"
   ]
 }

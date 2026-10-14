@@ -23,12 +23,6 @@ ex:queue	Sal.MRDTs.Instances.RGAKernel.Code	Sal.EmbedRGA.unaryEnc
 thm:sequential-lift	Sal.MRDTs.Paper1.PaperPresentation	Sal.MRDTs.Paper1.PaperPresentation.uniform_versionsRA_of_paperOrder_witness
 eq:commutation-compatibility	Sal.MRDTs.Paper1.CommutationBridge	Sal.MRDTs.Paper1.specificationRA_of_fiveVCs_compatible
 eq:total-fold-sound	Sal.MRDTs.Paper1.SequentialSimulation	Sal.MRDTs.Paper1.SequentialSimulation
-ex:transferable-counter	Sal.MRDTs.Instances.TransferableBoundedCounterCorrected	Sal.MRDTs.Instances.TransferableBoundedCounter.Corrected.fiveVC
-ex:transferable-counter	Sal.MRDTs.Instances.TransferableBoundedCounterCorrected	Sal.MRDTs.Instances.TransferableBoundedCounter.Corrected.prepareRebalance
-ex:transferable-counter	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedEvent	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedEvent.certifiedV
-ex:transferable-counter	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedBudget	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedEvent.versions_budgetV
-ex:transferable-counter	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedBudget	Sal.MRDTs.Paper1.TransferableBoundedCounterCorrectedEvent.versions_allocations_nonnegativeV
-ex:transferable-counter	Sal.MRDTs.Paper1.TransferableBoundedCounterEvent	Sal.MRDTs.Paper1.TransferableBoundedCounterEvent.concurrent_credit_loss
 ex:balegas-counter	Sal.MRDTs.Instances.BalegasBoundedCounter	Sal.MRDTs.Instances.BalegasBoundedCounter.localRights
 ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterVC	Sal.MRDTs.Paper1.BalegasBoundedCounterVC.fiveVC
 ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterCertificate	Sal.MRDTs.Paper1.BalegasBoundedCounterEvent.certifiedV

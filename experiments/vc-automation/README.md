@@ -8,7 +8,7 @@ directory contains the production audit tooling and effort reports.
 
 The migration preserves implementations, issuers, operation policies,
 representations, execution contracts and existing theorem statements. The current
-22 implementation/proof cases consolidate the grow-only set and generic AddStore
+21 implementation/proof cases consolidate the grow-only set and generic AddStore
 into one entry. Counts describe proof configurations, not distinct abstract
 datatypes: FinsetStore and the pointwise Boolean FlatGrowOnly set implement the
 same grow-only set semantics. FinsetStore remains the enumerable carrier needed
@@ -16,20 +16,28 @@ by Peritext. Queue means anchored enqueue;
 the historical unanchored queue is excluded. Core/RichCore retain native
 insert-only issuance. Fugue’s represented-version result uses the common VCs;
 its original issuer and independent sequential specification have a checked
-specification-visibility obstruction. The 22-case automation inventory is distinct
-from the 21-package production registry; the latter retains the historical queue.
+specification-visibility obstruction. The 21-case automation inventory is distinct
+from the 20-package production registry; the latter retains the historical queue.
 
 Kartik's split policy interfaces are integrated and checked for these same
-22 cases, with the original event/state scopes and five-VC dependencies.
-The additional transferable-counter candidate has separate proofs and is not
-included in the measured corpus or its effort columns. Existing `BoundedCounter`
-rows refer to independent nonnegative replica accounts. The submission's
-published Balegas matrix/max counter now has separate checked five-VC,
-sequential-history, local-safety and global-union proofs in
+21 retained cases, with the original event/state scopes and five-VC dependencies.
+The published Balegas matrix/max counter is the sole bounded-counter algorithm
+in production. Its checked five-VC, sequential-history, local-safety and
+global-union proofs live in
 [`BalegasBoundedCounterAudit`](../../Sal/MRDTs/Paper1/BalegasBoundedCounterAudit.lean).
-It is not yet a measured case in the automation effort tables below. Its
+It is not a measured automation case. Its
 [bounded exhaustive control](balegas-controls.py) checks 49,796 trace prefixes
 with zero failures; ten Lean PASS+FAIL controls exercise the actual definitions.
+The earlier independent-account and transferable-counter implementations have
+been retired. Archived effort rows for `BoundedCounter` in the historical JSON files describe
+the retired independent-account implementation, not Balegas.
+
+The JSON/log reports in `results/` and the baseline directories retain fixed
+historical measurements. Their old case inventories and source hashes do not
+assert current source coverage. [Historical measurement provenance](results/historical-measurements.json)
+records this boundary. The active audit script selects 21 retained cases;
+[`transfer-inventory.json`](transfer-inventory.json) records that current selection.
+No historical effort totals have been relabelled as measurements of Balegas.
 
 Neem's corrected enable-wins and disable-wins flags also have separate checked
 five-VC and Boolean-history proofs, audited by
@@ -167,7 +175,7 @@ Per-case totals overlap because instances share helpers, so do not sum the rows.
 
 The recorded effort audit before consolidation covered **23 named cases,
 69 distinct public endpoints and 95 existing production roots**. Its JSON reports
-retain that historical inventory. The current audit scripts check 22 cases; the
+retain that historical inventory. The current audit scripts check 21 cases; the
 grow-only set keeps the original five-VC and sequential-bridge checks.
 
 | Instance | Before automation (lines) | With automation (lines) |
@@ -181,7 +189,6 @@ grow-only set keeps the original five-VC and sequential-bridge checks.
 | Flat grow-only map | 45 | 13 |
 | LWW register | 32 | 14 |
 | Native RGA | 60 | 17 |
-| Bounded Counter | 58 | 28 |
 | TreeMove | 33 | 19 |
 | AegisSheet | 26 | 12 |
 | Ordinary OR-set | 336 | 8 |
@@ -260,10 +267,10 @@ Sequential-bridge automation is measured separately below.
 unfolding the supplied definitions, decomposing extensional equality, exposing
 constructor and conditional branches, and applying membership, Boolean and
 linear-integer reasoning. The same command is used for Add-store, finite
-add-store, flat counters, flat grow-only sets/maps, Bounded Counter, native
-RGA, TreeMove and AegisSheet. These are eight input families; named counter
-and map specializations reuse them. It closes their 40 finite merge-kernel
-fields without calling their previous completed kernel or merge-law proofs.
+add-store, flat counters, flat grow-only sets/maps, native RGA, TreeMove and
+AegisSheet. These are seven retained input families; named counter and map
+specializations reuse them. The historical eight-family/40-field measurement
+also included the retired independent-account counter.
 
 The author still supplies the implementation definitions to unfold, the input
 packaging and any remaining commuting/evidence helpers. This is reusable
@@ -369,7 +376,6 @@ proofs and annotations. They do not measure just the final wrapper.
 | Flat grow-only set / map | 7 | 24 | Pointwise update simulation |
 | LWW register | 744 | 829 | Legal ordering and last-write observation |
 | Native RGA | 1,494 | 1,693 | Ordered replay and reference validity |
-| Nonnegative replica accounts (`BoundedCounter`) | 874 | 970 | Issuance-derived prefix safety |
 | TreeMove | 772 | 882 | Rendering, cycle checks and ordered replay |
 | AegisSheet | 2,744 | 3,354 | Materialization, undo and overwrite semantics |
 | Ordinary OR-set | 17 | 55 | Set projection description |
@@ -459,7 +465,8 @@ remain checked. Trusted model definitions are unchanged; these proof refactors
 do not constitute a new external validation of the source algorithms. The audit
 preserves 484 existing declarations, with two reviewed sound-only certificate
 proof replacements. The recorded production audit covered 23 cases and 95 roots before consolidation; both
-repository gates pass, including 187 runtime tests and 569 benchmark records.
+repository gates passed at that measurement checkpoint, including 187 runtime tests
+and 569 benchmark records. Those counts are historical evidence.
 
 ## Reproduction
 

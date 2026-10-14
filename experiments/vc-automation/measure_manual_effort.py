@@ -114,7 +114,6 @@ def main():
     wrappers['lww-register'].append(P+'LWW.GuardedPort.history')
     for label,fam,comm,merge,delta,peel,port in [
         ('rga','RGA','RGAM_all_comm','RGAM_mergeLaws','RGAM_deltaLaws','RGAM_commutingPeelLaw','RGA.ConcretePort.conditions'),
-        ('bounded-counter','BoundedCounter','BC_all_comm','BC_mergeLaws','BC_deltaLaws','BC_commutingPeelLaw','ConcreteMRDT.GuardedPorts.Bounded.conditions'),
         ('tree-move','TreeMove','all_comm','mergeLaws','deltaLaws','commutingPeelLaw','ConcreteMRDT.GuardedPorts.Tree.conditions'),
         ('aegis-sheet','AegisSheet','all_comm','mergeLaws','deltaLaws','commutingPeelLaw','ConcreteMRDT.GuardedPorts.Sheet.conditions')]:
         n='Instances.'+fam+'.';commuting(label,n+comm,n+merge,n+delta,n+peel,port)

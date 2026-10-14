@@ -57,11 +57,6 @@ namespace Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts
 noncomputable section
 open Sal.MRDTs.Paper1.ConcreteMRDT
 
-abbrev boundedCertificate := GuardedPorts.Bounded.conditions.toCertificate
-abbrev boundedVersions {C : Configuration (Instances.BoundedCounter.BC)} := boundedCertificate.versions (C := C)
-abbrev boundedVersionsV {C : Configuration (Instances.BoundedCounter.BC)} := boundedCertificate.versionsV (C := C)
-abbrev boundedExecutions := boundedCertificate.executions
-abbrev boundedExecutionsV := boundedCertificate.executionsV
 
 abbrev treeCertificate := GuardedPorts.Tree.conditions.toCertificate
 abbrev treeVersions {C : Configuration (Instances.TreeMove.D)} := treeCertificate.versions (C := C)

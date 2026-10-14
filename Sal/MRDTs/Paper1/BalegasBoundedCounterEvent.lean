@@ -1,5 +1,6 @@
 import Sal.MRDTs.Paper1.BalegasBoundedCounterProjection
-import Sal.MRDTs.Paper1.BoundedCounterEvent
+import Sal.MRDTs.Paper1.SimpleEventPorts
+import Sal.MRDTs.Metatheory.Safety
 
 /-! Independent escrow sequential semantics. The scalar counter is the client
 observation; balances represent the separately exposed local-rights query.

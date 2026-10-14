@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "historical-measurements",
+  "scope": "Existing effort/audit/log snapshots in this directory and baseline directories predate retirement of the independent-account bounded counter; retain their original numeric results and source hashes as research evidence.",
+  "active_automation_case_count": 21,
+  "active_inventory": "../transfer-inventory.json",
+  "retired_case_in_old_snapshots": "bounded-counter (independent nonnegative replica accounts; not published Balegas)",
+  "unmeasured_checked_instances": [
+    "published Balegas bounded counter",
+    "Neem enable-wins flag",
+    "Neem disable-wins flag"
+  ],
+  "refresh_requirement": "Run scripts/verify-paper1-automation.py and the relevant measurement scripts against unchanged current sources before claiming refreshed effort or coverage."
+}

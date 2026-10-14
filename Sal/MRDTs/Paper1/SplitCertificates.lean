@@ -12,7 +12,7 @@ import Sal.MRDTs.Paper1.CertifiedRGARichCertificate
 import Sal.MRDTs.Paper1.AnchoredQueueCertificate
 import Sal.MRDTs.Paper1.SelfCommutationInstancesCertified
 
-/-! Exactly the 22 automation cases after consolidating the grow-only set
+/-! Exactly the 21 automation cases after consolidating the grow-only set
 with the generic AddStore implementation. Raw cases use split five-VC/certificate execution constructors;
 scoped cases expose the split policy in the existing actual execution
 certificate. FugueMax remains scoped algebraic replay, with no RA claim. -/
@@ -40,9 +40,6 @@ abbrev booleanSetExecutionsV := booleanSet.executionsV
 abbrev booleanMap := Concrete.VCConditions.ofExisting ConcreteMRDT.SimplePorts.booleanMapConditions
 abbrev booleanMapExecutions := booleanMap.executions
 abbrev booleanMapExecutionsV := booleanMap.executionsV
-abbrev bounded := Concrete.ScopedVCConditions.ofExisting ConcreteMRDT.GuardedPorts.Bounded.conditions
-abbrev boundedExecutions := bounded.executions
-abbrev boundedExecutionsV := bounded.executionsV
 abbrev tree := Concrete.ScopedVCConditions.ofExisting ConcreteMRDT.GuardedPorts.Tree.conditions
 abbrev treeExecutions := tree.executions
 abbrev treeExecutionsV := tree.executionsV

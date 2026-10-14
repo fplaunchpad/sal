@@ -21,12 +21,68 @@ CERTIFICATES = {
     for n in ('Add', 'Finite', 'Boolean', 'Delta')
 } | {
     'Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.' + n + '.conditions'
-    for n in ('Bounded', 'Tree', 'Sheet')
+    for n in ('Tree', 'Sheet')
 } | {'Sal.MRDTs.Paper1.RGA.ConcretePort.conditions',
      'Sal.MRDTs.Paper1.LWW.GuardedPort.certificate'} | {
     'Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.' + n + 'Certificate'
-    for n in ('bounded', 'tree', 'sheet', 'rga')
+    for n in ('tree', 'sheet', 'rga')
 }
+# Explicit user-requested algorithm retirement. These historical contracts are
+# not substituted with weaker theorems; the published Balegas instance has its
+# own independent source definitions and dependency audit.
+RETIRED_PATHS = {
+    'Sal/MRDTs/Instances/BoundedCounter.lean',
+    'Sal/MRDTs/Instances/TransferableBoundedCounter.lean',
+    'Sal/MRDTs/Instances/TransferableBoundedCounterCorrected.lean',
+    'Sal/MRDTs/Instances/TransferableBoundedCounterCorrectedSPOT.lean',
+    'Sal/MRDTs/Paper1/BoundedCounterEvent.lean',
+    'Sal/MRDTs/Paper1/TransferableBoundedCounterCorrectedBudget.lean',
+    'Sal/MRDTs/Paper1/TransferableBoundedCounterAudit.lean',
+    'Sal/MRDTs/Paper1/TransferableBoundedCounterEvent.lean',
+    'Sal/MRDTs/Paper1/TransferableBoundedCounterCorrectedEvent.lean',
+}
+RETIRED_PREFIXES = (
+    'Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Bounded.',
+    'Sal.MRDTs.Paper1.Automation.TransferGuardedCommuting.Bounded.',
+)
+RETIRED_DECLARATIONS = {
+    'Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.' + 'bounded' + suffix
+    for suffix in ('Certificate', 'Versions', 'VersionsV', 'Executions', 'ExecutionsV')
+} | {'Sal.MRDTs.Paper1.Automation.CommonInstances.Bounded.input',
+     'Sal.MRDTs.Paper1.SplitCertificates.bounded',
+     'Sal.MRDTs.Paper1.SplitCertificates.boundedExecutions',
+     'Sal.MRDTs.Paper1.SplitCertificates.boundedExecutionsV',
+     'Sal.MRDTs.Paper1.SelfCommutationInstances.bounded'}
+
+def retired_declaration(name):
+    return name in RETIRED_DECLARATIONS or name.startswith(RETIRED_PREFIXES)
+
+# Registry metadata is checked against the exact checkpoint-to-current retirement,
+# rather than giving arbitrary changes to these declarations an exemption.
+RETIREMENT_CHECKPOINT = 'a9fd54a3961b91432c3f1dd726a39feff5055f51'
+RETIREMENT_METADATA = {
+    'Sal.MRDTs.Production.registry': 'Sal/MRDTs/Metatheory/ProductionLedger.lean',
+    'Sal.MRDTs.Production.StateGC.registry': 'Sal/MRDTs/Metatheory/StateGCCoverage.lean',
+    **{'Sal.MRDTs.Paper1.' + family + '.' + decl: 'Sal/MRDTs/Paper1/' + family + '.lean'
+       for family, decls in [('CertifiedCoverage', ('inventory', 'counts')),
+                            ('GuardedCoverage', ('inventory', 'inventory_length', 'counts')),
+                            ('MigrationCoverage', ('inventory', 'counts'))]
+       for decl in decls},
+}
+
+def retirement_metadata_change(name, after):
+    if name not in RETIREMENT_METADATA or after is None:
+        return False
+    prior = declarations(git('show', RETIREMENT_CHECKPOINT + ':' + RETIREMENT_METADATA[name]))[name]
+    if prior['variables'] != after['variables']:
+        return False
+    if name.endswith(('.counts', '.inventory_length')):
+        expected = prior['header'].replace('= 21', '= 20').replace('= 13', '= 12').replace('= 11', '= 10')
+        return expected != prior['header'] and after['header'] == expected
+    row = r' , (?:PackagedMRDT\.of|PackagedStateGC\.ofExactState|guarded|proved|compatible) "bounded-counter" .*?(?= , (?:PackagedMRDT|PackagedStateGC|guarded|proved|compatible|⟨Packaged))'
+    expected, removed = re.subn(row, '', prior['body'])
+    return removed == 1 and after['header'] == prior['header'] and after['body'] == expected
+
 MOVED = {
     'Sal.MRDTs.Paper1.CertifiedQueueMVR.MVR.RawVC.' + n:
     'Sal/MRDTs/Paper1/CertifiedMVRVCContract.lean'
@@ -303,6 +359,10 @@ def main():
                   files=[], failures=[],
                   added_files=[path for path in changed if path not in baseline_files])
     for path in files:
+        if path in RETIRED_PATHS:
+            report.setdefault("retired_algorithms", []).append(path)
+            assert not (ROOT / path).exists(), (path, "retired algorithm restored")
+            continue
         current_path = RENAMED_PATHS.get(path, path)
         if not (ROOT / current_path).is_file():
             report['failures'].append(dict(path=path, reason='deleted baseline production file'))
@@ -318,6 +378,12 @@ def main():
                 after = declarations((ROOT / target).read_text()).get(name)
                 record['moved'].append(dict(declaration=name, target=target))
             reason = None
+            if retirement_metadata_change(name, after):
+                record.setdefault("exact_retirement_metadata", []).append(name)
+                continue
+            if after is None and retired_declaration(name):
+                record.setdefault('retired_algorithms', []).append(name)
+                continue
             if after is None:
                 reason = 'missing declaration'
             elif before['header'] != after['header']:

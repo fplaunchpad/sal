@@ -182,7 +182,7 @@ the client operation without a proved abstraction bridge.
 | pn-counter | Integer; increment/decrement add `+1`/`-1`. | Correct abstract carrier. `CanIssue := True`. |
 | flat-grow-only-set | Characteristic function of a mathematical set. | Correct abstract carrier. `CanIssue := True`. |
 | flat-grow-only-map | Characteristic function of immutable key/value entries. | Correct abstract carrier. `CanIssue := True`. |
-| bounded-counter | Per-replica abstract balances; increment and decrement change the named balance. | Independent of the concrete pair of grow-only component maps. Issuance is load-bearing for rights-respecting legality and safety. |
+| bounded-counter | Independent scalar value and per-replica rights; increment mints, decrement consumes, transfer moves rights. | Published Balegas matrix/max implementation; sufficient local rights and single-writer issuance justify legal causal histories and the global lower bound. |
 | lww-register | Optional value; every sequential write overwrites the register. | Correct total register abstraction. The representation retains the winning timestamped tuple; `stateRel` projects only its value, and the public witness sorts by the timestamped key. |
 | rga | Ordinary list of stable identifiers; insert splices after an anchor and delete physically filters an identifier. | Correct abstraction; no tombstones or insertion-edge store. Issuance is load-bearing for list legality and rejects insertion after an observed anchor deletion. |
 | embed-rga | Ordinary list of identifier/payload pairs. | Correct abstraction; no coordinate records. Issuance is load-bearing for anchor legality and the conditioned merge proof. |
@@ -245,8 +245,12 @@ The released set is the efficient OR-set; the tagged model lives in
 
 ## Evidence status
 
+The published bounded counter has a separate concrete five-VC and independent
+scalar/rights history certificate in `BalegasBoundedCounterCertificate`,
+including recursive merges and an all-issued-events bound.
+
 - **Machine-checked positive migrations:** total stores/counters, TreeMove,
-  BoundedCounter, LWW register, tombstone RGA, EmbedRGA, SidedEmbedRGA, Peritext, both Sided
+  LWW register, tombstone RGA, EmbedRGA, SidedEmbedRGA, Peritext, both Sided
   Peritext signatures, AegisSheet, the observed-remove set, and the grow-only
   canary, Queue, and MVR. Every released entry is a typed `PackagedMRDT` in
   `Production.registry`.

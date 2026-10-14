@@ -158,10 +158,6 @@ namespace Sal.MRDTs
 #check Instances.SidedEmbedRGA.ForwardNIM
 #check Instances.SidedEmbedRGA.BackwardNIExcM
 #check Instances.SidedEmbedRGA.SameOriginLowFirstM
-#check Instances.BoundedCounter.bcApplicable
-#check Instances.BoundedCounter.ClientLegal
-#check Instances.BoundedCounter.clientSpec
-#check Instances.BoundedCounter.verified
 #check Instances.LWWRegister.D
 #check Instances.LWWRegister.replayOrder
 #check Instances.LWWRegister.spec

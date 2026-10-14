@@ -28,6 +28,22 @@ if rg -n '^structure SeqState|^  events : Finset Event' \
   exit 1
 fi
 
+# Published Balegas is the only bounded-counter algorithm in production.
+# Historical experiment snapshots are outside this live-tree regression gate.
+if rg -n 'Instances\.BoundedCounter\b|TransferableBoundedCounter' Sal/MRDTs --glob '*.lean'; then
+  echo 'retired bounded-counter alternative remains in production' >&2
+  exit 1
+fi
+for retired in \
+  Sal/MRDTs/Instances/BoundedCounter.lean \
+  Sal/MRDTs/Instances/TransferableBoundedCounter.lean \
+  Sal/MRDTs/Instances/TransferableBoundedCounterCorrected.lean; do
+  if [ -e "$retired" ]; then
+    echo "retired bounded-counter module remains: $retired" >&2
+    exit 1
+  fi
+done
+
 npm test --prefix runtime
 npm run validate --prefix benchmarks
 

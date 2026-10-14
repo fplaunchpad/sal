@@ -64,8 +64,14 @@ def main():
  failures=[];checked=[]
  for f in changed:
   if f not in baseline:continue
+  if f in C.RETIRED_PATHS:
+   assert not (ROOT/f).exists(),(f,"retired algorithm restored")
+   checked.append(dict(file=f,retired_algorithm=True))
+   continue
   old=C.declarations(C.git('show',BASE+':'+f));current_path=C.RENAMED_PATHS.get(f,f);new=C.declarations((ROOT/current_path).read_text()) if (ROOT/current_path).exists() else {}
   for n,b in old.items():
+   if n not in new and C.retired_declaration(n):continue
+   if C.retirement_metadata_change(n,new.get(n)):continue
    why=reason(n,b,new.get(n),new)
    if why:failures.append(dict(file=f,name=n,reason=why))
   checked.append(dict(file=f,declarations=len(old)))
