@@ -34,11 +34,14 @@ creation; splits reuse them. Actual client preparation and received creator
 provenance derive this fact across versions, without caller-supplied replay
 acceptance or structural guards. Bootstrap may follow independent creations.
 
-The independent specification has checked local effects and guarded physical
-history refinement. Connecting actual replay and display to that specification,
-proving preparation succeeds for every supported request, completing source
-wire/search-label correspondence, and constructing the same-witness RA/history
-bridge remain open. Existing five-VC results certify transaction storage only.
+Actual honest reconstruction now admits a display-ordered projection into the
+existing independent document model, with exactly the same visible rendering.
+Valid bounded insert/split/delete requests and create requests with an existing
+predecessor issue successfully. Fresh text cannot inherit earlier pending
+tombstones. Actual create and erase operations simulate the existing document
+transitions; insertion and split simulation, positional edit effects, source
+wire/search-label correspondence, and the same-witness RA/history bridge remain
+open. Existing five-VC results certify transaction storage only.
 This research branch is outside the verified datatype registry and makes no
 claim about Notion production. The [bug catalogue](docs/notion-bugs.md) preserves
 the three confirmed demo failures and distinguishes admission countermodels.

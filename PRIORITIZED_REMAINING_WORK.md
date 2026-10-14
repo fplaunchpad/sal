@@ -16,6 +16,12 @@ Evidence and semantic choices are in [the research record](docs/notion-research.
 No production-code correspondence is established. Do not change the paper,
 formal-reference PDF or public Site from this branch; GC stays out of scope.
 
+Current priority: connect the existing actual machine directly to the existing
+independent document specification and RA bridge. Parallel proof work covers
+delete preparation totality, display/materialization correspondence, and fresh
+text visibility. Broad oracle expansion and model proliferation are deferred;
+use focused builds during development and full gates at integration checkpoints.
+
 - [x] Audit the seven pinned source modules and distinguish positional requests
   from generated transactions, ordering, identities and routing machinery.
 - [x] Build directed and reachable-state oracles, preserve literal traces, and
@@ -90,16 +96,23 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
   every honest network and peer, without assumed prefix acceptance or guards.
   Handle bootstrap after independent lower-key creates; preserve the honest
   counterexample to a bootstrap-first assumption.
-- [ ] Finish the split/insert/delete-only milestone: relate actual reconstructed
-  blocks, display order and physical partitions to the independent specification
-  and prove actual local client effects. Prove total preparation for supported
-  requests, including the single-instance deletion validator under derived
-  normal shape. Successful-request network reachability does not establish
-  that every valid request is accepted. Connect source name/range decoding and
+- [x] Derive actual display alignment and successful display-ordered projection
+  into the existing source document, with exact independent-specification view.
+  Prove actual bounded nonempty deletion and insert/split gap preparation and
+  issuance totality, plus creation with an existing optional predecessor.
+  Derive fresh text flags from canonical pending-target counter bounds.
+- [x] Prove actual create and erase transitions simulate the existing source
+  document. Derive canonical create freshness and predecessor presence; retain
+  exact display splice order and erasure's physical endpoint identities.
+- [ ] Finish the split/insert/delete-only milestone: complete actual insertion
+  and atomic split transition simulation and positional editing effects, deriving
+  projected structural invariants. Connect source name/range decoding and
   search-label validation. Instantiate the same-witness RA bridge with event
   enumeration, required order and specification visibility. Keep source IDs
   distinct from Sal event labels. State ordinary and recursive coverage
   separately; existing five-VC coverage remains storage convergence only.
+  Current preparation totality covers natural-number in-range gaps and bounded
+  nonempty erase ranges; source early no-ops remain intentional non-emissions.
 - [ ] Resolve the extension design boundary before a positive full-editor claim:
   the unchanged demo violates ordinary local split and bold effects after merges.
   A repaired issuer/transition or restricted contract is a different target and

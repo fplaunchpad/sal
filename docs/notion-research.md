@@ -13,10 +13,12 @@ identity-based sequential model passes bounded differential gates and has
 checked local effects, invariant preservation and guarded physical-history
 refinement. The actual typed core now has a checked structural replay theorem:
 every canonical prefix of every honestly generated network executes and
-preserves partition and shape. The remaining connection is from that execution
-and its display to the independent specification, followed by the Sal
-same-witness event/history bridge. Total preparation for every supported
-positional request and source wire/label correspondence also remain open.
+preserves partition and shape. Actual display-ordered materialization now has
+exact independent-specification observations, and bounded valid core requests
+issue successfully. Actual create and erase transitions refine the existing
+source document. Insertion/split transition simulation, positional edit effects,
+source wire/label correspondence, and the Sal same-witness event/history bridge
+remain open.
 
 ## Enquiry and evidence boundaries
 
@@ -493,3 +495,40 @@ an inactive title from membership in the structural active set. An honest
 lower-key create preceding bootstrap refutes a tempting proof shortcut; the
 proof now derives initial-name freshness at arbitrary bootstrap positions.
 These are model and invariant findings, not additional demo bugs.
+
+## Actual document projection and request progress
+
+`MachineDisplay.reconstructed_aligned` proves that actual accepted replay keeps
+unique forest keys and a display permutation of all keys. The literal display
+insert-after splice equals the existing document specification's flatMap
+insertion when its predecessor is present. `MachineBlockPresence` derives
+persistent block membership and canonical required predecessors from creators.
+
+`MachineDocument.honest_document` takes actual `MachineNetwork.Reach` and derives
+successful reconstruction, successful projection to the existing SourceDocument,
+and actual rendering equal to CoreSpec.view of that projection. It reads actual
+display order and active interval contents, retaining inactive own-title anchors
+in the semantic slots. It is a same-state observation theorem; transition and
+history correctness do not follow merely from its existence.
+
+`MachineDeleteTotal` and `MachineClientTotal` derive actual selection, internal
+decoding, reservation and issuance for existing blocks with valid natural-number
+gaps, nonempty insert atoms, or bounded nonempty erase ranges. Create permits no
+predecessor or an existing predecessor. All output networks remain honestly
+reachable. These endpoints do not assume prior selection or desired visible
+effects. Oversized clamped deletion bounds and JavaScript wire decoding are not
+claimed by the bounded request theorems. Early no-ops intentionally emit nothing.
+
+`MachineFreshText` derives that every actual prior pending deletion target has
+counter below the next canonical transaction. Every allocated text offset is
+therefore initially live, independent of session ties; no desired flag premise
+or acceptance of the next operation is supplied.
+
+`MachineDocumentCreate.canonical_create_document` derives fresh creation and
+its exact existing source-document create transition, including display order.
+`MachineDocumentErase.erase_source_step` and `erase_spec_step` derive source and
+independent-spec deletion from actual erasure and old materialization. They
+preserve parent/marker identities and endpoints; no new materialization or
+rendering equation is assumed. Insertion, atomic split, positional edit effects,
+source runtime correspondence and the same-witness RA/history bridge remain open.
+No fourth demo bug is claimed and no document certificate enters the ledger.

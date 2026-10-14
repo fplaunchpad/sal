@@ -1833,3 +1833,65 @@ public contracts and axiom audit, 187 runtime tests, and 569 benchmark records.
 All 17 research result series matched saved JSON evidence; the full replay
 instrumentation matches the existing replay-slice-partition snapshot. No Notion
 document certificate was added to the production ledger.
+
+## Display alignment and bounded deletion totality review
+
+MachineDisplay and DisplayOrder's insert_after_flatMap independently check
+cleanly with standard axioms. Actual operations preserve unique forest names
+and display permutation; existing creation returns without reordering, fresh
+creation uses literal splice, and marker/move phases preserve names. Alignment
+certifies ID enumeration, not render success or physical interval ordering.
+The known-predecessor helper derives equality to the independent flatMap
+insertion under unique old IDs and actual predecessor membership. It does not
+cover raw missing-predecessor fallback, which remains a separate source domain.
+
+The frozen DeleteTotal independently checks cleanly with standard axioms.
+Actual checked slice materialization is derived from partition and physical
+uniqueness; empty inactive titles contribute no visible characters. Replay
+provenance makes each visible atom decode as an item rather than START, and
+normal shape gives the same selected instance for every target, so the entire
+validator succeeds. The honest public theorem derives reconstruction and these
+structural guards, without a successful reconstruction or selected payload
+premise. It covers existing blocks and nonempty in-range natural bounds
+start < stop ≤ visible length; oversized clamped ends and negative/fractional
+JS inputs are not included in that theorem. Its result uses codec-sorted IDs,
+not physical selection order. The inherited-leaf PASS+FAIL control rejects the
+unused title instance and separately checks an empty range emits none.
+No broad oracle or gate was run during this assurance review.
+
+## Valid gap preparation and issuance completion
+
+The parent-written ClientTotal gap and insert/split issuance theorems were
+independently checked cleanly. Existing blocks and natural gaps at or below
+visible atom length derive actual endpoint materialization, nonempty slice
+preorder, address selection, and internal decoding; index zero includes empty
+or all-deleted blocks. Nonempty insert atoms are explicitly required, preserving
+the source's empty-insert early no-op. No successful selection or future output
+is a premise.
+
+The owned extension adds actual erase and create issuance. Erase retains the
+existing-block and nonempty in-range bounds, proves codec-sorted targets remain
+nonempty, and derives reservation, emission, and honest reachability. Create
+allows None or a genuinely stored predecessor in the peer's reconstructed
+state; it does not weaken the public API to raw missing-predecessor fallback.
+Both compose actual preparation with the executable issue function. The expanded
+module's narrow build passes 726 jobs warning-free with standard printed axioms.
+No broad suites or gates were run.
+
+## Integrated document projection checkpoint
+
+The parent reviewed FreshText, DeleteTotal, Document and DocumentErase directly:
+causal counters exclude prior pending flags for fresh text, actual selectors
+derive internal decoding and same-instance validation, and erasure derives the
+new materialized document without an output premise. The projection is into the
+existing source-document model in actual display order. Independent review of
+BlockPresence and DocumentCreate confirmed that canonical predecessor presence
+comes from persistent blocks, not merely persistent instances, and exact create
+order comes from the literal display splice. Its source transition is derived.
+
+Both integration gates passed: 73 registered Notion modules (3,484 Lean jobs),
+17 unchanged oracle groups, 3,694 production Lean jobs, 18 exact public contracts
+with axiom audit, 187 runtime tests and 569 benchmark records. Every research
+result series matched saved evidence. The parent uses focused builds for ongoing
+insertion/split/client-effect proofs; those in-progress modules are outside this
+checkpoint. No Notion document certificate enters the production ledger.

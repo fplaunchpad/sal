@@ -161,7 +161,7 @@ correspondence. The [research record](notion-research.md),
 [proof boundary](notion-proof.md), and [source correspondence analysis](notion-core-correspondence.md)
 provide theorem and assumption details.
 
-The current increment proves `honest_prefix_reconstruct` and `honest_reconstruct`
+The preceding replay increment proves `honest_prefix_reconstruct` and `honest_reconstruct`
 from actual `MachineNetwork.Reach` alone. Every canonical transaction prefix
 executes successfully and preserves the all-reference partition, normal forest
 shape, empty inactive titles, and exact active-instance classification. Archive
@@ -178,18 +178,32 @@ fresh bootstrap succeeds in an arbitrary preceding state with derived initial
 name freshness. The raw inactive-title countermodel remains a nonbug boundary
 control. There are still three confirmed demo bugs.
 
-The theorem covers networks of successful actual requests, whole-version
-exchanges and clock gaps. It does not prove total preparation for all valid
-positional requests, the visible editing contract, decoded JavaScript equivalence,
-or the same-witness RA/history bridge. Neither ordinary nor recursive Notion
-document correctness is claimed.
+The new document increment derives successful display-ordered projection into
+the existing SourceDocument for every honest reconstructed state and proves
+actual rendering equals CoreSpec.view of that projection. Display enumeration
+is derived from actual replay and remains distinct from physical interval order.
+Bounded valid create/insert/erase/split requests now prepare, reserve and issue
+successfully; source early no-ops intentionally emit nothing. Delete totality
+covers nonempty in-range natural-number bounds, not every oversized clamped
+JavaScript input. Fresh canonical text is initially live because every prior
+pending deletion target has a strictly smaller counter.
+
+Actual create and erase now simulate existing source-document transitions.
+Create derives canonical fresh names and predecessor presence from persistent
+block creators, then matches the exact display splice. Erasure derives new
+materialization by tombstoning fixed global addresses while retaining endpoints,
+parents and markers. These results supply transition equations, not merely
+endpoint rendering equality. Insertion/split transition refinement, positional
+visible effects, decoded JavaScript equivalence and the same-witness RA/history
+bridge remain open. Neither ordinary nor recursive Notion document correctness
+is claimed.
 
 Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the honest canonical replay increment:
-65 Notion modules (3,476 Lean jobs), seventeen research result groups, the production
+Both gates passed for the actual document projection and request progress increment:
+73 Notion modules (3,484 Lean jobs), seventeen research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
 187 runtime tests, and validation of 569 stored benchmark records. All current
 research result records exactly match the saved evidence, including the

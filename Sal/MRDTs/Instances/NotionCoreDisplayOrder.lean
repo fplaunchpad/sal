@@ -35,6 +35,35 @@ theorem missing_front (order : List Nat) (fresh previous : Nat) (missing : previ
     insert order fresh (some previous) = fresh :: order := by
   simp [insert, insertionIndex, missing]
 
+/-- At a present unique predecessor, the source index splice is exactly the
+independent document specification's insert-after traversal. -/
+theorem insert_after_flatMap (order : List Nat) (fresh previous : Nat)
+    (unique : order.Nodup) (present : previous ∈ order) :
+    insert order fresh (some previous) =
+      order.flatMap (fun bid => if bid = previous then [bid,fresh] else [bid]) := by
+  induction order with
+  | nil => simp at present
+  | cons head tail ih =>
+    obtain ⟨absent,tailUnique⟩ := List.nodup_cons.mp unique
+    by_cases same : head = previous
+    · subst head
+      have rest : tail.flatMap (fun bid => if bid = previous then [bid,fresh] else [bid]) = tail := by
+        clear unique tailUnique ih present
+        induction tail with
+        | nil => rfl
+        | cons next rest ih =>
+          have different : next ≠ previous := fun eq => absent (by simp [eq])
+          simp only [List.flatMap_cons,if_neg different,List.singleton_append]
+          exact congrArg (next :: ·) (ih (fun mem => absent (List.mem_cons_of_mem _ mem)))
+      simp [insert,insertionIndex,rest]
+    · have inside : previous ∈ tail := (List.mem_cons.mp present).resolve_left (Ne.symm same)
+      have no : (head == previous) = false := by simp [same]
+      simp only [insert,insertionIndex,if_pos present,List.idxOf_cons,no,cond_false,
+        List.flatMap_cons,if_neg same,List.singleton_append]
+      have tailEq := ih tailUnique inside
+      simp only [insert,insertionIndex,if_pos inside] at tailEq
+      simpa [Nat.add_assoc,List.take_succ_cons,List.drop_succ_cons] using congrArg (head :: ·) tailEq
+
 structure State where
   search : Forest
   display : List Nat
