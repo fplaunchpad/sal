@@ -73,5 +73,24 @@
     "file": "physical-replay-controls-observations.jsonl",
     "cases": 3,
     "scope": "Pinned source primitive controls, not whole-client reachability. Hand-derived hidden-origin tree splice and marker insertion before routing to each of two intervals."
+  },
+  "replayPrefixInstrumentation": {
+    "events": 9,
+    "closedSets": 40,
+    "prefixes": 238,
+    "rgaEntryChecks": 646,
+    "childDominanceChecks": 661,
+    "internalOriginChecks": 9,
+    "internalChildChecks": 398,
+    "controls": {
+      "emptyRequestsNoEvent": true,
+      "duplicateDelivery": true,
+      "deleteReservationIsNotRgaItem": true,
+      "sameSessionCollisionDetected": true,
+      "missingDependencyDetected": true,
+      "brokenDominanceDetected": true
+    },
+    "scope": "All causal ideals of one nine-event directed honest network; observes actual pinned RGA entry points during sorted full-transaction replay. No claim every source receive enforces closure or session serialization.",
+    "file": "replay-prefix-instrumentation-observations.jsonl"
   }
 }

@@ -10,6 +10,9 @@ and make bolding a reversed two-character block format neither character.
 Pinned executable regressions and restricted kernel-checked semantic counterparts
 preserve these findings. They concern the educational demo; production-source
 correspondence is not established.
+The [permanent bug catalogue](notion-bugs.md) records N-001 (split suffix),
+N-002 (selected bold missed), and N-003 (unselected bold in another block),
+with literal traces, reproduction commands and minimization limits.
 
 The core split/insert/delete milestone remains open, with a more substantial
 checked intermediate result:
@@ -29,7 +32,7 @@ checked intermediate result:
 - The transaction-set five-VC chain still proves storage convergence for ordinary
   and recursive bases. It has no Notion document-history certificate.
 
-The latest increment closes more of the structural connection. A finite physical
+The structural connection now includes a finite physical
 origin tree now searches for its insertion origin and derives the global preorder
 splice coordinate. A raw endpoint/owner table extracts its materialized intervals
 by actual scans and derives coverage and unique ownership across repeated edits.
@@ -39,11 +42,21 @@ boundary at zero. The typed physical replay bridge injectively encodes UTF-16
 session identities as unordered semantic names and connects tree insertion to
 raw endpoint replay. It does not identify source keys with Sal event labels.
 
-The remaining correspondence is still global. JavaScript's parent maps have not
-been extracted into the finite tree for all honest replay prefixes; raw receipt
-permits unresolved origins. The per-block root/leaf shape, endpoint ownership and
-block display order must hold together, and allocation and decoding must derive
-all guards. Independent payload values are opaque atoms, so rendering and string
+The latest increment derives whole-version mint-past closure and provider-item
+availability in actual source-key-sorted prefixes. It distinguishes item births
+from create/delete reservations. A raw parent-table interpreter now extracts a
+complete ordered forest under derived uniqueness, known-parent and counter-rank
+invariants; literal run integration preserves the tree's parent edges. A separate
+slice-tree induction preserves root/leaf shape and empty inactive title roots
+through actual search, split, detach and append operations. Its enumeration is
+source map search order, with displayed block order still separate.
+
+The remaining correspondence is still global. Source payload decoding must
+establish item births and selected references, and the raw parent-table,
+incrementally ordered tree, slice forest and endpoint ownership must describe
+the same execution together with displayed block order. Raw isolated receipt
+permits unresolved origins; the adaptation's whole versions preserve closure.
+Independent payload values are opaque atoms, so rendering and string
 encoding remain explicit. The Sal witness still needs finite event enumeration,
 required order and specification visibility together with the source history.
 Neither ordinary nor recursive Notion document correctness is claimed.
@@ -61,6 +74,11 @@ hidden-origin tree splice and integrate-before-route ownership for both
 existing intervals. The earlier 4,500 model comparisons,
 575 directed cases and 18,053 bounded local-effect checks remain separately
 scoped evidence.
+The new structural instrumentation checks all 40 causal ideals of one nine-event
+network: 238 full-transaction prefixes and 646 actual RGA entry calls. It preserves
+controls for dependency omission, duplicate allocators sharing a session,
+child dominance and non-item reservations, plus a witness refuting an unnecessary
+global-maximum clock premise.
 
 Independent Sol6.1 review is recorded in [notion-core-review.md](notion-core-review.md)
 and [notion-review.md](notion-review.md). The new review caught and corrected a
@@ -73,8 +91,8 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for this increment: all 17 Notion modules (3,428 Lean jobs),
-all eight research result groups, the production build (3,694 Lean jobs),
+Both gates passed for this increment: all 20 Notion modules (3,431 Lean jobs),
+all nine research result groups, the production build (3,694 Lean jobs),
 18 exact public contracts and their axiom audit, 187 runtime tests, and validation
 of 569 stored benchmark records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or

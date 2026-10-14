@@ -20,7 +20,10 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreOriginTree \
   Sal.MRDTs.Instances.NotionCorePartition \
   Sal.MRDTs.Instances.NotionCorePreparation \
-  Sal.MRDTs.Instances.NotionCorePhysicalReplay
+  Sal.MRDTs.Instances.NotionCorePhysicalReplay \
+  Sal.MRDTs.Instances.NotionCoreIssuance \
+  Sal.MRDTs.Instances.NotionCoreParentMap \
+  Sal.MRDTs.Instances.NotionCoreSliceForest
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")
 printf 'Notion check logs: %s\n' "$check_dir"
@@ -31,13 +34,14 @@ python3 experiments/notion-oracle/run.py --trace core-adversarial.mjs > "$check_
 python3 experiments/notion-oracle/run.py --trace allocation-controls.mjs > "$check_dir/allocation-controls.jsonl"
 python3 experiments/notion-oracle/run.py --trace preparation-boundary.mjs > "$check_dir/preparation-boundary.jsonl"
 python3 experiments/notion-oracle/run.py --trace physical-replay-controls.mjs > "$check_dir/physical-replay-controls.jsonl"
+python3 experiments/notion-oracle/run.py --trace replay-prefix-instrumentation.mjs > "$check_dir/replay-prefix-instrumentation.jsonl"
 node experiments/notion-oracle/identity-controls.mjs > "$check_dir/identity-controls.jsonl"
 python3 - "$check_dir" <<'PY'
 import json
 from pathlib import Path
 import sys
 root = Path(sys.argv[1])
-for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls']:
+for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation']:
     rows = [json.loads(line) for line in (root / (name + '.jsonl')).read_text().splitlines()]
     print(f'{name}: {len(rows)} result records; executable assertions passed')
 print('Known-failure regression success means the counterexamples reproduce.')

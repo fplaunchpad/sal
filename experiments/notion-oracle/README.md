@@ -56,6 +56,7 @@ python3 experiments/notion-oracle/run.py --trace core-adversarial.mjs
 python3 experiments/notion-oracle/run.py --trace allocation-controls.mjs
 python3 experiments/notion-oracle/run.py --trace preparation-boundary.mjs
 python3 experiments/notion-oracle/run.py --trace physical-replay-controls.mjs
+python3 experiments/notion-oracle/run.py --trace replay-prefix-instrumentation.mjs
 ```
 
 The full reachable run intentionally exits 1 when it discovers the saved local
@@ -121,6 +122,9 @@ The minimizer repeats request removal to a fixed point after shrinking the text,
 so its one-minimal claim applies to the final seed.
 
 ## Direct failures of ordinary local editing
+
+The [permanent bug catalogue](../../docs/notion-bugs.md) records N-001 through
+N-003 with their contracts, literal evidence, minimization limits and formal scope.
 
 `regressions.mjs` reissues concise histories and checks both the observed anomaly
 and its disagreement with the independent local contract. These expectations
@@ -213,3 +217,20 @@ integrate-before-route controls locate a freshly inserted marker in the left
 or right existing interval according to its origin. Both old endpoint rows
 remain unchanged during that transient routing check. These controls exercise
 the trusted tree/endpoint semantics without claiming whole-client reachability.
+
+## Sorted-prefix structural instrumentation
+
+`replay-prefix-instrumentation.mjs` observes actual pinned RGA insertion entry
+points without replacing integration or traversal. It checks all 40 causal
+ideals of one nine-event honest network, reconstructing 238 full-transaction
+prefixes. It checks origin presence, fresh IDs, physical coverage, 661 old-child
+comparisons and 398 internal-child complete-run dependencies. The saved JSONL
+contains the complete literal transaction/dependency ledger.
+
+The network covers the real grouped bootstrap, Unicode sessions, overlapping
+run clocks, internal run origins, split markers, duplicate receipt and no-event
+empty requests. It distinguishes a delete transaction's reservation from an
+actual RGA item. Deliberately broken missing-dependency, shared-session and
+child-dominance controls are detected. A preserved witness has a new first ID
+below an unrelated stored item, showing why global maximum dominance is too
+strong. This is finite structural evidence, not a source-replay or RA theorem.

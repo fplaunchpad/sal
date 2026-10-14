@@ -30,6 +30,8 @@ source-selected preparation, global traversal/endpoint lemmas, and guarded
 physical-model history refinement. Full source replay correspondence
 and the Notion RA bridge remain open. This is research evidence, not an addition to the verified datatype registry or a
 verification of Notion production.
+The [preserved bug catalogue](docs/notion-bugs.md) links the three confirmed
+ordinary editing failures to reproducible traces and their proof boundaries.
 
 The [natural-specification audit](docs/natural-sequential-specifications.md)
 separates client requests from generated replication messages. Simple sets and

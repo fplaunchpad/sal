@@ -33,6 +33,11 @@ about their definitions; it is not a JavaScript verification theorem. See the
 
 ## Small counterexamples
 
+The [permanent bug catalogue](notion-bugs.md) assigns stable identifiers, records
+reproduction commands and minimization limits, and links the retained literal
+traces and checked counterparts. It also separates demo bugs from counterexamples
+to modelling assumptions.
+
 All setup requests are generated through `Replica`; no malformed or fabricated
 operation payload is needed. The regression corpus records literal messages.
 
@@ -127,11 +132,11 @@ same user intent. The latter occur in the minimized split trace.
 | Core local effects | 560 generated states, 18,053 local split/insert/delete checks, one fixed seed, no failure |
 | Independent core semantics | Complete Lean slot machine and prefix-closed grouped history language; 4,500 original plus 5,348 adversarial comparisons |
 | Independent local preparation | Universal insert/delete/split effects, structural invariant preservation and progress; hidden origins allowed |
-| Allocation | Receipt-derived clock bounds, disjoint run ownership, transaction-key uniqueness and local child dominance; UTF-16 session comparison |
+| Allocation and issuance | Receipt-derived clock bounds and uniqueness; whole-version mint-past closure; item-producing providers in actual source-key-sorted prefixes; source payload decoding remains separate |
 | Source-selected preparation | Actual zero/fallback and visible-predecessor rules on the core normal form; successful physical insert/delete/split effects |
 | Materialized source model | Physical interval transitions project to semantic steps; guarded grouped histories preserve all query answers |
-| Global structural components | Recursive origin search derives preorder splices; raw augmented endpoint scans derive partitions and ownership across repeated operations |
-| Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks; extraction and issuance derivation still open |
+| Global structural components | Recursive origin search and raw parent-table extraction; endpoint partition/ownership; slice-tree root/leaf and inactive-title induction |
+| Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks, plus 238 instrumented sorted prefixes; joint execution and payload-decoding proof still open |
 | Local effects with merges/formatting | Refuted by fresh-client executable traces; restricted kernel formatting counterparts |
 | Three-way adaptation | Executable transaction-set shell preserving source preparation and rendering |
 | Five VCs | Reused finite-store proof, key-consistency lemmas and arbitrary-render convergence; storage only |
@@ -215,3 +220,33 @@ Grouped bootstrap, no-event empty edits, ID-range compression and rendering
 remain encoding boundaries. The Sal same-witness certificate still needs that
 source correspondence; the current structural components do not supply it by
 assuming the desired observation equation.
+
+## Issuance and raw source structure increment
+
+The candidate claim is that every dependency-closed version of honestly issued
+core transactions replays with present origins, fresh item identities and
+dominance over the chosen origin's old children. A missing provider or an old
+internal child sorting above the new first item would refute it. The targeted
+reality oracle instruments actual pinned RGA entry points over all 40 causal
+ideals of a nine-event network: 238 transaction-prefix replays, 646 entry checks,
+661 child comparisons and 398 internal-child whole-run checks pass. Deliberate
+missing-dependency, child-dominance and shared-session controls are detected.
+The saved literal ledger includes overlapping runs and Unicode session ties.
+A new transaction below an unrelated stored item refutes a stronger global
+maximum requirement; that requirement is not imposed on the implementation.
+
+The formal increment derives whole-version mint-past closure and item-provider
+availability in actual source-key-sorted prefixes. Review exposed that allocation
+alone does not imply an item exists: create/delete also reserve IDs. The model
+now distinguishes item-producing runs, and a positive/negative control pins the
+difference. Source payload decoding still has to establish the tags and selected
+references in the complete execution.
+
+Raw parent-table extraction now derives a finite ordered forest and complete
+coverage from operationally preserved rank, uniqueness and closure. Separate
+slice-tree induction derives the core root/leaf shape and empty inactive titles
+through actual search/split/detach/append operations. These results narrow the
+remaining correspondence problem to their joint execution, payload/identity
+decoding, endpoint ownership and displayed block order. They do not yet supply
+the same-witness RA certificate. Exact theorem scopes are in the
+[correspondence analysis](notion-core-correspondence.md).

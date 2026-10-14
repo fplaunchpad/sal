@@ -127,3 +127,81 @@ The physical map preserves text values, deletion flags, and split-marker kind, t
 The module has hand-derived positive/negative controls for semantic-name separation and START insertion. `lake build Sal.MRDTs.Instances.NotionCorePhysicalReplay` succeeds cleanly; its four printed integration theorems use standard `propext`, `Classical.choice`, and `Quot.sound` only.
 
 Remaining premises are explicit: initial parent-map-to-tree extraction, honest issuance of source runs/markers, replay origin reachability, derivation of child dominance and freshness in that coupled execution, block-order/root-wrapper correspondence, transaction grouping, and admission of the same source-key history to the selected RA bridge. These theorems do not establish production correspondence or complete the core milestone by themselves.
+
+## Whole-version issuance and source-ordered prefixes
+
+`NotionCoreIssuance` extends the allocation network with ghost records of the
+actual mint-time received runs. Exchange imports a whole peer version through
+the existing receipt operation. `allocation_reachable` erases these steps into
+the checked allocation model, preserving its single serialized allocator per
+session. `peers_closed` derives that every exposed version includes the complete
+mint past of each transaction it contains. Raw isolated receipt in JavaScript
+does not enforce this property; the whole-version MRDT exchange supplies it.
+
+Item-producing insert/split runs are distinguished from reservation-only
+create/delete operations. `ItemKnown` requires a received provider record that
+produces items, rather than accepting any allocated clock ID as an origin.
+The item-production tag and selected references remain inputs whose decoding
+from source payloads must be proved. `record_reference_births` preserves those
+births in the saved mint past. `reference_counter_before` derives strict parent
+counter rank; `replay_child_dominance` combines sorted transaction-first children
+with whole-run knowledge for internal children.
+
+`replay` deduplicates received reservations using the published records and
+sorts them by source key. Allocation uniqueness derives strict ordering.
+`replay_item_ready` proves that each referenced item's complete, item-producing
+provider occurs in the actual sorted prefix. Closure is also preserved under
+union and intersection; these structural facts do not instantiate the Sal
+ordinary or recursive-base document theorem. Controls distinguish whole-run
+clock observation, unknown references, canonical versus receipt order,
+dependency-incomplete delivery, and reservations that produce no items.
+
+## Raw parent-table extraction
+
+`NotionCoreParentMap` defines physical item/origin rows and actual child
+filtering, descending sorting, lookup and recursive traversal. The extractor
+builds the existing rose-tree type. `extract_raw_model` derives its structural
+adjacency/order/lookup relation from unique IDs and strictly increasing
+parent-to-child counters, using the maximum stored counter as sufficient fuel.
+No traversal equality or pre-existing tree is assumed. `extraction_covers_rows`
+adds known-parent closure and derives that every stored row is reachable from
+START and appears in extraction.
+
+Fresh, known-origin integration history derives uniqueness, increasing rank
+and closure; `reachable_extraction` gives the resulting complete extraction.
+Raw orphan integration remains permitted by `insertFresh`, and a control
+checks that START traversal omits the orphan until its dependency exists.
+Other controls traverse tombstones and split markers in source sibling order.
+
+`fresh_run_edges_any` connects literal appended run rows with the exact parent
+edges of the existing recursive tree insertion, including START. This preserves
+records and parent links, not merely observations. `ParentEdges` alone does not
+assert sibling order, whereas `ForestModel` includes it. Establishing that the
+incrementally updated ordered forest is exactly the raw table's extracted forest
+remains a coupling obligation, as do deletion-flag updates and source payload
+decoding in that complete execution.
+
+## Source slice-tree shape induction
+
+`NotionCoreSliceForest` models arbitrary finite slice trees. Its recursive
+search uses actual endpoint extraction to test membership. Splitting transfers
+all old children under the new right node; a separate recursive search detaches
+that entire subtree and appends it to the freshly created title root.
+`atomicSplit_result` derives the selected source and moved leaf from successful
+execution. The leaf conclusion follows from the input invariant, rather than
+being built into the split algorithm.
+
+The state invariant contains root-only or empty-title-root-plus-one-leaf shape,
+active-instance ownership, distinct block names, and physical emptiness of
+inactive titles. `reachable_invariant` derives it from creation, updates to an
+active instance, and actual successful atomic splits with fresh names. No guard
+assumes the resulting shape or query answer. Instance updates abstract their
+contents, so this frame theorem must still be coupled to valid RGA/endpoint
+transitions; it does not independently establish interval coverage or progress.
+
+The forest order is `blocks.values()` map insertion order, used by source
+`#allNodes`. Appending a newly created block matches that search enumeration.
+The separate displayed `blockOrder` inserts after the requested block and is
+not represented by this list. Connecting displayed order and the materialized
+document projection remains explicit. Controls check actual split/detach/append,
+a reachable structural fixture, and a repeated split of an attached leaf.

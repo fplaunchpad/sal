@@ -29,10 +29,15 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
   projection and history refinement; challenge Unicode runs and source intervals.
 - [x] Derive global origin-search splice coordinates, endpoint-table extraction,
   and source-selected local preparation effects in the explicit physical models.
+- [x] Derive whole-version mint-past closure, sorted-prefix item provenance,
+  raw parent-map extraction, and slice-tree shape preservation in their models.
+- [x] Preserve confirmed bugs with stable catalogue identifiers, literal traces,
+  reproduction commands, minimization limits and scoped formal counterparts.
 - [ ] Finish the split/insert/delete-only milestone: connect actual source
   issuance and sorted replay to the physical interval model, deriving structural
-  guards. Couple parent-map/rose-tree extraction, augmented endpoint ownership,
-  bootstrap and message encoding with the checked preparation rule. Instantiate
+  guards. Couple the checked parent-map extraction, slice-forest shape and
+  endpoint ownership with display order, bootstrap/payload decoding and the
+  actual preparation rule. Instantiate
   the same-witness RA bridge
   with event enumeration, required order and specification visibility. Keep
   source compound IDs distinct from Sal event labels. State ordinary and recursive

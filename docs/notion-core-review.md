@@ -638,3 +638,193 @@ The frozen physical-replay module and the updated marker-routing partition
 module independently compile cleanly. All printed integration/routing theorem
 dependencies are standard logical axioms. The final whitespace check passes;
 no additional oracle runs were performed for this integration review.
+
+## Issuance and sorted-prefix structural challenge
+
+The next candidate claim is structural: a dependency-closed version of honestly
+issued core transactions, replayed by source key, has known non-START origins,
+globally fresh item IDs, and a new first item greater than every old child of
+its origin. Each dependency is a whole transaction known when the issuing
+client prepared its request. Honesty additionally requires one persistent,
+serialized allocator per session. The falsifier would be one such closed
+version/prefix violating any of those checks. The formal oracle is the proposed
+mint-past/complete-run issuance model; the reality oracle here instruments the
+pinned source's actual RGA entry points during `CrdtDocument` reconstruction.
+
+`replay-prefix-instrumentation.mjs` creates one nine-event directed network,
+starting with the actual grouped `createInitialTransactions` bootstrap. Actors
+use session A, an emoji, and U+E000. Transactions include overlapping-clock
+multicharacter runs, insertion after an internal bootstrap atom, insertion
+after the start marker of a moved slice, concurrent split/insertion, and
+receipt followed by a later split. Dependencies are recorded from each issuing
+replica's entire transaction map immediately before the request. Repeated
+delivery is exercised; empty insertion and deletion are checked to publish no
+transaction and leave the source clock unchanged.
+
+The harness enumerates every subset of those nine events, retains all 40
+dependency-closed subsets, sorts each with the actual source comparator, and
+replays every whole-transaction prefix. This gives 238 prefix replays, including
+repeated/empty prefixes rather than 238 distinct version sets. At the pinned
+`RgaText.insertRun` and `insertSplit` entry points it checks origin presence,
+cross-instance item-ID freshness, and strict child dominance. The original
+integration/traversal methods still perform the operations. Every completed
+integration also has all stored items reachable in actual source preorder.
+The run passes 646 RGA-entry checks, 661 old-child dominance checks, 398 checks
+that the issuer knew the whole run of an internal child, and nine internal
+origin checks. The literal ledger and counts are retained in the separate
+observations file.
+
+A distinguishing witness rejects a stronger shortcut: a new U+E000-session
+item at counter 4 is integrated with an A-session item at counter 5 already
+stored. The former still dominates every relevant child of its own origin.
+Hence being greater than every stored item is unnecessary and does not follow
+from sorted transaction-first keys. Complete-run receipt, rather than a global
+maximum argument over the replay prefix, is needed for internal-run children.
+
+The broken controls detect an unknown-origin message set, a deliberately
+non-dominating raw insertion, and two concurrent Replica instances reusing the
+same session with different payloads. The latter are both accepted local API
+calls but collide on receipt: the public constructor does not enforce the
+environmental single-allocator discipline. The missing-origin and dominance
+controls are rejected by the instrumentation's structural assertions, not by
+a claim that the source itself enforces closure or immediate-splice legality.
+
+This finite experiment supports the exact proposed structural claim on one
+adversarial network; it does not prove it for all source executions. Whole
+version union can preserve recorded dependency closure, whereas arbitrary raw
+individual message receipt need not. A source-to-ghost provenance argument must
+still show that selected non-START origins come from known complete insertion
+runs or split transactions and derive closure, allocation freshness, and
+dominance from issuance. Bootstrap's create and insertion share one key but
+create adds no competing RGA item. Empty requests contribute no event. These
+are encoding and issuance obligations, not failures of the candidate structural
+claim on the tested domain.
+
+## Mint-past issuance and canonical replay review
+
+`NotionCoreIssuance.lean` records each reservation's actual pre-mint received
+run list and references. Whole-peer exchange imports a complete received
+version; it does not admit arbitrary isolated message receipt. `peers_closed`
+derives mint-past dependency closure from those operations, rather than placing
+closure in the mint guard. `closed_union` and `closed_intersection` preserve
+that property for lists relative to the same global record set. These are
+closure results, not an ordinary or recursive-base RA certificate.
+
+`replay` filters the unique globally minted record runs by a version and uses
+an actual source-key merge sort. Ghost past/reference fields do not affect
+sorting. `replay_ordered` combines sortedness with allocation-derived key
+uniqueness to obtain strict order; no ordered-list premise is supplied to the
+canonical readiness theorem. `past_in_prefix` uses that order and the complete
+past-run maximum bound to show every provider precedes the next transaction.
+`replay_ready` consequently places complete referenced provider runs in every
+actual canonical replay prefix. `replay_child_dominance` separates first items
+from internal children, using sorting for the former and reference-derived
+whole-run ownership for the latter. Its internal-child predecessor reference
+must still be obtained from actual origin edges.
+
+The review found an important type distinction: allocation `Known` alone
+includes create/delete reservation IDs that have no physical RGA item. The
+parent refined records with an item-producing tag and strengthened mint
+references to `ItemKnown`. `record_reference_births` and `replay_item_ready`
+now return a provider explicitly tagged as producing the referenced item.
+The metadata control checks allocation knowledge together with absence of
+item knowledge. The existing targeted network separately checks that its
+received delete transaction key is absent from every actual source RGA item
+map. The rerun retains the same nine events and structural counts and adds
+only that assertion; no larger network or broad suite is introduced.
+
+The tag is an abstract birth declaration. Source payload decoding must still
+show that insertion/split transactions produce their reserved items and
+create/delete/empty-bootstrap reservations do not. The model does not inspect
+payloads or derive references from `locateInsertion`/range selection; those
+remain typed source-to-issuer correspondence obligations. The corrected
+readiness theorem must not be described as proving concrete parent-map origin
+presence without that connection.
+
+The controls use a reachable complete two-item run, a later referencing mint,
+canonical ordering different from receipt order, and a negative dependency
+closure example for isolated delivery. They reject unknown references and
+metadata IDs as item origins. No desired edit result or final document
+invariant appears in issuance guards. Within the explicit session/whole-version
+discipline, the claim is substantive source-key/provenance reasoning rather
+than set-union convergence alone.
+
+The tagged issuance module independently compiles cleanly. Printed closure,
+provider-readiness, and child-dominance dependencies are standard logical
+axioms only. The targeted deletion-reservation assertion also passes against
+the pinned source; syntax and whitespace checks remain clean.
+
+For the upcoming slice-forest result, creation appends the fresh title in the
+search forest. This matches source `this.blocks.set` and `#allNodes` iteration
+over `this.blocks.values()`. The separate `blockOrder.splice` controls display
+order after the selected block. Appending in the search forest is therefore
+not a source-search ordering mismatch; the displayed-order representation and
+projection still require a separate list and correspondence argument.
+
+## Parent-map extraction and slice-forest induction
+
+`NotionCoreParentMap.lean` now stores physical items with explicit origin links,
+enumerates children from that raw table, sorts their IDs with the source
+comparator, and performs lookup during fuel-bounded traversal and extraction.
+The structural `ForestModel` uses actual lookup, adjacency-key permutation,
+and descending sibling order; it contains no traversal equation.
+`extract_model` derives exact forest recovery at a sufficient structural height.
+The stronger `extract_raw_model` computes a bound from the table's maximum
+counter and derives a model directly from unique IDs and strictly increasing
+origin counters, without assuming a chosen forest.
+
+The raw integration reachability relation guards fresh IDs, known parent
+membership, and strictly increasing counters. Its induction derives uniqueness,
+counter increase, and parent closure. Closed increasing tables have a path from
+START for every row, so `reachable_extraction` derives complete stored-row
+coverage rather than merely a rooted subset. These are structural input guards,
+not the desired extraction or visible editing result. Source issuance still
+must establish those guards; the mint reference-counter result supplies part
+of that connection but does not itself decode transaction payload rows.
+
+`runRows` matches the actual preceding-item links of a run. The recursive
+insertion edge lemmas and `fresh_run_edges_any` preserve exact parent-record
+permutation, including START insertions. This is valuable parent-edge coupling,
+but `ParentEdges` alone does not imply `ForestModel`: the same parent edges
+can be enumerated in the wrong sibling order. Ordered-forest preservation and
+its connection to extracted source traversal remain explicit integration
+obligations. The tombstone/marker traversal fixture rejects map iteration
+order and empty visible text. The orphan fixture shows a stored unreachable row
+is omitted by START traversal and lies outside the closed reachability domain,
+matching raw source acceptance rather than pretending it rejects the row.
+
+`NotionCoreSliceForest.lean` gives arbitrary rose-tree operations for source
+split, recursive marker routing, detachment of the complete child subtree, and
+append to a fresh title. The normal form is a predicate on those arbitrary
+trees, not built into their transition guards. `splitDetach_normal` derives
+which source was selected and why the moved subtree is a leaf at a normal
+atomic boundary. `atomicSplit_result` describes the resulting forest from
+actual accepted search/detach/append. Its intermediate tree can have another
+level, so normal form is asserted only after the transaction's detachment.
+
+The global invariant combines tree shape, unique block profiles, active
+instance ownership, and physically empty inactive title instances. Creation,
+active-instance update, and atomic splitting preserve it. `Reach` guards fresh
+marker/block names, the instance addressed by an update, and actual accepted
+split execution; it does not guard output normal form or empty titles.
+`reachable_invariant` derives both. The update's physical contents are arbitrary
+here: that theorem is a frame argument, not proof of RGA/endpoint validity or
+correct text. The separate physical-replay and partition invariants still need
+coupling to this forest relation.
+
+The three controls check actual split/detach/append rather than retaining the
+right leaf under the old root, establish a concrete reachable split state with
+an empty inactive title, and repeat splitting inside an inherited interval.
+Their negative views/structures rule out leaving both titles empty or treating
+the second split as a no-op. They do not claim global displayed block order.
+Search forest order is source Map insertion order; the separate display-order
+list still needs projection. Together these developments remove assumed raw
+graph coverage and assumed atomic-boundary tree shape in their respective
+structural models, while keeping their source/issuance integration scope clear.
+
+The final issuance, parent-map, and slice-forest candidates independently
+compile cleanly. Their printed theorem dependencies are standard logical
+axioms only; no new admissions or axioms are introduced. The review found no
+circular desired-output premises. Whitespace checks pass. The targeted
+metadata-item assertion is the only oracle extension in this final review;
+the passing broad suites were not repeated.
