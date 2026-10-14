@@ -68,8 +68,10 @@ claiming metadata-free concurrent positional or document histories.
   refinement, and removing only the live-parent guard is not a fix.
 
 
-Manuscript comparison refreshed against fetched Overleaf `179d763`
-(13 October 2026). See [remaining paper changes](docs/paper1-formalism-reconciliation.md).
+Manuscript comparison refreshed against fetched Overleaf `bd18900`
+(14 October 2026). See [remaining paper changes](docs/paper1-formalism-reconciliation.md)
+and the aligned [section-by-section review](docs/paper-writing-review.md).
+GC is excluded from this paper.
 The older PDF and manuscript patch retain their explicitly labelled `0450d48`
 baseline. The canonical five-VC equations already match; certified coverage
 and the listed definition/bridge corrections remain manuscript work.

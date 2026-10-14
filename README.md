@@ -40,7 +40,8 @@ bridge. The ordinary OR-set has unrestricted payload correctness through the new
 VC route; Embedded RGA uses that merge route with certified representation and
 an exact selected-history bridge. The [earlier manuscript patch](docs/paper1-manuscript-reconciliation.patch)
 targets Overleaf `0450d48`; it must not be applied wholesale to the current
-`179d763` manuscript. The revision note above records the remaining differences.
+`bd18900` manuscript. The revision note above records the remaining differences;
+the [section-by-section writing review](docs/paper-writing-review.md) expands them.
 
 The paper-facing policy now uses Kartik's split formulation: `rc-non-comm`
 for distinct operation payloads, plus equal-payload self-commutation.

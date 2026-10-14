@@ -1,16 +1,21 @@
 # Remaining changes to the Sal paper
 
-Compared with Overleaf **`179d763` (13 October 2026)** and the checked
-`paper1` natural-specification update of 14 October 2026. Locations below refer to this manuscript
-snapshot; definition numbers refer to the [formal reference PDF](paper1-formal-reference/main.pdf).
+Compared with Overleaf **`bd18900` (14 October 2026)** and checked Sal
+`paper1` **`12886ba`**, including the natural-specification proofs in `706036c`.
+Locations below refer to this manuscript snapshot; definition numbers refer
+to the [formal reference PDF](paper1-formal-reference/main.pdf).
+This is the concise author-facing correction list. The
+[section-by-section writing review](paper-writing-review.md) expands it with
+contribution, exposition and evaluation gaps. GC is excluded from this paper.
 
-The latest revision adds the operation-inequality guard to `rc-non-comm`,
-restricts the lifting premise to linear extensions of stored event sets, and
-correctly says the no-op-remove example violates specification compatibility.
-The five canonical merge equations remain; **VC4 is now causal-delta and VC5
-is shared redistribution**, opposite to the reference's numbering. Compare
-these by name. General label projection and the recursive-base proof paragraph
-have been removed from the active text.
+The latest revision adds the introduction, expands the VC3 explanation and
+removes the undefined `Supported` premise in VC2. These are no longer missing.
+The operation-inequality guard and version-local lifting premise remain, as
+does the correct diagnosis of no-op removal as a specification-compatibility
+failure. **Manuscript VC4 is causal-delta and VC5 is shared redistribution**,
+opposite to the reference's numbering; compare them by name until aligned.
+General label projection and the recursive-base proof remain absent from the
+active text.
 
 ## Changes still needed
 
@@ -42,9 +47,10 @@ have been removed from the active text.
    The order and canonical-state definitions still require causal closure,
    while the VCs and Join lemma use weakly closed sets and peeled downsets.
    State finiteness and prove existence and uniqueness on that wider domain.
-   In `Admissible`, replace the unbound `E` by `E_i`; define the still-used
-   `Supported` predicate or remove its redundant use in VC2. This is the
-   global canonical route; the certified extension below needs its own scope.
+   In `Admissible`, replace the unbound `E` by `E_i`. VC2 now states support
+   directly, but the canonical states in every VC still need the appropriate
+   closure domain. This is the global canonical route; the certified extension
+   below needs its own scope.
    **Reference:** §4, “Canonical States and Certified Replay”; §5.
 
 4. **Require simulation transitions to exist (`seq_spec.tex:87–123`).**
@@ -66,6 +72,10 @@ have been removed from the active text.
    both semantic order and metadata closure. These obligations support the
    same five merge equations; they are not supplied by acyclicity alone.
    Do not claim arbitrary-permutation uniqueness for every certified RDT.
+   `rga.tex` is still only a heading and is not included by `main.tex`. Choose
+   the implementation explicitly: Embedded RGA is not native tombstoned RGA.
+   Include both the five-VC connection and the independent history bridge;
+   local positional preparation alone is not the global correctness result.
    **Reference:** Definitions 4.7–4.8 and 5.1–5.4; Theorem 5.5; §6.2.
 
 6. **Restore a precise recursive-base statement (`opsem.tex:118–122`;
@@ -77,10 +87,20 @@ have been removed from the active text.
    **Reference:** Definition 3.4 and Theorem 5.7.
 
 7. **Fill implementation/evaluation with the actual coverage.** Report
-   21 existing named five-VC cases after removing the duplicate GSet alias,
-   with 20 positive history results and Fugue's checked specification
-   obstruction; report the published bounded counter separately from this
-   inventory. Report [VC and bridge effort separately](../experiments/vc-automation/README.md).
+   the 21 retained automation proof configurations separately from distinct
+   ADTs and runtime packages. FugueMax now has a complete natural-origin
+   history certificate through the five VCs, including recursive executions;
+   only its former live-parent specification remains refuted. The earlier
+   “20 positive results plus Fugue obstruction” summary is obsolete. The new
+   Fugue bridge is not measured in the historical effort tables. Report
+   [VC and bridge effort separately](../experiments/vc-automation/README.md),
+   correcting that report's stale Fugue status before quoting it. The published
+   bounded counter and two source flags have checked certificates outside
+   the measured automation corpus. Do not sum these counts as distinct ADTs.
+   For presentation, group the three flat counters into one counter-family row:
+   `Counter` and increment-only are duplicates up to operation renaming; PN
+   adds decrement but uses the same implementation/proof family. Keep the
+   bounded escrow counter separate. This does not relabel historical measurements.
    The published **Balegas et al., SRDS 2015, §III-B/Figure 1** design now has
    a checked five-VC and independent history bridge for ordinary and recursive
    merges. It uses a sender–recipient matrix `R`, decrement vector `U`,
@@ -105,6 +125,20 @@ have been removed from the active text.
    to the F* source API. See Example 6.8 for both equations and policies.
 
    **Reference:** Example 6.7, “Published bounded counter”.
+
+8. **Correct and complete the contribution claims
+   (`introduction.tex:76–132`; abstract and closing sections).** Attribute
+   concrete convergence to the canonical/represented-state theorem and its
+   hypotheses, not to observational RA admission alone. Scope “all valid
+   linearizations” to the raw replay theorem; certified results use their own
+   domains. Say that the merge proof avoids assembling a witness from the
+   chosen branch sequences, not that no history is ever constructed. Add the
+   certified extension, Lean mechanization, shared independent specifications,
+   and evaluated automation/coverage to the contribution list. The abstract,
+   implementation, evaluation, related work and conclusion still need text.
+   **Reference:** §4 canonical/replay results, §5 sufficient conditions and
+   §6 sequential bridges; the [writing review](paper-writing-review.md)
+   identifies the supporting artifacts and evaluation qualifications.
 
 Small mathematical fixes: `proof_strategy.tex:49` should say that every
 *other* downset member precedes the event in a respecting linear extension,
