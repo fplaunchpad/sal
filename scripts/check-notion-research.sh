@@ -62,6 +62,10 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreMachineBootstrap \
   Sal.MRDTs.Instances.NotionCoreMachinePartitionSplit \
   Sal.MRDTs.Instances.NotionCoreMachineCanonicalSplit \
+  Sal.MRDTs.Instances.NotionCoreRootCreators \
+  Sal.MRDTs.Instances.NotionCoreMachineRootReplay \
+  Sal.MRDTs.Instances.NotionCoreMachineHonestReplay \
+  Sal.MRDTs.Instances.NotionCoreBootstrapProvenance \
   Sal.MRDTs.Instances.NotionCoreMachineShape \
   Sal.MRDTs.Instances.NotionCoreMachineClientShape \
   Sal.MRDTs.Instances.NotionCoreSliceForest
@@ -83,13 +87,14 @@ python3 experiments/notion-oracle/run.py --trace client-provenance-controls.mjs 
 python3 experiments/notion-oracle/run.py --trace delete-group-controls.mjs > "$check_dir/delete-group-controls.jsonl"
 python3 experiments/notion-oracle/run.py --trace split-phase-controls.mjs > "$check_dir/split-phase-controls.jsonl"
 python3 experiments/notion-oracle/run.py --trace inactive-title-controls.mjs > "$check_dir/inactive-title-controls.jsonl"
+python3 experiments/notion-oracle/run.py --trace active-instance-controls.mjs > "$check_dir/active-instance-controls.jsonl"
 node experiments/notion-oracle/identity-controls.mjs > "$check_dir/identity-controls.jsonl"
 python3 - "$check_dir" <<'PY'
 import json
 from pathlib import Path
 import sys
 root = Path(sys.argv[1])
-for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation', 'payload-provenance-controls', 'search-label-controls', 'endpoint-adjacency-controls', 'client-provenance-controls', 'delete-group-controls', 'split-phase-controls', 'inactive-title-controls']:
+for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation', 'payload-provenance-controls', 'search-label-controls', 'endpoint-adjacency-controls', 'client-provenance-controls', 'delete-group-controls', 'split-phase-controls', 'inactive-title-controls', 'active-instance-controls']:
     rows = [json.loads(line) for line in (root / (name + '.jsonl')).read_text().splitlines()]
     print(f'{name}: {len(rows)} result records; executable assertions passed')
 print('Known-failure regression success means the counterexamples reproduce.')

@@ -8,12 +8,15 @@ request have an effect that it does not have. This is a result about the pinned
 educational demo, not Notion's production implementation or a limitation of
 Sal's five-VC theorem.
 
-The narrower split/insertion/deletion-only milestone remains open. An independent
-identity-based sequential model passes bounded differential gates. Lean proves
-its local preparation effects and invariant preservation, and refines guarded
-physical interval executions into its grouped history language. The missing
-connection is from actual source issuance and sorted replay to those executions,
-followed by the Sal event/history bridge.
+The split/insertion/deletion-only milestone remains open. An independent
+identity-based sequential model passes bounded differential gates and has
+checked local effects, invariant preservation and guarded physical-history
+refinement. The actual typed core now has a checked structural replay theorem:
+every canonical prefix of every honestly generated network executes and
+preserves partition and shape. The remaining connection is from that execution
+and its display to the independent specification, followed by the Sal
+same-witness event/history bridge. Total preparation for every supported
+positional request and source wire/label correspondence also remain open.
 
 ## Enquiry and evidence boundaries
 
@@ -471,3 +474,22 @@ uniqueness during the transient split or coverage during detachment. The next
 research step is the honest-history induction that supplies active-instance
 provenance across issuer and replay versions, then connects the resulting
 execution to the independent specification on the required RA witness.
+
+
+## Honest replay and the root-provider invariant
+
+The active-instance premise is now derived across versions. A checked archive
+classification distinguishes bootstrap/standalone root creation from split's
+inactive own-title creation. It supplies earlier root providers in canonical
+prefixes. A prefix induction derives actual execution, partition, shape and the
+exact active set; induction over honest client history then derives the archive
+classification itself. The final theorem takes honest network reachability,
+not assumed replay acceptance or structural invariants.
+
+Pinned classification checks cover 238 prefixes of 40 causal ideals, with 198
+active-instance memberships and 95 excluded split-title memberships. Directed
+cases retain empty and all-deleted roots, and distinguish physical pollution of
+an inactive title from membership in the structural active set. An honest
+lower-key create preceding bootstrap refutes a tempting proof shortcut; the
+proof now derives initial-name freshness at arbitrary bootstrap positions.
+These are model and invariant findings, not additional demo bugs.

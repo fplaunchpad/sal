@@ -16,7 +16,7 @@ open NotionCoreSliceForest (FreshMarker)
 /-- The complete create/marker/move transaction executes and restores the
 partition and strong shape. No next acceptance, desired output forest,
 selected owner, name freshness or recursive routing result is assumed. -/
-theorem canonical_split_preserves (network : NotionCorePayloadNetwork.State)
+theorem canonical_split_preserves_active (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
     (pre suffix : List Transaction) (tx : Transaction)
     (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
@@ -26,7 +26,8 @@ theorem canonical_split_preserves (network : NotionCorePayloadNetwork.State)
     (payload : tx.payload = .split block inst origin)
     (activeInstance : ActiveInstance state (blockName inst)) :
     ∃ result, applyTransaction state tx = some result ∧
-      Partitioned result ∧ ShapeInvariant result := by
+      Partitioned result ∧ ShapeInvariant result ∧
+      ∀ key, ActiveInstance result key ↔ ActiveInstance state key := by
   obtain ⟨created,rows,createStep,integrated,stage,rawForest,emptyTarget,_⟩ :=
     canonical_split_marker_phase network reachable peer pre suffix tx position state accepted
       partitioned block inst origin payload
@@ -71,8 +72,31 @@ theorem canonical_split_preserves (network : NotionCorePayloadNetwork.State)
   refine ⟨{raw with forest := forest},
     split_transaction_of_atomic state created tx block inst origin rows forest payload createStep
       integrated stage rawForest atomic,finalPart,?_⟩
-  exact atomic_split_shape_preserves state raw target marker forest shapeInvariant rawForest rawShape
-    emptyTarget freshMarker freshTarget atomic
+  constructor
+  · exact atomic_split_shape_preserves state raw target marker forest shapeInvariant rawForest rawShape
+      emptyTarget freshMarker freshTarget atomic
+  · intro key
+    exact atomic_split_active (physical raw) marker target state.forest forest shapeInvariant.1
+      freshMarker freshTarget inactive emptyTarget atomic key
+
+/-- Compatibility projection retaining just transaction success and the two
+structural invariants. The strengthened theorem also classifies active instances. -/
+theorem canonical_split_preserves (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
+    (block inst : BlockKey) (origin : NotionCoreOriginTree.Origin)
+    (payload : tx.payload = .split block inst origin)
+    (activeInstance : ActiveInstance state (blockName inst)) :
+    ∃ result, applyTransaction state tx = some result ∧
+      Partitioned result ∧ ShapeInvariant result := by
+  obtain ⟨result,step,part,shape,_⟩ := canonical_split_preserves_active network reachable peer pre suffix tx
+    position state accepted partitioned shapeInvariant block inst origin payload activeInstance
+  exact ⟨result,step,part,shape⟩
+
+#print axioms canonical_split_preserves_active
 
 #print axioms canonical_split_preserves
 end Sal.MRDTs.Instances.NotionCoreMachineCanonicalSplit

@@ -38,6 +38,34 @@ theorem bootstrap_shape (atoms : List Nat) :
     ∃ state, applyTransaction {} (NotionCorePayload.bootstrap atoms) = some state ∧ ShapeInvariant state :=
   ⟨NotionCoreMachineBootstrap.seeded atoms,NotionCoreMachineBootstrap.bootstrap_executes atoms,seeded_shape atoms⟩
 
+/-- A fresh standalone root may contain arbitrary physical text. Other
+instances retain their old contents, so old inactive titles stay empty. This
+also covers bootstrap following independent earlier creations. -/
+theorem fresh_root_frame_shape (state result : State) (bid : Nat)
+    (prior : ShapeInvariant state) (fresh : bid ∉ state.forest.map NotionCoreSliceForest.Block.id)
+    (forest : result.forest = state.forest ++ [⟨bid,NotionCoreSliceForest.freshTitle bid⟩])
+    (other : ∀ key, key ≠ bid → physical result key = physical state key) : ShapeInvariant result := by
+  let created := NotionCoreSliceForest.create (shapeView state) bid
+  have createInvariant := NotionCoreSliceForest.create_preserves (shapeView state) bid prior fresh
+  have activeNew : ∃ block ∈ created.blocks, (active block.title).start.1 = bid := by
+    exact ⟨⟨bid,NotionCoreSliceForest.freshTitle bid⟩,by simp [created,NotionCoreSliceForest.create],rfl⟩
+  have updated := NotionCoreSliceForest.updateInstance_preserves created bid (physical result bid)
+    createInvariant activeNew
+  have view : shapeView result = NotionCoreSliceForest.updateInstance created bid (physical result bid) := by
+    apply view_ext
+    · exact forest
+    · funext key
+      by_cases selected : key = bid
+      · subst key
+        simp [shapeView,NotionCoreSliceForest.updateInstance,NotionCoreSliceForest.write]
+      · simpa [shapeView,NotionCoreSliceForest.updateInstance,NotionCoreSliceForest.write,
+          created,NotionCoreSliceForest.create,selected] using other key selected
+  unfold ShapeInvariant
+  rw [view]
+  exact updated
+
+#print axioms fresh_root_frame_shape
+
 /-- Literal fresh create supplies exactly the old source-tree create view. -/
 theorem fresh_create_view (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)

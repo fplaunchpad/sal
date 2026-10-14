@@ -153,6 +153,15 @@ private theorem selection_data (state : State) (block : BlockKey) (start stop : 
           simp [selectErase, selected, head, decoded] at prepared
           exact ⟨addresses, first, inst, id, rfl, head, decoded, prepared⟩
 
+/-- Successful deletion preparation emits only an erase payload; no
+insert/split instance-selection obligation is hidden in this request case. -/
+theorem selectErase_kind (state : State) (block : BlockKey) (start stop : Nat) (payload : Payload)
+    (prepared : selectErase state block start stop = some payload) :
+    ∃ inst ids, payload = .erase block inst ids := by
+  obtain ⟨_,_,inst,_,_,_,_,preparedInst⟩ := selection_data state block start stop payload prepared
+  obtain ⟨_,ids,_,_,equal⟩ := preparation_data state block inst start stop payload preparedInst
+  exact ⟨inst,_,equal⟩
+
 theorem selectErase_references (network : NotionCorePayloadNetwork.State)
     (session : NotionRunAllocation.Session) (txs : List Transaction) (state : State)
     (received : ∀ tx ∈ txs, ∃ entry ∈ network.entries, entry.tx = tx ∧

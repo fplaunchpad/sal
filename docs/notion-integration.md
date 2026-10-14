@@ -98,15 +98,17 @@ required instances even for metadata-only creation. The next nonempty insert
 and erase transactions execute and preserve the all-reference partition from
 its accepted prior-prefix invariant, without caller-supplied execution guards.
 
-The remaining correspondence is still global. Slice forest, endpoint ownership
-and displayed block order must be preserved with those actual tables in the same
-execution, including empty inactive title roots. Per-instance owner uniqueness
+The remaining correspondence is semantic: actual rendering and displayed block
+order must be connected to the independent specification in the same execution.
+Slice forest shape, endpoint ownership and empty inactive title roots are now
+preserved throughout honest canonical replay. Per-instance owner uniqueness
 holds at atomic boundaries: the split opcode temporarily duplicates the owner
 until movement assigns the right reference to its fresh block. Detachment
 also briefly removes interval coverage before append; the two new pinned phase
 traces preserve these internal states and distinguish an incorrectly skipped
-move from the correct final ownership. The new network
-is partial: a successful request transition does not establish that the resulting archive reconstructs. Core
+move from the correct final ownership. The network
+remains partial at preparation: honest archives now reconstruct, but every valid
+positional request has not yet been proved to prepare successfully. Core
 deletion must also be proved total on the supported normal shape; general
 multi-instance grouping after merge is not implemented in this core model.
 The typed range codec now has exact sorted roundtrip and deletion-effect proofs;
@@ -120,8 +122,7 @@ The item-only typed admission counterexample is now kernel checked: unseeded
 START insertion creates no title, so a later split cannot find a slice. A
 separate creator-aware relation excludes it. Actual replay now derives block
 and instance creators, and actual create/insert/split preparation derives
-metadata guards from that provenance. This is a source-preparation increment,
-not a proof of future replay success. Honest concurrent splits also refute
+metadata guards from that provenance. These preparation results now feed the honest replay theorem described below. Honest concurrent splits also refute
 requiring replay origin ownership to equal the original requested block.
 Neither ordinary nor recursive Notion document correctness is claimed.
 
@@ -160,22 +161,35 @@ correspondence. The [research record](notion-research.md),
 [proof boundary](notion-proof.md), and [source correspondence analysis](notion-core-correspondence.md)
 provide theorem and assumption details.
 
-The current increment proves actual bootstrap success and partition preservation,
-canonical fresh-create and checked marker progress, and complete canonical split
-success with joint partition/shape preservation. The split theorem retains an
-explicit active-source-instance premise in the old canonical state. Actual local
-client preparation derives active selection in the issuer state; transporting
-that fact across canonical versions remains open. A new pinned-source and
-kernel-checked raw inactive-title countermodel explains why creator knowledge
-alone is insufficient. This is not a fourth demo bug. The structural split proof
-retains empty titles and restores ownership after the transient detach/move phases.
+The current increment proves `honest_prefix_reconstruct` and `honest_reconstruct`
+from actual `MachineNetwork.Reach` alone. Every canonical transaction prefix
+executes successfully and preserves the all-reference partition, normal forest
+shape, empty inactive titles, and exact active-instance classification. Archive
+root provenance is derived by induction on actual successful client requests:
+old reconstruction identifies the selected active instance with a received
+bootstrap or standalone-create provider, and emission records that provider in
+the new transaction's causal past. A separate canonical-prefix induction uses
+that provenance to discharge the next transaction's guards. The composition
+requires no free prior-acceptance, partition, shape or active-selection premise.
+
+Bootstrap is not assumed to sort first. A pinned honest create-before-receiving-
+bootstrap trace and kernel-checked counterpart reject that tempting assumption;
+fresh bootstrap succeeds in an arbitrary preceding state with derived initial
+name freshness. The raw inactive-title countermodel remains a nonbug boundary
+control. There are still three confirmed demo bugs.
+
+The theorem covers networks of successful actual requests, whole-version
+exchanges and clock gaps. It does not prove total preparation for all valid
+positional requests, the visible editing contract, decoded JavaScript equivalence,
+or the same-witness RA/history bridge. Neither ordinary nor recursive Notion
+document correctness is claimed.
 
 Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the complete atomic split preservation increment:
-61 Notion modules (3,472 Lean jobs), sixteen research result groups, the production
+Both gates passed for the honest canonical replay increment:
+65 Notion modules (3,476 Lean jobs), seventeen research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
 187 runtime tests, and validation of 569 stored benchmark records. All current
 research result records exactly match the saved evidence, including the

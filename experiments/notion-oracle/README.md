@@ -64,6 +64,7 @@ python3 experiments/notion-oracle/run.py --trace client-provenance-controls.mjs
 python3 experiments/notion-oracle/run.py --trace delete-group-controls.mjs
 python3 experiments/notion-oracle/run.py --trace split-phase-controls.mjs
 python3 experiments/notion-oracle/run.py --trace inactive-title-controls.mjs
+python3 experiments/notion-oracle/run.py --trace active-instance-controls.mjs
 ```
 
 The full reachable run intentionally exits 1 when it discovers the saved local
@@ -299,3 +300,13 @@ confirmed demo bug. The Lean counterpart in
 `NotionCoreMachineInactiveTitleBoundary` proves creator admission and normal
 tree shape can coexist with failure of inactive-title emptiness. It uses the
 same instance-choice distinction with a different fresh session allocation.
+
+
+`active-instance-controls.mjs` records four classification results. It compares
+structural active leaf instances with independently decoded bootstrap/standalone
+create providers across 238 prefixes of the existing nine-event ledger, then
+checks empty/deleted/repeated-split cases and a separately fabricated inactive
+title write. The final honest trace creates at `@1` without initial receipts,
+then receives `A1` bootstrap: canonical order is create, bootstrap. Saved literal
+transactions and controls are in `active-instance-observations.jsonl`; no new
+demo bug is claimed.

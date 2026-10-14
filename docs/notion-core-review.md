@@ -1751,3 +1751,85 @@ validated benchmark records. All research output records matched the saved
 JSON evidence; replay-prefix records are distributed across the existing table,
 partition and structural-instrumentation evidence files. No new Notion module
 is registered as a verified document datatype.
+
+## Active-root classification and nonfirst bootstrap review
+
+The generic fresh-bootstrap extension, fresh-root shape frame, strengthened
+CanonicalSplit active-set theorem, and prepared_root_knowledge helper all
+independently check cleanly with standard axioms. Fresh bootstrap accepts an
+arbitrary old partitioned state when initial block/instance names are absent;
+it does not require an empty prefix. Fresh-root shape allows arbitrary own
+physical contents while framing other instances. Complete splitting preserves
+the exact old active-instance set, excluding the fresh destination's own title.
+The preparation helper derives received root knowledge from actual local
+selection and root classification; its root-classification premise is an old
+state invariant, not desired acceptance of a new request.
+
+The new active-instance oracle independently derives expected roots from literal
+bootstrap/standalone-create operations and compares them to actual structural
+leaves. Across 40 causal ideals and 238 atomic prefixes it checks 198 active
+memberships and excludes 95 split-title occurrences. Six additional directed
+snapshots cover standalone empty creation, all visible text deleted, and repeated
+empty/inherited splits. The hand-derived active set remains block-A and S-block-4.
+A separately fabricated own-title insertion breaks physical emptiness without
+adding an active tree instance, so root classification alone is not EmptyInactive.
+The honest empty-receipt @ replica creates at @1 before receiving A1 bootstrap;
+canonical order is @1 then A1, Map order is independent-created block then
+initial block, and display order places ab before the empty independent block.
+This rejects bootstrap-first assumptions without asserting a demo bug. Four
+literal records are retained; the shared instrumentation was not edited.
+
+The frozen RootReplay was independently read and kernel checked cleanly. Its
+canonical-prefix theorem derives actual success, Partitioned, ShapeInvariant,
+and exact ActiveInstance iff prior root-creator metadata from CreatorReach and
+archive RootProvenance. No prefix acceptance, partition, shape, or active guard
+is supplied. Reverse induction constructs the prior state and uses exact root
+providers to discharge selected-instance guards for the next insert/split.
+Erase retains shape without an active-target guard. Bootstrap uses derived initial
+name freshness and the generic arbitrary-old-state frame, so the independent
+create-before-bootstrap control is admitted. RootProvenance is a structural
+archive condition, not a rendered-state equation; deriving it from actual honest
+requests is the separate final HonestReplay composition reviewed by the source
+agent. This paragraph does not independently certify that later composition.
+
+The gate now includes actual RootCreators, MachineRootReplay, MachineHonestReplay,
+and BootstrapProvenance module paths and the active-instance trace: 65 modules
+and 17 result series. Syntax checks pass. No full gate was run by this reviewer
+while the main induction was being completed.
+
+Independent source-audit review of the frozen `MachineHonestReplay` and its
+`MachineRootReplay` composition found no circular proof or hidden output
+premise. The network induction uses the preceding archive's root provenance
+to derive actual reconstruction, partition, normal shape, empty inactive
+titles, and exact active-root classification. Actual local materialization and
+internal decoding then identify the new insert/split instance with a received
+root creator. Emission records that provider in the new transaction's causal
+past. This establishes the next archive property without assuming its desired
+reconstruction. The canonical prefix induction separately derives each actual
+next transaction's success; bootstrap may follow independent lower-key creates
+and its initial-instance freshness is proved rather than assumed.
+
+`honest_root_provenance`, `honest_prefix_reconstruct`, and `honest_reconstruct`
+therefore remove the former free root-provenance, prior-acceptance, partition,
+and shape guards from their public conclusions. Their history domain is
+`MachineNetwork.Reach`: a request transition requires an actual successful
+`issue` result. These theorems establish reconstruction progress for networks
+built from successful positional requests, whole-version exchanges, and clock
+gaps; they do not establish that every valid nonempty positional request can
+prepare and issue successfully. Deletion preparation totality remains separate.
+They also do not establish the independent document specification, five document
+VCs, RA/history correctness, search-label runtime validation, or equivalence of
+the typed interpreter with a decoded JavaScript execution. Those distinctions
+are essential to the positive reconstruction result's scope.
+
+## Integrated honest replay checkpoint validation
+
+The parent reviewed the root-provider definitions, arbitrary-position bootstrap,
+active-set preservation and both induction compositions. Independent reviews
+above confirm the noncircular dependency and successful-request scope.
+Both full gates exited successfully: 65 research modules (3,476 Lean jobs),
+17 oracle result groups, the production ledger build (3,694 jobs), 18 exact
+public contracts and axiom audit, 187 runtime tests, and 569 benchmark records.
+All 17 research result series matched saved JSON evidence; the full replay
+instrumentation matches the existing replay-slice-partition snapshot. No Notion
+document certificate was added to the production ledger.

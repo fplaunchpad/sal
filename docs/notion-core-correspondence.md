@@ -869,3 +869,43 @@ different canonical prefix requires the honest-history provenance argument.
 The raw inactive-title countermodel prevents dropping this obligation in favor
 of creator knowledge. This theorem closes the conditional complete-split case,
 not full reconstruction or the document-history/RA certificate.
+
+
+## Honest-network replay without supplied structural guards
+
+`NotionCoreRootCreators` classifies root providers by payload: bootstrap
+creates the initial active instance, standalone create creates an issued active
+instance, and split creates only an inactive own-title instance. Its archive
+`RootProvenance` property records a received root provider for each insert/split
+selection. Canonical closure places that provider in the actual earlier
+transaction prefix, rather than merely proving some global creator exists.
+
+`NotionCoreMachineRootReplay.canonical_prefix_reconstruct` derives execution,
+`Partitioned`, `ShapeInvariant`, and the exact root-created active-instance set
+for every canonical prefix, assuming creator reachability and this archive
+property. The induction handles all payload kinds. It derives insertion's
+nonempty run from actual admission, preserves inactive emptiness through erase,
+and uses exact active-instance preservation through complete split.
+
+`NotionCoreMachineHonestReplay.honest_root_provenance` then derives the archive
+property by induction on actual positional-request network history. At each
+request, the old archive property supplies the issuer's reconstruction
+invariants; actual local preparation selects an active instance; exact root
+classification identifies a received root provider for the new payload.
+`honest_prefix_reconstruct` and `honest_reconstruct` consequently require only
+`NotionCoreMachineNetwork.Reach`, a peer, and the chosen canonical prefix.
+No prefix acceptance, partition, shape, selected-owner, active-instance or
+root-provenance premise remains in these final theorems.
+
+Bootstrap is not assumed first. A peer without initial receipts can issue a
+lower-key standalone create before later receiving bootstrap. The pinned
+`@1`/`A1` trace and kernel counterpart preserve that case.
+`NotionCoreBootstrapProvenance` derives initial-name freshness in the actual
+prior prefix; generalized bootstrap execution preserves independent earlier
+blocks and their physical contents.
+
+This closes reconstruction progress and the structural replay induction for
+the typed core. Network reachability records successful actual request issuance;
+it does not prove that every valid positional request is accepted. Actual
+render/specification alignment, total preparation, wire/label validation and
+the same-witness document-history/RA theorem remain separate obligations.
