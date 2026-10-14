@@ -8,6 +8,17 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Executable Notion refinement (completed research goal)
+
+- [x] Connect the actual executable core to an explicit semantics/compiler
+  boundary; specify retained indexes, archive and allocator metadata.
+- [x] Prove initial, receipt and direct-merge representation preservation,
+  including late arrivals and atomic transactions.
+- [x] Prove executable query correspondence using the creator-fold display;
+  retain the original honest client protocol and preparation boundary.
+- [x] Validate and measure the connected executable against the pinned oracle;
+  retain counterexamples and state theorem, measurements and limits for a paper.
+
 ## Incremental Notion core research (isolated branch)
 
 - [x] Test direct structured integration/merge, starting with insertion and late

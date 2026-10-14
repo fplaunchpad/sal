@@ -1,0 +1,34 @@
+{
+  "kind": "native-build-snapshot",
+  "binarySha256": "f2ab88e3f5645490cc0e60d2f7c45947b851798504b7a4d03cfffedc3f80ca48",
+  "binaryBytes": 160055888,
+  "leanToolchain": "leanprover/lean4:v4.28.0",
+  "gitHeadAtReportTime": "1b8ffa3cb6cc4b8654aff1458131dedd0a199298",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "sourceHashesAtReportTime": {
+    "Sal/MRDTs/Instances/NotionCoreRuntimeAdapter.lean": "f6c38484a0f0900896da25bdab24fbe1daa45c29884a8083e049809f38fa299c",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeAdapterProofs.lean": "c59b1a4c393831a1193a90852fc1d338d3a23079dc3f006a08c776bde47f75fa",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeCompatibility.lean": "6d511552d1c2a03be124c77503d6099c57af9f13cfc4baaa2c0d849f9efab020",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeEngine.lean": "896c6bf9bdb9daa679bfda4d0a861ddb63f110da02b944b39f124c3976f7008d",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeEngineProofs.lean": "a8f29fabc8abc6c185f6eda08e7f28e0c27dc5b30c67bb5f1f00c157c6d3e114",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeIndex.lean": "fed0b6a00e009823dba6253cc67b55ba0baf8e4428b3303f69f22bd2c9d647f6",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeMain.lean": "df83967277a1120b3b4e4617826e737e2cd4384a53be0a4dfd8eb0aaa9319132",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeMetadata.lean": "60b09645c90698715841463f11a09d413f55aa63c8e38a7783b3c90f32d398fe",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeProgress.lean": "53bd6c9c8015ccced9fc23896d23151633ebdd30d3ce5199646ea1026b7441a4",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeQuery.lean": "b90b1d258c57ea6c4a0753e21d72592b6408de0045caba2aa5c5c0037f3c4c81",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeRefinement.lean": "02791498679854e36b6fc678d9f391c157857fe88e8b6d736c3866eb46c179ae",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeState.lean": "e40761a25685a825b57c07e11ddc637a3ec8e48f1e755b256ca3393382697f08",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeStateProofs.lean": "6abbe435c0e6d5b28c16ae896686b15a3361f6173ea2f72008cf3aabaada6f22",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeTheorem.lean": "3549afa8b3e99b30c48c9b20d1a8ed8a7425d3f7efc1f23452c0dd30c66c1d77",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeTypes.lean": "997b122a00274b1ed5c6a83da0a7e1be3f21a1f5f74ba37aff9ee057420731e4",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeWire.lean": "914eb6d6788cd97715b68bb8cbc5410bab3a175515a2383efd52fb765a4f84bf"
+  },
+  "bridgeHashes": {
+    "experiments/notion-incremental/native-wire.mjs": "46a6f5b18bb1f08b32df88d282f3ec6e425d3a855feaa45fa0ec0944f3beec19",
+    "experiments/notion-incremental/native-harness.mjs": "554929c2df4ab1bcf4f3e8ad4b4c5fc9619f19cd1a5f81a554c503aba3a0be8c"
+  },
+  "pinnedManifestSha256": "af626566ba46f69fcff56c2bf46109cb291b17ca05dc0913009ddd121f2b8cdf",
+  "scope": "Binary used for native-observations; source/bridge hashes captured at reporting time while proof additions may continue; Git HEAD alone excludes local changes. Compiler/runtime and wire parsing remain explicit trust boundaries.",
+  "nodeVersionAtReportTime": "v26.3.1"
+}

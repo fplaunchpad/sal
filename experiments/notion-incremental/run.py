@@ -10,6 +10,9 @@ p.add_argument('--repeats',type=int,default=5)
 p.add_argument('--output',type=pathlib.Path)
 p.add_argument('--display-fold-only',action='store_true')
 p.add_argument('--heap-comparison',action='store_true')
+p.add_argument('--native-binary',type=pathlib.Path)
+p.add_argument('--native-fixtures-only',action='store_true')
+p.add_argument('--native-controls-only',action='store_true')
 a=p.parse_args()
 with tempfile.TemporaryDirectory(prefix='sal-notion-incremental-') as d:
  work=pathlib.Path(d);(work/'package.json').write_text('{"type":"module"}\n')
@@ -18,6 +21,11 @@ with tempfile.TemporaryDirectory(prefix='sal-notion-incremental-') as d:
   target=work/module['file'];subprocess.run(['curl','-fsSL',module['url'],'-o',str(target)],check=True)
   if hashlib.sha256(target.read_bytes()).hexdigest()!=module['sha256']:raise SystemExit(f"Source changed: {module['file']}")
  command=['node','--expose-gc',str(work/'benchmark.mjs'),'--cases',str(a.cases),'--sizes',a.sizes,'--repeats',str(a.repeats)]
+ if a.native_binary or a.native_fixtures_only:
+  command=['node',str(work/'native-harness.mjs'),'--cases',str(a.cases),'--sizes',a.sizes,'--repeats',str(a.repeats)]
+  if a.native_binary:command.extend(['--binary',str(a.native_binary.resolve())])
+  if a.native_fixtures_only:command.append('--fixtures-only')
+  if a.native_controls_only:command.append('--controls-only')
  if a.heap_comparison:
   output=a.output.open('w') if a.output else None
   try:

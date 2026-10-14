@@ -53,11 +53,11 @@ function check(w){
   const union=[...new Map([...w.batches[i],...w.batches[j]].map(tx=>[idKey(tx.id),tx])).values()];
   const before=left.counts.transactionsIntegrated;left.merge(right);
   assert.equal(left.counts.transactionsIntegrated,before,'direct join must not interpret transaction payloads');
-  assert.deepEqual(left.query(),oracle(union));assert.deepEqual(left.query('fold'),oracle(union));equalityChecks+=2;
+  assert.deepEqual(left.query(),oracle(union));assert.deepEqual(left.query('tree'),oracle(union));equalityChecks+=2;
   const reverse=new Structured(w.batches[j]).merge(new Structured(w.batches[i]));assert.deepEqual(reverse.query(),left.query());equalityChecks++;
  }
- const state=new Structured(w.initial),past=[...w.initial];assert.deepEqual(state.query(),oracle(past));assert.deepEqual(state.query('fold'),oracle(past));equalityChecks+=2;
- for(const tx of w.schedule){state.receive(tx);past.push(tx);assert.deepEqual(state.query(),oracle(past),JSON.stringify({seed:w.seed,mode:w.mode,tx,past}));equalityChecks++;assert.deepEqual(state.query('fold'),oracle(past));equalityChecks++;assert.equal(state.receive(tx),false);}
+ const state=new Structured(w.initial),past=[...w.initial];assert.deepEqual(state.query(),oracle(past));assert.deepEqual(state.query('tree'),oracle(past));equalityChecks+=2;
+ for(const tx of w.schedule){state.receive(tx);past.push(tx);assert.deepEqual(state.query(),oracle(past),JSON.stringify({seed:w.seed,mode:w.mode,tx,past}));equalityChecks++;assert.deepEqual(state.query('tree'),oracle(past));equalityChecks++;assert.equal(state.receive(tx),false);}
  for(const batch of w.batches){const branch=new Structured(batch);const before=state.transactions.size;state.merge(branch);assert.equal(state.transactions.size,before);assert.deepEqual(state.query(),oracle(past));equalityChecks++;}
  return state;
 }
@@ -99,7 +99,7 @@ if(args.includes('--heap-engine')) {
  const after=process.memoryUsage();
  // Retain state and prepared workload across GC, then verify after measurement.
  const actual=state.query(),expected=oracle(txs);assert.deepEqual(actual,expected);
- console.log(JSON.stringify({kind:'retained-heap',engine:name,size,mode,seed:w.seed,
+ console.log(JSON.stringify({kind:'retained-heap',engine:name,displayStrategy:name==='indexed-structure'?'creator-fold':'pinned-interpreter',size,mode,seed:w.seed,
   nodeVersion:process.version,platform:process.platform,architecture:process.arch,
   beforeHeapUsed:before.heapUsed,afterHeapUsed:after.heapUsed,retainedHeapDelta:after.heapUsed-before.heapUsed,
   beforeRss:before.rss,afterRss:after.rss,transactions:txs.length,blocks:actual.length,
@@ -108,7 +108,7 @@ if(args.includes('--heap-engine')) {
 }
 const negativeControls=controls();let metadata={inserts:0,splits:0,deletes:0,creates:0,lateArrivals:0};
 for(let seed=1;seed<=cases;seed++)for(const mode of ['insertion','mixed']){const w=workload(seed,24,mode);check(w);for(const key of Object.keys(metadata))metadata[key]+=w.metadata[key];}
-console.log(JSON.stringify({kind:'correctness',seedRange:[1,cases],cases:cases*2,equalityChecks,metadata,negativeControls,scope:'Honest pinned Replica issuance and whole-version receipt; independently maintained executable structure against pinned reconstruction; no extraction claim.'}));
+console.log(JSON.stringify({kind:'correctness',defaultDisplay:'creator-fold',comparisonDisplay:'explicit-tree',seedRange:[1,cases],cases:cases*2,equalityChecks,metadata,negativeControls,scope:'Honest pinned Replica issuance and whole-version receipt; independently maintained executable structure against pinned reconstruction; no extraction claim.'}));
 function measure(fn){const start=performance.now();const value=fn();return {ms:performance.now()-start,value};}
 if(args.includes('--display-fold-only')){
  for(const size of sizes)for(const mode of ['insertion','mixed']){
@@ -129,7 +129,7 @@ if(args.includes('--display-fold-only')){
   const merged=measure(()=>left.merge(right));const mergedQuery=measure(()=>left.query());
   assert.deepEqual(mergedQuery.value,oracle([...new Map([...w.mergeBatches[0],...w.mergeBatches[1]].map(t=>[idKey(t.id),t])).values()]));
   const archiveBytes=Buffer.byteLength(JSON.stringify([...state.transactions.values()]));
-  console.log(JSON.stringify({kind:'benchmark',engine:name,size,mode,seed:w.seed,repeat,metadata:w.metadata,
+  console.log(JSON.stringify({kind:'benchmark',engine:name,displayStrategy:name==='indexed-structure'?'creator-fold':'pinned-interpreter',size,mode,seed:w.seed,repeat,metadata:w.metadata,
    updateMs:update.ms,queryMs:query.ms,mergeMs:merged.ms,mergedQueryMs:mergedQuery.ms,
    updateTransactions:w.schedule.length,mergeInputTransactions:right.transactions.size,mergeAddedTransactions:left.transactions.size-w.mergeBatches[0].length,
    memory:{kind:'explicit-proxy-not-heap-measurement',archiveJsonBytes:archiveBytes,...state.memoryProxy()},

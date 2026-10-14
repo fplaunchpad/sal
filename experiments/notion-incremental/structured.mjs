@@ -62,7 +62,7 @@ export class Structured {
   for(const [key,tx] of other.transactions)if(!this.transactions.has(key))this.transactions.set(key,clone(tx));
   this.counts.merges++;return this;
  }
- query(display="tree") {
+ query(display="fold") {
   this.counts.queries++;const texts=new Map([...this.blocks.keys()].map(id=>[id,[]]));
   for(const [instanceId,inst] of this.instances){let owner=instanceId;const stack=[...(inst.children.get(idKey(START))??[])].reverse();
    while(stack.length){const row=stack.pop();this.counts.rowsVisited++;

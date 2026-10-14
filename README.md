@@ -40,6 +40,16 @@ memory proxies and validation-overhead limitations. The JavaScript adapter and
 Lean model are separate artifacts; no extraction or production equivalence is
 claimed.
 
+The [executable refinement record](docs/notion-executable-refinement.md) connects
+a compiled Lean core to its concrete hash indexes and allocator sidecar.
+Receipt/merge representation preservation, honest-domain acceptance and the
+native query theorem check. A constructive endpoint receives any ordering of
+an honest closed version into the empty engine and returns the reference answer. The pinned native
+oracle run passed 10,008 query comparisons. Native query is slower on the
+measured mixed workload, so the earlier JavaScript speedups must not be
+attributed to this executable. The compiler and tested JSON codec remain
+explicit trusted boundaries.
+
 ### Notion core — checked protocol entry
 
 The [Notion core catalogue entry](docs/notion-catalogue.md) covers a typed

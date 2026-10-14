@@ -1,0 +1,224 @@
+{
+  "correctness": null,
+  "measurement": "Native timer nanoseconds converted to milliseconds, reported separately from complete JSON/IPC roundtrip; median of recorded repeats; preparation and wire decode outside core timer",
+  "benchmarks": [],
+  "nativeCorrectness": {
+    "kind": "native-correctness",
+    "cases": 200,
+    "checks": 10008,
+    "seedRange": [
+      1,
+      100
+    ],
+    "scope": "Original pinned honest client transactions and whole versions; native queries compared to pinned oracle after duplicate/late receipt and direct joins; codec trusted/tested until proved."
+  },
+  "nativeMetadataControl": {
+    "kind": "native-metadata-control",
+    "sourceClock": 8,
+    "targetClock": 2,
+    "cloneAfterGapClock": 2,
+    "gapNotTransmitted": true,
+    "cloneDoesNotCopyGap": true,
+    "scope": "Local six-tick allocator gap is preserved locally; merging unchanged receipts does not import source-only allocation gaps."
+  },
+  "nativeBenchmarks": [
+    {
+      "mode": "insertion",
+      "size": 32,
+      "repeats": 5,
+      "updateTransactions": 32,
+      "lateArrivals": 14,
+      "nativeMs": {
+        "updateElapsedNs": 0.090542,
+        "queryElapsedNs": 0.039375,
+        "mergeElapsedNs": 0.017833,
+        "mergedQueryElapsedNs": 0.056917
+      },
+      "roundTripMs": {
+        "updateMs": 0.5172490000006746,
+        "queryMs": 0.05404100000009748,
+        "mergeMs": 0.02995799999985138,
+        "mergedQueryMs": 0.07554099999993014
+      },
+      "updateStats": {
+        "blocks": 1,
+        "clock": 24,
+        "cuts": 0,
+        "rows": 39,
+        "transactions": 33
+      },
+      "mergeStats": {
+        "blocks": 1,
+        "clock": 25,
+        "cuts": 0,
+        "rows": 41,
+        "transactions": 35
+      }
+    },
+    {
+      "mode": "insertion",
+      "size": 128,
+      "repeats": 5,
+      "updateTransactions": 128,
+      "lateArrivals": 68,
+      "nativeMs": {
+        "updateElapsedNs": 0.541251,
+        "queryElapsedNs": 0.324834,
+        "mergeElapsedNs": 0.0855,
+        "mergedQueryElapsedNs": 0.371125
+      },
+      "roundTripMs": {
+        "updateMs": 2.5950780000009672,
+        "queryMs": 0.35495800000012423,
+        "mergeMs": 0.10020800000006602,
+        "mergedQueryMs": 0.40795799999978044
+      },
+      "updateStats": {
+        "blocks": 1,
+        "clock": 71,
+        "cuts": 0,
+        "rows": 142,
+        "transactions": 129
+      },
+      "mergeStats": {
+        "blocks": 1,
+        "clock": 72,
+        "cuts": 0,
+        "rows": 144,
+        "transactions": 131
+      }
+    },
+    {
+      "mode": "insertion",
+      "size": 512,
+      "repeats": 5,
+      "updateTransactions": 512,
+      "lateArrivals": 303,
+      "nativeMs": {
+        "updateElapsedNs": 4.071986,
+        "queryElapsedNs": 4.679,
+        "mergeElapsedNs": 0.91675,
+        "mergedQueryElapsedNs": 4.81575
+      },
+      "roundTripMs": {
+        "updateMs": 12.969046999997772,
+        "queryMs": 4.749667000000045,
+        "mergeMs": 0.9316249999997126,
+        "mergedQueryMs": 4.894041999999899
+      },
+      "updateStats": {
+        "blocks": 1,
+        "clock": 231,
+        "cuts": 0,
+        "rows": 556,
+        "transactions": 513
+      },
+      "mergeStats": {
+        "blocks": 1,
+        "clock": 232,
+        "cuts": 0,
+        "rows": 558,
+        "transactions": 515
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 32,
+      "repeats": 5,
+      "updateTransactions": 32,
+      "lateArrivals": 20,
+      "nativeMs": {
+        "updateElapsedNs": 0.086622,
+        "queryElapsedNs": 0.250834,
+        "mergeElapsedNs": 0.018541,
+        "mergedQueryElapsedNs": 0.321042
+      },
+      "roundTripMs": {
+        "updateMs": 0.5484160000000884,
+        "queryMs": 0.2752090000001317,
+        "mergeMs": 0.03008399999998801,
+        "mergedQueryMs": 0.3476670000000013
+      },
+      "updateStats": {
+        "blocks": 9,
+        "clock": 17,
+        "cuts": 8,
+        "rows": 29,
+        "transactions": 33
+      },
+      "mergeStats": {
+        "blocks": 9,
+        "clock": 18,
+        "cuts": 8,
+        "rows": 31,
+        "transactions": 35
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 128,
+      "repeats": 5,
+      "updateTransactions": 128,
+      "lateArrivals": 75,
+      "nativeMs": {
+        "updateElapsedNs": 0.567959,
+        "queryElapsedNs": 5.950875,
+        "mergeElapsedNs": 0.08925,
+        "mergedQueryElapsedNs": 6.44725
+      },
+      "roundTripMs": {
+        "updateMs": 2.7765860000008615,
+        "queryMs": 6.040166000000227,
+        "mergeMs": 0.10266700000011042,
+        "mergedQueryMs": 6.527875000000222
+      },
+      "updateStats": {
+        "blocks": 42,
+        "clock": 59,
+        "cuts": 28,
+        "rows": 104,
+        "transactions": 129
+      },
+      "mergeStats": {
+        "blocks": 42,
+        "clock": 60,
+        "cuts": 28,
+        "rows": 106,
+        "transactions": 131
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 512,
+      "repeats": 5,
+      "updateTransactions": 512,
+      "lateArrivals": 304,
+      "nativeMs": {
+        "updateElapsedNs": 3.376282,
+        "queryElapsedNs": 73.741375,
+        "mergeElapsedNs": 0.931458,
+        "mergedQueryElapsedNs": 75.639542
+      },
+      "roundTripMs": {
+        "updateMs": 11.609118000058515,
+        "queryMs": 74.01975000000311,
+        "mergeMs": 0.9491670000024897,
+        "mergedQueryMs": 75.9065830000036
+      },
+      "updateStats": {
+        "blocks": 179,
+        "clock": 223,
+        "cuts": 107,
+        "rows": 408,
+        "transactions": 513
+      },
+      "mergeStats": {
+        "blocks": 179,
+        "clock": 224,
+        "cuts": 107,
+        "rows": 410,
+        "transactions": 515
+      }
+    }
+  ]
+}
