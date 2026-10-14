@@ -2,7 +2,7 @@
 set -eu
 
 # Separate research gate: the production ledger intentionally does not register
-# an unfinished Notion document certificate.
+# this separately scoped typed Notion protocol certificate.
 lake build \
   Sal.MRDTs.Instances.NotionSplitSpec \
   Sal.MRDTs.Instances.NotionFormattingCounterexample \
@@ -97,6 +97,15 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreArchiveEvents \
   Sal.MRDTs.Instances.NotionCoreArchiveCertificate \
   Sal.MRDTs.Instances.NotionCoreIssuanceGuard \
+  Sal.MRDTs.Instances.NotionCoreCarrierExecution \
+  Sal.MRDTs.Instances.NotionCoreMachineExecution \
+  Sal.MRDTs.Instances.NotionCoreMachineGenesis \
+  Sal.MRDTs.Instances.NotionCoreMachineGenesisControl \
+  Sal.MRDTs.Instances.NotionCoreMachineSearchLabels \
+  Sal.MRDTs.Instances.NotionCoreWireNames \
+  Sal.MRDTs.Instances.NotionCoreProtocol \
+  Sal.MRDTs.Instances.NotionCoreMRDTClient \
+  Sal.MRDTs.Instances.NotionCoreMachinePreallocation \
   Sal.MRDTs.Instances.NotionCoreSliceForest
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")

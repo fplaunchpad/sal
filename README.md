@@ -44,12 +44,16 @@ ordered sequential history. This history theorem also covers arbitrary
 causally closed versions of one honest archive. Honest insertion, bounded
 deletion and splitting have their requested effects through issuance and
 reconstruction.
-The concrete query-bearing MRDT now has a conditional Sal witness: one source
-sorted event sequence supplies enumeration, required ordering, specification
-visibility and the independent query history. The five VCs derive its stored
-carrier correspondence. Constructing the common honest archive through the
-full initialized Sal execution, and source wire/search-label correspondence,
-remain open; this is not yet a complete document certificate.
+The concrete query-bearing MRDT now has a checked protocol-level Sal theorem:
+`NotionCoreProtocol.specification_ra`. From actual factory, guarded local,
+fork and merge steps, it derives one source-sorted witness satisfying event
+enumeration, required order, specification visibility and independent query
+history. The five VCs derive stored carrier correspondence; callers supply no
+archive coupling, desired answer or state image. Both ordinary and canonical
+recursive merge bases are covered. Local insert/split/delete effects reach the
+actual MRDT query. Physical search-label uniqueness and mathematical wire-name
+encoding are checked. JavaScript number/string/JSON extraction and literal
+interpreter correspondence remain an audited and tested external boundary.
 This research branch is outside the verified datatype registry and makes no
 claim about Notion production. The [bug catalogue](docs/notion-bugs.md) preserves
 the three confirmed demo failures and distinguishes admission countermodels.

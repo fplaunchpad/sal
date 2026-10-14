@@ -1,4 +1,112 @@
-# Core correspondence: source invariants and proof route
+# Core correspondence: current result and historical proof route
+
+## Current authoritative scope
+
+The typed create/insert/delete/split core now has an execution-derived Sal RA
+result. `NotionCoreProtocol.versions_witness` constructs the same event witness
+for carrier replay, required order, specification visibility, and the independent
+history's query answer for **every registered version**. `specification_ra`
+specializes this result to current heads. Their source-specific inputs are an
+injective replica-to-session assignment and actual `Protocol.Reach`; neither
+archive coupling, carrier equality, replay success, nor a desired document
+answer is a caller-supplied premise.
+
+This result covers ordinary Sal version merges and canonical recursive virtual
+merge bases. Those merges union immutable transactions; they are different from
+the demo's merge-block editing request, which is outside the verified fragment.
+The concrete carrier and actual checked document renderer are
+`NotionCoreMRDT.D`. Its query returns an `Option` answer, so an execution error is
+not silently replaced by an empty document. The independent history delegates
+to the existing retained-slot `CoreSpec`, with one atomic update group per
+transaction. It contains neither an archive nor a source-clock replay rule.
+
+The protocol has an explicit factory action from the initial source archive,
+followed by ordinary locally prepared requests. Empty forks can precede that
+action. Factory authorization is not inferred from a replica's locally empty
+finite store. Ordinary issuance preserves one allocator per assigned session,
+whole-run receipts, and captured mint past. Source compound IDs remain payload
+metadata; Sal's globally fresh outer timestamps have a separate domain.
+
+The pinned-source audit and executable evidence support the source model, but
+there is still no machine-checked JavaScript-to-Lean extraction theorem or claim
+about Notion's production service. The exact public-demo source hashes are in
+[the source manifest](../experiments/notion-oracle/sources.json); function-level
+source evidence is in [notion-source-model.md](notion-source-model.md).
+
+## What is connected now
+
+| Boundary | Checked artifact and result |
+| --- | --- |
+| Honest archive to replay | `MachineHonestReplay.honest_prefix_reconstruct_version` derives success, physical partitions, normal root/leaf shape, empty inactive titles, and exact active instances for every closed archive version and prefix. |
+| Physical machine to independent document | `MachineDocument*` derives display-ordered materialization and actual create/insert/erase/atomic-split transitions; `MachineHistory.honest_history_version` transports the same sorted transaction sequence to independent history admission. |
+| Source version to actual MRDT query | `MRDTArchive` relates the finite carrier to actual canonical replay and rendering. `MRDTClient.issued_update` relates actual issuance to `D.update` and its query. |
+| Positional client effects | `MRDTClient.insert_effect`, `split_effect`, and `erase_effect` derive the ordinary visible effect on the issuer's next concrete MRDT query. Bounds use visible string-iterator atoms; deletion uses a nonempty in-range interval. |
+| Five VCs to registered carrier | `NotionCoreMRDT.fiveVCs` and `represented_versions` reuse the finite-store VC induction with the real document query. Storage correctness alone is not presented as document correctness. |
+| Archive to the same Sal event witness | `ArchiveEvents` derives event/source-key uniqueness, source-order visibility, exact enumeration, and closed-version eligibility. `ArchiveCertificate` derives registered carrier equality through the VC representation. |
+| Actual Sal/source execution coupling | `MachineExecution`, `MachineGenesis`, and `IssuanceGuard` preserve the common archive, mint past, current heads, and allocator clocks through factory creation and guarded operations. `Protocol.Reach.paired` derives the coupling used by the final witness. |
+| Search-label lifecycle | `MachineSearchLabels.honest_mapping_guard` derives canonical labels and multiplicity-sensitive key uniqueness through actual closed-version replay, including split routing and movement. |
+| Literal wire names | `WireNames.honest_wire_mapping_guard` carries those labels to source-shaped block/item names and composite mapping keys; separator-bearing sessions do not create collisions on the stated domain. |
+| Finite empty participants | `MachinePreallocation.finite_source_participants` constructs a real empty-fork prefix and initial source pairing for any finite participant set. Source sessions, archive, clocks, and receipts remain unchanged. |
+
+The representation retains tombstones, split markers, inactive title anchors,
+parent links, and interval endpoints. Thus it justifies future addressed commands,
+not only equality of rendered text. Actual forest-map search order, per-instance
+RGA order, and displayed block order are distinct and are related by proofs.
+Sibling dominance follows from whole-run origin knowledge; transaction-first ID
+sorting alone is insufficient. At an inherited leaf's zero gap, actual preparation
+may select its moved marker rather than the convenience specification preparer's
+unused title anchor. The local effects use the structural `PreparedGap` relation,
+not false equality of the two prepared messages.
+
+Finite preallocation closes participant availability at initialization. It does
+not yet prove that every arbitrary timed source trace can be rearranged into a
+Sal protocol trace, nor that a post-factory Sal fork is the same action as creating
+a new empty source replica. The former copies its source's current snapshot.
+
+## External correspondence limits
+
+The final RA theorem is for the defined typed core and explicit protocol. The
+remaining external extraction obligations include JavaScript object/Map and
+transaction decoding, the source tree/label fields, conversion between strings
+and iterator atoms, and error/exception behavior outside valid client inputs.
+The parent-table, slice, range, and label models have direct audited source rules
+and directed controls, but these are not a compiler or execution-equivalence
+proof for the pinned modules.
+
+`WireNames` proves mathematical decimal and separator codec properties. Its
+agreement with JavaScript `Number.toString` is limited to positive safe-integer
+counters; conversion to JavaScript strings remains external. Source session
+comparison uses UTF-16 code-unit order. The model's opaque text atoms do not
+establish grapheme-index or unrestricted JavaScript input behavior. Local request
+progress covers existing blocks and valid natural-number positions/ranges;
+early empty requests emit no transaction. Arbitrary isolated transaction receipt
+with missing dependencies is outside the whole-version MRDT protocol.
+
+No document theorem for the demo's merge-block, unrestricted movement, removal,
+or formatting extensions follows from the core result. Three honest-client
+editing failures remain reproducible: reversed-range formatting can affect
+neither selected character; formatting `ac` can also affect `b` in another block;
+and a merge-derived `aX` split at zero yields `X | a` instead of `empty | aX`.
+See [the exact counterexamples](notion-research.md#small-counterexamples).
+These are three demo bugs, not counterexamples to the restricted typed core.
+
+## Current validation
+
+The final research gate passed 3,515 Lean jobs and all seventeen pinned result
+groups, including 575 systematic cases with zero failures. The production gate
+passed 3,694 Lean jobs, eighteen exact contracts and their axiom audit, thirteen
+contract controls, 187 JavaScript tests, and 569 benchmark records. These checks
+support the scoped artifacts above; they do not replace external JavaScript
+extraction. Notion remains outside the production theorem ledger.
+
+## Historical progress entries
+
+Everything below records the chronological proof investigation. Statements such
+as “not yet proved,” “open,” or “local component only” describe the checkpoint at
+which that entry was written and are superseded where the current overview above
+names a completed theorem. Historical build counts are checkpoint evidence, not
+a claim about the latest validation run. The current task list remains solely
+`PRIORITIZED_REMAINING_WORK.md`.
 
 This enquiry concerns honestly issued create/split/insert/delete transactions, with merge, slice movement outside split, removal of blocks, and formatting excluded. Source references use the exact seven hashes in `sources.json` and the function map in `notion-source-model.md`. The proposed invariants below are source-derived proof obligations; they are not yet a mechanized refinement theorem.
 

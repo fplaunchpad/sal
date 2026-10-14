@@ -8,17 +8,34 @@ request have an effect that it does not have. This is a result about the pinned
 educational demo, not Notion's production implementation or a limitation of
 Sal's five-VC theorem.
 
-The split/insertion/deletion-only milestone remains open. An independent
-identity-based sequential model passes bounded differential gates and has
-checked local effects, invariant preservation and guarded physical-history
-refinement. The actual typed core now has a checked structural replay theorem:
-every canonical prefix of every honestly generated network executes and
-preserves partition and shape. Actual display-ordered materialization now has
-exact independent-specification observations, and bounded valid core requests
-issue successfully. Actual create and erase transitions refine the existing
-source document. Insertion/split transition simulation, positional edit effects,
-source wire/label correspondence, and the Sal same-witness event/history bridge
-remain open.
+The typed split/insertion/deletion core now has a checked end-to-end result.
+`NotionCoreProtocol.versions_witness` derives one witness for each registered
+version's event enumeration, required order, specification visibility and
+actual MRDT query admission. `specification_ra` gives the corresponding
+full-input RA criterion for current heads. The proof uses the existing five
+VCs for the finite transaction carrier and a separate bridge into the
+independent identity-addressed grouped history specification. It covers actual
+ordinary and canonical recursive merge-base steps within an explicit honest
+protocol: source factory initialization is separate from guarded ordinary
+requests, and empty peers may fork before factory initialization.
+
+Actual valid local insert, bounded nonempty delete and split requests have their
+requested visible effect through issuance and issuer reconstruction.
+`MRDTClient.issued_update` transports actual issuance exactly to the concrete
+MRDT carrier update and next query. Create admits no predecessor or an existing
+predecessor; gaps and ranges use natural-number in-range bounds. Early no-ops
+emit nothing. These local effects concern the issuer's immediate observation,
+not replay of unchanged numeric requests after concurrency.
+
+This is verification of the source-audited typed adaptation, not a kernel proof
+of the fetched JavaScript program. Hash-pinned source audits and distinguishing
+traces support that correspondence. Checked mathematical range/name codecs and
+actual search-label uniqueness do not prove JavaScript JSON decoding,
+Number.toString/safe-integer behavior, or string-to-opaque-atom extraction.
+No production correspondence is established. The final research gate passed
+3,515 Lean jobs and all 17 pinned oracle groups; production checks passed
+3,694 jobs and 187 runtime tests. The merge/movement/formatting extension
+remains obstructed by the retained demo counterexamples.
 
 ## Enquiry and evidence boundaries
 
@@ -97,9 +114,9 @@ Boundary slots name positions at the beginning of split blocks, including empty
 blocks. Block identities distinguish placement from ownership. These are
 semantic address choices, not a claim that this representation is globally
 minimal. The model contains no transaction logs, Lamport clocks, sorting,
-search labels, RGA parent trees, or slice trees. Its current commands require
-honest fresh identities and present anchors; those invariants remain to be
-proved from issuance.
+search labels, RGA parent trees, or slice trees. Its commands require
+honest fresh identities and present anchors; the typed archive and protocol
+proofs now derive those invariants from issuance.
 
 The harness decodes generated messages separately and tests an increasing-ID
 candidate witness. Sorting chooses a witness outside the specification; it
@@ -141,14 +158,14 @@ same user intent. The latter occur in the minimized split trace.
 | Source-selected preparation | Actual zero/fallback and visible-predecessor rules on the core normal form; successful physical insert/delete/split effects |
 | Materialized source model | Physical interval transitions project to semantic steps; guarded grouped histories preserve all query answers |
 | Global structural components | Recursive origin search and raw parent-table extraction; endpoint partition/ownership; slice-tree root/leaf and inactive-title induction |
-| Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks, 238 instrumented sorted prefixes, 144 directed endpoint-adjacency checks; joint execution and source decoding proof still open |
-| Positional request admission | Actual per-peer sorted reconstruction; create/insert/single-instance delete/split derive item and creator guards; total replay and core deletion progress remain open |
-| Combined typed interpreter | Exact deletion-aware actual tables through accepted canonical replay; derived actual graph guards, next reference presence and row integration; joint slice/replay progress remains open |
+| Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks, 238 instrumented sorted prefixes, 144 directed endpoint-adjacency checks; typed replay induction checked; JavaScript extraction remains separate |
+| Positional request admission | Actual per-peer sorted reconstruction; create/insert/single-instance delete/split derive item and creator guards; honest replay and bounded core request progress checked |
+| Combined typed interpreter | Exact deletion-aware actual tables through accepted canonical replay; derived actual graph guards, next reference presence and row integration; joint partition/shape replay progress checked |
 | Local effects with merges/formatting | Refuted by fresh-client executable traces; restricted kernel formatting counterparts |
 | Three-way adaptation | Executable transaction-set shell preserving source preparation and rendering |
-| Five VCs | Reused finite-store proof, key-consistency lemmas and arbitrary-render convergence; storage only |
-| Natural sequential-history bridge | Open for the core; full requested local-effect contract refuted |
-| Ordinary and recursive bases | Generic storage convergence covers both via the existing five-VC chain; no Notion document-history correctness theorem for either |
+| Five VCs | Concrete query-bearing finite-store VCs and represented versions; document history follows from a separate bridge |
+| Natural sequential-history bridge | Checked for the typed core on one honest archive and protocol; extended merge/formatting local contract refuted |
+| Ordinary and recursive bases | Protocol certificate covers ordinary and canonical recursive merge bases with the same document-history witness |
 | Production implementation | No source correspondence or verification claim |
 | Arbitrary block movement | No public demo client request; only merge's internal slice movement audited |
 
@@ -156,7 +173,13 @@ The only development task list is `PRIORITIZED_REMAINING_WORK.md`. This record
 states evidence and semantic choices; it is not a second queue. GC, the paper,
 formal-reference PDF and public Site are outside this branch's changes.
 
-## Core proof increment
+## Chronological proof increments
+
+The sections below retain earlier checkpoints in order. Their descriptions of
+open obligations apply to that checkpoint; the current status is the overview
+and verification table above. Historical build counts are not fresh gate claims.
+
+### Core proof increment
 
 The research question sharpened to a source provenance obligation: does every
 honestly prepared origin, when replayed among concurrent transactions, still

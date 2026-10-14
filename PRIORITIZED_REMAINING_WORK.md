@@ -16,11 +16,12 @@ Evidence and semantic choices are in [the research record](docs/notion-research.
 No production-code correspondence is established. Do not change the paper,
 formal-reference PDF or public Site from this branch; GC stays out of scope.
 
-Current priority: connect the existing actual machine directly to the existing
-independent document specification and RA bridge. Parallel proof work covers
-local insertion effects, atomic split simulation, and independent review of
-actual document effects. Broad oracle expansion and model proliferation are deferred;
-use focused builds during development and full gates at integration checkpoints.
+Current result: the typed core connects actual guarded execution to the
+independent specification and selected RA criterion for ordinary and canonical
+recursive merge bases. Local insert/split/delete effects reach the concrete
+query. Independent reviews and both integration gates passed. The integration
+report preserves the JavaScript extraction boundary and negative extension
+results; adopting a repaired full-editor design requires a separate decision.
 
 - [x] Audit the seven pinned source modules and distinguish positional requests
   from generated transactions, ordering, identities and routing machinery.
@@ -132,43 +133,23 @@ use focused builds during development and full gates at integration checkpoints.
   independent sequential-history admission now hold for the same sorted version
   (`honest_history_version`; focused build passed, 742 jobs). Sal event coupling
   remains separate below.
-- [ ] Finish the split/insert/delete-only milestone: integrate the local split effect and archive-wide history, deriving
-  projected structural invariants. Connect source name/range decoding and
-  search-label validation. Instantiate the same-witness RA bridge with event
-  enumeration, required order and specification visibility. Keep source IDs
-  distinct from Sal event labels. State ordinary and recursive coverage
-  separately; existing five-VC coverage remains storage convergence only.
-  Current preparation totality covers natural-number in-range gaps and bounded
-  nonempty erase ranges; source early no-ops remain intentional non-emissions.
-  The archive-history/local-split checkpoint is pushed as `b317634`, with both
-  research and production gates passed. The next increment is being developed
-  alongside validation: concrete query-bearing MRDT and history alphabet lift,
-  shared-archive event enumeration, and exact source search-label codec laws.
-  `MachineSnapshots` now checks saved-version copying/restoration through
-  existing honest exchanges and finite support of touched peer identities;
-  constructing the full Sal execution simulation remains open.
-  Focused integration of these modules passed 3,494 Lean jobs. The concrete
-  renderer now agrees exactly with closed-archive replay; its independent
-  history alphabet lift rejects failed queries. Event coupling derives exact
-  enumeration and visibility order but still requires operational preservation.
-  Source search labels have checked canonical encoding and prefix-free split
-  frontier laws; coupling distinct physical slices to distinct labels remains
-  in progress. `MachineMint` derives actual honest issuance at a later source
-  counter from preparation plus an allocator clock bound.
-  `AllocationClock` now derives that bound from positive counters above all
-  received runs and a witnessed stable clock; whole-version receipt and
-  gap-then-mint preserve that clock invariant (566-job focused build passed).
-  Initial bootstrap must be treated as the source factory action; enforcing
-  global-first initialization cannot be smuggled into a local-carrier guard.
-  The active execution simulation therefore keeps initialization explicit.
-  `ArchiveCertificate.certified_versions_witness` now derives carrier equality
-  through five-VC representation; its remaining extra input is one honest
-  archive coupling, not an assumed sequential answer or state image.
-  `IssuanceGuard.guard_issues` constructs actual ordinary source issuance from
-  a local guard plus structural carrier correspondence and the stable clock
-  invariant (3,493-job build, with distinguishing create/counter controls).
-  Actual fork and ordinary/recursive merge coupling preservation are being
-  integrated with mint preservation and explicit factory initialization.
+- [x] Close the typed split/insert/delete core theorem chain. The explicit
+  factory and locally guarded `NotionCoreProtocol.Reach` derives the common
+  honest archive, execution coupling and carrier certificate from actual Sal
+  steps. `specification_ra` proves the selected same-witness criterion, including
+  specification visibility, for ordinary and canonical recursive merge bases.
+  `MRDTClient` connects issued insert/split/delete requests to actual update/query
+  effects. `MachineSearchLabels` and `WireNames` derive actual slice mapping-key
+  uniqueness and mathematical codec correspondence; `MachinePreallocation`
+  supplies real empty-fork prefixes for any finite participant set.
+  This is a source-audited typed adaptation: JS Number/safe-integer printing,
+  UTF-16 extraction, JSON/parser equality and literal JavaScript-to-typed
+  interpreter extraction remain explicit external boundaries. Supported requests
+  use natural-number in-range gaps and bounded nonempty edits; early no-ops
+  remain intentional non-emissions. Final research gate passed 3,515 Lean jobs
+  and all 17 pinned oracle groups (575 systematic cases); production gate
+  passed 3,694 jobs, 18 exact contracts/axiom audit, 13 contract controls,
+  187 runtime tests and 569 benchmark records.
 - [ ] Resolve the extension design boundary before a positive full-editor claim:
   the unchanged demo violates ordinary local split and bold effects after merges.
   A repaired issuer/transition or restricted contract is a different target and

@@ -1,5 +1,50 @@
 # Notion split proof enquiry
 
+## Current checked endpoint
+
+`NotionCoreMRDT` is the concrete finite-transaction MRDT with actual typed
+replay/render query. Its five-VC representation feeds the separate independent
+history bridge. `NotionCoreProtocol.versions_witness` now derives a single
+witness for every registered version's event permutation, required order,
+specification visibility and actual query admission; `specification_ra` gives
+full-input RA-linearizability for current heads. Neither common-archive
+coupling, carrier equality, accepted next steps nor desired query answers are
+supplied as proof premises.
+
+The protocol refines actual Sal steps: fork copies source receipts, ordinary
+and canonical recursive merge import current-head receipts, explicit factory
+initialization establishes bootstrap, and the local ordinary issuance guard
+derives actual gap/reservation/emission. The factory phase is separate because
+one global initialization cannot be enforced by inspecting a local carrier.
+Empty forks before factory initialization and bootstrap after lower-key creates
+in canonical replay are retained. The result does not assert correctness of
+unrestricted carrier-True issuance executions.
+
+Actual bounded valid insert/delete/split request theorems derive issuance,
+reconstruction and the immediate requested visible effect. `MRDTClient` proves
+exact transport of issued transactions to concrete MRDT update/query. Ranges
+are bounded natural-number ranges, insertion is nonempty, and source early
+no-ops intentionally emit nothing. Concurrent histories use prepared semantic
+identities, not unchanged numeric request replay.
+
+Focused kernel checks and the final research gate (3,515 Lean jobs, all 17
+pinned oracle groups) support these endpoints. The production gate also passed
+3,694 jobs, exact-contract/axiom checks and 187 runtime tests. The typed source model is supported by the
+pinned JavaScript audit and distinguishing executable traces. Mathematical
+name/range codecs and actual labeled replay uniqueness are checked, but
+JavaScript JSON decoding, safe-number printing, and opaque atom/string
+extraction are not proved program translations. No Notion production claim is
+made. Merge/movement and formatting remain a separate, counterexample-bearing
+extension.
+
+## Chronological proof record
+
+The remaining sections preserve discovery and intermediate theorem scopes.
+Statements that an obligation is open refer to the checkpoint being described,
+not the current endpoint above. The initial fragment and storage shell remain
+limited artifacts even though later typed-core modules close their missing
+bridges.
+
 ## Question and falsifiers
 
 **Goal:** connect a faithful MRDT adaptation of the pinned published demo to an independent block/text sequential specification through the existing five merge VCs and a separate history bridge.
@@ -10,7 +55,7 @@
 
 **Formal oracle:** the `Sal/MRDTs/Instances/Notion*.lean` modules, built by `scripts/check-notion-research.sh`. The initial `NotionSplitSpec` fragment and the later full core machine have different scopes, described below.
 
-**Reality oracle:** the separately fetched, hash-pinned published JavaScript demo and the literal traces in `experiments/notion-oracle/`. The Lean definitions below are independent specifications, not a translation or verification of that JavaScript.
+**Reality oracle:** the separately fetched, hash-pinned published JavaScript demo and the literal traces in `experiments/notion-oracle/`. The independent specifications and source-shaped typed models have distinct roles; neither constitutes a proved translation or verification of that JavaScript.
 
 ## Initial small fragment
 

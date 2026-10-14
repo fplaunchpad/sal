@@ -1930,3 +1930,74 @@ from this ordinary request guard. The search-label review confirmed canonical
 encoding and frontier split preservation; actual slice-to-label injectivity is
 a separate obligation, since a set of labels alone forgets duplicate assignment.
 The research gate passed 3,505 Lean jobs and all seventeen oracle groups.
+
+## Honest protocol and concrete client transport review
+
+Independent read and narrow Lean checks of `NotionCoreMRDTClient` confirm that
+`issued_update` extracts the actual generated transaction from successful
+request issuance, derives honest next reachability, and proves exact finite
+carrier update and actual next query equality. The append lemma determines the
+next carrier; no next-state image or requested rendering equation is supplied.
+The direct check used only standard Lean axioms.
+
+`NotionCoreProtocol` now derives raw Sal reachability and source pairing through
+actual fork, ordinary or canonical recursive merge, explicit factory, guarded
+ordinary apply, and query steps. Its `versions_witness` supplies one witness
+for enumeration, required order, specification visibility and actual query
+admission for every registered version; `specification_ra` specializes this
+to current heads. Common-archive coupling, state-image equations and certified
+prefixes are conclusions, not protocol inputs. Its narrow build passed 3,501
+jobs with standard axioms only. The factory constructor explicitly requires
+the source initial archive and its fixed session; the ordinary local guard
+excludes bootstrap. Thus this is an honest lifecycle protocol result, not a
+claim about unrestricted carrier-True issuance executions.
+
+Independent review and direct kernel checking of `NotionCoreWireNames` confirm
+that suffix recovery permits separators inside session names, and that actual
+archive provenance supplies positive-counter and decoded-key validity. The
+wire mapping guard includes an actual labeled replay and list multiplicity
+uniqueness. Mathematical decimal printing, UTF-16 code-unit names and canonical
+labels do not constitute a proved extraction of JavaScript Number.toString,
+JSON decoding or the pinned JavaScript program. Source-program correspondence
+remains supported by the source audit and distinguishing pinned traces. The
+atom representation also retains its opaque-value/string-projection boundary.
+No production Notion correspondence or positive merge/move/formatting extension
+is claimed by these core endpoints.
+
+
+## Independent final protocol, genesis and client audit
+
+Direct kernel checks of `NotionCoreProtocol`, `NotionCoreMachineGenesisControl`
+and the final `NotionCoreMRDTClient` pass with only standard axioms. Protocol
+reachability supplies actual Sal `Step`/canonical `StepV` transitions and the
+local source issuance guard. Common-archive coupling, head receipt/state-image
+agreement, carrier certification and every registered version's specification
+witness are derived. The same source-sorted event list supplies enumeration,
+paper-order and specification-visibility obligations and independent admission
+of the implementation's actual `Option` answer. The permissive carrier guard
+is not substituted for honest source issuance.
+
+The concrete genesis control inhabits both the raw factory step and the
+protocol relation, and distinguishes successful `ab` rendering from failure
+or an empty answer. Client insert, split and erase wrappers derive successful
+request issuance and transport its exact local effect to actual MRDT update
+and query. Their supplied outer event metadata does not itself construct an
+admissible Sal step; protocol admission remains the separate checked relation.
+
+The result covers injective replica/session assignments, the explicit factory
+or unseeded lifecycle, and ordinary and canonical recursive merge bases.
+It does not cover unrestricted raw applies, arbitrary merge-base resolvers,
+merge/formatting source extensions, or a whole-program JavaScript extraction.
+Nonempty source sessions, valid UTF-16 units, safe-integer decimal printing and
+JSON decoding/equality retain the documented external runtime boundary. These
+are scope limits, not additional observed demo bugs.
+
+## Final integration validation
+
+The final research gate passed 3,515 Lean jobs and all seventeen pinned-source
+oracle groups, including 575 systematic cases with zero failures. The retained
+known-failure regressions reproduce the three catalogued demo bugs; their
+success is not a claim that those behaviors are correct. The production gate
+passed 3,694 Lean jobs, eighteen exact public contracts and axiom checks,
+thirteen contract controls, 187 runtime tests, and 569 benchmark records.
+The research protocol remains outside the production theorem ledger.
