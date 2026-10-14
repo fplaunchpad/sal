@@ -34,9 +34,11 @@ interpreter now has exact deletion-aware table correspondence through accepted
 canonical replay. Issuance derives its actual graph guards, reference presence
 and next-row integration checks. A relation covering every stored forest ref,
 including empty titles, derives checked slice extraction, successful recursive
-split search and valid resulting bounds. Its preservation across full replay
-remains open. Actual positional requests now reconstruct the peer's
-received, sorted archive and derive item and creator knowledge for typed
+split search and valid resulting bounds. Canonical next nonempty insert and
+erase transactions now execute and preserve that partition, deriving instance
+presence, freshness and ordering from issuance. Preservation across complete
+split transactions and full replay remains open. Actual positional requests
+now reconstruct the peer's received, sorted archive and derive item and creator knowledge for typed
 issuance. Single-instance deletion includes the source range codec; the old
 underconstrained admission has a preserved counterexample. Joint replay
 correspondence and the Notion RA bridge remain open. This is research evidence, not an addition to the verified datatype registry or a

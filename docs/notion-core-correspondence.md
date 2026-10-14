@@ -703,3 +703,64 @@ index 1 requires two cells in the original instance and a separate empty title
 cell in the new instance; omitting that title is rejected. The saved evidence
 is `replay-slice-partition-observations.jsonl`. These bounded checks support
 the structural candidate; full replay preservation and the RA bridge remain open.
+
+
+## Actual insert/erase preservation from canonical issuance
+
+`NotionCoreMachineSplice` connects the actual checked row integration and
+`putInstance` to physical splicing after the selected origin. It derives
+successful origin-tree insertion and the resulting physical context; no
+chosen next forest or traversal equation is assumed. The text wrapper decodes
+the literal run with actual pending deletion flags. Its generic premises are
+structural old edges, ordering, freshness and origin presence. A singleton
+marker theorem covers raw marker integration before tree splitting.
+
+`NotionCoreMachineCanonicalForest` discharges those generic premises for the
+next canonical nonempty insertion. The actual accepted prefix determines its
+ordered extracted forest and exact parent edges. Archive provenance supplies
+origin presence, sibling dominance and disjoint fresh birth IDs. The resulting
+`canonical_insert_physical` derives actual operation success and physical
+splicing without accepting any of those guards from the caller. It still
+assumes the prior prefix was accepted.
+
+`NotionCoreMachineErase` proves a stronger local fact: erasure commutes with
+finite traversal without graph guards. IDs, parent links, child enumeration,
+lookup order and traversal fuel are unchanged. Actual erase maps text flags
+in the selected physical instance, retains markers and hidden parents, and
+leaves other instances, the forest and display unchanged. This unconditional
+finite-evaluator result does not make malformed cyclic raw graphs legitimate
+source executions.
+
+`NotionCoreMachineCreatorPresence` supplies the missing forward provenance.
+Every instance created by an earlier accepted transaction persists; the
+forest's own block names have supporting instances. Thus an earlier archived
+creator, identified in the actual canonical prefix, establishes the next
+required instance's presence. Empty metadata-created instances are included;
+item-reference knowledge alone would not establish them.
+
+`NotionCoreMachinePartitionUpdates.canonical_insert_partitioned` and
+`canonical_erase_partitioned` compose these results. Under creator-aware
+canonical issuance, an accepted prior prefix and its structural `Partitioned`
+relation, the next nonempty insert or erase transaction executes and preserves
+that relation. No selected owner, instance-existence guard, freshness, child
+dominance, physical-output equation or next-step acceptance is a caller premise.
+Erasure includes empty target lists. Generic structural splice preservation
+alone does not establish fresh-ID uniqueness or normal slice shape; the
+canonical insertion proof derives its required graph and birth facts.
+
+The weaker creator-aware relation can still admit START insertion into an
+attached block's inactive own-title instance. Such insertion can preserve
+`Partitioned` while violating the intended empty-title/one-active-leaf shape.
+The actual positional client-selection rule is therefore needed for that
+stronger invariant; creator presence alone cannot establish it. This is an
+intermediate-model boundary, not an additional honest demo failure.
+
+The full induction remains unfinished: bootstrap/create and complete split
+transactions must preserve the joint partition, normal active/empty title
+shape and display alignment. The phase oracle makes the split obligation
+precise. After tree splitting, both refs still have the old owner; after
+detachment there is a transient coverage gap; append restores final coverage
+and ownership. Two pinned, honestly issued traces preserve these observations
+and a hand-derived wrong-final-owner control. They support the phase model,
+not a universal preservation theorem. Source wire/label correspondence and
+the same-witness RA bridge remain separate.

@@ -266,3 +266,17 @@ instance tables and 1,534 rows (27 tombstoned) across the existing 238 prefixes.
 campaign record remains historical. A separate raw pending-before-birth check
 is not counted as an honest-client history. No-op-delete and wrong-instance
 mutations must fail. This remains finite source evidence, not replay progress.
+
+
+## Atomic split phases
+
+Run `python3 experiments/notion-oracle/run.py --trace split-phase-controls.mjs`
+to observe two honestly issued split histories around unchanged pinned
+primitives. The hand-derived `ab` split at index 1 distinguishes the phases:
+marker integration preserves the old partition; tree splitting retains
+coverage while duplicating the old owner; detachment temporarily removes
+coverage; append restores final per-instance ownership, including the new
+empty title cell. Treating the post-split state as final is rejected. A second
+trace splits an all-deleted inherited interval and keeps its empty titles.
+`split-phase-observations.jsonl` records literal transactions and snapshots.
+These are internal atomic phases, not additional confirmed editor bugs.

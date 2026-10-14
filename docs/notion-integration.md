@@ -91,11 +91,21 @@ algorithms. Fresh create derives executable success and partition preservation
 from explicit fresh instance/block names. The all-reference oracle passed
 293 partitions and 1,827 physical ownership checks; its empty-title omission control is rejected.
 
+The physical-update increment now derives actual insertion splicing and
+erasure's tombstone traversal. Canonical provenance discharges fresh IDs,
+sibling readiness and origin presence; forward replay persistence supplies
+required instances even for metadata-only creation. The next nonempty insert
+and erase transactions execute and preserve the all-reference partition from
+its accepted prior-prefix invariant, without caller-supplied execution guards.
+
 The remaining correspondence is still global. Slice forest, endpoint ownership
 and displayed block order must be preserved with those actual tables in the same
 execution, including empty inactive title roots. Per-instance owner uniqueness
 holds at atomic boundaries: the split opcode temporarily duplicates the owner
-until movement assigns the right reference to its fresh block. The new network
+until movement assigns the right reference to its fresh block. Detachment
+also briefly removes interval coverage before append; the two new pinned phase
+traces preserve these internal states and distinguish an incorrectly skipped
+move from the correct final ownership. The new network
 is partial: a successful request transition does not establish that the resulting archive reconstructs. Core
 deletion must also be proved total on the supported normal shape; general
 multi-instance grouping after merge is not implemented in this core model.
@@ -154,8 +164,8 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the all-reference routing increment:
-48 Notion modules (3,459 Lean jobs), fourteen research result groups, the production
+Both gates passed for the canonical insert/erase preservation increment:
+53 Notion modules (3,464 Lean jobs), fifteen research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
 187 runtime tests, and validation of 569 stored benchmark records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or

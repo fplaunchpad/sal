@@ -404,3 +404,23 @@ only after movement to the fresh destination. Thus the full partition relation
 belongs at transaction boundaries; intermediate phases need weaker relations.
 This is a proof-design constraint, not a fourth demo bug. Full replay progress,
 wire/label correspondence and the same-witness RA bridge remain unfinished.
+
+
+## Canonical insert/erase preservation
+
+The physical-update equations are now derived from actual table operations.
+Canonical archive provenance supplies insertion's fresh IDs, origin presence
+and sibling order; actual replay supplies persistent creator instances.
+Consequently the next nonempty insert and erase transactions execute and
+preserve the all-reference partition whenever that partition holds for the
+accepted prior prefix. No next-step acceptance or selected-owner premise is
+used. This closes the insertion/deletion cases of that preservation argument,
+including pending tombstone flags and empty deletion targets.
+
+The whole replay induction still needs the remaining transaction cases and
+its joint normal-shape/display invariant. Pinned split-phase observations show
+why a per-opcode partition claim is false: tree splitting duplicates ownership,
+then detachment briefly breaks coverage, before append restores both. These
+are internal stages of a single atomic transaction, not editor failures. The
+three confirmed demo bugs remain unchanged. Source wire/label correspondence
+and the same-witness RA theorem are still open.

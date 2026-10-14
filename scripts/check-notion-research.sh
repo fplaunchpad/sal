@@ -51,6 +51,11 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreMachineRouting \
   Sal.MRDTs.Instances.NotionCoreMachinePartition \
   Sal.MRDTs.Instances.NotionCoreMachinePartitionCreate \
+  Sal.MRDTs.Instances.NotionCoreMachineSplice \
+  Sal.MRDTs.Instances.NotionCoreMachineErase \
+  Sal.MRDTs.Instances.NotionCoreMachineCanonicalForest \
+  Sal.MRDTs.Instances.NotionCoreMachineCreatorPresence \
+  Sal.MRDTs.Instances.NotionCoreMachinePartitionUpdates \
   Sal.MRDTs.Instances.NotionCoreSliceForest
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")
@@ -68,13 +73,14 @@ python3 experiments/notion-oracle/run.py --trace search-label-controls.mjs > "$c
 python3 experiments/notion-oracle/run.py --trace endpoint-adjacency-controls.mjs > "$check_dir/endpoint-adjacency-controls.jsonl"
 python3 experiments/notion-oracle/run.py --trace client-provenance-controls.mjs > "$check_dir/client-provenance-controls.jsonl"
 python3 experiments/notion-oracle/run.py --trace delete-group-controls.mjs > "$check_dir/delete-group-controls.jsonl"
+python3 experiments/notion-oracle/run.py --trace split-phase-controls.mjs > "$check_dir/split-phase-controls.jsonl"
 node experiments/notion-oracle/identity-controls.mjs > "$check_dir/identity-controls.jsonl"
 python3 - "$check_dir" <<'PY'
 import json
 from pathlib import Path
 import sys
 root = Path(sys.argv[1])
-for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation', 'payload-provenance-controls', 'search-label-controls', 'endpoint-adjacency-controls', 'client-provenance-controls', 'delete-group-controls']:
+for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation', 'payload-provenance-controls', 'search-label-controls', 'endpoint-adjacency-controls', 'client-provenance-controls', 'delete-group-controls', 'split-phase-controls']:
     rows = [json.loads(line) for line in (root / (name + '.jsonl')).read_text().splitlines()]
     print(f'{name}: {len(rows)} result records; executable assertions passed')
 print('Known-failure regression success means the counterexamples reproduce.')

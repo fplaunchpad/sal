@@ -1538,3 +1538,62 @@ the fresh gate output exactly. The production gate passed 3,694 Lean jobs,
 18 exact public contracts with axiom audit, 187 runtime tests and validation of
 569 benchmark records. Its production ledger does not register these unfinished
 Notion research modules as a verified document datatype.
+
+## Actual insert/erase partition preservation and split phases
+
+The final MachineSplice, MachineErase, MachineCanonicalForest,
+MachineCreatorPresence, and expanded MachinePartitionUpdates independently
+check cleanly with standard printed axioms. Generic splice derives checked row
+integration and actual physical insertion from an input edge-coupled ordered
+forest, fresh IDs, origin presence, and sibling readiness. CanonicalForest
+removes those caller guards by deriving the actual forest and allocation facts
+from issuance and the accepted canonical prior prefix. No next insertion
+acceptance, next forest, desired physical splice, or output partition is assumed.
+Literal pending text births and singleton split markers use the same proved
+physical position; source text and marker kinds retain their distinct flags.
+
+MachineErase derives finite traversal tombstone commutation without graph
+closure or uniqueness premises, since IDs and parent links remain unchanged.
+Its actual operation frames supply physical erasure and unchanged other
+instances. CreatorPresence derives metadata-provider execution in the actual
+prior prefix, including empty created instances. The public canonical insert
+and erase preservation theorems use that result to discharge instance existence;
+they require no free existing-instance witness. From the old all-owned partition
+and accepted prior prefix, next complete insert/erase acceptance and partition
+preservation are conclusions. Full replay still needs create/split composition,
+initial/bootstrap handling, and preservation of the additional normal-form
+properties; these are not inferred from the partition result alone.
+
+Generic structural splice does not by itself prove fresh physical uniqueness
+or prevent populating an inactive title. Those properties depend on separate
+canonical allocation/client/normal-form facts. Physical update equations were
+explicit interfaces in the generic partition lemmas and are now derived for
+these actual insert/erase compositions. The latest insertion-result draft typing
+failure is resolved in the independently checked final module.
+
+The two pinned `split-phase-controls.mjs` records observe unchanged source
+primitives and command boundaries. Hand-derived ab split at 1 preserves coverage
+before creation, after creation, and after marker integration. Tree splitting
+keeps coverage but temporarily duplicates the old owner; detach-before-append
+briefly leaves an unowned gap; final append restores coverage and per-instance
+owner uniqueness, including the empty fresh title. Skipping the move is rejected
+as final ownership. A second honest split of an all-deleted inherited interval
+shows the same boundary pattern and yields a|empty|empty. These are focused
+phase examples, not a universal frame-preservation proof or a new bug. In
+particular they do not justify asserting atomic Partitioned after each internal
+tree/detach phase. Existing source root-detachment and decoder boundaries remain.
+
+The proof-track reviewer also independently checked the final composed
+insert/erase endpoints and found no dependency cycle or next-acceptance
+premise. One additional boundary is explicit: creator-aware admission permits
+START insertion into an attached block's inactive own-title instance. That
+may preserve `Partitioned` while breaking the stronger empty-title/active-leaf
+shape. Actual client selection must establish the stronger invariant. The
+partition theorems do not claim it, and this is not a new demo bug.
+
+Final validation passed: 53 research modules (3,464 Lean jobs), all fifteen
+oracle groups including two split-phase records, and exact agreement between
+those saved records and fresh pinned execution. The production gate passed
+3,694 Lean jobs, 18 exact public contracts with axiom audit, 187 runtime tests
+and validation of 569 benchmark records. No Notion document certificate was
+added to the production ledger.
