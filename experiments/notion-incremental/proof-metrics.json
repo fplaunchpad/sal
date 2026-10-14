@@ -1,0 +1,1328 @@
+{
+  "scope": "Current source snapshot, including unfinished modules. No build or completion claim.",
+  "limits": [
+    "Physical and nonblank lines include definitions, comments and controls.",
+    "Declaration counts use line-oriented syntax, not elaborated theorem objects.",
+    "Import closure measures available dependencies, not which lemmas are used.",
+    "Source size does not measure author time, difficulty, or proof reduction.",
+    "Reference provides shared semantics and honest protocol; direct modules reuse it."
+  ],
+  "reference_protocol_notion_closure": {
+    "totals": {
+      "lines": 24317,
+      "nonblank_lines": 22416,
+      "theorem_declarations": 1198
+    },
+    "file_count": 89,
+    "files": [
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreAllocationClock.lean",
+        "lines": 79,
+        "nonblank_lines": 68,
+        "theorem_declarations": 8
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreArchiveCertificate.lean",
+        "lines": 160,
+        "nonblank_lines": 150,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreArchiveEvents.lean",
+        "lines": 268,
+        "nonblank_lines": 249,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreArchiveOrder.lean",
+        "lines": 109,
+        "nonblank_lines": 100,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreBootstrapProvenance.lean",
+        "lines": 101,
+        "nonblank_lines": 93,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreCarrierExecution.lean",
+        "lines": 68,
+        "nonblank_lines": 62,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreCreatorNetwork.lean",
+        "lines": 182,
+        "nonblank_lines": 163,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreDisplayOrder.lean",
+        "lines": 190,
+        "nonblank_lines": 165,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreExtractionEdges.lean",
+        "lines": 242,
+        "nonblank_lines": 229,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreForestRefs.lean",
+        "lines": 228,
+        "nonblank_lines": 214,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreHistory.lean",
+        "lines": 102,
+        "nonblank_lines": 91,
+        "theorem_declarations": 3
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreInvariant.lean",
+        "lines": 412,
+        "nonblank_lines": 379,
+        "theorem_declarations": 21
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreIssuance.lean",
+        "lines": 462,
+        "nonblank_lines": 419,
+        "theorem_declarations": 25
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreIssuanceGuard.lean",
+        "lines": 126,
+        "nonblank_lines": 114,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMRDT.lean",
+        "lines": 180,
+        "nonblank_lines": 153,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMRDTArchive.lean",
+        "lines": 121,
+        "nonblank_lines": 111,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachine.lean",
+        "lines": 248,
+        "nonblank_lines": 221,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineBirths.lean",
+        "lines": 307,
+        "nonblank_lines": 285,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineBlockPresence.lean",
+        "lines": 181,
+        "nonblank_lines": 171,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineBootstrap.lean",
+        "lines": 133,
+        "nonblank_lines": 121,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCanonicalCreate.lean",
+        "lines": 246,
+        "nonblank_lines": 233,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCanonicalForest.lean",
+        "lines": 268,
+        "nonblank_lines": 249,
+        "theorem_declarations": 15
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCanonicalSplit.lean",
+        "lines": 141,
+        "nonblank_lines": 134,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineClient.lean",
+        "lines": 631,
+        "nonblank_lines": 588,
+        "theorem_declarations": 29
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineClientShape.lean",
+        "lines": 162,
+        "nonblank_lines": 152,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCommands.lean",
+        "lines": 43,
+        "nonblank_lines": 37,
+        "theorem_declarations": 2
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCreatorPresence.lean",
+        "lines": 231,
+        "nonblank_lines": 216,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCreators.lean",
+        "lines": 423,
+        "nonblank_lines": 391,
+        "theorem_declarations": 20
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDelete.lean",
+        "lines": 299,
+        "nonblank_lines": 277,
+        "theorem_declarations": 14
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDeleteTotal.lean",
+        "lines": 278,
+        "nonblank_lines": 261,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDisplay.lean",
+        "lines": 146,
+        "nonblank_lines": 135,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocument.lean",
+        "lines": 289,
+        "nonblank_lines": 271,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentBootstrap.lean",
+        "lines": 201,
+        "nonblank_lines": 193,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentClient.lean",
+        "lines": 341,
+        "nonblank_lines": 323,
+        "theorem_declarations": 14
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentCreate.lean",
+        "lines": 307,
+        "nonblank_lines": 288,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentErase.lean",
+        "lines": 315,
+        "nonblank_lines": 295,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentInsert.lean",
+        "lines": 659,
+        "nonblank_lines": 634,
+        "theorem_declarations": 20
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentInvariant.lean",
+        "lines": 316,
+        "nonblank_lines": 292,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentSplit.lean",
+        "lines": 791,
+        "nonblank_lines": 769,
+        "theorem_declarations": 20
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineErase.lean",
+        "lines": 148,
+        "nonblank_lines": 135,
+        "theorem_declarations": 9
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineExecution.lean",
+        "lines": 509,
+        "nonblank_lines": 492,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineFreshText.lean",
+        "lines": 107,
+        "nonblank_lines": 98,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineGenesis.lean",
+        "lines": 109,
+        "nonblank_lines": 99,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineHistory.lean",
+        "lines": 190,
+        "nonblank_lines": 175,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineHonestReplay.lean",
+        "lines": 190,
+        "nonblank_lines": 180,
+        "theorem_declarations": 8
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineMarkerProgress.lean",
+        "lines": 455,
+        "nonblank_lines": 436,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineMint.lean",
+        "lines": 74,
+        "nonblank_lines": 67,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineNetwork.lean",
+        "lines": 173,
+        "nonblank_lines": 158,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePartition.lean",
+        "lines": 192,
+        "nonblank_lines": 177,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePartitionCreate.lean",
+        "lines": 134,
+        "nonblank_lines": 126,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePartitionSplit.lean",
+        "lines": 412,
+        "nonblank_lines": 394,
+        "theorem_declarations": 15
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePartitionUpdates.lean",
+        "lines": 287,
+        "nonblank_lines": 271,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePrefix.lean",
+        "lines": 183,
+        "nonblank_lines": 166,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineRootReplay.lean",
+        "lines": 451,
+        "nonblank_lines": 422,
+        "theorem_declarations": 23
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineRouting.lean",
+        "lines": 383,
+        "nonblank_lines": 357,
+        "theorem_declarations": 19
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineRows.lean",
+        "lines": 69,
+        "nonblank_lines": 63,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineShape.lean",
+        "lines": 279,
+        "nonblank_lines": 257,
+        "theorem_declarations": 18
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineSlices.lean",
+        "lines": 130,
+        "nonblank_lines": 120,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineSnapshots.lean",
+        "lines": 143,
+        "nonblank_lines": 129,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineSplice.lean",
+        "lines": 238,
+        "nonblank_lines": 222,
+        "theorem_declarations": 14
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineTableGraph.lean",
+        "lines": 188,
+        "nonblank_lines": 175,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineTables.lean",
+        "lines": 474,
+        "nonblank_lines": 437,
+        "theorem_declarations": 26
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineVersionTables.lean",
+        "lines": 224,
+        "nonblank_lines": 210,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreOriginTree.lean",
+        "lines": 370,
+        "nonblank_lines": 329,
+        "theorem_declarations": 20
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreParentCoupling.lean",
+        "lines": 483,
+        "nonblank_lines": 447,
+        "theorem_declarations": 35
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreParentErase.lean",
+        "lines": 124,
+        "nonblank_lines": 114,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreParentMap.lean",
+        "lines": 710,
+        "nonblank_lines": 646,
+        "theorem_declarations": 36
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePartition.lean",
+        "lines": 735,
+        "nonblank_lines": 667,
+        "theorem_declarations": 39
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePayload.lean",
+        "lines": 246,
+        "nonblank_lines": 210,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePayloadNetwork.lean",
+        "lines": 308,
+        "nonblank_lines": 271,
+        "theorem_declarations": 18
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePayloadParents.lean",
+        "lines": 270,
+        "nonblank_lines": 250,
+        "theorem_declarations": 15
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePhysicalReplay.lean",
+        "lines": 341,
+        "nonblank_lines": 315,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePreparation.lean",
+        "lines": 523,
+        "nonblank_lines": 487,
+        "theorem_declarations": 26
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreProtocol.lean",
+        "lines": 168,
+        "nonblank_lines": 159,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreRGA.lean",
+        "lines": 50,
+        "nonblank_lines": 41,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreRanges.lean",
+        "lines": 140,
+        "nonblank_lines": 119,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreReconstruction.lean",
+        "lines": 177,
+        "nonblank_lines": 156,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreReplayGraph.lean",
+        "lines": 256,
+        "nonblank_lines": 238,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreRootCreators.lean",
+        "lines": 305,
+        "nonblank_lines": 281,
+        "theorem_declarations": 19
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSliceForest.lean",
+        "lines": 697,
+        "nonblank_lines": 629,
+        "theorem_declarations": 25
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSource.lean",
+        "lines": 334,
+        "nonblank_lines": 290,
+        "theorem_declarations": 21
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSourceDocument.lean",
+        "lines": 347,
+        "nonblank_lines": 310,
+        "theorem_declarations": 14
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSourceGuards.lean",
+        "lines": 209,
+        "nonblank_lines": 189,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSourceHistory.lean",
+        "lines": 121,
+        "nonblank_lines": 107,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSourceInvariant.lean",
+        "lines": 195,
+        "nonblank_lines": 169,
+        "theorem_declarations": 15
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSpec.lean",
+        "lines": 829,
+        "nonblank_lines": 749,
+        "theorem_declarations": 42
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreTableView.lean",
+        "lines": 151,
+        "nonblank_lines": 130,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionRunAllocation.lean",
+        "lines": 381,
+        "nonblank_lines": 348,
+        "theorem_declarations": 19
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionTransactionSet.lean",
+        "lines": 119,
+        "nonblank_lines": 103,
+        "theorem_declarations": 10
+      }
+    ]
+  },
+  "new_direct_modules": {
+    "totals": {
+      "lines": 2135,
+      "nonblank_lines": 1931,
+      "theorem_declarations": 99
+    },
+    "file_count": 13,
+    "files": [
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralActiveText.lean",
+        "lines": 43,
+        "nonblank_lines": 39,
+        "theorem_declarations": 2
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralCuts.lean",
+        "lines": 285,
+        "nonblank_lines": 267,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralDisplay.lean",
+        "lines": 324,
+        "nonblank_lines": 296,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralDisplayTree.lean",
+        "lines": 111,
+        "nonblank_lines": 102,
+        "theorem_declarations": 3
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralExecution.lean",
+        "lines": 221,
+        "nonblank_lines": 201,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralFacts.lean",
+        "lines": 146,
+        "nonblank_lines": 120,
+        "theorem_declarations": 9
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralHistory.lean",
+        "lines": 131,
+        "nonblank_lines": 120,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralIssuanceBoundary.lean",
+        "lines": 91,
+        "nonblank_lines": 81,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean",
+        "lines": 65,
+        "nonblank_lines": 56,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralRender.lean",
+        "lines": 366,
+        "nonblank_lines": 338,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralRows.lean",
+        "lines": 190,
+        "nonblank_lines": 170,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralTransport.lean",
+        "lines": 52,
+        "nonblank_lines": 42,
+        "theorem_declarations": 3
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralVC.lean",
+        "lines": 110,
+        "nonblank_lines": 99,
+        "theorem_declarations": 6
+      }
+    ]
+  },
+  "new_direct_required_by_final_endpoint": {
+    "totals": {
+      "lines": 1933,
+      "nonblank_lines": 1748,
+      "theorem_declarations": 86
+    },
+    "file_count": 11,
+    "files": [
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralActiveText.lean",
+        "lines": 43,
+        "nonblank_lines": 39,
+        "theorem_declarations": 2
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralCuts.lean",
+        "lines": 285,
+        "nonblank_lines": 267,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralDisplay.lean",
+        "lines": 324,
+        "nonblank_lines": 296,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralExecution.lean",
+        "lines": 221,
+        "nonblank_lines": 201,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralFacts.lean",
+        "lines": 146,
+        "nonblank_lines": 120,
+        "theorem_declarations": 9
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralHistory.lean",
+        "lines": 131,
+        "nonblank_lines": 120,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean",
+        "lines": 65,
+        "nonblank_lines": 56,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralRender.lean",
+        "lines": 366,
+        "nonblank_lines": 338,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralRows.lean",
+        "lines": 190,
+        "nonblank_lines": 170,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralTransport.lean",
+        "lines": 52,
+        "nonblank_lines": 42,
+        "theorem_declarations": 3
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralVC.lean",
+        "lines": 110,
+        "nonblank_lines": 99,
+        "theorem_declarations": 6
+      }
+    ]
+  },
+  "new_direct_optional_investigations": {
+    "totals": {
+      "lines": 202,
+      "nonblank_lines": 183,
+      "theorem_declarations": 13
+    },
+    "file_count": 2,
+    "files": [
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralDisplayTree.lean",
+        "lines": 111,
+        "nonblank_lines": 102,
+        "theorem_declarations": 3
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreStructuralIssuanceBoundary.lean",
+        "lines": 91,
+        "nonblank_lines": 81,
+        "theorem_declarations": 10
+      }
+    ]
+  },
+  "intermediate_cache_and_counterexample_modules": {
+    "totals": {
+      "lines": 568,
+      "nonblank_lines": 511,
+      "theorem_declarations": 32
+    },
+    "file_count": 3,
+    "files": [
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreIncrementalCounterexample.lean",
+        "lines": 216,
+        "nonblank_lines": 201,
+        "theorem_declarations": 9
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreIncrementalMRDT.lean",
+        "lines": 125,
+        "nonblank_lines": 108,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreIncrementalReplay.lean",
+        "lines": 227,
+        "nonblank_lines": 202,
+        "theorem_declarations": 16
+      }
+    ]
+  },
+  "new_support_required_by_final_endpoint": {
+    "totals": {
+      "lines": 216,
+      "nonblank_lines": 201,
+      "theorem_declarations": 9
+    },
+    "file_count": 1,
+    "files": [
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreIncrementalCounterexample.lean",
+        "lines": 216,
+        "nonblank_lines": 201,
+        "theorem_declarations": 9
+      }
+    ]
+  },
+  "direct_existing_notion_dependencies": {
+    "totals": {
+      "lines": 24317,
+      "nonblank_lines": 22416,
+      "theorem_declarations": 1198
+    },
+    "file_count": 89,
+    "files": [
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreAllocationClock.lean",
+        "lines": 79,
+        "nonblank_lines": 68,
+        "theorem_declarations": 8
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreArchiveCertificate.lean",
+        "lines": 160,
+        "nonblank_lines": 150,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreArchiveEvents.lean",
+        "lines": 268,
+        "nonblank_lines": 249,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreArchiveOrder.lean",
+        "lines": 109,
+        "nonblank_lines": 100,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreBootstrapProvenance.lean",
+        "lines": 101,
+        "nonblank_lines": 93,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreCarrierExecution.lean",
+        "lines": 68,
+        "nonblank_lines": 62,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreCreatorNetwork.lean",
+        "lines": 182,
+        "nonblank_lines": 163,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreDisplayOrder.lean",
+        "lines": 190,
+        "nonblank_lines": 165,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreExtractionEdges.lean",
+        "lines": 242,
+        "nonblank_lines": 229,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreForestRefs.lean",
+        "lines": 228,
+        "nonblank_lines": 214,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreHistory.lean",
+        "lines": 102,
+        "nonblank_lines": 91,
+        "theorem_declarations": 3
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreInvariant.lean",
+        "lines": 412,
+        "nonblank_lines": 379,
+        "theorem_declarations": 21
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreIssuance.lean",
+        "lines": 462,
+        "nonblank_lines": 419,
+        "theorem_declarations": 25
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreIssuanceGuard.lean",
+        "lines": 126,
+        "nonblank_lines": 114,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMRDT.lean",
+        "lines": 180,
+        "nonblank_lines": 153,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMRDTArchive.lean",
+        "lines": 121,
+        "nonblank_lines": 111,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachine.lean",
+        "lines": 248,
+        "nonblank_lines": 221,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineBirths.lean",
+        "lines": 307,
+        "nonblank_lines": 285,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineBlockPresence.lean",
+        "lines": 181,
+        "nonblank_lines": 171,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineBootstrap.lean",
+        "lines": 133,
+        "nonblank_lines": 121,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCanonicalCreate.lean",
+        "lines": 246,
+        "nonblank_lines": 233,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCanonicalForest.lean",
+        "lines": 268,
+        "nonblank_lines": 249,
+        "theorem_declarations": 15
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCanonicalSplit.lean",
+        "lines": 141,
+        "nonblank_lines": 134,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineClient.lean",
+        "lines": 631,
+        "nonblank_lines": 588,
+        "theorem_declarations": 29
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineClientShape.lean",
+        "lines": 162,
+        "nonblank_lines": 152,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCommands.lean",
+        "lines": 43,
+        "nonblank_lines": 37,
+        "theorem_declarations": 2
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCreatorPresence.lean",
+        "lines": 231,
+        "nonblank_lines": 216,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineCreators.lean",
+        "lines": 423,
+        "nonblank_lines": 391,
+        "theorem_declarations": 20
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDelete.lean",
+        "lines": 299,
+        "nonblank_lines": 277,
+        "theorem_declarations": 14
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDeleteTotal.lean",
+        "lines": 278,
+        "nonblank_lines": 261,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDisplay.lean",
+        "lines": 146,
+        "nonblank_lines": 135,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocument.lean",
+        "lines": 289,
+        "nonblank_lines": 271,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentBootstrap.lean",
+        "lines": 201,
+        "nonblank_lines": 193,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentClient.lean",
+        "lines": 341,
+        "nonblank_lines": 323,
+        "theorem_declarations": 14
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentCreate.lean",
+        "lines": 307,
+        "nonblank_lines": 288,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentErase.lean",
+        "lines": 315,
+        "nonblank_lines": 295,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentInsert.lean",
+        "lines": 659,
+        "nonblank_lines": 634,
+        "theorem_declarations": 20
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentInvariant.lean",
+        "lines": 316,
+        "nonblank_lines": 292,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineDocumentSplit.lean",
+        "lines": 791,
+        "nonblank_lines": 769,
+        "theorem_declarations": 20
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineErase.lean",
+        "lines": 148,
+        "nonblank_lines": 135,
+        "theorem_declarations": 9
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineExecution.lean",
+        "lines": 509,
+        "nonblank_lines": 492,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineFreshText.lean",
+        "lines": 107,
+        "nonblank_lines": 98,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineGenesis.lean",
+        "lines": 109,
+        "nonblank_lines": 99,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineHistory.lean",
+        "lines": 190,
+        "nonblank_lines": 175,
+        "theorem_declarations": 10
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineHonestReplay.lean",
+        "lines": 190,
+        "nonblank_lines": 180,
+        "theorem_declarations": 8
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineMarkerProgress.lean",
+        "lines": 455,
+        "nonblank_lines": 436,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineMint.lean",
+        "lines": 74,
+        "nonblank_lines": 67,
+        "theorem_declarations": 5
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineNetwork.lean",
+        "lines": 173,
+        "nonblank_lines": 158,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePartition.lean",
+        "lines": 192,
+        "nonblank_lines": 177,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePartitionCreate.lean",
+        "lines": 134,
+        "nonblank_lines": 126,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePartitionSplit.lean",
+        "lines": 412,
+        "nonblank_lines": 394,
+        "theorem_declarations": 15
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePartitionUpdates.lean",
+        "lines": 287,
+        "nonblank_lines": 271,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachinePrefix.lean",
+        "lines": 183,
+        "nonblank_lines": 166,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineRootReplay.lean",
+        "lines": 451,
+        "nonblank_lines": 422,
+        "theorem_declarations": 23
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineRouting.lean",
+        "lines": 383,
+        "nonblank_lines": 357,
+        "theorem_declarations": 19
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineRows.lean",
+        "lines": 69,
+        "nonblank_lines": 63,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineShape.lean",
+        "lines": 279,
+        "nonblank_lines": 257,
+        "theorem_declarations": 18
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineSlices.lean",
+        "lines": 130,
+        "nonblank_lines": 120,
+        "theorem_declarations": 7
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineSnapshots.lean",
+        "lines": 143,
+        "nonblank_lines": 129,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineSplice.lean",
+        "lines": 238,
+        "nonblank_lines": 222,
+        "theorem_declarations": 14
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineTableGraph.lean",
+        "lines": 188,
+        "nonblank_lines": 175,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineTables.lean",
+        "lines": 474,
+        "nonblank_lines": 437,
+        "theorem_declarations": 26
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreMachineVersionTables.lean",
+        "lines": 224,
+        "nonblank_lines": 210,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreOriginTree.lean",
+        "lines": 370,
+        "nonblank_lines": 329,
+        "theorem_declarations": 20
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreParentCoupling.lean",
+        "lines": 483,
+        "nonblank_lines": 447,
+        "theorem_declarations": 35
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreParentErase.lean",
+        "lines": 124,
+        "nonblank_lines": 114,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreParentMap.lean",
+        "lines": 710,
+        "nonblank_lines": 646,
+        "theorem_declarations": 36
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePartition.lean",
+        "lines": 735,
+        "nonblank_lines": 667,
+        "theorem_declarations": 39
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePayload.lean",
+        "lines": 246,
+        "nonblank_lines": 210,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePayloadNetwork.lean",
+        "lines": 308,
+        "nonblank_lines": 271,
+        "theorem_declarations": 18
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePayloadParents.lean",
+        "lines": 270,
+        "nonblank_lines": 250,
+        "theorem_declarations": 15
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePhysicalReplay.lean",
+        "lines": 341,
+        "nonblank_lines": 315,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCorePreparation.lean",
+        "lines": 523,
+        "nonblank_lines": 487,
+        "theorem_declarations": 26
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreProtocol.lean",
+        "lines": 168,
+        "nonblank_lines": 159,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreRGA.lean",
+        "lines": 50,
+        "nonblank_lines": 41,
+        "theorem_declarations": 4
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreRanges.lean",
+        "lines": 140,
+        "nonblank_lines": 119,
+        "theorem_declarations": 12
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreReconstruction.lean",
+        "lines": 177,
+        "nonblank_lines": 156,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreReplayGraph.lean",
+        "lines": 256,
+        "nonblank_lines": 238,
+        "theorem_declarations": 13
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreRootCreators.lean",
+        "lines": 305,
+        "nonblank_lines": 281,
+        "theorem_declarations": 19
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSliceForest.lean",
+        "lines": 697,
+        "nonblank_lines": 629,
+        "theorem_declarations": 25
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSource.lean",
+        "lines": 334,
+        "nonblank_lines": 290,
+        "theorem_declarations": 21
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSourceDocument.lean",
+        "lines": 347,
+        "nonblank_lines": 310,
+        "theorem_declarations": 14
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSourceGuards.lean",
+        "lines": 209,
+        "nonblank_lines": 189,
+        "theorem_declarations": 16
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSourceHistory.lean",
+        "lines": 121,
+        "nonblank_lines": 107,
+        "theorem_declarations": 6
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSourceInvariant.lean",
+        "lines": 195,
+        "nonblank_lines": 169,
+        "theorem_declarations": 15
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreSpec.lean",
+        "lines": 829,
+        "nonblank_lines": 749,
+        "theorem_declarations": 42
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionCoreTableView.lean",
+        "lines": 151,
+        "nonblank_lines": 130,
+        "theorem_declarations": 11
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionRunAllocation.lean",
+        "lines": 381,
+        "nonblank_lines": 348,
+        "theorem_declarations": 19
+      },
+      {
+        "path": "Sal/MRDTs/Instances/NotionTransactionSet.lean",
+        "lines": 119,
+        "nonblank_lines": 103,
+        "theorem_declarations": 10
+      }
+    ]
+  }
+}

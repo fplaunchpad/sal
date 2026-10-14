@@ -22,6 +22,24 @@ Its direct sequential lifting theorem
 uses the same public-order witness as the paper, without extra replay-law
 assumptions at that lifting step.
 
+### Incremental Notion research branch
+
+Branch `research/notion-incremental` investigates direct immutable origin,
+delete, creation-link and cut-owner facts for the typed Notion core. The final
+[`NotionCoreStructuralMRDT`](Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean)
+checks full query correspondence, the five VCs, actual execution transport and
+the independent RA specification under the original honest protocol. Queries
+traverse structural rows and cuts and fold creation links; they do not replay
+transactions. The existing catalogue entry below refers to the transaction-set
+reference, which supplies the preserved client protocol and specification.
+
+The [research record](docs/notion-incremental-research.md) explains the candidate
+and preserved frozen-endpoint counterexample. The [reproducible experiment](experiments/notion-incremental/README.md)
+records bounded oracle comparisons and update/query/merge timings, with
+memory proxies and validation-overhead limitations. The JavaScript adapter and
+Lean model are separate artifacts; no extraction or production equivalence is
+claimed.
+
 ### Notion core — checked protocol entry
 
 The [Notion core catalogue entry](docs/notion-catalogue.md) covers a typed

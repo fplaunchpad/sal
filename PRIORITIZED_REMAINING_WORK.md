@@ -8,6 +8,23 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Incremental Notion core research (isolated branch)
+
+- [x] Test direct structured integration/merge, starting with insertion and late
+  concurrent transactions; preserve minimized failures with honest provenance.
+  Evidence: 200 honest seeded cases / 6,800 oracle comparisons, and checked
+  `honestly_issuable_splits`, `frozen_endpoint_control`, `direct_cut_control`.
+- [x] Prove maintained-state observations equal `NotionCoreMRDT` and reuse its
+  independent specification without weakening the honest protocol.
+- [x] Extend insertion results to split and erase. Direct owner/start facts
+  suffice; frozen stop endpoints have an honest checked counterexample.
+  `NotionCoreStructuralMRDT` checks query/RA/operational correspondence and five VCs.
+- [x] Measure update/query/merge time, retained heap and new datatype-specific
+  source volume; independently audit results and run relevant checks.
+  Result: receipt/query/merge gains on measured workloads; no general memory
+  saving or total proof-effort reduction established. Evidence and limits:
+  `docs/notion-incremental-research.md`.
+
 ## Notion catalogue integration and paper handoff
 
 - [x] Integrate the checked research branch into `paper1`, preserving unrelated work.
