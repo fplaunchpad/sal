@@ -27,7 +27,9 @@ The separate `research/notion-mrdt` branch contains a
 counterexamples to local split/formatting effects after merges, an independent
 core specification with checked local effects and invariant preservation,
 source-selected preparation, global traversal/endpoint lemmas, and guarded
-physical-model history refinement. Full source replay correspondence
+physical-model history refinement. Typed payload archives now derive item
+freshness and same-instance provider provenance in sorted replay, and exact
+parent rows determine the ordered insertion traversal. Full source replay correspondence
 and the Notion RA bridge remain open. This is research evidence, not an addition to the verified datatype registry or a
 verification of Notion production.
 The [preserved bug catalogue](docs/notion-bugs.md) links the three confirmed

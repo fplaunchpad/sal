@@ -828,3 +828,94 @@ axioms only; no new admissions or axioms are introduced. The review found no
 circular desired-output premises. Whitespace checks pass. The targeted
 metadata-item assertion is the only oracle extension in this final review;
 the passing broad suites were not repeated.
+
+## Parent traversal coupling and typed payload review
+
+`NotionCoreParentCoupling.lean` closes the earlier gap between an exact
+permutation of parent rows and the ordered recursive forest model. Its
+`edges_model` derives the model from unique row IDs, exact parent edges, and
+recursively descending sibling IDs; the conclusion is not a premise.
+`appended_run_traversal` then couples the actual appended parent rows to the
+actual accepted recursive insertion and derives their entire traversal equality.
+Fresh/disjoint output IDs, origin acceptance, and child dominance remain explicit
+inputs. The hidden-origin control gives aXYcd and rejects a misplaced appended
+XY. A second control preserves exactly the same edges under the wrong sibling
+order and rejects the resulting traversal: edge membership alone is insufficient.
+The module independently compiles; printed dependencies are standard logical
+axioms only.
+
+The independent review of `NotionCorePayload.lean` finds the typed atomic
+expansion aligned with the pinned core dispatch: bootstrap creates then inserts
+under the shared A@1 key; split creates, inserts its marker, then moves its
+slice. Item-production tags and reservation widths are derived from payloads.
+The birth-membership theorem therefore excludes create/delete reservation IDs
+without a caller-supplied birth flag. Pending tombstones affect text births;
+markers remain hidden split items. The clock fold includes empty bootstrap's
+transaction key. Ordinary empty insertion/deletion emits no transaction.
+
+This remains a typed decoder boundary. Source iterator elements are opaque
+values, not validated Unicode scalars; concatenated string projection can fuse
+separately stored surrogates. Expanded deletion ranges, selected block/instance
+identities, source block-name injection, and wire parsing are not derived here.
+`prepare_admitted` establishes allocation/issuance admission given known RGA
+references; it does not establish block existence, same-instance ownership,
+display predecessor validity, or successful source execution. Block-creator
+provenance is separate from item references. Pointer/path/search-label fields
+are irrelevant to the modeled core dispatch, but actual source mapping rebuilds
+can reject duplicate search labels; the observed runtime exception boundary
+has not become an unconditional typed execution theorem.
+
+Search enumeration still follows the source blocks Map insertion order, while
+displayed order follows its separate blockOrder list. A faithful combined state
+needs both lists, with per-instance parent rows and endpoint ownership attached
+to active forest leaves and empty inactive title instances. Appending a newly
+created title to the search forest cannot itself establish display order.
+
+## Located typed archive provenance
+
+`NotionCorePayloadNetwork.lean` independently builds cleanly (569 jobs).
+`replay_located_provider` derives a provider transaction in the actual canonical
+prefix whose births contain the requested instance/item pair, with the complete
+provider reservation ending before the consumer key. `reference_provenance`
+records the provider's receipt at emission and preserves it through archive
+extension and whole-version exchange; replay order is derived through the
+existing issuance theorem. Neither a free item-production flag nor a provider
+ordering premise is introduced. Its printed dependencies are standard axioms.
+
+The remaining trust boundary is explicit in `Reach.emit`: the client supplies
+located birth membership for its selected references. This excludes global-ID
+membership in an unrelated instance, but does not derive positional selection,
+instance/block existence, or source dispatch success from a joint interpreter.
+Birth addresses use a false tombstone environment because existence and
+instance ownership do not depend on deleted flags, including pending text
+births. Empty bootstrap has no item references or births, and remains distinct
+from ordinary empty requests.
+
+The pinned runner's three new `payload-provenance-controls.mjs` records pass
+with all seven source hashes checked against `sources.json`; literal records
+are retained in `payload-provenance-observations.jsonl`. The honest two-instance
+history shows its inserted ID in exactly one instance and rejects the other.
+A separately labelled fabricated future-target deletion confirms text births
+are tombstoned while split markers stay undeleted; it is not claimed honestly
+issued or dependency closed. Honest empty insert/delete requests leave the
+clock and archive unchanged, and the next key is P@2 rather than P@4. Each
+control includes a hand-derived positive and a distinguishing negative. No
+broad oracle suite was repeated.
+
+The final typed-network extension was independently rechecked with Lean.
+`birthAddresses_deleted` proves instance/ID addresses unchanged for every
+pending-tombstone environment; it does not assert unchanged visibility.
+`birth_ids_unique` derives per-payload uniqueness from consecutive counters.
+`prepared_births_fresh` quantifies over **all** earlier archive entries, not
+just the issuing peer's received subset: record publication supplies global
+allocation membership, unique reservation ownership forces any collision into
+an identical run, and fresh transaction keys exclude that run. Thus unreceived
+transactions are covered under the existing single-writer session allocator
+model. This adds no freshness premise to the prepared transaction.
+
+The provider conclusion still contains the complete instance/item address,
+not merely its globally unique ID. The added controls distinguish wrong-instance
+presence, an overlapping reservation key, and reverse replay order. They retain
+hand-derived PASS+FAIL structure. No circular desired-state premise or weakened
+same-instance conclusion was found; the source-selection and wire boundaries
+recorded above remain in force.

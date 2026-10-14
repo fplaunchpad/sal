@@ -33,11 +33,15 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
   raw parent-map extraction, and slice-tree shape preservation in their models.
 - [x] Preserve confirmed bugs with stable catalogue identifiers, literal traces,
   reproduction commands, minimization limits and scoped formal counterparts.
+- [x] Couple exact parent rows to ordered insertion traversal, derive item birth
+  tags and clock reservations from typed atomic payloads, and derive fresh item
+  IDs and same-instance replay providers from their emitted archives.
 - [ ] Finish the split/insert/delete-only milestone: connect actual source
   issuance and sorted replay to the physical interval model, deriving structural
   guards. Couple the checked parent-map extraction, slice-forest shape and
-  endpoint ownership with display order, bootstrap/payload decoding and the
-  actual preparation rule. Instantiate
+  endpoint ownership with display order, the typed payload archive and actual
+  preparation rule. Derive block-creator and same-instance selection provenance;
+  cover source name/range decoding and search-label validation. Instantiate
   the same-witness RA bridge
   with event enumeration, required order and specification visibility. Keep
   source compound IDs distinct from Sal event labels. State ordinary and recursive

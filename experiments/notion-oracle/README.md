@@ -57,6 +57,7 @@ python3 experiments/notion-oracle/run.py --trace allocation-controls.mjs
 python3 experiments/notion-oracle/run.py --trace preparation-boundary.mjs
 python3 experiments/notion-oracle/run.py --trace physical-replay-controls.mjs
 python3 experiments/notion-oracle/run.py --trace replay-prefix-instrumentation.mjs
+python3 experiments/notion-oracle/run.py --trace payload-provenance-controls.mjs
 ```
 
 The full reachable run intentionally exits 1 when it discovers the saved local
@@ -234,3 +235,15 @@ actual RGA item. Deliberately broken missing-dependency, shared-session and
 child-dominance controls are detected. A preserved witness has a new first ID
 below an unrelated stored item, showing why global maximum dominance is too
 strong. This is finite structural evidence, not a source-replay or RA theorem.
+
+
+## Typed payload provenance controls
+
+`payload-provenance-controls.mjs` checks three hand-derived PASS+FAIL cases
+against the pinned source. Two honest histories distinguish same-instance item
+birth from global ID membership and prove empty insert/delete requests leave
+both clock and transaction archive unchanged. A raw RGA fixture deliberately
+deletes a future ID, then distinguishes tombstoned text birth from an undeleted
+split marker. That fixture tests primitive semantics, not honest issuance.
+`payload-provenance-observations.jsonl` preserves the literal inputs and outputs.
+These controls do not add to the three confirmed bugs in `docs/notion-bugs.md`.

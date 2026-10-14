@@ -250,3 +250,28 @@ remaining correspondence problem to their joint execution, payload/identity
 decoding, endpoint ownership and displayed block order. They do not yet supply
 the same-witness RA certificate. Exact theorem scopes are in the
 [correspondence analysis](notion-core-correspondence.md).
+
+
+## Typed payload and ordered traversal increment
+
+The candidate claim is now checked at two previously separate boundaries:
+exact raw parent edges plus unique IDs and ordered siblings determine the
+actual traversal, and honestly emitted typed payloads supply their own item
+births, reservation widths and same-instance replay providers. An unordered
+forest with the same edges and a globally present item in the wrong instance
+are distinguishing negative controls. The kernel-checked declarations and
+residual premises are recorded in the correspondence analysis.
+
+The typed archive derives freshness against all earlier issued items, including
+unreceived transactions. Its canonical-prefix theorem names an actual provider
+payload and the selected text instance, instead of assuming a free item tag.
+The source-selected membership premise still needs derivation from the joint
+interpreter. Source block-name/range encoding, block-creator provenance, search
+label validation, display order and the final same-witness RA bridge remain
+open. The full core milestone is not complete.
+
+Three new pinned-source fixtures check the trusted payload boundaries. Honest
+requests show that item existence is instance-specific and empty edits reserve
+no clock or transaction. A clearly labeled fabricated primitive checks that a
+pending delete tombstones a later text birth but not a split marker. These are
+controls, not additional confirmed demo bugs; the preserved count remains three.

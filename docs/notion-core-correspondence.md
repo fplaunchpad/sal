@@ -9,7 +9,7 @@ At transaction boundaries each block has one of these shapes:
 1. Its title root is the only slice node.
 2. Its title root has exactly one child, that child is a leaf, and the root's own text instance contains no RGA items. The child's instance may contain visible characters, tombstones, and split markers.
 
-Every node interval remains one contiguous interval of its instance's RGA preorder. Intervals partition the text items of the instance, while boundary markers serve as stable addresses. Each instance's `start` address belongs to its original title root. Each split marker serves as the beginning address of exactly one moved right-hand interval. Blocks remain alive throughout the core fragment. Search labels distinguish intervals but do not affect the interpreted operation in the demo.
+Every node interval remains one contiguous interval of its instance's RGA preorder. Intervals partition the text items of the instance, while boundary markers serve as stable addresses. Each instance's `start` address belongs to its original title root. Each split marker serves as the beginning address of exactly one moved right-hand interval. Blocks remain alive throughout the core fragment. Search-label hints do not choose the core dispatch target, but mapping rebuilds reject duplicate labels. A complete source correspondence must cover that runtime check as well as interval routing.
 
 This is stronger and more precise than “at most one populated slice”: two nodes and one child are allowed, but the parent in that shape has a permanently empty *instance*, not merely no visible characters. A root with tombstones is not interchangeable with an empty new root. All bounds here are at complete transaction boundaries. A split temporarily creates one additional node before moving it.
 
@@ -205,3 +205,54 @@ The separate displayed `blockOrder` inserts after the requested block and is
 not represented by this list. Connecting displayed order and the materialized
 document projection remains explicit. Controls check actual split/detach/append,
 a reachable structural fixture, and a repeated split of an attached leaf.
+
+
+## Ordered parent coupling and typed payload archives
+
+`NotionCoreParentCoupling.edges_model` derives the ordered forest model from
+exact parent-row permutation, unique item IDs and recursively ordered siblings.
+`appended_run_traversal` preserves those facts through actual recursive insertion
+and proves that traversal of the appended raw rows equals the resulting tree
+preorder. The conclusion is not supplied as an input. A hidden-origin control
+checks the complete traversal; an edge-equivalent forest with reversed siblings
+shows why parent edges alone are insufficient. Origin presence/acceptance and
+child dominance remain structural inputs to this theorem.
+
+`NotionCorePayload` expands typed transactions into their actual atomic phases.
+Bootstrap creates then inserts with the shared A@1 key. Split creates a fresh
+block, inserts one marker, then moves its slice. `born_iff_record` derives the
+issuance item-production tag from the expanded operations; create/delete IDs
+cannot become fictitious RGA origins. `clockMax_reservation` derives the full
+reservation bound from the actual operation list, including empty bootstrap.
+Ordinary empty insertion/deletion emits no transaction. Pending deletes change
+text visibility but leave split markers as markers.
+
+`NotionCorePayloadNetwork` retains emitted typed transactions and their actual
+mint-time received versions. Its projection computes all issuance records from
+those payloads. `forget_reachable` derives whole-version issuance reachability;
+`prepared_births_fresh` derives new item-ID disjointness against every earlier
+emitted payload, even those not received by this issuer. `birth_ids_unique`
+proves within-run uniqueness. `replay_located_provider` derives an earlier typed
+provider for each referenced instance/item pair in the canonical sorted replay,
+with the whole-provider clock bound. Tombstone flags do not change these birth
+addresses (`birthAddresses_deleted`). The public conclusion identifies the
+actual provider transaction, rather than merely an allocated range or Boolean
+tag. Its controls distinguish same-instance ownership, overlapping allocation,
+and unsorted newest-first archive enumeration.
+
+The remaining selection premise is explicit: an emitted reference must occur
+among a received provider's births in the selected instance. This layer does
+not yet extract that fact from source `locateInsertion`/deletion selection and
+the joint document state. It also does not prove block-creator availability,
+block-name/string injection, deletion-range decoding, or display predecessor
+validity. Those boundaries must connect to the slice forest and endpoint table;
+no source execution or Notion RA certificate follows from allocation admission
+alone. Search-label generation/uniqueness and its runtime exception boundary
+remain part of that source correspondence.
+
+Three pinned-source controls separately validate instance ownership, pending
+text versus marker tombstones, and empty-request clocks. The pending-delete
+fixture deliberately fabricates a future target at the raw RGA interface;
+it is a primitive semantic control, not an honestly issued demo bug. The other
+two use honest public requests. Literal records are in
+`payload-provenance-observations.jsonl` under `experiments/notion-oracle/`.

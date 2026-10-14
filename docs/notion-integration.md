@@ -32,8 +32,8 @@ checked intermediate result:
 - The transaction-set five-VC chain still proves storage convergence for ordinary
   and recursive bases. It has no Notion document-history certificate.
 
-The structural connection now includes a finite physical
-origin tree now searches for its insertion origin and derives the global preorder
+The structural connection includes a finite physical
+origin tree that searches for its insertion origin and derives the global preorder
 splice coordinate. A raw endpoint/owner table extracts its materialized intervals
 by actual scans and derives coverage and unique ownership across repeated edits.
 Source-selected preparation now proves successful local insertion, deletion and
@@ -51,10 +51,18 @@ slice-tree induction preserves root/leaf shape and empty inactive title roots
 through actual search, split, detach and append operations. Its enumeration is
 source map search order, with displayed block order still separate.
 
-The remaining correspondence is still global. Source payload decoding must
-establish item births and selected references, and the raw parent-table,
-incrementally ordered tree, slice forest and endpoint ownership must describe
-the same execution together with displayed block order. Raw isolated receipt
+The new parent coupling derives sorted traversal from exact raw parent edges,
+unique IDs and ordered siblings, including after actual recursive insertion.
+Typed atomic payloads derive item births and clock reservations; their emitted
+archives derive item freshness and same-instance provider transactions in the
+actual sorted replay prefix. The controls distinguish wrong sibling order,
+wrong-instance origins, overlapping reservations and newest-first replay.
+
+The remaining correspondence is still global. The source's actual selection
+must establish the located-reference premise of typed emission. Block creator
+provenance, raw parent rows, slice forest and endpoint ownership must describe
+the same execution together with displayed block order. Name/range decoding and
+search-label uniqueness/runtime validation also remain source boundaries. Raw isolated receipt
 permits unresolved origins; the adaptation's whole versions preserve closure.
 Independent payload values are opaque atoms, so rendering and string
 encoding remain explicit. The Sal witness still needs finite event enumeration,
@@ -79,6 +87,10 @@ network: 238 full-transaction prefixes and 646 actual RGA entry calls. It preser
 controls for dependency omission, duplicate allocators sharing a session,
 child dominance and non-item reservations, plus a witness refuting an unnecessary
 global-maximum clock premise.
+Three additional pinned-source controls validate same-instance birth ownership,
+empty-request clock preservation and pending-tombstone birth behavior. The
+pending-delete case is a fabricated raw primitive control; the other two use
+honest requests. None is an additional confirmed demo bug.
 
 Independent Sol6.1 review is recorded in [notion-core-review.md](notion-core-review.md)
 and [notion-review.md](notion-review.md). The new review caught and corrected a
@@ -91,10 +103,10 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for this increment: all 20 Notion modules (3,431 Lean jobs),
-all nine research result groups, the production build (3,694 Lean jobs),
-18 exact public contracts and their axiom audit, 187 runtime tests, and validation
-of 569 stored benchmark records. Known-failure regression assertions passed by
+Both gates passed for the typed-payload and parent-coupling increment:
+23 Notion modules (3,434 Lean jobs), ten research result groups, the production
+build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
+187 runtime tests, and validation of 569 stored benchmark records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or
 Notion certification by the production gate.
 The merge-enabled exploratory `--reachable` command exits 1 when it rediscovers

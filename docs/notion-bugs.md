@@ -95,6 +95,8 @@ control rules out constantly formatting every character.
 | Two lone-surrogate atoms can display as one emoji | Treating displayed Unicode scalars as the source's editing atoms | `preparation-boundary-observations.jsonl` |
 | Raw receipt permits missing dependencies; two allocators sharing a session collide | Unstated causal-closure or session-serialization assumptions | Preparation-boundary and replay-prefix instrumentation records |
 | A new transaction can sort below an unrelated stored run item | A global-maximum premise stronger than origin-child dominance | `replay-prefix-instrumentation-observations.jsonl` |
+| An existing global item ID is absent from another text instance | Global item knowledge used in place of selected-instance provenance | `payload-provenance-observations.jsonl`; `NotionCorePayloadNetwork.located_presence_control` |
+| Two forests have identical parent edges but different sibling enumeration | Parent-edge correspondence without the source's descending sibling order | `NotionCoreParentCoupling.ordering_is_needed_control` |
 
 The split/insert/delete-only core has no discovered ordinary-effect bug in the
 recorded finite search; its universal proof remains incomplete. Preserve the
