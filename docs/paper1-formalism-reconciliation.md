@@ -117,6 +117,15 @@ Keep concrete implementation equality and the specification refinement function
 
 ## Reference artifacts
 
+The ongoing [natural-specification audit](natural-sequential-specifications.md)
+separates positional/value-only client requests from generated replication
+messages. Simple sets and counters now use set/integer sequential states with
+checked equality of their complete former history languages. Queue has a
+checked local enqueue/dequeue preparation theorem alongside its existing
+concurrent named-head history theorem. FugueMax's source-faithful positional
+bridge remains unfinished; do not report the intermediate origin-list machine
+as a completed client-correctness result.
+
 - [Formal reference PDF](paper1-formal-reference/main.pdf): checked split laws
   and certified results. Its manuscript correspondence appendix still targets
   `0450d48`; the updated lifting premise and VC numbering above supersede that map.

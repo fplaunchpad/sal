@@ -20,7 +20,7 @@ theorem exact_remove_control : (ORSet.EventSpec.spec Nat).admits
       (DeterministicSpec.updateLabels [(1, 0, ORSet.Update.add 7),
         (2, 1, ORSet.Update.remove 7)] ++ [.query 7 true])
   rw [DeterministicSpec.updates_query_iff, DeterministicSpec.updates_query_iff]
-  simp [ORSet.EventSpec.model, ORSet.abstractStep, Op.op]
+  simp [ORSet.EventSpec.model, Op.op]
 
 /-- PASS+FAIL for the production efficient OR-set's independent set language. -/
 theorem efficient_remove_control : (EfficientORSet.EventSpec.spec Nat).admits
@@ -34,7 +34,7 @@ theorem efficient_remove_control : (EfficientORSet.EventSpec.spec Nat).admits
       (DeterministicSpec.updateLabels [(1, 0, SetOp.add 7),
         (2, 1, SetOp.remove 7)] ++ [.query 7 true])
   rw [DeterministicSpec.updates_query_iff, DeterministicSpec.updates_query_iff]
-  simp [EfficientORSet.EventSpec.model, setStep]
+  simp [EfficientORSet.EventSpec.model, Op.op]
 
 /-- One-element ordinary-set language over the mutant's exact input tuples. -/
 def mutantSpec : HistorySpec (Op CriterionCounterexample.Update) Unit Bool :=

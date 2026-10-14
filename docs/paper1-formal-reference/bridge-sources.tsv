@@ -1,4 +1,12 @@
 label	module	declaration
+par:natural-states	Sal.MRDTs.Paper1.SequentialAbstraction	Sal.MRDTs.Paper1.DeterministicSpec.Abstraction.admits_iff
+par:natural-states	Sal.MRDTs.Paper1.SimpleEventPorts	Sal.MRDTs.Paper1.SimpleEventPorts.set_language_preserved
+par:natural-states	Sal.MRDTs.Paper1.SimpleEventPorts	Sal.MRDTs.Paper1.SimpleEventPorts.finite_language_preserved
+par:natural-states	Sal.MRDTs.Paper1.SimpleEventPorts	Sal.MRDTs.Paper1.SimpleEventPorts.boolean_language_preserved
+par:natural-states	Sal.MRDTs.Paper1.SimpleEventPorts	Sal.MRDTs.Paper1.SimpleEventPorts.delta_language_preserved
+ex:queue	Sal.MRDTs.Paper1.AnchoredQueueClient	Sal.MRDTs.Paper1.AnchoredQueue.Client.prepared_canIssue
+ex:queue	Sal.MRDTs.Paper1.AnchoredQueueClient	Sal.MRDTs.Paper1.AnchoredQueue.Client.prepared_refines
+ex:queue	Sal.MRDTs.Paper1.AnchoredQueueClient	Sal.MRDTs.Paper1.AnchoredQueue.Client.canIssue_iff_prepared
 eq:total-fold-sound	Sal.MRDTs.Paper1.SequentialSimulation	Sal.MRDTs.Paper1.SequentialSimulation.sound
 eq:total-fold-sound	Sal.MRDTs.Paper1.Automation.FiniteSetSimulation	Sal.MRDTs.Paper1.Automation.FiniteSetDescription.project_update
 eq:total-fold-sound	Sal.MRDTs.Paper1.Automation.GenericGuardedFold	Sal.MRDTs.Paper1.Automation.guarded_fold_projection

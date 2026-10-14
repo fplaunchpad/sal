@@ -1,5 +1,6 @@
 import Sal.MRDTs.Framework.MergeLaws
 import Sal.MRDTs.Paper1.HistorySpec
+import Sal.MRDTs.Paper1.NaturalSetSpec
 
 /-! The finite reachable fragment of the exact OR-set of motivation.tex, Fig. 1.
 Every add is retained as an element/timestamp pair; remove erases all pairs
@@ -127,15 +128,19 @@ theorem replayLaws : ReplayLaws (D α).toUpdateSig := by
     · simp [hp]
     · exact and_congr (hfold p hp) Iff.rfl
 
-def abstractStep (s : Finset α) : Update α → Finset α
-  | .add x => insert x s
-  | .remove x => s.erase x
+/-- Erase the representation-specific operation type at the client boundary. -/
+def abstractAction : Update α → NaturalSetSpec.Action α
+  | .add x => .add x
+  | .remove x => .remove x
 
-def spec (α : Type) [DecidableEq α] : DeterministicSpec (Update α) α Bool where
-  State := Finset α
-  initial := ∅
-  update := abstractStep
-  query := fun s x => decide (x ∈ s)
+@[simp] theorem abstractAction_add (x : α) : abstractAction (.add x) = .add x := rfl
+@[simp] theorem abstractAction_remove (x : α) : abstractAction (.remove x) = .remove x := rfl
+
+def abstractStep (s : Finset α) (op : Update α) : Finset α :=
+  NaturalSetSpec.step s (abstractAction op)
+
+def spec (α : Type) [DecidableEq α] : DeterministicSpec (Update α) α Bool :=
+  NaturalSetSpec.model abstractAction
 
 @[simp] theorem view_empty : view (∅ : State α) = ∅ := by simp [view]
 
@@ -146,7 +151,7 @@ def spec (α : Type) [DecidableEq α] : DeterministicSpec (Update α) α Bool wh
   | add x => simp [step, view, abstractStep]
   | remove x =>
       ext y
-      simp only [view, step, abstractStep, Finset.mem_image, Finset.mem_filter, Finset.mem_erase]
+      simp only [view, step, abstractStep, abstractAction, NaturalSetSpec.step, Finset.mem_image, Finset.mem_filter, Finset.mem_erase]
       constructor
       · rintro ⟨p, ⟨hp, hpx⟩, rfl⟩; exact ⟨hpx, p, hp, rfl⟩
       · rintro ⟨hyx, p, hp, hpy⟩; exact ⟨p, ⟨hp, hpy ▸ hyx⟩, hpy⟩

@@ -1,4 +1,5 @@
 import Sal.MRDTs.Metatheory.Correctness
+import Sal.MRDTs.Paper1.NaturalSetSpec
 
 /-! Neem's efficient OR-set. The public certificate is in `EfficientORSetCertified`.
 The operation and merge definitions follow the cached F★ OR-set-efficient
@@ -52,10 +53,15 @@ Fresh timestamps and sequential use of a replica belong to execution. -/
 def issuance : Issuance (D α) where
   CanIssue _ _ := True
 
+def abstractAction : SetOp α → Paper1.NaturalSetSpec.Action α
+  | .add x => .add x
+  | .remove x => .remove x
+
+@[simp] theorem abstractAction_add (x : α) : abstractAction (.add x) = .add x := rfl
+@[simp] theorem abstractAction_remove (x : α) : abstractAction (.remove x) = .remove x := rfl
+
 def setStep (s : Finset α) (e : Op (SetOp α)) : Finset α :=
-  match e.2.2 with
-  | .add x => insert x s
-  | .remove x => s.erase x
+  Paper1.NaturalSetSpec.step s (abstractAction e.2.2)
 
 def spec : SequentialSpec (D α) where
   State := Finset α
@@ -107,7 +113,7 @@ theorem elements_update (s : State α) (e : Op (SetOp α)) :
   cases op with
   | add x =>
     ext y
-    simp only [elements, update, setStep, Finset.mem_image, Finset.mem_insert,
+    simp only [elements, update, setStep, abstractAction, Paper1.NaturalSetSpec.step, Finset.mem_image, Finset.mem_insert,
       Finset.mem_filter]
     constructor
     · rintro ⟨p, hp | hp, hpy⟩
@@ -120,7 +126,7 @@ theorem elements_update (s : State α) (e : Op (SetOp α)) :
         · exact ⟨p, Or.inr ⟨hp, fun h => hy (hpy.symm.trans h.2)⟩, hpy⟩
   | remove x =>
     ext y
-    simp only [elements, update, setStep, Finset.mem_image, Finset.mem_filter,
+    simp only [elements, update, setStep, abstractAction, Paper1.NaturalSetSpec.step, Finset.mem_image, Finset.mem_filter,
       Finset.mem_erase]
     constructor
     · rintro ⟨p, ⟨hp, hpx⟩, hpy⟩

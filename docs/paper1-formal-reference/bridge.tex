@@ -105,6 +105,20 @@ queries. The functional case takes $R(\sigma,\phi)$ to mean
 $\alpha(\sigma)=\phi$.
 % SequentialSimulation.lean: SequentialSimulation; SequentialSimulation.sound.
 
+\paragraph{Natural abstract states.}\label{par:natural-states}
+The grow-only-set specifications use $S\subseteq A$, initially $\varnothing$,
+with $S\xrightarrow{\mathsf{add}(a)}S\cup\{a\}$ and observation $S$ (or its
+characteristic function). Counter specifications use $z\in\mathbb Z$, initially
+$0$, with $z\xrightarrow{u}z+\delta(u)$ and observation $z$. These replace
+earlier operation-log presentations without changing their history languages,
+including queries interspersed with updates. More generally, two total
+deterministic sequential machines have equal admitted languages when a map
+between their states preserves initialization, every update, and every query.
+Forward simulation maps a run; the reverse argument follows the same updates
+from the source initial state. Surjectivity of the map is unnecessary.
+This is a sequential-state simplification, not a quotient of implementation
+states or a change to the five VCs.
+
 For an observed-remove set take
 $\alpha(\sigma)=\{a\mid\exists t.\ (a,t)\in\sigma\}$.
 Addition gains $a$, removal loses $a$, and membership queries agree.
@@ -235,6 +249,16 @@ The absent-removal case requires a prior birth in the sequential prefix;
 invented identities cannot be removed. Lack of tombstones does not mean lack
 of metadata: carried coordinates preserve placement information and can grow
 with their ancestry.
+
+Clients need only request $\mathsf{enqueue}(v)$ or $\mathsf{dequeue}$.
+Preparation selects the live tail and its coordinate for enqueue, or the live
+head identity for dequeue; an empty dequeue generates no update event.
+Every message allowed by the original issuer arises from such a request.
+For a sorted issuing state with unique IDs and a fresh event timestamp,
+the prepared message satisfies the existing issuance predicate and its local
+effect on the value list is respectively $L\cdot[v]$ or $\F{tail}(L)$.
+This local request theorem does not identify concurrent named-head removal
+with repeated destructive pops: two replicas may remove the same observed head.
 
 Head-only issuance implies that removed births form a causal downset among
 enqueue events. Order the original dequeue events chronologically. Immediately

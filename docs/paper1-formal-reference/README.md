@@ -32,4 +32,7 @@ retains the October 8 baseline.
 
 The sole bounded-counter example is the published Balegas matrix/max design
 (Example 6.7); the Neem flags follow as Example 6.8. The current source appendix
-resolves 113 declarations across 30 reference anchors.
+resolves 121 declarations across 31 reference anchors. The natural-state
+paragraph records exact history-language preservation for sets and counters;
+the queue example separates value-only client preparation from its concurrent
+named-head history contract.

@@ -22,6 +22,13 @@ Its direct sequential lifting theorem
 uses the same public-order witness as the paper, without extra replay-law
 assumptions at that lifting step.
 
+The [natural-specification audit](docs/natural-sequential-specifications.md)
+separates client requests from generated replication messages. Simple sets and
+counters use set/integer abstract states with exact history-language preservation;
+both OR-set implementations share an ordinary-set specification. Queue has a
+checked value-only request adapter alongside its concurrent named-head language.
+FugueMax's replacement client bridge remains in progress.
+
 The [correctness audit](docs/paper1-correctness-audit.md) traces both obligations:
 five-VC implementation correctness, then the independent sequential-specification
 bridge. The ordinary OR-set has unrestricted payload correctness through the new

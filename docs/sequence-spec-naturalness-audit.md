@@ -1,0 +1,131 @@
+# Sequence specification naturalness audit
+
+Audit scope: source definitions and theorem statements read on 2026-10-14. This
+is a read-only contract audit; it changes no implementation, issuer, or public
+certificate. “Checked” below means a theorem exists for the stated language,
+not that every packet field belongs in a natural client API.
+
+## Research question
+
+Can the sequence implementations share an ordinary client list specification,
+with generated identifiers, coordinates, structural parents, and observed
+anchors related to client requests by a separate refinement? For queues, can
+the abstract language distinguish an ordinary destructive dequeue from an
+idempotent removal of an observed head?
+
+The decisive boundary is the update alphabet and its acceptance conditions.
+An abstract state can be a plain list while its language still exposes
+implementation metadata or a different operation semantics. A merge theorem
+alone does not settle that boundary.
+
+## Current contracts
+
+| Family | Current independent abstract state and operations | Metadata role | Checked result and remaining client boundary |
+|---|---|---|---|
+| Native RGA | List of IDs plus a permanent allocation registry. Insert after a live ID, or root; remove named ID. | Insert ID is the event timestamp. Replica is ignored. Anchor identifies a visible list position. | `RGAConcretePort.history` proves an accepted strict-list witness, specification visibility, and the stored query on that same witness. Ordinary and recursive execution exports exist. A positional request-to-generated-ID/anchor adapter is not established by that theorem. |
+| Native RGA missing-anchor variant | The same list/registry machine permits a missing anchor; insertion then changes allocation but leaves the list unchanged. | Same IDs and anchor inputs. | This is an explicitly different language, not another name for the strict editor API. Do not silently substitute it to discharge a strict-list obligation. |
+| Embedded RGA | Ordinary list of `(id,value)` pairs. Insert immediately after a supplied anchor; delete by ID. | Generated coordinate prefix does not affect abstract step, but production legality checks its coherence against an earlier anchor record. Increasing inserted IDs are required by the proof language. | The local sequential adjacency theorem and the execution-scoped invariant bridge are checked. A client specification that erases prefix and Lamport-generation conditions needs a separate request/packet refinement. |
+| Sided embedded RGA | Ordinary `(id,value)` list containing a root sentinel. Insert immediately before or after an anchor; delete by ID; query hides sentinel. | Side is semantically meaningful at this intermediate API. Coordinate prefix and monotone timestamps occur in legality. | Two-sided adjacency and the same-witness invariant history bridge are checked. Root-left insertion is a legitimate extra operation, so this API is not literally the one-sided embedded API. Positional request refinement remains separate. |
+| Peritext over embedded RGA | Product of the embedded list machine and mark/attribute collections, observed through a document renderer. | Anchor IDs affect formatting boundaries; text coordinate prefix is packet provenance. | Full-event ordinary and recursive scoped history exports exist. The text component can share an ordinary list layer; the whole document cannot be identified with a plain list of values. Formatting acceptance and rendering need their own observable contract. |
+| Sided Peritext Core and RichCore | Sided text plus independent mark/deletion collections; RichCore adds rendered document observations. | Stable IDs identify text and marks. Side and mark boundaries affect observable order/formatting. | The production certificate path is explicitly native insert-only for text; do not advertise unrestricted text-delete correctness from it. Core/RichCore history exports exist for that issuer scope. Their text part can reuse the two-sided list abstraction, but native operation scope and rendered queries differ. |
+| FugueMax | Existing legacy contract uses a visible list and treats generated structural parent/side as its splice instruction. | Structural parent can be a tombstone; recorded left/right origins and chain describe the generated placement. | Five-VC represented-state convergence is checked. The old live-parent language has a checked criterion obstruction. A replacement ordinary positional API and its message/gap bridge are under active investigation; do not promote the legacy `verified` package to a source-faithful client theorem. |
+| Historical mergeable queue | List of tagged values. Enqueue appends; removal names a previously observed head. A repeated target already absent is legal and a no-op. Query returns tagged head. | Tag selects which element was observed; it is semantically load-bearing under concurrency. | Sequential ordinary FIFO refinement is checked under `qOK`. The concurrent public certificate uses the idempotent named-head language, not unconditional `tail` on every dequeue event. |
+| Anchored-enqueue queue | The same tagged FIFO language: enqueue appends; a live named removal must target current head; an already absent, previously born target is a no-op. | Tail anchor and coordinate certify enqueue placement but are ignored by independent FIFO step. Dequeue target remains semantically relevant. | The schedule, public tagged-head witness, and ordinary/recursive execution certificates are checked. It is a different implementation and issuer from the historical queue; it shares the named-head abstract behavior, not its operational graph. |
+
+## Source map
+
+- Native list and canonical replay: `Sal/MRDTs/Instances/RGASequential.lean`
+  (`listStep`, `listLegal`, `listSpec`, `canonical_refines_list`). The public
+  strict and missing-anchor machines are
+  `Sal/MRDTs/Paper1/RGAIdentified.lean` (`machine`, `strictSpec`,
+  `missingNoopSpec`), lifted without changing event inputs by
+  `Sal/MRDTs/Paper1/RGAEventSpec.lean`. The full criterion bridge is
+  `Sal/MRDTs/Paper1/RGAConcretePort.lean` (`history`, execution exports).
+- Embedded list: `Sal/MRDTs/Instances/EmbedRGASequential.lean`
+  (`eSpecStep`, `eSeqOK`, sequential adjacency/refinement), and
+  `Sal/MRDTs/Instances/ProductionRGA.lean` (`embedSpec`, `embedLegal`).
+  Full specification visibility is handled separately by
+  `Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean`; its
+  `canonical_valid_history` conclusion combines replay equality, specification
+  visibility, and admission on one history.
+- Sided list: `Sal/MRDTs/Instances/SidedEmbedRGASequential.lean`
+  (`sInsBefore`, `sInsAfter`, `sSpecStep`, `sided_seq_read`),
+  `Sal/MRDTs/Instances/ProductionRGA.lean` (`sidedSpec`, `sidedLegal`), and
+  `Sal/MRDTs/Paper1/CertifiedSidedInvariantHistory.lean`.
+- Document products: `Sal/MRDTs/Instances/Peritext.lean`,
+  `Sal/MRDTs/Instances/SidedPeritext.lean` (`richSpec`, `richGeneration`),
+  `Sal/MRDTs/Paper1/CertifiedPeritextInvariantCertificate.lean`,
+  `CertifiedRGACoreCertificate.lean`, and `CertifiedRGARichCertificate.lean`.
+  `CertifiedRGACoreCertificate` requires `NativeInsertOnly` when constructing
+  the chronological text witness.
+- Fugue mismatch: `docs/fugue-spec-source-audit.md`,
+  `Sal/MRDTs/Instances/FugueMaxContract.lean` (`listLegal`),
+  `FugueMaxListRefinement.lean` (`listStep`), and
+  `Sal/MRDTs/Paper1/CertifiedFugueInvariantObstruction.lean`
+  (`valid_execution_counterexample`). Source-correct issuer and coordinate
+  evidence are in `FugueMaxIssuer.lean`, `FugueMaxHonesty.lean`, and
+  `FugueMaxOriginBounds.lean`.
+- Historical FIFO: `Sal/MRDTs/Instances/QueueSequential.lean`
+  (`qSpecStep`, `qOK`, `queue_seq_sound`), `QueueContract.lean`
+  (`clientStep`, `clientLegalAux`, `clientSpec`), and
+  `QueueConditioningSPOT.lean` for concurrent duplicate-head behavior.
+- Anchored FIFO: `Sal/MRDTs/Paper1/AnchoredQueue.lean`
+  (`CanIssue`, `fifoStep`, `fifoApplicable`, `fifoLegal`),
+  `AnchoredQueueHistory.lean` (`NextLegal`), `AnchoredQueueSchedule.lean`,
+  `AnchoredQueuePublic.lean`, and `AnchoredQueueCertificate.lean`.
+
+## Shared specifications and genuine differences
+
+The natural reusable text layer is a list with fresh stable element IDs,
+value insertion at a visible position, ID-addressed idempotent deletion, and
+queries returning visible values. A named visible anchor is an intermediate
+representation of a position, not a generated structural parent. Freshness
+can be stated over allocated IDs without importing a coordinate codec or
+requiring client timestamps to increase. Packet coherence and source Lamport
+conditions belong in the request-to-message relation and issuer proof.
+
+The one-sided and two-sided buffer programs share splice and deletion lemmas.
+They still expose different operation alphabets: before/after with a sentinel
+is more expressive than insert-after with a root-front convention. A shared
+positional list specification is plausible, but needs checked projections of
+both request alphabets. Existing local adjacency lemmas are useful inputs;
+they are not already those projections.
+
+Strict insertion and missing-anchor no-op are different semantics. Likewise,
+ordinary `dequeue` that consumes the current head on every accepted operation
+is different from “remove the head I observed,” which can be idempotent when
+two replicas remove the same tag. This difference must stay visible in the
+public queue API. Tags may be hidden from returned values only after an
+observation/refinement theorem; erasing tags from removal requests can erase
+which operation the implementation actually performed.
+
+The anchored and historical queue languages can share a common tagged-head
+specification. Their independently written abstract steps differ on illegal
+middle-target removals: historical `clientStep` leaves the queue unchanged,
+whereas anchored `fifoStep` filters the target. Their legality rejects that
+case, so compare the languages on admitted histories rather than claiming
+unconditional equality of the raw step functions.
+
+## Missing refinement obligations
+
+1. Specify the client request alphabet independently: valid positional insert,
+   delete by position or stable ID, and its return values. Keep the generated
+   replication message as a separate alphabet.
+2. Prove each source issuer prepares a message representing that request in
+   its current visible view. For embedded variants, erase coordinate prefixes
+   at this boundary while retaining enough provenance to prove placement.
+3. Prove admitted message histories refine client histories while preserving
+   observable answers and the event identities required by the RA criterion.
+   A local sequential simulation alone does not supply the concurrent witness.
+4. Preserve one history satisfying the policy order, specification visibility,
+   abstract admission, and stored query. The existing invariant-history
+   theorems provide this shape and should remain the acceptance gate.
+5. For FugueMax, prove tombstone-parent placements retain the requested visible
+   gap, then validate backward insertion and concurrent siblings. The new
+   origin bounds establish strict placement between recorded origins; they do
+   not establish adjacency or a complete positional refinement.
+6. For queues, choose explicitly between destructive FIFO dequeue and observed
+   tagged-head removal. Keep the checked duplicate-dequeue negative control
+   when considering a simpler client alphabet.
+
+No stronger source-to-positional-client theorem is claimed by this audit.

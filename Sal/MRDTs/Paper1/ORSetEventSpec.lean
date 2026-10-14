@@ -10,11 +10,8 @@ open Foundation
 variable {α : Type} [DecidableEq α]
 
 def model (α : Type) [DecidableEq α] :
-    DeterministicSpec (Op (Update α)) α Bool where
-  State := Finset α
-  initial := ∅
-  update s e := abstractStep s e.op
-  query s x := decide (x ∈ s)
+    DeterministicSpec (Op (Update α)) α Bool :=
+  NaturalSetSpec.model (fun e => abstractAction e.op)
 
 def spec (α : Type) [DecidableEq α] : HistorySpec (Op (Update α)) α Bool :=
   (model α).toSpec
@@ -22,7 +19,7 @@ def spec (α : Type) [DecidableEq α] : HistorySpec (Op (Update α)) α Bool :=
 theorem spec_eq : spec α = (ORSet.spec α).toSpec.withInputs Op.op :=
   by
     have hm : (model α).machine = (ORSet.spec α).machine.withInputs Op.op := by
-      unfold model ORSet.spec DeterministicSpec.machine HistoryMachine.withInputs
+      unfold model ORSet.spec NaturalSetSpec.model DeterministicSpec.machine HistoryMachine.withInputs
       congr 1
       funext s label t
       cases label <;> rfl

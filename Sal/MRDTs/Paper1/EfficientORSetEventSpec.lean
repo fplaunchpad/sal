@@ -14,11 +14,8 @@ open Classical
 variable {α : Type} [DecidableEq α]
 local instance : EventOrder (D α).toUpdateSig := replayOrder
 
-def model (α : Type) [DecidableEq α] : DeterministicSpec (Op (SetOp α)) α Bool where
-  State := Finset α
-  initial := ∅
-  update := setStep
-  query s x := decide (x ∈ s)
+def model (α : Type) [DecidableEq α] : DeterministicSpec (Op (SetOp α)) α Bool :=
+  NaturalSetSpec.model (fun e => abstractAction e.op)
 
 def spec (α : Type) [DecidableEq α] : HistorySpec (Op (SetOp α)) α Bool := (model α).toSpec
 
@@ -268,7 +265,7 @@ example : (spec Nat).admits [.update (8, 0, .add 7), .update (3, 0, .add 7),
       (DeterministicSpec.updateLabels [(8, 0, SetOp.add 7), (3, 0, SetOp.remove 7)] ++
         [.query 7 true])
   simp only [DeterministicSpec.updates_query_iff]
-  simp [model, setStep]
+  simp [model, abstractAction, NaturalSetSpec.step, Op.op]
 
 #print axioms noncommutation_does_not_factor
 #print axioms restrictedLaws_impossible

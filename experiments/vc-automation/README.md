@@ -368,6 +368,16 @@ AddStore row has been consolidated with the grow-only set. Counts are nonblank, 
 closure of each registered sequential-bridge theorem, including required helper
 proofs and annotations. They do not measure just the final wrapper.
 
+Refactoring audits are not required datatype-author proof cost. In particular,
+`ORSetSharedSpecification.admits_iff` compares the two complete languages but
+is not used to discharge either implementation's bridge. The analogous
+log-to-set/counter language-preservation theorems are also audit results.
+Count the shared sequential specification once as a datatype description,
+each required implementation-specific bridge, and shared bridge helpers once
+in the deduplicated total. Do not add optional equivalence audits to those
+required proof costs. The historical measurements below have not been rerun
+for the natural-specification campaign.
+
 | Case | Classified proof/description lines | All concrete source lines | Main manual argument |
 |---|---:|---:|---|
 | Grow-only set (`AddStore`) | 9 | 26 | Direct update simulation |

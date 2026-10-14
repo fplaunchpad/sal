@@ -1,12 +1,14 @@
 import Sal.MRDTs.Paper1.EventBridge
+import Sal.MRDTs.Paper1.SequentialAbstraction
 import Sal.MRDTs.Instances.AddStore
 import Sal.MRDTs.Instances.FinsetStore
 import Sal.MRDTs.Instances.FlatCounters
 import Sal.MRDTs.Instances.FlatGrowOnly
 
 /-! Independent full-input history languages for the seven production
-instances built from grow-only stores and integer deltas. Abstract lists record
-application entries; their queries use set membership or a mathematical sum.
+instances built from grow-only stores and integer deltas. Abstract states are
+sets, finite sets, or integer balances. Complete language equivalence with the
+former log presentation is proved through an observation abstraction.
 They do not call concrete update, merge, or replay to define acceptance. -/
 namespace Sal.MRDTs.Paper1.SimpleEventPorts
 open Foundation
@@ -21,31 +23,90 @@ def emptyLaws {D : UpdateSig} (comm : ∀ a b, D.commutes a b) :
   no_chain := by simp [emptyPolicy]
   conditional_commutation := by intro _ _ _ _ _ h; exact h.elim
 
-/-- A list remembers applications, including duplicate adds; observation
-forgets multiplicity. -/
+/-- The ordinary mathematical grow-only set. -/
 def setMachine : DeterministicSpec (Op A) Unit (Set A) where
-  State := List A
-  initial := []
-  update xs e := e.op :: xs
-  query xs _ := {x | x ∈ xs}
+  State := Set A
+  initial := ∅
+  update s e := insert e.op s
+  query s _ := s
 
+/-- The same datatype with an enumerable abstract carrier. -/
 def finiteMachine : DeterministicSpec (Op A) Unit (Finset A) where
-  State := List A
-  initial := []
-  update xs e := e.op :: xs
-  query xs _ := xs.toFinset
+  State := Finset A
+  initial := ∅
+  update s e := insert e.op s
+  query s _ := s
 
+/-- A finite set of immutable entries, observed by its characteristic function. -/
 def booleanMachine : DeterministicSpec (Op A) Unit (A → Bool) where
-  State := List A
-  initial := []
-  update xs e := e.op :: xs
-  query xs _ x := decide (x ∈ xs)
+  State := Finset A
+  initial := ∅
+  update s e := insert e.op s
+  query s _ x := decide (x ∈ s)
 
+/-- Integer accumulation, independent of the concrete counter representation. -/
 def deltaMachine (delta : A → Int) : DeterministicSpec (Op A) Unit Int where
+  State := Int
+  initial := 0
+  update balance e := balance + delta e.op
+  query balance _ := balance
+
+/-- Proof-local presentation of the former operation log. -/
+private def logMachine {V : Type} (observe : List A → V) :
+    DeterministicSpec (Op A) Unit V where
   State := List A
   initial := []
   update xs e := e.op :: xs
-  query xs _ := (xs.map delta).sum
+  query xs _ := observe xs
+
+private def setAbstraction : DeterministicSpec.Abstraction
+    (logMachine (fun xs : List A => {x | x ∈ xs})) setMachine where
+  map (xs : List A) := {x | x ∈ xs}
+  initial := by change {x : A | x ∈ ([] : List A)} = (∅ : Set A); ext x; simp
+  update := by
+    intro xs e
+    change List A at xs
+    change {x : A | x ∈ e.op :: xs} = insert e.op {x | x ∈ xs}
+    ext x; simp
+  query := fun _ _ => rfl
+
+private def finiteAbstraction : DeterministicSpec.Abstraction
+    (logMachine (fun xs : List A => xs.toFinset)) finiteMachine where
+  map := List.toFinset
+  initial := rfl
+  update := by intro xs e; simp [logMachine,finiteMachine]
+  query := fun _ _ => rfl
+
+private def booleanAbstraction : DeterministicSpec.Abstraction
+    (logMachine (fun xs : List A => fun x => decide (x ∈ xs))) booleanMachine where
+  map := List.toFinset
+  initial := rfl
+  update := by intro xs e; simp [logMachine,booleanMachine]
+  query := by intro xs q; funext x; simp [logMachine,booleanMachine]
+
+private def deltaAbstraction (delta : A → Int) : DeterministicSpec.Abstraction
+    (logMachine (fun xs : List A => (xs.map delta).sum)) (deltaMachine delta) where
+  map xs := (xs.map delta).sum
+  initial := rfl
+  update := by intro xs e; simp [logMachine,deltaMachine,Int.add_comm]
+  query := fun _ _ => rfl
+
+/-- Exact complete-history equivalence, including interspersed query labels. -/
+theorem set_language_preserved (labels : List (SeqLabel (Op A) Unit (Set A))) :
+    (logMachine (fun xs : List A => {x | x ∈ xs})).toSpec.admits labels ↔
+      setMachine.toSpec.admits labels := setAbstraction.admits_iff labels
+
+theorem finite_language_preserved (labels : List (SeqLabel (Op A) Unit (Finset A))) :
+    (logMachine (fun xs : List A => xs.toFinset)).toSpec.admits labels ↔
+      finiteMachine.toSpec.admits labels := finiteAbstraction.admits_iff labels
+
+theorem boolean_language_preserved (labels : List (SeqLabel (Op A) Unit (A → Bool))) :
+    (logMachine (fun xs : List A => fun x => decide (x ∈ xs))).toSpec.admits labels ↔
+      booleanMachine.toSpec.admits labels := booleanAbstraction.admits_iff labels
+
+theorem delta_language_preserved (delta : A → Int) (labels : List (SeqLabel (Op A) Unit Int)) :
+    (logMachine (fun xs : List A => (xs.map delta).sum)).toSpec.admits labels ↔
+      (deltaMachine delta).toSpec.admits labels := (deltaAbstraction delta).admits_iff labels
 
 namespace Add
 noncomputable abbrev D := Instances.AddStore.D A
@@ -54,14 +115,10 @@ abbrev laws : RestrictedLaws (D (A := A)).toUpdateSig (emptyPolicy A) :=
   emptyLaws Instances.AddStore.all_comm
 
 def simulation : EventSequentialSimulation (D (A := A)) setMachine where
-  Rel (s : Set A) (xs : List A) := s = {x | x ∈ xs}
-  initial := by apply Set.ext; intro x; simp [D, Instances.AddStore.D, setMachine]
-  update := by
-    intro s xs hs e
-    subst s
-    apply Set.ext; intro x
-    simp [D, Instances.AddStore.D, setMachine, Op.op]
-  observes := by intro s xs hs q; exact hs
+  Rel := (· = ·)
+  initial := rfl
+  update := by intro s a h e; subst a; rfl
+  observes := by intro s a h q; exact h
 
 end Add
 
@@ -124,26 +181,21 @@ private theorem language_commutes_related {U Q V : Type}
         exact ⟨last, by simpa only [List.append_assoc] using hp.append swapped⟩
   exact ⟨exchange a b swap, exchange b a (fun s => symm (swap s))⟩
 
-private theorem list_commutes {V : Type}
-    (query : List A → Unit → V)
-    (obs : ∀ xs ys : List A, xs.Perm ys → ∀ q, query xs q = query ys q)
-    (a b : Op A) :
-    (show DeterministicSpec (Op A) Unit V from
-      { State := List A, initial := [], update := fun xs e => e.op :: xs,
-        query := query }).toSpec.Commutes a b := by
-  apply language_commutes_related _ List.Perm
-  · intro xs ys hp e; exact hp.cons e.op
-  · exact obs
-  · intro xs ys hp; exact hp.symm
-  · intro xs; exact List.Perm.swap _ _ _
+private theorem machine_commutes {U Q V : Type} (M : DeterministicSpec U Q V)
+    (a b : U) (swap : ∀ s, M.update (M.update s a) b = M.update (M.update s b) a) :
+    M.toSpec.Commutes a b := by
+  apply language_commutes_related M (· = ·)
+  · intro s t h e; rw [h]
+  · intro s t h q; rw [h]
+  · intro s t h; exact h.symm
+  · exact swap
 
 namespace Add
 
 theorem commutes (a b : Op A) : setMachine.toSpec.Commutes a b := by
-  apply list_commutes
-  intro xs ys hp q
-  ext x
-  exact hp.mem_iff
+  apply machine_commutes
+  intro s; change Set A at s; change insert b.op (insert a.op s) = insert a.op (insert b.op s)
+  ext x; simp [or_assoc,or_left_comm,or_comm]
 
 theorem compatible : CommutationCompatibility (D (A := A)) id setMachine.toSpec :=
   fun a b _ => commutes a b
@@ -167,16 +219,15 @@ abbrev laws : RestrictedLaws (D (A := A)).toUpdateSig (emptyPolicy A) :=
   emptyLaws Instances.FinsetStore.all_comm
 
 def simulation : EventSequentialSimulation (D (A := A)) finiteMachine where
-  Rel (s : Finset A) (xs : List A) := s = xs.toFinset
+  Rel := (· = ·)
   initial := rfl
-  update := by intro s xs hs e; subst s; simp [D, Instances.FinsetStore.D, finiteMachine, Op.op]
-  observes := by intro s xs hs q; exact hs
+  update := by intro s a h e; subst a; rfl
+  observes := by intro s a h q; exact h
 
 theorem commutes (a b : Op A) : finiteMachine.toSpec.Commutes a b := by
-  apply list_commutes
-  intro xs ys hp q
-  ext x
-  simp only [List.mem_toFinset, hp.mem_iff]
+  apply machine_commutes
+  intro s; change Finset A at s; change insert b.op (insert a.op s) = insert a.op (insert b.op s)
+  ext x; simp [or_assoc,or_left_comm,or_comm]
 
 theorem compatible : CommutationCompatibility (D (A := A)) id finiteMachine.toSpec :=
   fun a b _ => commutes a b
@@ -199,18 +250,17 @@ abbrev laws : RestrictedLaws (D (A := A)).toUpdateSig (emptyPolicy A) :=
   emptyLaws Instances.FlatGrowOnly.all_comm
 
 def simulation : EventSequentialSimulation (D (A := A)) booleanMachine where
-  Rel (s : A → Bool) (xs : List A) := ∀ x, s x = decide (x ∈ xs)
+  Rel (s : A → Bool) (entries : Finset A) := ∀ x, s x = decide (x ∈ entries)
   initial := by intro x; rfl
   update := by
-    intro s xs hs e x
-    simp [D, Instances.FlatGrowOnly.D, booleanMachine, hs x, Op.op, Bool.or_comm]
-  observes := by intro s xs hs q; exact funext hs
+    intro s entries hs e x
+    simp [D,Instances.FlatGrowOnly.D,booleanMachine,hs x,Op.op,Bool.or_comm]
+  observes := by intro s entries hs q; exact funext hs
 
 theorem commutes (a b : Op A) : booleanMachine.toSpec.Commutes a b := by
-  apply list_commutes
-  intro xs ys hp q
-  funext x
-  simp only [hp.mem_iff]
+  apply machine_commutes
+  intro s; change Finset A at s; change insert b.op (insert a.op s) = insert a.op (insert b.op s)
+  ext x; simp [or_assoc,or_left_comm,or_comm]
 
 theorem compatible : CommutationCompatibility (D (A := A)) id booleanMachine.toSpec :=
   fun a b _ => commutes a b
@@ -234,20 +284,14 @@ abbrev laws : RestrictedLaws (D delta).toUpdateSig (emptyPolicy A) :=
   emptyLaws (Instances.FlatCounters.all_comm delta)
 
 def simulation : EventSequentialSimulation (D delta) (deltaMachine delta) where
-  Rel (s : Int) (xs : List A) := s = (xs.map delta).sum
+  Rel := (· = ·)
   initial := rfl
-  update := by
-    intro s xs hs e
-    change Int at s
-    change List A at xs
-    change s + delta e.op = delta e.op + (xs.map delta).sum
-    rw [hs, Int.add_comm]
-  observes := by intro s xs hs q; exact hs
+  update := by intro s a h e; subst a; rfl
+  observes := by intro s a h q; exact h
 
 theorem commutes (a b : Op A) : (deltaMachine delta).toSpec.Commutes a b := by
-  apply list_commutes
-  intro xs ys hp q
-  exact (hp.map delta).sum_eq
+  apply machine_commutes
+  intro balance; simp [deltaMachine,Int.add_assoc,Int.add_left_comm,Int.add_comm]
 
 theorem compatible : CommutationCompatibility (D delta) id (deltaMachine delta).toSpec :=
   fun a b _ => commutes delta a b
@@ -370,6 +414,10 @@ theorem increment_control :
     change (1 : Int) = 2 at hx
     omega
 
+#print axioms set_language_preserved
+#print axioms finite_language_preserved
+#print axioms boolean_language_preserved
+#print axioms delta_language_preserved
 #print axioms gsetCertifiedV
 #print axioms pnCertifiedV
 #print axioms booleanMapCertifiedV

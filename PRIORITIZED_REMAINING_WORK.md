@@ -10,6 +10,45 @@ sole active bounded counter is the published Balegas matrix/max design.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Active: natural sequential specifications and client bridges
+
+The campaign covers all retained datatype families. Its evidence table is
+[natural sequential specifications](docs/natural-sequential-specifications.md).
+FugueMax is the first complete specification-and-bridge target; a working
+intermediate machine does not finish it.
+
+- [ ] Finish FugueMax's positional request refinement and certified RA bridge
+  through the existing five VCs, preserving the source issuer.
+- [ ] Audit RGA/document variants and Queue; separate natural client requests
+  from generated messages and prove the correspondence.
+- [x] Replace simple set/counter log states with natural ADT states and prove
+  exact complete-history language equivalence, including queries.
+- [ ] Consolidate shared abstract semantics for matching datatypes; audit
+  remaining sets, counters, flags, registers, tree and sheet contracts.
+- [ ] Synchronize the formal reference, Site and reconciliation note with
+  checked results and explicit remaining obligations.
+- [ ] Independently review, run the required gate, commit and push completed
+  changes while preserving unrelated GC work.
+
+#### FugueMax research protocol
+
+- Goal: connect the unchanged original FugueMax issuer and five-VC implementation
+  to an independently justified sequential client specification.
+- Candidate: distinguish the positional client request/visible gap from the
+  structural parent in its generated message; deleted structural parents remain
+  admissible where the original algorithm selects them.
+- Falsifier: an honestly generated local edit or concurrent merge whose visible
+  result has no history under the proposed client interpretation. Test the known
+  insert/delete/insert trace, backward insertion and concurrent same-gap edits.
+- Formal oracle: new candidate controls and bridge lemmas, alongside the existing
+  `CertifiedFugueRawOrderObstruction` and unchanged five-VC audit.
+- Reality oracle: Weidner/Kleppmann's Fugue paper, Algorithm 1 and FugueMax
+  modification, and the authors' FugueMax Simple implementation.
+- Preserve the existing obstruction until a complete replacement specification
+  and bridge check. A tombstone-message machine alone is not a plain-list API
+  refinement, and removing only the live-parent guard is not a fix.
+
+
 Manuscript comparison refreshed against fetched Overleaf `179d763`
 (13 October 2026). See [remaining paper changes](docs/paper1-formalism-reconciliation.md).
 The older PDF and manuscript patch retain their explicitly labelled `0450d48`

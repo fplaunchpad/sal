@@ -1,4 +1,8 @@
 import Sal.MRDTs.Paper1.NeemFlagAudit
+import Sal.MRDTs.Paper1.AnchoredQueueClient
+import Sal.MRDTs.Paper1.ORSetSharedSpecification
+import Sal.MRDTs.Paper1.FugueMaxNaturalControls
+import Sal.MRDTs.Paper1.FugueMaxSourceRepresentation
 import Sal.MRDTs.Paper1.BalegasBoundedCounterAudit
 import Sal.MRDTs.Paper1.SelfCommutationAudit
 import Sal.MRDTs.Framework.StateGC
@@ -35,6 +39,16 @@ import Sal.MRDTs.Metatheory.StateGCCoverage
 /-! Build gate for the plain-signature reconstruction. -/
 
 namespace Sal.MRDTs
+
+#check Paper1.AnchoredQueue.Client.prepared_canIssue
+#check Paper1.AnchoredQueue.Client.canIssue_iff_prepared
+#check Paper1.AnchoredQueue.Client.prepared_refines
+#check Paper1.SimpleEventPorts.set_language_preserved
+#check Paper1.SimpleEventPorts.finite_language_preserved
+#check Paper1.SimpleEventPorts.boolean_language_preserved
+#check Paper1.SimpleEventPorts.delta_language_preserved
+#check Paper1.ORSetSharedSpecification.specification_eq
+#check Paper1.ORSetSharedSpecification.admits_iff
 
 #check MRDTSig
 #check MRDTSig.merge
