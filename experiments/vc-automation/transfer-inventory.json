@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "scope": "Current 19 measured automation cases after grow-only-set consolidation and retirement of non-Balegas bounded counters and consolidation of ordinary signed Counter. Historical transfer statuses describe the original transfer experiment; Balegas and the Neem flags are separately checked and unmeasured.",
+  "scope": "Current 19 automation audit cases after grow-only-set consolidation, retirement of non-Balegas bounded counters and consolidation of ordinary signed Counter. Effort reports retain historical measured snapshots; this selection is not a fresh 19-case measurement. Historical transfer statuses describe the original transfer experiment; Balegas, the Neem flags and the typed Notion core protocol are separately checked and unmeasured.",
   "counts": {
     "production_registry_entries": 18,
     "measured_automation_cases": 19,
@@ -285,7 +285,7 @@
       },
       "selected_existing_vc_route": "CertifiedFugueVC.mergeVCs",
       "status": "excluded-track-a",
-      "scope_note": "Merge VC proof only. The existing sequential-specification visibility obstruction remains unchanged.",
+      "scope_note": "Selected audit covers merge VCs, represented-state convergence and the checked obstruction to the former live-parent language. The separate FugueMaxNaturalCertificate proves natural-origin sequential correctness on the existing invariant domain; that bridge is outside this audit selection and historical effort measurements.",
       "transfer_theorem": "NeemExpansion.AutomatedFugue.automated_vcs",
       "transfer_status": "independently-checked-common-interface"
     },
@@ -322,6 +322,7 @@
   "unmeasured_checked_instances": [
     "published Balegas bounded counter",
     "Neem enable-wins flag",
-    "Neem disable-wins flag"
+    "Neem disable-wins flag",
+    "typed Notion core protocol (finite-store VC reuse; explicit document, issuance and history proofs)"
   ]
 }

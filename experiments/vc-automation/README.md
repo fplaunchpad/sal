@@ -40,6 +40,8 @@ historical measurements. Their old case inventories and source hashes do not
 assert current source coverage. [Historical measurement provenance](results/historical-measurements.json)
 records this boundary. The active audit script selects 19 retained cases;
 [`transfer-inventory.json`](transfer-inventory.json) records that current selection.
+Its legacy `measured_automation_cases` key counts audit cases; it does not claim
+a fresh effort measurement.
 No historical effort totals have been relabelled as measurements of Balegas.
 
 Neem's corrected enable-wins and disable-wins flags also have separate checked
@@ -50,6 +52,13 @@ causal-prefix and live-event lemmas; it is not an automatic-discovery result.
 [Exhaustive controls](neem-flag-controls.py) check 55,987 trace prefixes per
 polarity with zero failures and catch the older scalar-flag mutant. Nine
 Lean PASS+FAIL examples check the actual definitions.
+
+The typed Notion core protocol is also integrated and checked through
+[`NotionCoreLedger`](../../Sal/MRDTs/Metatheory/NotionCoreLedger.lean).
+`NotionCoreMRDT.fiveVCs` reuses the existing finite-store automation through
+`NotionTransactionSet.fiveVCs`. Its document refinement, client issuance and
+protocol-history certificate remain explicit proofs. Their source footprint
+has not been measured; Notion is outside the 19-case audit selection.
 
 ## What does the RDT author supply?
 
@@ -143,13 +152,14 @@ injection and tag validity follow from generic code composition with concrete
 fixed-width, alphabet and raw-equation certificates. Independent sequential-specification bridges are outside all these
 counts.
 
-## Current production evidence
+## Historical production audit and effort snapshots
 
 [`results/production-audit.json`](results/production-audit.json) records the
-actual production VC roots and existing public certificate endpoints, their
-transitive dependencies, Lean axioms, declaration locations and source hashes.
-It checks use of the common verifier and excludes earlier datatype VC/Join
-proof routes. Its VC evidence closures are extracted from the actual submitted
+production VC roots and public certificate endpoints at its recorded snapshot,
+with transitive dependencies, Lean axioms, declaration locations and source hashes.
+At that snapshot it checks use of the common verifier and excludes earlier
+datatype VC/Join proof routes. It is not a fresh audit of the current branch.
+Its VC evidence closures are extracted from the actual submitted
 `CommonVerification.verify` proof applications, separately from unchanged
 sequential-history fields in certificate bundles.
 
@@ -166,7 +176,10 @@ helper theorems. Anchored Queue requires **69 lines**, including 7 unary-code
 helper lines and its two proof-packaging fields. Helpers may belong to that same RDT or be shared with another;
 they are required proofs that automation reuses, rather than generates.
 
-The historical estimate uses the direct production VC proofs at commit
+These reports were retained in commit `8680ec3` (2026-10-13); their embedded
+source hashes identify the measured sources. No measurement campaign was rerun
+for this documentation refresh. The historical estimate uses the direct
+production VC proofs at commit
 [`e89cd6d`](https://github.com/fplaunchpad/sal/commit/e89cd6d), immediately before
 the production automation migration. Both columns include required
 RDT-specific helper proofs. They exclude implementation and contract
@@ -179,7 +192,9 @@ Per-case totals overlap because instances share helpers, so do not sum the rows.
 The recorded effort audit before consolidation covered **23 named cases,
 69 distinct public endpoints and 95 existing production roots**. Its JSON reports
 retain that historical inventory. The current audit scripts check 19 cases; the
-grow-only set keeps the original five-VC and sequential-bridge checks.
+grow-only set keeps the original five-VC and sequential-bridge checks. The table
+below displays the retained cases using historical per-case costs; the
+deduplicated total remains that of the original 23-case campaign.
 
 | Instance | Before automation (lines) | With automation (lines) |
 |---|---:|---:|
@@ -215,7 +230,7 @@ includes the one-line unused private compatibility helper. It is
 excluded from both RDT-specific columns. The measurement files retain the
 per-declaration breakdown and the additional existing generic dependencies.
 
-## What the reduction means
+## Historical reductions and their baselines
 
 The combined RDT-specific footprint falls by about **89%**. Efficient OR-set
 improves **89%** (234 → 26); Embedded RGA improves **92%** (726 → 60).
@@ -237,8 +252,9 @@ retains the checked declarations, registrations and source hashes. The submitted
 VC inputs use no retained datatype helper theorems for these four cases. Their
 remaining author code consists of data mappings, raw-equation certificates,
 finite issuance adapters and concrete code-composition proofs. Fugue's result is
-represented-state convergence; its checked sequential-specification obstruction
-remains.
+represented-state convergence. The selected audit retains the checked obstruction
+to the former live-parent language; the separate natural-origin certificate is
+now complete and is outside this measurement.
 
 Against the immediately preceding production baseline `7880732`, this
 OR-set derivation change reduces ordinary OR-set from **106 to 8 lines** and
@@ -307,14 +323,15 @@ separately from production proofs. Kernel controls also show why visibility orde
 
 ## Sequential-history bridge experiment
 
-The selected production bridges now use generic finite-set projection and
+This historical experiment refactored selected production bridges through
+generic finite-set projection and
 guarded-fold templates. The baseline is production commit `052b8fb`, after the
 VC automation campaign. Counts are nonblank, noncomment source lines in complete
 kernel-reached concrete declarations, including their statements, proof bodies,
 wrappers and datatype descriptions. Shared framework code and semantic or
 implementation definitions are reported separately.
 
-| Production bridge | Before (lines) | Current (lines) |
+| Production bridge | Before (lines) | After at measured snapshot (lines) |
 | --- | ---: | ---: |
 | Ordinary OR-set | 49 | 23 |
 | Efficient OR-set | 48 | 24 |
@@ -346,7 +363,7 @@ bridge is checked but is not measured by this historical experiment.
 
 The [baseline closure and measurement](bridge-baseline/measurement-052b8fb.json),
 [baseline provenance and 23-case bridge inventory](bridge-baseline/production-audit-052b8fb.json),
-and [current comparison](results/bridge-measurement.json) expose declaration
+and [recorded comparison](results/bridge-measurement.json) expose declaration
 ranges, classifications, axioms and source hashes. The audit hashes the full
 local import closure, including macros and description fields absent from
 compiled proof expressions. Source preservation checks retain statements,
@@ -363,7 +380,7 @@ laws. Transitions need only correspond at justified states and legal extensions.
 Execution and issuance evidence select a legal history; they do not replace the
 five VCs or independently establish the datatype's sequential semantics.
 
-The current experiment reduces structural proof work beneath that interface:
+The historical experiment measures structural proof work beneath that interface.
 
 The following historical measurement table groups shared bridges; the duplicate
 AddStore row has been consolidated with the grow-only set. Counts are nonblank, noncomment lines in the transitive
@@ -461,7 +478,7 @@ and independent production sequential certificates, a wider scope than the
 per-case table above. Embedded RGA's independent production bridge grows
 **1,997 → 2,003** proof/description lines; the improvement is not uniform.
 
-The refreshed whole-source comparison also includes later framework and instance
+The recorded whole-source comparison also includes later framework and instance
 changes. It therefore does
 not isolate the net source cost of the original abstraction campaign. The two
 shared induction modules still cost 65 lines; the 23-case closure table above
@@ -481,6 +498,14 @@ repository gates passed at that measurement checkpoint, including 187 runtime te
 and 569 benchmark records. Those counts are historical evidence.
 
 ## Reproduction
+
+The following are the audit and measurement entry points. This documentation
+refresh does not rerun the measurement campaign. Build/runtime gates establish
+current coverage separately from effort measurements; measurement commands write
+new reports and may require updates for changed sources. Preserve the historical
+snapshots before running them.
+The source-preservation checks concern the original refactoring baselines and
+must not be described as passing after later semantic changes without a new run.
 
 From the repository root:
 

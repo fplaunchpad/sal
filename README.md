@@ -124,11 +124,13 @@ lines, Core from 430 to 74, RichCore from 434 to 78, and FugueMax from 959 to
 code-composition proofs, finite issuance adapters and annotations. Shared
 archive, prefix-code and minting proofs replace the retained datatype helper
 proofs in the submitted Fugue VC input.
-Fugue's five-VC proof does not resolve its separate
-sequential-specification obstruction.
+This historical Fugue measurement covers the five-VC proof. The former
+live-parent language remains refuted; the separate natural-origin certificate
+is now complete and has not been measured.
 
-Shared representation reasoning now discharges 40 finite equations across
-eight input families, covering sets, Boolean functions, scalar counters and
+The historical shared-representation experiment discharged 40 finite equations
+across eight input families (including the retired independent-account bounded
+counter), covering sets, Boolean functions, scalar counters and
 products of integer maps as well as native RGA. The selected kernel proofs
 shrink from 70 to 16 lines using a 16-line generic tactic. TreeMove and
 AegisSheet also reuse an origin-to-prefix lemma; their sequential correctness
