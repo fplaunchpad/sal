@@ -17,10 +17,14 @@ The campaign covers all retained datatype families. Its evidence table is
 FugueMax is the first complete specification-and-bridge target; a working
 intermediate machine does not finish it.
 
-- [ ] Finish FugueMax's positional request refinement and certified RA bridge
+- [x] Finish FugueMax's positional request refinement and certified RA bridge
   through the existing five VCs, preserving the source issuer.
 - [ ] Audit RGA/document variants and Queue; separate natural client requests
   from generated messages and prove the correspondence.
+- [x] Restore native RGA's source reserved-root convention: positive insertion
+  IDs, matching sequential guard and certified no-zero invariant. KC confirmed
+  the original paper and implementation reserve zero; the permissive Lean
+  counterexample diagnoses an omitted formalization guard.
 - [x] Replace simple set/counter log states with natural ADT states and prove
   exact complete-history language equivalence, including queries.
 - [ ] Consolidate shared abstract semantics for matching datatypes; audit
@@ -31,6 +35,20 @@ intermediate machine does not finish it.
   changes while preserving unrelated GC work.
 
 #### FugueMax research protocol
+
+Checkpoint `09f18ff` is pushed to `paper1`: natural set/counter states, shared
+OR-set semantics, exact Queue request preparation, and checked partial FugueMax
+origin/representation results. The full gate passed 3,674 Lean jobs, the public
+contract and negative controls, 187 runtime tests and 569 benchmark records.
+The formal-reference PDF checks 121 declaration anchors and its changed pages
+were visually inspected. Public Site version 10 is deployed against this
+checkpoint; 983 LaTeX expressions render without errors. Since that checkpoint,
+the complete physical client refinement and natural invariant-scoped RA
+certificate have passed, including the five-VC dependency audit and recursive
+executions. The completed-work release gate passed 3,690 Lean jobs, 20 exact
+public contracts, 13 contract controls, 187 runtime tests and 569 benchmark
+records. The updated reference checks 127 declarations across 32 anchors;
+publication is in progress. Embedded-RGA certified local wrappers remain active.
 
 - Goal: connect the unchanged original FugueMax issuer and five-VC implementation
   to an independently justified sequential client specification.

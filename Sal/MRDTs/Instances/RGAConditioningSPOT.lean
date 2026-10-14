@@ -86,7 +86,7 @@ example : listSpec.Legal
     · intro ts replica anchor he
       simp [E, ops, insertOne, deleteA, deleteB] at he
       rcases he with ⟨rfl, rfl, rfl⟩
-      exact Or.inl rfl
+      exact Or.inl ⟨rfl, by decide⟩
     · intro ts replica id he
       simp [E, ops, insertOne, deleteA, deleteB] at he
       rcases he with (⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩) <;>

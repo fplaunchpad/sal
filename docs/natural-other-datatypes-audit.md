@@ -108,14 +108,20 @@ certify the production compact implementation. Sharing already exists and should
 be retained. Replica is not used by the abstract transition, but write identity
 and observed overwrite identities are semantic data for this message alphabet.
 
-This is an independent observed-overwrite machine, not an ordinary register
-whose every write replaces the whole current value set. Turning `.write v O`
-into `.write v` would lose the distinction between concurrent and causally
-subsequent writes. A metadata-free request API requires a separate mechanism
-that elaborates a local write into its observed identities, and a refinement
-that relates those local origins to a natural client contract. The current
-proof does not establish that additional projection. No impossibility theorem
-for all alternative client abstractions is inferred from this audit.
+`Paper1/MVRClient.lean` now supplies `prepare`, accepting a value and replication
+metadata and collecting the complete live write-ID set. `prepared_targets_exact`
+proves that collection complete; `issuance_prepare_iff` and
+`historical_issuance_prepare_iff` establish the exact source guards.
+The compact source checks live-ID freshness; the historical source additionally
+rejects reuse of a dead prior write's ID. The adapter retains that distinction.
+`prepared_replaces` and `prepared_public_read` prove that the local write
+replaces the live set and reads as the requested singleton.
+
+The global contract remains an independent observed-overwrite machine. A
+singleton register whose every write replaces the whole current value set
+would lose the distinction between concurrent and causally subsequent writes.
+The checked local adapter does not claim that stronger concurrent contract.
+No impossibility theorem for all alternative client abstractions is inferred.
 
 ## AegisSheet
 
@@ -152,8 +158,8 @@ replacement or new projection theorem was implemented in this audit.
 
 ## Verification scope
 
-This report reads current definitions and theorem statements. It does not add
-new certificates or claim new request-level refinements. The source flags,
+This report reads current definitions and theorem statements, including the
+new checked local MVR adapter. It does not add new global certificates. The source flags,
 bounded counter, LWW, TreeMove, MVRLive and AegisSheet already have production
 certificates; their different abstraction boundaries are recorded above.
 The adjacent OR-set consolidation was separately built: the shared natural

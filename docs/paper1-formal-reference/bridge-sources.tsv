@@ -39,3 +39,9 @@ ex:balegas-counter	Sal.MRDTs.Paper1.BalegasBoundedCounterGlobal	Sal.MRDTs.Paper1
 ex:neem-flags	Sal.MRDTs.Paper1.EnableWinsFlagVC	Sal.MRDTs.Paper1.NeemFlagVC.fiveVC
 ex:neem-flags	Sal.MRDTs.Paper1.EnableWinsFlagCertificate	Sal.MRDTs.Paper1.EnableWinsFlagEvent.certifiedV
 ex:neem-flags	Sal.MRDTs.Paper1.DisableWinsFlagCertificate	Sal.MRDTs.Paper1.DisableWinsFlagEvent.certifiedV
+ex:fugue	Sal.MRDTs.Paper1.FugueMaxNaturalSequence	Sal.MRDTs.Paper1.FugueMaxNaturalSequence.machine
+ex:fugue	Sal.MRDTs.Paper1.FugueMaxHonestPhysicalRefinement	Sal.MRDTs.Paper1.FugueMaxHonestPhysicalRefinement.honest_physical_insert_refinement
+ex:fugue	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate.version_witness_noninterleaving
+ex:fugue	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate.correct
+ex:fugue	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate.correctV
+par:rga-root	Sal.MRDTs.Paper1.RGAClientLocal	Sal.MRDTs.Paper1.RGA.Client.certified_no_root

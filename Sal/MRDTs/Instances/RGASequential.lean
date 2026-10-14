@@ -21,7 +21,7 @@ def listStep (xs : List ℕ) (e : Op RGAOp) : List ℕ :=
   | .remove id => xs.filter (· ≠ id)
 
 /-- Legal RGA histories are stated only over abstract events.  Inserted IDs
-match their Lamport timestamps, timestamps are unique, and every referenced
+match their positive Lamport timestamps (0 is reserved for the root), timestamps are unique, and every referenced
 anchor or deletion target was introduced earlier in the same history.
 Repeated deletion remains legal. -/
 def listLegal (ops : List (Op RGAOp)) : Prop :=
@@ -29,8 +29,8 @@ def listLegal (ops : List (Op RGAOp)) : Prop :=
   ∀ pre e post, ops = pre ++ e :: post →
     match e.2.2 with
     | .addAfter anchor =>
-        anchor = 0 ∨ ∃ replica parent,
-            (anchor, replica, .addAfter parent) ∈ pre
+        0 < e.1 ∧ (anchor = 0 ∨ ∃ replica parent,
+            (anchor, replica, .addAfter parent) ∈ pre)
     | .remove id =>
         ∃ replica anchor,
           (id, replica, .addAfter anchor) ∈ pre
@@ -351,7 +351,7 @@ structure VersionWellFormed (E : Set (Op RGAOp)) : Prop where
   time_unique : ∀ {a b}, a ∈ E → b ∈ E → a.1 = b.1 → a = b
   add : ∀ {ts replica anchor},
     (ts, replica, .addAfter anchor) ∈ E →
-      anchor = 0 ∨ ∃ parentReplica parentAnchor,
+      (anchor = 0 ∧ 0 < ts) ∨ ∃ parentReplica parentAnchor,
           (anchor, parentReplica, .addAfter parentAnchor) ∈ E ∧
           anchor < ts
   remove : ∀ {ts replica id},
@@ -373,8 +373,8 @@ theorem versionWellFormed_of_evidence {C : Configuration RGAM}
   · intro ts replica anchor he
     obtain ⟨past, hpast, _, hguard⟩ := hmint _ (hsub _ he)
     rcases hguard with ⟨hanchor, _, _⟩
-    rcases hanchor with rfl | ⟨_, hlt, parentAnchor, hpresent⟩
-    · exact Or.inl rfl
+    rcases hanchor with ⟨rfl,positive⟩ | ⟨_, hlt, parentAnchor, hpresent⟩
+    · exact Or.inl ⟨rfl,positive⟩
     · rw [add_true_iff] at hpresent
       obtain ⟨parentReplica, hmem⟩ := hpresent
       have hpastSet := (hpast.2 _).mp hmem
@@ -407,7 +407,7 @@ theorem replayOrder_insert_iff_original_of_execution {C : Configuration RGAM}
       (a = b ∨ i = b ∨ j = a) ∧ i < j := by
   apply replayOrder_insert_iff_original_of_anchor_valid
   rcases (versionWellFormed_of_execution exec hver).add inserted with root | h
-  · exact Or.inl root
+  · exact Or.inl root.1
   · obtain ⟨_, _, _, earlier⟩ := h
     exact Or.inr earlier
 
@@ -426,12 +426,12 @@ theorem canonical_legal {ops : List (Op RGAOp)}
     obtain ⟨ts, replica, op⟩ := e
     cases op with
     | addAfter anchor =>
-      rcases hwf.add heE with rfl | ⟨anchorReplica, anchorParent,
+      rcases hwf.add heE with ⟨rfl,positive⟩ | ⟨anchorReplica, anchorParent,
           hanchorE, hlt⟩
-      · exact Or.inl rfl
-      · exact Or.inr ⟨anchorReplica, anchorParent,
+      · exact ⟨positive,Or.inl rfl⟩
+      · exact ⟨Nat.zero_lt_of_lt hlt,Or.inr ⟨anchorReplica, anchorParent,
           anchor_mem_prefix (canonical_ordered ops) hsplit
-            ((hcan.2 _).mpr hanchorE) hlt⟩
+            ((hcan.2 _).mpr hanchorE) hlt⟩⟩
     | remove id =>
       obtain ⟨creatorReplica, creatorAnchor, hcreatorE⟩ :=
         hwf.remove heE
@@ -462,7 +462,7 @@ theorem canonical_prefix_allocated {ops : List (Op RGAOp)}
   obtain ⟨ts, replica, op⟩ := e
   cases op with
   | addAfter anchor =>
-      rcases hwf.add heE with rfl | ⟨anchorReplica, anchorParent,
+      rcases hwf.add heE with ⟨rfl,positive⟩ | ⟨anchorReplica, anchorParent,
           hanchorE, hlt⟩
       · exact Or.inl rfl
       · apply Or.inr
@@ -790,7 +790,7 @@ theorem canonical_respects_replayOrder_of_evidence {C : Configuration RGAM}
                 rcases hconf with rfl | ⟨hroot, rfl⟩
                 · exact Bool.false_ne_true
                     (hguard.2.2.symm.trans hgrave)
-                · rcases hguard.1 with rfl | hanchor
+                · rcases hguard.1 with ⟨rfl,_⟩ | hanchor
                   · exact hroot rfl
                   · exact Bool.false_ne_true (hanchor.1.symm.trans hgrave)
         | remove target =>

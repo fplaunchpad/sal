@@ -140,8 +140,8 @@ private theorem ordered_wellFormed : VersionWellFormed {e | e ∈ ordered} := by
   · intro ts r anchor he
     simp [ordered, event] at he
     rcases he with h | h | h | h | h | h
-    · exact Or.inl h.2.2
-    · exact Or.inl h.2.2
+    · exact Or.inl ⟨h.2.2,by simp_all⟩
+    · exact Or.inl ⟨h.2.2,by simp_all⟩
     all_goals
       right
       refine ⟨0, 0, ?_, ?_⟩ <;> simp_all [ordered, event]

@@ -2612,7 +2612,7 @@ $s_1$ and deletion flags $s_2$ as above,
 \begin{aligned}
  &\mathsf{applicable}((i,r,\mathsf{addAfter}(a)),s)\\
  &\quad\Longleftrightarrow
- \bigl(a=0\lor(s_2(a)=\mathsf{false}\land a<i\land
+ \bigl((a=0\land 0<i)\lor(s_2(a)=\mathsf{false}\land a<i\land
    \exists p.\;s_1(a,p)=\mathsf{true})\bigr)\\
  &\hspace{3em}\land(\forall a'.\;s_1(i,a')=\mathsf{false})
  \land s_2(i)=\mathsf{false},\\
@@ -2652,7 +2652,7 @@ $\mathsf{Legal}(\ell)$ holds exactly when its timestamps are unique and, for
 every decomposition $\ell=u\mathbin{+\!+}[e]\mathbin{+\!+}v$,
 \[
 \begin{cases}
- a=0\ \lor\ \exists r',p.\;(a,r',\mathsf{addAfter}(p))\in u,
+ 0<i\ \land\bigl(a=0\ \lor\ \exists r',p.\;(a,r',\mathsf{addAfter}(p))\in u\bigr),
    & e=(i,r,\mathsf{addAfter}(a)),\\
  \exists r',a.\;(i,r',\mathsf{addAfter}(a))\in u,
    & e=(t,r,\mathsf{remove}(i)).

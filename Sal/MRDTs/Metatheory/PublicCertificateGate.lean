@@ -1,6 +1,7 @@
 import Sal.MRDTs.Metatheory.ProductionLedger
 import Sal.MRDTs.Metatheory.Countermodels.TaggedORSet
 import Sal.MRDTs.Instances.QueueCertificates
+import Sal.MRDTs.Paper1.FugueMaxNaturalCertificate
 
 /-! Negative type controls for the release gate. These check rejected
 substitutions, not impossibility of ever proving Queue's intended contract. -/

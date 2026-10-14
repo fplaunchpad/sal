@@ -3,6 +3,12 @@ import Sal.MRDTs.Paper1.AnchoredQueueClient
 import Sal.MRDTs.Paper1.ORSetSharedSpecification
 import Sal.MRDTs.Paper1.FugueMaxNaturalControls
 import Sal.MRDTs.Paper1.FugueMaxSourceRepresentation
+import Sal.MRDTs.Paper1.MVRClient
+import Sal.MRDTs.Paper1.RGAClientLocal
+import Sal.MRDTs.Paper1.FugueMaxNaturalCommutation
+import Sal.MRDTs.Paper1.FugueMaxNaturalOrder
+import Sal.MRDTs.Paper1.FugueMaxNaturalHistory
+import Sal.MRDTs.Paper1.FugueMaxNaturalCertificate
 import Sal.MRDTs.Paper1.BalegasBoundedCounterAudit
 import Sal.MRDTs.Paper1.SelfCommutationAudit
 import Sal.MRDTs.Framework.StateGC
@@ -49,6 +55,18 @@ namespace Sal.MRDTs
 #check Paper1.SimpleEventPorts.delta_language_preserved
 #check Paper1.ORSetSharedSpecification.specification_eq
 #check Paper1.ORSetSharedSpecification.admits_iff
+#check Paper1.MVRClient.issuance_prepare_iff
+#check Paper1.MVRClient.prepared_public_read
+#check Paper1.RGA.Client.dropped_guard_root_boundary
+#check Paper1.RGA.Client.certified_no_root
+#check Paper1.RGA.Client.prepared_refines_certified
+#check Paper1.FugueMaxNaturalCommutation.insert_delete_commutes
+#check Paper1.FugueMaxNaturalCommutation.deletes_commute
+#check Paper1.FugueMaxNaturalOrder.respects_order
+#check Paper1.FugueMaxNaturalHistory.natural_witness
+#check Paper1.FugueMaxNaturalCertificate.correct
+#check Paper1.FugueMaxNaturalCertificate.correctV
+#check Paper1.FugueMaxNaturalCertificate.version_witness_noninterleaving
 
 #check MRDTSig
 #check MRDTSig.merge

@@ -23,7 +23,7 @@ def machine (strict : Bool) : HistoryMachine Update Unit (List ℕ) where
   initial := ([], ∅)
   transition state label next := match label with
     | .update (.addAfter id anchor) =>
-        id ∉ state.2 ∧ (strict = false ∨ anchor = 0 ∨ anchor ∈ state.1) ∧
+        (0 < id ∧ id ∉ state.2) ∧ (strict = false ∨ anchor = 0 ∨ anchor ∈ state.1) ∧
           next = (insertAfter anchor id state.1, insert id state.2)
     | .update (.remove id) => next = (state.1.filter (· ≠ id), state.2)
     | .query _ answer => next = state ∧ answer = state.1
@@ -106,7 +106,7 @@ private theorem strict_run_aux (ops : List (Op RGAOp))
           have norem : removedIds ops = [] := removedIds_eq_nil_of_before_add ordered
           have guard : anchor = 0 ∨ List.Mem anchor (listSpec.run ops) := by
             have hl := legal.2 ops (ts, r, .addAfter anchor) [] (by simp)
-            rcases hl with root | ⟨pr, pa, birth⟩
+            rcases hl.2 with root | ⟨pr, pa, birth⟩
             · exact Or.inl root
             · exact Or.inr (live norem anchor pr pa birth)
           constructor
@@ -117,7 +117,7 @@ private theorem strict_run_aux (ops : List (Op RGAOp))
             rw [show labels (ops ++ [(ts, r, .addAfter anchor)]) =
                 labels ops ++ [.update (.addAfter ts anchor)] by simp [labels, project, Op.op, Op.time]]
             rw [SequentialSpec.run_append_single, next]
-            exact run.append (.cons ⟨hf, Or.inr guard, rfl⟩ (.nil _))
+            exact run.append (.cons ⟨⟨(legal.2 ops (ts,r,.addAfter anchor) [] (by simp)).1,hf⟩, Or.inr guard, rfl⟩ (.nil _))
           · intro _ i ri ai h
             rw [SequentialSpec.run_append_single]
             change i ∈ insertAfter anchor ts (listSpec.run ops)
@@ -156,7 +156,7 @@ def advance (s : List ℕ × Finset ℕ) : Update → List ℕ × Finset ℕ
   | .remove id => (s.1.filter (· ≠ id), s.2)
 
 def guard (strict : Bool) (s : List ℕ × Finset ℕ) : Update → Prop
-  | .addAfter id anchor => id ∉ s.2 ∧
+  | .addAfter id anchor => (0 < id ∧ id ∉ s.2) ∧
       (strict = false ∨ anchor = 0 ∨ anchor ∈ s.1)
   | .remove _ => True
 
@@ -397,7 +397,17 @@ theorem certifiedStrictExecutionsV (trace : List (Label RGAM × Configuration RG
     ProjectedSpecificationExecution RGAM emptyPolicy project strictSpec (initConfig RGAM) trace :=
   projected_certified_executionsV certifiedStrictRAV trace execution
 
-/-- PASS: explicit IDs determine ordinary list contents, including physical deletion. -/
+namespace ReadSide
+
+theorem zero_insert_rejected (strict : Bool) :
+    ¬ (machine strict).toSpec.admits [.update (.addAfter 0 0)] := by
+  rintro ⟨state,run⟩
+  cases run with
+  | cons transition rest => exact Nat.lt_irrefl 0 transition.1.1
+
+end ReadSide
+
+/-- Hand-derived positive: explicit identities `1` and `2` produce exactly `[1,2]`. -/
 theorem two_insertions_admitted : strictSpec.admits
     [.update (.addAfter 1 0), .update (.addAfter 2 1), .query () [1, 2]] := by
   refine ⟨(([1, 2], {1, 2}) : List ℕ × Finset ℕ), .cons (m := ([1], {1})) ?_ (.cons (m := ([1, 2], {1, 2})) ?_ (.cons ?_ (.nil _)))⟩
@@ -472,7 +482,7 @@ end ReadSide
 theorem registry_blocks_reuse : ¬ (machine true).transition
     (([], {1}) : List ℕ × Finset ℕ) (.update (.addAfter 1 0)) ([1], {1}) := by
   intro h
-  exact h.1 (by simp)
+  exact h.1.2 (by simp)
 
 namespace ReadSide
 

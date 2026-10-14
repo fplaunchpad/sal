@@ -1,7 +1,7 @@
 # Remaining changes to the Sal paper
 
 Compared with Overleaf **`179d763` (13 October 2026)** and the checked
-`paper1` development at `8680ec3`. Locations below refer to this manuscript
+`paper1` natural-specification update of 14 October 2026. Locations below refer to this manuscript
 snapshot; definition numbers refer to the [formal reference PDF](paper1-formal-reference/main.pdf).
 
 The latest revision adds the operation-inequality guard to `rc-non-comm`,
@@ -122,9 +122,12 @@ separates positional/value-only client requests from generated replication
 messages. Simple sets and counters now use set/integer sequential states with
 checked equality of their complete former history languages. Queue has a
 checked local enqueue/dequeue preparation theorem alongside its existing
-concurrent named-head history theorem. FugueMax's source-faithful positional
-bridge remains unfinished; do not report the intermediate origin-list machine
-as a completed client-correctness result.
+concurrent named-head history theorem. FugueMax now has both the actual
+physical positional refinement and the complete natural origin-list RA bridge
+through the five VCs, for ordinary and recursive executions. Its sequential
+language retains stable identities and deleted origins, but no coordinate
+chains or structural parents. Native RGA now enforces the paper's reserved-zero
+convention in both issuance and its identified sequential language.
 
 - [Formal reference PDF](paper1-formal-reference/main.pdf): checked split laws
   and certified results. Its manuscript correspondence appendix still targets

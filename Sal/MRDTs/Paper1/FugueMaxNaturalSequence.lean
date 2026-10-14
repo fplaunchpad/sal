@@ -1,9 +1,9 @@
 import Sal.MRDTs.Paper1.FugueMaxClientCandidate
 
-/-! Deterministic identity-list candidate for the natural sequence contract.
+/-! Deterministic identity-list language for the natural sequence contract.
 The abstract state remembers only permanent identity order and deletion marks.
 Positions are interpreted once, at issuance; replay uses stable identities.
-No global RA refinement is asserted in this module. -/
+The global RA theorem is proved in FugueMaxNaturalCertificate. -/
 namespace Sal.MRDTs.Paper1.FugueMaxNaturalSequence
 open FugueMaxClientCandidate
 open Instances.SidedEmbedRGA

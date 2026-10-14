@@ -32,7 +32,7 @@ theorem missingSpec_eq :
 theorem insertion_uses_timestamp (s t : List Nat × Finset Nat)
     (ts replica anchor : Nat) :
     machine.transition s (.update (ts,replica,.addAfter anchor)) t ↔
-      ts ∉ s.2 ∧ (anchor = 0 ∨ anchor ∈ s.1) ∧
+      (0 < ts ∧ ts ∉ s.2) ∧ (anchor = 0 ∨ anchor ∈ s.1) ∧
         t = (insertAfter anchor ts s.1, insert ts s.2) := by
   simp [machine, HistoryMachine.withInputs, Identified.machine,
     SeqLabel.mapUpdate, Identified.project, Op.time, Op.op]

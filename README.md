@@ -27,7 +27,10 @@ separates client requests from generated replication messages. Simple sets and
 counters use set/integer abstract states with exact history-language preservation;
 both OR-set implementations share an ordinary-set specification. Queue has a
 checked value-only request adapter alongside its concurrent named-head language.
-FugueMax's replacement client bridge remains in progress.
+FugueMax now has a checked physical positional refinement and a natural
+origin-list RA bridge through the five VCs, including recursive executions and
+the same-witness noninterleaving guarantee. RGA reserves ID zero for its root
+in both issuance and sequential specifications.
 
 The [correctness audit](docs/paper1-correctness-audit.md) traces both obligations:
 five-VC implementation correctness, then the independent sequential-specification
@@ -42,8 +45,9 @@ for distinct operation payloads, plus equal-payload self-commutation.
 [`SplitPolicy.lean`](Sal/MRDTs/Paper1/SplitPolicy.lean) proves equivalence with the
 combined laws on the same raw, represented-ready and invariant domains.
 [`SplitCertificates.lean`](Sal/MRDTs/Paper1/SplitCertificates.lean) exposes the
-21 existing cases through the split interfaces: 20 positive history cases and
-Fugue's algebraic certificate with its separate specification obstruction.
+21 existing cases through the split interfaces. FugueMax's new natural-history
+certificate in `FugueMaxNaturalCertificate.lean` closes its former remaining
+sequential-bridge gap on the existing invariant domain.
 The dependency audit requires the five-VC verifier, merge induction and split
 laws; it does not count aliases as independent implementations.
 
@@ -177,19 +181,17 @@ and Peritext certificates likewise retain their original specifications and
 ordinary/recursive-virtual execution semantics. `CertifiedCoverage` still records
 the separate raw-order result.
 
-FugueMax also has invariant closure, scoped replay laws, raw merge VCs, and
-stored/virtual-base validity. Its original issuer and independent specification
-nevertheless conflict under specification visibility: after inserting and deleting
-a seed, the issuer can prepare an insertion naming that deleted seed. The list
-specification requires a live anchor. `CertifiedFugueInvariantObstruction` proves
-that the actual certified trace has no explaining history for **any invariant or
-policy**, using specification visibility alone. The relevant effectors now
-commute on valid implementation states, so this is a distinct obstruction.
+FugueMax's natural certificate combines invariant closure, scoped replay laws,
+the five merge VCs, and a complete independent origin-list history bridge.
+`FugueMaxNaturalCertificate` covers ordinary and recursive executions and
+preserves maximal noninterleaving on the same history witness. Its physical
+client refinement proves the original issuer implements positional edits.
+The older live-structural-parent language remains a checked counterexample:
+a generated structural parent may be a tombstone. That obstruction concerns
+the rejected language, not the new origin-list specification.
 
-Across the retained and new certificate routes, **18 of 20 production packages
-have positive certificates**; ordinary paper OR-set is additional. The remaining
-cases are Fugue's specification-visibility obstruction and Queue's policy
-obstruction. This count does not reclassify the retained raw-order registry.
+The historical unanchored Queue obstruction remains separate from the positive
+certificate for the current anchored Queue described below.
 
 `CertifiedQueueMVRQueue` shows that Queue's payload-only/no-chain obstruction
 persists in a legal fork/apply/apply execution at a represented empty root.
@@ -323,7 +325,8 @@ including unbounded natural-number allocations. With explicit insertion identifi
 labels, independent strict and missing-anchor list languages satisfy the
 stronger projected criterion on all ordinary and virtual certified executions.
 The projection is explicit and genuinely changes the application alphabet; the
-concrete datatype and issuer are unchanged. `Paper1.RGAComparison` checks both
+concrete updates and merges are unchanged; the issuer now explicitly restores
+the source convention that insertion IDs are positive. `Paper1.RGAComparison` checks both
 negative and positive criteria on the same reachable read `[5,4,8,7]`.
 These paper-facing results do not assert a migration of every
 production package to the restricted policy.

@@ -1,12 +1,14 @@
 import Sal.MRDTs.Instances.FugueMaxImplementation
 import Sal.MRDTs.Paper1.HistorySpec
 
-/-! Candidate trusted boundary, not a replacement public contract.
+/-! Positional client requests and auxiliary gap-machine definitions.
 The natural client is a positional list of identities (the current Sal query
 observes identities). Generated messages retain stable origins and deletion
 identities; numeric positions are interpreted at the issuing view. The gap
 machine below is an intermediate nondeterministic specification, with no
-coordinates, structural-parent relation or implementation update function. -/
+coordinates, structural-parent relation or implementation update function.
+The selected deterministic language and certified bridge are in
+FugueMaxNaturalSequence and FugueMaxNaturalCertificate. -/
 namespace Sal.MRDTs.Paper1.FugueMaxClientCandidate
 open Foundation
 open Instances.SidedEmbedRGA

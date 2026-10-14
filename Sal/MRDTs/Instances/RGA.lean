@@ -170,10 +170,12 @@ theorem read_eq_sequence_of_birthGraveRel {s : RGAM.State} {q : BirthGraveState}
   rw [supportFinset_eq s.1 q.adds h.1,
     supportFinset_eq s.2 q.grave h.2]
 
+/-- Source identifiers reserve 0 for the root. Root insertion therefore
+requires a positive timestamp; non-root anchors already require an earlier ID. -/
 def applicable (e : Op RGAOp) (s : RGAM.State) : Prop :=
   match e.2.2 with
   | .addAfter anchor =>
-      (anchor = 0 ∨
+      ((anchor = 0 ∧ 0 < e.1) ∨
         (s.2 anchor = false ∧
           anchor < e.1 ∧ ∃ parent, s.1 (anchor, parent) = true)) ∧
       (∀ anchor', s.1 (e.1, anchor') = false) ∧ s.2 e.1 = false

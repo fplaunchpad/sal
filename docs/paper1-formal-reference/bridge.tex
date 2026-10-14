@@ -277,20 +277,60 @@ public tagged-head query.
 % AnchoredQueueCertificate.lean: History.stored_publicWitness;
 % History.correct; History.correctV; History.executions; History.executionsV.
 
-\begin{example}[Fugue and a live-anchor specification]\label{ex:fugue}
-The original Fugue issuer permits insertion naming a deleted birth. A certified
-trace creates a birth, deletes it, then inserts a replacement anchored to that
-birth. Its independent live-anchor language permits the replacement before the
-deletion, but rejects it after the deletion. Specification visibility requires
-the actual causal deletion-before-replacement order. No admitted word satisfies
-that requirement, for any representation-state domain or arbitration policy.
-The relevant implementation effectors nevertheless commute on the proved closed
-invariant domain. Thus representation invariants repair an implementation-order
-issue without repairing this issuance/specification mismatch. A successful
-claim must reconcile those two interfaces explicitly.
+\begin{example}[FugueMax: positional clients and stable origins]\label{ex:fugue}
+The client inserts at a position $i$ or deletes the element at position $i$.
+Preparation interprets $i$ in the issuing visible list. An insertion message
+records its fresh identity $t$ and visible predecessor $\ell$ (zero at the
+front); a deletion records the selected identity $x$. Structural parents,
+right origins and coordinate chains remain implementation metadata.
+
+The independent sequential state is $(B,T)$, a permanent identity list and
+set of deleted identities, initially $([0],\varnothing)$. Write
+$\operatorname{after}(B,\ell,t)$ for insertion immediately after $\ell$.
+Its admitted transitions and read are
+\[
+\begin{aligned}
+ (B,T)&\xrightarrow{\F{insertAfter}(t,\ell)}
+ (\operatorname{after}(B,\ell,t),T)
+ &&\text{when }t\ne0\land t\notin B\land\ell\in B,\\
+ (B,T)&\xrightarrow{\F{delete}(x)}(B,T\cup(\{x\}\setminus\{0\}))
+ &&\text{when }x\in B,\\
+ \F{read}(B,T)&=[x\in B\mid x\ne0\land x\notin T].
+\end{aligned}
+\]
+Deleted identities remain available as origins; the visible read omits them.
+The source issuer still chooses the requested visible gap. The checked local
+refinement proves that its actual physical update implements the positional
+edit. The current carrier observes identities; this theorem does not add an
+arbitrary character payload to that carrier.
+
+For every stored version of an ordinary or recursively merged certified
+execution, the checked five-VC construction yields one permutation of its
+original events that respects the invariant-scoped implementation order and
+specification-conflicting visibility, is admitted by this language, and returns
+the stored query answer. The same witness carries the existing maximal
+noninterleaving property. The valid-state domain is unchanged and separately
+proved closed under updates and merges.
+
+The earlier live-structural-parent language remains refuted by the certified
+insert--delete--insert trace: it confuses a structural tombstone with the
+client's visible predecessor. This obstruction does not apply to the language
+above. Requiring raw commutation on malformed unsorted lists would also impose
+a stronger implementation order than the established invariant criterion.
 \end{example}
-% CertifiedFugueInvariantObstruction.lean: certified_failure;
-% implementation_spec_separation; valid_execution_counterexample.
+% FugueMaxNaturalSequence.lean: machine; spec; generated_insert_intent.
+% FugueMaxHonestPhysicalRefinement.lean: honest_physical_insert_refinement.
+% FugueMaxNaturalCertificate.lean: version_witness_noninterleaving; correct; correctV.
+% CertifiedFugueInvariantObstruction.lean: certified_failure.
+
+\paragraph{Native RGA's reserved root.}\label{par:rga-root}
+Both insertion issuance and the identified sequential language require $t>0$;
+zero denotes only the root. The certified no-root theorem derives exclusion
+of zero from visible lists for ordinary and recursive executions. This restores
+a source convention omitted in the earlier Lean guard, without changing the
+update or merge functions.
+% RGAClientLocal.lean: certified_no_root; prepared_refines_certified;
+% dropped_guard_root_boundary.
 
 \begin{example}[Published bounded counter]\label{ex:balegas-counter}
 Balegas et al., SRDS 2015, Section III-B, Figure 1, define a lower-bounded

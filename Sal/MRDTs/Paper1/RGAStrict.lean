@@ -218,8 +218,8 @@ private theorem trace_wellFormed : VersionWellFormed {e | e ∈ all} := by
     simp [all, genesis, rootOne, rootTwo, deleteOne, afterTwo,
       deleteTwo, afterOne] at he
     rcases he with h | h | h | h
-    · exact Or.inl h.2.2
-    · exact Or.inl h.2.2
+    · exact Or.inl ⟨h.2.2,by simp_all⟩
+    · exact Or.inl ⟨h.2.2,by simp_all⟩
     · right
       refine ⟨0, 0, ?_, ?_⟩ <;>
         simp_all [all, genesis, rootOne, rootTwo, deleteOne, afterTwo,

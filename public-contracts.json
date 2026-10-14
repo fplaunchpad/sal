@@ -142,7 +142,8 @@
       ]
     },
     {
-      "id": "fugue-max", "certificate": "Instances.SidedEmbedRGA.FugueMax.verified unaryCode",
+      "id": "fugue-max",
+      "certificate": "Instances.SidedEmbedRGA.FugueMax.verified unaryCode",
       "implementation": "Instances.SidedEmbedRGA.FugueMax.datatype unaryCode",
       "issuance": "Instances.SidedEmbedRGA.FugueMax.generation unaryCode",
       "replayOrder": "Instances.SidedEmbedRGA.FugueMax.replayOrder unaryCode",
@@ -153,8 +154,19 @@
           "name": "same-witness-list-and-maximal-noninterleaving",
           "proof": "@Instances.SidedEmbedRGA.FugueMax.correct unaryCode",
           "statement": "∀ (C : Configuration implementation), CertifiedExecution implementation issuance C → ∀ (v : Version) (s : implementation.State) (E : Set (Op implementation.AppOp)), C.ver v = some (s, E) → ∃ ops : List (Op implementation.AppOp), listPermOf ops E ∧ respects ops (@loOn implementation.toUpdateSig replayOrder C.replayContext E) ∧ spec.Legal ops ∧ rel s (spec.run ops) ∧ (∀ q, implementation.query s q = spec.query (spec.run ops) q) ∧ Instances.SidedEmbedRGA.MaxNonInterleavingM unaryCode (ops.map Instances.SidedEmbedRGA.FugueMax.recordOf)"
+        },
+        {
+          "name": "natural-client-invariant-ra-and-closed-domain",
+          "proof": "fun C exec => ⟨(Paper1.FugueMaxNaturalCertificate.correct unaryCode exec).closed, (Paper1.FugueMaxNaturalCertificate.correct unaryCode exec).stored_valid, (Paper1.FugueMaxNaturalCertificate.correct unaryCode exec).replay, (Paper1.FugueMaxNaturalCertificate.correct unaryCode exec).versions⟩",
+          "statement": "∀ (C : Configuration implementation), CertifiedExecution implementation issuance C → Paper1.InvariantOrder.Closed implementation C.replayContext (Paper1.FugueMaxNaturalCertificate.invariant unaryCode C) ∧ (∀ (v : Version) (s : implementation.State) (E : Set (Op implementation.AppOp)), C.ver v = some (s, E) → Paper1.FugueMaxNaturalCertificate.invariant unaryCode C s) ∧ (∀ (v : Version) (s : implementation.State) (E : Set (Op implementation.AppOp)), C.ver v = some (s, E) → Paper1.SplitPolicy.Invariant.RestrictedLaws (Paper1.CertifiedFugueInvariantReplay.scope unaryCode C E) (Paper1.FugueMaxNaturalCertificate.invariant unaryCode C) Paper1.CertifiedFugueInvariantReplay.policy ∧ Paper1.InvariantReplay.Canonical (Paper1.CertifiedFugueInvariantReplay.scope unaryCode C E) (Paper1.FugueMaxNaturalCertificate.invariant unaryCode C) Paper1.CertifiedFugueInvariantReplay.policy implementation.init s) ∧ Paper1.InvariantOrder.VersionsRA implementation (Paper1.FugueMaxNaturalCertificate.invariant unaryCode C) Paper1.CertifiedFugueInvariantReplay.policy Paper1.FugueMaxNaturalCertificate.eventSpec C"
+        },
+        {
+          "name": "same-natural-client-witness-and-maximal-noninterleaving",
+          "proof": "@Paper1.FugueMaxNaturalCertificate.version_witness_noninterleaving unaryCode",
+          "statement": "∀ (C : Configuration implementation), CertifiedExecution implementation issuance C → ∀ (v : Version) (s : implementation.State) (E : Set (Op implementation.AppOp)), C.ver v = some (s, E) → ∀ q : implementation.Query, ∃ ops : List (Op implementation.AppOp), listPermOf ops E ∧ respects ops (Paper1.InvariantOrder.order (Paper1.FugueMaxNaturalCertificate.invariant unaryCode C) Paper1.CertifiedFugueInvariantReplay.policy C.replayContext E) ∧ respects ops (Paper1.projectedSpecVisibility Paper1.FugueMaxNaturalCertificate.project Paper1.FugueMaxNaturalSequence.spec C.replayContext) ∧ Paper1.FugueMaxNaturalSequence.spec.admits (Paper1.projectedLabels (D := implementation) Paper1.FugueMaxNaturalCertificate.project ops ++ [.query q (implementation.query s q)]) ∧ Instances.SidedEmbedRGA.MaxNonInterleavingM unaryCode (ops.map Instances.SidedEmbedRGA.FugueMax.recordOf)"
         }
-      ]
+      ],
+      "note": "The certificate/spec/relation fields retain the implementation replay proof package. The public natural client language is Paper1.FugueMaxNaturalCertificate.eventSpec, checked by the explicit natural obligations below. Its concrete order uses the existing independently closed Valid domain; no raw-state RA claim is made."
     }
   ]
 }

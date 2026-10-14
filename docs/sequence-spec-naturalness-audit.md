@@ -1,8 +1,8 @@
 # Sequence specification naturalness audit
 
 Audit scope: source definitions and theorem statements read on 2026-10-14. This
-is a read-only contract audit; it changes no implementation, issuer, or public
-certificate. “Checked” below means a theorem exists for the stated language,
+records the source audit and subsequent checked refinements. Update and merge
+algorithms are unchanged; native RGA restores its intended reserved-root guard. “Checked” below means a theorem exists for the stated language,
 not that every packet field belongs in a natural client API.
 
 ## Research question
@@ -28,7 +28,7 @@ alone does not settle that boundary.
 | Sided embedded RGA | Ordinary `(id,value)` list containing a root sentinel. Insert immediately before or after an anchor; delete by ID; query hides sentinel. | Side is semantically meaningful at this intermediate API. Coordinate prefix and monotone timestamps occur in legality. | Two-sided adjacency and the same-witness invariant history bridge are checked. Root-left insertion is a legitimate extra operation, so this API is not literally the one-sided embedded API. Positional request refinement remains separate. |
 | Peritext over embedded RGA | Product of the embedded list machine and mark/attribute collections, observed through a document renderer. | Anchor IDs affect formatting boundaries; text coordinate prefix is packet provenance. | Full-event ordinary and recursive scoped history exports exist. The text component can share an ordinary list layer; the whole document cannot be identified with a plain list of values. Formatting acceptance and rendering need their own observable contract. |
 | Sided Peritext Core and RichCore | Sided text plus independent mark/deletion collections; RichCore adds rendered document observations. | Stable IDs identify text and marks. Side and mark boundaries affect observable order/formatting. | The production certificate path is explicitly native insert-only for text; do not advertise unrestricted text-delete correctness from it. Core/RichCore history exports exist for that issuer scope. Their text part can reuse the two-sided list abstraction, but native operation scope and rendered queries differ. |
-| FugueMax | Existing legacy contract uses a visible list and treats generated structural parent/side as its splice instruction. | Structural parent can be a tombstone; recorded left/right origins and chain describe the generated placement. | Five-VC represented-state convergence is checked. The old live-parent language has a checked criterion obstruction. A replacement ordinary positional API and its message/gap bridge are under active investigation; do not promote the legacy `verified` package to a source-faithful client theorem. |
+| FugueMax | Permanent identity list and deletion marks; generated insertions name a stable left origin, deletions name an ID. Clients request positional edits. | Structural parent, side, right origin and chain stay in generated implementation messages; none occurs in the independent sequential action. | Physical positional refinement and complete natural invariant-scoped RA certificate are checked through the five VCs, for ordinary and recursive executions, with maximal noninterleaving on the same witness. The old live-parent language remains an explicitly rejected alternative. |
 | Historical mergeable queue | List of tagged values. Enqueue appends; removal names a previously observed head. A repeated target already absent is legal and a no-op. Query returns tagged head. | Tag selects which element was observed; it is semantically load-bearing under concurrency. | Sequential ordinary FIFO refinement is checked under `qOK`. The concurrent public certificate uses the idempotent named-head language, not unconditional `tail` on every dequeue event. |
 | Anchored-enqueue queue | The same tagged FIFO language: enqueue appends; a live named removal must target current head; an already absent, previously born target is a no-op. | Tail anchor and coordinate certify enqueue placement but are ignored by independent FIFO step. Dequeue target remains semantically relevant. | The schedule, public tagged-head witness, and ordinary/recursive execution certificates are checked. It is a different implementation and issuer from the historical queue; it shares the named-head abstract behavior, not its operational graph. |
 
@@ -120,12 +120,50 @@ unconditional equality of the raw step functions.
 4. Preserve one history satisfying the policy order, specification visibility,
    abstract admission, and stored query. The existing invariant-history
    theorems provide this shape and should remain the acceptance gate.
-5. For FugueMax, prove tombstone-parent placements retain the requested visible
-   gap, then validate backward insertion and concurrent siblings. The new
-   origin bounds establish strict placement between recorded origins; they do
-   not establish adjacency or a complete positional refinement.
+5. For FugueMax, connect the checked physical positional refinement
+   (`FugueMaxHonestPhysicalRefinement.honest_physical_insert_refinement`)
+   to a complete certified history theorem. The origin-tree construction,
+   specification visibility and final `FugueMaxNaturalCertificate` are checked.
+   Local placement and the global same-witness result are separate theorems.
 6. For queues, choose explicitly between destructive FIFO dequeue and observed
    tagged-head removal. Keep the checked duplicate-dequeue negative control
    when considering a simpler client alphabet.
 
 No stronger source-to-positional-client theorem is claimed by this audit.
+
+### FugueMax implementation-order boundary
+
+The final certificate must use the existing `InvariantOrder` criterion with
+`CertifiedFugueInvariant.Valid`. This domain requires sorted records with
+provenance from the execution, and has separately proved initial-state,
+update, and merge closure. It is not a predicate chosen to fit the new witness.
+
+The raw, all-states criterion is stronger: filtering a malformed unsorted list
+can change where a subsequent insertion lands. The checked scratch-state
+example in `CertifiedFugueRawOrderObstruction` already establishes this
+distinction. Consequently, an insertions-before-deletions witness cannot be
+justified by claiming that unrelated insertions and deletions commute on every
+raw state. The intended proof uses their existing valid-state commutation
+theorem and checks specification visibility separately on the same witness.
+
+## Native RGA positional boundary
+
+`Paper1/RGAClientLocal.lean` adds a positional request adapter for the source-faithful
+issuer. `prepared_canIssue` proves issuance from a complete live view and
+fresh metadata; `covers_original_issuer` supplies a request for every originally
+applicable message. `prepared_refines_identified` proves its strict identified
+list effect with explicit uniqueness and exclusion of visible ID zero.
+`apply_clock_above_observed` derives clock monotonicity from an actual apply
+step, rather than assuming it follows from the application guard alone.
+
+KC clarified that both the original paper and implementation reserve zero for
+the root. Lean's earlier issuer omitted that convention. The checked trace
+allocates zero, reads `[0]`, and turns insertion at index 1 into `[1,0]` rather
+than `[0,1]`. This diagnoses the missing formalization guard; it is not a
+counterexample to the source RGA algorithm or its intended issuance domain.
+The correction is checked: insertion IDs are positive in the issuer and both
+identified sequential languages. `certified_no_root` proves the invariant for
+ordinary and recursive certified executions, and `prepared_refines_certified`
+uses it at the client boundary. The old trace is an explicit dropped-guard
+regression whose insertion fails the corrected issuer. Update and merge
+algorithms are unchanged.

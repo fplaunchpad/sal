@@ -1,13 +1,15 @@
 # Fugue client operations and structural parents
 
-Audit status: source comparison and a hand-derived single-replica scenario;
-no issuer, implementation, sequential specification or theorem changed.
+Original audit: source comparison and a hand-derived single-replica scenario.
+Follow-up: `FugueMaxNaturalCertificate` now proves the replacement origin-list
+contract through the five VCs, and `FugueMaxHonestPhysicalRefinement` proves the
+actual positional client effect. The source issuer and implementation are unchanged.
 The five merge VCs and their expansion proofs concern a separate equality
 boundary and do not establish correspondence to the original client API.
 
 ## Finding
 
-The current sequential contract interprets the structural parent in a generated
+The former live-parent sequential contract interprets the structural parent in a generated
 Fugue message as a live-list splice anchor. Original Fugue allows this parent
 to be a tombstone. For the insert/delete/insert scenario below, the issuer's
 choice is consistent with the original algorithm; the live-parent requirement

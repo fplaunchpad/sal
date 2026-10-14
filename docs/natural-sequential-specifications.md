@@ -3,8 +3,9 @@
 This campaign checks two different claims: generated replication messages have
 an admitted sequential history, and generating a message implements the client
 request at its issuing view. A checked message-history bridge does not by itself
-establish the second claim. The implementations, issuers, five VCs and selected
-RA criterion remain fixed.
+establish the second claim. The update/merge implementations, intended issuance, five VCs and selected
+RA criterion remain fixed. Native RGA restores the source's reserved-zero guard
+that the earlier Lean issuer omitted.
 
 ## Current audit
 
@@ -16,15 +17,16 @@ RA criterion remain fixed.
 | Enable-wins and disable-wins flags | Enable, disable, Boolean read | Checked | Both already share a Boolean sequential machine. Their distinct merge policies select different concurrent outcomes. Neem's application source omits the query; the Boolean interpretation is explicit. |
 | Published bounded counter | Increment/decrement a scalar; transfer and inspect local rights | Checked, including ordinary/recursive executions and local/global bounds | Independent scalar and account balances match the observable API. The transfer matrix is absent from the sequential state. |
 | LWW register | Write a value; read the most recent sequential write | Checked | Sequential state is an optional value, without timestamps. The bridge selects a timestamp-consistent witness. |
-| Multi-value register | A local write replaces all currently observed values; concurrent writes may remain together | Checked identity-addressed overwrite language | `MVRLive.issued_write_singleton` and `linear_register` establish local replacement and ordinary sequential register behavior. The overwrite IDs are generated message context, not extra client arguments. Keep the concurrent value-set result distinct from a singleton register. |
-| RGA and document variants | Positional edits and visible text; documented mark operations | Checked for their existing identified-operation contracts | Audit positional request generation separately. Several legality predicates expose coordinate coherence or timestamp restrictions. See the sequence audit; do not remove them without a correspondence proof. |
+| Multi-value register | A local write replaces all currently observed values; concurrent writes may remain together | Checked identity-addressed overwrite language | `MVRClient.prepare` accepts a value and captures all live write identities. Its issuance equivalences and local singleton replacement/read are checked for both representations; historical freshness additionally excludes dead prior identities, and its local effect theorem derives overwrite coherence from a certified source version. The concurrent value-set contract remains distinct from a singleton register. |
+| Native RGA | Positional edits over an identified list | Identified-operation contract and reserved-root correction checked | The issuer and strict/missing identified languages now require positive insertion IDs, matching the source's reserved root. `RGAClientLocal.certified_no_root` derives exclusion of zero for ordinary and recursive certified executions; the positional adapter uses it. The old zero trace is retained only with an explicit failed issuance guard. |
+| Embedded RGA and document variants | Positional edits and visible text; documented mark operations | Checked for their existing identified-operation contracts | Several legality predicates expose coordinate coherence or timestamp restrictions. See the sequence audit; removing them still requires a correspondence proof. |
 | Anchored Queue | Enqueue a value; dequeue the observed head | Checked | `AnchoredQueueClient.prepare` generates the tail coordinate or head identity. `prepared_canIssue` and `prepared_refines` prove the unchanged issuer accepts the message and its local effect is append/pop on a sorted, fresh, unique-ID issuing state. Empty dequeue generates no event. Concurrent duplicate removals still use the checked idempotent named-head language; this is not a destructive-dequeue concurrent specification. |
-| FugueMax | Positional insert/delete and visible-list read | Five VCs checked; existing live-parent sequential language obstructed | Repair the client/message boundary. A structural parent may be a tombstone. Candidate origin-only specification and client-refinement proofs are in progress. |
+| FugueMax | Positional insert/delete; generated messages project to stable insertion ID and left origin, or deletion target | Physical client refinement and certified natural RA bridge checked | `FugueMaxHonestPhysicalRefinement` proves the actual local edit. `FugueMaxNaturalHistory.natural_witness` constructs a permutation of the original events admitted by the origin-only language, with the exact source query and specification visibility. `FugueMaxNaturalOrder.respects_order` checks the existing valid-state implementation order. `FugueMaxNaturalCertificate.correct` and `correctV` connect these results through the five VCs for ordinary and recursive executions, with maximal noninterleaving on the same witness. |
 | TreeMove and AegisSheet | In-place tree and sheet edits | Existing bridges checked | Audit completed: tree effects are ordinary cycle-checked moves with causal-origin legality; the sheet machine retains observed versions, tokens and undo context. A visible-sheet-only transition is already refuted for the current message alphabet. Request elaboration remains separate. |
 
 The [sequence audit](sequence-spec-naturalness-audit.md) records the exact
 RGA/Queue contracts and genuinely different operation semantics. The
-[source audit](fugue-spec-source-audit.md) explains FugueMax's current mismatch.
+[source audit](fugue-spec-source-audit.md) records the mismatch in FugueMax's former live-parent language.
 The [remaining-family audit](natural-other-datatypes-audit.md) covers registers,
 flags, the published bounded counter, TreeMove and AegisSheet, with exact
 source declarations and the limits of their client interpretation.
