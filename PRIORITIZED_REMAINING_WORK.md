@@ -8,6 +8,19 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Additional Neem datatypes for the paper
+
+- [x] Implement and certify the source remove-wins set, including its initial
+  removal tags and an independent ordinary-set sequential specification.
+- [x] Implement and certify the source set-wins map; state explicitly the
+  accumulating per-key value semantics of its insertion-only `Set` operation.
+- [x] Implement and certify the source optional register, including the
+  execution facts needed by its per-replica merge and sequential bridge.
+- [x] Independently check each five-VC/Join route, ordinary and recursive
+  execution theorem, axiom dependencies, and positive/negative concrete tests.
+- [ ] Add completed cases to the catalogue, measured paper table, and public
+  datatype reference Site. JSON is outside this campaign.
+
 ## Notion catalogue integration and paper handoff
 
 - [x] Integrate the checked research branch into `paper1`, preserving unrelated work.

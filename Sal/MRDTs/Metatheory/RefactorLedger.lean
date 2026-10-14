@@ -1,4 +1,7 @@
 import Sal.MRDTs.Metatheory.NotionCoreLedger
+import Sal.MRDTs.Paper1.SetWinsMapAudit
+import Sal.MRDTs.Paper1.RemoveWinsSetAudit
+import Sal.MRDTs.Paper1.OptionalRegisterAudit
 import Sal.MRDTs.Paper1.NeemFlagAudit
 import Sal.MRDTs.Paper1.AnchoredQueueClient
 import Sal.MRDTs.Paper1.ORSetSharedSpecification

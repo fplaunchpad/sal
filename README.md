@@ -273,6 +273,29 @@ Neem's source omits queries; we explicitly supply the surviving-enable query
 and its disable-wins dual. These additional cases are not yet measured in the
 automation effort tables.
 
+Neem's **remove-wins set** and **set-wins map** also have checked five-VC,
+independent sequential-history, and ordinary/recursive execution proofs.
+The [remove-wins set](Sal/MRDTs/Paper1/RemoveWinsSetAudit.lean) retains the
+source's timestamp-zero initial removal tags and reserves zero through an
+explicit positive-timestamp issuance guard. Its finite-universe model includes
+Neem's two-element example and uses an ordinary-set sequential specification.
+The [set-wins map](Sal/MRDTs/Paper1/SetWinsMapAudit.lean) retains all values
+inserted at a key until deletion. Neem supplies no query; our explicit
+set-valued lookup is certified against an independent accumulating multimap.
+Both audits check that the execution results consume the five VCs and generic
+merge induction, and reject nonstandard axioms. Hand-derived PASS+FAIL tests
+pin the intended query results and competing incorrect behaviors.
+
+The [Neem optional register](Sal/MRDTs/Paper1/OptionalRegisterCertificate.lean)
+preserves its finite partial-map domain, counter/flag arithmetic, and
+equal-timestamp averaging branch. A scoped bridge proves an independent scalar
+`Option Nat` specification with ordinary `set` and `unset`; the chosen query
+returns the greatest-timestamp active value. Reachability derives the payload
+coherence needed by the source merge. Positive issued timestamps also establish
+the [source state refinement](Sal/MRDTs/Paper1/OptionalRegisterSourceValidity.lean).
+Its five-VC-derived execution certificate covers ordinary and recursive bases
+with the application policy `unset → set`.
+
 `GSet`'s alias module has been removed: the single mathematical grow-only-set
 implementation is `AddStore`, with one coverage entry. `FinsetStore` and
 `FlatGrowOnly` provide enumerable and Boolean representations of the same abstract
