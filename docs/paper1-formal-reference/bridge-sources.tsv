@@ -45,3 +45,7 @@ ex:fugue	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate	Sal.MRDTs.Paper1.FugueMaxNa
 ex:fugue	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate.correct
 ex:fugue	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate	Sal.MRDTs.Paper1.FugueMaxNaturalCertificate.correctV
 par:rga-root	Sal.MRDTs.Paper1.RGAClientLocal	Sal.MRDTs.Paper1.RGA.Client.certified_no_root
+par:client-preparation	Sal.MRDTs.Paper1.EmbedRGAClientLocal	Sal.MRDTs.Paper1.EmbedRGAClient.certified_prepared_physical
+par:client-preparation	Sal.MRDTs.Paper1.SidedRGAClientLocal	Sal.MRDTs.Paper1.SidedRGAClient.certified_prepared_physical
+par:client-preparation	Sal.MRDTs.Paper1.RGAClientPhysical	Sal.MRDTs.Paper1.RGA.Client.Physical.certified_query_prepared
+par:client-preparation	Sal.MRDTs.Paper1.RGAClientPhysical	Sal.MRDTs.Paper1.RGA.Client.Physical.certified_query_preparedV

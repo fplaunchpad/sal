@@ -139,6 +139,24 @@ the shared induction instead assumes a legal selected history and a one-step
 projection law. Proving insertion adjacency and deriving legality from the
 certified execution remain datatype-specific obligations.
 
+\paragraph{Positional request preparation.}\label{par:client-preparation}
+For native RGA, Embedded RGA and its sided variant, clients request insertion
+or deletion at a visible position. Preparation supplies the anchor identity
+and, for the embedded variants, the coordinate prefix. Let $\F{view}$ erase coordinates while retaining the visible identities
+and values, and let $\F{edit}_t$ be ordinary positional list editing, using $t$
+as the fresh insertion identity. At a certified source and an actual apply step,
+the checked local theorem is
+\[
+ \F{prepare}(s,t,r,u)=e
+ \quad\Longrightarrow\quad
+ \F{view}(\doop(s,e))=\F{edit}_t(\F{view}(s),u).
+\]
+The theorem derives sortedness, identity uniqueness, positive coordinates and
+the required clock bound from the execution. It does not assume a legal
+sequential replay, or replace the separate global history bridge.
+% EmbedRGAClientLocal.lean: certified_prepared_physical.
+% SidedRGAClientLocal.lean: certified_prepared_physical.
+
 \paragraph{Retaining specification conflicts.}
 For the stronger criterion of Definition~\ref{def:ra}, additionally require
 \begin{equation}

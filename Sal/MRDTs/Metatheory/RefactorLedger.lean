@@ -5,10 +5,13 @@ import Sal.MRDTs.Paper1.FugueMaxNaturalControls
 import Sal.MRDTs.Paper1.FugueMaxSourceRepresentation
 import Sal.MRDTs.Paper1.MVRClient
 import Sal.MRDTs.Paper1.RGAClientLocal
+import Sal.MRDTs.Paper1.RGAClientPhysical
 import Sal.MRDTs.Paper1.FugueMaxNaturalCommutation
 import Sal.MRDTs.Paper1.FugueMaxNaturalOrder
 import Sal.MRDTs.Paper1.FugueMaxNaturalHistory
 import Sal.MRDTs.Paper1.FugueMaxNaturalCertificate
+import Sal.MRDTs.Paper1.EmbedRGAClientLocal
+import Sal.MRDTs.Paper1.SidedRGAClientLocal
 import Sal.MRDTs.Paper1.BalegasBoundedCounterAudit
 import Sal.MRDTs.Paper1.SelfCommutationAudit
 import Sal.MRDTs.Framework.StateGC
@@ -67,6 +70,8 @@ namespace Sal.MRDTs
 #check Paper1.FugueMaxNaturalCertificate.correct
 #check Paper1.FugueMaxNaturalCertificate.correctV
 #check Paper1.FugueMaxNaturalCertificate.version_witness_noninterleaving
+#check Paper1.EmbedRGAClient.certified_prepared_physical
+#check Paper1.SidedRGAClient.certified_prepared_physical
 
 #check MRDTSig
 #check MRDTSig.merge
@@ -344,3 +349,6 @@ end Sal.MRDTs
 #check Sal.MRDTs.Paper1.SplitPolicy.Concrete.ScopedVCConditions.executionsV
 #check Sal.MRDTs.Paper1.SplitPolicy.Certified.versions_of_canonical_histories
 #check Sal.MRDTs.Paper1.SplitPolicy.Invariant.versions_of_canonical_histories
+
+#check Sal.MRDTs.Paper1.RGA.Client.Physical.certified_query_prepared
+#check Sal.MRDTs.Paper1.RGA.Client.Physical.certified_query_preparedV

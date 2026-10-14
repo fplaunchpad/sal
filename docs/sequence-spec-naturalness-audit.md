@@ -167,3 +167,25 @@ ordinary and recursive certified executions, and `prepared_refines_certified`
 uses it at the client boundary. The old trace is an explicit dropped-guard
 regression whose insertion fails the corrected issuer. Update and merge
 algorithms are unchanged.
+
+`RGAClientPhysical.certified_query_prepared` now proves the direct local equation
+`RGAM.query (RGAM.update s event) () = Client.step (read s) stamp request`.
+Its premises are a certified source execution, an actual certified apply step,
+the actor's head/version lookup and successful positional preparation. Finite
+birth support, unique IDs, a fresh timestamp, an undeleted new ID and a live
+anchor follow from execution and the original issuer guard. The recursive
+execution variant proves the same equation. This complements the separate
+global history bridge: it proves the effect of this particular client edit.
+
+## Certified embedded client effects
+
+`EmbedRGAClient.certified_prepared_physical` and
+`SidedRGAClient.certified_prepared_physical` prove that successful positional
+preparation at an actual certified source produces the requested physical
+insert/delete effect. Their premises are the source execution, an actual apply
+step, the actor's head/version lookup, and successful preparation. Sortedness,
+unique positive IDs, chain provenance, and a clock above the source records are
+derived through the existing five-VC execution results. No `eSeqOK`/`sSeqOK` or
+caller-supplied coordinate invariant remains in these local theorem premises.
+The global admitted-history languages are unchanged; this does not erase their
+metadata guards or expand the native Core/RichCore text-operation scope.

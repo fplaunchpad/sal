@@ -30,7 +30,9 @@ checked value-only request adapter alongside its concurrent named-head language.
 FugueMax now has a checked physical positional refinement and a natural
 origin-list RA bridge through the five VCs, including recursive executions and
 the same-witness noninterleaving guarantee. RGA reserves ID zero for its root
-in both issuance and sequential specifications.
+in both issuance and sequential specifications. Native, Embedded and Sided RGA
+also have checked local theorems equating the actual implementation update
+with the prepared positional client edit, deriving their invariants from execution.
 
 The [correctness audit](docs/paper1-correctness-audit.md) traces both obligations:
 five-VC implementation correctness, then the independent sequential-specification

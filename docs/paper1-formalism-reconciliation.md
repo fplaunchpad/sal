@@ -117,7 +117,7 @@ Keep concrete implementation equality and the specification refinement function
 
 ## Reference artifacts
 
-The ongoing [natural-specification audit](natural-sequential-specifications.md)
+The [natural-specification audit](natural-sequential-specifications.md)
 separates positional/value-only client requests from generated replication
 messages. Simple sets and counters now use set/integer sequential states with
 checked equality of their complete former history languages. Queue has a
@@ -127,7 +127,10 @@ physical positional refinement and the complete natural origin-list RA bridge
 through the five VCs, for ordinary and recursive executions. Its sequential
 language retains stable identities and deleted origins, but no coordinate
 chains or structural parents. Native RGA now enforces the paper's reserved-zero
-convention in both issuance and its identified sequential language.
+convention in both issuance and its identified sequential language. The reference’s
+“Positional request preparation” paragraph states the checked local update
+correspondence for native, Embedded and Sided RGA. Execution supplies the
+freshness and representation invariants; the client supplies a position.
 
 - [Formal reference PDF](paper1-formal-reference/main.pdf): checked split laws
   and certified results. Its manuscript correspondence appendix still targets

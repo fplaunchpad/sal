@@ -19,7 +19,7 @@ intermediate machine does not finish it.
 
 - [x] Finish FugueMax's positional request refinement and certified RA bridge
   through the existing five VCs, preserving the source issuer.
-- [ ] Audit RGA/document variants and Queue; separate natural client requests
+- [x] Audit RGA/document variants and Queue; separate natural client requests
   from generated messages and prove the correspondence.
 - [x] Restore native RGA's source reserved-root convention: positive insertion
   IDs, matching sequential guard and certified no-zero invariant. KC confirmed
@@ -27,7 +27,7 @@ intermediate machine does not finish it.
   counterexample diagnoses an omitted formalization guard.
 - [x] Replace simple set/counter log states with natural ADT states and prove
   exact complete-history language equivalence, including queries.
-- [ ] Consolidate shared abstract semantics for matching datatypes; audit
+- [x] Consolidate shared abstract semantics for matching datatypes; audit
   remaining sets, counters, flags, registers, tree and sheet contracts.
 - [ ] Synchronize the formal reference, Site and reconciliation note with
   checked results and explicit remaining obligations.
@@ -36,19 +36,16 @@ intermediate machine does not finish it.
 
 #### FugueMax research protocol
 
-Checkpoint `09f18ff` is pushed to `paper1`: natural set/counter states, shared
-OR-set semantics, exact Queue request preparation, and checked partial FugueMax
-origin/representation results. The full gate passed 3,674 Lean jobs, the public
-contract and negative controls, 187 runtime tests and 569 benchmark records.
-The formal-reference PDF checks 121 declaration anchors and its changed pages
-were visually inspected. Public Site version 10 is deployed against this
-checkpoint; 983 LaTeX expressions render without errors. Since that checkpoint,
-the complete physical client refinement and natural invariant-scoped RA
-certificate have passed, including the five-VC dependency audit and recursive
-executions. The completed-work release gate passed 3,690 Lean jobs, 20 exact
-public contracts, 13 contract controls, 187 runtime tests and 569 benchmark
-records. The updated reference checks 127 declarations across 32 anchors;
-publication is in progress. Embedded-RGA certified local wrappers remain active.
+Checkpoint `e0c1089` is pushed: natural set/counter states, shared OR-set
+semantics, Queue request preparation, complete natural FugueMax RA certification
+and native RGA's reserved-root correction. Public Site version 11 is live.
+The final client supplement adds independently reviewed native, Embedded and
+Sided RGA actual-update/positional-edit theorems. Its full gate passed on
+14 October: 3,694 Lean build jobs, 20 exact public contracts, 13 contract
+controls, 187 runtime tests and 569 benchmark records. The formal reference
+checks 131 declarations across 33 anchors; the changed PDF page was visually
+inspected. The updated Site renders 992 LaTeX expressions without errors.
+Final supplemental commit and Site publication are in progress.
 
 - Goal: connect the unchanged original FugueMax issuer and five-VC implementation
   to an independently justified sequential client specification.
