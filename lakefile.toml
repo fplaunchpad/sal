@@ -17,3 +17,7 @@ rev = "v4.28.0"
 
 [[lean_lib]]
 name = "Sal"
+
+[[lean_exe]]
+name = "notion_core_runtime"
+root = "Sal.MRDTs.Instances.NotionCoreRuntimeMain"

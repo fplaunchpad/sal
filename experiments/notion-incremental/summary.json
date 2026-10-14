@@ -1,0 +1,658 @@
+{
+  "correctness": {
+    "kind": "correctness",
+    "seedRange": [
+      1,
+      100
+    ],
+    "cases": 200,
+    "equalityChecks": 6800,
+    "metadata": {
+      "inserts": 3638,
+      "splits": 579,
+      "deletes": 350,
+      "creates": 233,
+      "lateArrivals": 2406
+    },
+    "negativeControls": {
+      "lateConcurrentInsertLiteral": true,
+      "concurrentSplitLiteral": true,
+      "noOpDeleteRejected": true,
+      "appendOnlyArrivalOrderRejected": true,
+      "appendOrder": [
+        "block-A",
+        "B-block-3",
+        "Z-block-3"
+      ],
+      "correctOrder": [
+        "block-A",
+        "Z-block-3",
+        "B-block-3"
+      ],
+      "splitTransactions": [
+        {
+          "id": {
+            "sessionId": "Z",
+            "counter": 3
+          },
+          "operations": [
+            {
+              "command": "createBlock",
+              "pointer": {
+                "table": "block",
+                "id": "Z-block-3"
+              },
+              "path": [],
+              "args": {
+                "blockId": "Z-block-3",
+                "afterBlockId": "block-A",
+                "titleTextInstanceId": "Z-block-3"
+              }
+            },
+            {
+              "command": "splitText",
+              "pointer": {
+                "table": "block",
+                "id": "block-A"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "block-A",
+                "searchLabel": "",
+                "id": {
+                  "sessionId": "Z",
+                  "counter": 3
+                },
+                "originId": {
+                  "sessionId": "A",
+                  "counter": 1
+                }
+              }
+            },
+            {
+              "command": "moveTextSliceIntoBlock",
+              "pointer": {
+                "table": "block",
+                "id": "block-A"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "block-A",
+                "sourceSearchLabel": "",
+                "textSliceStartItemId": {
+                  "sessionId": "Z",
+                  "counter": 3
+                },
+                "targetBlockId": "Z-block-3"
+              }
+            }
+          ]
+        },
+        {
+          "id": {
+            "sessionId": "B",
+            "counter": 3
+          },
+          "operations": [
+            {
+              "command": "createBlock",
+              "pointer": {
+                "table": "block",
+                "id": "B-block-3"
+              },
+              "path": [],
+              "args": {
+                "blockId": "B-block-3",
+                "afterBlockId": "block-A",
+                "titleTextInstanceId": "B-block-3"
+              }
+            },
+            {
+              "command": "splitText",
+              "pointer": {
+                "table": "block",
+                "id": "block-A"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "block-A",
+                "searchLabel": "",
+                "id": {
+                  "sessionId": "B",
+                  "counter": 3
+                },
+                "originId": {
+                  "sessionId": "A",
+                  "counter": 1
+                }
+              }
+            },
+            {
+              "command": "moveTextSliceIntoBlock",
+              "pointer": {
+                "table": "block",
+                "id": "block-A"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "block-A",
+                "sourceSearchLabel": "",
+                "textSliceStartItemId": {
+                  "sessionId": "B",
+                  "counter": 3
+                },
+                "targetBlockId": "B-block-3"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scope": "Honest pinned Replica issuance and whole-version receipt; independently maintained executable structure against pinned reconstruction; no extraction claim."
+  },
+  "measurement": "milliseconds; median of independently recorded repeats; memory is counts/serialized archive proxy, not heap",
+  "benchmarks": [
+    {
+      "mode": "insertion",
+      "size": 32,
+      "engine": "full-replay",
+      "repeats": 5,
+      "updateMs": 0.6725830000000315,
+      "queryMs": 0.026333000000022366,
+      "mergeMs": 0.10812499999997272,
+      "mergedQueryMs": 0.02508299999999508,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 9603,
+        "archiveTransactions": 33,
+        "physicalRows": 39,
+        "deletedIds": 0,
+        "blocks": 1,
+        "instances": 1,
+        "mappingEntries": 1,
+        "retainedSortedTransactionReferences": 33
+      },
+      "work": {
+        "reconstructions": 33,
+        "replayedTransactions": 561
+      },
+      "mergeStateWork": {
+        "reconstructions": 2,
+        "replayedTransactions": 69
+      },
+      "metadata": {
+        "inserts": 32,
+        "splits": 0,
+        "deletes": 0,
+        "creates": 0,
+        "lateArrivals": 14
+      }
+    },
+    {
+      "mode": "insertion",
+      "size": 32,
+      "engine": "indexed-structure",
+      "repeats": 5,
+      "updateMs": 0.052833999999961634,
+      "queryMs": 0.0061249999999972715,
+      "mergeMs": 0.06116700000006858,
+      "mergedQueryMs": 0.005332999999950516,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 9603,
+        "archiveTransactions": 33,
+        "physicalRows": 39,
+        "originIndexEntries": 39,
+        "deletedIds": 0,
+        "cuts": 0,
+        "blocks": 1,
+        "instances": 1,
+        "blockOriginIndexEntries": 1
+      },
+      "work": {
+        "transactionsIntegrated": 33,
+        "rowsIntegrated": 39,
+        "deleteTargets": 0,
+        "queries": 1,
+        "rowsVisited": 39,
+        "merges": 0,
+        "mergeRowsExamined": 0
+      },
+      "mergeStateWork": {
+        "transactionsIntegrated": 34,
+        "rowsIntegrated": 41,
+        "deleteTargets": 0,
+        "queries": 1,
+        "rowsVisited": 41,
+        "merges": 1,
+        "mergeRowsExamined": 40
+      },
+      "metadata": {
+        "inserts": 32,
+        "splits": 0,
+        "deletes": 0,
+        "creates": 0,
+        "lateArrivals": 14
+      }
+    },
+    {
+      "mode": "insertion",
+      "size": 128,
+      "engine": "full-replay",
+      "repeats": 5,
+      "updateMs": 8.750583000000006,
+      "queryMs": 0.09533300000020972,
+      "mergeMs": 0.31533300000000963,
+      "mergedQueryMs": 0.09579099999996288,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 37410,
+        "archiveTransactions": 129,
+        "physicalRows": 142,
+        "deletedIds": 0,
+        "blocks": 1,
+        "instances": 1,
+        "mappingEntries": 1,
+        "retainedSortedTransactionReferences": 129
+      },
+      "work": {
+        "reconstructions": 129,
+        "replayedTransactions": 8385
+      },
+      "mergeStateWork": {
+        "reconstructions": 2,
+        "replayedTransactions": 261
+      },
+      "metadata": {
+        "inserts": 128,
+        "splits": 0,
+        "deletes": 0,
+        "creates": 0,
+        "lateArrivals": 68
+      }
+    },
+    {
+      "mode": "insertion",
+      "size": 128,
+      "engine": "indexed-structure",
+      "repeats": 5,
+      "updateMs": 0.20279099999993377,
+      "queryMs": 0.018291999999973996,
+      "mergeMs": 0.2180839999998625,
+      "mergedQueryMs": 0.017624999999952706,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 37410,
+        "archiveTransactions": 129,
+        "physicalRows": 142,
+        "originIndexEntries": 142,
+        "deletedIds": 0,
+        "cuts": 0,
+        "blocks": 1,
+        "instances": 1,
+        "blockOriginIndexEntries": 1
+      },
+      "work": {
+        "transactionsIntegrated": 129,
+        "rowsIntegrated": 142,
+        "deleteTargets": 0,
+        "queries": 1,
+        "rowsVisited": 142,
+        "merges": 0,
+        "mergeRowsExamined": 0
+      },
+      "mergeStateWork": {
+        "transactionsIntegrated": 130,
+        "rowsIntegrated": 144,
+        "deleteTargets": 0,
+        "queries": 1,
+        "rowsVisited": 144,
+        "merges": 1,
+        "mergeRowsExamined": 143
+      },
+      "metadata": {
+        "inserts": 128,
+        "splits": 0,
+        "deletes": 0,
+        "creates": 0,
+        "lateArrivals": 68
+      }
+    },
+    {
+      "mode": "insertion",
+      "size": 512,
+      "engine": "full-replay",
+      "repeats": 5,
+      "updateMs": 145.92270800000006,
+      "queryMs": 0.4287920000001577,
+      "mergeMs": 1.24283400000013,
+      "mergedQueryMs": 0.4332079999999223,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 149545,
+        "archiveTransactions": 513,
+        "physicalRows": 556,
+        "deletedIds": 0,
+        "blocks": 1,
+        "instances": 1,
+        "mappingEntries": 1,
+        "retainedSortedTransactionReferences": 513
+      },
+      "work": {
+        "reconstructions": 513,
+        "replayedTransactions": 131841
+      },
+      "mergeStateWork": {
+        "reconstructions": 2,
+        "replayedTransactions": 1029
+      },
+      "metadata": {
+        "inserts": 512,
+        "splits": 0,
+        "deletes": 0,
+        "creates": 0,
+        "lateArrivals": 303
+      }
+    },
+    {
+      "mode": "insertion",
+      "size": 512,
+      "engine": "indexed-structure",
+      "repeats": 5,
+      "updateMs": 0.8176250000001346,
+      "queryMs": 0.07704199999989214,
+      "mergeMs": 0.861417000000074,
+      "mergedQueryMs": 0.07345799999984592,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 149545,
+        "archiveTransactions": 513,
+        "physicalRows": 556,
+        "originIndexEntries": 556,
+        "deletedIds": 0,
+        "cuts": 0,
+        "blocks": 1,
+        "instances": 1,
+        "blockOriginIndexEntries": 1
+      },
+      "work": {
+        "transactionsIntegrated": 513,
+        "rowsIntegrated": 556,
+        "deleteTargets": 0,
+        "queries": 1,
+        "rowsVisited": 556,
+        "merges": 0,
+        "mergeRowsExamined": 0
+      },
+      "mergeStateWork": {
+        "transactionsIntegrated": 514,
+        "rowsIntegrated": 558,
+        "deleteTargets": 0,
+        "queries": 1,
+        "rowsVisited": 558,
+        "merges": 1,
+        "mergeRowsExamined": 557
+      },
+      "metadata": {
+        "inserts": 512,
+        "splits": 0,
+        "deletes": 0,
+        "creates": 0,
+        "lateArrivals": 303
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 32,
+      "engine": "full-replay",
+      "repeats": 5,
+      "updateMs": 3.2673750000000155,
+      "queryMs": 0.12408400000003894,
+      "mergeMs": 0.367958999999928,
+      "mergedQueryMs": 0.1316669999999931,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 12605,
+        "archiveTransactions": 33,
+        "physicalRows": 29,
+        "deletedIds": 10,
+        "blocks": 9,
+        "instances": 9,
+        "mappingEntries": 17,
+        "retainedSortedTransactionReferences": 33
+      },
+      "work": {
+        "reconstructions": 33,
+        "replayedTransactions": 561
+      },
+      "mergeStateWork": {
+        "reconstructions": 2,
+        "replayedTransactions": 69
+      },
+      "metadata": {
+        "inserts": 16,
+        "splits": 8,
+        "deletes": 8,
+        "creates": 0,
+        "lateArrivals": 20
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 32,
+      "engine": "indexed-structure",
+      "repeats": 5,
+      "updateMs": 0.07429100000013023,
+      "queryMs": 0.0061670000000049185,
+      "mergeMs": 0.06062499999995907,
+      "mergedQueryMs": 0.005208000000038737,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 12605,
+        "archiveTransactions": 33,
+        "physicalRows": 29,
+        "originIndexEntries": 29,
+        "deletedIds": 10,
+        "cuts": 8,
+        "blocks": 9,
+        "instances": 9,
+        "blockOriginIndexEntries": 9
+      },
+      "work": {
+        "transactionsIntegrated": 33,
+        "rowsIntegrated": 29,
+        "deleteTargets": 13,
+        "queries": 1,
+        "rowsVisited": 29,
+        "merges": 0,
+        "mergeRowsExamined": 0
+      },
+      "mergeStateWork": {
+        "transactionsIntegrated": 34,
+        "rowsIntegrated": 31,
+        "deleteTargets": 13,
+        "queries": 1,
+        "rowsVisited": 31,
+        "merges": 1,
+        "mergeRowsExamined": 30
+      },
+      "metadata": {
+        "inserts": 16,
+        "splits": 8,
+        "deletes": 8,
+        "creates": 0,
+        "lateArrivals": 20
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 128,
+      "engine": "full-replay",
+      "repeats": 5,
+      "updateMs": 137.06937500000004,
+      "queryMs": 1.8529579999999441,
+      "mergeMs": 3.8102499999999964,
+      "mergedQueryMs": 1.891832999999906,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 47511,
+        "archiveTransactions": 129,
+        "physicalRows": 104,
+        "deletedIds": 22,
+        "blocks": 42,
+        "instances": 42,
+        "mappingEntries": 70,
+        "retainedSortedTransactionReferences": 129
+      },
+      "work": {
+        "reconstructions": 129,
+        "replayedTransactions": 8385
+      },
+      "mergeStateWork": {
+        "reconstructions": 2,
+        "replayedTransactions": 261
+      },
+      "metadata": {
+        "inserts": 68,
+        "splits": 28,
+        "deletes": 19,
+        "creates": 13,
+        "lateArrivals": 75
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 128,
+      "engine": "indexed-structure",
+      "repeats": 5,
+      "updateMs": 0.29187500000011823,
+      "queryMs": 0.0242910000001757,
+      "mergeMs": 0.208458999999948,
+      "mergedQueryMs": 0.02183300000001509,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 47511,
+        "archiveTransactions": 129,
+        "physicalRows": 104,
+        "originIndexEntries": 104,
+        "deletedIds": 22,
+        "cuts": 28,
+        "blocks": 42,
+        "instances": 42,
+        "blockOriginIndexEntries": 42
+      },
+      "work": {
+        "transactionsIntegrated": 129,
+        "rowsIntegrated": 104,
+        "deleteTargets": 27,
+        "queries": 1,
+        "rowsVisited": 104,
+        "merges": 0,
+        "mergeRowsExamined": 0
+      },
+      "mergeStateWork": {
+        "transactionsIntegrated": 130,
+        "rowsIntegrated": 106,
+        "deleteTargets": 27,
+        "queries": 1,
+        "rowsVisited": 106,
+        "merges": 1,
+        "mergeRowsExamined": 105
+      },
+      "metadata": {
+        "inserts": 68,
+        "splits": 28,
+        "deletes": 19,
+        "creates": 13,
+        "lateArrivals": 75
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 512,
+      "engine": "full-replay",
+      "repeats": 5,
+      "updateMs": 9451.713749999995,
+      "queryMs": 27.152833999993163,
+      "mergeMs": 49.225500000000466,
+      "mergedQueryMs": 27.0068339999998,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 187601,
+        "archiveTransactions": 513,
+        "physicalRows": 408,
+        "deletedIds": 72,
+        "blocks": 179,
+        "instances": 179,
+        "mappingEntries": 286,
+        "retainedSortedTransactionReferences": 513
+      },
+      "work": {
+        "reconstructions": 513,
+        "replayedTransactions": 131841
+      },
+      "mergeStateWork": {
+        "reconstructions": 2,
+        "replayedTransactions": 1029
+      },
+      "metadata": {
+        "inserts": 273,
+        "splits": 107,
+        "deletes": 61,
+        "creates": 71,
+        "lateArrivals": 304
+      }
+    },
+    {
+      "mode": "mixed",
+      "size": 512,
+      "engine": "indexed-structure",
+      "repeats": 5,
+      "updateMs": 1.14762500001234,
+      "queryMs": 0.0972920000058366,
+      "mergeMs": 0.7994160000089323,
+      "mergedQueryMs": 0.10312499999417923,
+      "memoryProxy": {
+        "kind": "explicit-proxy-not-heap-measurement",
+        "archiveJsonBytes": 187601,
+        "archiveTransactions": 513,
+        "physicalRows": 408,
+        "originIndexEntries": 408,
+        "deletedIds": 72,
+        "cuts": 107,
+        "blocks": 179,
+        "instances": 179,
+        "blockOriginIndexEntries": 179
+      },
+      "work": {
+        "transactionsIntegrated": 513,
+        "rowsIntegrated": 408,
+        "deleteTargets": 79,
+        "queries": 1,
+        "rowsVisited": 408,
+        "merges": 0,
+        "mergeRowsExamined": 0
+      },
+      "mergeStateWork": {
+        "transactionsIntegrated": 514,
+        "rowsIntegrated": 410,
+        "deleteTargets": 79,
+        "queries": 1,
+        "rowsVisited": 410,
+        "merges": 1,
+        "mergeRowsExamined": 409
+      },
+      "metadata": {
+        "inserts": 273,
+        "splits": 107,
+        "deletes": 61,
+        "creates": 71,
+        "lateArrivals": 304
+      }
+    }
+  ]
+}

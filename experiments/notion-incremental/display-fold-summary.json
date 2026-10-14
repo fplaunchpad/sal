@@ -1,0 +1,215 @@
+{
+  "correctness": {
+    "kind": "correctness",
+    "seedRange": [
+      1,
+      100
+    ],
+    "cases": 200,
+    "equalityChecks": 12400,
+    "metadata": {
+      "inserts": 3638,
+      "splits": 579,
+      "deletes": 350,
+      "creates": 233,
+      "lateArrivals": 2406
+    },
+    "negativeControls": {
+      "lateConcurrentInsertLiteral": true,
+      "concurrentSplitLiteral": true,
+      "noOpDeleteRejected": true,
+      "appendOnlyArrivalOrderRejected": true,
+      "appendOrder": [
+        "block-A",
+        "B-block-3",
+        "Z-block-3"
+      ],
+      "correctOrder": [
+        "block-A",
+        "Z-block-3",
+        "B-block-3"
+      ],
+      "splitTransactions": [
+        {
+          "id": {
+            "sessionId": "Z",
+            "counter": 3
+          },
+          "operations": [
+            {
+              "command": "createBlock",
+              "pointer": {
+                "table": "block",
+                "id": "Z-block-3"
+              },
+              "path": [],
+              "args": {
+                "blockId": "Z-block-3",
+                "afterBlockId": "block-A",
+                "titleTextInstanceId": "Z-block-3"
+              }
+            },
+            {
+              "command": "splitText",
+              "pointer": {
+                "table": "block",
+                "id": "block-A"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "block-A",
+                "searchLabel": "",
+                "id": {
+                  "sessionId": "Z",
+                  "counter": 3
+                },
+                "originId": {
+                  "sessionId": "A",
+                  "counter": 1
+                }
+              }
+            },
+            {
+              "command": "moveTextSliceIntoBlock",
+              "pointer": {
+                "table": "block",
+                "id": "block-A"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "block-A",
+                "sourceSearchLabel": "",
+                "textSliceStartItemId": {
+                  "sessionId": "Z",
+                  "counter": 3
+                },
+                "targetBlockId": "Z-block-3"
+              }
+            }
+          ]
+        },
+        {
+          "id": {
+            "sessionId": "B",
+            "counter": 3
+          },
+          "operations": [
+            {
+              "command": "createBlock",
+              "pointer": {
+                "table": "block",
+                "id": "B-block-3"
+              },
+              "path": [],
+              "args": {
+                "blockId": "B-block-3",
+                "afterBlockId": "block-A",
+                "titleTextInstanceId": "B-block-3"
+              }
+            },
+            {
+              "command": "splitText",
+              "pointer": {
+                "table": "block",
+                "id": "block-A"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "block-A",
+                "searchLabel": "",
+                "id": {
+                  "sessionId": "B",
+                  "counter": 3
+                },
+                "originId": {
+                  "sessionId": "A",
+                  "counter": 1
+                }
+              }
+            },
+            {
+              "command": "moveTextSliceIntoBlock",
+              "pointer": {
+                "table": "block",
+                "id": "block-A"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "block-A",
+                "sourceSearchLabel": "",
+                "textSliceStartItemId": {
+                  "sessionId": "B",
+                  "counter": 3
+                },
+                "targetBlockId": "B-block-3"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scope": "Honest pinned Replica issuance and whole-version receipt; independently maintained executable structure against pinned reconstruction; no extraction claim."
+  },
+  "measurement": "milliseconds; median of independently recorded repeats; memory is counts/serialized archive proxy, not heap",
+  "benchmarks": [],
+  "displayBenchmarks": [
+    {
+      "mode": "insertion",
+      "size": 32,
+      "repeats": 5,
+      "createdBlocks": 1,
+      "retainedRows": 39,
+      "treeQueryMs": 0.005083000000013271,
+      "foldQueryMs": 0.00437499999998181
+    },
+    {
+      "mode": "insertion",
+      "size": 128,
+      "repeats": 5,
+      "createdBlocks": 1,
+      "retainedRows": 142,
+      "treeQueryMs": 0.016583000000082393,
+      "foldQueryMs": 0.015541999999868494
+    },
+    {
+      "mode": "insertion",
+      "size": 512,
+      "repeats": 5,
+      "createdBlocks": 1,
+      "retainedRows": 556,
+      "treeQueryMs": 0.0632500000001528,
+      "foldQueryMs": 0.06475000000000364
+    },
+    {
+      "mode": "mixed",
+      "size": 32,
+      "repeats": 5,
+      "createdBlocks": 9,
+      "retainedRows": 29,
+      "treeQueryMs": 0.004083000000036918,
+      "foldQueryMs": 0.0037079999999605207
+    },
+    {
+      "mode": "mixed",
+      "size": 128,
+      "repeats": 5,
+      "createdBlocks": 42,
+      "retainedRows": 104,
+      "treeQueryMs": 0.016583000000082393,
+      "foldQueryMs": 0.02216699999962657
+    },
+    {
+      "mode": "mixed",
+      "size": 512,
+      "repeats": 5,
+      "createdBlocks": 179,
+      "retainedRows": 408,
+      "treeQueryMs": 0.07687499999883585,
+      "foldQueryMs": 0.16724999999860302
+    }
+  ]
+}

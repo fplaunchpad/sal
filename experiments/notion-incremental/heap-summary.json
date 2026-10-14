@@ -1,0 +1,63 @@
+{
+  "correctness": null,
+  "measurement": "Retained heapUsed byte deltas after three GC passes; isolated process per engine/repeat; prepared workload retained outside interval; runtime/GC noise remains",
+  "benchmarks": [],
+  "heapBenchmarks": [
+    {
+      "mode": "insertion",
+      "size": 512,
+      "engine": "full-replay",
+      "repeats": 3,
+      "medianBytes": 545432,
+      "minBytes": 410344,
+      "maxBytes": 545432,
+      "nodeVersion": "v26.3.1",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "transactions": 513,
+      "blocks": 1
+    },
+    {
+      "mode": "insertion",
+      "size": 512,
+      "engine": "indexed-structure",
+      "repeats": 3,
+      "medianBytes": 478496,
+      "minBytes": 478464,
+      "maxBytes": 478496,
+      "nodeVersion": "v26.3.1",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "transactions": 513,
+      "blocks": 1
+    },
+    {
+      "mode": "mixed",
+      "size": 512,
+      "engine": "full-replay",
+      "repeats": 3,
+      "medianBytes": 694912,
+      "minBytes": 693184,
+      "maxBytes": 695896,
+      "nodeVersion": "v26.3.1",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "transactions": 513,
+      "blocks": 179
+    },
+    {
+      "mode": "mixed",
+      "size": 512,
+      "engine": "indexed-structure",
+      "repeats": 3,
+      "medianBytes": 712320,
+      "minBytes": 685152,
+      "maxBytes": 715328,
+      "nodeVersion": "v26.3.1",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "transactions": 513,
+      "blocks": 179
+    }
+  ]
+}

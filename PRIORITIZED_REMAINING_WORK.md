@@ -21,6 +21,34 @@ sole active bounded counter is the published Balegas matrix/max design.
 - [x] Add completed cases to the catalogue, measured paper table, and public
   datatype reference Site. JSON is outside this campaign.
 
+## Executable Notion refinement (completed research goal)
+
+- [x] Connect the actual executable core to an explicit semantics/compiler
+  boundary; specify retained indexes, archive and allocator metadata.
+- [x] Prove initial, receipt and direct-merge representation preservation,
+  including late arrivals and atomic transactions.
+- [x] Prove executable query correspondence using the creator-fold display;
+  retain the original honest client protocol and preparation boundary.
+- [x] Validate and measure the connected executable against the pinned oracle;
+  retain counterexamples and state theorem, measurements and limits for a paper.
+
+## Incremental Notion core research (integrated into paper1)
+
+- [x] Test direct structured integration/merge, starting with insertion and late
+  concurrent transactions; preserve minimized failures with honest provenance.
+  Evidence: 200 honest seeded cases / 6,800 oracle comparisons, and checked
+  `honestly_issuable_splits`, `frozen_endpoint_control`, `direct_cut_control`.
+- [x] Prove maintained-state observations equal `NotionCoreMRDT` and reuse its
+  independent specification without weakening the honest protocol.
+- [x] Extend insertion results to split and erase. Direct owner/start facts
+  suffice; frozen stop endpoints have an honest checked counterexample.
+  `NotionCoreStructuralMRDT` checks query/RA/operational correspondence and five VCs.
+- [x] Measure update/query/merge time, retained heap and new datatype-specific
+  source volume; independently audit results and run relevant checks.
+  Result: receipt/query/merge gains on measured workloads; no general memory
+  saving or total proof-effort reduction established. Evidence and limits:
+  `docs/notion-incremental-research.md`.
+
 ## Notion catalogue integration and paper handoff
 
 - [x] Integrate the checked research branch into `paper1`, preserving unrelated work.
