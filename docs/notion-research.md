@@ -136,7 +136,8 @@ same user intent. The latter occur in the minimized split trace.
 | Source-selected preparation | Actual zero/fallback and visible-predecessor rules on the core normal form; successful physical insert/delete/split effects |
 | Materialized source model | Physical interval transitions project to semantic steps; guarded grouped histories preserve all query answers |
 | Global structural components | Recursive origin search and raw parent-table extraction; endpoint partition/ownership; slice-tree root/leaf and inactive-title induction |
-| Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks, plus 238 instrumented sorted prefixes; joint execution and payload-decoding proof still open |
+| Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks, 238 instrumented sorted prefixes, 144 directed endpoint-adjacency checks; joint execution and source decoding proof still open |
+| Combined typed interpreter | Kernel controls pass; typed prefix provenance derives checked row insertion; structural cells derive checked slice extraction; whole replay refinement remains open |
 | Local effects with merges/formatting | Refuted by fresh-client executable traces; restricted kernel formatting counterparts |
 | Three-way adaptation | Executable transaction-set shell preserving source preparation and rendering |
 | Five VCs | Reused finite-store proof, key-consistency lemmas and arbitrary-render convergence; storage only |
@@ -275,3 +276,40 @@ requests show that item existence is instance-specific and empty edits reserve
 no clock or transaction. A clearly labeled fabricated primitive checks that a
 pending delete tombstones a later text birth but not a split marker. These are
 controls, not additional confirmed demo bugs; the preserved count remains three.
+
+
+## Combined replay increment
+
+The candidate claim is that the typed replay interpreter maintains a physical
+partition whose stored stops name successive boundaries, so its actual reads
+refine the independent materialized specification. Wrong stops are a falsifier:
+a checked control exposes neighboring text when a boundary is dropped. Raw
+incomplete receipt is another excluded countermodel; it can allocate an
+instance with no covering slice.
+
+The formal oracle now derives graph uniqueness, counter rank and parent
+closure for every canonical prefix, reconstructs exact parent edges, and
+derives checked row integration for the next payload. The combined interpreter
+passes kernel-checked execution controls. Successful checked slice extraction
+and attached-tree reads follow from the structural partition premises, rather
+than an assumed read equation. The reality oracle validates 144 instance
+adjacency checks on directed honest core histories. Canonical label controls
+cover 8,191 binary paths of depth at most 12 plus twelve honest repeated splits;
+alphabet-valid but noncanonical labels can alias and are not claimed injective.
+
+These results remove component guard assumptions, not the remaining whole-state
+induction. Actual replay tables must still be coupled to deletion-aware typed
+prefix births; slice endpoint ownership, empty inactive titles and display
+alignment must hold for that same execution. Actual client selection must
+supply reference and creator provenance. The same-witness RA bridge, source
+codec and label proof remain open. The first milestone is still incomplete,
+and the confirmed demo bug count remains three.
+
+
+Review exposed a specific reason the typed allocation network does not yet
+supply whole-interpreter progress: START has no item-reference requirement, so
+it permits an unseeded insertion that creates a table without a block title.
+A following item-referencing split lacks a source slice. This is an inspected
+countermodel to the intermediate admission model's sufficiency, not a trace
+from an honest demo client. It sharpens the creator-provenance obligation;
+no fourth demo bug or kernel Reach counterexample is claimed.

@@ -49,7 +49,7 @@ complete ordered forest under derived uniqueness, known-parent and counter-rank
 invariants; literal run integration preserves the tree's parent edges. A separate
 slice-tree induction preserves root/leaf shape and empty inactive title roots
 through actual search, split, detach and append operations. Its enumeration is
-source map search order, with displayed block order still separate.
+source map search order, with displayed block order represented separately.
 
 The new parent coupling derives sorted traversal from exact raw parent edges,
 unique IDs and ordered siblings, including after actual recursive insertion.
@@ -58,16 +58,31 @@ archives derive item freshness and same-instance provider transactions in the
 actual sorted replay prefix. The controls distinguish wrong sibling order,
 wrong-instance origins, overlapping reservations and newest-first replay.
 
+The combined typed interpreter now executes these operations together and
+passes kernel-checked concrete controls. Canonical-prefix graph invariants
+supply exact extracted edges and insertion readiness; typed provenance also
+derives successful checked row integration. Given structural physical cells
+and the next-endpoint relation, actual checked slice extraction succeeds and
+returns the intended interior, including under an empty inactive title.
+Directed source checks validate endpoint adjacency in 144 instances and
+canonical label encoding on 8,191 bounded paths plus twelve repeated splits.
+
 The remaining correspondence is still global. The source's actual selection
 must establish the located-reference premise of typed emission. Block creator
-provenance, raw parent rows, slice forest and endpoint ownership must describe
-the same execution together with displayed block order. Name/range decoding and
+provenance, deletion-aware prefix rows, slice forest and endpoint ownership must
+describe the same execution together with displayed block order. The typed
+interpreter takes ordered transactions; source constructor sorting and runtime
+validation still need the complete correspondence proof. Name/range decoding and
 search-label uniqueness/runtime validation also remain source boundaries. Raw isolated receipt
 permits unresolved origins; the adaptation's whole versions preserve closure.
 Independent payload values are opaque atoms, so rendering and string
 encoding remain explicit. The Sal witness still needs finite event enumeration,
 required order and specification visibility together with the source history.
-Neither ordinary nor recursive Notion document correctness is claimed.
+Read-only review shows why creator provenance is necessary: current typed
+admission allows an unseeded START insertion without a block title, so a later
+split need not find a slice. This is an intermediate-model countermodel, not
+an honest demo trace. Neither ordinary nor recursive Notion document
+correctness is claimed.
 
 The oracle now includes 5,348 additional comparisons covering multiscalar runs,
 Unicode session ties, clock gaps, deleted anchors and repeated splits, all with
@@ -103,8 +118,8 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the typed-payload and parent-coupling increment:
-23 Notion modules (3,434 Lean jobs), ten research result groups, the production
+Both gates passed for the combined-interpreter and prefix/slice increment:
+32 Notion modules (3,443 Lean jobs), twelve research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
 187 runtime tests, and validation of 569 stored benchmark records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or

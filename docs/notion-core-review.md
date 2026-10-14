@@ -919,3 +919,195 @@ presence, an overlapping reservation key, and reverse replay order. They retain
 hand-derived PASS+FAIL structure. No circular desired-state premise or weakened
 same-instance conclusion was found; the source-selection and wire boundaries
 recorded above remain in force.
+
+## Separate search and display order
+
+`NotionCoreDisplayOrder.lean` models fresh source creation as append to the
+search forest and a literal indexed splice in the separate display list.
+Absent and missing predecessors both choose index zero, exactly as raw
+`#createBlock` does. The existing SourceDocument/CoreSpec creation relation
+rejects a missing `some` predecessor, so this new raw fallback is not presented
+as an unconditional refinement of that relation. Revival of existing blocks,
+source name encoding, truthiness of source strings, and deletion are outside
+this fresh-core operation.
+
+Creation derives unique search names and a display/search permutation from
+freshness and input alignment. Materialization finds each display ID in the
+actual search forest and selects its active leaf. Unique-key lookup is proved
+from list membership, and canonical materialization is derived equal to the
+forest's active-leaf projection. The display materialization permutation
+therefore relates actual lookups to that projection, with no desired display
+equality premise. It does not yet render endpoint contents or derive a full
+client command trace refinement.
+
+Hand-derived controls distinguish concurrent creates' search order [1,2,3]
+from display [1,3,2], reject append-on-missing-predecessor, and exercise actual
+SliceForest splitting twice at markers 3 and 4. The second split routes through
+an inherited interval even though both destination creations requested the
+original block as predecessor. Materialization returns active starts in display
+order START, marker4, marker3 and rejects the unused fresh title starts. These
+checks separately exercise routing and lookup rather than echoing displayed IDs.
+The module checks with standard logical axioms only and no admissions.
+
+## Typed parent provenance and existing-item deletion
+
+The frozen `NotionCorePayloadParents.lean` and `NotionCoreParentErase.lean`
+independently check cleanly, with standard printed axioms. `birth_parent`
+extracts first/external versus subsequent/internal parent links from literal
+payload expansion. For an old internal child, equality with the consumer's
+selected origin derives that the preceding old-run ID is a consumer reference;
+no additional caller-supplied internal-origin premise is introduced.
+`replay_child_before` then uses complete-provider clock bounds for internal
+children and transaction ordering for first children. `prefix_ready` derives
+the actual recursive readiness predicate from those row edges. It still takes
+input table/tree edge coupling and the fresh tree's first ID as explicit
+representation assumptions, rather than deriving a combined interpreter.
+
+`prefixRows` enumerates filtered archive entries, newest first, with rows in
+payload order. This is not the source RGA Map insertion enumeration. It is a
+finite parent-table view used through exact edge membership/permutation;
+source traversal sorts children by IDs, so a separate coupling can justify
+order-independent traversal under uniqueness. No theorem here asserts literal
+Map iteration equality or handles duplicate fabricated archives. Pending-delete
+flags remain parametrized; the archive view alone does not maintain that set.
+
+ParentErase maps existing text tombstones while preserving IDs, origin links,
+markers, and recursive child structure. The updated traversal equation is
+derived through edge coupling, uniqueness, and sibling order, not assumed.
+Its controls distinguish retained live descendants from subtree removal and
+reject converting a marker to deleted text. Future-target pending deletes are
+explicitly outside this update. The updated DisplayOrder split control now
+also computes its displayed IDs through the two actual insertions, eliminating
+the earlier literal display fixture as a setup premise.
+
+The source search-label experiment was cross-reviewed without rerunning it:
+8191 canonical paths through depth 12 and twelve honest split/move
+reconstructions are bounded evidence, not a Lean injection theorem. The LL/D
+alias distinguishes noncanonical strings from generated canonical labels.
+Honest reconstructions execute the source duplicate-label assertion
+successfully; that does not reproduce a throwing duplicate-state exception.
+
+## Derived replay graph guards
+
+`NotionCoreReplayGraph.lean` independently checks cleanly with standard printed
+axioms. Its global archive-birth uniqueness induction uses the previously
+derived freshness against all prior entries, including unreceived transactions.
+Instance and version selection are sublists of those IDs, so `prefix_unique`
+requires no graph uniqueness premise. Strict counter increase follows literal
+run predecessor links, positive issued keys, and external-reference counter
+causality; no rank premise is supplied.
+
+Closure has the stronger, appropriate domain: `prefix_closed` requires that
+the selected runs are an actual prefix of canonical whole-version replay.
+It derives external parents from a located provider in an earlier prefix and
+internal parents from births of the same complete atomic payload. The full
+instance/item address is retained, and tombstones do not remove parent rows.
+Arbitrary selected subsets get uniqueness and increasing edges, but are not
+claimed closed. This distinction is preserved in `prefix_graph` and
+`canonical_graph`; their conclusions are not caller premises.
+
+The two PASS+FAIL controls test literal prefix row decoding and retained
+marker/hidden-parent edges in the inherited instance. They do not themselves
+construct Reach witnesses or prove a source Map enumeration equation. The
+archive representation and joint-interpreter boundary described above remain.
+
+## Extraction edges and combined-machine draft audit
+
+`NotionCoreExtractionEdges.lean` independently checks cleanly. Its exact
+row permutation follows unique table lookup, increasing parent counters,
+closed origin membership, and the actual raw extraction. Extracted ID
+uniqueness is derived by multiplicity recurrence and backwards counter
+induction, rather than assumed. Prefix extraction and readiness then consume
+the derived graph guards; callers no longer supply the extracted forest or
+its edge-coupling equation. The orphan control correctly demonstrates why
+closure is necessary, and the hidden-parent/marker control distinguishes
+physical traversal from archive enumeration.
+
+The combined Machine draft was separately audited against pinned dispatch.
+Existing-ID integration must compare kind, ID, origin, and content while ignoring
+tombstone status; the revised definition does so. Existing-block creation must
+return without reordering; the revised definition does so within its typed
+same-title domain. The split/insert fixture's hand calculation places C@4
+before sibling B@4, hence inserted X on the left of B's split marker. Source
+split immediately validates only the two resulting slices; a global forest
+bounds check is a stronger malformed-state boundary. Source constructor sorts
+transactions, while draft replay consumes supplied order. Its sorted-input,
+closed-graph, typed-title, search-label, and whole-construction exception
+boundaries must remain explicit. This draft audit is not a frozen-machine
+compilation certificate.
+
+The concrete control reduction problem was isolated independently: even
+`#reduce sortChildren [A@2,B@4]` leaves mergeSort's well-founded Acc.rec.
+This is a kernel reduction obstruction in the sorter, not evidence that the
+hand-derived expected text is wrong. Rewriting by proved merge-sort equations
+or its proved insertion-sort equality is appropriate; native execution would
+not replace the requested kernel evidence.
+
+## Frozen machine and directed endpoint adjacency evidence
+
+The current Machine and MachineRows independently compile cleanly. All printed
+machine control dependencies are standard logical axioms, with no native
+execution shortcut or admission. The insertion-sort evaluator is proved equal
+to the existing merge-sort traversal and makes branching controls kernel
+reducible. MachineRows derives actual checked-loop append from fresh/disjoint
+IDs and increasing parent counters; an output update equation is not a premise.
+The typed-title, ordered-replay, malformed global bounds, source string decoder,
+and search-label boundaries identified in the draft review remain explicit.
+
+The new pinned-source `endpoint-adjacency-controls.mjs` saves six literal output
+records. It checks 144 instance states over four dependency-closed versions
+containing neither, either, or both concurrent splits of a four-atom seed
+(including an astral Unicode iterator atom). Directed local followups delete
+all visible text, insert a two-atom run after hidden origins, split with an empty
+left side, and split an inherited interval again. Grouping stored slice
+references by instance and sorting by physical start yields START first and
+each stop equal to the next start or END throughout. Source hashes are checked
+by run.py; this is bounded directed evidence, not exhaustive validation.
+The incomplete individual-receipt control creates an instance without covering
+slices and rejects the same coverage condition, confirming the closed-version
+domain. No new honestly reachable core counterexample was found.
+
+The quantifier needs care: inactive fresh title instances have no active leaf
+in their own instance after attachment, although their stored START-to-END
+root covers a physically empty RGA. The tested formulation includes all stored
+slice refs and the empty title intervals. A formulation using active leaves
+only must restrict to active instances and separately require empty inactive
+titles. Search Map order and displayed order are both irrelevant to endpoint
+adjacency; physical start order is the appropriate ordering.
+
+## Final checked integration and slice extraction review
+
+The final Machine adds meaningful kernel PASS+FAIL controls for duplicate text
+integration preserving an existing tombstone and existing-block creation
+preserving placement. These pin the two source semantic mismatches identified
+in the draft audit. MachineRows' fresh/increasing append result remains unchanged.
+The frozen MachinePrefix and MachineSlices independently check cleanly; their
+printed dependencies are standard logical axioms.
+
+MachinePrefix derives fresh transaction row uniqueness and rank, then separates
+its IDs from the canonical prior prefix through global reservation ownership
+and strict replay order. Old and fresh tombstone environments are independent;
+separation does not assume identical deletion flags. The permutation variant
+supplies only an input row representation, not a view or accepted-step premise.
+It derives acceptance by the actual Machine integration loop, while retaining
+the stated remaining obligation to derive that representation for complete
+Machine states. Concrete controls test hidden origins, internal run links,
+newly tombstoned births, and bootstrap's shared key without metadata births.
+
+MachineSlices derives successful checked extraction from full input physical
+factorization, unique addresses, actual instance presence, and the next physical
+stop. Its premise is a structural input layout, not the desired extraction
+answer. It derives both bound checks and exact interior atoms, including legal
+empty interiors. The cell theorem obtains factorization from partition flatten;
+that partition relation is still an invariant obligation for full replay.
+Empty inactive titles explicitly require their instance and sole virtual START,
+and attached-tree extraction combines that empty root with the actual inherited
+cell lookup. The controls reject reversed bounds and omission of the physical
+stop, rather than merely checking unchecked extraction. Their raw slice fixture
+uses text IDs as endpoints; this checks the extraction API boundary and is not
+claimed to be a honestly generated split-title shape.
+
+The directed 144-instance adjacency evidence above supports the proposed full
+replay invariant without replacing it. Its stored-root versus active-instance
+quantifier distinction and incomplete-receipt negative remain necessary. No
+additional broad campaign was run during these final component reviews.

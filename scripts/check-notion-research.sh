@@ -26,6 +26,15 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreParentCoupling \
   Sal.MRDTs.Instances.NotionCorePayload \
   Sal.MRDTs.Instances.NotionCorePayloadNetwork \
+  Sal.MRDTs.Instances.NotionCorePayloadParents \
+  Sal.MRDTs.Instances.NotionCoreReplayGraph \
+  Sal.MRDTs.Instances.NotionCoreExtractionEdges \
+  Sal.MRDTs.Instances.NotionCoreParentErase \
+  Sal.MRDTs.Instances.NotionCoreDisplayOrder \
+  Sal.MRDTs.Instances.NotionCoreMachine \
+  Sal.MRDTs.Instances.NotionCoreMachineRows \
+  Sal.MRDTs.Instances.NotionCoreMachinePrefix \
+  Sal.MRDTs.Instances.NotionCoreMachineSlices \
   Sal.MRDTs.Instances.NotionCoreSliceForest
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")
@@ -39,13 +48,15 @@ python3 experiments/notion-oracle/run.py --trace preparation-boundary.mjs > "$ch
 python3 experiments/notion-oracle/run.py --trace physical-replay-controls.mjs > "$check_dir/physical-replay-controls.jsonl"
 python3 experiments/notion-oracle/run.py --trace replay-prefix-instrumentation.mjs > "$check_dir/replay-prefix-instrumentation.jsonl"
 python3 experiments/notion-oracle/run.py --trace payload-provenance-controls.mjs > "$check_dir/payload-provenance-controls.jsonl"
+python3 experiments/notion-oracle/run.py --trace search-label-controls.mjs > "$check_dir/search-label-controls.jsonl"
+python3 experiments/notion-oracle/run.py --trace endpoint-adjacency-controls.mjs > "$check_dir/endpoint-adjacency-controls.jsonl"
 node experiments/notion-oracle/identity-controls.mjs > "$check_dir/identity-controls.jsonl"
 python3 - "$check_dir" <<'PY'
 import json
 from pathlib import Path
 import sys
 root = Path(sys.argv[1])
-for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation', 'payload-provenance-controls']:
+for name in ['systematic', 'regressions', 'identity', 'identity-controls', 'core-adversarial', 'allocation-controls', 'preparation-boundary', 'physical-replay-controls', 'replay-prefix-instrumentation', 'payload-provenance-controls', 'search-label-controls', 'endpoint-adjacency-controls']:
     rows = [json.loads(line) for line in (root / (name + '.jsonl')).read_text().splitlines()]
     print(f'{name}: {len(rows)} result records; executable assertions passed')
 print('Known-failure regression success means the counterexamples reproduce.')

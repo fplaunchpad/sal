@@ -29,8 +29,11 @@ core specification with checked local effects and invariant preservation,
 source-selected preparation, global traversal/endpoint lemmas, and guarded
 physical-model history refinement. Typed payload archives now derive item
 freshness and same-instance provider provenance in sorted replay, and exact
-parent rows determine the ordered insertion traversal. Full source replay correspondence
-and the Notion RA bridge remain open. This is research evidence, not an addition to the verified datatype registry or a
+parent rows determine the ordered insertion traversal. The combined typed
+interpreter has checked concrete executions; canonical-prefix provenance derives
+its row-integration checks, and structural partition cells derive successful
+checked slice extraction. Joint replay correspondence and the Notion RA bridge
+remain open. This is research evidence, not an addition to the verified datatype registry or a
 verification of Notion production.
 The [preserved bug catalogue](docs/notion-bugs.md) links the three confirmed
 ordinary editing failures to reproducible traces and their proof boundaries.

@@ -36,11 +36,16 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
 - [x] Couple exact parent rows to ordered insertion traversal, derive item birth
   tags and clock reservations from typed atomic payloads, and derive fresh item
   IDs and same-instance replay providers from their emitted archives.
+- [x] Derive canonical-prefix graph invariants and exact extracted parent edges;
+  check the combined typed interpreter, derive its row-integration guards, and
+  connect its checked slice extraction to physical partition cells. Preserve
+  directed source controls for canonical labels and endpoint adjacency.
 - [ ] Finish the split/insert/delete-only milestone: connect actual source
   issuance and sorted replay to the physical interval model, deriving structural
-  guards. Couple the checked parent-map extraction, slice-forest shape and
-  endpoint ownership with display order, the typed payload archive and actual
-  preparation rule. Derive block-creator and same-instance selection provenance;
+  guards. Prove each actual machine table represents deletion-aware prefix
+  births; preserve the joint slice endpoint partition, empty inactive titles
+  and display alignment through complete atomic transactions. Connect those
+  invariants to the actual preparation rule. Derive block-creator and same-instance selection provenance;
   cover source name/range decoding and search-label validation. Instantiate
   the same-witness RA bridge
   with event enumeration, required order and specification visibility. Keep

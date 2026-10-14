@@ -256,3 +256,232 @@ fixture deliberately fabricates a future target at the raw RGA interface;
 it is a primitive semantic control, not an honestly issued demo bug. The other
 two use honest public requests. Literal records are in
 `payload-provenance-observations.jsonl` under `experiments/notion-oracle/`.
+
+### Search-label codec and same-instance uniqueness
+
+The pinned `search-labels.js` (`b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09`)
+encodes one **to five**, rather than six, binary decisions per character.
+For a nonempty chunk of length `d ≤ 5`, interpreting L/R as bits with numeric
+value `p`, its character value before the ASCII offset is
+`p * 2^(6-d) + 2^(5-d) - 1`. Thus it lies in 0..62 and never equals 31.
+Its trailing-one count is exactly `5-d`; that count recovers the chunk length,
+and division by `2^(6-d)` recovers `p`. These are direct algebraic properties
+of the codec, not Lean-checked theorems in this increment.
+
+Canonical labels concatenate five-bit chunks followed by one final chunk of
+length 1..5; the empty path is the empty label. Every nonfinal encoded value
+is even. This restriction matters: the two valid-character strings `LL` and
+`D` both decode through `printableSearchLabel` to the path `LL`. The former
+is noncanonical because its first chunk has only one decision. Consequently,
+injectivity over arbitrary strings accepted by `decode` is false. On canonical
+labels, character equality recovers each chunk uniquely, hence the whole path.
+
+The two branches of `splitSearchLabel` implement path extension exactly. An
+odd final value has `t ≥ 1` trailing ones: adding or subtracting `2^(t-1)`
+changes the chunk encoding into the right or left extension respectively.
+An even final value is already a full five-bit chunk, so the appended values
+15/47 encode a new L/R chunk. The empty label follows this second branch.
+This gives an inductive canonical-generation invariant, including arbitrarily
+many chunk boundaries. Replacing one path `w` in a prefix-free frontier by
+`wL,wR` preserves prefix freedom and excludes collisions with every other
+frontier member. Canonical injectivity then gives label uniqueness.
+
+This frontier describes slice **labels**, not the physical attachment tree.
+In pinned `text-slice-tree.js`
+(`c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91`),
+`splitTextSliceTreeNode` replaces the selected label with its left child and
+allocates a right-label node; transferring old children does not relabel them.
+In pinned `document.js`
+(`5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616`),
+`#moveTextSliceIntoBlock` and `#moveTextSlice` detach and reattach the same
+nodes, preserving their instance and label. A fresh block's empty title root
+has its own instance, so its empty label does not collide with the attached
+slice's label. Provided creation uses fresh instance identities and nodes
+remain uniquely owned, splitting and movement preserve per-instance frontier
+uniqueness. Arbitrary raw input assigning aliases, repeated creation identities,
+or malformed ownership is outside this argument.
+
+`search-label-controls.mjs` checks the pinned codec on all 8191 binary paths
+through depth twelve and performs twelve honest `Replica.splitBlock` calls
+with actual slice moves. Hand-derived checkpoints are depth five `=`, depth
+six `=L`, and depth twelve `==D`. At every depth the original instance has
+exactly the frontier `L^depth` and `L^i R` for `0 ≤ i < depth`; the fixture
+checks this literal expected set, prefix freedom, unique runtime mapping keys,
+and preservation of the lone `a`. Every document reconstruction runs the
+source `#rebuildMappings` duplicate-label exception check. The literal record
+is `experiments/notion-oracle/search-label-observations.jsonl`. Negative
+controls distinguish the chunk boundary, a collapsed singleton frontier, and
+the noncanonical alias. This is source-focused evidence and an explicit
+algebraic proof route, not a mechanized codec theorem or a full execution
+certificate for instance freshness and node ownership.
+
+## Parent-table deletion and the combined-state boundary
+
+`NotionCoreParentErase.lean` follows pinned `rga.js`'s existing-item deletion:
+text targets acquire a tombstone, split markers keep their kind, and parent
+links are unchanged. `erase_edges`, `erase_unique`, and
+`eraseForest_ordered` preserve the exact table/tree coupling and sibling order.
+`erase_traversal` then derives the updated raw traversal by mapping the
+visibility update over the old traversal; `erase_traversal_ids` proves that
+physical identities remain unchanged. No updated traversal equation is a
+premise. Hand-derived positive and negative controls retain a deleted parent's
+live child and descendant marker, and reject turning a marker into text.
+Pending deletes for items not yet born are outside this existing-item update;
+payload birth decoding already accepts the pending-deletion predicate, but a
+combined interpreter must maintain that set.
+
+The smallest faithful combined interpreter should keep instance-keyed parent
+tables, pending tombstones, actual slice trees, and the source block-order
+structure. Physical traversals and materialized slices should be derived from
+these fields. A remaining coupling obligation is endpoint adjacency: actual
+slice references, grouped by instance and sorted by physical start position,
+must have stored stops equal to the next start or END, with full physical
+coverage. Forest enumeration and displayed block order do not supply this
+physical interval order. The atomic split must create its destination, insert
+its marker, search the post-insertion traversal, split the selected node, and
+detach/append its subtree. The combined typed interpreter below implements these phases with an injective
+block-name encoding. The separate component proofs still need a joint execution
+invariant and derivation of client selections from its materialized state.
+
+## Graph invariants from typed replay provenance
+
+`NotionCoreReplayGraph.lean` derives `Unique`, `Increasing`, and `Closed` for
+`PayloadParents.prefixRows` from `PayloadNetwork.Reach`. These tables contain
+actual expanded payload births in the selected instance. `all_births_unique`
+uses prepared reservation freshness across the whole typed archive;
+`prefix_unique` restricts that result to arbitrary filtered run lists.
+`prefix_increasing` derives external parent ranks from the issuer's observed
+clock and internal predecessor ranks from consecutive run IDs.
+`prefix_closed` covers every prefix `pre` of a canonical received replay,
+including the full replay. An external parent has a located provider earlier
+in that prefix; an internal predecessor is born in the same included payload.
+No graph predicate or desired traversal equation is an input.
+
+`prefix_graph` and `canonical_graph` package these three structural results.
+The deletion predicate may vary with replay state without changing identities
+or parent links. Positive and negative controls distinguish internal run
+parents from START, preserve tombstoned parents of markers, and keep split
+markers in their inherited instance rather than the destination title instance.
+This closes the replay-table graph guards; combining table execution, slice
+endpoint coverage, displayed ordering, and client preparation remains separate.
+
+## Exact edges of raw extraction
+
+`NotionCoreExtractionEdges.lean` upgrades raw parent-map extraction to exact
+`ParentEdges` under `Unique`, `Increasing`, and `Closed`. It derives extracted
+ID uniqueness rather than assuming it. A counting lemma follows each item's
+unique parent backwards: its traversal multiplicity equals its parent's
+multiplicity, or one for a START child. Strict counter rank makes that descent
+terminate. Actual lookup rows supply forward row membership; closed-map
+coverage supplies the converse, yielding a row permutation.
+
+`prefix_extraction_edges` obtains all three graph guards from typed canonical
+replay provenance. `prefix_extraction_ready` then derives readiness of the
+next transaction against that actual extracted prefix, without an externally
+chosen forest or edge-coupling premise. These theorems address the parent-map
+component. Slice endpoint coverage, pending-delete execution, block display
+ordering, and full document/client refinement still need the combined state.
+Controls preserve tombstones and marker rows while distinguishing source
+sibling order from archive enumeration. A raw orphan control demonstrates why
+closure is necessary for complete reconstruction.
+
+## Typed prefix to checked machine row insertion
+
+`NotionCoreMachinePrefix.lean` derives acceptance of the actual
+`Machine.integrateRows` loop for the next canonical transaction's expanded
+births in a selected instance. `transactionRows` filters the typed decoder's
+actual rows. Its IDs are unique by the payload run allocation, parent rank is
+derived from replay graph provenance, and separation from prior rows follows
+from whole-reservation ownership plus strict canonical replay order.
+`integrate_canonical_prefix` derives the append result without an accepted-step
+premise. `integrate_prefix_permutation` accommodates any existing table
+enumeration structurally equivalent to the decoded prefix.
+
+The old-prefix and new-birth deletion predicates may differ. This permits an
+actual pending-delete set to determine newly born tombstones without changing
+identity freshness or parent rank. Controls append a two-character run after a
+tombstoned origin, retain its internal predecessor edge, and distinguish
+bootstrap's shared-key text births from metadata and a different instance.
+The remaining combined-state obligation is to derive that each machine table
+has the deletion-aware prefix representation throughout actual transaction
+execution. This module does not assume or prove a rendered-document equation.
+
+
+## Combined interpreter and checked slice extraction
+
+`NotionCoreMachine.lean` executes typed atomic operation lists over per-instance
+parent tables and pending deletes, arbitrary slice forests, and separate block
+display order. It checks duplicate payload content while preserving old
+tombstone status, retains existing-block placement on repeated creation, and
+performs marker insertion before slice search/split/detach/append. Its
+structurally recursive sibling sorter is proved equal to the parent-map merge
+sort; concrete controls are kernel checked without native-decision axioms.
+Bootstrap, hidden-origin insertion, concurrent split/insertion, conflicting
+duplicates, tombstone-preserving duplicates, existing creation, and Map/display
+separation each have a hand-derived positive and negative control.
+
+`replay` consumes an ordered transaction list. This interface is not the
+source constructor's sorting algorithm. The model omits JS wire decoding and
+search-label validation, and checks bounds globally after marker splitting;
+source splitting checks the two new intervals and the constructor validates
+all slices after complete replay. The valid core correspondence still needs
+the joint invariant proving these checks succeed. Malformed raw states do not
+have a source-equivalence claim. `blockName_injective` preserves typed block
+identity but does not prove correspondence with source string encoding.
+
+`NotionCoreMachineSlices.sliceAtoms_factor` derives successful bounds checking
+and exact interior extraction from a unique, structurally factored physical
+traversal. `sliceAtoms_cell` specializes this to a partition cell whose stored
+stop is the next physical cell's start or END. `empty_title_atoms` and
+`attached_tree_atoms` connect actual tree preorder extraction to that cell while
+retaining an empty inactive title's own START slice. These conclusions are
+not assumptions. Physical factorization, instance existence, uniqueness, and
+correct next-endpoint ownership remain explicit structural premises. Whole
+replay must establish them; these lemmas do not themselves establish that
+invariant. Controls distinguish a legal empty interval from reversed bounds
+and demonstrate the neighboring text exposed by dropping a stored stop.
+
+The directed pinned-source endpoint campaign passes 144 per-instance checks
+across four closed concurrent-split versions and local followups with complete
+deletions, fresh runs and repeated inherited splits. It groups all stored
+slices, including empty inactive title roots, then orders them by physical
+start. It checks START coverage and consecutive stop/start adjacency. A raw
+received payload without dependencies creates an uncovered instance and is
+explicitly outside the closed-version claim. This is bounded validation,
+not an exhaustive network test or a proof of the invariant.
+
+
+## Creator provenance is necessary for unconditional replay
+
+Read-only review identifies a concrete missing admission obligation.
+`PayloadNetwork.Known` covers item references; START introduces no such
+reference. From the unseeded initial network, an insert into `.initial` at
+START can therefore be admitted without a preceding block creation. Its typed
+machine step installs a parent table but no title. A subsequent split after
+that item can meet item-provider admission yet find no source slice for its
+marker. Similarly, a create with an absent predecessor has no item reference;
+the raw machine's front fallback is not the independent guarded create rule.
+
+This is an inspection-derived countermodel to using current typed network
+reachability alone as a whole-interpreter progress premise. It is not an
+honest-client trace, a new public demo bug, or a kernel-checked Reach
+counterexample. Existing graph, freshness and row-integration theorems retain
+their stated scopes. Actual source selection and block/instance creator
+provenance must refine the issuance model before unconditional replay progress
+can follow. Assuming accepted replay would prove only conditional table
+preservation and would not discharge this obligation.
+
+The inspected two-message witness uses session `[66]`: first key `(1,[66])`
+inserts `[97]` into `.initial` at START; key `(2,[66])` splits `.initial` after
+that first item. Both item-reference obligations are satisfiable, but the first
+message never created an initial title. A separate missing-predecessor witness
+is a first create after `.issued (99,[90])`. These literal typed messages are
+preserved to guide a kernel counterexample and source-selection refinement.
+
+Creator provenance must be paired with issuer-side active-gap selection.
+Creation alone would still permit START in an empty inactive title instance.
+Conversely, replay must not require the current owner to equal the payload's
+requested block: concurrent splitting can transfer that interval, and source
+routing deliberately searches globally. The current owner follows from the
+physical partition, while the requested block's creator justifies placement
+of the new destination block.

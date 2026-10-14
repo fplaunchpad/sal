@@ -58,6 +58,8 @@ python3 experiments/notion-oracle/run.py --trace preparation-boundary.mjs
 python3 experiments/notion-oracle/run.py --trace physical-replay-controls.mjs
 python3 experiments/notion-oracle/run.py --trace replay-prefix-instrumentation.mjs
 python3 experiments/notion-oracle/run.py --trace payload-provenance-controls.mjs
+python3 experiments/notion-oracle/run.py --trace search-label-controls.mjs
+python3 experiments/notion-oracle/run.py --trace endpoint-adjacency-controls.mjs
 ```
 
 The full reachable run intentionally exits 1 when it discovers the saved local
