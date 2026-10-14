@@ -257,3 +257,23 @@ are registered in that gate. The production gate also passed: 3,694 Lean jobs,
 tests, and 569 benchmark records. Independent review confirmed the version
 history derives each actual step and its independent source execution; its
 scope remains terminal-query history, with the Sal RA connection still open.
+
+The following carrier/history increment now connects the actual `Option` query
+to a conditional Sal `VersionsWitness`. One source-sorted event list supplies
+event enumeration, required order, specification visibility and independent
+query admission. Five-VC representation derives stored carrier equality rather
+than assuming it. The remaining hypothesis is a structural coupling to one
+honest archive, whose full execution preservation is still being constructed.
+This applies to certified ordinary and canonical recursive-base executions
+under that coupling; it is not an unconditional document certificate.
+
+The ordinary local issuance guard derives actual request preparation, clock-gap
+allocation and exact emitted transaction. Independent review checked the guard,
+clock witnesses and issuance transport. Canonical search-label encoding and
+frontier split laws are checked separately; coupling them to actual physical
+slice multiplicity is still in progress. The research gate for these modules
+passed 3,505 Lean jobs and all seventeen oracle groups.
+The production gate passed 3,694 Lean jobs, 18 exact contracts and axiom checks,
+13 contract controls, 187 runtime tests and 569 benchmark records. No production
+certificate was added. Execution preservation and physical label coupling are
+the next increment and are not included in this checkpoint's claims.

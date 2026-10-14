@@ -140,6 +140,35 @@ use focused builds during development and full gates at integration checkpoints.
   separately; existing five-VC coverage remains storage convergence only.
   Current preparation totality covers natural-number in-range gaps and bounded
   nonempty erase ranges; source early no-ops remain intentional non-emissions.
+  The archive-history/local-split checkpoint is pushed as `b317634`, with both
+  research and production gates passed. The next increment is being developed
+  alongside validation: concrete query-bearing MRDT and history alphabet lift,
+  shared-archive event enumeration, and exact source search-label codec laws.
+  `MachineSnapshots` now checks saved-version copying/restoration through
+  existing honest exchanges and finite support of touched peer identities;
+  constructing the full Sal execution simulation remains open.
+  Focused integration of these modules passed 3,494 Lean jobs. The concrete
+  renderer now agrees exactly with closed-archive replay; its independent
+  history alphabet lift rejects failed queries. Event coupling derives exact
+  enumeration and visibility order but still requires operational preservation.
+  Source search labels have checked canonical encoding and prefix-free split
+  frontier laws; coupling distinct physical slices to distinct labels remains
+  in progress. `MachineMint` derives actual honest issuance at a later source
+  counter from preparation plus an allocator clock bound.
+  `AllocationClock` now derives that bound from positive counters above all
+  received runs and a witnessed stable clock; whole-version receipt and
+  gap-then-mint preserve that clock invariant (566-job focused build passed).
+  Initial bootstrap must be treated as the source factory action; enforcing
+  global-first initialization cannot be smuggled into a local-carrier guard.
+  The active execution simulation therefore keeps initialization explicit.
+  `ArchiveCertificate.certified_versions_witness` now derives carrier equality
+  through five-VC representation; its remaining extra input is one honest
+  archive coupling, not an assumed sequential answer or state image.
+  `IssuanceGuard.guard_issues` constructs actual ordinary source issuance from
+  a local guard plus structural carrier correspondence and the stable clock
+  invariant (3,493-job build, with distinguishing create/counter controls).
+  Actual fork and ordinary/recursive merge coupling preservation are being
+  integrated with mint preservation and explicit factory initialization.
 - [ ] Resolve the extension design boundary before a positive full-editor claim:
   the unchanged demo violates ordinary local split and bold effects after merges.
   A repaired issuer/transition or restricted contract is a different target and

@@ -624,3 +624,31 @@ an answer admitted by the independent sequential specification on that same
 sorted transaction sequence. The focused build passed (742 jobs), using only
 standard Lean axioms. Sal event enumeration and visibility coupling remain work
 in progress; this theorem alone is not the full RA certificate.
+
+### Concrete query and event coupling
+
+`NotionCoreMRDT` now gives the finite transaction carrier its actual typed
+replay/render query, retaining `Option` failures. Its five VCs and represented
+version supply are independent of the issuance guard. The history alphabet lift
+delegates updates to the existing independent specification and rejects `none`
+query answers. `MRDTArchive.transactions_carrierFor` proves that arbitrary finite
+set enumeration followed by source-key sorting yields exactly the closed
+archive's transaction sequence; `honest_carrier_history` transports its actual
+answer and independent history.
+
+`ArchiveEvents` derives exact event enumeration, visibility order and closed
+version eligibility from a structural coupling to one honest archive. The
+coupling records payload identity and captured mint past, not a desired answer.
+Its preservation through actual Sal execution is still open. In particular,
+source bootstrap is a factory action, whereas the generic Sal issuance guard
+can inspect only the local carrier; the initialization protocol must be made
+explicit. Ordinary and recursive merges both union current heads, so the
+existing honest exchange operation can model their receipts even when the
+merge base is an older version. This does not yet constitute the RA certificate.
+
+The search-label codec now has checked canonical encoding injectivity and
+prefix-free frontier preservation under repeated source-shaped splits.
+The remaining label obligation connects distinct actual slice references to
+distinct labels; a set of labels alone cannot detect duplicate assignments.
+The new bridge modules passed a combined 3,494-job focused build. They remain
+outside the production theorem ledger.

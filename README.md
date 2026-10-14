@@ -44,9 +44,12 @@ ordered sequential history. This history theorem also covers arbitrary
 causally closed versions of one honest archive. Honest insertion, bounded
 deletion and splitting have their requested effects through issuance and
 reconstruction.
-Source wire/search-label correspondence and the Sal event
-witness with RA ordering remain open. Existing five-VC results certify
-transaction storage only.
+The concrete query-bearing MRDT now has a conditional Sal witness: one source
+sorted event sequence supplies enumeration, required ordering, specification
+visibility and the independent query history. The five VCs derive its stored
+carrier correspondence. Constructing the common honest archive through the
+full initialized Sal execution, and source wire/search-label correspondence,
+remain open; this is not yet a complete document certificate.
 This research branch is outside the verified datatype registry and makes no
 claim about Notion production. The [bug catalogue](docs/notion-bugs.md) preserves
 the three confirmed demo failures and distinguishes admission countermodels.

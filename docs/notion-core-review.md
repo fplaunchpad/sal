@@ -1910,3 +1910,23 @@ all seventeen oracle groups; the production gate passed 3,694 Lean jobs,
 18 contract/axiom checks, 13 regression controls, 187 runtime tests and validation
 of 569 benchmark records. The production ledger still excludes this unfinished
 document certificate.
+
+## Concrete carrier, event witness and local issuance
+
+The parent reviewed the actual finite-carrier query and alphabet lift: failed
+queries are rejected by the independent specification, and update transitions
+delegate to the existing semantic commands. Archive ID uniqueness makes finite
+set enumeration followed by source sorting agree with canonical archive replay.
+The conditional certificate uses one event witness for enumeration, required
+order, specification visibility and actual query admission. Its carrier image
+is now derived from the five-VC representation. Common-archive execution
+coupling remains an explicit obligation.
+
+Independent review of `IssuanceGuard`, `AllocationClock` and `MachineMint`
+confirmed that a positive counter exceeding all received run endpoints exceeds
+the actual stable allocator clock, and the exact required gap and issued
+transaction are derived. A source factory bootstrap is intentionally separate
+from this ordinary request guard. The search-label review confirmed canonical
+encoding and frontier split preservation; actual slice-to-label injectivity is
+a separate obligation, since a set of labels alone forgets duplicate assignment.
+The research gate passed 3,505 Lean jobs and all seventeen oracle groups.
