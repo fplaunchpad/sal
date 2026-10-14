@@ -54,6 +54,8 @@ python3 experiments/notion-oracle/run.py --trace identity-check.mjs
 python3 experiments/notion-oracle/run.py --trace identity-controls.mjs
 python3 experiments/notion-oracle/run.py --trace core-adversarial.mjs
 python3 experiments/notion-oracle/run.py --trace allocation-controls.mjs
+python3 experiments/notion-oracle/run.py --trace preparation-boundary.mjs
+python3 experiments/notion-oracle/run.py --trace physical-replay-controls.mjs
 ```
 
 The full reachable run intentionally exits 1 when it discovers the saved local
@@ -184,3 +186,30 @@ The research gate also builds the independent core machine, local-effect and
 invariant proofs, grouped history language, allocation/sibling-order lemmas,
 and physical interval projection/refinement. These artifacts still lack the
 complete pinned-source replay extraction and Sal document-history bridge.
+
+## Source preparation boundary
+
+`preparation-boundary.mjs` has four directed controls for obligations exposed by
+the new source preparation proofs. The real demo bootstrap creates the block
+and initial run in one transaction; its first item shares the transaction key.
+An all-deleted attached block selects the inherited leaf boundary at zero,
+not its unused title root. Both are asserted against pinned source calls.
+
+Two other controls distinguish input and execution domains. Separately inserting
+lone high and low UTF-16 surrogates displays one emoji but retains two indexed
+atoms; splitting at one separates the surrogates. The independent model's opaque
+atom values can represent this, but parsing the concatenated string into Unicode
+scalars would change its indexing contract. No string-domain restriction has
+been added. The receiver also accepts a dependent insertion before the block
+and origin arrive, initially rendering no blocks and later reconstructing `aX`.
+It does not itself check causal closure or query readiness. These fixtures are
+explicit source-boundary diagnostics, not new counterexamples to the retained
+atom specification on its intended dependency-closed executions.
+
+`physical-replay-controls.mjs` checks three hand-derived primitive fixtures
+against the pinned source. Insertion after a hidden nonroot origin places the
+new run before its old child subtree and before a later root sibling. Two
+integrate-before-route controls locate a freshly inserted marker in the left
+or right existing interval according to its origin. Both old endpoint rows
+remain unchanged during that transient routing check. These controls exercise
+the trusted tree/endpoint semantics without claiming whole-client reachability.

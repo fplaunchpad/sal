@@ -29,16 +29,24 @@ checked intermediate result:
 - The transaction-set five-VC chain still proves storage convergence for ordinary
   and recursive bases. It has no Notion document-history certificate.
 
-The missing correspondence is specific. Actual source issuance and sorted
-replay have not been proved to construct the physical interval executions and
-semantic guards. The RGA forest, endpoint partition, empty title roots, selected
-origin and message decoder need one global preservation argument. The existing
-allocation skeleton does not establish document causal closure or payload
-construction. Independent client preparation does not establish exact source
-message preparation. Source compound IDs also remain separate from Sal's outer
-event labels. Consequently, neither an ordinary nor a recursive Notion RA
-certificate is available; a source-key order lemma alone supplies no accepted
-history or event permutation.
+The latest increment closes more of the structural connection. A finite physical
+origin tree now searches for its insertion origin and derives the global preorder
+splice coordinate. A raw endpoint/owner table extracts its materialized intervals
+by actual scans and derives coverage and unique ownership across repeated edits.
+Source-selected preparation now proves successful local insertion, deletion and
+split effects in the physical interval model, including the inherited leaf
+boundary at zero. The typed physical replay bridge injectively encodes UTF-16
+session identities as unordered semantic names and connects tree insertion to
+raw endpoint replay. It does not identify source keys with Sal event labels.
+
+The remaining correspondence is still global. JavaScript's parent maps have not
+been extracted into the finite tree for all honest replay prefixes; raw receipt
+permits unresolved origins. The per-block root/leaf shape, endpoint ownership and
+block display order must hold together, and allocation and decoding must derive
+all guards. Independent payload values are opaque atoms, so rendering and string
+encoding remain explicit. The Sal witness still needs finite event enumeration,
+required order and specification visibility together with the source history.
+Neither ordinary nor recursive Notion document correctness is claimed.
 
 The oracle now includes 5,348 additional comparisons covering multiscalar runs,
 Unicode session ties, clock gaps, deleted anchors and repeated splits, all with
@@ -46,7 +54,11 @@ zero discarded histories. It checks 43,005 block shapes/title owners, 62,849
 retained-slot intervals and 19,844 physically empty title roots. The preserved
 fabricated `Z@10` run / `A@11` insertion shows why first-ID sorting alone fails;
 the honestly issued `A@12` control succeeds. The fabricated trace is explicitly
-not a reachable-client counterexample. The earlier 4,500 model comparisons,
+not a reachable-client counterexample. Four additional targeted fixtures check real bootstrap grouping, all-deleted
+leaf selection, lone-surrogate atom/string indexing, and receipt before
+dependencies. Three direct source-primitive fixtures additionally check the
+hidden-origin tree splice and integrate-before-route ownership for both
+existing intervals. The earlier 4,500 model comparisons,
 575 directed cases and 18,053 bounded local-effect checks remain separately
 scoped evidence.
 
@@ -61,15 +73,14 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
+Both gates passed for this increment: all 17 Notion modules (3,428 Lean jobs),
+all eight research result groups, the production build (3,694 Lean jobs),
+18 exact public contracts and their axiom audit, 187 runtime tests, and validation
+of 569 stored benchmark records. Known-failure regression assertions passed by
+reproducing the documented failures. This is not a claim of semantic review or
+Notion certification by the production gate.
 The merge-enabled exploratory `--reachable` command exits 1 when it rediscovers
 the known failure; permanent regression success means that failure reproduces.
-
-The expanded research gate passed all 13 Notion modules (3,424 dependency/build
-jobs), 575 directed cases, four regression records, both differential suites and
-all mutation/allocation controls. A final explicit negative ownership control
-was rechecked with the narrow Lean command. The production gate passed with
-3,694 Lean jobs, 18 public contracts, 187 runtime tests and 569 benchmark records.
-No new axioms or admissions were introduced.
 
 This branch is suitable as research evidence, not an addition to the paper's
 verified datatype inventory. No manuscript edits are proposed. Only

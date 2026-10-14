@@ -120,3 +120,43 @@ This is a refinement theorem for the materialized source model. It has no
 premise purporting to be a proved JavaScript extraction, no RA event enumeration,
 and no issuance certificate connecting it to the transaction-set store. Those
 remain separate from this checked history theorem.
+
+## Source-selected local preparation
+
+`NotionCorePreparation` models the pinned `locateInsertion` rule on the physical
+core normal form. At a positive index it selects the preceding visible atom.
+At zero it chooses the first slice containing visible text, falling back to the
+last slice when every slice is empty. The one/two-node core shape therefore
+selects the active slice's starting marker, including when that marker follows
+an unused empty title root. This is not always the independent helper's address.
+
+`locate_active_prepared` and `locate_prepared` derive retained-coordinate
+membership and the visible prefix count from actual selection. `locate_progress`
+proves every legal index produces an address. `delete_targets_projection` proves
+that source visible range selection chooses exactly the independent semantic
+identities, before ID-range compression.
+
+`source_insert_effect`, `source_delete_effect`, and `source_split_effect` prove
+successful physical normal-form execution and the ordinary whole-document
+local effects. The split proof derives creation of an empty target, preservation
+of the projected invariant after creation, source origin safety and split
+progress; physical success is not assumed. It then uses the existing transition
+projection to establish the prefix/suffix view. Its two-command split operation
+encapsulates marker insertion and movement, so the actual JavaScript three-step
+transaction still requires the raw tree/endpoint correspondence argument.
+
+Allocated run and marker names are inputs. Immediate visible-effect theorems
+are distinct from future invariant preservation: neither freshness nor exact
+clock consumption follows from these results. Source insertion uses the located
+instance, but contiguous run allocation and payload construction remain separate.
+Empty source insertion/deletion emits no transaction; semantic empty commands
+have the same immediate visible effect without proving identical issuance or
+clock behavior. Range compression, string-atom encoding and block-key encoding
+remain explicit decoder obligations. Atom values are opaque naturals, not an
+assumed Unicode-scalar parse of concatenated display strings.
+
+PASS+FAIL controls distinguish the inherited marker from the empty title root,
+visible predecessors from tombstones, oversized indices, exact deletion identity
+selection, and the physical zero-position split of an attached block. The pinned
+four-case preparation oracle separately validates the source boundary, including
+bootstrap transaction grouping and source receipt without dependency readiness.

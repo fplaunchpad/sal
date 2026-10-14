@@ -26,7 +26,8 @@ The separate `research/notion-mrdt` branch contains a
 [Notion demo investigation](docs/notion-research.md): pinned executable
 counterexamples to local split/formatting effects after merges, an independent
 core specification with checked local effects and invariant preservation,
-and guarded physical-model history refinement. Full source replay correspondence
+source-selected preparation, global traversal/endpoint lemmas, and guarded
+physical-model history refinement. Full source replay correspondence
 and the Notion RA bridge remain open. This is research evidence, not an addition to the verified datatype registry or a
 verification of Notion production.
 

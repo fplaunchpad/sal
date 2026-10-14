@@ -58,5 +58,20 @@
     "fabricatedView": "abX",
     "honestView": "aXb",
     "claim": "Raw countermodel is not honestly issuable; complete-run receipt is necessary."
+  },
+  "preparationBoundary": {
+    "file": "preparation-boundary-observations.jsonl",
+    "cases": 4,
+    "claims": [
+      "one-transaction bootstrap with shared first item key",
+      "all-deleted attached slice selects inherited marker",
+      "lone surrogate runs distinguish atom indexing from concatenated scalar text",
+      "receipt stores dependent operations before dependencies; no readiness validation"
+    ]
+  },
+  "physicalReplayControls": {
+    "file": "physical-replay-controls-observations.jsonl",
+    "cases": 3,
+    "scope": "Pinned source primitive controls, not whole-client reachability. Hand-derived hidden-origin tree splice and marker insertion before routing to each of two intervals."
   }
 }

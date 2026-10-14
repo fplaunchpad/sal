@@ -128,7 +128,9 @@ same user intent. The latter occur in the minimized split trace.
 | Independent core semantics | Complete Lean slot machine and prefix-closed grouped history language; 4,500 original plus 5,348 adversarial comparisons |
 | Independent local preparation | Universal insert/delete/split effects, structural invariant preservation and progress; hidden origins allowed |
 | Allocation | Receipt-derived clock bounds, disjoint run ownership, transaction-key uniqueness and local child dominance; UTF-16 session comparison |
+| Source-selected preparation | Actual zero/fallback and visible-predecessor rules on the core normal form; successful physical insert/delete/split effects |
 | Materialized source model | Physical interval transitions project to semantic steps; guarded grouped histories preserve all query answers |
+| Global structural components | Recursive origin search derives preorder splices; raw augmented endpoint scans derive partitions and ownership across repeated operations |
 | Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks; extraction and issuance derivation still open |
 | Local effects with merges/formatting | Refuted by fresh-client executable traces; restricted kernel formatting counterparts |
 | Three-way adaptation | Executable transaction-set shell preserving source preparation and rendering |
@@ -172,3 +174,44 @@ checks definitions, theorem strength, mutation sensitivity and the separation
 between allocation, semantic guards, physical source operations and JavaScript.
 Ordinary and recursive-base natural editing correctness both remain open;
 the existing five-VC storage result covers both only at the transaction-set level.
+
+## Source traversal and preparation increment
+
+The source-normal-form argument now has global search and extraction components.
+`NotionCoreOriginTree` searches a finite physical tree for the actual origin and
+derives the surrounding preorder splice context. `NotionCorePartition` starts
+with an augmented raw traversal and endpoint-owner table, recovers cells through
+endpoint scans, and derives coverage/unique ownership across repeated splits,
+insertions and deletions. Its virtual START is not a stored JavaScript item,
+and its endpoint order is not block display order.
+
+`NotionCorePhysicalReplay` connects these two representations: source session
+identities inject into opaque semantic names, actual tree insertion preserves
+the raw traversal coupling, and raw scanning yields the updated interval cells.
+For splits it derives the source's post-marker routing through the old endpoint
+table before installing the new endpoint. Freshness and child dominance remain
+structural inputs; this theorem does not yet derive them from source issuance.
+
+`NotionCorePreparation` follows the source's zero/fallback and visible-predecessor
+selection rules. It derives a prepared semantic gap, proves deletion identity
+selection, and proves successful physical-model local insert/delete/split effects.
+The attached-block zero address deliberately differs from the independent
+helper's unused title root. This closes preparation on the defined normal form,
+not extraction of that form from every source replay.
+
+The new four-case pinned oracle exposes bootstrap grouping, deleted-boundary
+fallback, raw receipt before dependencies and an atom/string distinction.
+Source insertion accepts lone surrogates: two separately inserted surrogate
+atoms can display as one emoji while remaining separately indexed. The formal
+values remain opaque atoms; no Unicode-scalar/string roundtrip or silent input
+restriction is assumed. Source receipt also does not check dependency closure.
+A faithful MRDT issuance theorem must establish closure for its version states,
+rather than cite a validation absent from the demo.
+
+The outstanding full-source proof must connect the parent map to the finite
+origin tree and endpoint table, preserve the per-block root/leaf shape and
+block display order, and derive payload/identity/provenance guards from issuance.
+Grouped bootstrap, no-event empty edits, ID-range compression and rendering
+remain encoding boundaries. The Sal same-witness certificate still needs that
+source correspondence; the current structural components do not supply it by
+assuming the desired observation equation.

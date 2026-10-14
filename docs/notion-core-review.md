@@ -352,3 +352,289 @@ extraction, and actual-issuer semantic admission, rather than closing those
 obligations by assumption under a stronger name. The full same-witness RA
 certificate and its ordinary/recursive-base scope remain unestablished for the
 natural editor. No broad oracle tests were repeated during this final review.
+
+## Targeted source preparation boundary
+
+The next review increment inspects pinned `document.js:275` (`locateInsertion`),
+`replica.js` request preparation, and the actual demo bootstrap. Four focused
+fixtures are reproducible with
+`python3 experiments/notion-oracle/run.py --trace preparation-boundary.mjs`.
+Their literal transactions and observations are saved separately. This is a
+targeted boundary check, not a repetition of the broad passing suites.
+
+| Source preparation | Required model connection |
+|---|---|
+| `blockCharacters` traverses live text items in displayed slice order. | Positional indices count editing atoms, not JavaScript UTF-16 units or grapheme clusters. |
+| Positive `locateInsertion` selects `characters[index - 1]`, carrying that item's instance and identity. | A legal natural index in bounds supplies a visible predecessor and its source instance. |
+| At zero, the function chooses the first slice with a visible text item; if none exists, it chooses the last traversed slice and its retained start boundary. | Under the root-only/empty-root-plus-leaf normal form, preparation selects the active leaf, including when all characters are deleted. Its origin need not be visible. |
+| `deleteText` uses `blockCharacters(...).slice(start,end)`, groups by instance, then compresses selected IDs into ranges. There is no separate `locateRange` helper in the pinned client. | Legal range preparation must establish selected visible identities; decompression/sorting preserves their set. Integer/range legality is an external client domain condition, not enforced uniformly by this helper. |
+| `splitBlock` captures one insertion location, then emits create/split/move as one transaction. | The three operations must remain one atomic semantic update; the public view occurs after the entire group, including detachment. |
+| `createInitialTransactions` emits create and insert in one transaction, both using first key A@1. | The real bootstrap requires a grouped initial-state connection; the existing two-request `Replica.createBlock` then `insertText` fixtures are a different bootstrap. |
+
+The empty-leaf fixture passes: split `ab` at zero, delete both moved characters,
+then prepare insertion at zero in that block. The source selects the inherited
+split-marker origin in the original text instance, rather than the unused
+fresh title root. The bootstrap fixture separately checks that inserting after
+initial `ab` next allocates counter 3. Empty bootstrap text still has a
+transaction/create key, even though its insertion creates no text run.
+This is an encoding boundary, not an allocation contradiction: a positive
+bootstrap reservation of width `max 1 atomCount` can cover that group. The
+actual bootstrap decoder and its hard-coded block name still require a
+correspondence argument.
+
+The review identifies two domain distinctions that must not disappear in a
+source theorem. First, source string spread accepts lone UTF-16 surrogates.
+Insert a lone high surrogate, then a lone low surrogate: the displayed string
+is the emoji U+1F600, but the source retains two editing atoms. Splitting at
+index one separates those surrogates. Thus arbitrary source text cannot be
+identified with the Unicode-scalar list obtained by spreading its concatenated
+rendered string. A theorem may restrict inserted strings to well-formed UTF-16,
+or retain source iterator atoms and a separate rendering function. The current
+`Slot.value : Nat` is opaque and can encode isolated surrogate iterator elements;
+the formal atom-sequence view does not impose a Unicode-scalar domain or prove
+a stringify/parse round trip. No input restriction is silently added here.
+The local split fixture explicitly refutes an unqualified contract that first
+parses the concatenated displayed string into scalars and then splits that
+scalar list: that contract gives `emoji | empty`, while the source gives
+`high-surrogate | low-surrogate`. This is a contract/representation distinction,
+not a refutation of the retained opaque-atom specification.
+
+Second, `receive` stores identified transactions without requiring causal
+dependencies. A receiver given only an insertion whose block and origin have
+not arrived accepts it and renders an empty document; after receiving the
+bootstrap dependencies, it reconstructs `aX`. Therefore dependency closure and
+origin reachability are execution assumptions to derive or enforce, not
+validation already performed by the published receiver. The fixture's initial
+empty result follows directly from having no created blocks. It does not claim
+that dependency-incomplete receipts violate the source's contract.
+
+## Global origin-search review
+
+`NotionCoreOriginTree.lean` replaces supplied preorder contexts with actual
+recursive origin search through a finite forest. START remains external.
+`insertForest_splice` derives the surrounding physical-list splice from that
+search, under the structural requirement that the new first key dominates
+existing children of the searched origin. `insert_run_indices` then derives
+the concrete retained insertion coordinate by searching the complete physical
+preorder. Neither theorem assumes the desired before/after list equation.
+Hidden text and split markers remain in the searched tree.
+
+`insertChild_sorted_keys` relates local ordered child insertion to complete
+source-comparator sorting when old child keys are ordered. Allocation/run
+provenance supplies dominance separately; the module does not assert that
+transaction-first sorting alone suffices. Fresh internal run IDs and
+disjointness from old IDs are explicit hypotheses of unique-ID preservation,
+rather than invariant conclusions silently assumed for the inserted forest.
+
+The fixtures distinguish a hidden nonroot origin from appending after the
+forest, a leaf insertion from insertion after a later root, START insertion
+from insertion after the first visible character, and split-marker origins
+from failure. The missing-origin fixture checks the partial tree domain and
+rejects unchanged successful output. It does not claim that the raw source
+rejects an orphan: the header explicitly notes its receiver can store
+unreachable items. Parent-map-to-forest extraction and dependency closure remain
+separate. These are meaningful global search lemmas within the known-origin
+fragment, rather than verification of every raw received message.
+
+The final origin-tree module independently compiles with standard logical
+dependencies. No broad oracle runs were needed to validate these new statements.
+
+## Source selection and local message effects
+
+`NotionCorePreparation.lean` now implements the source's selector on the
+root-only/empty-title-root-plus-leaf representation. Its zero rule selects the
+active slice boundary even with no visible text. Its positive rule selects the
+preceding visible atom through tombstones. `locate_progress` proves legal
+indices return an address, while `locate_prepared` derives the semantic retained
+coordinate and visible prefix count. Neither takes the requested edit's output
+as a premise. Extraction of that one/two-node representation from source replay
+remains separate.
+
+`delete_targets_projection` proves exact selected identity agreement before
+same-session ID-range compression. `source_delete_effect` then gives the whole
+physical-model document effect and preserves other block views, using address
+uniqueness to exclude cross-block deletion. Natural start/stop inputs with
+start at most stop share the source's clamping behavior; a scalar-string
+roundtrip is not used. Compression/decompression correctness remains a
+separate message-encoding step.
+
+`source_insert_effect` uses the actual selected origin's instance and proves
+existence and the immediate atom-sequence insertion effect for supplied run
+entries. Allocation, contiguous run IDs, and freshness remain external. The
+current theorem does not identify arbitrary supplied entries with the exact
+`LamportClock.reserve` result or prove their future invariant preservation.
+`source_split_message_effect` uses the same selected origin and proves the
+independent grouped create/split command effect. Its statement clearly labels
+this as preparation/message correctness, rather than claiming extraction of
+the physical endpoint/split/move implementation.
+
+The selection fixtures reject the independent helper's unused title-root
+choice at zero, a hidden rather than visible predecessor at a positive index,
+and deletion of a hidden rather than selected visible identity. They also
+check the all-hidden fallback and an oversized-index rejection. These controls
+distinguish actual preparation choices without promoting implementation output
+into the expected visible editing contract.
+
+The source returns `undefined` without reserving or publishing for empty text
+insertion and empty deletion selection. The materialized machine can instead
+execute an empty insertion run or empty deletion as a no-op command. Its local
+view theorem is compatible with that case but does not establish matching
+issuance, clock advancement, or event enumeration for empty requests. Those
+requests need an explicit no-event encoding when connecting the real client.
+
+The final `source_split_effect` strengthens that message result to successful
+physical normal-form creation followed by splitting, with the exact requested
+whole-document view. Creation's projection supplies an actual created state;
+`create_empty_target` derives its empty destination. Creation preservation
+establishes projected well-formedness, from which the selected active origin
+derives safety. `split_progress` then lifts independently proved semantic
+split existence to physical transition success by inspecting its domain.
+Only after proving that success does transition projection give the output
+view. This argument does not assume physical success or the desired physical
+answer as a premise.
+
+The split encapsulates marker insertion and slice detachment in one
+materialized operation; extraction of the raw JavaScript three-operation
+transaction remains open. The immediate-effect theorem does not require fresh
+marker IDs and does not conclude final invariant preservation for arbitrary
+supplied markers. Connecting its parameters to the actual allocator and
+admissible issuer is still necessary for faithful repeated source executions.
+The physical zero-split control transfers the remaining visible atom from an
+attached block and rejects leaving it in the old block. The frozen preparation
+module independently compiles; its printed local-effect dependencies are
+standard logical axioms only.
+
+## Endpoint partition extraction
+
+`NotionCorePartition.lean` extracts cells by scanning raw start/next-endpoint
+addresses and looking up physical atoms. Its representation records a
+structural factorization of physical atoms and endpoint rows, address
+uniqueness, and unique cell owners. It does not equate the extracted cells with
+the desired result as a premise. `extraction_correct` derives that equation
+from the factorization. `physical_unique_owner` and `split_refines` derive the
+affected interval from raw origin membership rather than accepting a chosen
+owner or surrounding context.
+
+The raw split transition actually locates its cell, splices a marker into the
+physical list, and inserts the new endpoint row. It never reads a proposed
+materialized output partition. Raw insertion and deletion similarly operate
+on physical atoms. Their preservation lemmas relate those operations to the
+recovered cells. The later raw `Reach` relation carries input freshness,
+instance/kind conditions, and actual accepted raw operations; it does not carry
+a materialized partition or output invariant. `reachable_represents` derives
+factorization and the property that all interior atoms are text, so split
+markers remain exactly interval boundaries. `reachable_extraction` then makes
+the actual scan, rather than an arbitrary existential projection, the invariant
+partition for every such reachable state.
+
+The sentinel boundary is explicit: this physical list prepends a virtual START
+boundary atom, whereas JavaScript's RGA keeps START external. END is an
+explicit scan sentinel. Endpoint-table order is physical interval order and
+does not assert displayed block order. `semanticCells` is a per-instance
+auxiliary document, not the global displayed document with empty title-root
+wrappers. Those representations still need an explicit connection.
+
+The endpoint fixture excludes both endpoints while retaining a tombstoned
+character, and rejects assigning all following atoms to the first interval.
+The tombstone-owner fixture rejects absence. The reachable repeated-operation
+fixture performs insertion, deletion, splitting after a hidden identity,
+another insertion at that hidden identity, and a repeated START split. Its
+positive and negative views distinguish proper suffix transfer from retaining
+the visible prefix in the old owner. These are hand-derived controls with
+actual raw transitions, rather than views copied from the demo.
+
+The scope remains a raw endpoint/splice machine. Its immediate physical splice
+has a separate origin-tree justification, but the module does not itself
+extract JavaScript's parent map or compose that justification into sorted replay.
+Freshness and source-shaped inputs are supplied by the raw issuance relation;
+they are not yet obtained from the real allocator/client. Global block-order
+and one/two-node slice-tree preservation, grouped transaction correspondence,
+and the complete RA bridge remain separate. This is a genuine derived
+endpoint-partition invariant within that boundary, not complete source
+verification.
+
+The frozen partition module independently compiles cleanly. The extraction,
+ownership, split-refinement, and reachable-scan theorems report only standard
+logical dependencies. The targeted preparation runner, syntax check, and
+repository whitespace check also pass; previously passing broad suites were
+not repeated for this increment.
+
+## Integrate-then-route split order
+
+The source integrates a split marker before searching for its containing
+slice. The raw combined split initially locates the old origin before inserting
+the marker. `marker_routing_after_insert` now relates these orders: from an
+existing factorization, a present origin, and a fresh marker, it derives that
+the unchanged endpoint table routes the inserted marker to the same old owner.
+Its returned cell includes the transient interior marker. The proof uses
+physical insertion preservation and actual endpoint scanning; it does not
+assume the post-insertion routing answer.
+
+This transient state need not satisfy `InteriorText`: the endpoint row making
+the marker a boundary has not yet been installed. `Represents` deliberately
+supports that intermediate interval calculation. The control checks a split
+after a tombstone and rejects premature ownership by the fresh destination.
+An additional later-interval control routes a marker after `c` to existing owner
+11 and rejects constant routing to the first owner 10.
+Thus the difference in operation order is addressed within the raw endpoint
+model. Source slice-tree routing, instance separation, and final detachment
+still need their global correspondence argument.
+
+The parent's pinned `physical-replay-controls.mjs` adds three direct source
+primitive observations. Its RGA fixture builds roots `d,a`, the run `bc` under
+`a`, tombstones `b`, and inserts `XY` after hidden `b`. The hand-derived
+physical order `[2,3,10,11,4,1]` and text `aXYcd` agree with the origin-tree
+fixture and reject appending `XY`. Two further fixtures integrate a new marker
+before invoking the actual source `textSliceContainsItem`: a marker after
+hidden `b` routes left, while a marker after the existing boundary routes
+right. Opposite-owner negatives and marker-retention checks distinguish both
+interval choices. These validate narrow primitive calculations against pinned
+source; they are not complete client-issuance or reachability certificates.
+The already passing run was inspected without repeating it.
+
+## Typed physical replay integration
+
+`NotionCorePhysicalReplay.lean` now connects the previously separate origin-tree
+and endpoint representations. Source sessions are UTF-16 unit lists. Their
+semantic names use `Encodable.encode`, whose injectivity supplies
+`localId_injective` and `address_injective`; the event constructor cannot alias
+START. The encoding is explicitly a name encoding, not an order embedding.
+All source comparison obligations remain on source IDs before encoding.
+
+`physical` augments the encoded tree preorder with the virtual START atom.
+`physical_origin_index` proves the corresponding index offset, and
+`tree_insert_physical` derives exactly the physical splice used by the endpoint
+machine from actual tree insertion. It assumes origin presence and structural
+child dominance, not an output-state or rendering equality. The insertion
+theorem itself yields a successful physical result; complete parent-map
+extraction and source-replay establishment of its premises remain separate.
+
+`tree_insert_partition` and `tree_split_partition` start with an input
+physical-state coupling and represented endpoint partition. They derive the
+raw accepted transition, preservation of that partition, its actual extracted
+cells, and equality of the new physical state with the inserted tree's encoded
+preorder. The source insertion transition is named explicitly; fresh source
+IDs transport to unique, disjoint semantic addresses. The input coupling is a
+representation premise, not the desired output equation. `initial_coupled`
+checks it at the empty-instance state.
+
+`tree_marker_routes` additionally transports the integrate-then-route result
+to the actual post-marker tree traversal with the old endpoint table. This
+closes the earlier order-of-operations mismatch in the coupled tree/endpoint
+models. The encoding control distinguishes equal-counter sessions and START;
+the physical START control distinguishes actual inserted text from retaining
+only the sentinel.
+
+The remaining gap is no longer merely that the tree and partition results live
+in different typed universes. They now have explicit typed step-coupling
+theorems. What remains is establishing the coupled, ordered, dependency-closed
+states from JavaScript parent-map replay and honestly generated transactions,
+deriving allocation freshness/dominance and semantic admission on those states,
+and connecting global slice/block ordering and the same-witness RA criterion.
+The module does not claim these premises already follow from real issuance or
+that arbitrary raw received messages satisfy them.
+
+The frozen physical-replay module and the updated marker-routing partition
+module independently compile cleanly. All printed integration/routing theorem
+dependencies are standard logical axioms. The final whitespace check passes;
+no additional oracle runs were performed for this integration review.
