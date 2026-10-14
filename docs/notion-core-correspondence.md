@@ -648,3 +648,58 @@ formal machine; source correspondence is membership equality, not equality of
 order or multiplicity. The saved full-field oracle compares pending Sets.
 This increment does not prove the joint slice partition, source wire/label
 validation, complete reconstruction progress or the same-witness RA bridge.
+
+
+## All-reference partitions and split routing
+
+`NotionCoreForestRefs.ownedRefs` enumerates every actual tree node with its
+block owner, including empty inactive title roots. `splitForest_refs` derives
+the exact selected-reference replacement from the actual recursive search.
+Detach derives the removed subtree's contiguous preorder context; append
+retains the existing children before the appended subtree. These are typed
+algorithm lemmas over arbitrary trees. Source detach correspondence additionally
+needs the core domain: the demo throws on a first matching title root, whereas
+the typed detach searches children. Fresh markers and normal title starts
+exclude that case. Duplicate block IDs are outside the source Map domain.
+
+`NotionCoreMachinePartition.Partitioned` relates each actual instance's physical
+traversal to cells and a permutation of its exact owner/start/stop references.
+Stops are next physical starts, with END for the final cell. Every reference
+names an existing instance. Owner uniqueness is per instance: an attached block
+also owns an empty title in its own instance. It is not global owner uniqueness.
+This is a structural factorization and reference relation, not an equation
+assuming extraction or successful search.
+
+From that relation and physical address uniqueness, `ref_extracts` derives
+successful checked extraction and `partition_bounds` derives every current
+endpoint check. A physical item which is not already a stored start supplies
+an actual containing tree reference. `NotionCoreMachineRouting` proves strict
+endpoint positions from the raw scan, then proves actual recursive split
+search succeeds and its output bounds are valid. The composed
+`splitForest_partition_progress` assumes neither a selected owner, a successful
+search nor output bounds. Canonical-prefix address uniqueness was established
+by the previous actual-table increment; the partition relation must still be
+preserved in that same replay.
+
+`NotionCoreMachinePartitionCreate.create_partitioned` proves actual fresh-create
+success and preservation of this relation. Existing instance cells and refs
+are retained; the fresh instance adds its START-only cell and empty title ref.
+Fresh instance and block names are explicit inputs, not yet discharged here
+from canonical creator provenance. A structural negative theorem proves that
+an instance with no title violates the relation even if its text is empty.
+
+The phase boundary matters: immediately after the split opcode, left and right
+references have the same owner in one instance. Full `Partitioned` is therefore
+an atomic-boundary invariant; the intervening phase needs a weaker relation
+until movement assigns the right subtree to its fresh destination. The theorem
+can use the old partition after raw marker insertion and before tree splitting,
+with the marker in a cell interior. It does not assert partition preservation
+after each opcode.
+
+Pinned instrumentation checked 293 all-reference partitions and 1,827 physical
+atom ownership occurrences over the existing 238 prefixes and 40 causal ideals.
+It includes virtual START and every empty title. A hand-derived `ab` split at
+index 1 requires two cells in the original instance and a separate empty title
+cell in the new instance; omitting that title is rejected. The saved evidence
+is `replay-slice-partition-observations.jsonl`. These bounded checks support
+the structural candidate; full replay preservation and the RA bridge remain open.

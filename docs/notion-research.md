@@ -380,3 +380,27 @@ endpoint adjacency, unique ownership and display alignment must be preserved
 in that same execution to establish split routing and bounds. Source wire and
 label correspondence and the RA bridge remain separate. No new demo bug was
 found; the three confirmed editing failures remain recorded.
+
+
+## All-reference routing increment
+
+The structural candidate now includes every stored slice reference, including
+empty inactive title roots. Its exact per-instance physical factorization
+derives checked extraction, a containing-reference witness, successful actual
+recursive split search and valid output bounds. Separate recursive-update
+lemmas derive the split and detach contexts, preserving earlier empty roots.
+Fresh create also derives executable success and partition preservation from
+explicit name freshness. Independent reviews and kernel checks found no hidden
+desired-output premise.
+
+The oracle checked 293 instance partitions and 1,827 augmented physical atom
+ownership occurrences across the existing 238-prefix campaign. A hand-derived
+split fixture distinguishes retaining the fresh empty title from omitting it.
+These are bounded observations, not invariant preservation.
+
+The proof must be atomic: immediately after splitting a tree node, both new
+references still have the old owner. Per-instance owner uniqueness is restored
+only after movement to the fresh destination. Thus the full partition relation
+belongs at transaction boundaries; intermediate phases need weaker relations.
+This is a proof-design constraint, not a fourth demo bug. Full replay progress,
+wire/label correspondence and the same-witness RA bridge remain unfinished.

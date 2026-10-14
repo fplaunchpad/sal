@@ -1414,3 +1414,127 @@ pending-before-birth control. The production gate passed 3,694 Lean jobs,
 18 exact contracts and their axiom audit, 187 runtime tests and validation of
 569 benchmark records. Full joint slice/display progress, source wire/label
 correspondence and the Notion RA certificate remain open.
+
+## Complete accepted-prefix tables and all owned slice evidence
+
+MachineTables independently checks cleanly with standard axioms. Its
+`replay_tables` derives full actual instance rows and pending targets from
+accepted replay plus whole-list decoded birth-ID uniqueness, using actual
+storage effects and transaction phase decomposition. It assumes neither the
+per-step output equation nor a preselected row representation. The canonical
+composition derives that uniqueness from issuance and supplies exact actual
+row equality, archive permutation, graph guards, physical uniqueness, and
+next-row integration. Next integration takes only the accepted **prior** prefix;
+acceptance of the next transaction is not a premise. Next located references
+are likewise derived present in actual prior rows. Global slice routing and
+whole-transaction progress remain separate.
+
+Lean pending lists preserve deletion chronology and duplicate targets, while
+source JS uses a Set. The correspondence is exact membership, not list order
+or multiplicity; the concrete marker/repeated-delete control documents this.
+The raw pending-before-birth control is an accepted primitive fixture, not an
+honest issuer witness. Full honest rows remain chronological Map births with
+unchanged parent links and source tombstone semantics.
+
+The all-owned-slice extension of the same pinned nine-event campaign saves
+`replay-slice-partition-observations.jsonl`. Across its 238 canonical prefixes,
+293 instance partitions and 1827 augmented physical atom occurrences satisfy:
+first start START, physical start order, stop equal to the next start or END,
+exactly one covering cell per physical atom, and unique owner blocks within
+each instance. All stored nodes are included, including inactive empty title
+roots. Owner duplication across different instances is deliberately allowed.
+A hand-derived split of ab gives two old-instance cells and a fresh empty
+START-to-END title cell; omitting that title is rejected. This adds exact
+coverage and an empty-title mutant to the earlier adjacency checks, without
+claiming a universal invariant or a new bug. Existing observations are retained.
+
+## Forest reference rewrites and conditional owned partition
+
+ForestRefs independently checks cleanly with standard axioms. It derives the
+selected preorder context from actual recursive search, rewrites one selected
+reference into left/right references, removes the complete detached subtree's
+contiguous references, and appends child preorder. No supplied context or desired
+projection equation is a premise. The split control retains a preceding empty
+title and rejects dropping it. The arbitrary duplicate-name append formula
+explicitly updates every list match; source Map uniqueness excludes that malformed
+case. Raw detachment has an additional abstraction boundary: SliceForest skips
+root matches, whereas source searches all nodes and throws on a selected root.
+Core fresh markers and normal title starts exclude that discrepancy; generic
+arbitrary-tree source equivalence is not claimed.
+
+MachinePartition includes all owned references and requires per-instance
+permutation to cells with next-physical-start stops, existing instances, and
+per-instance owner uniqueness. Cross-instance duplication of an attached block's
+owner remains permitted. `ref_extracts` and `partition_bounds` derive actual
+checked slice success and global bound checks from this structural partition
+and physical uniqueness, rather than taking extracted output values as premises.
+This is a conditional invariant interpretation: preservation under Machine steps
+and a whole-replay theorem have not been established.
+
+The added containing-reference witness derives an actual forest slice containing
+a physical marker from that partition, instance presence, and its not already
+being a stored start boundary. It does not assume the containing slice or a
+successful source search. These remain conditional input-state premises until
+insertion preservation supplies them. An independent draft check caught a local
+membership variable shadowing failure in the final tree-witness projection;
+the owner repaired it, and the expanded MachinePartition independently
+checks cleanly with standard printed axioms.
+
+## Checked routing and conditional partition composition
+
+MachineRouting and the final MachinePartition composition independently check
+cleanly with standard printed axioms. Routing derives strict physical index
+bounds from actual endpoint-scan membership and unique tokens. Its duplicate
+marker control demonstrates that the uniqueness premise is necessary. Virtual
+START and END are handled through the augmented physical/token representation;
+strict containment excludes both stored endpoints, matching source slice bounds.
+
+`splitForest_checked_progress` derives successful recursive search and valid
+resulting bounds from an actual containing-ref witness, input bounds, and
+physical uniqueness. Accepted search/output bounds are not premises. Its
+internal accepted-step preservation lemmas are consumed only after the separate
+search-progress proof constructs that step. The transient control preserves
+the right interval and its tombstoned physical parent, and endpoint negatives
+exclude selecting the marker at an existing start or stop.
+
+`splitForest_partition_progress` removes the free search witness and input
+bounds: the structural all-owned partition supplies both. Instance presence,
+physical marker membership, physical uniqueness, and the marker not already
+being a stored start remain explicit. This proves checked routing success at
+that state, not preservation of Partitioned after inserting or detaching the
+marker, and not complete transaction/whole-replay progress. In particular the
+transient split has two same-instance references under one owner before move;
+the per-instance owner invariant is an atomic-boundary property. The next-stop
+control rejects treating the preceding empty interval as unbounded.
+
+The root-detachment caveat now appears in ForestRefs' header as well as this
+review: arbitrary structural detachment skips roots, while raw source would
+throw on a first root match. Core freshness and normal title starts exclude
+that case. None of the reviewed routing theorems relies on a claim of arbitrary
+raw detachment equivalence.
+
+
+## Fresh-create partition review
+
+The proof-track reviewer independently read and kernel checked the final
+MachinePartition and MachinePartitionCreate modules. Fresh create derives the
+actual dispatched state and proves preservation of old cells plus the fresh
+START-only cell and title reference. `create_partitioned` supplies actual
+executable success rather than requiring next-step acceptance. Instance and
+block freshness remain explicit; this module does not derive them from the
+issuer. The empty-title positive control and structural read-side omission
+falsifier distinguish invisible content from an absent interval.
+
+The primary reviewer checked the recursive routing/endpoint proofs, exact
+forest context rewrites, fresh-create case split and oracle mutation control.
+No desired final partition or successful split result is used as a premise
+in the new progress endpoints. The full partition is still an explicit
+structural input, and its owner uniqueness is a transaction-boundary property.
+No complete replay or Notion RA claim follows from this increment.
+
+The final routing-increment research gate passed 48 modules (3,459 Lean jobs)
+and all fourteen oracle result groups. Saved all-reference observations match
+the fresh gate output exactly. The production gate passed 3,694 Lean jobs,
+18 exact public contracts with axiom audit, 187 runtime tests and validation of
+569 benchmark records. Its production ledger does not register these unfinished
+Notion research modules as a verified document datatype.

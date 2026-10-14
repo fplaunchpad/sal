@@ -55,12 +55,20 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
   accepted replay. Derive canonical prefix birth freshness and archive-row
   permutation, actual table graph guards, physical ID uniqueness, next reference
   presence and successful next-row integration without next-step acceptance.
+- [x] Relate every actual forest reference, including empty titles, to physical
+  partition cells; derive checked extraction and recursive split search with
+  valid output bounds from that structural relation. Derive exact reference
+  rewrites for actual split and detach, retaining their source-domain limits.
+  Derive fresh-create success and partition preservation from explicit name
+  freshness.
 - [ ] Finish the split/insert/delete-only milestone: connect actual source
   issuance and sorted replay to the physical interval model, deriving structural
   guards. Preserve the joint slice endpoint partition, empty inactive titles
   and display alignment through complete atomic transactions, including all
-  empty title roots as well as active slices. Derive complete reconstruction
-  success, not only accepted-prefix table representation and next-row checks. Connect those
+  empty title roots as well as active slices. Per-instance owner uniqueness
+  belongs at atomic boundaries: the split opcode temporarily gives both new
+  refs the old owner, until movement assigns the right ref to its fresh block.
+  Derive complete reconstruction success, not only accepted-prefix table representation and next-row checks. Connect those
   invariants to the actual preparation rule. Prove total core deletion preparation from the derived normal shape; the
   single-instance validator must never reject an honest supported request. Connect
   source name/range decoding and search-label validation. Creator knowledge

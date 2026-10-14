@@ -83,10 +83,20 @@ and row permutations are derived, and actual graph guards, physical address
 uniqueness, next reference presence and successful next-row integration follow.
 The latter conclusions do not assume acceptance of the next transaction.
 
+The routing increment now relates all actual forest references to physical
+partition cells, including empty inactive titles. It derives checked extraction,
+an actual containing-reference witness, successful recursive split search and
+valid output bounds. Split/detach contexts are derived from the recursive
+algorithms. Fresh create derives executable success and partition preservation
+from explicit fresh instance/block names. The all-reference oracle passed
+293 partitions and 1,827 physical ownership checks; its empty-title omission control is rejected.
+
 The remaining correspondence is still global. Slice forest, endpoint ownership
-and displayed block order must be related to those actual tables in the same
-execution, including empty inactive title roots. The new network is partial: a successful request
-transition does not establish that the resulting archive reconstructs. Core
+and displayed block order must be preserved with those actual tables in the same
+execution, including empty inactive title roots. Per-instance owner uniqueness
+holds at atomic boundaries: the split opcode temporarily duplicates the owner
+until movement assigns the right reference to its fresh block. The new network
+is partial: a successful request transition does not establish that the resulting archive reconstructs. Core
 deletion must also be proved total on the supported normal shape; general
 multi-instance grouping after merge is not implemented in this core model.
 The typed range codec now has exact sorted roundtrip and deletion-effect proofs;
@@ -144,8 +154,8 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the actual-table correspondence increment:
-44 Notion modules (3,455 Lean jobs), fourteen research result groups, the production
+Both gates passed for the all-reference routing increment:
+48 Notion modules (3,459 Lean jobs), fourteen research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
 187 runtime tests, and validation of 569 stored benchmark records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or

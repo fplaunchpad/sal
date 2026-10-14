@@ -47,6 +47,10 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreArchiveOrder \
   Sal.MRDTs.Instances.NotionCoreMachineTables \
   Sal.MRDTs.Instances.NotionCoreMachineTableGraph \
+  Sal.MRDTs.Instances.NotionCoreForestRefs \
+  Sal.MRDTs.Instances.NotionCoreMachineRouting \
+  Sal.MRDTs.Instances.NotionCoreMachinePartition \
+  Sal.MRDTs.Instances.NotionCoreMachinePartitionCreate \
   Sal.MRDTs.Instances.NotionCoreSliceForest
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")

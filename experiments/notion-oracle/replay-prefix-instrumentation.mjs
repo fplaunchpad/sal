@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import {Replica} from './replica.js';
 import {CrdtDocument,createInitialTransactions} from './document.js';
 import {RgaText} from './rga.js';
-import {START,idKey,compareOpIds,nextId} from './ids.js';
+import {START,END,idKey,compareOpIds,nextId} from './ids.js';
+import {iterateTextSliceTree} from './text-slice-tree.js';
 const initial=createInitialTransactions('a😀b'),block='block-A';
 const ledger=new Map(initial.map(tx=>[idKey(tx.id),{tx,dependencies:[],request:{kind:'bootstrap'}}]));
 function issue(r,request,method,...args) {
@@ -98,6 +99,27 @@ function decodedTables(transactions) {
 function actualTables(doc){return [...doc.instances].map(([instance,value])=>({instance,
  rows:[...value.rga.items.values()].map(row=>({id:row.id,originId:row.originId,kind:row.kind,content:row.content??null,deleted:row.deleted})),
  pending:[...value.rga.deletedIds].sort()}));}
+function partitionView(doc, omitEmptyTitle=false){
+ const groups=new Map([...doc.instances].map(([instance,value])=>[instance,{instance,
+  physical:[START,...value.rga.orderedItems().map(item=>item.id)],refs:[]} ]));
+ for(const block of doc.blocks.values())for(const node of iterateTextSliceTree(block.title)){
+  if(omitEmptyTitle&&node===block.title&&node.children.length>0)continue;
+  const slice=node.textSlice;groups.get(slice.textInstanceId).refs.push({owner:block.id,start:slice.startItemId,stop:slice.endItemId});
+ }
+ return [...groups.values()].map(group=>{
+  const position=id=>group.physical.findIndex(value=>idKey(value)===idKey(id));
+  group.refs.sort((a,b)=>position(a.start)-position(b.start));
+  const counts=group.physical.map(()=>0);
+  for(const ref of group.refs){const start=position(ref.start),stop=ref.stop===END?group.physical.length:position(ref.stop);
+   if(start>=0&&stop>start)for(let i=start;i<stop;i++)counts[i]++;
+  }
+  const valid=group.refs.length>0&&group.refs[0].start===START&&
+   new Set(group.refs.map(ref=>ref.owner)).size===group.refs.length&&
+   group.refs.every((ref,i)=>position(ref.start)>=0&&idKey(ref.stop)===idKey(group.refs[i+1]?.start??END))&&counts.every(n=>n===1);
+  return {...group,counts,valid};
+ });
+}
+let partitionChecks=0,physicalOwnershipChecks=0,fullPartition;
 let tableChecks=0,rowChecks=0,tombstoneChecks=0,fullTable;
 const events=[...ledger.values()];let closedSets=0,prefixes=0;
 for(let mask=0;mask<2**events.length;mask++) {
@@ -111,6 +133,9 @@ for(let mask=0;mask<2**events.length;mask++) {
   active={items:new Set(),calls:[]};const document=new CrdtDocument(prefix);active=undefined;prefixes++;
   const expected=decodedTables(prefix),actual=actualTables(document);
   assert.deepEqual(actual,expected);tableChecks+=actual.length;
+  const partition=partitionView(document);assert(partition.every(group=>group.valid));
+  partitionChecks+=partition.length;physicalOwnershipChecks+=partition.reduce((n,group)=>n+group.counts.length,0);
+  if(prefix.length===events.length)fullPartition=partition;
   rowChecks+=actual.reduce((n,instance)=>n+instance.rows.length,0);
   tombstoneChecks+=actual.reduce((n,instance)=>n+instance.rows.filter(row=>row.deleted).length,0);
   if(prefix.length===events.length)fullTable={transactions:prefix,expected,actual};
@@ -135,6 +160,19 @@ console.log(JSON.stringify({name:'fabricated-pending-before-birth-full-fields',p
  scope:'Direct raw primitive boundary, not a dependency-closed honestly issued version.'}));
 console.log(JSON.stringify({name:'honest-full-prefix-stored-field-comparison',tableChecks,rowChecks,tombstoneChecks,fullTable,
  controls:{noOpDeleteRejected:true,wrongInstanceRejected:true},scope:'Expected full fields and pending sets decoded independently from literal atomic transactions; Map order is chronological, not traversal order.'}));
+const tiny=new Replica('S','tiny',createInitialTransactions('ab')),tinyCut=tiny.splitBlock('block-A',1);
+assert.deepEqual(tinyCut.transaction.id,{sessionId:'S',counter:3});
+const tinyDoc=tiny.document(),tinyPartition=partitionView(tinyDoc);
+assert.deepEqual(tinyPartition.map(group=>({instance:group.instance,refs:group.refs,counts:group.counts})),[
+ {instance:'block-A',refs:[{owner:'block-A',start:START,stop:{sessionId:'S',counter:3}},
+  {owner:'S-block-3',start:{sessionId:'S',counter:3},stop:END}],counts:[1,1,1,1]},
+ {instance:'S-block-3',refs:[{owner:'S-block-3',start:START,stop:END}],counts:[1]}]);
+assert(tinyPartition.every(group=>group.valid));
+const omitted=partitionView(tinyDoc,true);assert(omitted.some(group=>!group.valid));
+assert.equal(omitted.find(group=>group.instance==='S-block-3').refs.length,0);
+console.log(JSON.stringify({name:'all-owned-slice-prefix-partition',partitionChecks,physicalOwnershipChecks,fullPartition,
+ tiny:{transactions:tiny.transactions(),partition:tinyPartition,omittedEmptyTitle:omitted},
+ scope:'Every stored node including inactive title roots; augmented START and all physical atoms have exactly one cell owner per instance. Same block may own cells in different instances.'}));
 const honestDominanceChecks=dominanceChecks;
 // Known-broken environment: the public API alone does not serialize sessions.
 const same1=new Replica('same','one',initial),same2=new Replica('same','two',initial);
