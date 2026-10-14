@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Build and audit the existing production proof paths for all 21 named cases.
+"""Build and audit the existing production proof paths for all 19 named cases.
 
 Counts are implementation/proof cases, not distinct abstract datatypes.
 The grow-only set uses generic AddStore; FinsetStore and FlatGrowOnly provide
-alternative set carriers. Counter/IOC share delta one. Queue's obstructed native API is outside
-this 21-case raw-VC coverage. Fugue is represented-state convergence plus a
-checked criterion obstruction, never an RA certificate.
+alternative set carriers. Counter supports free signed increment and decrement.
+Queue's obstructed native API is outside
+this 19-case raw-VC coverage. Fugue is represented-state convergence plus a
+checked criterion obstruction in this selected historical audit path; the separate
+natural invariant-domain RA certificate is checked by the production ledger.
 """
 from pathlib import Path
 import hashlib
@@ -31,7 +33,6 @@ def case(identifier, endpoint, vc, bridge, suffixes=('executions', 'executionsV'
 for identifier, name, family in [
         ('grow-only-set', 'gset', 'Add'),
         ('finite-add-store', 'finiteAdd', 'Finite'), ('counter', 'counter', 'Delta'),
-        ('increment-only-counter', 'ioc', 'Delta'), ('pn-counter', 'pn', 'Delta'),
         ('flat-grow-only-set', 'booleanSet', 'Boolean'), ('flat-grow-only-map', 'booleanMap', 'Boolean')]:
     CASES.append(dict(id=identifier,
         endpoints=[P + 'ConcreteMRDT.SimplePorts.' + name + 'Executions' + s for s in ('', 'V')],
@@ -63,12 +64,12 @@ CASES.append(dict(id='fugue-max', endpoints=[P + 'CertifiedFugueVCExecution.repr
 # Also inspect existing facade endpoints; these once rebuilt the obsolete
 # scoped law bundle instead of reusing the concrete conditions.
 for c in CASES:
-    if c['id'] in {'grow-only-set','finite-add-store','counter','increment-only-counter','pn-counter','flat-grow-only-set','flat-grow-only-map'}:
+    if c['id'] in {'grow-only-set','finite-add-store','counter','flat-grow-only-set','flat-grow-only-map'}:
         c['endpoints'] += [n.replace('ConcreteMRDT.SimplePorts.', 'ConcreteMRDT.Guarded.SimplePorts.') for n in c['endpoints']]
     facade = {'tree-move':'tree', 'aegis-sheet':'sheet', 'rga':'rga'}.get(c['id'])
     if facade:
         c['endpoints'] += [P + 'ConcreteMRDT.Guarded.ScopedPorts.' + facade + 'Executions' + suffix for suffix in ('','V')]
-assert len(CASES) == 21 and len({c['id'] for c in CASES}) == 21
+assert len(CASES) == 19 and len({c['id'] for c in CASES}) == 19
 
 # Existing Ledger already rejects each family's old correctness path. This
 # standalone audit additionally checks every selected root, including bundle
@@ -456,7 +457,7 @@ def main():
         import_audit=import_audit,
         experiments_imported=bool(import_audit['forbidden_imports']), fugue_ra_claim=False)
     (OUT / 'production-audit.json').write_text(json.dumps(report, indent=2) + '\n')
-    print(f'Production automation audit passed: 21 named cases, {len(roots)} roots.')
+    print(f'Production automation audit passed: 19 named cases, {len(roots)} roots.')
 
 
 if __name__ == '__main__':

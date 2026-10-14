@@ -91,10 +91,6 @@ noncomputable def registry : List PackagedStateGC :=
       (Instances.FinsetStore.verified (α := Nat))
   , PackagedStateGC.ofExactState "counter"
       Instances.FlatCounters.counterVerified
-  , PackagedStateGC.ofExactState "increment-only-counter"
-      Instances.FlatCounters.iocVerified
-  , PackagedStateGC.ofExactState "pn-counter"
-      Instances.FlatCounters.pnVerified
   , PackagedStateGC.ofExactState "flat-grow-only-set"
       Instances.FlatGrowOnly.gosetVerified
   , PackagedStateGC.ofExactState "flat-grow-only-map"
@@ -128,7 +124,7 @@ noncomputable def registry : List PackagedStateGC :=
 noncomputable def names : List String :=
   registry.map (fun entry => entry.package.name)
 
-example : registry.length = 20 := by rfl
+example : registry.length = 18 := by rfl
 example : names = Production.names := by rfl
 
 end Production.StateGC

@@ -5,7 +5,7 @@ import Sal.MRDTs.Instances.FinsetStore
 import Sal.MRDTs.Instances.FlatCounters
 import Sal.MRDTs.Instances.FlatGrowOnly
 
-/-! Independent full-input history languages for the seven production
+/-! Independent full-input history languages for the five production
 instances built from grow-only stores and integer deltas. Abstract states are
 sets, finite sets, or integer balances. Complete language equivalence with the
 former log presentation is proved through an observation abstraction.
@@ -312,12 +312,8 @@ abbrev gsetCertified := Add.certified (A := Nat)
 abbrev gsetCertifiedV := Add.certifiedV (A := Nat)
 abbrev finiteAddCertified := Finite.certified (A := Nat)
 abbrev finiteAddCertifiedV := Finite.certifiedV (A := Nat)
-abbrev counterCertified := Delta.certified (A := Unit) (fun _ => 1)
-abbrev counterCertifiedV := Delta.certifiedV (A := Unit) (fun _ => 1)
-abbrev iocCertified := Delta.certified (A := Instances.FlatCounters.IOCOp) (fun _ => 1)
-abbrev iocCertifiedV := Delta.certifiedV (A := Instances.FlatCounters.IOCOp) (fun _ => 1)
-abbrev pnCertified := Delta.certified Instances.FlatCounters.pnDelta
-abbrev pnCertifiedV := Delta.certifiedV Instances.FlatCounters.pnDelta
+abbrev counterCertified := Delta.certified Instances.FlatCounters.counterDelta
+abbrev counterCertifiedV := Delta.certifiedV Instances.FlatCounters.counterDelta
 abbrev booleanSetCertified := Boolean.certified (A := Nat)
 abbrev booleanSetCertifiedV := Boolean.certifiedV (A := Nat)
 abbrev booleanMapCertified := Boolean.certified (A := Nat × Nat)
@@ -339,15 +335,15 @@ theorem finite_add_control :
 
 /-- PASS+FAIL: two increments and one decrement observe1, including updates
 from different replicas; constant0 and treating decrement as a no-op fail. -/
-theorem pn_control :
-    (deltaMachine Instances.FlatCounters.pnDelta).toSpec.admits
+theorem counter_control :
+    (deltaMachine Instances.FlatCounters.counterDelta).toSpec.admits
       [.update (1,0,.inc), .update (2,1,.inc), .update (3,0,.dec), .query () 1] ∧
-    ¬ (deltaMachine Instances.FlatCounters.pnDelta).toSpec.admits
+    ¬ (deltaMachine Instances.FlatCounters.counterDelta).toSpec.admits
       [.update (1,0,.inc), .update (2,1,.inc), .update (3,0,.dec), .query () 2] := by
   constructor
   · exact ⟨_, .cons rfl (.cons rfl (.cons rfl (.cons ⟨rfl,rfl⟩ (.nil _))))⟩
   · intro h
-    have hx := (deltaMachine Instances.FlatCounters.pnDelta).updates_query_iff
+    have hx := (deltaMachine Instances.FlatCounters.counterDelta).updates_query_iff
       [(1,0,.inc),(2,1,.inc),(3,0,.dec)] () 2 |>.mp h
     change (2 : Int) = 1 at hx
     omega
@@ -400,17 +396,17 @@ theorem immutable_map_control :
     have hm := congrArg (fun f : (Nat × Nat) → Bool => f (7,10)) hx
     simp [booleanMachine, Op.op] at hm
 
-/-- PASS+FAIL for increment-only members of the delta family. -/
-theorem increment_control :
-    (deltaMachine (A := Unit) (fun _ => 1)).toSpec.admits
-      [.update (1,0,()), .update (2,1,()), .query () 2] ∧
-    ¬ (deltaMachine (A := Unit) (fun _ => 1)).toSpec.admits
-      [.update (1,0,()), .update (2,1,()), .query () 1] := by
+/-- PASS+FAIL: two freely issued increments of the signed Counter. -/
+theorem counter_increment_control :
+    (deltaMachine Instances.FlatCounters.counterDelta).toSpec.admits
+      [.update (1,0,.inc), .update (2,1,.inc), .query () 2] ∧
+    ¬ (deltaMachine Instances.FlatCounters.counterDelta).toSpec.admits
+      [.update (1,0,.inc), .update (2,1,.inc), .query () 1] := by
   constructor
   · exact ⟨_, .cons rfl (.cons rfl (.cons ⟨rfl,rfl⟩ (.nil _)))⟩
   · intro h
-    have hx := (deltaMachine (A := Unit) (fun _ => 1)).updates_query_iff
-      [(1,0,()),(2,1,())] () 1 |>.mp h
+    have hx := (deltaMachine Instances.FlatCounters.counterDelta).updates_query_iff
+      [(1,0,.inc),(2,1,.inc)] () 1 |>.mp h
     change (1 : Int) = 2 at hx
     omega
 
@@ -419,6 +415,6 @@ theorem increment_control :
 #print axioms boolean_language_preserved
 #print axioms delta_language_preserved
 #print axioms gsetCertifiedV
-#print axioms pnCertifiedV
+#print axioms counterCertifiedV
 #print axioms booleanMapCertifiedV
 end Sal.MRDTs.Paper1.SimpleEventPorts

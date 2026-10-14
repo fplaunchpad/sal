@@ -201,19 +201,17 @@ proof effort, and an evidence-linked coverage table.
 
 Use separate columns for merge VCs and sequential bridge. Include meaningful
 negative controls. Separate proof configurations from distinct ADTs and from
-runtime packages. The automation corpus has 21 retained configurations; the
+runtime packages. The automation corpus has 19 retained configurations; the
 published bounded counter and the two source flags have separate checked
 certificates and are not measured cases in that corpus. Do not add these
 numbers and call the result a count of distinct datatypes.
 
-Counter inventory check: `FlatCounters.Counter` and `FlatCounters.IOC` both
-instantiate the same integer-delta implementation with constant delta 1. Their
-single-operation alphabets differ only by constructor naming. `FlatCounters.PN`
-also permits delta -1, so its API is broader; all three share integer state,
-merge `a + b - ancestor`, and the generic proof. Recommend one counter-family
-row represented by PN, mentioning increment-only as a restriction. This is a
-presentation recommendation; the current 21-case measured inventory has not
-been changed. The bounded escrow counter is a separate datatype because its
+Counter consolidation: the active ordinary counter is the former PN
+implementation, now named Counter, supporting unrestricted increment and
+decrement on integers. The two increment-only duplicates have been removed
+from the active inventory. Keep a single Counter row. Historical measurements
+retain their original names/counts; they are not new measurements of this
+consolidation. The bounded escrow counter remains separate because its
 issuance, rights and transfer semantics differ.
 
 For obligation counts, the policy expansion has 17 merge/replay schemas plus
@@ -255,6 +253,38 @@ The additional motivation comments concern exposition and source comparison;
 they do not change the mathematical correction list. The review's broader
 writing suggestions are proposals for discussion, not manuscript edits already
 made. Both documents exclude GC.
+
+## Candidate industrial case study: Notion's public demo
+
+Notion's [CRDT article](https://www.notion.com/blog/how-notion-handles-concurrent-editing-with-crdts)
+links an [interactive demo](https://www.notion.com/front-static/crdt-demo/index.html?embed=1)
+with readable JavaScript modules. The public
+[`Replica`](https://www.notion.com/front-static/crdt-demo/src/crdt/replica.js)
+stores identified transactions; the
+[`CrdtDocument`](https://www.notion.com/front-static/crdt-demo/src/crdt/document.js)
+constructor sorts and replays them. These are concrete sources for an oracle
+and a candidate MRDT translation. Production-source correspondence and an
+open-source licence have not been established.
+
+The distinguishing research question is whether independently specified block
+split/move operations compose correctly with concurrent text edits and marks.
+Use the demo to discover behavior with minimal split-versus-insert/delete
+traces, distinguish candidate specifications, and test both delivery orders.
+Record observed outcomes as oracle evidence, not as a definition of the
+sequential specification or a proof of intent. A prospective result should say
+“a verified MRDT model of Notion's published demo”; verifying the deployed
+implementation requires a further correspondence argument. No Notion theorem
+or completed case study is claimed yet. This remains outside GC.
+
+Initial demo probes (14 October snapshot): from `abcd`, split at index 2
+concurrently with inserting `X` there. Split session A / insert session B
+produces `abX | cd`; swapping the sessions produces `ab | Xcd`. Deleting the
+original range `[1,3)` concurrently with the split produces `a | d`. Both
+receipt orders agreed in these finite tests. This distinguishes ID-ordered
+boundary placement from an always-left/right split rule. The demo globally
+sorts transactions before reconstruction, so receipt-order agreement is a
+limited check, not a general convergence theorem. These are observations for
+specification discovery, not hand-derived regression expectations.
 
 ## Suggested editing order
 

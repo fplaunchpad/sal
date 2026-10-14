@@ -108,8 +108,10 @@ $\alpha(\sigma)=\phi$.
 \paragraph{Natural abstract states.}\label{par:natural-states}
 The grow-only-set specifications use $S\subseteq A$, initially $\varnothing$,
 with $S\xrightarrow{\mathsf{add}(a)}S\cup\{a\}$ and observation $S$ (or its
-characteristic function). Counter specifications use $z\in\mathbb Z$, initially
-$0$, with $z\xrightarrow{u}z+\delta(u)$ and observation $z$. These replace
+characteristic function). The ordinary Counter uses $z\in\mathbb Z$, initially
+$0$, with $z\xrightarrow{u}z+\delta(u)$ and observation $z$, where
+$\delta(\mathsf{inc})=1$ and $\delta(\mathsf{dec})=-1$. Both operations
+are always permitted; decrement at zero yields $-1$. These replace
 earlier operation-log presentations without changing their history languages,
 including queries interspersed with updates. More generally, two total
 deterministic sequential machines have equal admitted languages when a map

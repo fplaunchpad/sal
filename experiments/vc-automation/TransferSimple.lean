@@ -96,9 +96,7 @@ end Boolean
 
 abbrev gset := Add.expanded_vcs (A := Nat)
 abbrev finiteAdd := Finite.expanded_vcs (A := Nat)
-abbrev counter := Delta.expanded_vcs (A := Unit) (fun _ => 1)
-abbrev ioc := Delta.expanded_vcs (A := Instances.FlatCounters.IOCOp) (fun _ => 1)
-abbrev pn := Delta.expanded_vcs Instances.FlatCounters.pnDelta
+abbrev counter := Delta.expanded_vcs Instances.FlatCounters.counterDelta
 abbrev booleanSet := Boolean.expanded_vcs (A := Nat)
 abbrev booleanMap := Boolean.expanded_vcs (A := Nat × Nat)
 

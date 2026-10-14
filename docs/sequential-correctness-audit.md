@@ -177,9 +177,7 @@ the client operation without a proved abstraction bridge.
 | grow-only-set | Mathematical set; add inserts an element. | Correct abstract carrier. `CanIssue := True`. |
 | add-store | Mathematical set; add inserts an element. | Correct abstract carrier. `CanIssue := True`. |
 | finite-add-store | Finite mathematical set; add inserts an element. | Correct abstract carrier. `CanIssue := True`. |
-| counter | Integer; every operation adds one. | Correct abstract carrier. `CanIssue := True`. |
-| increment-only-counter | Integer; increment adds one. | Correct abstract carrier. `CanIssue := True`. |
-| pn-counter | Integer; increment/decrement add `+1`/`-1`. | Correct abstract carrier. `CanIssue := True`. |
+| counter | Integer; unrestricted increment/decrement add `+1`/`-1`. | Correct abstract carrier. `CanIssue := True`; decrement from zero yields -1. The earlier increment-only duplicates are removed. |
 | flat-grow-only-set | Characteristic function of a mathematical set. | Correct abstract carrier. `CanIssue := True`. |
 | flat-grow-only-map | Characteristic function of immutable key/value entries. | Correct abstract carrier. `CanIssue := True`. |
 | bounded-counter | Independent scalar value and per-replica rights; increment mints, decrement consumes, transfer moves rights. | Published Balegas matrix/max implementation; sufficient local rights and single-writer issuance justify legal causal histories and the global lower bound. |

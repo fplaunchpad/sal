@@ -31,9 +31,6 @@ noncomputable def registry : List PackagedMRDT :=
   , PackagedMRDT.of "finite-add-store"
       (Instances.FinsetStore.verified (α := Nat))
   , PackagedMRDT.of "counter" Instances.FlatCounters.counterVerified
-  , PackagedMRDT.of "increment-only-counter"
-      Instances.FlatCounters.iocVerified
-  , PackagedMRDT.of "pn-counter" Instances.FlatCounters.pnVerified
   , PackagedMRDT.of "flat-grow-only-set"
       Instances.FlatGrowOnly.gosetVerified
   , PackagedMRDT.of "flat-grow-only-map"
@@ -61,7 +58,7 @@ noncomputable def registry : List PackagedMRDT :=
 
 noncomputable def names : List String := registry.map PackagedMRDT.name
 
-example : registry.length = 20 := by rfl
+example : registry.length = 18 := by rfl
 
 #check registry
 #check Instances.LWWRegister.verified

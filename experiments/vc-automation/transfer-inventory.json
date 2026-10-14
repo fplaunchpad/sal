@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "scope": "Current 21 measured automation cases after grow-only-set consolidation and retirement of non-Balegas counters. Historical transfer statuses describe the original transfer experiment; Balegas and the Neem flags are separately checked and unmeasured.",
+  "scope": "Current 19 measured automation cases after grow-only-set consolidation and retirement of non-Balegas bounded counters and consolidation of ordinary signed Counter. Historical transfer statuses describe the original transfer experiment; Balegas and the Neem flags are separately checked and unmeasured.",
   "counts": {
-    "production_registry_entries": 20,
-    "measured_automation_cases": 21,
-    "automation_without_state_dependent_issuance": 10,
+    "production_registry_entries": 18,
+    "measured_automation_cases": 19,
+    "automation_without_state_dependent_issuance": 8,
     "automation_with_state_dependent_issuance": 11,
     "paper_examples_outside_registry": 2,
     "historical_queue_excluded": true
@@ -45,7 +45,7 @@
     {
       "id": "counter",
       "implementation": "Instances.FlatCounters.Counter",
-      "issuance": "Instances.FlatCounters.generation (fun _ => 1)",
+      "issuance": "Instances.FlatCounters.generation Instances.FlatCounters.counterDelta",
       "registry": "public-contracts.json",
       "state_dependent_issuance": false,
       "issuer_evidence": {
@@ -55,38 +55,6 @@
       },
       "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Delta.conditions",
       "transfer_theorem": "NeemExpansion.CommonInstances.counter",
-      "status": "checked-transfer",
-      "transfer_status": "independently-checked-common-interface"
-    },
-    {
-      "id": "increment-only-counter",
-      "implementation": "Instances.FlatCounters.IOC",
-      "issuance": "Instances.FlatCounters.generation (fun _ => 1)",
-      "registry": "public-contracts.json",
-      "state_dependent_issuance": false,
-      "issuer_evidence": {
-        "path": "Sal/MRDTs/Instances/FlatCounters.lean",
-        "declaration": "generation",
-        "predicate": "CanIssue := fun _ _ => True"
-      },
-      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Delta.conditions",
-      "transfer_theorem": "NeemExpansion.CommonInstances.ioc",
-      "status": "checked-transfer",
-      "transfer_status": "independently-checked-common-interface"
-    },
-    {
-      "id": "pn-counter",
-      "implementation": "Instances.FlatCounters.PN",
-      "issuance": "Instances.FlatCounters.generation Instances.FlatCounters.pnDelta",
-      "registry": "public-contracts.json",
-      "state_dependent_issuance": false,
-      "issuer_evidence": {
-        "path": "Sal/MRDTs/Instances/FlatCounters.lean",
-        "declaration": "generation",
-        "predicate": "CanIssue := fun _ _ => True"
-      },
-      "selected_existing_vc_route": "ConcreteMRDT.SimplePorts.Delta.conditions",
-      "transfer_theorem": "NeemExpansion.CommonInstances.pn",
       "status": "checked-transfer",
       "transfer_status": "independently-checked-common-interface"
     },

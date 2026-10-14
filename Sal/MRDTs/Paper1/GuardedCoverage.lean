@@ -89,10 +89,6 @@ noncomputable def inventory : List Entry :=
       (provedScoped Guarded.SimplePorts.finiteAddCertificate)
   , proved "counter" Instances.FlatCounters.counterVerified
       (provedScoped Guarded.SimplePorts.counterCertificate)
-  , proved "increment-only-counter" Instances.FlatCounters.iocVerified
-      (provedScoped Guarded.SimplePorts.iocCertificate)
-  , proved "pn-counter" Instances.FlatCounters.pnVerified
-      (provedScoped Guarded.SimplePorts.pnCertificate)
   , proved "flat-grow-only-set" Instances.FlatGrowOnly.gosetVerified
       (provedScoped Guarded.SimplePorts.booleanSetCertificate)
   , proved "flat-grow-only-map" Instances.FlatGrowOnly.gomapVerified
@@ -133,10 +129,10 @@ theorem every_production_entry (original : PackagedMRDT)
 
 noncomputable def tags : List Tag := inventory.map (fun e => e.disposition.tag)
 
-theorem inventory_length : inventory.length = 20 := rfl
+theorem inventory_length : inventory.length = 18 := rfl
 
 theorem counts :
-    (tags.filter (· == .proved)).length = 12 ∧
+    (tags.filter (· == .proved)).length = 10 ∧
     (tags.filter (· == .blocked)).length = 8 := by decide
 
 /-- Additional exact-paper OR-set; the production registry remains unchanged. -/

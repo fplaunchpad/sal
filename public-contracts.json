@@ -17,21 +17,9 @@
     },
     {
       "id": "counter", "certificate": "Instances.FlatCounters.counterVerified",
-      "implementation": "Instances.FlatCounters.Counter", "issuance": "Instances.FlatCounters.generation (fun _ => 1)",
+      "implementation": "Instances.FlatCounters.Counter", "issuance": "Instances.FlatCounters.generation Instances.FlatCounters.counterDelta",
       "replayOrder": "EventOrder.unconstrained Instances.FlatCounters.Counter.toUpdateSig",
-      "spec": "Instances.FlatCounters.spec (fun _ => 1)", "relation": "Eq"
-    },
-    {
-      "id": "increment-only-counter", "certificate": "Instances.FlatCounters.iocVerified",
-      "implementation": "Instances.FlatCounters.IOC", "issuance": "Instances.FlatCounters.generation (fun _ => 1)",
-      "replayOrder": "EventOrder.unconstrained Instances.FlatCounters.IOC.toUpdateSig",
-      "spec": "Instances.FlatCounters.spec (fun _ => 1)", "relation": "Eq"
-    },
-    {
-      "id": "pn-counter", "certificate": "Instances.FlatCounters.pnVerified",
-      "implementation": "Instances.FlatCounters.PN", "issuance": "Instances.FlatCounters.generation Instances.FlatCounters.pnDelta",
-      "replayOrder": "EventOrder.unconstrained Instances.FlatCounters.PN.toUpdateSig",
-      "spec": "Instances.FlatCounters.spec Instances.FlatCounters.pnDelta", "relation": "Eq"
+      "spec": "Instances.FlatCounters.spec Instances.FlatCounters.counterDelta", "relation": "Eq"
     },
     {
       "id": "flat-grow-only-set", "certificate": "Instances.FlatGrowOnly.gosetVerified",

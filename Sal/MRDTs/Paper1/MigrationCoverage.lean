@@ -63,17 +63,10 @@ noncomputable def inventory : List Entry :=
       ⟨SimpleEventPorts.emptyPolicy Nat, SimpleEventPorts.finiteMachine.toSpec,
         SimpleEventPorts.Finite.laws, SimpleEventPorts.finiteAddCertifiedV⟩
   , compatible "counter" Instances.FlatCounters.counterVerified
-      ⟨SimpleEventPorts.emptyPolicy Unit, (SimpleEventPorts.deltaMachine (fun _ => 1)).toSpec,
-        SimpleEventPorts.Delta.laws (fun _ => 1), SimpleEventPorts.counterCertifiedV⟩
-  , compatible "increment-only-counter" Instances.FlatCounters.iocVerified
-      ⟨SimpleEventPorts.emptyPolicy Instances.FlatCounters.IOCOp,
-        (SimpleEventPorts.deltaMachine (fun _ => 1)).toSpec,
-        SimpleEventPorts.Delta.laws (fun _ => 1), SimpleEventPorts.iocCertifiedV⟩
-  , compatible "pn-counter" Instances.FlatCounters.pnVerified
-      ⟨SimpleEventPorts.emptyPolicy Instances.FlatCounters.PNOp,
-        (SimpleEventPorts.deltaMachine Instances.FlatCounters.pnDelta).toSpec,
-        SimpleEventPorts.Delta.laws Instances.FlatCounters.pnDelta,
-        SimpleEventPorts.pnCertifiedV⟩
+      ⟨SimpleEventPorts.emptyPolicy Instances.FlatCounters.CounterOp,
+        (SimpleEventPorts.deltaMachine Instances.FlatCounters.counterDelta).toSpec,
+        SimpleEventPorts.Delta.laws Instances.FlatCounters.counterDelta,
+        SimpleEventPorts.counterCertifiedV⟩
   , compatible "flat-grow-only-set" Instances.FlatGrowOnly.gosetVerified
       ⟨SimpleEventPorts.emptyPolicy Nat, SimpleEventPorts.booleanMachine.toSpec,
         SimpleEventPorts.Boolean.laws, SimpleEventPorts.booleanSetCertifiedV⟩
@@ -125,7 +118,7 @@ theorem every_production_entry (original : PackagedMRDT)
 noncomputable def count (tag : Tag) : Nat :=
   (inventory.filter (fun e => e.disposition.tag == tag)).length
 
-theorem counts : inventory.length = 20 ∧ count .compatible = 10 ∧
+theorem counts : inventory.length = 18 ∧ count .compatible = 8 ∧
     count .incompatible = 9 ∧ count .excludedLWW = 1 := by
   exact ⟨rfl,rfl,rfl,rfl⟩
 

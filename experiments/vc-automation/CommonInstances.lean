@@ -129,15 +129,9 @@ theorem gset : Raw.MergeVCs (commutingPolicy Nat)
 theorem finiteAdd : Raw.MergeVCs (commutingPolicy Nat)
     (CommutingPort.representation (Instances.FinsetStore.D Nat))
     (CommutingPort.scheme (Instances.FinsetStore.all_comm (α := Nat))) := by mrdt_verify
-theorem counter : Raw.MergeVCs (commutingPolicy Unit)
-    (CommutingPort.representation (Instances.FlatCounters.D Unit (fun _ => 1)))
-    (CommutingPort.scheme (Instances.FlatCounters.all_comm (fun _ : Unit => 1))) := by mrdt_verify
-theorem ioc : Raw.MergeVCs (commutingPolicy Instances.FlatCounters.IOCOp)
-    (CommutingPort.representation (Instances.FlatCounters.D Instances.FlatCounters.IOCOp (fun _ => 1)))
-    (CommutingPort.scheme (Instances.FlatCounters.all_comm (fun _ : Instances.FlatCounters.IOCOp => 1))) := by mrdt_verify
-theorem pn : Raw.MergeVCs (commutingPolicy Instances.FlatCounters.PNOp)
-    (CommutingPort.representation (Instances.FlatCounters.D Instances.FlatCounters.PNOp Instances.FlatCounters.pnDelta))
-    (CommutingPort.scheme (Instances.FlatCounters.all_comm Instances.FlatCounters.pnDelta)) := by mrdt_verify
+theorem counter : Raw.MergeVCs (commutingPolicy Instances.FlatCounters.CounterOp)
+    (CommutingPort.representation (Instances.FlatCounters.D Instances.FlatCounters.CounterOp Instances.FlatCounters.counterDelta))
+    (CommutingPort.scheme (Instances.FlatCounters.all_comm Instances.FlatCounters.counterDelta)) := by mrdt_verify
 theorem booleanSet : Raw.MergeVCs (commutingPolicy Nat)
     (CommutingPort.representation (Instances.FlatGrowOnly.D Nat))
     (CommutingPort.scheme (Instances.FlatGrowOnly.all_comm (A := Nat))) := by mrdt_verify

@@ -3,7 +3,7 @@ import Sal.MRDTs.Paper1.Automation.CommutingAssembly
 import Sal.MRDTs.Paper1.ConcreteCommutingVCReplay
 import Sal.MRDTs.Paper1.SimpleEventPorts
 
-/-! Concrete VC ports of the seven simple production MRDTs. Independent list-based history languages are
+/-! Concrete VC ports of the five simple production MRDTs. Independent list-based history languages are
 reused from SimpleEventPorts. Join and represented-version supply are derived
 through the metadata VC induction, not taken from the old Join certificates. -/
 namespace Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts
@@ -158,13 +158,11 @@ theorem executionsV (trace : List (Label (D delta) × Configuration (D delta)))
   (conditions delta).executionsV trace run
 end Delta
 
-/-- Named ports for seven registry specializations. The grow-only set uses
-generic AddStore directly; counter and IOC have mathematical delta one. -/
+/-- Named ports for five registry specializations. The Counter uses signed
+integer deltas; the grow-only set uses generic AddStore directly. -/
 abbrev gsetConditions := Add.conditions (A := Nat)
 abbrev finiteAddConditions := Finite.conditions (A := Nat)
-abbrev counterConditions := Delta.conditions (A := Unit) (fun _ => 1)
-abbrev iocConditions := Delta.conditions (A := Instances.FlatCounters.IOCOp) (fun _ => 1)
-abbrev pnConditions := Delta.conditions Instances.FlatCounters.pnDelta
+abbrev counterConditions := Delta.conditions Instances.FlatCounters.counterDelta
 abbrev booleanSetConditions := Boolean.conditions (A := Nat)
 abbrev booleanMapConditions := Boolean.conditions (A := Nat × Nat)
 
@@ -172,18 +170,10 @@ abbrev gsetVersions {C : Configuration (Add.D (A := Nat))} := Add.versions (C :=
 abbrev gsetVersionsV {C : Configuration (Add.D (A := Nat))} := Add.versionsV (C := C)
 abbrev finiteAddVersions {C : Configuration (Finite.D (A := Nat))} := Finite.versions (C := C)
 abbrev finiteAddVersionsV {C : Configuration (Finite.D (A := Nat))} := Finite.versionsV (C := C)
-abbrev counterVersions {C : Configuration (Delta.D (A := Unit) (fun _ => 1))} :=
-  Delta.versions (C := C) (fun _ => 1)
-abbrev counterVersionsV {C : Configuration (Delta.D (A := Unit) (fun _ => 1))} :=
-  Delta.versionsV (C := C) (fun _ => 1)
-abbrev iocVersions {C : Configuration (Delta.D (A := Instances.FlatCounters.IOCOp) (fun _ => 1))} :=
-  Delta.versions (C := C) (fun _ => 1)
-abbrev iocVersionsV {C : Configuration (Delta.D (A := Instances.FlatCounters.IOCOp) (fun _ => 1))} :=
-  Delta.versionsV (C := C) (fun _ => 1)
-abbrev pnVersions {C : Configuration (Delta.D Instances.FlatCounters.pnDelta)} :=
-  Delta.versions (C := C) Instances.FlatCounters.pnDelta
-abbrev pnVersionsV {C : Configuration (Delta.D Instances.FlatCounters.pnDelta)} :=
-  Delta.versionsV (C := C) Instances.FlatCounters.pnDelta
+abbrev counterVersions {C : Configuration (Delta.D Instances.FlatCounters.counterDelta)} :=
+  Delta.versions (C := C) Instances.FlatCounters.counterDelta
+abbrev counterVersionsV {C : Configuration (Delta.D Instances.FlatCounters.counterDelta)} :=
+  Delta.versionsV (C := C) Instances.FlatCounters.counterDelta
 abbrev booleanSetVersions {C : Configuration (Boolean.D (A := Nat))} := Boolean.versions (C := C)
 abbrev booleanSetVersionsV {C : Configuration (Boolean.D (A := Nat))} := Boolean.versionsV (C := C)
 abbrev booleanMapVersions {C : Configuration (Boolean.D (A := Nat × Nat))} := Boolean.versions (C := C)
@@ -193,12 +183,8 @@ abbrev gsetExecutions := Add.executions (A := Nat)
 abbrev gsetExecutionsV := Add.executionsV (A := Nat)
 abbrev finiteAddExecutions := Finite.executions (A := Nat)
 abbrev finiteAddExecutionsV := Finite.executionsV (A := Nat)
-abbrev counterExecutions := Delta.executions (A := Unit) (fun _ => 1)
-abbrev counterExecutionsV := Delta.executionsV (A := Unit) (fun _ => 1)
-abbrev iocExecutions := Delta.executions (A := Instances.FlatCounters.IOCOp) (fun _ => 1)
-abbrev iocExecutionsV := Delta.executionsV (A := Instances.FlatCounters.IOCOp) (fun _ => 1)
-abbrev pnExecutions := Delta.executions Instances.FlatCounters.pnDelta
-abbrev pnExecutionsV := Delta.executionsV Instances.FlatCounters.pnDelta
+abbrev counterExecutions := Delta.executions Instances.FlatCounters.counterDelta
+abbrev counterExecutionsV := Delta.executionsV Instances.FlatCounters.counterDelta
 abbrev booleanSetExecutions := Boolean.executions (A := Nat)
 abbrev booleanSetExecutionsV := Boolean.executionsV (A := Nat)
 abbrev booleanMapExecutions := Boolean.executions (A := Nat × Nat)
@@ -208,18 +194,16 @@ abbrev booleanMapExecutionsV := Boolean.executionsV (A := Nat × Nat)
 concrete VC port; acceptance does not consult the implementation state. -/
 abbrev add_control := SimpleEventPorts.add_control
 abbrev finite_add_control := SimpleEventPorts.finite_add_control
-abbrev increment_control := SimpleEventPorts.increment_control
-abbrev pn_control := SimpleEventPorts.pn_control
+abbrev counter_increment_control := SimpleEventPorts.counter_increment_control
+abbrev counter_control := SimpleEventPorts.counter_control
 abbrev boolean_control := SimpleEventPorts.boolean_control
 abbrev immutable_map_control := SimpleEventPorts.immutable_map_control
 
 #print axioms gsetConditions
 #print axioms finiteAddConditions
 #print axioms counterConditions
-#print axioms iocConditions
-#print axioms pnConditions
 #print axioms booleanSetConditions
 #print axioms booleanMapConditions
-#print axioms pnExecutionsV
+#print axioms counterExecutionsV
 end
 end Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts

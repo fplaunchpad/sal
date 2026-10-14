@@ -153,8 +153,6 @@ namespace Sal.MRDTs
 #check (Instances.AddStore.sequential (α := Nat))
 #check (Instances.AddStore.verified (α := Nat))
 #check Instances.FlatCounters.counterVerified
-#check Instances.FlatCounters.iocVerified
-#check Instances.FlatCounters.pnVerified
 #check Instances.FlatGrowOnly.gosetVerified
 #check Instances.FlatGrowOnly.gomapVerified
 #check Instances.LWWRegister.replayOrder

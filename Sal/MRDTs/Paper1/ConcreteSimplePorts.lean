@@ -2,7 +2,7 @@ import Sal.MRDTs.Paper1.SimpleConcretePorts
 import Sal.MRDTs.Paper1.IssuedConcretePorts
 import Sal.MRDTs.Paper1.RGAConcretePort
 
-/-! Twelve positive concrete ports, each retaining its five-VC derivation. -/
+/-! Ten positive concrete ports, each retaining its five-VC derivation. -/
 namespace Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.SimplePorts
 noncomputable section
 open Sal.MRDTs.Paper1.ConcreteMRDT
@@ -21,22 +21,10 @@ abbrev finiteAddExecutions := finiteAddCertificate.executions
 abbrev finiteAddExecutionsV := finiteAddCertificate.executionsV
 
 abbrev counterCertificate := Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.counterConditions.toCertificate
-abbrev counterVersions {C : Configuration (SimplePorts.Delta.D (A := Unit) (fun _ => 1))} := counterCertificate.versions (C := C)
-abbrev counterVersionsV {C : Configuration (SimplePorts.Delta.D (A := Unit) (fun _ => 1))} := counterCertificate.versionsV (C := C)
+abbrev counterVersions {C : Configuration (SimplePorts.Delta.D Instances.FlatCounters.counterDelta)} := counterCertificate.versions (C := C)
+abbrev counterVersionsV {C : Configuration (SimplePorts.Delta.D Instances.FlatCounters.counterDelta)} := counterCertificate.versionsV (C := C)
 abbrev counterExecutions := counterCertificate.executions
 abbrev counterExecutionsV := counterCertificate.executionsV
-
-abbrev iocCertificate := Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.iocConditions.toCertificate
-abbrev iocVersions {C : Configuration (SimplePorts.Delta.D (A := Instances.FlatCounters.IOCOp) (fun _ => 1))} := iocCertificate.versions (C := C)
-abbrev iocVersionsV {C : Configuration (SimplePorts.Delta.D (A := Instances.FlatCounters.IOCOp) (fun _ => 1))} := iocCertificate.versionsV (C := C)
-abbrev iocExecutions := iocCertificate.executions
-abbrev iocExecutionsV := iocCertificate.executionsV
-
-abbrev pnCertificate := Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.pnConditions.toCertificate
-abbrev pnVersions {C : Configuration (SimplePorts.Delta.D Instances.FlatCounters.pnDelta)} := pnCertificate.versions (C := C)
-abbrev pnVersionsV {C : Configuration (SimplePorts.Delta.D Instances.FlatCounters.pnDelta)} := pnCertificate.versionsV (C := C)
-abbrev pnExecutions := pnCertificate.executions
-abbrev pnExecutionsV := pnCertificate.executionsV
 
 abbrev booleanSetCertificate := Sal.MRDTs.Paper1.ConcreteMRDT.SimplePorts.booleanSetConditions.toCertificate
 abbrev booleanSetVersions {C : Configuration (SimplePorts.Boolean.D (A := Nat))} := booleanSetCertificate.versions (C := C)

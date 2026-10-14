@@ -2,9 +2,8 @@ import Sal.MRDTs.Metatheory.Correctness
 
 /-! # Integer-delta MRDT family
 
-Counter, increment-only counter, and PN-counter are instances of one group
-construction.  Sharing the proof makes the production boundary smaller and
-makes explicit that their ternary merge is addition with GCA subtraction.
+The signed Counter uses an integer-delta group construction. Its ternary
+merge is addition with GCA subtraction.
 -/
 
 namespace Sal.MRDTs.Instances.FlatCounters
@@ -118,26 +117,26 @@ noncomputable def verified : VerifiedMRDT (D A delta) where
     (fun ops => (sequential delta).sound ops True.intro)
     (fun _ _ => rfl)
 
-abbrev Counter := D Unit (fun _ => 1)
+inductive CounterOp where | inc | dec deriving DecidableEq
 
-inductive IOCOp where | incr deriving DecidableEq
-abbrev IOC := D IOCOp (fun _ => 1)
-
-inductive PNOp where | inc | dec deriving DecidableEq
-
-def pnDelta : PNOp → Int
+def counterDelta : CounterOp → Int
   | .inc => 1
   | .dec => -1
 
-abbrev PN := D PNOp pnDelta
+abbrev Counter := D CounterOp counterDelta
 
-noncomputable def counterVerified : VerifiedMRDT Counter := verified (fun _ => 1)
-noncomputable def iocVerified : VerifiedMRDT IOC := verified (fun _ => 1)
-noncomputable def pnVerified : VerifiedMRDT PN := verified pnDelta
+noncomputable def counterVerified : VerifiedMRDT Counter := verified counterDelta
+
+/-- Free signed operations: decrement at zero is negative, never clamped. -/
+theorem counter_controls :
+    Counter.update (0 : Int) (1,0,.inc) = (1 : Int) ∧
+    Counter.update (0 : Int) (1,0,.inc) ≠ (0 : Int) ∧
+    Counter.update (0 : Int) (1,0,.dec) = (-1 : Int) ∧
+    Counter.update (0 : Int) (1,0,.dec) ≠ (0 : Int) ∧
+    Counter.update (-1 : Int) (2,0,.inc) = (0 : Int) ∧
+    Counter.update (-1 : Int) (2,0,.dec) = (-2 : Int) := by decide
 
 #print axioms join
 #print axioms counterVerified
-#print axioms iocVerified
-#print axioms pnVerified
 
 end Sal.MRDTs.Instances.FlatCounters

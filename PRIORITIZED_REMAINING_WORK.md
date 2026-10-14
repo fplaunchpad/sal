@@ -10,6 +10,17 @@ sole active bounded counter is the published Balegas matrix/max design.
 
 ## Paper1: specialize the framework to the submission formalism
 
+### Active: one ordinary Counter
+
+Consolidate the former Counter/IOC/PN entries to one unrestricted integer
+increment/decrement Counter, keeping the published bounded counter separate.
+Update active Lean endpoints, registries, automation inputs, reference PDFs and
+Site; preserve historical measurement snapshots and unrelated GC work. Independent review and the final release gate passed: 3,694 Lean jobs,
+18 exact public contracts, 187 runtime tests and 569 benchmark records.
+The reference checks 131 declarations; both changed PDF pages were inspected.
+Site content has 20 grouped entries and 946 valid equations; publication
+follows the code commit.
+
 ### Checked: natural sequential specifications and client bridges
 
 The campaign covers all retained datatype families. Its evidence table is
@@ -100,8 +111,9 @@ of 125 changed Lean files found only identifier/comment changes.
 - [x] Reconcile submission coverage claims across README, formal reference and Site.
 - [x] Run final gates, commit and push completed work without unrelated GC edits.
 
-The current retained automation inventory has 21 cases, 85 proof/audit roots,
-and 61 public endpoints. The published bounded counter is checked separately
+At this campaign checkpoint the retained automation inventory had 21 cases,
+85 proof/audit roots and 61 public endpoints. The current Counter consolidation
+removes two duplicate cases; its active inventory is recorded above. The published bounded counter is checked separately
 and is not measured in the archived author-cost corpus. Historical campaign
 measurements below describe their original checkpoint.
 Final repository gate passed on 13 October: 3,648 Lean build jobs, 187 runtime

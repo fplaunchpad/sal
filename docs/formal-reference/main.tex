@@ -2220,21 +2220,17 @@ stored member is part of the monotone semantic value under the current
 signature; a stronger result would have to prove a representation quotient
 or state formally that no internal metadata is reclaimable.
 
-\paragraph{Counters.}
-This profile covers the released counter, increment-only-counter, and
-pn-counter entries.
+\paragraph{Counter.}
+The single released ordinary Counter supports unrestricted increment and decrement.
 
-\emph{Datatype $D$.} Counter has one operation, the unit value $()$, meaning
-increment; increment-only counter names that operation $\mathsf{incr}$.
-PN-counter has operations $\mathsf{inc}$ and $\mathsf{dec}$.
+\emph{Datatype $D$.} Its operations are $\mathsf{inc}$ and $\mathsf{dec}$.
 For the family parameterized by $\delta:O\to\mathbb Z$,
 \[
  \State=\mathbb Z,\qquad
  \doop(s,e)=s+\delta(e.\mathsf{op}),\qquad
  \merge(l,a,b)=a+b-l.
 \]
-Counter and increment-only counter have $\delta=1$; PN-counter has
-$\delta(\mathsf{inc})=1$ and $\delta(\mathsf{dec})=-1$.
+Here $\delta(\mathsf{inc})=1$ and $\delta(\mathsf{dec})=-1$.
 Concrete state starts at zero and its query is identity.
 
 \emph{Replay-order relation $ord$.} $\forall a,b.\;\neg(a\ord b)$.
@@ -2248,15 +2244,15 @@ Concrete state starts at zero and its query is identity.
  \mathsf{query}_{\rm seq}(q,\mathsf{rd})=q.
 \]
 Here $\mathsf{Legal}(\ell)\Longleftrightarrow\mathsf{True}$ and
-$\mathsf{Rel}(s,q)\Longleftrightarrow s=q$. PN-counter decrement is
+$\mathsf{Rel}(s,q)\Longleftrightarrow s=q$. Counter decrement is
 unrestricted, including at zero; its result may be negative.
 \anchor{Sal/MRDTs/Instances/FlatCounters.lean}
   {FlatCounters.D, FlatCounters.generation, FlatCounters.spec,
    FlatCounters.verified}
 
-\emph{Datatype-state collection.} The integer counter, increment-only counter, and PN-counter
-also carry exact-state certificates.  Their states are already aggregates,
-not replay logs: one integer for each counter.  Removing a component would
+\emph{Datatype-state collection.} The integer counter
+also carries an exact-state certificate. Its state is already an aggregate,
+not a replay log: one integer.  Removing a component would
 need an explicit replica-retirement or coordinate-normalization protocol;
 none is part of the released semantics.
 

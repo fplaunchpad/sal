@@ -25,9 +25,9 @@ seen = set()
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--transfer', action='store_true', help='Check all Track A instances')
 parser.add_argument('--certified', action='store_true', help='Also check the certified RGA-family routes')
-parser.add_argument('--automated', action='store_true', help='Use reusable templates for both OR-sets, MVR and RGA in the 21-case audit')
-parser.add_argument('--common', action='store_true', help='Check all 21 through the common declarative verification interface')
-parser.add_argument('--all', action='store_true', help='Check all 21 current named cases')
+parser.add_argument('--automated', action='store_true', help='Use reusable templates for both OR-sets, MVR and RGA in the 19-case audit')
+parser.add_argument('--common', action='store_true', help='Check all 19 through the common declarative verification interface')
+parser.add_argument('--all', action='store_true', help='Check all 19 current named cases')
 args = parser.parse_args()
 if args.common:
     # The current interface is production; all other flags retain historical
@@ -91,7 +91,7 @@ for name in order:
 theorems = ['NeemExpansion.Exact.expanded_vcs', 'NeemExpansion.Efficient.expanded_vcs']
 if args.transfer:
     theorems += ['NeemExpansion.TransferSimple.' + name for name in
-                 ['gset', 'finiteAdd', 'counter', 'ioc', 'pn', 'booleanSet', 'booleanMap']]
+                 ['gset', 'finiteAdd', 'counter', 'booleanSet', 'booleanMap']]
     theorems += ['NeemExpansion.TransferLWW.expanded_vcs']
 audit = 'import ' + module + '\n' + (HERE / 'Audit.lean').read_text()
 if args.certified:
@@ -125,15 +125,15 @@ if args.automated:
 if args.common:
     audit = 'import CommonInstances\nimport AutomatedCore\nimport AutomatedFugue\n' + audit
     common_names = ['ordinaryORSet', 'efficientORSet', 'gset', 'finiteAdd',
-                    'counter', 'ioc', 'pn', 'booleanSet', 'booleanMap', 'lww', 'sided',
+                    'counter', 'booleanSet', 'booleanMap', 'lww', 'sided',
                     'nativeRGA', None, None, 'embedded', 'anchored_queue', 'peritext',
                     None, 'tree', 'aegis', 'mvr']
     assert len(common_names) == len(theorems)
     theorems = ['NeemExpansion.CommonInstances.' + n if n is not None else t
                 for n, t in zip(common_names, theorems)]
-    for i, name in {12: 'NeemExpansion.AutomatedCore.automated_vcs',
-                    13: 'NeemExpansion.AutomatedCore.rich_automated_vcs',
-                    17: 'NeemExpansion.AutomatedFugue.automated_vcs'}.items():
+    for i, name in {10: 'NeemExpansion.AutomatedCore.automated_vcs',
+                    11: 'NeemExpansion.AutomatedCore.rich_automated_vcs',
+                    15: 'NeemExpansion.AutomatedFugue.automated_vcs'}.items():
         theorems[i] = name
 audit += '\n' + '\n'.join('audit_vc ' + t for t in theorems) + '\n'
 audit += '\n'.join(f'audit_vc_contract {t} against {r}'

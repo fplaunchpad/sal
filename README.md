@@ -48,16 +48,17 @@ for distinct operation payloads, plus equal-payload self-commutation.
 [`SplitPolicy.lean`](Sal/MRDTs/Paper1/SplitPolicy.lean) proves equivalence with the
 combined laws on the same raw, represented-ready and invariant domains.
 [`SplitCertificates.lean`](Sal/MRDTs/Paper1/SplitCertificates.lean) exposes the
-21 existing cases through the split interfaces. FugueMax's new natural-history
+19 existing cases through the split interfaces. FugueMax's new natural-history
 certificate in `FugueMaxNaturalCertificate.lean` closes its former remaining
 sequential-bridge gap on the existing invariant domain.
 The dependency audit requires the five-VC verifier, merge induction and split
 laws; it does not count aliases as independent implementations.
 
 The [five-VC automation interface](experiments/vc-automation/README.md)
-now supplies the production proofs for all 21 current named cases through
-the common `mrdt_verify` command. The named inventory includes anchored Queue
-and representation variants; it differs from the 20-package production registry.
+now supplies the production proofs for all 19 current named cases through
+the common `mrdt_verify` command. Counter now means the single integer increment/decrement implementation;
+increment-only duplicates have been removed. The named inventory includes anchored Queue
+and representation variants; it differs from the 18-package production registry.
 Registered inputs supply finite laws, datatype mappings and existing execution
 or issuance evidence. For both OR-sets, `derive_mrdt_input` constructs that input
 from proof-free annotations: `PolicyData` records the event comparison;

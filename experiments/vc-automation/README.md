@@ -8,19 +8,22 @@ directory contains the production audit tooling and effort reports.
 
 The migration preserves implementations, issuers, operation policies,
 representations, execution contracts and existing theorem statements. The current
-21 implementation/proof cases consolidate the grow-only set and generic AddStore
-into one entry. Counts describe proof configurations, not distinct abstract
+19 implementation/proof cases consolidate the grow-only set and generic AddStore
+into one entry and consolidate the ordinary counter to unrestricted
+increment/decrement (the former PN case). The two increment-only duplicates
+are removed. Counts describe proof configurations, not distinct abstract
 datatypes: FinsetStore and the pointwise Boolean FlatGrowOnly set implement the
 same grow-only set semantics. FinsetStore remains the enumerable carrier needed
 by Peritext. Queue means anchored enqueue;
 the historical unanchored queue is excluded. Core/RichCore retain native
 insert-only issuance. Fugue’s represented-version result uses the common VCs;
-its original issuer and independent sequential specification have a checked
-specification-visibility obstruction. The 21-case automation inventory is distinct
-from the 20-package production registry; the latter retains the historical queue.
+its original issuer now has a complete natural-origin sequential certificate
+in `FugueMaxNaturalCertificate`. The former live-parent language remains
+refuted; historical effort reports do not measure the new bridge. The 19-case automation inventory is distinct
+from the 18-package production registry; the latter retains the historical queue.
 
 Kartik's split policy interfaces are integrated and checked for these same
-21 retained cases, with the original event/state scopes and five-VC dependencies.
+19 retained cases, with the original event/state scopes and five-VC dependencies.
 The published Balegas matrix/max counter is the sole bounded-counter algorithm
 in production. Its checked five-VC, sequential-history, local-safety and
 global-union proofs live in
@@ -35,7 +38,7 @@ the retired independent-account implementation, not Balegas.
 The JSON/log reports in `results/` and the baseline directories retain fixed
 historical measurements. Their old case inventories and source hashes do not
 assert current source coverage. [Historical measurement provenance](results/historical-measurements.json)
-records this boundary. The active audit script selects 21 retained cases;
+records this boundary. The active audit script selects 19 retained cases;
 [`transfer-inventory.json`](transfer-inventory.json) records that current selection.
 No historical effort totals have been relabelled as measurements of Balegas.
 
@@ -151,7 +154,7 @@ proof routes. Its VC evidence closures are extracted from the actual submitted
 sequential-history fields in certificate bundles.
 
 [`results/production-effort.json`](results/production-effort.json) measures
-current RDT-specific proof code. The main total includes the finite inputs,
+RDT-specific proof code at its recorded source snapshot. The main total includes the finite inputs,
 annotations, automation calls, and all required datatype helper proofs already
 present in the repository. Compatibility helper statements retained solely to
 preserve the public API are excluded when the production input bypasses them;
@@ -175,16 +178,14 @@ Per-case totals overlap because instances share helpers, so do not sum the rows.
 
 The recorded effort audit before consolidation covered **23 named cases,
 69 distinct public endpoints and 95 existing production roots**. Its JSON reports
-retain that historical inventory. The current audit scripts check 21 cases; the
+retain that historical inventory. The current audit scripts check 19 cases; the
 grow-only set keeps the original five-VC and sequential-bridge checks.
 
 | Instance | Before automation (lines) | With automation (lines) |
 |---|---:|---:|
 | Grow-only set | 40 | 12 |
 | Finite add-store | 28 | 12 |
-| Counter | 49 | 14 |
-| Increment-only counter | 49 | 14 |
-| PN-counter | 49 | 14 |
+| Counter (former PN row) | 49 | 14 |
 | Flat grow-only set | 45 | 13 |
 | Flat grow-only map | 45 | 13 |
 | LWW register | 32 | 14 |
@@ -340,7 +341,8 @@ substantial reduction: the generic template owns history induction and the
 filter projection, while ordered-chain insertion adjacency and
 execution/issuance legal-history selection retain substantial concrete proofs.
 Both its acceptance and visibility paths exclude the old `embed_seq_sound`.
-Fugue's sequential-specification obstruction remains unchanged.
+Fugue's former live-parent specification remains refuted. Its new natural-origin
+bridge is checked but is not measured by this historical experiment.
 
 The [baseline closure and measurement](bridge-baseline/measurement-052b8fb.json),
 [baseline provenance and 23-case bridge inventory](bridge-baseline/production-audit-052b8fb.json),
@@ -382,7 +384,7 @@ for the natural-specification campaign.
 |---|---:|---:|---|
 | Grow-only set (`AddStore`) | 9 | 26 | Direct update simulation |
 | Finite AddStore | 5 | 22 | Direct update simulation |
-| Counter / increment-only / PN | 10 | 27 | Arithmetic update simulation |
+| Counter (former PN) | 10 | 27 | Arithmetic update simulation; historical measurement |
 | Flat grow-only set / map | 7 | 24 | Pointwise update simulation |
 | LWW register | 744 | 829 | Legal ordering and last-write observation |
 | Native RGA | 1,494 | 1,693 | Ordered replay and reference validity |
@@ -396,7 +398,7 @@ for the natural-specification campaign.
 | Sided Peritext Core | 3,576 | 3,933 | Text/product refinement and history legality |
 | Sided Peritext RichCore | 3,622 | 4,107 | Core refinement and query transport |
 | Anchored Queue | 503 | 624 | Scheduling a legal queue history |
-| Fugue | — | — | Checked obstruction; no sequential bridge |
+| FugueMax | — | — | Natural-origin bridge checked; not measured in this experiment |
 
 The first numeric column uses an explicit proof/descriptor classifier. The
 second includes **every concrete declaration kind**, including implementation
@@ -470,7 +472,7 @@ automatic sequential-bridge derivation.
 
 Controls check births, fresh and duplicate keys, absent births, unsupported
 origins, invalid downward transport and nonmonotone predicates. Existing
-nonempty RGA traces, illegal-origin controls and Fugue's genuine obstruction
+nonempty RGA traces, illegal-origin controls and Fugue's rejected live-parent language
 remain checked. Trusted model definitions are unchanged; these proof refactors
 do not constitute a new external validation of the source algorithms. The audit
 preserves 484 existing declarations, with two reviewed sound-only certificate

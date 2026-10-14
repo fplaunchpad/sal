@@ -87,7 +87,7 @@ active text.
    **Reference:** Definition 3.4 and Theorem 5.7.
 
 7. **Fill implementation/evaluation with the actual coverage.** Report
-   the 21 retained automation proof configurations separately from distinct
+   the 19 retained automation proof configurations separately from distinct
    ADTs and runtime packages. FugueMax now has a complete natural-origin
    history certificate through the five VCs, including recursive executions;
    only its former live-parent specification remains refuted. The earlier
@@ -97,10 +97,10 @@ active text.
    correcting that report's stale Fugue status before quoting it. The published
    bounded counter and two source flags have checked certificates outside
    the measured automation corpus. Do not sum these counts as distinct ADTs.
-   For presentation, group the three flat counters into one counter-family row:
-   `Counter` and increment-only are duplicates up to operation renaming; PN
-   adds decrement but uses the same implementation/proof family. Keep the
-   bounded escrow counter separate. This does not relabel historical measurements.
+   The active ordinary Counter now supports unrestricted increment/decrement;
+   the two increment-only duplicates have been removed. Use one Counter row
+   and keep the bounded escrow counter separate. This does not relabel
+   historical measurements.
    The published **Balegas et al., SRDS 2015, §III-B/Figure 1** design now has
    a checked five-VC and independent history bridge for ordinary and recursive
    merges. It uses a sender–recipient matrix `R`, decrement vector `U`,

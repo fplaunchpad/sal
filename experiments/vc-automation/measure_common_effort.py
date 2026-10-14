@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure the current production five-VC source footprint for 21 named cases.
+"""Measure the current production five-VC source footprint for 19 named cases.
 
 Counts source-written declarations and registrations, not human effort.
 Per-case closures overlap; only deduplicated campaign totals are summable.
@@ -66,7 +66,7 @@ audit = json.loads(args.audit.read_text())
 for filename, expected in audit['source_sha256'].items():
     path = ROOT / filename
     assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, f'Stale production audit: {path}'
-assert len(audit['cases']) == 21, f"Expected 21 production cases, got {len(audit['cases'])}"
+assert len(audit['cases']) == 19, f"Expected 19 production cases, got {len(audit['cases'])}"
 locations, roots = audit['declaration_sources'], audit['roots']
 vc_names = {root for case in audit['cases'] for root in case['vc_roots']}
 evidence = audit['vc_evidence_closures']
