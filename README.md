@@ -40,9 +40,11 @@ Valid bounded insert/split/delete requests and create requests with an existing
 predecessor issue successfully. Fresh text cannot inherit earlier pending
 tombstones. Every typed core transaction now simulates its atomic independent
 command group, and the actual reconstructed answer is admitted by that same
-ordered sequential history. Honest insertion and bounded deletion have their requested effects through
-issuance and reconstruction.
-Local split effects, source wire/search-label correspondence, and the Sal event
+ordered sequential history. This history theorem also covers arbitrary
+causally closed versions of one honest archive. Honest insertion, bounded
+deletion and splitting have their requested effects through issuance and
+reconstruction.
+Source wire/search-label correspondence and the Sal event
 witness with RA ordering remain open. Existing five-VC results certify
 transaction storage only.
 This research branch is outside the verified datatype registry and makes no

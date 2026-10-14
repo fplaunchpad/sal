@@ -273,53 +273,178 @@ private theorem canonical_bootstrap_step (network : NotionCorePayloadNetwork.Sta
   intro name
   simpa [rootCreatedBlocks,payload,blockName,eq_comm] using root_frame_active state next 0 forest name
 
-/-- Every canonical chronological prefix executes from the empty actual
-machine. Root-provider provenance supplies every selected active instance;
-none of acceptance, partition, shape, or active coverage is assumed for the
-prefix being proved. -/
-theorem canonical_prefix_reconstruct (network : NotionCorePayloadNetwork.State)
+/-! Archive-general closed-version replay. -/
+theorem canonical_insert_nonempty_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (tx : Transaction) (member : tx ∈ NotionCoreReconstruction.transactionsFor network version)
+    (block inst : BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
+    (payload : tx.payload = .insert block inst origin atoms) : atoms ≠ [] := by
+  obtain ⟨entry,present,same,_⟩ := NotionCoreReconstruction.transactionsFor_received network version tx member
+  have emits := archived_emits network (NotionCoreCreatorNetwork.payload_reachable reachable) entry present
+  rw [same,payload] at emits
+  simpa [NotionCorePayload.Payload.emits] using emits
+
+private theorem selected_active_version (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
-    (peer : NotionRunAllocation.Session) (pre suffix : List Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ suffix) :
+    (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version) (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (prior : RootActive pre state) (inst : BlockKey)
+    (selected : inst ∈ NotionCoreRootCreators.selectedInstances tx.payload) :
+    ActiveInstance state (blockName inst) := by
+  obtain ⟨provider,member,root,_⟩ := NotionCoreRootCreators.canonical_selected_root_provider_version
+    network reachable roots version closed pre suffix tx position inst selected
+  exact (prior _).mpr ⟨provider,member,inst,root,rfl⟩
+
+theorem canonical_ordinary_step_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
+    (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version) (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (part : Partitioned state) (shape : ShapeInvariant state) (rootActive : RootActive pre state)
+    (ordinary : ∀ atoms, tx.payload ≠ .bootstrap atoms) :
+    ∃ next, applyTransaction state tx = some next ∧ Partitioned next ∧ ShapeInvariant next ∧
+      RootActive (pre ++ [tx]) next := by
+  cases payload : tx.payload with
+  | bootstrap atoms => exact False.elim (ordinary atoms payload)
+  | create afterBlock =>
+    obtain ⟨next,step,nextPart,_,_⟩ := NotionCoreMachineCanonicalCreate.canonical_create_phase_version
+      network reachable version closed pre suffix tx position state accepted part afterBlock
+    obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh_version
+      network reachable version closed pre suffix tx position state accepted
+    have nextShape := fresh_create_shape_preserves state next (.issued tx.id) afterBlock
+      shape freshInstance freshBlock step
+    have active := create_active_exact state next (.issued tx.id) afterBlock freshInstance freshBlock step
+    refine ⟨next,by simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations] using step,
+      nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
+    intro name
+    simpa [rootCreatedBlocks,payload,eq_comm] using active name
+  | insert block inst origin atoms =>
+    have selected := selected_active_version network reachable roots version closed pre suffix tx position state rootActive inst
+      (by simp [NotionCoreRootCreators.selectedInstances,payload])
+    have nonempty := canonical_insert_nonempty_version network reachable version tx
+      (position ▸ List.mem_append_right pre (by simp)) block inst origin atoms payload
+    obtain ⟨next,step,nextPart⟩ := NotionCoreMachinePartitionUpdates.canonical_insert_partitioned_version
+      network reachable version closed pre suffix tx position state accepted part block inst origin atoms payload nonempty
+    have operation : applyOperation state (.insert block inst tx.id origin atoms) = some next := by
+      simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations] using step
+    obtain ⟨nextShape,active⟩ := insert_shape_active state next block inst tx.id origin atoms shape selected operation
+    refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
+    intro name
+    simpa [rootCreatedBlocks,payload] using active name
+  | erase block inst targets =>
+    obtain ⟨next,step,nextPart⟩ := NotionCoreMachinePartitionUpdates.canonical_erase_partitioned_version
+      network reachable version closed pre suffix tx position state accepted part block inst targets payload
+    have operation : applyOperation state (.erase block inst targets) = some next := by
+      simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations] using step
+    obtain ⟨nextShape,active⟩ := erase_shape_active state next block inst targets shape operation
+    refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
+    intro name
+    simpa [rootCreatedBlocks,payload] using active name
+  | split block inst origin =>
+    have selected := selected_active_version network reachable roots version closed pre suffix tx position state rootActive inst
+      (by simp [NotionCoreRootCreators.selectedInstances,payload])
+    obtain ⟨next,step,nextPart,nextShape,active⟩ := NotionCoreMachineCanonicalSplit.canonical_split_preserves_active_version
+      network reachable version closed pre suffix tx position state accepted part shape block inst origin payload selected
+    refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
+    intro name
+    simpa [rootCreatedBlocks,payload] using active name
+
+private theorem canonical_bootstrap_step_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (part : Partitioned state) (shape : ShapeInvariant state) (rootActive : RootActive pre state)
+    (atoms : List Nat) (payload : tx.payload = .bootstrap atoms) :
+    ∃ next, applyTransaction state tx = some next ∧ Partitioned next ∧ ShapeInvariant next ∧
+      RootActive (pre ++ [tx]) next := by
+  have same := NotionCoreBootstrapProvenance.canonical_bootstrap_transaction_version
+    network reachable version pre suffix tx position atoms payload
+  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreBootstrapProvenance.canonical_bootstrap_fresh_version
+    network reachable version closed pre suffix tx position atoms payload state accepted
+  obtain ⟨next,step,nextPart,forest,other⟩ := NotionCoreMachineBootstrap.fresh_bootstrap_preserves
+    state atoms part freshInstance freshBlock
+  have fresh : 0 ∉ state.forest.map NotionCoreSliceForest.Block.id := by
+    intro member
+    obtain ⟨old,present,equal⟩ := List.mem_map.mp member
+    exact freshBlock old present equal
+  refine ⟨next,by simpa only [same] using step,nextPart,
+    fresh_root_frame_shape state next 0 shape fresh forest other,
+    extend_roots pre tx state next rootActive ?_⟩
+  intro name
+  simpa [rootCreatedBlocks,payload,blockName,eq_comm] using root_frame_active state next 0 forest name
+
+theorem canonical_prefix_reconstruct_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
+    (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version) (pre suffix : List Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ suffix) :
     ∃ state, replay {} pre = some state ∧ Partitioned state ∧ ShapeInvariant state ∧ RootActive pre state := by
   induction pre using List.reverseRecOn generalizing suffix with
   | nil =>
     exact ⟨{},rfl,NotionCoreMachinePartition.initial_partitioned,initial_shape,by simp [RootActive,ActiveInstance]⟩
   | append_singleton pre tx ih =>
-    have located : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix := by
+    have located : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix := by
       simpa only [List.append_assoc,List.singleton_append] using position
     obtain ⟨state,accepted,part,shape,rootActive⟩ := ih (tx :: suffix) located
     have nextStep : ∃ next, applyTransaction state tx = some next ∧ Partitioned next ∧
         ShapeInvariant next ∧ RootActive (pre ++ [tx]) next := by
       cases payload : tx.payload with
       | bootstrap atoms =>
-        exact canonical_bootstrap_step network reachable peer pre suffix tx located
+        exact canonical_bootstrap_step_version network reachable version closed pre suffix tx located
           state accepted part shape rootActive atoms payload
       | create afterBlock =>
-        exact canonical_ordinary_step network reachable roots peer pre suffix tx located
+        exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro atoms; simp [payload])
       | insert block inst origin atoms =>
-        exact canonical_ordinary_step network reachable roots peer pre suffix tx located
+        exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro other; simp [payload])
       | erase block inst targets =>
-        exact canonical_ordinary_step network reachable roots peer pre suffix tx located
+        exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro atoms; simp [payload])
       | split block inst origin =>
-        exact canonical_ordinary_step network reachable roots peer pre suffix tx located
+        exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro atoms; simp [payload])
     obtain ⟨next,step,nextPart,nextShape,nextRoots⟩ := nextStep
     refine ⟨next,?_,nextPart,nextShape,nextRoots⟩
     simp [replay_append,accepted,replay,step,Bind.bind,Option.bind]
 
-/-- Complete reconstruction and its exact root set follow for every peer
-under creator-aware admission plus the typed archive root-provenance property. -/
+/-- Whole closed-version execution, including recursively constructed
+virtual merge-base versions of this same archive. -/
+theorem reconstruct_version_invariant (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
+    (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version) :
+    ∃ state, replay {} (NotionCoreReconstruction.transactionsFor network version) = some state ∧
+      Partitioned state ∧ ShapeInvariant state ∧
+      RootActive (NotionCoreReconstruction.transactionsFor network version) state :=
+  canonical_prefix_reconstruct_version network reachable roots version closed _ [] (by simp)
+
+#print axioms canonical_prefix_reconstruct_version
+#print axioms reconstruct_version_invariant
+/-- Peer replay is a specialization of the same closed archive-prefix
+induction; no separate peer-only progress argument is needed. -/
+theorem canonical_prefix_reconstruct (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
+    (peer : NotionRunAllocation.Session) (pre suffix : List Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ suffix) :
+    ∃ state, replay {} pre = some state ∧ Partitioned state ∧ ShapeInvariant state ∧ RootActive pre state :=
+  canonical_prefix_reconstruct_version network reachable roots _
+    (NotionCoreIssuance.peers_closed
+      (NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)) peer)
+    pre suffix position
+
+/-- Complete peer reconstruction retains the existing API. -/
 theorem reconstruct_invariant (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
     (peer : NotionRunAllocation.Session) :
     ∃ state, NotionCoreReconstruction.reconstruct network peer = some state ∧
       Partitioned state ∧ ShapeInvariant state ∧
-      RootActive (NotionCoreReconstruction.transactions network peer) state := by
-  exact canonical_prefix_reconstruct network reachable roots peer _ [] (by simp)
+      RootActive (NotionCoreReconstruction.transactions network peer) state :=
+  canonical_prefix_reconstruct network reachable roots peer _ [] (by simp)
 
 #print axioms canonical_prefix_reconstruct
 #print axioms reconstruct_invariant

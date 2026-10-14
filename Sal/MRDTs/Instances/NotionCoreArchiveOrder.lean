@@ -19,20 +19,20 @@ open NotionCoreReconstruction
   rw [← NotionCoreIssuance.record_runs issued] at unique
   simpa [forget, Entry.record, record, reservation, List.map_map, Function.comp_def] using unique
 
-theorem canonical_prefix_transactions_perm (network : State) (reachable : Reach network)
-    (peer : Session) (pre suffix : List Transaction)
-    (position : transactions network peer = pre ++ suffix) :
+theorem version_prefix_transactions_perm (network : State) (reachable : Reach network)
+    (version : List Run) (pre suffix : List Transaction)
+    (position : transactionsFor network version = pre ++ suffix) :
     pre.Perm ((network.entries.map Entry.tx).filter (fun tx => reservation tx ∈ pre.map reservation)) := by
   let archived := network.entries.map Entry.tx
   have unique : (archived.map Transaction.id).Nodup := archive_keys_unique network reachable
   have preArchived : ∀ tx ∈ pre, tx ∈ archived := by
     intro tx member
-    have inReplay : tx ∈ transactions network peer := position ▸ List.mem_append_left suffix member
-    obtain ⟨⟨entry,present,same⟩,_⟩ := (transactions_membership network peer tx).mp inReplay
+    have inReplay : tx ∈ transactionsFor network version := position ▸ List.mem_append_left suffix member
+    obtain ⟨⟨entry,present,same⟩,_⟩ := (transactionsFor_membership network version tx).mp inReplay
     exact List.mem_map.mpr ⟨entry,present,same⟩
-  have replayUnique : ((transactions network peer).map Transaction.id).Nodup := by
+  have replayUnique : ((transactionsFor network version).map Transaction.id).Nodup := by
     have perm := (List.mergeSort_perm
-      ((network.entries.map Entry.tx).filter (fun tx => reservation tx ∈ (network.allocation.peers peer).received))
+      ((network.entries.map Entry.tx).filter (fun tx => reservation tx ∈ version))
       (fun a b => decide (Ascending a b))).map Transaction.id
     exact perm.nodup_iff.mpr ((List.filter_sublist).map Transaction.id |>.nodup unique)
   have preUnique : pre.Nodup := List.Nodup.of_map Transaction.id
@@ -52,24 +52,24 @@ theorem canonical_prefix_transactions_perm (network : State) (reachable : Reach 
     have equal := List.inj_on_of_nodup_map unique (preArchived previous inPre) present idSame
     exact equal ▸ inPre
 
-theorem canonical_prefix_rows_perm (network : State) (reachable : Reach network)
-    (peer : Session) (pre suffix : List Transaction)
-    (position : transactions network peer = pre ++ suffix) (inst : BlockKey)
+theorem version_prefix_rows_perm (network : State) (reachable : Reach network)
+    (version : List Run) (pre suffix : List Transaction)
+    (position : transactionsFor network version = pre ++ suffix) (inst : BlockKey)
     (deleted : BlockKey → NotionRunAllocation.Id → Bool) :
     (pre.flatMap (fun tx => NotionCoreMachinePrefix.transactionRows tx inst deleted)).Perm
       (NotionCorePayloadParents.prefixRows network.entries (pre.map reservation) inst deleted) := by
-  have perm := (canonical_prefix_transactions_perm network reachable peer pre suffix position).flatMap_right
+  have perm := (version_prefix_transactions_perm network reachable version pre suffix position).flatMap_right
     (fun tx => NotionCoreMachinePrefix.transactionRows tx inst deleted)
   simpa only [NotionCorePayloadParents.prefixRows, NotionCoreMachinePrefix.transactionRows,
     List.filter_map, List.flatMap_map, Function.comp_def] using perm
 
 /-- Canonical birth IDs are globally unique, even across different instances. -/
-theorem canonical_prefix_birth_ids_unique (network : State) (reachable : Reach network)
-    (peer : Session) (pre suffix : List Transaction)
-    (position : transactions network peer = pre ++ suffix)
+theorem version_prefix_birth_ids_unique (network : State) (reachable : Reach network)
+    (version : List Run) (pre suffix : List Transaction)
+    (position : transactionsFor network version = pre ++ suffix)
     (deleted : BlockKey → NotionRunAllocation.Id → Bool) :
     (pre.flatMap (fun tx => (births tx deleted).map birthId)).Nodup := by
-  have perm := (canonical_prefix_transactions_perm network reachable peer pre suffix position).flatMap_right
+  have perm := (version_prefix_transactions_perm network reachable version pre suffix position).flatMap_right
     (fun tx => (births tx deleted).map birthId)
   have subset :
       (((network.entries.map Entry.tx).filter (fun tx => reservation tx ∈ pre.map reservation)).flatMap
@@ -80,6 +80,30 @@ theorem canonical_prefix_birth_ids_unique (network : State) (reachable : Reach n
         (l := network.entries.map Entry.tx)).flatMap (fun tx => (births tx deleted).map birthId)
   exact perm.nodup_iff.mpr (subset.nodup (NotionCoreReplayGraph.all_births_unique reachable deleted))
 
+theorem canonical_prefix_transactions_perm (network : State) (reachable : Reach network)
+    (peer : Session) (pre suffix : List Transaction)
+    (position : transactions network peer = pre ++ suffix) :
+    pre.Perm ((network.entries.map Entry.tx).filter (fun tx => reservation tx ∈ pre.map reservation)) :=
+  version_prefix_transactions_perm network reachable _ pre suffix position
+
+theorem canonical_prefix_rows_perm (network : State) (reachable : Reach network)
+    (peer : Session) (pre suffix : List Transaction)
+    (position : transactions network peer = pre ++ suffix) (inst : BlockKey)
+    (deleted : BlockKey → NotionRunAllocation.Id → Bool) :
+    (pre.flatMap (fun tx => NotionCoreMachinePrefix.transactionRows tx inst deleted)).Perm
+      (NotionCorePayloadParents.prefixRows network.entries (pre.map reservation) inst deleted) :=
+  version_prefix_rows_perm network reachable _ pre suffix position inst deleted
+
+theorem canonical_prefix_birth_ids_unique (network : State) (reachable : Reach network)
+    (peer : Session) (pre suffix : List Transaction)
+    (position : transactions network peer = pre ++ suffix)
+    (deleted : BlockKey → NotionRunAllocation.Id → Bool) :
+    (pre.flatMap (fun tx => (births tx deleted).map birthId)).Nodup :=
+  version_prefix_birth_ids_unique network reachable _ pre suffix position deleted
+
+#print axioms version_prefix_transactions_perm
+#print axioms version_prefix_rows_perm
+#print axioms version_prefix_birth_ids_unique
 #print axioms canonical_prefix_rows_perm
 #print axioms canonical_prefix_birth_ids_unique
 end Sal.MRDTs.Instances.NotionCoreArchiveOrder

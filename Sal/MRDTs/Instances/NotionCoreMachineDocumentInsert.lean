@@ -466,10 +466,11 @@ private theorem replay_append (state : State) (a b : List NotionCorePayload.Tran
 /-- Honest canonical insertion executes and simulates the independent source
 insert with statically live fresh text. All freshness, physical/spatial frames,
 active-origin availability and next uniqueness are derived. -/
-theorem canonical_insert_source_step (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+theorem canonical_insert_source_step_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closedVersion : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state)
     (document : NotionCoreSourceDocument.Document)
     (old : NotionCoreMachineDocument.materializeDocument state = some document)
@@ -484,18 +485,18 @@ theorem canonical_insert_source_step (network : NotionCorePayloadNetwork.State)
   have creators := NotionCoreMachineNetwork.creator_reachable reachable
   have networkReach := NotionCoreCreatorNetwork.payload_reachable creators
   obtain ⟨checked,checkedReplay,part,shape,rootActive⟩ :=
-    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closedVersion pre (tx :: suffix) position
   have stateEq : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
-  have nonempty := NotionCoreMachineRootReplay.canonical_insert_nonempty network creators peer tx
+  have nonempty := NotionCoreMachineRootReplay.canonical_insert_nonempty_version network creators version tx
     (position ▸ List.mem_append_right pre (by simp)) block inst origin atoms payload
-  obtain ⟨provider,providerMember,root,_⟩ := NotionCoreRootCreators.canonical_selected_root_provider
+  obtain ⟨provider,providerMember,root,_⟩ := NotionCoreRootCreators.canonical_selected_root_provider_version
     network creators (NotionCoreMachineHonestReplay.honest_root_provenance network reachable)
-    peer pre suffix tx position inst (by simp [payload,NotionCoreRootCreators.selectedInstances])
+    version closedVersion pre suffix tx position inst (by simp [payload,NotionCoreRootCreators.selectedInstances])
   have activeInst : NotionCoreMachineShape.ActiveInstance state (blockName inst) :=
     (rootActive _).mpr ⟨provider,providerMember,inst,root,rfl⟩
-  obtain ⟨next,operation,changed⟩ := NotionCoreMachineCanonicalForest.canonical_insert_physical
-    network networkReach peer pre suffix tx position state accepted block inst origin atoms payload nonempty
+  obtain ⟨next,operation,changed⟩ := NotionCoreMachineCanonicalForest.canonical_insert_physical_version
+    network networkReach version closedVersion pre suffix tx position state accepted block inst origin atoms payload nonempty
   have transaction : applyTransaction state tx = some next := by
     simp [applyTransaction,NotionCorePayload.operations,payload,applyOperations,operation]
   have nextEq : ∃ rows, next = putInstance state (blockName inst)
@@ -506,21 +507,21 @@ theorem canonical_insert_source_step (network : NotionCorePayloadNetwork.State)
     | none => simp [applyOperation,integrated] at operation
     | some rows => exact ⟨rows,by simpa [applyOperation,integrated] using operation.symm⟩
   obtain ⟨rows,nextEq⟩ := nextEq
-  have stored := NotionCoreMachineCreatorPresence.canonical_required_instance network creators
-    peer pre suffix tx position state accepted inst (by simp [payload,NotionCoreCreatorNetwork.requiredBlocks])
+  have stored := NotionCoreMachineCreatorPresence.canonical_required_instance_version network creators
+    version closedVersion pre suffix tx position state accepted inst (by simp [payload,NotionCoreCreatorNetwork.requiredBlocks])
   have nextReplay : replay {} (pre ++ [tx]) = some next := by
     rw [replay_append,accepted]
     simp [replay,transaction]
-  have nextPosition : NotionCoreReconstruction.transactions network peer = (pre ++ [tx]) ++ suffix := by
+  have nextPosition : NotionCoreReconstruction.transactionsFor network version = (pre ++ [tx]) ++ suffix := by
     simpa [List.append_assoc] using position
-  have unique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network networkReach
-    peer pre (tx :: suffix) position state accepted
-  have nextUnique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network networkReach
-    peer (pre ++ [tx]) suffix nextPosition next nextReplay
-  have present := NotionCoreMachineCanonicalForest.canonical_insert_origin_present network networkReach
-    peer pre suffix tx position state accepted block inst origin atoms payload
-  have static := NotionCoreMachineFreshText.canonical_textItems_pending_false network networkReach
-    peer pre suffix tx position state accepted inst atoms
+  have unique := NotionCoreMachineVersionTables.version_physical_unique_all network networkReach
+    version closedVersion pre (tx :: suffix) position state accepted
+  have nextUnique := NotionCoreMachineVersionTables.version_physical_unique_all network networkReach
+    version closedVersion (pre ++ [tx]) suffix nextPosition next nextReplay
+  have present := NotionCoreMachineCanonicalForest.canonical_insert_origin_present_version network networkReach
+    version closedVersion pre suffix tx position state accepted block inst origin atoms payload
+  have static := NotionCoreMachineFreshText.version_textItems_pending_false network networkReach
+    version pre suffix tx position state accepted inst atoms
   rw [static] at changed
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
     (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) accepted
@@ -546,6 +547,37 @@ theorem canonical_insert_source_step (network : NotionCorePayloadNetwork.State)
 
 /-- Canonical insertion supplies a guarded atomic source-history update;
 origin safety and block uniqueness follow from the actual old projection. -/
+theorem canonical_insert_execution_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closedVersion : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (replayed : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (materialized : NotionCoreMachineDocument.materializeDocument state = some document)
+    (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
+    (payload : tx.payload = .insert block inst origin atoms) :
+    ∃ result after, applyTransaction state tx = some result ∧
+      NotionCoreMachineDocument.materializeDocument result = some after ∧
+      NotionCoreSourceDocument.Execution document
+        [.insert (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
+          ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map
+            (NotionCorePhysicalReplay.atom (blockName inst)))] after := by
+  obtain ⟨result,after,transaction,projected,stepped⟩ := canonical_insert_source_step_version
+    network reachable version closedVersion pre suffix tx position state replayed document materialized block inst origin atoms payload
+  obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closedVersion pre (tx :: suffix) position
+  have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
+  subst checked
+  have unique := NotionCoreMachineVersionTables.version_physical_unique_all network
+    (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
+    version closedVersion pre (tx :: suffix) position state replayed
+  have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) replayed
+  have guard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part unique shape aligned
+    document after materialized _ stepped
+  exact ⟨result,after,transaction,projected,.cons guard stepped (.nil after)⟩
+
 theorem canonical_insert_execution (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
     (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
@@ -560,23 +592,37 @@ theorem canonical_insert_execution (network : NotionCorePayloadNetwork.State)
       NotionCoreSourceDocument.Execution document
         [.insert (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
           ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map
-            (NotionCorePhysicalReplay.atom (blockName inst)))] after := by
-  obtain ⟨result,after,transaction,projected,stepped⟩ := canonical_insert_source_step
-    network reachable peer pre suffix tx position state replayed document materialized block inst origin atoms payload
-  obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
-    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
-  have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
-  subst checked
-  have unique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network
-    (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
-    peer pre (tx :: suffix) position state replayed
-  have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
-    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) replayed
-  have guard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part unique shape aligned
-    document after materialized _ stepped
-  exact ⟨result,after,transaction,projected,.cons guard stepped (.nil after)⟩
+            (NotionCorePhysicalReplay.atom (blockName inst)))] after :=
+  canonical_insert_execution_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed
+      (NotionCorePayloadNetwork.forget_reachable
+        (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))) peer)
+    pre suffix tx position state replayed document materialized block inst origin atoms payload
 
+#print axioms canonical_insert_execution_version
+#print axioms canonical_insert_source_step_version
 #print axioms canonical_insert_execution
+
+theorem canonical_insert_source_step (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (old : NotionCoreMachineDocument.materializeDocument state = some document)
+    (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
+    (payload : tx.payload = .insert block inst origin atoms) :
+    ∃ next after, applyTransaction state tx = some next ∧
+      NotionCoreMachineDocument.materializeDocument next = some after ∧
+      NotionCoreSourceDocument.step document (.insert
+        (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
+        ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map
+          (NotionCorePhysicalReplay.atom (blockName inst)))) = some after :=
+  canonical_insert_source_step_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed
+      (NotionCorePayloadNetwork.forget_reachable
+        (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))) peer)
+    pre suffix tx position state accepted document old block inst origin atoms payload
 
 #print axioms canonical_insert_source_step
 namespace SPOT

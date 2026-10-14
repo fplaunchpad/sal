@@ -57,6 +57,50 @@ theorem root_created_is_created (tx : Transaction) (inst : BlockKey)
   | mk id payload => cases payload <;>
       simp_all [rootCreatedBlocks,NotionCoreCreatorNetwork.createdBlocks]
 
+/-- Root knowledge in an archived version does not require a live peer
+currently holding that version. Receipt order and duplicates are irrelevant. -/
+def KnownRootVersion (network : State) (version : List Run) (inst : BlockKey) : Prop :=
+  ∃ provider ∈ network.entries, reservation provider.tx ∈ version ∧
+    inst ∈ rootCreatedBlocks provider.tx
+
+/-- Closure of one common archive retains every selected active instance's
+root creator, including versions synthesized by union or intersection. -/
+theorem selected_root_known_version (network : State) (roots : RootProvenance network)
+    (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (entry : Entry) (member : entry ∈ network.entries)
+    (present : reservation entry.tx ∈ version)
+    (inst : BlockKey) (selected : inst ∈ selectedInstances entry.tx.payload) :
+    KnownRootVersion network version inst := by
+  obtain ⟨provider,published,past,created⟩ := roots entry member inst selected
+  have recordMember : entry.record ∈ (NotionCorePayloadNetwork.forget network).records :=
+    List.mem_map.mpr ⟨entry,member,rfl⟩
+  exact ⟨provider,published,closed entry.record recordMember present (reservation provider.tx) past,created⟩
+
+/-- Canonical closure places the whole root-creator provider before use. -/
+theorem replay_selected_root_provider_version (network : State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
+    (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (entry : Entry) (member : entry ∈ network.entries)
+    (pre suffix : List Run)
+    (position : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget network)
+      version = pre ++ reservation entry.tx :: suffix)
+    (inst : BlockKey) (selected : inst ∈ selectedInstances entry.tx.payload) :
+    ∃ provider ∈ network.entries, reservation provider.tx ∈ pre ∧
+      inst ∈ rootCreatedBlocks provider.tx ∧
+      (reservation provider.tx).last < entry.tx.id.counter := by
+  obtain ⟨provider,present,past,created⟩ := roots entry member inst selected
+  have issued := NotionCorePayloadNetwork.forget_reachable
+    (NotionCoreCreatorNetwork.payload_reachable reachable)
+  have recordMember : entry.record ∈ (NotionCorePayloadNetwork.forget network).records :=
+    List.mem_map.mpr ⟨entry,member,rfl⟩
+  have earlier := NotionCoreIssuance.past_in_prefix issued recordMember pre suffix
+    (position ▸ NotionCoreIssuance.replay_closed issued _ closed)
+    (position ▸ NotionCoreIssuance.replay_ordered issued _) (reservation provider.tx) past
+  exact ⟨provider,present,earlier,created,
+    (NotionCoreIssuance.record_provenance issued entry.record recordMember).2.1 _ past⟩
+
 /-- Canonical closure places the whole root-creator provider before use. -/
 theorem replay_selected_root_provider (network : State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
@@ -68,36 +112,33 @@ theorem replay_selected_root_provider (network : State)
     ∃ provider ∈ network.entries, reservation provider.tx ∈ pre ∧
       inst ∈ rootCreatedBlocks provider.tx ∧
       (reservation provider.tx).last < entry.tx.id.counter := by
-  obtain ⟨provider,present,past,created⟩ := roots entry member inst selected
   have issued := NotionCorePayloadNetwork.forget_reachable
     (NotionCoreCreatorNetwork.payload_reachable reachable)
-  have recordMember : entry.record ∈ (NotionCorePayloadNetwork.forget network).records :=
-    List.mem_map.mpr ⟨entry,member,rfl⟩
-  have earlier := NotionCoreIssuance.past_in_prefix issued recordMember pre suffix
-    (position ▸ NotionCoreIssuance.replay_closed issued _ (NotionCoreIssuance.peers_closed issued peer))
-    (position ▸ NotionCoreIssuance.replay_ordered issued _) (reservation provider.tx) past
-  exact ⟨provider,present,earlier,created,
-    (NotionCoreIssuance.record_provenance issued entry.record recordMember).2.1 _ past⟩
+  exact replay_selected_root_provider_version network reachable roots
+    (network.allocation.peers peer).received (NotionCoreIssuance.peers_closed issued peer)
+    entry member pre suffix position inst selected
 
 /-- Actual transaction membership, not merely reservation containment, names
 an earlier root creator in the canonical chronological prefix. -/
-theorem canonical_selected_root_provider (network : State)
+theorem canonical_selected_root_provider_version (network : State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
-    (peer : Session) (pre suffix : List Transaction) (tx : Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (inst : BlockKey) (selected : inst ∈ selectedInstances tx.payload) :
     ∃ provider ∈ pre, inst ∈ rootCreatedBlocks provider ∧
       (reservation provider).last < tx.id.counter := by
-  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactions_received network peer tx
+  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactionsFor_received network version tx
     (position ▸ List.mem_append_right pre (by simp))
   have runPosition : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget network)
-      (network.allocation.peers peer).received =
+      version =
       pre.map reservation ++ reservation entry.tx :: suffix.map reservation := by
-    rw [← NotionCoreReconstruction.transactions_runs,position,List.map_append,List.map_cons,same]
-  obtain ⟨provider,published,earlier,created,clock⟩ := replay_selected_root_provider network reachable roots
-    peer entry member (pre.map reservation) (suffix.map reservation) runPosition inst (same ▸ selected)
+    rw [← NotionCoreReconstruction.transactionsFor_runs,position,List.map_append,List.map_cons,same]
+  obtain ⟨provider,published,earlier,created,clock⟩ := replay_selected_root_provider_version network reachable roots
+    version closed entry member (pre.map reservation) (suffix.map reservation) runPosition inst (same ▸ selected)
   obtain ⟨previous,inPre,runEq⟩ := List.mem_map.mp earlier
-  obtain ⟨archived,archiveMember,previousEq,_⟩ := NotionCoreReconstruction.transactions_received network peer previous
+  obtain ⟨archived,archiveMember,previousEq,_⟩ := NotionCoreReconstruction.transactionsFor_received network version previous
     (position ▸ List.mem_append_left _ inPre)
   have keys := NotionCoreArchiveOrder.archive_keys_unique network
     (NotionCoreCreatorNetwork.payload_reachable reachable)
@@ -108,6 +149,21 @@ theorem canonical_selected_root_provider (network : State)
   have txEq : previous = provider.tx := List.inj_on_of_nodup_map keys previousMember providerMember
     (congrArg Run.first runEq)
   exact ⟨previous,inPre,txEq ▸ created,by simpa only [txEq,same] using clock⟩
+
+/-- Actual transaction membership, not merely reservation containment, names
+an earlier root creator in the canonical chronological prefix. -/
+theorem canonical_selected_root_provider (network : State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (roots : RootProvenance network)
+    (peer : Session) (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (inst : BlockKey) (selected : inst ∈ selectedInstances tx.payload) :
+    ∃ provider ∈ pre, inst ∈ rootCreatedBlocks provider ∧
+      (reservation provider).last < tx.id.counter := by
+  have issued := NotionCorePayloadNetwork.forget_reachable
+    (NotionCoreCreatorNetwork.payload_reachable reachable)
+  exact canonical_selected_root_provider_version network reachable roots
+    (network.allocation.peers peer).received (NotionCoreIssuance.peers_closed issued peer)
+    pre suffix tx position inst selected
 
 /-- The source's sole bootstrap is supplied at fixed A@1; ordinary prepare
 cannot emit another bootstrap. It need not be first in canonical replay. -/
@@ -142,19 +198,19 @@ private theorem initial_creator_bootstrap (tx : Transaction)
 
 /-- An earlier ordinary create may precede bootstrap. What is excluded is an
 earlier creator of the initial instance, not a nonempty chronological prefix. -/
-theorem canonical_no_initial_creator (network : State)
-    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : Session)
+theorem canonical_no_initial_creator_version (network : State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List Run)
     (pre suffix : List Transaction) (tx : Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (atoms : List Nat) (payload : tx.payload = .bootstrap atoms) :
     ∀ provider ∈ network.entries, reservation provider.tx ∈ pre.map reservation →
       BlockKey.initial ∉ NotionCoreCreatorNetwork.createdBlocks provider.tx := by
-  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactions_received network peer tx
+  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactionsFor_received network version tx
     (position ▸ List.mem_append_right pre (by simp))
   have archiveReach := NotionCoreCreatorNetwork.payload_reachable reachable
   have bootstrapEq := archived_bootstrap network archiveReach entry member atoms (same ▸ payload)
   have txEq : tx = NotionCorePayload.bootstrap atoms := same.symm.trans bootstrapEq
-  have ordered := position ▸ NotionCoreReconstruction.transactions_ordered network archiveReach peer
+  have ordered := position ▸ NotionCoreReconstruction.transactionsFor_ordered network archiveReach version
   intro provider published earlier created
   obtain ⟨oldAtoms,oldPayload⟩ := initial_creator_bootstrap provider.tx created
   have providerEq := archived_bootstrap network archiveReach provider published oldAtoms oldPayload
@@ -166,6 +222,47 @@ theorem canonical_no_initial_creator (network : State)
   rw [previousId] at before
   exact NotionCoreSourceInvariant.before_irrefl tx.id before
 
+/-- An earlier ordinary create may precede bootstrap. What is excluded is an
+earlier creator of the initial instance, not a nonempty chronological prefix. -/
+theorem canonical_no_initial_creator (network : State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (atoms : List Nat) (payload : tx.payload = .bootstrap atoms) :
+    ∀ provider ∈ network.entries, reservation provider.tx ∈ pre.map reservation →
+      BlockKey.initial ∉ NotionCoreCreatorNetwork.createdBlocks provider.tx := by
+  exact canonical_no_initial_creator_version network reachable (network.allocation.peers peer).received
+    pre suffix tx position atoms payload
+
+/-- Creator provenance excludes even a required use of the initial instance
+before bootstrap; a standalone lower-key create can still occur there. -/
+theorem canonical_no_initial_use_version (network : State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (atoms : List Nat) (payload : tx.payload = .bootstrap atoms) :
+    ∀ previous ∈ pre, BlockKey.initial ∉ NotionCoreMachineCreators.usedBlocks previous := by
+  have excluded := canonical_no_initial_creator_version network reachable version pre suffix tx position atoms payload
+  intro previous present used
+  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactionsFor_received network version previous
+    (position ▸ List.mem_append_left _ present)
+  rcases List.mem_append.mp used with created | required
+  · exact excluded entry member (List.mem_map.mpr ⟨previous,present,by rw [same]⟩) (same ▸ created)
+  · obtain ⟨before,after,shape⟩ := List.mem_iff_append.mp present
+    have runPosition : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget network)
+        version =
+        before.map reservation ++ reservation entry.tx :: (after ++ tx :: suffix).map reservation := by
+      rw [← NotionCoreReconstruction.transactionsFor_runs,position,shape,List.append_assoc,
+        List.cons_append,List.map_append,List.map_cons,same]
+    obtain ⟨provider,published,earlier,born,_⟩ :=
+      NotionCoreCreatorNetwork.replay_creator_provider_version reachable version closed member
+        (before.map reservation) ((after ++ tx :: suffix).map reservation) runPosition (same ▸ required)
+    have inPre : reservation provider.tx ∈ pre.map reservation := by
+      rw [shape,List.map_append,List.map_cons]
+      exact List.mem_append_left _ earlier
+    exact excluded provider published inPre born
+
 /-- Creator provenance excludes even a required use of the initial instance
 before bootstrap; a standalone lower-key create can still occur there. -/
 theorem canonical_no_initial_use (network : State)
@@ -174,25 +271,17 @@ theorem canonical_no_initial_use (network : State)
     (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
     (atoms : List Nat) (payload : tx.payload = .bootstrap atoms) :
     ∀ previous ∈ pre, BlockKey.initial ∉ NotionCoreMachineCreators.usedBlocks previous := by
-  have excluded := canonical_no_initial_creator network reachable peer pre suffix tx position atoms payload
-  intro previous present used
-  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactions_received network peer previous
-    (position ▸ List.mem_append_left _ present)
-  rcases List.mem_append.mp used with created | required
-  · exact excluded entry member (List.mem_map.mpr ⟨previous,present,by rw [same]⟩) (same ▸ created)
-  · obtain ⟨before,after,shape⟩ := List.mem_iff_append.mp present
-    have runPosition : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget network)
-        (network.allocation.peers peer).received =
-        before.map reservation ++ reservation entry.tx :: (after ++ tx :: suffix).map reservation := by
-      rw [← NotionCoreReconstruction.transactions_runs,position,shape,List.append_assoc,
-        List.cons_append,List.map_append,List.map_cons,same]
-    obtain ⟨provider,published,earlier,born,_⟩ :=
-      NotionCoreCreatorNetwork.replay_creator_provider reachable peer member
-        (before.map reservation) ((after ++ tx :: suffix).map reservation) runPosition (same ▸ required)
-    have inPre : reservation provider.tx ∈ pre.map reservation := by
-      rw [shape,List.map_append,List.map_cons]
-      exact List.mem_append_left _ earlier
-    exact excluded provider published inPre born
+  have issued := NotionCorePayloadNetwork.forget_reachable
+    (NotionCoreCreatorNetwork.payload_reachable reachable)
+  exact canonical_no_initial_use_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position atoms payload
+
+#print axioms canonical_no_initial_creator_version
+#print axioms canonical_no_initial_use_version
+#print axioms canonical_selected_root_provider_version
+#print axioms selected_root_known_version
+#print axioms replay_selected_root_provider_version
+#print axioms replay_selected_root_provider
 
 #print axioms canonical_no_initial_use
 #print axioms archived_bootstrap
@@ -202,6 +291,14 @@ theorem root_kind_control :
     rootCreatedBlocks ⟨⟨3,[65]⟩,.create (some .initial)⟩ = [.issued ⟨3,[65]⟩] ∧
     rootCreatedBlocks ⟨⟨3,[65]⟩,.split .initial .initial .start⟩ ≠ [.issued ⟨3,[65]⟩] ∧
     selectedInstances (.erase .initial .initial [⟨1,[65]⟩]) = [] := by decide +kernel
+
+/-- PASS+FAIL: an archive entry alone does not put its root into an empty
+version; a complete bootstrap reservation does, independently of a live peer. -/
+theorem root_version_control :
+    KnownRootVersion (NotionCorePayloadNetwork.seeded [97])
+      [reservation (NotionCorePayload.bootstrap [97])] .initial ∧
+    ¬ KnownRootVersion (NotionCorePayloadNetwork.seeded [97]) [] .initial := by
+  simp [KnownRootVersion,NotionCorePayloadNetwork.seeded,rootCreatedBlocks,NotionCorePayload.bootstrap]
 
 #print axioms emit_roots
 #print axioms canonical_selected_root_provider

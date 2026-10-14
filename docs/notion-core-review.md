@@ -1895,3 +1895,18 @@ with axiom audit, 187 runtime tests and 569 benchmark records. Every research
 result series matched saved evidence. The parent uses focused builds for ongoing
 insertion/split/client-effect proofs; those in-progress modules are outside this
 checkpoint. No Notion document certificate enters the production ledger.
+# Archive-version history and local split integration
+
+Independent review of `MachineHistory.honest_history_version` confirmed that
+every payload case derives actual execution and independent source execution.
+The generic composition premise is discharged by those cases; the conclusion
+uses exactly `transactionsFor` for its atomic command history and terminal
+query. No next-step acceptance or rendering equality is assumed. This does not
+yet establish Sal event enumeration, specification visibility or an RA witness.
+
+The local split issuance theorem and generalized replay dependencies passed
+independent review. The research integration gate passed 3,496 Lean jobs and
+all seventeen oracle groups; the production gate passed 3,694 Lean jobs,
+18 contract/axiom checks, 13 regression controls, 187 runtime tests and validation
+of 569 benchmark records. The production ledger still excludes this unfinished
+document certificate.

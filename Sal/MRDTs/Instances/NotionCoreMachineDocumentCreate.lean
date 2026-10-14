@@ -200,10 +200,11 @@ theorem fresh_create_document (state result : State) (key : BlockKey) (after : O
 /-- The actual canonical create phase has fresh names and an available
 predecessor derived from archived creators. This covers standalone create and
 the create phase of split, with their literal required-block metadata. -/
-theorem canonical_create_document (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
+theorem canonical_create_document_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state)
     (part : NotionCoreMachinePartition.Partitioned state)
     (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
@@ -215,14 +216,14 @@ theorem canonical_create_document (network : NotionCorePayloadNetwork.State)
         (.create (blockName (.issued tx.id)) (blockName (.issued tx.id)) (after.map blockName)) = some next := by
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
     ⟨by simp [NotionCoreDisplayOrder.names],List.Perm.refl []⟩ accepted
-  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh network
-    reachable peer pre suffix tx position state accepted
-  obtain ⟨result,created,_⟩ := NotionCoreMachineCanonicalCreate.canonical_create_partitioned network
-    reachable peer pre suffix tx position state accepted part after
+  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh_version network
+    reachable version closed pre suffix tx position state accepted
+  obtain ⟨result,created,_⟩ := NotionCoreMachineCanonicalCreate.canonical_create_partitioned_version network
+    reachable version closed pre suffix tx position state accepted part after
   have predecessor : ∀ previous, after = some previous → blockName previous ∈ state.display := by
     intro previous selected
     apply aligned.2.mem_iff.mpr
-    exact NotionCoreMachineBlockPresence.canonical_required_block network reachable peer pre suffix tx position
+    exact NotionCoreMachineBlockPresence.canonical_required_block_version network reachable version closed pre suffix tx position
       state accepted previous (required previous selected)
   obtain ⟨next,projected,step⟩ := fresh_create_document state result (.issued tx.id) after freshInstance
     freshBlock created aligned document materialized predecessor
@@ -230,10 +231,11 @@ theorem canonical_create_document (network : NotionCorePayloadNetwork.State)
 
 /-- Standalone creation supplies an atomic source-history update from honest
 canonical reconstruction, without caller-supplied partition or predecessor guards. -/
-theorem canonical_create_execution (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+theorem canonical_create_execution_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (replayed : replay {} pre = some state)
     (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
     (after : Option BlockKey) (payload : tx.payload = .create after) :
@@ -242,11 +244,11 @@ theorem canonical_create_execution (network : NotionCorePayloadNetwork.State)
       NotionCoreSourceDocument.Execution document
         [.create (blockName (.issued tx.id)) (blockName (.issued tx.id)) (after.map blockName)] next := by
   obtain ⟨checked,checkedReplay,part,_,_⟩ :=
-    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closed pre (tx :: suffix) position
   have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
   subst checked
-  obtain ⟨result,next,operation,projected,stepped⟩ := canonical_create_document network
-    (NotionCoreMachineNetwork.creator_reachable reachable) peer pre suffix tx position state replayed part
+  obtain ⟨result,next,operation,projected,stepped⟩ := canonical_create_document_version network
+    (NotionCoreMachineNetwork.creator_reachable reachable) version closed pre suffix tx position state replayed part
     document materialized after (by
       intro previous selected
       simp [payload,NotionCoreCreatorNetwork.requiredBlocks,selected])
@@ -259,6 +261,40 @@ theorem canonical_create_execution (network : NotionCorePayloadNetwork.State)
     exact aligned.2.nodup_iff.mpr aligned.1
   exact ⟨result,next,transaction,projected,.cons ⟨names,True.intro⟩ stepped (.nil next)⟩
 
+theorem canonical_create_document (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (part : NotionCoreMachinePartition.Partitioned state)
+    (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
+    (after : Option BlockKey)
+    (required : ∀ previous, after = some previous → previous ∈ NotionCoreCreatorNetwork.requiredBlocks tx.payload) :
+    ∃ result next, applyOperation state (.create (.issued tx.id) after) = some result ∧
+      materializeDocument result = some next ∧
+      NotionCoreSourceDocument.step document
+        (.create (blockName (.issued tx.id)) (blockName (.issued tx.id)) (after.map blockName)) = some next :=
+  canonical_create_document_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)) peer)
+    pre suffix tx position state accepted part document materialized after required
+
+theorem canonical_create_execution (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (replayed : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
+    (after : Option BlockKey) (payload : tx.payload = .create after) :
+    ∃ result next, applyTransaction state tx = some result ∧
+      materializeDocument result = some next ∧
+      NotionCoreSourceDocument.Execution document
+        [.create (blockName (.issued tx.id)) (blockName (.issued tx.id)) (after.map blockName)] next :=
+  canonical_create_execution_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))) peer)
+    pre suffix tx position state replayed document materialized after payload
+
+#print axioms canonical_create_document_version
+#print axioms canonical_create_execution_version
 #print axioms canonical_create_execution
 
 #print axioms canonical_create_document

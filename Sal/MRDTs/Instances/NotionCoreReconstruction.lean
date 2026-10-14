@@ -20,43 +20,52 @@ def transactions (network : State) (session : Session) : List Transaction :=
     (fun tx => reservation tx ∈ (network.allocation.peers session).received)).mergeSort
       (fun a b => decide (Ascending a b))
 
+/-- The same source sorting applied to an explicit version of one archive.
+Closure and issuance obligations belong to the replay theorems, not this filter. -/
+def transactionsFor (network : State) (version : List Run) : List Transaction :=
+  ((network.entries.map Entry.tx).filter
+    (fun tx => reservation tx ∈ version)).mergeSort (fun a b => decide (Ascending a b))
+
+theorem transactions_eq_for (network : State) (session : Session) :
+    transactions network session = transactionsFor network (network.allocation.peers session).received := rfl
+
 def reconstruct (network : State) (session : Session) : Option NotionCoreMachine.State :=
   NotionCoreMachine.replay {} (transactions network session)
 
-theorem transactions_membership (network : State) (session : Session) (tx : Transaction) :
-    tx ∈ transactions network session ↔
+theorem transactionsFor_membership (network : State) (version : List Run) (tx : Transaction) :
+    tx ∈ transactionsFor network version ↔
       (∃ entry ∈ network.entries, entry.tx = tx) ∧
-        reservation tx ∈ (network.allocation.peers session).received := by
-  unfold transactions
+        reservation tx ∈ version := by
+  unfold transactionsFor
   rw [(List.mergeSort_perm _ _).mem_iff]
   simp
 
-theorem transactions_received (network : State) (session : Session) :
-    ∀ tx ∈ transactions network session, ∃ entry ∈ network.entries, entry.tx = tx ∧
-      reservation tx ∈ (network.allocation.peers session).received := by
+theorem transactionsFor_received (network : State) (version : List Run) :
+    ∀ tx ∈ transactionsFor network version, ∃ entry ∈ network.entries, entry.tx = tx ∧
+      reservation tx ∈ version := by
   intro tx member
-  obtain ⟨⟨entry,present,same⟩,received⟩ := (transactions_membership network session tx).mp member
+  obtain ⟨⟨entry,present,same⟩,received⟩ := (transactionsFor_membership network version tx).mp member
   exact ⟨entry,present,same,received⟩
 
 /-- Canonical transaction replay projects to exactly the previously proved
 canonical run replay, not an arbitrary permutation or externally supplied list. -/
-theorem transactions_runs (network : State) (session : Session) :
-    (transactions network session).map reservation =
-      NotionCoreIssuance.replay (forget network) (network.allocation.peers session).received := by
-  unfold transactions
+theorem transactionsFor_runs (network : State) (version : List Run) :
+    (transactionsFor network version).map reservation =
+      NotionCoreIssuance.replay (forget network) version := by
+  unfold transactionsFor
   rw [List.map_mergeSort (s := fun a b => decide (NotionCoreIssuance.Ascending a b))
     (by intros; rfl)]
   unfold NotionCoreIssuance.replay forget
   simp only [List.map_map, Function.comp_def]
   have filtered :
       (((network.entries.map Entry.tx).filter
-        (fun tx => reservation tx ∈ (network.allocation.peers session).received)).map reservation) =
+        (fun tx => reservation tx ∈ version)).map reservation) =
       ((network.entries.map (fun e => e.record.run)).filter
-        (fun run => run ∈ (network.allocation.peers session).received)) := by
+        (fun run => run ∈ version)) := by
     induction network.entries with
     | nil => rfl
     | cons entry rest ih =>
-      by_cases receipt : reservation entry.tx ∈ (network.allocation.peers session).received
+      by_cases receipt : reservation entry.tx ∈ version
       · simp only [List.map_cons, List.filter_cons, Entry.record, NotionCorePayload.record,
           receipt, decide_true, if_true, List.map_cons]
         exact congrArg (List.cons (reservation entry.tx)) ih
@@ -66,18 +75,70 @@ theorem transactions_runs (network : State) (session : Session) :
 
   rw [filtered]
 
-theorem transactions_ordered (network : State)
-    (reachable : NotionCorePayloadNetwork.Reach network) (session : Session) :
-    (transactions network session).Pairwise (fun a b => NotionRunAllocation.Before a.id b.id) := by
+theorem transactionsFor_ordered (network : State)
+    (reachable : NotionCorePayloadNetwork.Reach network) (version : List Run) :
+    (transactionsFor network version).Pairwise (fun a b => NotionRunAllocation.Before a.id b.id) := by
   have ordered := NotionCoreIssuance.replay_ordered
     (NotionCorePayloadNetwork.forget_reachable reachable)
-    (network.allocation.peers session).received
-  rw [← transactions_runs] at ordered
-  have lifted : (transactions network session).Pairwise
+    version
+  rw [← transactionsFor_runs] at ordered
+  have lifted : (transactionsFor network version).Pairwise
       (fun a b => NotionRunAllocation.Before (reservation a).first (reservation b).first) :=
     (List.pairwise_map (f := reservation)
       (R := fun a b : Run => NotionRunAllocation.Before a.first b.first)).mp ordered
   simpa only [reservation] using lifted
+
+/-- Receipt order and multiplicity do not affect the selected canonical list. -/
+theorem transactionsFor_ext (network : State) (left right : List Run)
+    (same : ∀ run, run ∈ left ↔ run ∈ right) :
+    transactionsFor network left = transactionsFor network right := by
+  unfold transactionsFor
+  congr 1
+  apply List.filter_congr
+  intro tx _
+  simp only [decide_eq_decide]
+  exact same (reservation tx)
+
+/-- A supported version with no duplicates is enumerated exactly once by the
+canonical transaction replay, including versions not held by a live peer. -/
+theorem transactionsFor_enumerates (network : State)
+    (reachable : NotionCorePayloadNetwork.Reach network) (version : List Run)
+    (unique : version.Nodup)
+    (supported : ∀ run ∈ version, run ∈ (forget network).records.map NotionCoreIssuance.Record.run) :
+    ((transactionsFor network version).map reservation).Perm version := by
+  rw [transactionsFor_runs]
+  have ordered := NotionCoreIssuance.replay_ordered
+    (NotionCorePayloadNetwork.forget_reachable reachable) version
+  have replayUnique : (NotionCoreIssuance.replay (forget network) version).Nodup := by
+    apply ordered.imp
+    intro a b before equal
+    subst b
+    exact NotionCoreSourceInvariant.before_irrefl _ before
+  apply (List.perm_ext_iff_of_nodup replayUnique unique).mpr
+  intro run
+  rw [NotionCoreIssuance.replay_membership]
+  exact ⟨And.right,fun member => ⟨supported run member,member⟩⟩
+
+theorem transactions_membership (network : State) (session : Session) (tx : Transaction) :
+    tx ∈ transactions network session ↔
+      (∃ entry ∈ network.entries, entry.tx = tx) ∧
+        reservation tx ∈ (network.allocation.peers session).received :=
+  transactionsFor_membership network _ tx
+
+theorem transactions_received (network : State) (session : Session) :
+    ∀ tx ∈ transactions network session, ∃ entry ∈ network.entries, entry.tx = tx ∧
+      reservation tx ∈ (network.allocation.peers session).received :=
+  transactionsFor_received network _
+
+theorem transactions_runs (network : State) (session : Session) :
+    (transactions network session).map reservation =
+      NotionCoreIssuance.replay (forget network) (network.allocation.peers session).received :=
+  transactionsFor_runs network _
+
+theorem transactions_ordered (network : State)
+    (reachable : NotionCorePayloadNetwork.Reach network) (session : Session) :
+    (transactions network session).Pairwise (fun a b => NotionRunAllocation.Before a.id b.id) :=
+  transactionsFor_ordered network reachable _
 
 /-- Actual stored/traversed item knowledge now needs no free receipt-map
 premise: the reconstruction itself fixes its archived received transactions. -/
@@ -108,6 +169,9 @@ theorem reconstruction_control :
     NotionRunAllocation.emptyPeer, NotionRunAllocation.Run.last, List.mergeSort, Ascending,
     NotionCoreSourceInvariant.Desc, NotionRunAllocation.Before]
 
+#print axioms transactionsFor_enumerates
+#print axioms transactionsFor_runs
+#print axioms transactionsFor_ordered
 #print axioms transactions_runs
 #print axioms reconstruct_known_item
 end Sal.MRDTs.Instances.NotionCoreReconstruction

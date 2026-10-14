@@ -119,7 +119,20 @@ use focused builds during development and full gates at integration checkpoints.
   admitted by the independent specification on the same grouped transaction order.
   Prove valid insertion and bounded deletion through actual issuance and issuer
   reconstruction.
-- [ ] Finish the split/insert/delete-only milestone: complete remaining positional split effects, deriving
+- [x] Prove valid local split requests through actual issuance and issuer
+  reconstruction, including inherited zero-gap controls (focused build passed;
+  independent review and research integration gate passed).
+- [x] Extend the typed history theorem from actual peer receipts to arbitrary
+  causally closed versions of ONE honestly generated archive. Shared-archive
+  source-key uniqueness and saved mint-past closure must be preserved; separate
+  existential networks per event would not suffice. Generalized reconstruction
+  sorting, provider/root provenance, table graphs and pending-target bounds are
+  checked. Spatial prefix replay now derives success, partition, shape and root
+  provenance for every closed archive version. Actual document reconstruction and
+  independent sequential-history admission now hold for the same sorted version
+  (`honest_history_version`; focused build passed, 742 jobs). Sal event coupling
+  remains separate below.
+- [ ] Finish the split/insert/delete-only milestone: integrate the local split effect and archive-wide history, deriving
   projected structural invariants. Connect source name/range decoding and
   search-label validation. Instantiate the same-witness RA bridge with event
   enumeration, required order and specification visibility. Keep source IDs

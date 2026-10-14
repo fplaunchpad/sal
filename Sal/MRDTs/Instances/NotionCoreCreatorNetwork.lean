@@ -65,10 +65,14 @@ theorem creator_provenance {state : State} (reachable : Reach state) :
       · obtain ⟨provider, present, past, created⟩ := ih entry member block required
         exact ⟨provider, List.mem_cons_of_mem _ present, past, created⟩
 
-theorem replay_creator_provider {state : State} (reachable : Reach state) (peer : Session)
+/-- Metadata creator availability is an archive-closed property, not tied
+to a currently registered peer version. -/
+theorem replay_creator_provider_version {state : State} (reachable : Reach state)
+    (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget state).records version)
     {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
     (position : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget state)
-      (state.allocation.peers peer).received = pre ++ reservation entry.tx :: suffix)
+      version = pre ++ reservation entry.tx :: suffix)
     {block : BlockKey} (required : block ∈ requiredBlocks entry.tx.payload) :
     ∃ provider ∈ state.entries, reservation provider.tx ∈ pre ∧
       block ∈ createdBlocks provider.tx ∧
@@ -78,10 +82,26 @@ theorem replay_creator_provider {state : State} (reachable : Reach state) (peer 
   have member' : entry.record ∈ (NotionCorePayloadNetwork.forget state).records :=
     List.mem_map.mpr ⟨entry, member, rfl⟩
   have prior := NotionCoreIssuance.past_in_prefix issued member' pre suffix
-    (position ▸ NotionCoreIssuance.replay_closed issued _ (NotionCoreIssuance.peers_closed issued peer))
-    (position ▸ NotionCoreIssuance.replay_ordered issued _) (reservation provider.tx) past
+    (position ▸ NotionCoreIssuance.replay_closed issued version closed)
+    (position ▸ NotionCoreIssuance.replay_ordered issued version) (reservation provider.tx) past
   exact ⟨provider, present, prior, created,
     (NotionCoreIssuance.record_provenance issued entry.record member').2.1 _ past⟩
+
+/-- Existing receipt replay specializes the explicit closed archive version. -/
+theorem replay_creator_provider {state : State} (reachable : Reach state) (peer : Session)
+    {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
+    (position : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget state)
+      (state.allocation.peers peer).received = pre ++ reservation entry.tx :: suffix)
+    {block : BlockKey} (required : block ∈ requiredBlocks entry.tx.payload) :
+    ∃ provider ∈ state.entries, reservation provider.tx ∈ pre ∧
+      block ∈ createdBlocks provider.tx ∧
+      (reservation provider.tx).last < entry.tx.id.counter :=
+  replay_creator_provider_version reachable _
+    (NotionCoreIssuance.peers_closed
+      (NotionCorePayloadNetwork.forget_reachable (payload_reachable reachable)) peer)
+    member pre suffix position required
+
+#print axioms replay_creator_provider_version
 
 private def first : Id := ⟨1,[66]⟩
 private def second : Id := ⟨2,[66]⟩

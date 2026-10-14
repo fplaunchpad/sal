@@ -602,3 +602,25 @@ correspondence, the local split request effect, and the event enumeration,
 required ordering, and specification visibility on the same Sal witness remain
 open. Generic storage convergence still supplies the only ordinary/recursive
 merge-base certificate. The three documented demo bugs remain unchanged.
+
+### Closed versions of a shared archive
+
+The Sal bridge needs versions beyond the receipt sets held by current peers.
+`MachineHonestReplay.honest_prefix_reconstruct_version` and
+`honest_reconstruct_version` now derive execution success and spatial invariants
+for an arbitrary saved-past-closed version of one honestly generated archive.
+The old peer theorems specialize this same proof. No new document interpreter
+or independently chosen network per event is introduced.
+
+`Reconstruction.transactionsFor` applies the existing source filter/sort to an
+explicit run version. Its run projection matches the existing issuance replay;
+`transactionsFor_enumerates` proves exact enumeration when the version is
+supported by the archive and has no duplicates. Receipt order and multiplicity
+do not affect the selected transaction list. Archive-wide key uniqueness,
+located providers, creator/root provenance, physical graph closure, pending
+flags and spatial transitions have version-level proofs.
+`MachineHistory.honest_history_version` now proves actual reconstruction returns
+an answer admitted by the independent sequential specification on that same
+sorted transaction sequence. The focused build passed (742 jobs), using only
+standard Lean axioms. Sal event enumeration and visibility coupling remain work
+in progress; this theorem alone is not the full RA certificate.

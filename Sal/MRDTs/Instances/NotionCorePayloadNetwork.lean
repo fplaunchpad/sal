@@ -212,12 +212,12 @@ theorem reference_provenance {state : State} (reachable : Reach state) :
     · obtain ⟨provider, member, received, born⟩ := ih entry present address reference
       exact ⟨provider, List.mem_cons_of_mem _ member, received, born⟩
 
-/-- Located payload origins/deletion targets have an actual typed provider in
-every canonical replay prefix of a received whole version. No free birth tag,
-provider-order premise, or desired observation equation appears here. -/
-theorem replay_located_provider {state : State} (reachable : Reach state) (peer : Session)
+/-- Located providers occur before their dependent payload in every closed
+version of one honest archive, independently of which peer received it. -/
+theorem replay_located_provider_version {state : State} (reachable : Reach state)
+    (version : List Run) (closed : NotionCoreIssuance.Closed (forget state).records version)
     {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
-    (position : NotionCoreIssuance.replay (forget state) (state.allocation.peers peer).received =
+    (position : NotionCoreIssuance.replay (forget state) version =
       pre ++ reservation entry.tx :: suffix)
     {address : Address} (reference : address ∈ locatedReferences entry.tx.payload) :
     ∃ provider ∈ state.entries, reservation provider.tx ∈ pre ∧
@@ -227,11 +227,25 @@ theorem replay_located_provider {state : State} (reachable : Reach state) (peer 
   have reachable' := forget_reachable reachable
   have member' : entry.record ∈ (forget state).records := List.mem_map.mpr ⟨entry, member, rfl⟩
   have earlier := NotionCoreIssuance.past_in_prefix reachable' member' pre suffix
-    (position ▸ NotionCoreIssuance.replay_closed reachable' _
-      (NotionCoreIssuance.peers_closed reachable' peer))
-    (position ▸ NotionCoreIssuance.replay_ordered reachable' _) (reservation provider.tx) past
+    (position ▸ NotionCoreIssuance.replay_closed reachable' version closed)
+    (position ▸ NotionCoreIssuance.replay_ordered reachable' version) (reservation provider.tx) past
   exact ⟨provider, present, earlier, born,
     (NotionCoreIssuance.record_provenance reachable' entry.record member').2.1 _ past⟩
+
+/-- Peer receipt is a closed-version specialization of archive replay. -/
+theorem replay_located_provider {state : State} (reachable : Reach state) (peer : Session)
+    {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
+    (position : NotionCoreIssuance.replay (forget state) (state.allocation.peers peer).received =
+      pre ++ reservation entry.tx :: suffix)
+    {address : Address} (reference : address ∈ locatedReferences entry.tx.payload) :
+    ∃ provider ∈ state.entries, reservation provider.tx ∈ pre ∧
+      address ∈ birthAddresses provider.tx ∧
+      (reservation provider.tx).last < entry.tx.id.counter :=
+  replay_located_provider_version reachable _
+    (NotionCoreIssuance.peers_closed (forget_reachable reachable) peer)
+    member pre suffix position reference
+
+#print axioms replay_located_provider_version
 
 private def firstA : Id := ⟨1,[65]⟩
 private def secondA : Id := ⟨2,[65]⟩

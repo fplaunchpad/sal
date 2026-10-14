@@ -1,5 +1,6 @@
 import Sal.MRDTs.Instances.NotionCoreMachinePartitionUpdates
 import Sal.MRDTs.Instances.NotionCoreMachineCanonicalCreate
+import Sal.MRDTs.Instances.NotionCoreMachineVersionTables
 
 /-! Actual marker integration reaches a partitioned pre-tree-split stage and
 then passes recursive split search and endpoint checks. Ownership restoration
@@ -13,7 +14,7 @@ open NotionCoreMachinePartition
 open NotionCoreMachinePartitionUpdates
 open NotionCoreForestRefs (ownedRefs)
 open NotionCorePayload (BlockKey Transaction)
-open NotionRunAllocation (Id Session)
+open NotionRunAllocation (Id Session Run)
 
 structure MarkerStage (state : State) (marker : Address) : Prop where
   partitioned : Partitioned state
@@ -30,28 +31,25 @@ theorem ref_start_present (state : State) (partitioned : Partitioned state)
 
 /-- Include unallocated numeric keys: their actual default table has only
 virtual START. Allocated keys are traced to typed instances in accepted replay. -/
+theorem canonical_physical_unique_all_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCorePayloadNetwork.Reach network) (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ suffix)
+    (state : State) (accepted : replay {} pre = some state) :
+    ∀ key, ((physical state key).map Atom.address).Nodup := by
+  exact NotionCoreMachineVersionTables.version_physical_unique_all network reachable version closed
+    pre suffix position state accepted
+
 theorem canonical_physical_unique_all (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCorePayloadNetwork.Reach network) (peer : Session)
     (pre suffix : List Transaction)
     (position : NotionCoreReconstruction.transactions network peer = pre ++ suffix)
     (state : State) (accepted : replay {} pre = some state) :
     ∀ key, ((physical state key).map Atom.address).Nodup := by
-  intro key
-  by_cases existsInstance : ∃ entry ∈ state.instances, entry.1 = key
-  · obtain ⟨entry,member,equal⟩ := existsInstance
-    have stored : key ∈ NotionCoreMachineCreators.instanceKeys state :=
-      List.mem_map.mpr ⟨entry,member,equal⟩
-    obtain ⟨tx,inPre,inst,used,encoded⟩ :=
-      NotionCoreMachineCreators.replay_instance_used pre state accepted key stored
-    rw [encoded]
-    exact NotionCoreMachineTableGraph.canonical_physical_unique
-      network reachable peer pre suffix position state accepted inst
-  · have absent : state.instances.find? (fun entry => entry.1 == key) = none := by
-      apply List.find?_eq_none.mpr
-      intro entry member selected
-      exact existsInstance ⟨entry,member,by simpa using selected⟩
-    simp [physical,getInstance,absent,traversal,NotionCorePhysicalReplay.physical,
-      NotionCorePhysicalReplay.start]
+  exact canonical_physical_unique_all_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable reachable) peer)
+    pre suffix position state accepted
 
 /-- The raw marker splice preserves the old intervals and makes the new
 marker a physical interior point, before the tree algorithm adds its boundary. -/
@@ -136,6 +134,61 @@ theorem marker_operation_progress (state : State) (block inst : BlockKey) (id : 
 /-- The next canonical split supplies a fresh physical marker and an actual
 origin, and its raw integration has the proved splice. These facts precede
 the source tree phases and require only acceptance of the old prefix. -/
+theorem canonical_marker_physical_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCorePayloadNetwork.Reach network) (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (block inst : BlockKey) (origin : NotionCoreOriginTree.Origin)
+    (payload : tx.payload = .split block inst origin) :
+    ∃ rows, integrate (getInstance state (blockName inst)).rows ⟨⟨tx.id,.split⟩,origin⟩ = some rows ∧
+      physical (putInstance state (blockName inst) {getInstance state (blockName inst) with rows := rows})
+        (blockName inst) = NotionCorePartition.spliceAfterBy Atom.address
+          (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
+          [boundary (NotionCorePhysicalReplay.address (blockName inst) tx.id)] (physical state (blockName inst)) ∧
+      NotionCorePhysicalReplay.address (blockName inst) tx.id ∉ (physical state (blockName inst)).map Atom.address ∧
+      NotionCorePhysicalReplay.originAddress (blockName inst) origin ∈ (physical state (blockName inst)).map Atom.address := by
+  let forest := NotionCoreMachineCanonicalForest.originForest state inst
+  have edges := NotionCoreMachineCanonicalForest.canonical_forest_version
+    network reachable version closed pre (tx :: suffix) position state accepted inst
+  have graph := NotionCoreMachineVersionTables.version_table_graph
+    network reachable version closed pre (tx :: suffix) position state accepted inst
+  have birthRows : NotionCoreMachinePrefix.transactionRows tx inst (fun _ _ => false) =
+      [⟨⟨tx.id,.split⟩,origin⟩] := by
+    simp [NotionCoreMachinePrefix.transactionRows,NotionCorePayload.births,
+      NotionCorePayload.operations,payload,NotionCorePayload.Operation.births]
+  have apart := NotionCoreMachineCanonicalForest.canonical_births_apart_version
+    network reachable version closed pre suffix tx position state accepted inst (fun _ _ => false)
+  rw [birthRows] at apart
+  have fresh : tx.id ∉ (getInstance state (blockName inst)).rows.map (fun row => row.item.id) := by
+    intro present
+    exact List.disjoint_left.mp apart present (by simp)
+  have ready := NotionCoreMachineCanonicalForest.canonical_ready_version
+    network reachable version closed pre suffix tx position state accepted inst (.node ⟨tx.id,.split⟩ .nil) rfl
+  have ready' : NotionCoreOriginTree.Ready origin (.node ⟨tx.id,.split⟩ .nil) forest := by
+    simpa [payload,NotionCorePayloadParents.payloadOrigin] using ready
+  have present : NotionCorePhysicalReplay.Present origin forest := by
+    cases origin with
+    | start => trivial
+    | item id =>
+        apply NotionCoreMachineCanonicalForest.canonical_reference_in_forest_version
+          network reachable version closed pre suffix tx position state accepted inst id
+        simp [payload,NotionCorePayloadNetwork.locatedReferences,NotionCorePayload.originReference]
+  obtain ⟨rows,integrated,physicalEq⟩ := NotionCoreMachineSplice.integrate_marker_physical
+    state (blockName inst) origin tx.id forest edges.1 graph.1 edges.2 fresh ready' present
+  refine ⟨rows,integrated,physicalEq,?_,?_⟩
+  · rw [NotionCoreMachineCanonicalForest.canonical_physical_forest_version
+      network reachable version closed pre (tx :: suffix) position state accepted inst]
+    apply NotionCorePhysicalReplay.fresh_address
+    intro member
+    have old : tx.id ∈ (NotionCoreParentMap.forestRows .start forest).map (fun row => row.item.id) := by
+      simpa only [NotionCoreParentCoupling.forestRows_ids] using member
+    exact fresh ((edges.1.map (fun row => row.item.id)).mem_iff.mpr old)
+  · rw [NotionCoreMachineCanonicalForest.canonical_physical_forest_version
+      network reachable version closed pre (tx :: suffix) position state accepted inst]
+    exact NotionCorePhysicalReplay.origin_present_physical (blockName inst) origin forest present
+
 theorem canonical_marker_physical (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCorePayloadNetwork.Reach network) (peer : Session)
     (pre suffix : List Transaction) (tx : Transaction)
@@ -150,45 +203,94 @@ theorem canonical_marker_physical (network : NotionCorePayloadNetwork.State)
           [boundary (NotionCorePhysicalReplay.address (blockName inst) tx.id)] (physical state (blockName inst)) ∧
       NotionCorePhysicalReplay.address (blockName inst) tx.id ∉ (physical state (blockName inst)).map Atom.address ∧
       NotionCorePhysicalReplay.originAddress (blockName inst) origin ∈ (physical state (blockName inst)).map Atom.address := by
-  let forest := NotionCoreMachineCanonicalForest.originForest state inst
-  have edges := NotionCoreMachineCanonicalForest.canonical_forest
-    network reachable peer pre (tx :: suffix) position state accepted inst
-  have graph := NotionCoreMachineTableGraph.canonical_prefix_graph
-    network reachable peer pre (tx :: suffix) position state accepted inst
-  have birthRows : NotionCoreMachinePrefix.transactionRows tx inst (fun _ _ => false) =
-      [⟨⟨tx.id,.split⟩,origin⟩] := by
-    simp [NotionCoreMachinePrefix.transactionRows,NotionCorePayload.births,
-      NotionCorePayload.operations,payload,NotionCorePayload.Operation.births]
-  have apart := NotionCoreMachineCanonicalForest.canonical_births_apart
-    network reachable peer pre suffix tx position state accepted inst (fun _ _ => false)
-  rw [birthRows] at apart
-  have fresh : tx.id ∉ (getInstance state (blockName inst)).rows.map (fun row => row.item.id) := by
-    intro present
-    exact List.disjoint_left.mp apart present (by simp)
-  have ready := NotionCoreMachineCanonicalForest.canonical_ready
-    network reachable peer pre suffix tx position state accepted inst (.node ⟨tx.id,.split⟩ .nil) rfl
-  have ready' : NotionCoreOriginTree.Ready origin (.node ⟨tx.id,.split⟩ .nil) forest := by
-    simpa [payload,NotionCorePayloadParents.payloadOrigin] using ready
-  have present : NotionCorePhysicalReplay.Present origin forest := by
-    cases origin with
-    | start => trivial
-    | item id =>
-        apply NotionCoreMachineCanonicalForest.canonical_reference_in_forest
-          network reachable peer pre suffix tx position state accepted inst id
-        simp [payload,NotionCorePayloadNetwork.locatedReferences,NotionCorePayload.originReference]
-  obtain ⟨rows,integrated,physicalEq⟩ := NotionCoreMachineSplice.integrate_marker_physical
-    state (blockName inst) origin tx.id forest edges.1 graph.1 edges.2 fresh ready' present
-  refine ⟨rows,integrated,physicalEq,?_,?_⟩
-  · rw [NotionCoreMachineCanonicalForest.canonical_physical_forest
-      network reachable peer pre (tx :: suffix) position state accepted inst]
-    apply NotionCorePhysicalReplay.fresh_address
-    intro member
-    have old : tx.id ∈ (NotionCoreParentMap.forestRows .start forest).map (fun row => row.item.id) := by
-      simpa only [NotionCoreParentCoupling.forestRows_ids] using member
-    exact fresh ((edges.1.map (fun row => row.item.id)).mem_iff.mpr old)
-  · rw [NotionCoreMachineCanonicalForest.canonical_physical_forest
-      network reachable peer pre (tx :: suffix) position state accepted inst]
-    exact NotionCorePhysicalReplay.origin_present_physical (blockName inst) origin forest present
+  exact canonical_marker_physical_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable reachable) peer)
+    pre suffix tx position state accepted block inst origin payload
+
+/-- Canonical split execution reaches its checked marker phase through the
+actual fresh create operation. Raw storage, uniqueness, marker freshness and
+search progress are derived from the old accepted prefix; only its partition
+is assumed. The final detach/move partition is a separate obligation. -/
+theorem canonical_split_marker_phase_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
+    (block inst : BlockKey) (origin : NotionCoreOriginTree.Origin)
+    (payload : tx.payload = .split block inst origin) :
+    ∃ created rows,
+      applyOperation state (.create (.issued tx.id) (some block)) = some created ∧
+      integrate (getInstance created (blockName inst)).rows ⟨⟨tx.id,.split⟩,origin⟩ = some rows ∧
+      MarkerStage (putInstance created (blockName inst)
+        {getInstance created (blockName inst) with rows := rows})
+        (NotionCorePhysicalReplay.address (blockName inst) tx.id) ∧
+      (putInstance created (blockName inst)
+        {getInstance created (blockName inst) with rows := rows}).forest =
+        state.forest ++ [⟨blockName (.issued tx.id),
+          NotionCoreSliceForest.freshTitle (blockName (.issued tx.id))⟩] ∧
+      physical (putInstance created (blockName inst)
+        {getInstance created (blockName inst) with rows := rows}) (blockName (.issued tx.id)) =
+        NotionCoreSliceForest.emptyPhysical (blockName (.issued tx.id)) ∧
+      ∃ marked, applyOperation created (.marker block inst tx.id origin) = some marked := by
+  have payloadReach := NotionCoreCreatorNetwork.payload_reachable reachable
+  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh_version
+    network reachable version closed pre suffix tx position state accepted
+  have existsOld := NotionCoreMachineCreatorPresence.canonical_required_instance_version
+    network reachable version closed pre suffix tx position state accepted inst
+    (by simp [payload, NotionCoreCreatorNetwork.requiredBlocks])
+  have distinct : blockName inst ≠ blockName (.issued tx.id) := by
+    obtain ⟨entry,member,equal⟩ := existsOld
+    exact fun same => freshInstance entry member (equal.trans same)
+  obtain ⟨created,createStep,createPart,emptyTarget,storage⟩ :=
+    NotionCoreMachineCanonicalCreate.canonical_create_phase_version network reachable version closed pre suffix tx
+      position state accepted prior (some block)
+  have shape := NotionCoreMachineCanonicalCreate.fresh_create_shape state created (.issued tx.id)
+    (some block) freshInstance freshBlock createStep
+  have sourceStorage : getInstance created (blockName inst) = getInstance state (blockName inst) := by
+    simpa [distinct] using storage (blockName inst)
+  have sourcePhysical : physical created (blockName inst) = physical state (blockName inst) := by
+    simp only [physical,sourceStorage]
+  have uniqueOld := canonical_physical_unique_all_version network payloadReach version closed pre (tx :: suffix)
+    position state accepted
+  have uniqueCreated : ∀ key, ((physical created key).map Atom.address).Nodup := by
+    intro key
+    by_cases selected : key = blockName (.issued tx.id)
+    · subst key
+      rw [emptyTarget]
+      simp [NotionCoreSliceForest.emptyPhysical]
+    · have same : physical created key = physical state key := by
+        simp only [physical,storage key,if_neg selected]
+      rw [same]
+      exact uniqueOld key
+  have existsCreated : ∃ entry ∈ created.instances, entry.1 = blockName inst := by
+    obtain ⟨entry,member,equal⟩ := existsOld
+    exact ⟨entry,shape.1 ▸ List.mem_append_left _ member,equal⟩
+  obtain ⟨rows,integrated,physicalEq,fresh,originPresent⟩ := canonical_marker_physical_version
+    network payloadReach version closed pre suffix tx position state accepted block inst origin payload
+  have integratedCreated : integrate (getInstance created (blockName inst)).rows
+      ⟨⟨tx.id,.split⟩,origin⟩ = some rows := by rw [sourceStorage]; exact integrated
+  have physicalEqCreated : physical (putInstance created (blockName inst)
+      {getInstance created (blockName inst) with rows := rows}) (blockName inst) =
+      NotionCorePartition.spliceAfterBy Atom.address
+        (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
+        [boundary (NotionCorePhysicalReplay.address (blockName inst) tx.id)]
+        (physical created (blockName inst)) := by
+    rw [sourcePhysical]
+    simpa only [physical,NotionCoreMachineTables.getInstance_put,if_pos rfl,sourceStorage] using physicalEq
+  have stage := integrated_marker_stage created inst tx.id origin rows createPart uniqueCreated existsCreated
+    (sourcePhysical ▸ originPresent) (sourcePhysical ▸ fresh) physicalEqCreated
+  refine ⟨created,rows,createStep,integratedCreated,stage,?_,?_,
+    marker_operation_progress created block inst tx.id origin rows integratedCreated stage⟩
+  · have frame : (putInstance created (blockName inst)
+        {getInstance created (blockName inst) with rows := rows}).forest = created.forest := by
+      unfold putInstance; split <;> rfl
+    exact frame.trans shape.2.1
+  · have frame : physical (putInstance created (blockName inst)
+        {getInstance created (blockName inst) with rows := rows}) (blockName (.issued tx.id)) =
+        physical created (blockName (.issued tx.id)) := by
+      simp [physical,NotionCoreMachineTables.getInstance_put,Ne.symm distinct]
+    exact frame.trans emptyTarget
 
 /-- Canonical split execution reaches its checked marker phase through the
 actual fresh create operation. Raw storage, uniqueness, marker freshness and
@@ -215,64 +317,9 @@ theorem canonical_split_marker_phase (network : NotionCorePayloadNetwork.State)
         {getInstance created (blockName inst) with rows := rows}) (blockName (.issued tx.id)) =
         NotionCoreSliceForest.emptyPhysical (blockName (.issued tx.id)) ∧
       ∃ marked, applyOperation created (.marker block inst tx.id origin) = some marked := by
-  have payloadReach := NotionCoreCreatorNetwork.payload_reachable reachable
-  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh
-    network reachable peer pre suffix tx position state accepted
-  have existsOld := NotionCoreMachineCreatorPresence.canonical_required_instance
-    network reachable peer pre suffix tx position state accepted inst
-    (by simp [payload, NotionCoreCreatorNetwork.requiredBlocks])
-  have distinct : blockName inst ≠ blockName (.issued tx.id) := by
-    obtain ⟨entry,member,equal⟩ := existsOld
-    exact fun same => freshInstance entry member (equal.trans same)
-  obtain ⟨created,createStep,createPart,emptyTarget,storage⟩ :=
-    NotionCoreMachineCanonicalCreate.canonical_create_phase network reachable peer pre suffix tx
-      position state accepted prior (some block)
-  have shape := NotionCoreMachineCanonicalCreate.fresh_create_shape state created (.issued tx.id)
-    (some block) freshInstance freshBlock createStep
-  have sourceStorage : getInstance created (blockName inst) = getInstance state (blockName inst) := by
-    simpa [distinct] using storage (blockName inst)
-  have sourcePhysical : physical created (blockName inst) = physical state (blockName inst) := by
-    simp only [physical,sourceStorage]
-  have uniqueOld := canonical_physical_unique_all network payloadReach peer pre (tx :: suffix)
-    position state accepted
-  have uniqueCreated : ∀ key, ((physical created key).map Atom.address).Nodup := by
-    intro key
-    by_cases selected : key = blockName (.issued tx.id)
-    · subst key
-      rw [emptyTarget]
-      simp [NotionCoreSliceForest.emptyPhysical]
-    · have same : physical created key = physical state key := by
-        simp only [physical,storage key,if_neg selected]
-      rw [same]
-      exact uniqueOld key
-  have existsCreated : ∃ entry ∈ created.instances, entry.1 = blockName inst := by
-    obtain ⟨entry,member,equal⟩ := existsOld
-    exact ⟨entry,shape.1 ▸ List.mem_append_left _ member,equal⟩
-  obtain ⟨rows,integrated,physicalEq,fresh,originPresent⟩ := canonical_marker_physical
-    network payloadReach peer pre suffix tx position state accepted block inst origin payload
-  have integratedCreated : integrate (getInstance created (blockName inst)).rows
-      ⟨⟨tx.id,.split⟩,origin⟩ = some rows := by rw [sourceStorage]; exact integrated
-  have physicalEqCreated : physical (putInstance created (blockName inst)
-      {getInstance created (blockName inst) with rows := rows}) (blockName inst) =
-      NotionCorePartition.spliceAfterBy Atom.address
-        (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
-        [boundary (NotionCorePhysicalReplay.address (blockName inst) tx.id)]
-        (physical created (blockName inst)) := by
-    rw [sourcePhysical]
-    simpa only [physical,NotionCoreMachineTables.getInstance_put,if_pos rfl,sourceStorage] using physicalEq
-  have stage := integrated_marker_stage created inst tx.id origin rows createPart uniqueCreated existsCreated
-    (sourcePhysical ▸ originPresent) (sourcePhysical ▸ fresh) physicalEqCreated
-  refine ⟨created,rows,createStep,integratedCreated,stage,?_,?_,
-    marker_operation_progress created block inst tx.id origin rows integratedCreated stage⟩
-  · have frame : (putInstance created (blockName inst)
-        {getInstance created (blockName inst) with rows := rows}).forest = created.forest := by
-      unfold putInstance; split <;> rfl
-    exact frame.trans shape.2.1
-  · have frame : physical (putInstance created (blockName inst)
-        {getInstance created (blockName inst) with rows := rows}) (blockName (.issued tx.id)) =
-        physical created (blockName (.issued tx.id)) := by
-      simp [physical,NotionCoreMachineTables.getInstance_put,Ne.symm distinct]
-    exact frame.trans emptyTarget
+  have issued := NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)
+  exact canonical_split_marker_phase_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position state accepted prior block inst origin payload
 
 private theorem splitForest_ids (physical : Nat → List Atom) (marker : Address)
     (forest result : NotionCoreSliceForest.Forest)
@@ -401,5 +448,8 @@ theorem fresh_target_ref_owner (forest : NotionCoreSliceForest.Forest) (target i
 #print axioms canonical_physical_unique_all
 #print axioms integrated_marker_stage
 #print axioms marker_operation_progress
+#print axioms canonical_marker_physical_version
+#print axioms canonical_split_marker_phase_version
+#print axioms canonical_physical_unique_all_version
 #print axioms canonical_marker_physical
 end Sal.MRDTs.Instances.NotionCoreMachineMarkerProgress

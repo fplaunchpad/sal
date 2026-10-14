@@ -239,4 +239,21 @@ All oracle records match the saved evidence (including the partition/table
 instrumentation subsets). The production gate passed 3,694 Lean jobs, 18 exact
 contracts and axiom checks, 13 contract regression controls, 187 runtime tests,
 and validation of 569 benchmark records. No production document certificate
-was added. Local split issuance work continues separately.
+was added.
+
+The next increment proves local split effects through actual issuance and
+reconstruction, including inherited zero-gap controls. It also generalizes
+the actual replay and independent history theorem to every causally closed
+version of one honest archive. No separate archive is chosen for each event.
+`MachineHistory.honest_history_version` uses the same sorted atomic transaction
+sequence for actual reconstruction and independent sequential admission.
+Source-to-Sal event coupling, required ordering and specification visibility
+remain separate obligations; no full document RA certificate is claimed.
+
+The research integration gate for this increment passed 3,496 Lean jobs and
+all seventeen oracle groups. The new split-effects and version-table modules
+are registered in that gate. The production gate also passed: 3,694 Lean jobs,
+18 exact contracts and axiom checks, 13 contract regression controls, 187 runtime
+tests, and 569 benchmark records. Independent review confirmed the version
+history derives each actual step and its independent source execution; its
+scope remains terminal-query history, with the Sal RA connection still open.

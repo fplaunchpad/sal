@@ -86,6 +86,8 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreMachineInsertEffects \
   Sal.MRDTs.Instances.NotionCoreMachineHistory \
   Sal.MRDTs.Instances.NotionCoreMachineEraseIssueEffects \
+  Sal.MRDTs.Instances.NotionCoreMachineSplitEffects \
+  Sal.MRDTs.Instances.NotionCoreMachineVersionTables \
   Sal.MRDTs.Instances.NotionCoreSliceForest
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")

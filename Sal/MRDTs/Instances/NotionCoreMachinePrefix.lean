@@ -55,9 +55,9 @@ theorem transaction_rows_increasing {state : State} (reachable : Reach state)
 
 /-- Whole-reservation provenance makes every next birth fresh against the
 actual prefix births, even when prefix rows have already been tombstoned. -/
-theorem prefix_transaction_apart {state : State} (reachable : Reach state) (peer : Session)
+theorem prefix_transaction_apart_version {state : State} (reachable : Reach state) (version : List Run)
     {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
-    (position : NotionCoreIssuance.replay (forget state) (state.allocation.peers peer).received =
+    (position : NotionCoreIssuance.replay (forget state) version =
       pre ++ reservation entry.tx :: suffix)
     (inst : BlockKey) (oldDeleted freshDeleted : BlockKey → Id → Bool) :
     List.Disjoint ((prefixRows state.entries pre inst oldDeleted).map (fun row => row.item.id))
@@ -80,13 +80,54 @@ theorem prefix_transaction_apart {state : State} (reachable : Reach state) (peer
   have equal := NotionRunAllocation.reachable_unique_owner
     (NotionCoreIssuance.allocation_reachable reachable')
     (reservation old.tx) oldPublished (reservation entry.tx) newPublished id oldContains newContains
-  have ordered := position ▸ NotionCoreIssuance.replay_ordered reachable' (state.allocation.peers peer).received
+  have ordered := position ▸ NotionCoreIssuance.replay_ordered reachable' version
   have before := (List.pairwise_append.mp ordered).2.2 (reservation old.tx) earlier (reservation entry.tx) (by simp)
   rw [equal] at before
   exact NotionCoreSourceInvariant.before_irrefl _ before
 
 /-- The actual interpreter's duplicate and self-origin checks accept the next
 payload's rows. No accepted-step or desired update equation is a premise. -/
+theorem integrate_canonical_prefix_version {state : State} (reachable : Reach state) (version : List Run)
+    {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
+    (position : NotionCoreIssuance.replay (forget state) version =
+      pre ++ reservation entry.tx :: suffix)
+    (inst : BlockKey) (oldDeleted freshDeleted : BlockKey → Id → Bool) :
+    NotionCoreMachine.integrateRows (prefixRows state.entries pre inst oldDeleted)
+      (transactionRows entry.tx inst freshDeleted) =
+    some (prefixRows state.entries pre inst oldDeleted ++ transactionRows entry.tx inst freshDeleted) :=
+  NotionCoreMachineRows.integrateRows_increasing _ _
+    (transaction_rows_unique entry.tx inst freshDeleted)
+    (prefix_transaction_apart_version reachable version member pre suffix position inst oldDeleted freshDeleted)
+    (transaction_rows_increasing reachable member inst freshDeleted)
+
+
+/-- Table enumeration is immaterial to checked acceptance. A combined-state
+invariant can supply this structural row permutation without assuming a view. -/
+theorem integrate_prefix_permutation_version {state : State} (reachable : Reach state) (version : List Run)
+    {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
+    (position : NotionCoreIssuance.replay (forget state) version =
+      pre ++ reservation entry.tx :: suffix)
+    (inst : BlockKey) (oldDeleted freshDeleted : BlockKey → Id → Bool) (rows : Table)
+    (represented : rows.Perm (prefixRows state.entries pre inst oldDeleted)) :
+    NotionCoreMachine.integrateRows rows (transactionRows entry.tx inst freshDeleted) =
+      some (rows ++ transactionRows entry.tx inst freshDeleted) := by
+  apply NotionCoreMachineRows.integrateRows_increasing
+  · exact transaction_rows_unique entry.tx inst freshDeleted
+  · have apart := prefix_transaction_apart_version reachable version member pre suffix position inst oldDeleted freshDeleted
+    apply List.disjoint_left.mpr
+    intro id memberOld memberNew
+    exact List.disjoint_left.mp apart ((represented.map (fun row => row.item.id)).mem_iff.mp memberOld) memberNew
+  · exact transaction_rows_increasing reachable member inst freshDeleted
+
+theorem prefix_transaction_apart {state : State} (reachable : Reach state) (peer : Session)
+    {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
+    (position : NotionCoreIssuance.replay (forget state) (state.allocation.peers peer).received =
+      pre ++ reservation entry.tx :: suffix)
+    (inst : BlockKey) (oldDeleted freshDeleted : BlockKey → Id → Bool) :
+    List.Disjoint ((prefixRows state.entries pre inst oldDeleted).map (fun row => row.item.id))
+      ((transactionRows entry.tx inst freshDeleted).map (fun row => row.item.id)) :=
+  prefix_transaction_apart_version reachable _ member pre suffix position inst oldDeleted freshDeleted
+
 theorem integrate_canonical_prefix {state : State} (reachable : Reach state) (peer : Session)
     {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
     (position : NotionCoreIssuance.replay (forget state) (state.allocation.peers peer).received =
@@ -95,14 +136,8 @@ theorem integrate_canonical_prefix {state : State} (reachable : Reach state) (pe
     NotionCoreMachine.integrateRows (prefixRows state.entries pre inst oldDeleted)
       (transactionRows entry.tx inst freshDeleted) =
     some (prefixRows state.entries pre inst oldDeleted ++ transactionRows entry.tx inst freshDeleted) :=
-  NotionCoreMachineRows.integrateRows_increasing _ _
-    (transaction_rows_unique entry.tx inst freshDeleted)
-    (prefix_transaction_apart reachable peer member pre suffix position inst oldDeleted freshDeleted)
-    (transaction_rows_increasing reachable member inst freshDeleted)
+  integrate_canonical_prefix_version reachable _ member pre suffix position inst oldDeleted freshDeleted
 
-
-/-- Table enumeration is immaterial to checked acceptance. A combined-state
-invariant can supply this structural row permutation without assuming a view. -/
 theorem integrate_prefix_permutation {state : State} (reachable : Reach state) (peer : Session)
     {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
     (position : NotionCoreIssuance.replay (forget state) (state.allocation.peers peer).received =
@@ -110,14 +145,8 @@ theorem integrate_prefix_permutation {state : State} (reachable : Reach state) (
     (inst : BlockKey) (oldDeleted freshDeleted : BlockKey → Id → Bool) (rows : Table)
     (represented : rows.Perm (prefixRows state.entries pre inst oldDeleted)) :
     NotionCoreMachine.integrateRows rows (transactionRows entry.tx inst freshDeleted) =
-      some (rows ++ transactionRows entry.tx inst freshDeleted) := by
-  apply NotionCoreMachineRows.integrateRows_increasing
-  · exact transaction_rows_unique entry.tx inst freshDeleted
-  · have apart := prefix_transaction_apart reachable peer member pre suffix position inst oldDeleted freshDeleted
-    apply List.disjoint_left.mpr
-    intro id memberOld memberNew
-    exact List.disjoint_left.mp apart ((represented.map (fun row => row.item.id)).mem_iff.mp memberOld) memberNew
-  · exact transaction_rows_increasing reachable member inst freshDeleted
+    some (rows ++ transactionRows entry.tx inst freshDeleted) :=
+  integrate_prefix_permutation_version reachable _ member pre suffix position inst oldDeleted freshDeleted rows represented
 
 private def a : Id := ⟨1,[65]⟩
 private def b : Id := ⟨2,[65]⟩
@@ -147,6 +176,8 @@ theorem bootstrap_births_control :
     transactionRows seed (.issued a) (fun _ _ => false) ≠
       [⟨⟨a,.text 97 false⟩,.start⟩] := by decide
 
+#print axioms prefix_transaction_apart_version
+#print axioms integrate_prefix_permutation_version
 #print axioms integrate_canonical_prefix
 #print axioms integrate_prefix_permutation
 end Sal.MRDTs.Instances.NotionCoreMachinePrefix

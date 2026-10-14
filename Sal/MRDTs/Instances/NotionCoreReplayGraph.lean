@@ -105,7 +105,7 @@ private theorem runRows_origin (origin : NotionCoreOriginTree.Origin)
         · exact Or.inr ⟨first, by simp, same⟩
         · exact Or.inr ⟨item, List.mem_cons_of_mem _ present, same⟩
 
-private theorem located_birth_parent (tx : Transaction) (deleted : BlockKey → Id → Bool)
+theorem located_birth_parent (tx : Transaction) (deleted : BlockKey → Id → Bool)
     (inst : BlockKey) (row : Row) (born : (inst, row) ∈ births tx deleted)
     (old : Id) (parent : row.origin = .item old) :
     (inst, old) ∈ locatedReferences tx.payload ∨

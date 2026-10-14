@@ -84,12 +84,12 @@ theorem external_reference (payload : Payload) (id : Id) (origin : payloadOrigin
 /-- The complete provider width, rather than a transaction-global maximum,
 places every existing child before the new first item. Parent relationships
 are extracted from the actual old payload's births. -/
-theorem replay_child_before {state : NotionCorePayloadNetwork.State}
-    (reachable : NotionCorePayloadNetwork.Reach state) (peer : NotionRunAllocation.Session)
+theorem replay_child_before_version {state : NotionCorePayloadNetwork.State}
+    (reachable : NotionCorePayloadNetwork.Reach state) (version : List Run)
     {entry old : Entry} (member : entry ∈ state.entries) (oldMember : old ∈ state.entries)
     (pre suffix : List Run)
     (position : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget state)
-      (state.allocation.peers peer).received = pre ++ reservation entry.tx :: suffix)
+      version = pre ++ reservation entry.tx :: suffix)
     (earlier : reservation old.tx ∈ pre)
     (deleted : BlockKey → Id → Bool) (birth : Birth) (born : birth ∈ births old.tx deleted)
     (parent : birth.2.origin = payloadOrigin entry.tx.payload) :
@@ -112,6 +112,18 @@ theorem replay_child_before {state : NotionCorePayloadNetwork.State}
   have before := NotionCoreIssuance.replay_child_dominance reachable' member' pre suffix
     (position ▸ NotionCoreIssuance.replay_ordered reachable' _) earlier published within' reference
   simpa only [id, reservation, Run.at, offsetId, NotionCorePayloadNetwork.Entry.record, record] using before
+
+theorem replay_child_before {state : NotionCorePayloadNetwork.State}
+    (reachable : NotionCorePayloadNetwork.Reach state) (peer : NotionRunAllocation.Session)
+    {entry old : Entry} (member : entry ∈ state.entries) (oldMember : old ∈ state.entries)
+    (pre suffix : List Run)
+    (position : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget state)
+      (state.allocation.peers peer).received = pre ++ reservation entry.tx :: suffix)
+    (earlier : reservation old.tx ∈ pre)
+    (deleted : BlockKey → Id → Bool) (birth : Birth) (born : birth ∈ births old.tx deleted)
+    (parent : birth.2.origin = payloadOrigin entry.tx.payload) :
+    Before birth.2.item.id entry.tx.id :=
+  replay_child_before_version reachable _ member oldMember pre suffix position earlier deleted birth born parent
 
 /-- A finite table view of the prefix's actual typed births, restricted to
 one instance. Archive enumeration need not be replay order: child traversal
@@ -179,11 +191,11 @@ end
 
 /-- The insertion readiness predicate is derived for the actual prefix table
 and an edge-coupled tree. Internal-child provenance is not an extra assumption. -/
-theorem prefix_ready {state : NotionCorePayloadNetwork.State}
-    (reachable : NotionCorePayloadNetwork.Reach state) (peer : NotionRunAllocation.Session)
+theorem prefix_ready_version {state : NotionCorePayloadNetwork.State}
+    (reachable : NotionCorePayloadNetwork.Reach state) (version : List Run)
     {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
     (position : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget state)
-      (state.allocation.peers peer).received = pre ++ reservation entry.tx :: suffix)
+      version = pre ++ reservation entry.tx :: suffix)
     (inst : BlockKey) (deleted : BlockKey → Id → Bool) (forest : Forest) (fresh : Tree)
     (first : fresh.item.id = entry.tx.id)
     (coupled : NotionCoreParentMap.ParentEdges (prefixRows state.entries pre inst deleted) forest) :
@@ -194,7 +206,7 @@ theorem prefix_ready {state : NotionCorePayloadNetwork.State}
     have raw := coupled.mem_iff.mpr inside
     obtain ⟨old, oldMember, earlier, born⟩ := (prefix_row_member _ _ _ _ _).mp raw
     rw [first]
-    exact replay_child_before reachable peer member oldMember pre suffix position earlier deleted
+    exact replay_child_before_version reachable version member oldMember pre suffix position earlier deleted
       (inst, row) born parent
   cases originEq : payloadOrigin entry.tx.payload with
   | start =>
@@ -205,6 +217,17 @@ theorem prefix_ready {state : NotionCorePayloadNetwork.State}
   | item target =>
     exact forest_dominates_of_edges target fresh.item.id .start forest
       (fun row inside origin => children row inside (origin.trans originEq.symm))
+
+theorem prefix_ready {state : NotionCorePayloadNetwork.State}
+    (reachable : NotionCorePayloadNetwork.Reach state) (peer : NotionRunAllocation.Session)
+    {entry : Entry} (member : entry ∈ state.entries) (pre suffix : List Run)
+    (position : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget state)
+      (state.allocation.peers peer).received = pre ++ reservation entry.tx :: suffix)
+    (inst : BlockKey) (deleted : BlockKey → Id → Bool) (forest : Forest) (fresh : Tree)
+    (first : fresh.item.id = entry.tx.id)
+    (coupled : NotionCoreParentMap.ParentEdges (prefixRows state.entries pre inst deleted) forest) :
+    NotionCoreOriginTree.Ready (payloadOrigin entry.tx.payload) fresh forest :=
+  prefix_ready_version reachable _ member pre suffix position inst deleted forest fresh first coupled
 
 private def a : Id := ⟨1,[65]⟩
 private def b : Id := ⟨2,[65]⟩
@@ -239,6 +262,8 @@ theorem prefix_table_control :
     rows.map (fun row => row.item.id) ≠ [x,a,b] ∧
     prefixRows entries pre (.issued x) (fun _ _ => false) = [] := by decide
 
+#print axioms replay_child_before_version
+#print axioms prefix_ready_version
 #print axioms birth_parent
 #print axioms replay_child_before
 #print axioms prefix_ready

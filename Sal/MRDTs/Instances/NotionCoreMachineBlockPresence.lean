@@ -129,24 +129,25 @@ theorem replay_members (state result : State) (txs : List Transaction)
       simp only [List.mem_map,List.mem_cons]
       aesop
 
-theorem canonical_required_block (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
+theorem canonical_required_block_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List Transaction) (tx : Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state) (inst : BlockKey)
     (required : inst ∈ NotionCoreCreatorNetwork.requiredBlocks tx.payload) :
     blockName inst ∈ names state.forest := by
-  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactions_received network peer tx
+  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactionsFor_received network version tx
     (position ▸ List.mem_append_right pre (by simp))
   have runPosition : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget network)
-      (network.allocation.peers peer).received =
+      version =
       pre.map reservation ++ reservation entry.tx :: suffix.map reservation := by
-    rw [← NotionCoreReconstruction.transactions_runs,position,List.map_append,List.map_cons,same]
+    rw [← NotionCoreReconstruction.transactionsFor_runs,position,List.map_append,List.map_cons,same]
   obtain ⟨provider,published,earlier,born,_⟩ :=
-    NotionCoreCreatorNetwork.replay_creator_provider reachable peer member
+    NotionCoreCreatorNetwork.replay_creator_provider_version reachable version closed member
       (pre.map reservation) (suffix.map reservation) runPosition (same ▸ required)
   obtain ⟨previous,inPre,runSame⟩ := List.mem_map.mp earlier
-  obtain ⟨archived,archiveMember,previousEq,_⟩ := NotionCoreReconstruction.transactions_received network peer previous
+  obtain ⟨archived,archiveMember,previousEq,_⟩ := NotionCoreReconstruction.transactionsFor_received network version previous
     (position ▸ List.mem_append_left _ inPre)
   have keys := NotionCoreArchiveOrder.archive_keys_unique network
     (NotionCoreCreatorNetwork.payload_reachable reachable)
@@ -159,6 +160,21 @@ theorem canonical_required_block (network : NotionCorePayloadNetwork.State)
       (congrArg NotionRunAllocation.Run.first runSame)
   exact (replay_members {} state pre accepted (blockName inst)).mpr
     (Or.inr ⟨previous,inPre,inst,transactionEq ▸ born,rfl⟩)
+
+/-- Registered peer receipts specialize an explicitly closed archive version. -/
+theorem canonical_required_block (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state) (inst : BlockKey)
+    (required : inst ∈ NotionCoreCreatorNetwork.requiredBlocks tx.payload) :
+    blockName inst ∈ names state.forest :=
+  canonical_required_block_version network reachable _
+    (NotionCoreIssuance.peers_closed
+      (NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)) peer)
+    pre suffix tx position state accepted inst required
+
+#print axioms canonical_required_block_version
 
 #print axioms canonical_required_block
 #print axioms replay_members

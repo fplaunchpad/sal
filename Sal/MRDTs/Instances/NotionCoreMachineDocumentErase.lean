@@ -224,10 +224,11 @@ theorem erase_spec_step (state result : State) (block inst : BlockKey)
 /-- Honest canonical deletion executes an atomic source history update.
 The old projection is the only materialization premise; target decoding and
 all source-history guards are derived. -/
-theorem canonical_erase_execution (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+theorem canonical_erase_execution_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List Transaction) (tx : Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (replayed : replay {} pre = some state)
     (document : NotionCoreSourceDocument.Document)
     (materialized : materializeDocument state = some document)
@@ -238,12 +239,12 @@ theorem canonical_erase_execution (network : NotionCorePayloadNetwork.State)
       NotionCoreSourceDocument.Execution document
         [.delete (targets.map (NotionCorePhysicalReplay.address (blockName inst)))] after := by
   obtain ⟨checked,checkedReplay,part,_,_⟩ :=
-    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closed pre (tx :: suffix) position
   have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
   subst checked
   have creators := NotionCoreMachineNetwork.creator_reachable reachable
-  have stored := NotionCoreMachineCreatorPresence.canonical_required_instance network creators
-    peer pre suffix tx position state replayed inst
+  have stored := NotionCoreMachineCreatorPresence.canonical_required_instance_version network creators
+    version closed pre suffix tx position state replayed inst
     (by simp [payload,NotionCoreCreatorNetwork.requiredBlocks])
   obtain ⟨result,operation,_⟩ := NotionCoreMachinePartitionUpdates.erase_operation_partitioned
     state block inst targets part stored
@@ -258,6 +259,25 @@ theorem canonical_erase_execution (network : NotionCorePayloadNetwork.State)
   exact ⟨result,after,transaction,projected,
     .cons ⟨names,True.intro⟩ stepped (.nil after)⟩
 
+theorem canonical_erase_execution (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (replayed : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (materialized : materializeDocument state = some document)
+    (block inst : BlockKey) (targets : List NotionRunAllocation.Id)
+    (payload : tx.payload = .erase block inst targets) :
+    ∃ result after, applyTransaction state tx = some result ∧
+      materializeDocument result = some after ∧
+      NotionCoreSourceDocument.Execution document
+        [.delete (targets.map (NotionCorePhysicalReplay.address (blockName inst)))] after :=
+  canonical_erase_execution_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable
+      (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))) peer)
+    pre suffix tx position state replayed document materialized block inst targets payload
+
+#print axioms canonical_erase_execution_version
 #print axioms canonical_erase_execution
 
 #print axioms sliceAtoms_erase

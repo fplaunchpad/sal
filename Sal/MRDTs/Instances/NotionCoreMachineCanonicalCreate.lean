@@ -18,39 +18,41 @@ theorem created_issued_id (tx : Transaction) (id : Id)
   | mk first payload => cases payload <;>
       simp [NotionCoreCreatorNetwork.createdBlocks] at created <;> simp_all
 
-private theorem prefix_used_creator (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : Session)
-    (pre suffix : List Transaction) (position : transactions network peer = pre ++ suffix)
+private theorem prefix_used_creator_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (position : NotionCoreReconstruction.transactionsFor network version = pre ++ suffix)
     (previous : Transaction) (present : previous ∈ pre) (key : BlockKey)
     (used : key ∈ NotionCoreMachineCreators.usedBlocks previous) :
     ∃ provider ∈ network.entries, reservation provider.tx ∈ pre.map reservation ∧
       key ∈ NotionCoreCreatorNetwork.createdBlocks provider.tx := by
-  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactions_received network peer previous
+  obtain ⟨entry,member,same,_⟩ := NotionCoreReconstruction.transactionsFor_received network version previous
     (position ▸ List.mem_append_left suffix present)
   rcases List.mem_append.mp used with created | required
   · exact ⟨entry,member,List.mem_map.mpr ⟨previous,present,by rw [same]⟩,same ▸ created⟩
   · obtain ⟨before,after,shape⟩ := List.mem_iff_append.mp present
     have runPosition : NotionCoreIssuance.replay (NotionCorePayloadNetwork.forget network)
-        (network.allocation.peers peer).received =
+        version =
         before.map reservation ++ reservation entry.tx :: (after ++ suffix).map reservation := by
-      rw [← NotionCoreReconstruction.transactions_runs,position,shape,List.append_assoc,
+      rw [← NotionCoreReconstruction.transactionsFor_runs,position,shape,List.append_assoc,
         List.cons_append,List.map_append,List.map_cons,same]
     obtain ⟨provider,published,earlier,born,_⟩ :=
-      NotionCoreCreatorNetwork.replay_creator_provider reachable peer member
+      NotionCoreCreatorNetwork.replay_creator_provider_version reachable version closed member
         (before.map reservation) ((after ++ suffix).map reservation) runPosition (same ▸ required)
     refine ⟨provider,published,?_,born⟩
     rw [shape,List.map_append,List.map_cons]
     exact List.mem_append_left _ earlier
 
-theorem canonical_destination_fresh (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : Session)
+theorem canonical_destination_fresh_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List Transaction) (tx : Transaction)
-    (position : transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state) :
     (∀ entry ∈ state.instances, entry.1 ≠ blockName (.issued tx.id)) ∧
       (∀ block ∈ state.forest, block.id ≠ blockName (.issued tx.id)) := by
   have payloadReach := NotionCoreCreatorNetwork.payload_reachable reachable
-  have ordered := position ▸ NotionCoreReconstruction.transactions_ordered network payloadReach peer
+  have ordered := position ▸ NotionCoreReconstruction.transactionsFor_ordered network payloadReach version
   have earlier (previous : Transaction) (present : previous ∈ pre) :
       NotionRunAllocation.Before previous.id tx.id :=
     (List.pairwise_append.mp ordered).2.2 previous present tx (by simp)
@@ -61,7 +63,7 @@ theorem canonical_destination_fresh (network : NotionCorePayloadNetwork.State)
     obtain ⟨previous,present,key,used,encoded⟩ :=
       NotionCoreMachineCreators.replay_instance_used pre state accepted stored.1 keyMember
     have sameKey : key = .issued tx.id := blockName_injective (encoded.symm.trans sameName)
-    obtain ⟨provider,published,inPrefix,born⟩ := prefix_used_creator network reachable peer pre (tx::suffix)
+    obtain ⟨provider,published,inPrefix,born⟩ := prefix_used_creator_version network reachable version closed pre (tx::suffix)
       position previous present key used
     have idEq : provider.tx.id = tx.id := created_issued_id provider.tx tx.id (sameKey ▸ born)
     obtain ⟨earlierTx,earlierMember,runEq⟩ := List.mem_map.mp inPrefix
@@ -75,6 +77,33 @@ theorem canonical_destination_fresh (network : NotionCorePayloadNetwork.State)
   obtain ⟨entry,present,same⟩ := supported block.id (List.mem_map.mpr ⟨block,member,rfl⟩)
   exact freshInstances entry present (same.trans sameName)
 
+theorem canonical_destination_fresh (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state) :
+    (∀ entry ∈ state.instances, entry.1 ≠ blockName (.issued tx.id)) ∧
+      (∀ block ∈ state.forest, block.id ≠ blockName (.issued tx.id)) := by
+  have issued := NotionCorePayloadNetwork.forget_reachable
+    (NotionCoreCreatorNetwork.payload_reachable reachable)
+  exact canonical_destination_fresh_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position state accepted
+
+/-- Actual create phase for either a next create request or split destination.
+No assumed block/instance absence or next-step acceptance enters this theorem. -/
+theorem canonical_create_partitioned_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (partitioned : NotionCoreMachinePartition.Partitioned state) (afterBlock : Option BlockKey) :
+    ∃ result, applyOperation state (.create (.issued tx.id) afterBlock) = some result ∧
+      NotionCoreMachinePartition.Partitioned result := by
+  obtain ⟨freshInstance,freshBlock⟩ := canonical_destination_fresh_version network reachable version closed pre suffix tx position state accepted
+  exact NotionCoreMachinePartitionCreate.create_partitioned state (.issued tx.id) afterBlock
+    partitioned freshInstance freshBlock
+
 /-- Actual create phase for either a next create request or split destination.
 No assumed block/instance absence or next-step acceptance enters this theorem. -/
 theorem canonical_create_partitioned (network : NotionCorePayloadNetwork.State)
@@ -85,9 +114,10 @@ theorem canonical_create_partitioned (network : NotionCorePayloadNetwork.State)
     (partitioned : NotionCoreMachinePartition.Partitioned state) (afterBlock : Option BlockKey) :
     ∃ result, applyOperation state (.create (.issued tx.id) afterBlock) = some result ∧
       NotionCoreMachinePartition.Partitioned result := by
-  obtain ⟨freshInstance,freshBlock⟩ := canonical_destination_fresh network reachable peer pre suffix tx position state accepted
-  exact NotionCoreMachinePartitionCreate.create_partitioned state (.issued tx.id) afterBlock
-    partitioned freshInstance freshBlock
+  have issued := NotionCorePayloadNetwork.forget_reachable
+    (NotionCoreCreatorNetwork.payload_reachable reachable)
+  exact canonical_create_partitioned_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position state accepted partitioned afterBlock
 
 /-- Literal state shape of a genuinely fresh source create phase. -/
 theorem fresh_create_shape (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
@@ -171,6 +201,25 @@ theorem fresh_create_storage (state result : State) (block : BlockKey) (afterBlo
   exact NotionCoreMachineTables.getInstance_put state _ inst {}
 
 /-- Complete canonical create-phase output for the following marker phase. -/
+theorem canonical_create_phase_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (partitioned : NotionCoreMachinePartition.Partitioned state) (afterBlock : Option BlockKey) :
+    ∃ result, applyOperation state (.create (.issued tx.id) afterBlock) = some result ∧
+      NotionCoreMachinePartition.Partitioned result ∧
+      physical result (blockName (.issued tx.id)) =
+        NotionCoreSliceForest.emptyPhysical (blockName (.issued tx.id)) ∧
+      ∀ inst, getInstance result inst = if inst = blockName (.issued tx.id) then {} else getInstance state inst := by
+  obtain ⟨result,step,partition⟩ := canonical_create_partitioned_version network reachable version closed pre suffix tx position
+    state accepted partitioned afterBlock
+  obtain ⟨freshInstance,freshBlock⟩ := canonical_destination_fresh_version network reachable version closed pre suffix tx position state accepted
+  exact ⟨result,step,partition,(fresh_create_physical state result (.issued tx.id) afterBlock
+    freshInstance freshBlock step).1,fresh_create_storage state result (.issued tx.id) afterBlock
+    freshInstance freshBlock step⟩
+
 theorem canonical_create_phase (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (peer : Session)
     (pre suffix : List Transaction) (tx : Transaction)
@@ -182,13 +231,14 @@ theorem canonical_create_phase (network : NotionCorePayloadNetwork.State)
       physical result (blockName (.issued tx.id)) =
         NotionCoreSliceForest.emptyPhysical (blockName (.issued tx.id)) ∧
       ∀ inst, getInstance result inst = if inst = blockName (.issued tx.id) then {} else getInstance state inst := by
-  obtain ⟨result,step,partition⟩ := canonical_create_partitioned network reachable peer pre suffix tx position
-    state accepted partitioned afterBlock
-  obtain ⟨freshInstance,freshBlock⟩ := canonical_destination_fresh network reachable peer pre suffix tx position state accepted
-  exact ⟨result,step,partition,(fresh_create_physical state result (.issued tx.id) afterBlock
-    freshInstance freshBlock step).1,fresh_create_storage state result (.issued tx.id) afterBlock
-    freshInstance freshBlock step⟩
+  have issued := NotionCorePayloadNetwork.forget_reachable
+    (NotionCoreCreatorNetwork.payload_reachable reachable)
+  exact canonical_create_phase_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position state accepted partitioned afterBlock
 
+#print axioms canonical_destination_fresh_version
+#print axioms canonical_create_partitioned_version
+#print axioms canonical_create_phase_version
 #print axioms canonical_create_phase
 #print axioms canonical_destination_fresh
 #print axioms canonical_create_partitioned

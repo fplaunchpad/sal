@@ -16,10 +16,11 @@ open NotionCoreSliceForest (FreshMarker)
 /-- The complete create/marker/move transaction executes and restores the
 partition and strong shape. No next acceptance, desired output forest,
 selected owner, name freshness or recursive routing result is assumed. -/
-theorem canonical_split_preserves_active (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
+theorem canonical_split_preserves_active_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List Transaction) (tx : Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state)
     (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
     (block inst : BlockKey) (origin : NotionCoreOriginTree.Origin)
@@ -29,14 +30,14 @@ theorem canonical_split_preserves_active (network : NotionCorePayloadNetwork.Sta
       Partitioned result ∧ ShapeInvariant result ∧
       ∀ key, ActiveInstance result key ↔ ActiveInstance state key := by
   obtain ⟨created,rows,createStep,integrated,stage,rawForest,emptyTarget,_⟩ :=
-    canonical_split_marker_phase network reachable peer pre suffix tx position state accepted
+    canonical_split_marker_phase_version network reachable version closed pre suffix tx position state accepted
       partitioned block inst origin payload
   let raw := putInstance created (blockName inst)
     {getInstance created (blockName inst) with rows := rows}
   let marker := NotionCorePhysicalReplay.address (blockName inst) tx.id
   let target := blockName (.issued tx.id)
-  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh
-    network reachable peer pre suffix tx position state accepted
+  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh_version
+    network reachable version closed pre suffix tx position state accepted
   have freshTarget : target ∉ state.forest.map NotionCoreSliceForest.Block.id := by
     intro member
     obtain ⟨old,member,equal⟩ := List.mem_map.mp member
@@ -79,6 +80,41 @@ theorem canonical_split_preserves_active (network : NotionCorePayloadNetwork.Sta
     exact atomic_split_active (physical raw) marker target state.forest forest shapeInvariant.1
       freshMarker freshTarget inactive emptyTarget atomic key
 
+theorem canonical_split_preserves_active (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
+    (block inst : BlockKey) (origin : NotionCoreOriginTree.Origin)
+    (payload : tx.payload = .split block inst origin)
+    (activeInstance : ActiveInstance state (blockName inst)) :
+    ∃ result, applyTransaction state tx = some result ∧
+      Partitioned result ∧ ShapeInvariant result ∧
+      ∀ key, ActiveInstance result key ↔ ActiveInstance state key := by
+  have issued := NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)
+  exact canonical_split_preserves_active_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position state accepted partitioned shapeInvariant
+    block inst origin payload activeInstance
+
+/-- Compatibility projection retaining just transaction success and the two
+structural invariants. The strengthened theorem also classifies active instances. -/
+theorem canonical_split_preserves_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
+    (block inst : BlockKey) (origin : NotionCoreOriginTree.Origin)
+    (payload : tx.payload = .split block inst origin)
+    (activeInstance : ActiveInstance state (blockName inst)) :
+    ∃ result, applyTransaction state tx = some result ∧
+      Partitioned result ∧ ShapeInvariant result := by
+  obtain ⟨result,step,part,shape,_⟩ := canonical_split_preserves_active_version network reachable version closed pre suffix tx
+    position state accepted partitioned shapeInvariant block inst origin payload activeInstance
+  exact ⟨result,step,part,shape⟩
+
 /-- Compatibility projection retaining just transaction success and the two
 structural invariants. The strengthened theorem also classifies active instances. -/
 theorem canonical_split_preserves (network : NotionCorePayloadNetwork.State)
@@ -92,10 +128,13 @@ theorem canonical_split_preserves (network : NotionCorePayloadNetwork.State)
     (activeInstance : ActiveInstance state (blockName inst)) :
     ∃ result, applyTransaction state tx = some result ∧
       Partitioned result ∧ ShapeInvariant result := by
-  obtain ⟨result,step,part,shape,_⟩ := canonical_split_preserves_active network reachable peer pre suffix tx
-    position state accepted partitioned shapeInvariant block inst origin payload activeInstance
-  exact ⟨result,step,part,shape⟩
+  have issued := NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)
+  exact canonical_split_preserves_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position state accepted partitioned shapeInvariant
+    block inst origin payload activeInstance
 
+#print axioms canonical_split_preserves_active_version
+#print axioms canonical_split_preserves_version
 #print axioms canonical_split_preserves_active
 
 #print axioms canonical_split_preserves

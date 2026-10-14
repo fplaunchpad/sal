@@ -55,10 +55,11 @@ private theorem replay_append (state : State) (a b : List Transaction) :
 /-- Canonical bootstrap executes in an arbitrary earlier honest context and
 is simulated by the existing create/insert source execution. Neither an empty
 old machine nor bootstrap-first order nor a final projection is a premise. -/
-theorem canonical_bootstrap_source_execution (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+theorem canonical_bootstrap_source_execution_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List Transaction) (tx : Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state)
     (document : NotionCoreSourceDocument.Document)
     (old : NotionCoreMachineDocument.materializeDocument state = some document)
@@ -69,11 +70,11 @@ theorem canonical_bootstrap_source_execution (network : NotionCorePayloadNetwork
   have creators := NotionCoreMachineNetwork.creator_reachable reachable
   have networkReach := NotionCoreCreatorNetwork.payload_reachable creators
   obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
-    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closed pre (tx :: suffix) position
   have stateEq : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
-  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreBootstrapProvenance.canonical_bootstrap_fresh
-    network creators peer pre suffix tx position atoms payload state accepted
+  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreBootstrapProvenance.canonical_bootstrap_fresh_version
+    network creators version closed pre suffix tx position atoms payload state accepted
   obtain ⟨created,createStep,createdPart⟩ := NotionCoreMachinePartitionCreate.create_partitioned
     state .initial none part freshInstance freshBlock
   have createdShape := NotionCoreMachineShape.fresh_create_shape_preserves state created .initial none
@@ -93,12 +94,12 @@ theorem canonical_bootstrap_source_execution (network : NotionCorePayloadNetwork
   have nextReplay : replay {} (pre ++ [tx]) = some next := by
     rw [replay_append,accepted]
     simp [replay,transaction]
-  have nextPosition : NotionCoreReconstruction.transactions network peer = (pre ++ [tx]) ++ suffix := by
+  have nextPosition : NotionCoreReconstruction.transactionsFor network version = (pre ++ [tx]) ++ suffix := by
     simpa [List.append_assoc] using position
-  have oldUnique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network networkReach
-    peer pre (tx :: suffix) position state accepted
-  have nextUnique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network networkReach
-    peer (pre ++ [tx]) suffix nextPosition next nextReplay
+  have oldUnique := NotionCoreMachineVersionTables.version_physical_unique_all network networkReach
+    version closed pre (tx :: suffix) position state accepted
+  have nextUnique := NotionCoreMachineVersionTables.version_physical_unique_all network networkReach
+    version closed (pre ++ [tx]) suffix nextPosition next nextReplay
   have createdUnique : ∀ key, ((physical created key).map Atom.address).Nodup := by
     intro key
     by_cases selected : key = 0
@@ -160,6 +161,26 @@ theorem canonical_bootstrap_source_execution (network : NotionCorePayloadNetwork
   simpa only [NotionCoreMachineCommands.commands,payload,NotionCoreMachineCommands.text] using
     (NotionCoreSourceDocument.Execution.cons createGuard createSource
       (.cons insertGuard insertSource (.nil after)))
+
+/-- Registered peer bootstrap uses the same closed-version proof. -/
+theorem canonical_bootstrap_source_execution (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (old : NotionCoreMachineDocument.materializeDocument state = some document)
+    (atoms : List Nat) (payload : tx.payload = .bootstrap atoms) :
+    ∃ next after, applyTransaction state tx = some next ∧
+      NotionCoreMachineDocument.materializeDocument next = some after ∧
+      NotionCoreSourceDocument.Execution document (NotionCoreMachineCommands.commands tx) after :=
+  canonical_bootstrap_source_execution_version network reachable _
+    (NotionCoreIssuance.peers_closed
+      (NotionCorePayloadNetwork.forget_reachable
+        (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))) peer)
+    pre suffix tx position state accepted document old atoms payload
+
+#print axioms canonical_bootstrap_source_execution_version
 
 namespace SPOT
 private def earlier : Transaction := ⟨⟨1,[64]⟩,.create none⟩

@@ -511,10 +511,11 @@ theorem split_document_from_context (state raw next : State)
 /-- Honest canonical split refines the existing two-command source-document
 transaction. The displayed predecessor is the requested block, whereas the
 source to cut is recovered by the actual origin/marker searches. -/
-theorem canonical_split_source_step_with_execution (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+theorem canonical_split_source_step_with_execution_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state)
     (document : NotionCoreSourceDocument.Document)
     (old : materializeDocument state = some document)
@@ -532,18 +533,18 @@ theorem canonical_split_source_step_with_execution (network : NotionCorePayloadN
   have creators := NotionCoreMachineNetwork.creator_reachable reachable
   have payloadReach := NotionCoreCreatorNetwork.payload_reachable creators
   obtain ⟨checked,checkedReplay,part,shape,rootActive⟩ :=
-    NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre (tx :: suffix) position
+    NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closed pre (tx :: suffix) position
   have equal : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
-  obtain ⟨provider,providerMember,root,_⟩ := NotionCoreRootCreators.canonical_selected_root_provider
+  obtain ⟨provider,providerMember,root,_⟩ := NotionCoreRootCreators.canonical_selected_root_provider_version
     network creators (NotionCoreMachineHonestReplay.honest_root_provenance network reachable)
-    peer pre suffix tx position inst (by simp [payload,NotionCoreRootCreators.selectedInstances])
+    version closed pre suffix tx position inst (by simp [payload,NotionCoreRootCreators.selectedInstances])
   have activeInst : NotionCoreMachineShape.ActiveInstance state (blockName inst) :=
     (rootActive _).mpr ⟨provider,providerMember,inst,root,rfl⟩
-  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh
-    network creators peer pre suffix tx position state accepted
+  obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh_version
+    network creators version closed pre suffix tx position state accepted
   obtain ⟨created,rows,createStep,integrated,stage,rawForest,emptyTarget,_⟩ :=
-    NotionCoreMachineMarkerProgress.canonical_split_marker_phase network creators peer pre suffix tx position
+    NotionCoreMachineMarkerProgress.canonical_split_marker_phase_version network creators version closed pre suffix tx position
       state accepted part block inst origin payload
   let raw := putInstance created (blockName inst) {getInstance created (blockName inst) with rows := rows}
   let marker := NotionCorePhysicalReplay.address (blockName inst) tx.id
@@ -561,8 +562,8 @@ theorem canonical_split_source_step_with_execution (network : NotionCorePayloadN
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
     (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) accepted
   have createAligned := NotionCoreMachineDisplay.operation_aligned state created _ aligned createStep
-  have previousMember := NotionCoreMachineBlockPresence.canonical_required_block
-    network creators peer pre suffix tx position state accepted block
+  have previousMember := NotionCoreMachineBlockPresence.canonical_required_block_version
+    network creators version closed pre suffix tx position state accepted block
       (by simp [payload,NotionCoreCreatorNetwork.requiredBlocks])
   obtain ⟨intermediate,createdDoc,createDocStep⟩ := NotionCoreMachineDocumentCreate.fresh_create_document
     state created (.issued tx.id) (some block) freshInstance freshBlock createStep aligned document old (by
@@ -570,7 +571,7 @@ theorem canonical_split_source_step_with_execution (network : NotionCorePayloadN
       have keyEq : key = block := Option.some.inj equality.symm
       subst key
       exact aligned.2.mem_iff.mpr previousMember)
-  have existsOld := NotionCoreMachineCreatorPresence.canonical_required_instance network creators peer pre suffix tx
+  have existsOld := NotionCoreMachineCreatorPresence.canonical_required_instance_version network creators version closed pre suffix tx
     position state accepted inst (by simp [payload,NotionCoreCreatorNetwork.requiredBlocks])
   have instDistinct : blockName inst ≠ target := by
     obtain ⟨entry,member,equal⟩ := existsOld
@@ -580,7 +581,7 @@ theorem canonical_split_source_step_with_execution (network : NotionCorePayloadN
   have sameStorage : getInstance created (blockName inst) = getInstance state (blockName inst) := by
     simpa [target,instDistinct] using storage (blockName inst)
   obtain ⟨originalRows,originalIntegrated,originalPhysical,fresh,originPhysical⟩ :=
-    NotionCoreMachineMarkerProgress.canonical_marker_physical network payloadReach peer pre suffix tx position
+    NotionCoreMachineMarkerProgress.canonical_marker_physical_version network payloadReach version closed pre suffix tx position
       state accepted block inst origin payload
   have rowEqual : originalRows = rows := by
     rw [← sameStorage] at originalIntegrated
@@ -594,7 +595,7 @@ theorem canonical_split_source_step_with_execution (network : NotionCorePayloadN
   have markerFresh : marker ∉ (physical created (blockName inst)).map Atom.address := by
     simpa only [physical,sameStorage] using fresh
   have createdUnique : ∀ key, ((physical created key).map Atom.address).Nodup := by
-    have uniqueOld := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network payloadReach peer pre
+    have uniqueOld := NotionCoreMachineMarkerProgress.canonical_physical_unique_all_version network payloadReach version closed pre
       (tx :: suffix) position state accepted
     have physicalFrame := NotionCoreMachineCanonicalCreate.fresh_create_physical state created (.issued tx.id)
       (some block) freshInstance freshBlock createStep
@@ -701,7 +702,7 @@ theorem canonical_split_source_step_with_execution (network : NotionCorePayloadN
     rfl (by unfold next raw putInstance; split <;> rfl) rfl
     (NotionCoreMachineCanonicalCreate.fresh_create_physical state created (.issued tx.id)
       (some block) freshInstance freshBlock createStep).1
-  have oldUnique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network payloadReach peer pre
+  have oldUnique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all_version network payloadReach version closed pre
     (tx :: suffix) position state accepted
   have createGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part oldUnique shape aligned
     document intermediate old _ createDocStep
@@ -711,6 +712,50 @@ theorem canonical_split_source_step_with_execution (network : NotionCorePayloadN
     (NotionCoreSourceDocument.Execution.cons splitGuard splitStep (NotionCoreSourceDocument.Execution.nil result))
   exact ⟨next,intermediate,result,transaction,materialized,createDocStep,splitStep,
     by simpa [NotionCoreMachineCommands.commands,payload] using execution⟩
+
+/-- Honest canonical split refines the existing two-command source-document
+transaction. The displayed predecessor is the requested block, whereas the
+source to cut is recovered by the actual origin/marker searches. -/
+theorem canonical_split_source_step_with_execution (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (old : materializeDocument state = some document)
+    (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin)
+    (payload : tx.payload = .split block inst origin) :
+    ∃ next intermediate result, applyTransaction state tx = some next ∧
+      materializeDocument next = some result ∧
+      NotionCoreSourceDocument.step document (.create (blockName (.issued tx.id))
+        (blockName (.issued tx.id)) (some (blockName block))) = some intermediate ∧
+      NotionCoreSourceDocument.step intermediate (.split
+        (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
+        (NotionCorePhysicalReplay.address (blockName inst) tx.id)
+        (blockName (.issued tx.id))) = some result ∧
+      NotionCoreSourceDocument.Execution document (NotionCoreMachineCommands.commands tx) result := by
+  have issued := NotionCorePayloadNetwork.forget_reachable
+    (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
+  exact canonical_split_source_step_with_execution_version network reachable
+    (network.allocation.peers peer).received (NotionCoreIssuance.peers_closed issued peer)
+    pre suffix tx position state accepted document old block inst origin payload
+
+/-- Public atomic execution endpoint for history composition. -/
+theorem canonical_split_execution_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (document : NotionCoreSourceDocument.Document)
+    (old : materializeDocument state = some document)
+    (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin)
+    (payload : tx.payload = .split block inst origin) :
+    ∃ next result, applyTransaction state tx = some next ∧ materializeDocument next = some result ∧
+      NotionCoreSourceDocument.Execution document (NotionCoreMachineCommands.commands tx) result := by
+  obtain ⟨next,_,result,transaction,materialized,_,_,execution⟩ := canonical_split_source_step_with_execution_version
+    network reachable version closed pre suffix tx position state accepted document old block inst origin payload
+  exact ⟨next,result,transaction,materialized,execution⟩
 
 /-- Public atomic execution endpoint for history composition. -/
 theorem canonical_split_execution (network : NotionCorePayloadNetwork.State)
@@ -724,10 +769,13 @@ theorem canonical_split_execution (network : NotionCorePayloadNetwork.State)
     (payload : tx.payload = .split block inst origin) :
     ∃ next result, applyTransaction state tx = some next ∧ materializeDocument next = some result ∧
       NotionCoreSourceDocument.Execution document (NotionCoreMachineCommands.commands tx) result := by
-  obtain ⟨next,_,result,transaction,materialized,_,_,execution⟩ := canonical_split_source_step_with_execution
-    network reachable peer pre suffix tx position state accepted document old block inst origin payload
-  exact ⟨next,result,transaction,materialized,execution⟩
+  have issued := NotionCorePayloadNetwork.forget_reachable
+    (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
+  exact canonical_split_execution_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position state accepted document old block inst origin payload
 
+#print axioms canonical_split_execution_version
+#print axioms canonical_split_source_step_with_execution_version
 #print axioms canonical_split_execution
 #print axioms canonical_split_source_step_with_execution
 #print axioms split_document_from_context

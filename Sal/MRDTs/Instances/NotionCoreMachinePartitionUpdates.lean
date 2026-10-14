@@ -161,18 +161,19 @@ private theorem insert_result (state next : State) (block inst : NotionCorePaylo
 /-- Actual canonical nonempty insertion preserves the full partition. The
 origin, freshness and physical splice are derived from issuance; only the old
 partition and the selected instance's existence remain structural inputs. -/
-theorem canonical_insert_partitioned_of_instance
+theorem canonical_insert_partitioned_of_instance_version
     (network : NotionCorePayloadNetwork.State) (reachable : NotionCorePayloadNetwork.Reach network)
-    (peer : NotionRunAllocation.Session) (pre suffix : List NotionCorePayload.Transaction)
+    (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version) (pre suffix : List NotionCorePayload.Transaction)
     (tx : NotionCorePayload.Transaction)
-    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
     (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
     (payload : tx.payload = .insert block inst origin atoms) (nonempty : atoms ≠ [])
     (existsInstance : ∃ entry ∈ state.instances, entry.1 = blockName inst) :
     ∃ next, applyTransaction state tx = some next ∧ Partitioned next := by
-  obtain ⟨next, executed, physicalEq⟩ := NotionCoreMachineCanonicalForest.canonical_insert_physical
-    network reachable peer pre suffix tx position state accepted block inst origin atoms payload nonempty
+  obtain ⟨next, executed, physicalEq⟩ := NotionCoreMachineCanonicalForest.canonical_insert_physical_version
+    network reachable version closed pre suffix tx position state accepted block inst origin atoms payload nonempty
   have transaction : applyTransaction state tx = some next := by
     simp [applyTransaction, NotionCorePayload.operations, payload, applyOperations, executed]
   obtain ⟨rows, nextEq⟩ := insert_result state next block inst tx.id origin atoms executed
@@ -185,9 +186,9 @@ theorem canonical_insert_partitioned_of_instance
     ((NotionCorePayload.textItems tx.id atoms
       (fun id => decide (id ∈ (getInstance state (blockName inst)).pending))).map
       (NotionCorePhysicalReplay.atom (blockName inst))) prior frame ?_ existsInstance
-    (NotionCoreMachineTableGraph.canonical_physical_unique network reachable peer pre (tx :: suffix)
-      position state accepted inst)
-    (NotionCoreMachineCanonicalForest.canonical_insert_origin_present network reachable peer pre suffix tx
+    (NotionCoreMachineVersionTables.version_physical_unique_all network reachable version closed pre (tx :: suffix)
+      position state accepted (blockName inst))
+    (NotionCoreMachineCanonicalForest.canonical_insert_origin_present_version network reachable version closed pre suffix tx
       position state accepted block inst origin atoms payload) physicalEq ?_⟩
   · intro key
     rw [nextEq]
@@ -199,6 +200,56 @@ theorem canonical_insert_partitioned_of_instance
 /-- Creator-aware canonical issuance supplies the selected instance as well
 as all insertion guards. The only remaining execution invariant is the old
 all-reference partition; next acceptance is a conclusion. -/
+theorem canonical_insert_partitioned_version
+    (network : NotionCorePayloadNetwork.State) (reachable : NotionCoreCreatorNetwork.Reach network)
+    (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version) (pre suffix : List NotionCorePayload.Transaction)
+    (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
+    (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
+    (payload : tx.payload = .insert block inst origin atoms) (nonempty : atoms ≠ []) :
+    ∃ next, applyTransaction state tx = some next ∧ Partitioned next := by
+  apply canonical_insert_partitioned_of_instance_version network
+    (NotionCoreCreatorNetwork.payload_reachable reachable) version closed pre suffix tx position state accepted prior
+    block inst origin atoms payload nonempty
+  apply NotionCoreMachineCreatorPresence.canonical_required_instance_version
+    network reachable version closed pre suffix tx position state accepted inst
+  simp [payload, NotionCoreCreatorNetwork.requiredBlocks]
+
+/-- The complete canonical erase transaction preserves the partition, with
+target-instance existence derived from a replayed creator. Empty target lists
+are covered too; no item-reference witness is used to infer creation. -/
+theorem canonical_erase_partitioned_version
+    (network : NotionCorePayloadNetwork.State) (reachable : NotionCoreCreatorNetwork.Reach network)
+    (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version) (pre suffix : List NotionCorePayload.Transaction)
+    (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
+    (block inst : NotionCorePayload.BlockKey) (targets : List NotionRunAllocation.Id)
+    (payload : tx.payload = .erase block inst targets) :
+    ∃ next, applyTransaction state tx = some next ∧ Partitioned next := by
+  have existsInstance := NotionCoreMachineCreatorPresence.canonical_required_instance_version
+    network reachable version closed pre suffix tx position state accepted inst
+    (by simp [payload, NotionCoreCreatorNetwork.requiredBlocks])
+  obtain ⟨next, executed, represented⟩ := erase_operation_partitioned state block inst targets prior existsInstance
+  exact ⟨next, by simp [applyTransaction, NotionCorePayload.operations, payload, applyOperations, executed], represented⟩
+
+theorem canonical_insert_partitioned_of_instance
+    (network : NotionCorePayloadNetwork.State) (reachable : NotionCorePayloadNetwork.Reach network)
+    (peer : NotionRunAllocation.Session) (pre suffix : List NotionCorePayload.Transaction)
+    (tx : NotionCorePayload.Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
+    (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
+    (payload : tx.payload = .insert block inst origin atoms) (nonempty : atoms ≠ [])
+    (existsInstance : ∃ entry ∈ state.instances, entry.1 = blockName inst) :
+    ∃ next, applyTransaction state tx = some next ∧ Partitioned next :=
+  canonical_insert_partitioned_of_instance_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable reachable) peer)
+    pre suffix tx position state accepted prior block inst origin atoms payload nonempty existsInstance
+
 theorem canonical_insert_partitioned
     (network : NotionCorePayloadNetwork.State) (reachable : NotionCoreCreatorNetwork.Reach network)
     (peer : NotionRunAllocation.Session) (pre suffix : List NotionCorePayload.Transaction)
@@ -207,17 +258,11 @@ theorem canonical_insert_partitioned
     (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
     (block inst : NotionCorePayload.BlockKey) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
     (payload : tx.payload = .insert block inst origin atoms) (nonempty : atoms ≠ []) :
-    ∃ next, applyTransaction state tx = some next ∧ Partitioned next := by
-  apply canonical_insert_partitioned_of_instance network
-    (NotionCoreCreatorNetwork.payload_reachable reachable) peer pre suffix tx position state accepted prior
-    block inst origin atoms payload nonempty
-  apply NotionCoreMachineCreatorPresence.canonical_required_instance
-    network reachable peer pre suffix tx position state accepted inst
-  simp [payload, NotionCoreCreatorNetwork.requiredBlocks]
+    ∃ next, applyTransaction state tx = some next ∧ Partitioned next :=
+  canonical_insert_partitioned_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)) peer)
+    pre suffix tx position state accepted prior block inst origin atoms payload nonempty
 
-/-- The complete canonical erase transaction preserves the partition, with
-target-instance existence derived from a replayed creator. Empty target lists
-are covered too; no item-reference witness is used to infer creation. -/
 theorem canonical_erase_partitioned
     (network : NotionCorePayloadNetwork.State) (reachable : NotionCoreCreatorNetwork.Reach network)
     (peer : NotionRunAllocation.Session) (pre suffix : List NotionCorePayload.Transaction)
@@ -226,13 +271,13 @@ theorem canonical_erase_partitioned
     (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
     (block inst : NotionCorePayload.BlockKey) (targets : List NotionRunAllocation.Id)
     (payload : tx.payload = .erase block inst targets) :
-    ∃ next, applyTransaction state tx = some next ∧ Partitioned next := by
-  have existsInstance := NotionCoreMachineCreatorPresence.canonical_required_instance
-    network reachable peer pre suffix tx position state accepted inst
-    (by simp [payload, NotionCoreCreatorNetwork.requiredBlocks])
-  obtain ⟨next, executed, represented⟩ := erase_operation_partitioned state block inst targets prior existsInstance
-  exact ⟨next, by simp [applyTransaction, NotionCorePayload.operations, payload, applyOperations, executed], represented⟩
+    ∃ next, applyTransaction state tx = some next ∧ Partitioned next :=
+  canonical_erase_partitioned_version network reachable (network.allocation.peers peer).received
+    (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)) peer)
+    pre suffix tx position state accepted prior block inst targets payload
 
+#print axioms canonical_insert_partitioned_version
+#print axioms canonical_erase_partitioned_version
 #print axioms splice_partitioned
 #print axioms erase_partitioned
 #print axioms erase_operation_partitioned
