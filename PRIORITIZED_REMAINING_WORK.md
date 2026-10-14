@@ -10,7 +10,7 @@ sole active bounded counter is the published Balegas matrix/max design.
 
 ## Paper1: specialize the framework to the submission formalism
 
-### Active: natural sequential specifications and client bridges
+### Checked: natural sequential specifications and client bridges
 
 The campaign covers all retained datatype families. Its evidence table is
 [natural sequential specifications](docs/natural-sequential-specifications.md).
@@ -29,9 +29,9 @@ intermediate machine does not finish it.
   exact complete-history language equivalence, including queries.
 - [x] Consolidate shared abstract semantics for matching datatypes; audit
   remaining sets, counters, flags, registers, tree and sheet contracts.
-- [ ] Synchronize the formal reference, Site and reconciliation note with
+- [x] Synchronize the formal reference, Site and reconciliation note with
   checked results and explicit remaining obligations.
-- [ ] Independently review, run the required gate, commit and push completed
+- [x] Independently review, run the required gate, commit and push completed
   changes while preserving unrelated GC work.
 
 #### FugueMax research protocol
@@ -45,7 +45,11 @@ Sided RGA actual-update/positional-edit theorems. Its full gate passed on
 controls, 187 runtime tests and 569 benchmark records. The formal reference
 checks 131 declarations across 33 anchors; the changed PDF page was visually
 inspected. The updated Site renders 992 LaTeX expressions without errors.
-Final supplemental commit and Site publication are in progress.
+Final proof supplement `706036c` is pushed. Public Site version 12 is live
+against that snapshot. The historical queue remains a note, as KC requested;
+the current Queue is the anchored implementation. The campaign audit records
+the retained semantic metadata and rejected simplifications rather than
+claiming metadata-free concurrent positional or document histories.
 
 - Goal: connect the unchanged original FugueMax issuer and five-VC implementation
   to an independently justified sequential client specification.

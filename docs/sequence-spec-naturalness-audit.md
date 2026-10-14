@@ -18,7 +18,7 @@ An abstract state can be a plain list while its language still exposes
 implementation metadata or a different operation semantics. A merge theorem
 alone does not settle that boundary.
 
-## Current contracts
+## Message-history contracts
 
 | Family | Current independent abstract state and operations | Metadata role | Checked result and remaining client boundary |
 |---|---|---|---|
@@ -99,14 +99,16 @@ public queue API. Tags may be hidden from returned values only after an
 observation/refinement theorem; erasing tags from removal requests can erase
 which operation the implementation actually performed.
 
-The anchored and historical queue languages can share a common tagged-head
-specification. Their independently written abstract steps differ on illegal
+The anchored queue is the current Queue for this campaign. KC explicitly
+excluded the historical implementation from consolidation; the following is
+a retained research note. The anchored and historical queue languages may
+share a common tagged-head specification. Their independently written abstract steps differ on illegal
 middle-target removals: historical `clientStep` leaves the queue unchanged,
 whereas anchored `fifoStep` filters the target. Their legality rejects that
 case, so compare the languages on admitted histories rather than claiming
 unconditional equality of the raw step functions.
 
-## Missing refinement obligations
+## Refinement checklist and established boundary
 
 1. Specify the client request alphabet independently: valid positional insert,
    delete by position or stable ID, and its return values. Keep the generated
@@ -129,7 +131,11 @@ unconditional equality of the raw step functions.
    tagged-head removal. Keep the checked duplicate-dequeue negative control
    when considering a simpler client alphabet.
 
-No stronger source-to-positional-client theorem is claimed by this audit.
+The local preparation obligations for native, Embedded and Sided RGA are now
+proved below. Queue retains observed-head semantics, and FugueMax has the full
+natural global certificate. Existing RGA global witnesses retain their
+identified-operation languages. A new concurrent history alphabet consisting
+only of positions, or a metadata-free document UI, is not claimed.
 
 ### FugueMax implementation-order boundary
 
