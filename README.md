@@ -22,6 +22,13 @@ Its direct sequential lifting theorem
 uses the same public-order witness as the paper, without extra replay-law
 assumptions at that lifting step.
 
+The separate `research/notion-mrdt` branch contains a
+[Notion demo investigation](docs/notion-research.md): pinned executable
+counterexamples to local split/formatting effects after merges, an independent
+split-only specification candidate, and checked semantic fragments. This is
+research evidence, not an addition to the verified datatype registry or a
+verification of Notion production.
+
 The [natural-specification audit](docs/natural-sequential-specifications.md)
 separates client requests from generated replication messages. Simple sets and
 counters use set/integer abstract states with exact history-language preservation;

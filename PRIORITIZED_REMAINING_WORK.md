@@ -8,6 +8,34 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Notion published-demo MRDT investigation (separate research branch)
+
+Research question: can a faithful adaptation satisfy ordinary client effects
+and an independent identity-aware sequential history through the five VCs?
+Evidence and semantic choices are in [the research record](docs/notion-research.md).
+No production-code correspondence is established. Do not change the paper,
+formal-reference PDF or public Site from this branch; GC stays out of scope.
+
+- [x] Audit the seven pinned source modules and distinguish positional requests
+  from generated transactions, ordering, identities and routing machinery.
+- [x] Build directed and reachable-state oracles, preserve literal traces, and
+  minimize local split/formatting failures after honest split/merge histories.
+- [x] Define an independent slot-based split/insert/delete specification
+  candidate, test it differentially, and check semantic laws/counterexamples.
+- [x] Implement a source-preserving experimental transaction-set ternary adapter.
+- [ ] Finish the split/insert/delete-only milestone: formalize the full candidate
+  and adapter correspondence, derive issuance/execution invariants, prove local
+  preparation and the same-witness history bridge with required order and
+  specification visibility. State ordinary and recursive coverage separately.
+- [ ] Resolve the extension design boundary before a positive full-editor claim:
+  the unchanged demo violates ordinary local split and bold effects after merges.
+  A repaired issuer/transition or restricted contract is a different target and
+  must be explicitly selected and validated, never substituted silently.
+- [x] Independently review the research artifacts and pass the research and
+  repository gates; provide a separate integration report for the paper session.
+- [ ] Coordinate integration of the separate research branch without promoting
+  storage convergence or bounded tests to a verified Notion document claim.
+
 ## Paper1: specialize the framework to the submission formalism
 
 ### Checked: one ordinary Counter

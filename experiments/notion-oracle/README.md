@@ -35,3 +35,120 @@ deletion appears to retain the identities selected before splitting. Further
 traces should test concurrent splits, split/merge, and formatting across the
 boundary. The sequential specification must be stated independently, then
 challenged with these traces and proved against a faithful MRDT model.
+
+## Extended oracle: 14 October 2026
+
+The initial runner, traces and five observations remain reproducible unchanged.
+The extended suite uses the same seven SHA-256 pins in `sources.json` and never
+commits downloaded demo source.
+
+Run these commands from the repository root:
+
+```
+python3 experiments/notion-oracle/run.py --systematic
+python3 experiments/notion-oracle/run.py --reachable --core
+python3 experiments/notion-oracle/run.py --reachable
+python3 experiments/notion-oracle/run.py --minimize
+python3 experiments/notion-oracle/run.py --trace regressions.mjs
+python3 experiments/notion-oracle/run.py --trace identity-check.mjs
+python3 experiments/notion-oracle/run.py --trace identity-controls.mjs
+```
+
+The full reachable run intentionally exits 1 when it discovers the saved local
+split counterexample; the regression runner exits 0 when the known failures and
+its positive control reproduce. `--minimize` reads the original saved reachable
+failure and reissues requests with fresh client preparation after each removal.
+It never deletes arbitrary transactions and calls the resulting state reachable.
+
+`systematic.mjs` records 575 cases. It checks every split and insertion boundary
+of `abcd`, every nonempty deletion interval, swapped sessions, and three clock
+arrangements (equal, split greater, edit greater). Clock skew uses unused valid
+clock reservations, not hidden edits. It checks both receipt orders and repeated
+delivery, all pairs of concurrent split positions, formatting across a split,
+both causal edit/split directions, and merge against split/insert/delete/bold in
+either source or destination. The public client exposes merge-driven slice
+movement but no general block-movement request; arbitrary forged movement
+messages are outside this suite.
+
+`positional-spec.mjs` is an independent sequential visible-list specification.
+It imports no demo module. Local expectations use visible list split/splice and
+selected-character bold toggling. The concurrent split/delete contract retains
+the original selected character identities; its expected blocks follow directly
+by intersecting the original deletion interval with either side of the split.
+All 300 such cases agree. This does not establish a sequential-history bridge
+for the generated identity-addressed messages, nor validate insertion inheritance
+inside existing bold spans (the initial local insert controls are unformatted).
+
+`transaction-set.mjs` adapts replication to three-way merge: the base must be a
+payload-preserving subset of both inputs; merge takes the union of identified
+transactions and rejects conflicting payloads. Issuance and interpretation use
+the pinned demo client and document. The suite compares observations with the
+demo after delivery and checks an additional nested merge. That correspondence
+check is deliberately separate from independent specification agreement. It is
+finite evidence, not proof of the five VCs or of recursive-base correctness.
+The recorded `nestedMergeAgreement` checks another ordinary union against an
+ancestor base. It does not construct or test recursive virtual merge bases.
+
+`identity-spec.mjs` adds the separate retained-slot message specification.
+`identity-check.mjs` decodes generated messages into its semantic commands and
+checks a candidate ID-sorted witness against demo observations. It covers three
+xorshift32 seeds (`0x134ab912`, `0x514a2d19`, `0xabcdef01`), 50 trials per seed,
+six fork/join rounds, and two requests per branch. Its 4,500 comparisons cover
+every local step and join; empty deletion requests count as no-op steps, with
+zero discarded histories. Initial text is ASCII `abc` and inserted text is `X`.
+This bound does not cover all Unicode strings, session orders, clock skews, or
+unbounded histories; the systematic suite separately varies IDs and clocks.
+The same decoder/witness comparison detects injected no-op deletion and
+suffix-retaining split mutants on chosen control histories. An additional
+demo-independent `identity-controls.mjs` checks retained hidden anchors and
+detects suffix-dropping split and no-op deletion mutants using hand-derived
+expected states. Neither control injects mutation flags into the specification.
+
+The deterministic reachable generator uses xorshift32 seed `0x514a2d19`, 80
+trials, seven fork/join rounds each, and two valid client requests per branch.
+It checks all positions of local split/insert/delete after each join. With only
+split/insert/delete generation, 560 states and 18,053 checks pass; this is bounded
+evidence, not a universal claim. Allowing block merge discovers the first failure
+at state 243, check 5,545. `reachable-observations.jsonl` preserves that literal
+history. `minimized-observations.jsonl` records 70 replay/shrink attempts and a
+one-minimal seven-request setup under deletion of the fixed requests. Its seed
+text shrinks from `abcd` to `a`. This is not a proof of global minimality.
+The minimizer repeats request removal to a fixed point after shrinking the text,
+so its one-minimal claim applies to the final seed.
+
+## Direct failures of ordinary local editing
+
+`regressions.mjs` reissues concise histories and checks both the observed anomaly
+and its disagreement with the independent local contract. These expectations
+are semantic controls, not observations promoted into Lean test oracles.
+
+* **Split:** Start with `a`. Split at zero, then insert `X` in the empty first
+  block. Concurrently merge the second block twice using different transaction
+  identities, then join. Concurrently split the resulting `Xa` at zero and one,
+  then join. Merge the split-at-zero block into the preceding block. The visible
+  state is `empty · aX`. Splitting `aX` at zero produces `empty · X · a` rather
+  than `empty · empty · aX`. The requested suffix is not moved as a whole.
+  The saved `beforeStructure` shows `a` below the first child of a common
+  ancestor and `X` below its later second child. In pinned
+  `text-slice-tree.js:82`, `splitTextSliceTreeNode` partitions the selected
+  slice node and transfers that node's children to the new right node. In
+  `document.js:140`, `moveTextSliceIntoBlock` detaches only that right-node
+  subtree. Neither operation transfers later sibling branches of ancestors.
+  Thus the right part containing `a` moves, while the later visible `X`
+  remains in the old block. `afterStructure` records this separation.
+* **Selected bold:** Start with `ab`, concurrently split at zero and one, then
+  join: `empty · b · a`. Merge `a` into `b`: `empty · ba`. Toggle bold on all of
+  `ba`. Neither character becomes bold. The positional range maps to equal
+  annotation anchors in the underlying text-instance order.
+* **Unselected bold:** Start with `abc`, concurrently split at one and two,
+  then join: `a · c · b`. Merge `c` into `a`: `ac · b`. Toggle bold on all of
+  `ac`. The unselected `b` also becomes bold. The implementation groups selected
+  characters by text instance and emits an interval covering the intervening
+  unselected character in that instance.
+
+These measured failures concern the pinned public demo and a faithful
+transaction-set adaptation. They prevent an unrestricted local-preparation
+theorem for the ordinary visible split/bold contract on those reachable states.
+They do not establish a defect in Notion production, and they do not refute the
+restricted split/insert/delete-only milestone. Fixing the demo semantics would
+create a different implementation requiring a separate correspondence claim.

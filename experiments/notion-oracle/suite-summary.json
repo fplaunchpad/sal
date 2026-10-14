@@ -1,0 +1,28 @@
+{
+  "sourceManifest": "sources.json",
+  "originalObservationCount": 5,
+  "systematicCases": 575,
+  "systematicFailures": 0,
+  "reachableCore": {
+    "seed": "0x514a2d19",
+    "trials": 80,
+    "forkJoinRoundsPerTrial": 7,
+    "requestsPerBranch": 2,
+    "states": 560,
+    "localRequestChecks": 18053,
+    "counterexample": false
+  },
+  "reachableWithMerge": {
+    "seed": "0x514a2d19",
+    "firstFailureState": 243,
+    "localRequestChecks": 5545,
+    "counterexample": "reachable-observations.jsonl"
+  },
+  "minimization": {
+    "replayAttempts": 70,
+    "setupRequests": 7,
+    "seedText": "a",
+    "claim": "one-minimal under deletion of fixed requests; not globally minimal"
+  },
+  "scope": "Finite executable evidence about pinned public demo only; no production correspondence, universal correctness, or sequential bridge claim."
+}

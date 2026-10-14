@@ -1,0 +1,2 @@
+{"name":"identity-harness-mutant-control","mutant":"delete-no-op","detected":true,"failures":[{"fixture":"delete-retains-hidden-anchor","expected":[["left","Xb"]],"actual":[["left","aXb"]]}]}
+{"name":"identity-harness-mutant-control","mutant":"split-drops-suffix","detected":true,"failures":[{"fixture":"split-retains-suffix","expected":[["left","a"],["right","b"]],"actual":[["left","a"],["right",""]]}]}
