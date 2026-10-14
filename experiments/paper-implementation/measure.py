@@ -72,6 +72,17 @@ d,g,s=impl['notion-core']; rows['notion-core']={
 rows['set-wins-map']={'implementation':[I+'SetWinsMap.D',I+'SetWinsMap.issuance'],'specification':[P+'SetWinsMap.spec'],'vc':[P+'SetWinsMap.fiveVC'],'bridge':[P+'SetWinsMap.executions',P+'SetWinsMap.executionsV']}
 rows['remove-wins-set']={'implementation':[I+'RemoveWinsSet.D',P+'RemoveWinsSet.generation'],'specification':[P+'RemoveWinsSet.spec'],'vc':[P+'RemoveWinsSet.fiveVC'],'bridge':[P+'RemoveWinsSet.executions',P+'RemoveWinsSet.executionsV']}
 rows['optional-register']={'implementation':[I+'OptionalRegister.D',I+'OptionalRegister.generation'],'specification':[P+'OptionalRegister.spec'],'vc':[P+'OptionalRegister.fiveVC'],'bridge':[P+'OptionalRegister.executions',P+'OptionalRegister.executionsV',P+'OptionalRegister.sourceWellFormed']}
+rows['add-wins-priority-queue']={
+ 'implementation':[I+'AddWinsPriorityQueue.FullD',P+'AddWinsPriorityQueue.Full.generation',I+'AddWinsPriorityQueue.rmvMax'],
+ 'specification':[P+'AddWinsPriorityQueue.Full.spec',P+'AddWinsPriorityQueue.Full.seqRmvMax'],
+ 'vc':[P+'AddWinsPriorityQueue.Full.fiveVC'],
+ 'bridge':[P+'AddWinsPriorityQueue.Full.executions',P+'AddWinsPriorityQueue.Full.executionsV',
+   P+'AddWinsPriorityQueue.Full.rmvMax_refines',P+'AddWinsPriorityQueue.Full.prepared_remove_effect',
+   I+'AddWinsPriorityQueue.getMax_sound',I+'AddWinsPriorityQueue.getMax_none_iff']}
+# Core is an internal query/proof layer of the same sided Peritext MRDT.
+# Charge both dependency closures to the single public rendered endpoint.
+for role, ns in rows.pop('sided-peritext-core').items():
+ rows['sided-peritext-rich-core'][role]=list(dict.fromkeys(rows['sided-peritext-rich-core'][role]+ns))
 # Current anchored queue language is in AnchoredQueue.Public namespace.
 rows['anchored-queue-paper-variant']['specification']=[P+'AnchoredQueue.Public.language']
 roots=sorted({n for r in rows.values() for ns in r.values() for n in ns})
@@ -145,9 +156,8 @@ for role in ['implementation','specification','vc','bridge']:
  raw=set().union(*(set(map(tuple,report[c]['exclusive_code_lines'][role])) for c in gsetids));exclusive=raw-seen;seen|=exclusive
  combined['roots'][role]=sum((report[c]['roots'][role] for c in gsetids),[]);combined['loc'][role]=len(exclusive);combined['exclusive_code_lines'][role]=sorted(exclusive)
 paper={k:v for k,v in report.items() if k not in gsetids};paper={'grow-only-set-three-carriers':combined,**paper}
-result={'method':'Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles priority implementation definitions then specification definitions then actual CommonVerification.verify application/evidence closure (root declaration packaging included) then remaining bridge/execution closure; shared libraries excluded. Counts are dependency-footprint LOC, not author handwritten proof bodies or person-hours. Cross-row overlap not subtracted.','git_head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'configuration_rows':report,'paper_rows':paper,'deduplicated_concrete_total':len(union),'deduplicated_shared_dependency_total':len(shared_union),'shared_code_lines':sorted(shared_union),'source_sha256':{f:hashlib.sha256(s.encode()).hexdigest() for f,s in source.items()},'source_locations':decl}
+result={'method':'Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles prioritize implementation definitions, independent specification definitions, VC proof/input-support closures, then remaining bridge/execution closures. The 19 automation-selected cases use actual CommonVerification.verify application/evidence closures; other cases use their named raw five-VC, policy-expansion or direct-assembly dependency closures, with root packaging included. Shared libraries are excluded. Counts are dependency-footprint LOC, not handwritten proof-body sizes or person-hours; cross-row overlap is not subtracted. The direct structural Notion carrier assembly is explicitly listed in direct_vc_dependency_roots.','git_head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'configuration_rows':report,'paper_rows':paper,'deduplicated_concrete_total':len(union),'deduplicated_shared_dependency_total':len(shared_union),'shared_code_lines':sorted(shared_union),'source_sha256':{f:hashlib.sha256(s.encode()).hexdigest() for f,s in source.items()},'source_locations':decl}
 result['direct_vc_dependency_roots']=sorted(direct_vc_roots)
-result['method'] += ' Direct carrier VC assemblies without CommonVerification.verify are explicitly listed and charged their complete kernel dependency closures.'
 (OUT/'measurement.json').write_text(json.dumps(result,indent=2)+'\n')
 md=['| Configuration | Definition | Spec | VC support | Bridge + execution support |','|---|---:|---:|---:|---:|']
 for ident,row in paper.items():md.append('| '+ident+' | '+' | '.join(str(row['loc'][k]) for k in ['implementation','specification','vc','bridge'])+' |')

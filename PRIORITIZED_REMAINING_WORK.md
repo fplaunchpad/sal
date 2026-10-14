@@ -8,7 +8,26 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
-## Additional Neem datatypes for the paper
+## Priority queue integration and datatype appendix
+
+- [x] Port the historical Sal retained-increment priority queue through the five
+  VCs, independent sequential bridge, and ordinary/recursive certificates.
+- [x] Independently review, register in the production ledger, rerun the gate,
+  and include the measured priority-queue row with its exact query scope.
+- [x] Consolidate sided Peritext's core/rendered interfaces and order the paper
+  table by conceptual complexity, preserving related variants together.
+- [x] Add the Site's formal MRDT definitions, sequential specifications and
+  explanations as a mathematical appendix; check against Lean and render the PDF.
+- [x] Align appendix notation with the body; correct the queue abstract-state
+  type and Aegis event triple; independently audit and compile the combined PDF.
+- [x] Publish the appendix and ordered full-query table to Overleaf (`f627efa`),
+  preserving the latest abstract. Combined PDF: 68 pages; appendix starts page 29.
+- [ ] Reconcile substantive body/appendix differences during section review:
+  metadata-preserving label projections; the plain RGA live-list specification
+  and commutation argument; scoped certified VC/order hypotheses; Neem's single
+  configuration-wide partial relation versus an event-set-indexed relation.
+
+## Additional Neem datatypes for the paper (completed)
 
 - [x] Implement and certify the source remove-wins set, including its initial
   removal tags and an independent ordinary-set sequential specification.

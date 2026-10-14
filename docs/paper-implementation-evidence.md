@@ -1,6 +1,6 @@
 # Implementation section: scope and evidence
 
-Manuscript snapshot: Overleaf `f5aad25`; checked Sal code snapshot `19fa35173a2639c976a9eaa90221ab5be9bb972c` (14 October 2026), including the new Neem ports and structured/executable Notion. The current measurement pins 430 source files and retains `376bf8d` as its starting revision.
+Manuscript checkpoint: Overleaf `f627efa`, including the datatype appendix and priority queue; the collaborator’s abstract update `3eb1248` is preserved. Current implementation measurement: the working source based on `b45a145d5f316241bb6536fa495ef35d9f48df74` (14 October 2026), including the full-query priority queue and structured/executable Notion. The measurement pins 439 working-source files by SHA-256; its base revision does not assert that uncommitted port files already occur in that commit.
 This is evidence for the manuscript, not a development task list.
 
 ## Section plan
@@ -36,7 +36,7 @@ performance campaign is needed for this section.
   abstract datatype. Consolidate the three grow-only-set carrier representations;
   keep the two OR-set implementations and named sequence/rich-text representations
   visible. The paper-facing catalogue now contains 26 checked configurations,
-  consolidated into 24 rows. The 18-package registry and existing 19-case
+  consolidated into 24 rows: three grow-only representations share a row, sided Peritext has one rendered-interface row, and the retained-increment priority queue is included. The 18-package registry and existing 19-case
   automation selection are separate counts.
 - Do not claim all complex datatypes were previously unverified. Prior work
   includes convergence proofs (Peritext) and machine verification (TreeMove).
@@ -101,29 +101,23 @@ venue's appendix/page-budget rules before including any appendix in the submissi
 
 [Reproducible measurement bundle](../experiments/paper-implementation/README.md), [table](../experiments/paper-implementation/table.md), [generic theorem audit](../experiments/paper-implementation/metatheory-audit.md), and [datatype citation/source audit](../experiments/paper-implementation/source-audit.md).
 
-Validation checked all 430 recorded source hashes, all 24 per-row column partitions, and each reported line total. The generic theorem census is 4,020 lines, with 1,688 shared automation theorem lines. The instance audit resolved 211 distinct roots and checked their standard-axiom dependencies. The table has seven nontrivial application-rc rows. The three Notion failure traces and positive formatting control were freshly rerun.
+Validation checked all **439** recorded working-source hashes, all **24** paper-row column partitions and their line totals. The instance audit resolves **223** distinct roots and permits only `propext`, `Classical.choice` and `Quot.sound`. It reports **26 configuration rows / 24 paper rows**, with **eight** nontrivial application-rc rows. The deduplicated dependency unions are **46,417 concrete / 8,379 shared LOC**. The retained metatheory-only census is separately **4,020 lines**, with **1,688 shared automation theorem lines**; these are not the same dependency-union metric.
 
-The source hashes match both the working tree and code commit `19fa351`.
-The public datatype reference was deployed as Site version 17 with all 24 entries.
-The final integration gate passed 3,852 Lean jobs, 187 JavaScript runtime tests,
-and 569 benchmark records.
+The full integration gate passed **3,865 Lean jobs**, **13 certificate controls**, **187 runtime tests** and **569 benchmark records**. The uniform public gate remains at 18 exact packages. The priority-queue audit checks 459 declarations and the full ordinary/recursive endpoint ancestry. The earlier Notion failure-trace/native-oracle figures are recorded evidence; this measurement refresh did not rerun those discovery campaigns. Recorded Site version 17 predates this full-query refresh and is not evidence of current Site synchronization.
 
-The new rows' Def./Spec/VC-support/bridge-and-execution footprints are
-28/18/434/168 (remove-wins set), 25/12/19/136 (set-wins map), and
-61/9/717/880 (optional register). The measurement retains the 19 existing
-CommonVerification.verify cases, adds the generic policy-expansion derivation
-for set-wins map, and includes six named raw five-VC cases. Counts describe
-dependency source ranges, not handwritten proof-body size or author effort.
+The retained Neem Def./Spec/VC-support/Bridge-support footprints are **28/18/434/168** (remove-wins set), **25/12/19/136** (set-wins map) and **61/9/717/880** (optional register). The full Sal priority queue is **62/31/433/370**. The single sided Peritext row unions core/rendered interfaces and is **208/67/149/3,072**. The measurement retains actual `CommonVerification.verify` evidence for 19 selected automation cases, generic policy expansion for set-wins map, named raw five-VC routes and the direct structural Notion assembly. It does not claim that every row uses the same verifier application. Counts describe dependency source ranges, not handwritten proof-body size or author effort.
 
-## Draft and validation
+The priority-queue implementation roots are `Instances.AddWinsPriorityQueue.FullD`, `Paper1.AddWinsPriorityQueue.Full.generation` and `Instances.AddWinsPriorityQueue.rmvMax`. Specification roots are full `spec` and `seqRmvMax`; the VC root is full `fiveVC`. Full `executions`/`executionsV`, `rmvMax_refines`, `prepared_remove_effect`, and implementation `getMax_sound`/`getMax_none_iff` supply bridge and intent support. The independent finite priority map certifies empty, membership, priority and actual maximum queries, with greatest-element-ID ties. Derived maximum removal returns the local observed pair and removes its identity; it preserves increments and carries no atomic global-extraction guarantee. The full source paper's per-record Most-Change-Win algorithm remains outside this flattened Sal variant.
 
-The local Overleaf checkout now contains `implementation.tex` and
+## Recorded manuscript preview (`f5aad25`)
+
+At the recorded manuscript checkpoint, the local Overleaf checkout contains `implementation.tex` and
 `implementation_table.tex`, with bibliography additions. `main.tex` includes
 that section, removes the empty Evaluation input, and loads `array` for the
 table. No other manuscript section was edited. The pre-existing local
 `main.pdf` was preserved.
 
-[Compiled review PDF](paper-implementation-preview.pdf): the current draft has
+[Compiled review PDF](paper-implementation-preview.pdf): the recorded draft has
 27 pages total; the implementation table is on page 22 and references begin
 on page 25, after the end of the body. The body therefore extends onto page 25
 and exceeds the stated 23-page budget. This includes the author's newly supplied
@@ -145,8 +139,7 @@ original independent history proof and both refinement layers. Its current
 columns are 729 definition / 112 specification / 73 VC-support / 18,082
 bridge-and-execution lines. This includes concrete certificate wrappers formerly
 misclassified as shared. See the measurement README for exact role movements;
-the smaller VC column is not a proof reduction. The 211-root audit preserves
-all prior datatype cases, with only the Notion row changing.
+the smaller VC column is not a proof reduction. The earlier structural-Notion refresh preserved the other datatype rows. The current 223-root measurement additionally includes the full priority-query/client interface and sided Peritext consolidation, with this Notion row unchanged.
 
 The structural target has actual operational reach and RA theorems. The compiled
 runtime has receipt/merge representation preservation, honest-domain progress,

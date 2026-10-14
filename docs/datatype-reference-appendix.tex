@@ -1,0 +1,2611 @@
+% Datatype reference appendix; included by Sal_paper/main.tex.
+% Definitions audited against the Lean sources listed at each entry.
+\section{Datatype Definitions and Sequential Specifications}
+\label{app:datatypes}
+
+This appendix defines the datatype implementations in Table~\ref{tab:implementation}.
+For each implementation we give the concrete state space $\Sigma$, initial state
+$\sigma_0$, update $\F{do}$, three-way merge, and query, followed by an
+independent sequential machine. The concrete definitions are the Sal
+adaptations of the cited designs; the source and adaptation boundaries are
+stated where they affect the interface.
+
+As in \S\ref{sec:opsem}, an event is $e=(t,r,o)\in\mathcal E$.
+These implementations instantiate $\mathcal T=\mathbb N$ and
+$\mathcal R=\mathbb N$; $o\in O_\tau$ is an update operation. Unless otherwise stated,
+$\F{merge}(l,a,b)$ takes a common ancestor $l$ and two branch states $a,b$.
+As in \S\ref{sec:ralin-new}, $e(\sigma)=\F{do}(\sigma,t,r,o)$.
+Sets are finite when marked $\subseteq_{\rm fin}$ or represented by
+$\operatorname{Finset}$; Boolean predicates are interpreted pointwise.
+$X\mathbin{+\!+}Y$ denotes list concatenation, $x::X$ cons,
+and $[x\in X\mid P(x)]$ order-preserving list filtering.
+Natural subtraction is truncated at zero; sums of signed quantities use
+$\mathbb Z$. Write $\mathbb B=\{\mathsf{false},\mathsf{true}\}$.
+$\operatorname{Bool}(P)=\operatorname{decide}(P)$ is true
+exactly when $P$ holds. Lexicographic order uses a proper prefix smaller
+than its extension.
+
+Each sequential specification is a labelled transition system
+$\Spec=\langle L,\Phi,\phi_0,\longrightarrow\rangle$, as in
+Definition~\ref{def:spec}. Query transitions are state preserving and
+labelled $q\Rightarrow b$. For a unit-query interface we name its sole
+query $\F{rd}$; an element-indexed read is $\F{rd}_x$.
+Every finite admitted run starts at $\phi_0$, including runs with queries
+between updates. A retained prefix $H$ in a guarded sequential machine
+checks admission; it is not the replica-head map $H$ of a store
+configuration. These sequential rules contain no three-way merge.
+
+\paragraph{Event-label projections.}
+The identified specifications below retain event metadata when their
+labels need stable identities. This extends the payload-only label
+convention of \S\ref{sec:ralin-new}; it does not identify all these
+specifications with that convention. For an abstract update alphabet
+$\mathcal U$, let $f:\mathcal E\to\mathcal U$ translate an event to its
+update label, and define
+\[
+\F{ops}_{f}(e_1\cdots e_n)=f(e_1)\cdots f(e_n).
+\]
+The paper's $\F{ops}$ is the case $f(t,r,o)=o$. In a transition labelled
+by the complete event $(t,r,o)$, take $f$ to be the identity; its timestamp
+and replica remain in the label even when the transition ignores them.
+The FugueMax section defines an identified-action projection. The Notion
+section translates one event into an atomic command group; the group
+remains one admitted update, with queries allowed only between groups.
+A statement of sequential conformance for these machines uses
+$\F{ops}_f$ and its stated projection.
+
+The issuance guard is $G(e,s)$, as in Definition~\ref{def:issuance}.
+Where an origin state is written $O$, it is the original issuing state
+of the relevant implementation or protocol. The Notion section identifies
+its retained reference-protocol state separately from the structural carrier.
+The relation $\rcrel$ below is the selected application-operation policy.
+An empty policy adds no application precedence edges. It does not erase
+execution visibility, original-issuance guards, specification-conflicting
+visibility, or the invariant-scoped replay order used by an execution
+bridge. Guards are evaluated at the original issuing state, rather than
+at arbitrary replay states. The mechanized execution certificates for these implementations supply globally fresh
+event timestamps, honest origin metadata, supported causally closed event
+sets, and valid ordinary or recursively constructed merge bases.
+Per-replica cumulative implementations additionally use serialized issuance
+under each replica identity. The algebraic and history endpoints concern
+these represented executions whenever a guard or invariant is required;
+total raw operations alone do not establish the endpoint on fabricated
+states.
+
+\subsection{Counter}
+\label{app:dt-counter}
+
+% Sal/MRDTs/Instances/FlatCounters.lean: D, CounterOp, counterDelta, Counter, generation
+
+% Sal/MRDTs/Paper1/SimpleEventPorts.lean: deltaMachine
+
+% Sal/MRDTs/Paper1/SimpleConcretePorts.lean: counterConditions
+
+% Sal/MRDTs/Paper1/SimpleEventPorts.lean: delta_language_preserved
+
+\paragraph{Concrete MRDT}
+\textbf{State:} integer $z\in\mathbb{Z}$. \textbf{Initial:} $0$.
+
+Payload: inc or dec. Delta: $\delta(\mathrm{inc})=1$; $\delta(\mathrm{dec})=-1$.
+
+\textbf{Update:}
+
+\[
+e(z)=z+\delta(o)
+\]
+
+
+\textbf{Three-way merge:}
+
+\[
+\F{merge}(l,a,b)=a+b-l
+\]
+
+
+\textbf{Query:} input $()$; return $z$. Timestamp and replica are ignored.
+
+\paragraph{Independent sequential specification.}
+\textbf{State:} an integer $z\in\mathbb Z$, initially $0$. For $e=(t,r,o)$,
+\[
+z\xrightarrow{e}z+\delta(o).
+\]
+
+$\delta(\mathrm{inc})=1$, $\delta(\mathrm{dec})=-1$.
+
+\textbf{Query:}
+\[
+z\xrightarrow{\F{rd}\Rightarrow y}z\qquad\text{when }y=z.
+\]
+
+Timestamp and replica are ignored.
+
+
+\paragraph{Issuance.}
+\[
+G(e,O)\iff\top.
+\]
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$.
+
+
+\paragraph{Source and adaptation.}
+The integer-delta three-way counter uses ancestor subtraction; it is not a saturating natural-number counter.~\cite{neem}
+
+
+\subsection{Grow-only set}
+\label{app:dt-grow-only-set}
+
+% Sal/MRDTs/Instances/AddStore.lean: D, generation, verified
+
+% Sal/MRDTs/Paper1/SimpleEventPorts.lean: setMachine
+
+% Sal/MRDTs/Paper1/SimpleConcretePorts.lean: gsetConditions, finiteAddConditions, booleanSetConditions, booleanMapConditions
+
+% Sal/MRDTs/Instances/FinsetStore.lean: D, generation, verified
+
+% Sal/MRDTs/Paper1/SimpleEventPorts.lean: finiteMachine
+
+% Sal/MRDTs/Instances/FlatGrowOnly.lean: D, generation, verified
+
+% Sal/MRDTs/Paper1/SimpleEventPorts.lean: booleanMachine
+
+% Sal/MRDTs/Paper1/SimpleEventPorts.lean: set_language_preserved, finite_language_preserved, boolean_language_preserved
+
+\paragraph{Concrete MRDT}
+\textbf{State:} a mathematical set $S\subseteq\mathbb{N}$. \textbf{Initial:} $\varnothing$.
+
+The operation payload $o$ is an element of $\mathbb{N}$.
+
+\textbf{Update:}
+
+\[
+e(S)=S\cup\{o\}
+\]
+
+
+Timestamp and replica do not affect the update.
+
+\textbf{Three-way merge:}
+
+\[
+\F{merge}(l,a,b)=a\cup b
+\]
+
+
+The base $l$ is ignored.
+
+\textbf{Query:} input $()$; return the whole set $S$.
+
+\textbf{Representation variants.} The mathematical carrier uses $\mathrm{Set}(A)$; the enumerable carrier uses $\mathrm{Finset}(A)$ so clients can enumerate elements; the Boolean carrier uses $A\to\mathrm{Bool}$. All represent the same insertion-only membership abstraction. The Boolean implementation computes $l\lor a\lor b$ pointwise; on represented merge inputs, the ancestor is already included in the branches. Peritext uses the enumerable representation for rendering.
+
+
+\paragraph{Independent sequential specification.}
+\textbf{State:} a mathematical set $S\subseteq\mathbb N$, initially $\varnothing$. For $e=(t,r,o)$,
+\[
+S\xrightarrow{e}S\cup\{o\}.
+\]
+
+Timestamp and replica are ignored.
+
+\textbf{Query:}
+\[
+S\xrightarrow{\F{rd}\Rightarrow y}S\qquad\text{when }y=S.
+\]
+
+Finite-set and Boolean variants use a finite set, returning the collection or its characteristic function. These are representations of the same grow-only-set abstraction.
+
+
+\paragraph{Issuance.}
+\[
+G(e,O)\iff\top.
+\]
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$.
+
+
+\paragraph{Source and adaptation.}
+The three carriers implement one grow-only-set abstraction. They are three implementation configurations displayed in one row of Table~\ref{tab:implementation}.~\cite{shapiro2011comprehensive}
+
+
+\subsection{Flat grow-only map}
+\label{app:dt-flat-grow-only-map}
+
+% Sal/MRDTs/Instances/FlatGrowOnly.lean: D, generation, verified
+
+% Sal/MRDTs/Paper1/SimpleEventPorts.lean: booleanMachine
+
+% Sal/MRDTs/Paper1/SimpleConcretePorts.lean: gsetConditions, addStoreConditions, finiteAddConditions, booleanSetConditions, booleanMapConditions
+
+% Sal/MRDTs/Paper1/SimpleEventPorts.lean: boolean_language_preserved
+
+\paragraph{Concrete MRDT}
+\textbf{State:} a Boolean function $S:\mathbb{N}\times\mathbb{N}\to\{\mathrm{false},\mathrm{true}\}$. \textbf{Initial:} constantly false.
+
+The operation payload $o$ is an element of $\mathbb{N}\times\mathbb{N}$.
+
+\textbf{Update:}
+
+\[
+e(S)(x)=S(x)\lor(x=o)
+\]
+
+
+Timestamp and replica do not affect the update.
+
+\textbf{Three-way merge:}
+
+\[
+\F{merge}(l,a,b)(x)=l(x)\lor a(x)\lor b(x)
+\]
+
+
+\textbf{Query:} input $()$; return the whole characteristic function $S$.
+
+\paragraph{Independent sequential specification.}
+\textbf{State:} a finite set $S\subseteq\mathbb N\times\mathbb N$, initially $\varnothing$. For $e=(t,r,o)$,
+\[
+S\xrightarrow{e}S\cup\{o\}.
+\]
+
+Timestamp and replica are ignored.
+
+\textbf{Query:}
+\[
+S\xrightarrow{\F{rd}\Rightarrow y}S\qquad\text{when }y=(x\mapsto\operatorname{Bool}(x\in S)).
+\]
+
+Here $\operatorname{Bool}(P)$ is true exactly when $P$ holds. Multiple values for a key may coexist.
+
+
+\paragraph{Issuance.}
+\[
+G(e,O)\iff\top.
+\]
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$.
+
+
+\paragraph{Source and adaptation.}
+This configuration stores immutable key--value pairs and permits several values at a key.~\cite{shapiro2011comprehensive}
+
+
+\subsection{Last-writer-wins register}
+\label{app:dt-lww-register}
+
+% Sal/MRDTs/Instances/LWWRegister.lean: State, packedWrite, update, D, read, issuance, spec
+
+% Sal/MRDTs/Paper1/GuardedLWWPort.lean: policy, language, history
+
+\paragraph{Concrete MRDT}
+\textbf{State:} unset $\bot$ or a write key $(t,r,v)$, ordered lexicographically. \textbf{Initial:} $\bot$.
+
+Payload: write(v), $v\in\mathbb{N}$.
+
+\textbf{Update:}
+
+\[
+e(S)=\max\bigl(S,(t,r,v)\bigr)
+\]
+
+
+\textbf{Three-way merge:}
+
+\[
+\F{merge}(l,a,b)=\max(a,b)
+\]
+
+
+The base $l$ is ignored.
+
+\textbf{Query:} input $()$; return none when unset and some v for the stored key.
+
+\paragraph{Independent sequential specification.}
+\textbf{State:} $s\in\operatorname{Option}(\mathbb N)$, initially $\operatorname{none}$.
+\[
+s\xrightarrow{(t,r,v)}\operatorname{some}(v).
+\]
+
+\textbf{Query:}
+\[
+s\xrightarrow{\F{rd}\Rightarrow y}s\qquad\text{when }y=s.
+\]
+
+The abstract update ignores timestamp and replica. The history bridge chooses an order explaining the concrete maximum.
+
+
+\paragraph{Issuance.}
+\[
+G(e,O)\iff\top.
+\]
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. Chronological history legality still applies.
+
+
+\paragraph{Source and adaptation.}
+This maximum-key implementation refines an ordinary overwrite register using its chronological history order.~\cite{shapiro2011comprehensive}
+
+
+\subsection{Multi-value register}
+\label{app:dt-mvr}
+
+% Sal/MRDTs/Instances/MVRLive.lean: State, update, merge, D, canIssue, issuance, spec
+
+% Sal/MRDTs/Instances/MVRContract.lean: clientStep, clientLegal, queryValues
+
+% Sal/MRDTs/Paper1/CertifiedMVRHistory.lean: language
+
+% Sal/MRDTs/Paper1/MVRClient.lean: prepare; issuance_prepare_iff; prepared_public_read; historical_issued_prepared_public_read
+
+\paragraph{Concrete MRDT}
+\textbf{State:} finite pairs (timestamp,value). \textbf{Initial:} $\varnothing$.
+
+Payload write(v,W), $v\in\mathbb{N}$ and W a list of timestamp IDs.
+
+\textbf{Update:}
+
+\[
+e(S)=\{(t,v)\}\cup\{(n,w)\in S\mid n\notin W\}
+\]
+
+
+\textbf{Three-way merge:}
+
+\[
+\F{merge}(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l)
+\]
+
+
+\textbf{Query:} input $()$; return $\{v\mid\exists n,\ (n,v)\in S\}$. Replica is ignored by the update.
+
+\paragraph{Independent sequential specification.}
+\textbf{State:} $S\subseteq_{\rm fin}\mathbb N\times\mathbb N$, initially $\varnothing$. Track the update prefix $H$, initially $[]$, for history admission; it is not an extra concrete field. Let $T(H)=\{t_f\mid f\in H\}$ and $\langle W\rangle$ be the set of list entries in $W$. For $e=(t,r,\mathrm{write}(v,W))$,
+\[
+\begin{aligned}(H,S)&\xrightarrow{e}(H\mathbin{+\!+}[e],S')&&\text{when }t\notin T(H)\land\langle W\rangle\subseteq T(H),\\S'&=\{(t,v)\}\cup\{(u,w)\in S\mid u\notin\langle W\rangle\}.\end{aligned}
+\]
+
+Targets need not still be live; this admission guard does not require overwriting every live timestamp. The origin issuance guard does.
+
+\textbf{Query:}
+\[
+(H,S)\xrightarrow{\F{rd}\Rightarrow y}(H,S)\qquad\text{when }y=\{v\mid\exists u,(u,v)\in S\}.
+\]
+
+
+\textbf{Value-only client request.} The client supplies $\operatorname{write}(v)$. At its local live state $S$, preparation supplies
+\[
+W=\operatorname{sort}(\{u\mid\exists w,(u,w)\in S\}),\qquad\operatorname{prepare}(S,v,t,r)=(t,r,\operatorname{write}(v,W)).
+\]
+
+For a fresh insertion identity, the prepared local update reads exactly $\{v\}$. This is checked for both compact and historical implementations, using certified source evidence for the historical representation. Concurrent writes still use the observed-overwrite history above; this local theorem does not turn the replicated register into a singleton register.
+
+
+\paragraph{Issuance.}
+Let $O\subseteq_{\rm fin}\mathbb N\times\mathbb N$ be the live origin state and $\langle W\rangle=\{u\mid u\text{ occurs in list }W\}$. For $e=(t,r,\mathrm{write}(v,W))$,
+\[
+G(e,O)\iff t\notin\{u\mid\exists w,(u,w)\in O\}\land\langle W\rangle=\{u\mid\exists w,(u,w)\in O\}.
+\]
+
+List order and duplicate overwrite IDs do not affect this guard. The origin can omit concurrent writes preceding $e$ in a serialization.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. Original issuance and execution visibility carry overwrite dependencies.
+
+
+\paragraph{Source and adaptation.}
+The configuration uses compact live tagged writes. Overwrite IDs are prepared from the original live state; the abstract language preserves those supplied identities.~\cite{shapiro2011comprehensive}
+
+
+\subsection{Optional register}
+\label{app:dt-optional-register}
+
+% Sal/MRDTs/Instances/OptionalRegister.lean: D, initial, update, mergePayload, mergeCell, merge, query, generation
+
+% Sal/MRDTs/Paper1/OptionalRegisterVC.lean: fiveVC, representationJoin
+
+% Sal/MRDTs/Paper1/OptionalRegisterHistory.lean: model, spec, sorted_refines, history_from_representation
+
+% Sal/MRDTs/Paper1/OptionalRegisterCertificate.lean: certified, certifiedV, executions, executionsV
+
+% Sal/MRDTs/Paper1/OptionalRegisterSourceValidity.lean: sourceWellFormed, sourceWellFormedV, sourceWellFormedOrdinary
+
+\paragraph{Concrete MRDT}
+The state is a finite partial map of replica rows:
+\[
+s:\mathbb N\rightharpoonup((\mathbb Z\times\mathbb B)\times(\mathbb N\times\mathbb N)),\qquad s_0=\varnothing.
+\]
+
+Write $s(r)=((c_r,b_r),(t_r,v_r))$; absent rows read as $z=((0,\mathsf{false}),(0,0))$. The domain remains part of the state. Neem additionally refines stored rows by $b_r=\mathsf{false}\iff(t_r,v_r)=(0,0)$; the Lean raw carrier is broader, and this property is derived on the certified execution domain.
+\[
+\begin{aligned}
+\F{do}(s,t,r,\mathrm{set}(v))&=s[r\mapsto((c_r+1,\mathsf{true}),(t,v))],\\
+\F{do}(s,t,r,\mathrm{unset})(j)&=((c_j,\mathsf{false}),(0,0))&&\text{for }j\in\operatorname{dom}(s).
+\end{aligned}
+\]
+
+Unset preserves the domain. Merge has domain $\operatorname{dom}(l)\cup\operatorname{dom}(a)\cup\operatorname{dom}(b)$. At each key, let the input rows be $((c_l,b_l),p_l)$, $((c_a,b_a),p_a)$, $((c_b,b_b),p_b)$. Then
+\[
+c_m=c_a+c_b-c_l,\qquad
+b_m=\begin{cases}
+\mathsf{true}&b_a\land b_b,\\
+\mathsf{false}&\neg b_a\land\neg b_b,\\
+\operatorname{decide}(c_a>c_l)&b_a\land\neg b_b,\\
+\operatorname{decide}(c_b>c_l)&\neg b_a\land b_b.
+\end{cases}
+\]
+
+For $p_a=(t_a,v_a)$ and $p_b=(t_b,v_b)$, define
+\[
+W(p_a,p_b)=\begin{cases}
+(t_a,\lfloor(v_a+v_b)/2\rfloor)&t_a=t_b,\\
+p_a&t_a>t_b,\\
+p_b&t_a<t_b.
+\end{cases}
+\]
+
+\[
+p_m=\begin{cases}
+(0,0)&\neg b_m,\\
+p_b&b_m\land\neg b_a,\\
+p_a&b_m\land b_a\land\neg b_b,\\
+W(p_a,p_b)&b_m\land b_a\land b_b.
+\end{cases}
+\]
+
+The merged row is $((c_m,b_m),p_m)$. The source’s equal-timestamp averaging branch is retained.
+
+Let $A(s)=\{(t_r,r,v_r)\mid r\in\operatorname{dom}(s),\ b_r=\mathsf{true}\}$. Using lexicographic order,
+\[
+\operatorname{read}(s)=\begin{cases}
+\operatorname{none}&A(s)=\varnothing,\\
+\operatorname{some}(v)&(t,r,v)=\max_{\mathrm{lex}} A(s).
+\end{cases}
+\]
+
+The replica/value tie-break makes the raw query total. Issued timestamps are unique, so reachable equal-timestamp active payloads identify the same write.
+
+
+\paragraph{Independent sequential specification.}
+The independent state is $x\in\operatorname{Option}(\mathbb N)$, initially $\operatorname{none}$.
+\[
+\begin{aligned}
+x&\xrightarrow{(t,r,\mathrm{set}(v))}\operatorname{some}(v)\\
+x&\xrightarrow{(t,r,\mathrm{unset})}\operatorname{none}\\
+x&\xrightarrow{\F{rd}\Rightarrow y}x&&\text{when }y=x.
+\end{aligned}
+\]
+
+The specification has no replica rows, counters, or timestamps in its state. The sequential bridge chooses an order using execution evidence; arbitrary permutations need not explain the concrete query.
+
+
+\paragraph{Issuance.}
+\[
+G(e,s)\iff \F{time}(e)>0.
+\]
+
+Positive timestamps preserve the source convention that an inactive row has payload $(0,0)$. Execution certification also supplies globally fresh timestamps, causal growth and serialized issuance at each replica. The proof derives consistency of equal-timestamp payloads from this provenance.
+
+
+\paragraph{Conflict-resolution relation.}
+\[
+\rcrel(o_1,o_2)\iff\exists v.\ o_1=\mathrm{unset}\land o_2=\mathrm{set}(v).
+\]
+
+A concurrent Set follows Unset. Sets at different replicas commute in the implementation because they update different rows. The independent scalar specification still distinguishes writes of different values, so its visibility constraints are retained by the sequential bridge.
+
+
+\paragraph{Source and adaptation.}
+The arithmetic and equal-timestamp averaging branch are retained from Neem. The source supplies no query; Sal selects the greatest active timestamped payload.~\cite{neem}
+
+
+\subsection{Enable-wins flag}
+\label{app:dt-enable-wins-flag}
+
+% Sal/MRDTs/Instances/EnableWinsFlag.lean: D, enable, disable, generation
+
+% Sal/MRDTs/Instances/EnableWinsFlag.lean: NeemFlag.initial, NeemFlag.update, NeemFlag.mergeFlag, NeemFlag.mergeCell, NeemFlag.merge, NeemFlag.active
+
+% Sal/MRDTs/Paper1/EnableWinsFlagVC.lean: fiveVC, replayConditions
+
+% Sal/MRDTs/Paper1/NeemFlagEvent.lean: machine, spec, simulation
+
+% Sal/MRDTs/Paper1/EnableWinsFlagCertificate.lean: certified, certifiedV
+
+\paragraph{Concrete MRDT}
+State is $s:\mathbb N\to\mathbb Z\times\mathrm{Bool}$, with $s(i)=(c_i,b_i)$ and $s_0(i)=(0,\mathsf{false})$ for every replica index. Neem's source constant map has universal domain.
+
+For an event $(t,i,o)$,
+\[
+\begin{aligned}
+\F{do}(s,t,i,\mathrm{enable})(j)&=\begin{cases}(c_i+1,\mathsf{true})&j=i,\\s(j)&j\ne i,\end{cases}\\
+\F{do}(s,t,i,\mathrm{disable})(j)&=(c_j,\mathsf{false}).
+\end{aligned}
+\]
+
+
+Merge is pointwise. For ancestor row $(c_l,b_l)$ and branch rows $(c_a,b_a),(c_b,b_b)$,
+\[
+c_m=c_a+c_b-c_l,
+\]
+
+\[
+b_m=\begin{cases}
+\mathsf{true}&b_a\land b_b,\\
+\mathsf{false}&\neg b_a\land\neg b_b,\\
+\operatorname{decide}(c_a>c_l)&b_a\land\neg b_b,\\
+\operatorname{decide}(c_b>c_l)&\neg b_a\land b_b.
+\end{cases}
+\]
+
+\[
+\operatorname{read}(s)=\operatorname{decide}(\exists i.\ b_i=\mathsf{true}).
+\]
+
+The read result is Boolean. The source F$^\star$ application file specifies updates and merge but has no query; this query follows the surviving-winning-event interpretation (complemented for disable-wins).
+
+
+\paragraph{Independent sequential specification.}
+State is a Boolean $v$, initially $\mathsf{false}$.
+\[
+\begin{aligned}
+v&\xrightarrow{(t,i,\mathrm{enable})}\mathsf{true}\\
+v&\xrightarrow{(t,i,\mathrm{disable})}\mathsf{false}\\
+v&\xrightarrow{\F{rd}\Rightarrow y}v&&\text{when }y=v.
+\end{aligned}
+\]
+
+Replica and timestamp are carried in update labels; they do not affect the Boolean transition. The implementation query is the simulation projection. A respecting history places the losing operation before the concurrent winning operation.
+
+
+\paragraph{Issuance.}
+\[
+G(e,O)\iff\top.
+\]
+
+No datatype guard is added. Execution certification supplies unique events and serialized issuance at each replica. Full causal metadata retains the per-replica counter prefixes needed by the source merge.
+
+
+\paragraph{Conflict-resolution relation.}
+\[
+\rcrel(o_1,o_2)\iff o_1=\mathrm{disable}\land o_2=\mathrm{enable}.
+\]
+
+Equal-operation updates commute. Enable and disable do not commute, in either the implementation or the independent Boolean specification. The five VCs use a history representation: each counter counts winning events from its issuer, and each bit records a surviving winning event or an initial true bit with no reset. The shared proof preserves the source ternary merge and covers recursive merge bases.
+
+
+\paragraph{Source and adaptation.}
+The counter-and-bit update and ternary merge follow Neem. The source supplies no query; Sal adds the surviving-winning-bit observation.~\cite{neem}
+
+
+\subsection{Disable-wins flag}
+\label{app:dt-disable-wins-flag}
+
+% Sal/MRDTs/Instances/DisableWinsFlag.lean: D, enable, disable, generation
+
+% Sal/MRDTs/Instances/EnableWinsFlag.lean: NeemFlag.initial, NeemFlag.update, NeemFlag.mergeFlag, NeemFlag.mergeCell, NeemFlag.merge, NeemFlag.active
+
+% Sal/MRDTs/Paper1/EnableWinsFlagVC.lean: fiveVC, replayConditions
+
+% Sal/MRDTs/Paper1/NeemFlagEvent.lean: machine, spec, simulation
+
+% Sal/MRDTs/Paper1/DisableWinsFlagCertificate.lean: certified, certifiedV
+
+\paragraph{Concrete MRDT}
+State is $s:\mathbb N\to\mathbb Z\times\mathrm{Bool}$, with $s(i)=(c_i,b_i)$ and $s_0(i)=(0,\mathsf{true})$ for every replica index. Neem's source constant map has universal domain.
+
+For an event $(t,i,o)$,
+\[
+\begin{aligned}
+\F{do}(s,t,i,\mathrm{disable})(j)&=\begin{cases}(c_i+1,\mathsf{true})&j=i,\\s(j)&j\ne i,\end{cases}\\
+\F{do}(s,t,i,\mathrm{enable})(j)&=(c_j,\mathsf{false}).
+\end{aligned}
+\]
+
+
+Merge is pointwise. For ancestor row $(c_l,b_l)$ and branch rows $(c_a,b_a),(c_b,b_b)$,
+\[
+c_m=c_a+c_b-c_l,
+\]
+
+\[
+b_m=\begin{cases}
+\mathsf{true}&b_a\land b_b,\\
+\mathsf{false}&\neg b_a\land\neg b_b,\\
+\operatorname{decide}(c_a>c_l)&b_a\land\neg b_b,\\
+\operatorname{decide}(c_b>c_l)&\neg b_a\land b_b.
+\end{cases}
+\]
+
+\[
+\operatorname{read}(s)=\operatorname{decide}(\neg\exists i.\ b_i=\mathsf{true}).
+\]
+
+The read result is Boolean. The source F$^\star$ application file specifies updates and merge but has no query; this query follows the surviving-winning-event interpretation (complemented for disable-wins).
+
+
+\paragraph{Independent sequential specification.}
+State is a Boolean $v$, initially $\mathsf{false}$.
+\[
+\begin{aligned}
+v&\xrightarrow{(t,i,\mathrm{enable})}\mathsf{true}\\
+v&\xrightarrow{(t,i,\mathrm{disable})}\mathsf{false}\\
+v&\xrightarrow{\F{rd}\Rightarrow y}v&&\text{when }y=v.
+\end{aligned}
+\]
+
+Replica and timestamp are carried in update labels; they do not affect the Boolean transition. The implementation query is the simulation projection. A respecting history places the losing operation before the concurrent winning operation.
+
+
+\paragraph{Issuance.}
+\[
+G(e,O)\iff\top.
+\]
+
+No datatype guard is added. Execution certification supplies unique events and serialized issuance at each replica. Full causal metadata retains the per-replica counter prefixes needed by the source merge.
+
+
+\paragraph{Conflict-resolution relation.}
+\[
+\rcrel(o_1,o_2)\iff o_1=\mathrm{enable}\land o_2=\mathrm{disable}.
+\]
+
+Equal-operation updates commute. Enable and disable do not commute, in either the implementation or the independent Boolean specification. The five VCs use a history representation: each counter counts winning events from its issuer, and each bit records a surviving winning event or an initial true bit with no reset. The shared proof preserves the source ternary merge and covers recursive merge bases.
+
+
+\paragraph{Source and adaptation.}
+The counter-and-bit update and ternary merge follow Neem. Sal complements the outstanding-disable observation to expose whether the flag is enabled.~\cite{neem}
+
+
+
+\subsection{Ordinary OR-set (paper example)}
+\label{app:dt-ordinary-or-set-paper-example}
+% Sal/MRDTs/Paper1/ORSet.lean; Paper1/ORSetEventSpec.lean
+
+\paragraph{Concrete MRDT}
+Let $\mathbb E$ be the element type. Using the operation names of
+Fig.~\ref{fig:orset}, define
+\[
+\begin{aligned}
+\Sigma=\mathcal P_{\rm fin}(\mathbb E\times\mathcal T),\qquad &\sigma_0=\varnothing,\\
+O_\tau=\{\F{add}_x,\F{rem}_x\mid x\in\mathbb E\},\qquad
+&Q_\tau=\{\F{rd}_x\mid x\in\mathbb E\},\quad Val_\tau=\mathbb B.
+\end{aligned}
+\]
+Here $\mathcal P_{\rm fin}$ denotes finite subsets. The operations are
+\[
+\begin{aligned}
+\F{do}(\sigma,t,r,\F{add}_x)&=\sigma\cup\{(x,t)\},\\
+\F{do}(\sigma,t,r,\F{rem}_x)&=\{(y,u)\in\sigma\mid y\ne x\},\\
+\F{merge}(l,a,b)&=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l),\\
+\F{query}(\sigma,\F{rd}_x)&=\operatorname{Bool}(\exists u.\ (x,u)\in\sigma).
+\end{aligned}
+\]
+
+\paragraph{Independent sequential specification.}
+Both OR-set implementations use the ordinary-set machine of
+\S\ref{sec:whatcorrect}: $\Phi=\mathcal P_{\rm fin}(\mathbb E)$ and
+$\phi_0=\varnothing$, with transitions
+\[
+\begin{aligned}
+\phi&\xrightarrow{\F{add}_x}\phi\cup\{x\},\\
+\phi&\xrightarrow{\F{rem}_x}\phi\setminus\{x\},\\
+\phi&\xrightarrow{\F{rd}_x\Rightarrow b}\phi
+  &&\text{when }b=\operatorname{Bool}(x\in\phi).
+\end{aligned}
+\]
+The label projection is $f(t,r,o)=o$: timestamps and replicas do not affect
+these transitions. The mechanized event-labelled presentation retains them
+as ignored parameters.
+
+\paragraph{Issuance.}
+$G(e,\sigma)\iff\top$; no additional datatype guard is required.
+
+\paragraph{Conflict-resolution relation.}
+\[
+\rcrel=\{(\F{rem}_x,\F{add}_x)\mid x\in\mathbb E\}.
+\]
+The relation orders a concurrent removal before an addition of the same
+element, subject to the absorber clause of Definition~\ref{def:lo-local}.
+
+\paragraph{Source and adaptation.}
+This is the live-tag OR-set of the motivating example, represented by finite sets in the mechanization.~\cite{neem}
+
+
+\subsection{Efficient OR-set}
+\label{app:dt-efficient-or-set}
+% Sal/MRDTs/Instances/EfficientORSet.lean; Paper1/EfficientORSetEventSpec.lean
+
+\paragraph{Concrete MRDT}
+Let $\mathbb E$ be the element type. Using the operation names of
+Fig.~\ref{fig:orset}, define
+\[
+\begin{aligned}
+\Sigma=\mathcal P_{\rm fin}(\mathcal R\times\mathcal T\times\mathbb E),\qquad &\sigma_0=\varnothing,\\
+O_\tau=\{\F{add}_x,\F{rem}_x\mid x\in\mathbb E\},\qquad
+&Q_\tau=\{\F{rd}_x\mid x\in\mathbb E\},\quad Val_\tau=\mathbb B.
+\end{aligned}
+\]
+Here $\mathcal P_{\rm fin}$ denotes finite subsets. The operations are
+\[
+\begin{aligned}
+\F{do}(\sigma,t,r,\F{add}_x)&=\{(r,t,x)\}\cup\{(r\prime,u,y)\in\sigma\mid r\prime\ne r\lor y\ne x\},\\
+\F{do}(\sigma,t,r,\F{rem}_x)&=\{(r\prime,u,y)\in\sigma\mid y\ne x\},\\
+\F{merge}(l,a,b)&=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l),\\
+\F{query}(\sigma,\F{rd}_x)&=\operatorname{Bool}(\exists r\prime,u.\ (r\prime,u,x)\in\sigma).
+\end{aligned}
+\]
+
+\paragraph{Independent sequential specification.}
+Both OR-set implementations use the ordinary-set machine of
+\S\ref{sec:whatcorrect}: $\Phi=\mathcal P_{\rm fin}(\mathbb E)$ and
+$\phi_0=\varnothing$, with transitions
+\[
+\begin{aligned}
+\phi&\xrightarrow{\F{add}_x}\phi\cup\{x\},\\
+\phi&\xrightarrow{\F{rem}_x}\phi\setminus\{x\},\\
+\phi&\xrightarrow{\F{rd}_x\Rightarrow b}\phi
+  &&\text{when }b=\operatorname{Bool}(x\in\phi).
+\end{aligned}
+\]
+The label projection is $f(t,r,o)=o$: timestamps and replicas do not affect
+these transitions. The mechanized event-labelled presentation retains them
+as ignored parameters.
+
+\paragraph{Issuance.}
+$G(e,\sigma)\iff\top$; no additional datatype guard is required.
+
+\paragraph{Conflict-resolution relation.}
+\[
+\rcrel=\{(\F{rem}_x,\F{add}_x)\mid x\in\mathbb E\}.
+\]
+The relation orders a concurrent removal before an addition of the same
+element, subject to the absorber clause of Definition~\ref{def:lo-local}.
+
+\paragraph{Source and adaptation.}
+The state retains at most one live tag per replica and element; a new addition replaces that tag, while removal filters every observed tag for the element.~\cite{neem}
+
+\subsection{Remove-wins set}
+\label{app:dt-remove-wins-set}
+
+% Sal/MRDTs/Instances/RemoveWinsSet.lean: D, initial, step, merge, view, query
+
+% Sal/MRDTs/Paper1/RemoveWinsSetVC.lean: fiveVC, representationJoin
+
+% Sal/MRDTs/Paper1/RemoveWinsSetEvent.lean: model, spec, simulation, historySound
+
+% Sal/MRDTs/Paper1/RemoveWinsSetCertificate.lean: certified, certifiedV, executions, executionsV, generation
+
+\paragraph{Concrete MRDT}
+For a finite element universe $K$, store removal tags:
+\[
+\Sigma=\operatorname{Finset}(K\times\mathbb N),\qquad s_0=\{(x,0)\mid x\in K\}.
+\]
+
+For $e=(t,r,o)$,
+\[
+\begin{aligned}
+\F{do}(s,t,r,\mathrm{add}(x))&=\{(y,u)\in s\mid y\ne x\},\\
+\F{do}(s,t,r,\mathrm{remove}(x))&=s\cup\{(x,t)\}.
+\end{aligned}
+\]
+
+\[
+\F{merge}(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l).
+\]
+
+\[
+\operatorname{contains}(s,x)=\mathsf{true}\iff\neg\exists t.\ (x,t)\in s.
+\]
+
+The initial zero tags make every element absent. Neem uses $K=\{1,2\}$; the Lean model generalizes the same equations to any finite $K$, swapping the coordinates of source tags.
+
+
+\paragraph{Independent sequential specification.}
+The abstract state is $X\subseteq K$, initially $\varnothing$.
+\[
+\begin{aligned}
+X&\xrightarrow{(t,r,\mathrm{add}(x))}X\cup\{x\}\\
+X&\xrightarrow{(t,r,\mathrm{remove}(x))}X\setminus\{x\}\\
+X&\xrightarrow{\mathrm{contains}(x)\Rightarrow b}X&&\text{when }b=\operatorname{decide}(x\in X).
+\end{aligned}
+\]
+
+The query answer is Boolean. The sequential state stores neither timestamps nor removal tags.
+
+
+\paragraph{Issuance.}
+\[
+G(e,s)\iff \F{time}(e)>0.
+\]
+
+Timestamp zero is reserved for the initial tags. The execution model supplies fresh timestamps and causal replica histories; this explicit guard excludes collision with those seed tags.
+
+
+\paragraph{Conflict-resolution relation.}
+\[
+\rcrel(o_1,o_2)\iff\exists x.\ o_1=\mathrm{add}(x)\land o_2=\mathrm{remove}(x).
+\]
+
+Addition and removal of the same element do not commute. This policy orders a concurrent addition before removal. Different-element operations and equal-kind operations commute.
+
+
+\paragraph{Source and adaptation.}
+The finite-universe generalization retains Neem's initial zero tags and survivor merge. Positive timestamps reserve those initial identities.~\cite{neem}
+
+
+\subsection{Set-wins multimap}
+\label{app:dt-set-wins-map}
+
+% Sal/MRDTs/Instances/SetWinsMap.lean: D, update, merge, lookup, policy, issuance
+
+% Sal/MRDTs/Paper1/SetWinsMapVC.lean: fiveVC, representationJoin
+
+% Sal/MRDTs/Paper1/SetWinsMapEvent.lean: model, spec, simulation, historySound
+
+% Sal/MRDTs/Paper1/SetWinsMapCertificate.lean: certified, certifiedV, executions, executionsV
+
+\paragraph{Concrete MRDT}
+Keys and values are natural numbers. Store timestamped key–value records:
+\[
+\Sigma=\operatorname{Finset}(\mathbb N\times(\mathbb N\times\mathbb N)),\qquad s_0=\varnothing.
+\]
+
+\[
+\begin{aligned}
+\F{do}(s,t,r,\mathrm{set}(k,v))&=s\cup\{(t,(k,v))\},\\
+\F{do}(s,t,r,\mathrm{del}(k))&=\{(u,(j,w))\in s\mid j\ne k\}.
+\end{aligned}
+\]
+
+\[
+\F{merge}(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l).
+\]
+
+\[
+\operatorname{lookup}(s,k)=\{v\mid\exists t.\ (t,(k,v))\in s\}.
+\]
+
+In particular, two sequential sets at one key retain both values. Repeated records for one value produce one lookup result.
+
+
+\paragraph{Independent sequential specification.}
+The independent state is a finite relation $M\subseteq\mathbb N\times\mathbb N$, initially $\varnothing$.
+\[
+\begin{aligned}
+M&\xrightarrow{(t,r,\mathrm{set}(k,v))}M\cup\{(k,v)\}\\
+M&\xrightarrow{(t,r,\mathrm{del}(k))}\{(j,w)\in M\mid j\ne k\}\\
+M&\xrightarrow{\mathrm{lookup}(k)\Rightarrow V}M&&\text{when }V=\{v\mid(k,v)\in M\}.
+\end{aligned}
+\]
+
+The specification stores no timestamps. It exposes an accumulating multimap, rather than assigning a single value to a key.
+
+
+\paragraph{Issuance.}
+\[
+G(e,s)\iff\top.
+\]
+
+There is no datatype-specific issuance guard. The execution model supplies globally fresh timestamps. Neem restricts timestamps to positive numbers; the Lean proof also admits timestamp zero.
+
+
+\paragraph{Conflict-resolution relation.}
+\[
+\rcrel(o_1,o_2)\iff\exists k,v.\ o_1=\mathrm{del}(k)\land o_2=\mathrm{set}(k,v).
+\]
+
+A concurrent set is placed after deletion of its key. Two sets commute, as do deletions and operations on different keys.
+
+
+\paragraph{Source and adaptation.}
+Neem supplies updates and merge but no query. Sal exposes an accumulating multimap lookup, whose independent state erases timestamps.~\cite{neem}
+
+
+\subsection{Priority queue (Sal retained-increment variant)}
+\label{app:dt-add-wins-priority-queue}
+% Sources: Sal/MRDTs/Instances/AddWinsPriorityQueue.lean;
+% Sal/MRDTs/Instances/AddWinsPriorityQueueFull.lean;
+% Sal/MRDTs/Paper1/AddWinsPriorityQueueSpec.lean;
+% Sal/MRDTs/Paper1/AddWinsPriorityQueueFullSpec.lean;
+% Sal/MRDTs/Paper1/AddWinsPriorityQueueFullCertificate.lean.
+\paragraph{Concrete MRDT}
+Elements and innate priorities are natural numbers; increments are signed.
+The state and initial state are
+\[
+ \Sigma=\operatorname{Finset}(\mathbb N\times\mathbb N\times\mathbb N)
+       \times\operatorname{Finset}(\mathbb N\times\mathbb N\times\mathbb Z),
+ \qquad\sigma_0=(\varnothing,\varnothing).
+\]
+Write $(P,I)$ for Add records $(x,t,v)$ and retained increment records
+$(x,t,n)$. Operations are $\F{add}(x,v)$, $\F{inc}(x,n)$, and
+$\F{remove}(x)$.
+\[
+\begin{aligned}
+\F{do}((P,I),t,r,\F{add}(x,v))&=(P\cup\{(x,t,v)\},I),\\
+\F{do}((P,I),t,r,\F{inc}(x,n))&=(P,I\cup\{(x,t,n)\}),\\
+\F{do}((P,I),t,r,\F{remove}(x))&=(\{(y,u,v)\in P\mid y\ne x\},I),\\
+\F{merge}(l,a,b)&=((P_l\cap P_a\cap P_b)
+ \cup(P_a\setminus P_l)\cup(P_b\setminus P_l),I_a\cup I_b).
+\end{aligned}
+\]
+Let $E(P)=\{x\mid\exists u,v.\ (x,u,v)\in P\}$,
+$w_x=\max_{\rm lex}\{(u,v)\mid(x,u,v)\in P\}$, with
+$w_x=\bot$ for an empty set, and $d_x=\sum_{(x,u,n)\in I}n$.
+Define the partial priority map
+\[
+ p_{P,I}(x)=
+\begin{cases}\F{none}&w_x=\bot,\\
+\F{some}(v+d_x)&w_x=(u,v).
+\end{cases}
+\]
+For finite support $E$ and partial priorities $p$, define
+\[
+\begin{aligned}
+R(E,p)&=\{(v,x)\mid x\in E\land p(x)=\F{some}(v)\},\\
+\operatorname{maximum}(E,p)&=
+\begin{cases}
+\F{none}&R(E,p)=\varnothing,\\
+\F{some}(x,v)&(v,x)=\max_{\rm lex}R(E,p).
+\end{cases}
+\end{aligned}
+\]
+Thus maximum ties choose the greatest element ID. The query alphabet is
+\[
+Q_\tau=\{\F{empty},\F{getMax}\}\cup
+\{\F{lookup}(x),\F{getPri}(x)\mid x\in\mathbb N\}.
+\]
+The result type is the tagged sum
+$Val_\tau=\mathbb B\uplus\operatorname{Option}(\mathbb Z)
+\uplus\operatorname{Option}(\mathbb N\times\mathbb Z)$.
+The query returns tagged Booleans, optional priorities, or optional pairs:
+\[
+\begin{aligned}
+q((P,I),\F{empty})&=\F{boolean}(\operatorname{Bool}(E(P)=\varnothing)),\\
+q((P,I),\F{lookup}(x))&=\F{boolean}(\operatorname{Bool}(x\in E(P))),\\
+q((P,I),\F{getPri}(x))&=\F{priority}(p_{P,I}(x)),\\
+q((P,I),\F{getMax})&=\F{maximum}(\operatorname{maximum}(E(P),p_{P,I})).
+\end{aligned}
+\]
+The innate value breaks a raw timestamp tie; globally fresh event timestamps
+exclude this tie in certified histories. Increment records remain through
+remove and re-add, and increments issued while an element is absent
+contribute to its later priority. Negative resulting priorities are allowed.
+
+\paragraph{Independent sequential specification.}
+The abstract state is $(E,s)$, where $E\subseteq_{\rm fin}\mathbb N$ and
+$s:\mathbb N\to(W\times\operatorname{Finset}(\mathbb N\times\mathbb Z))$.
+Here $W=\{\bot\}\uplus(\mathbb N\times\mathbb N)$ is ordered
+lexicographically above $\bot$. Initially $E=\varnothing$ and
+$s(x)=(\bot,\varnothing)$. For $s(x)=(w,J)$, updates change the named
+cell and the finite support:
+\[
+\begin{aligned}
+(E,s)&\xrightarrow{(t,r,\F{add}(x,v))}
+ (E\cup\{x\},s[x\mapsto(\max(w,(t,v)),J)]),\\
+(E,s)&\xrightarrow{(t,r,\F{inc}(x,n))}
+ (E,s[x\mapsto(w,J\cup\{(t,n)\})]),\\
+(E,s)&\xrightarrow{(t,r,\F{remove}(x))}
+ (E\setminus\{x\},s[x\mapsto(\bot,J)]).
+\end{aligned}
+\]
+These transitions are total. Let $p_s(x)=\F{none}$ for $w=\bot$, and
+$p_s(x)=\F{some}(v+\sum_{(u,n)\in J}n)$ for $w=(t,v)$.
+The four query equations are respectively
+$\F{boolean}(\operatorname{Bool}(E=\varnothing))$,
+$\F{boolean}(\operatorname{Bool}(x\in E))$,
+$\F{priority}(p_s(x))$, and
+$\F{maximum}(\operatorname{maximum}(E,p_s))$.
+The abstract state retains one winning candidate per element, rather than
+all live Add records. Increment identities account for repeated raw
+delivery; freshness counts each issued increment once. The finite support
+records live element IDs independently of the priority cells.
+
+\paragraph{Derived maximum removal.}
+At the issuer's state $\sigma$, preparation returns $\F{none}$ when the maximum query returns no pair. Otherwise, for the selected pair $(x,v)$, it returns
+\[
+ \F{prepareRmvMax}(\sigma,t,r)
+   =\F{some}((t,r,\F{remove}(x)),(x,v)).
+\]
+The local client action returns $(x,v)$ and applies this ordinary Remove.
+The abstract derived action selects
+$\operatorname{maximum}(E,p_s)$ and takes the corresponding Remove
+transition. The checked local refinement equates both the returned pair
+and the projected resulting state. The selected element becomes absent,
+and its acquired increments remain. Replication carries the stable
+selected identity: replay does not recompute a maximum. Two replicas can
+select the same element concurrently; this is a local selection-and-remove
+contract, not globally atomic extraction.
+
+\paragraph{Issuance and policy.}
+$G(e,O)\iff\top$, and
+\[
+\rcrel(o_1,o_2)\iff\exists x,v.\quad
+ o_1=\F{remove}(x)\land o_2=\F{add}(x,v).
+\]
+The five-equation certificate and independent projection bridge cover all
+four query forms in ordinary and recursive-base executions.
+
+\paragraph{Source and adaptation.}
+This is the archived Sal sum-of-increments adaptation of the priority-queue
+design~\cite{PriorityQueue2023}. It retains signed increments independently
+of Add records. It does not implement the source's per-Add observation
+counts or Most-Change-Win rule. The archived survivor merge for increments
+equals union when the ancestor's increments occur in both branches; union
+extends the raw operation outside that coherent domain. Maximum ties use
+Sal's explicit greatest-element rule. The maximum read and derived local
+removal are now included, while the retained-increment priority semantics
+remain this Sal variant.
+
+\subsection{Bounded counter with rights transfer}
+\label{app:dt-bounded-counter}
+
+% Sal/MRDTs/Instances/BalegasBoundedCounter.lean: Action, State, initial, update, merge, localRights, value, query, applicable, generation
+
+% Sal/MRDTs/Paper1/BalegasBoundedCounterVC.lean: scheme, representation, fiveVC, replayConditions
+
+% Sal/MRDTs/Paper1/BalegasBoundedCounterEvent.lean: Accounts, machine, spec, project
+
+% Sal/MRDTs/Paper1/BalegasBoundedCounterCertificate.lean: certified, certifiedV, versions_safe, versions_safeV
+
+% Sal/MRDTs/Paper1/BalegasBoundedCounterGlobal.lean: globalValue, global_bound, global_boundV
+
+\paragraph{Concrete MRDT}
+Fix replicas $I=\{0,\ldots,N-1\}$ and lower bound $K\in\mathbb Z$. State is $R:\mathbb N\times\mathbb N\to\mathbb N$, $U:\mathbb N\to\mathbb N$, initially zero. Only indices in $I$ can issue updates or receive transfers; other cells remain zero.
+
+\[
+V(R,U)=K+\sum_{i\in I}R_{ii}-\sum_{i\in I}U_i,
+\]
+
+\[
+B_i(R,U)=R_{ii}+\sum_{j\in I\setminus\{i\}}R_{ji}-\sum_{j\in I\setminus\{i\}}R_{ij}-U_i.
+\]
+
+
+For $e=(t,i,o)$ and amount $a\in\mathbb N$, accepted effectors are
+\[
+\begin{aligned}
+\F{do}((R,U),t,i,\mathrm{inc}(a))&=(R[(i,i)\mapsto R_{ii}+a],U),\\
+\F{do}((R,U),t,i,\mathrm{dec}(a))&=(R,U[i\mapsto U_i+a]),\\
+\F{do}((R,U),t,i,\mathrm{transfer}(a,j))&=(R[(i,j)\mapsto R_{ij}+a],U).
+\end{aligned}
+\]
+
+The issuance conditions appear below. $R_{ii}$ records increments, $R_{ij}$ for $i\ne j$ records transfers, and $U_i$ records consumption. Only issuer $i$ changes row $i$ and $U_i$.
+
+\[
+\F{merge}(l,(R,U),(R',U'))=(\max(R,R'),\max(U,U'))
+\]
+
+Maximum is componentwise; ancestor $l$ is unused. Queries return $V(R,U)$ or $B_i(R,U)$.
+
+\paragraph{Independent sequential specification.}
+The independent state is $(v,b)$ with $v\in\mathbb Z$ and $b:\mathbb N\to\mathbb Z$, initially $(K,0)$. For $a\in\mathbb N$,
+\[
+\begin{aligned}
+(v,b)&\xrightarrow{(t,i,\mathrm{inc}(a))}(v+a,b[i\mapsto b_i+a])&&\text{when }i\in I,\\
+(v,b)&\xrightarrow{(t,i,\mathrm{dec}(a))}(v-a,b[i\mapsto b_i-a])&&\text{when }i\in I,\ a\le b_i,\\
+(v,b)&\xrightarrow{(t,i,\mathrm{transfer}(a,j))}(v,b[i\mapsto b_i-a,j\mapsto b_j+a])&&\text{when }i,j\in I,\ i\ne j,\ a\le b_i.
+\end{aligned}
+\]
+
+\[
+\begin{aligned}
+(v,b)&\xrightarrow{\mathrm{value}\Rightarrow y}(v,b)&&\text{when }y=v,\\
+(v,b)&\xrightarrow{\mathrm{localRights}(i)\Rightarrow y}(v,b)&&\text{when }y=b_i.
+\end{aligned}
+\]
+
+The scalar is the client counter value; balances expose separate rights accounting. The representation is $v=V(R,U)$ and $b_i=B_i(R,U)$.
+
+Certified histories preserve
+\[
+v=K+\sum_{i\in I}b_i,\qquad\forall i.\ b_i\ge0,\qquad v\ge K.
+\]
+
+For the global union $E$ of all issued events, even when no replica holds that union,
+\[
+K+\sum_{e\in E}\Delta(e)\ge K,\qquad\Delta(\mathrm{inc}(a))=a,\quad\Delta(\mathrm{dec}(a))=-a,\quad\Delta(\mathrm{transfer}(a,j))=0.
+\]
+
+\paragraph{Issuance.}
+Let $O=(R,U)$ be the original issuing state, $e=(t,i,o)$ and $a\in\mathbb N$.
+\[
+\begin{aligned}
+G((t,i,\mathrm{inc}(a)),O)&\iff i\in I,\\
+G((t,i,\mathrm{dec}(a)),O)&\iff i\in I\land a\le B_i(O),\\
+G((t,i,\mathrm{transfer}(a,j)),O)&\iff i,j\in I\land i\ne j\land a\le B_i(O).
+\end{aligned}
+\]
+
+Execution certification serializes updates from each replica and records their causal past. Missing incoming transfers can underestimate local rights; an issuer must retain all its own preceding updates. Stale forks issuing concurrently under the same replica identity are excluded. Zero amounts are allowed; negative amounts are outside the operation domain.
+
+
+\paragraph{Conflict-resolution relation.}
+The application policy is empty:
+\[
+\rcrel=\varnothing.
+\]
+
+Raw arithmetic effectors commute. Reconstruction nevertheless retains full visibility as metadata dependence:
+\[
+M_C(a,b)\iff a\mathrel{\mathrm{vis}_C}b.
+\]
+
+This records cumulative single-writer prefixes for max merge. All five VCs feed the generic merge induction. The independent bridge uses a causal history and original issuance funds. Both ordinary and recursive-merge executions have checked history and bound theorems.
+
+
+\paragraph{Source and adaptation.}
+The effectors and componentwise maximum merge follow the escrow counter of Balegas et al.; nonnegative amounts and a fixed replica universe delimit the port.~\cite{BalegasBoundedCounter}
+
+
+\subsection{Anchored FIFO queue}
+\label{app:dt-anchored-queue-paper-variant}
+
+% Sal/MRDTs/Instances/EmbedRGA.lean: E, eUpdate, eInsert, eMerge, eMerge2
+
+% Sal/MRDTs/Paper1/AnchoredQueue.lean: Q, publicQueue, CanIssue, fifoStep, fifoApplicable, fifoLegal, fifoSpec, language
+
+% Sal/MRDTs/Paper1/AnchoredQueuePublic.lean: Public.fifoSpec, Public.language
+
+% Sal/MRDTs/Paper1/AnchoredQueueHistory.lean: History.Witness, History.Witness.admitted
+
+% Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean: certified FIFO execution bridge
+
+% Sal/MRDTs/Instances/RGAKernel/Code.lean: unaryEnc, unaryCode
+
+% Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean: key, keyLt
+
+% Sal/MRDTs/Paper1/AnchoredQueueClient.lean: prepare, prepared_canIssue, canIssue_iff_prepared, prepared_refines
+
+\paragraph{Concrete MRDT}
+For $e=(t,r,o)$, the concrete carrier and initial state are
+\[
+\begin{aligned}\Sigma&=\operatorname{List}(\mathbb N\times\mathbb N\times\operatorname{List}(\mathbb B)),\\\sigma_0&=[].\end{aligned}
+\]
+
+A record is $(id,value,coordinate)$. The kernel is EmbedRGA.E unaryCode Nat; the public wrapper changes only the query. Payloads are $\operatorname{ins}(v,p,a)$ and $\operatorname{del}(x)$.
+
+\textbf{Update.} Let $I(S)=\{z.id\mid z\in S\}$ be the set of live IDs, $\Gamma$ the unary code $\Gamma(d)=[\underbrace{\mathrm{true},\ldots,\mathrm{true}}_{d},\mathrm{false}]$ (including $\Gamma(0)=[\mathrm{false}]$), and $\operatorname{insert}_{\downarrow}$ descending-key insertion. Write $z=(t,v,p\mathbin{+\!+}\Gamma(t-a))$.
+\[
+e(S)=\begin{cases}S&t\in I(S),\ o=\operatorname{ins}(v,p,a),\\\operatorname{insert}_{\downarrow}(z,S)&t\notin I(S),\ o=\operatorname{ins}(v,p,a),\\\operatorname{filter}_{id\ne x}(S)&o=\operatorname{del}(x).\end{cases}
+\]
+
+Natural subtraction floors at zero. For a bit coordinate $c$, the comparison key is $K_Q(c)=\operatorname{map}(b\mapsto\mathrm{if}\ b\ \mathrm{then}\ 2\ \mathrm{else}\ 1,c)\mathbin{+\!+}[3]$. Keys use strict lexicographic order on natural numbers, with a proper prefix smaller than its extension; IDs and values do not break ties. Insertion places the new record before the first strictly smaller key; equal keys retain delivery order.
+
+\textbf{Three-way merge.} For ancestor $A$ and branches $L,R$, define survivor lists, preserving input order:
+\[
+\begin{aligned}L'&=[z\in L\mid z.id\in I(R)\lor z.id\notin I(A)],\\R'&=[z\in R\mid z.id\notin I(A)\land z.id\notin I(L)],\\\F{merge}(A,L,R)&=\F{merge}_{\downarrow}(L',R').\end{aligned}
+\]
+
+The descending merge emits the larger head key; ties choose the right head. The ancestor distinguishes deletion of existing elements from new insertions. Values and coordinates remain immutable.
+
+\textbf{Query.}
+\[
+\begin{aligned}\operatorname{query}_{Q}(S)&=\operatorname{map}(value,S),\\\operatorname{query}_{public}(S)&=\begin{cases}\operatorname{none}&S=[],\\\operatorname{some}(id,value)&(id,value,c)\text{ is the head.}\end{cases}\end{aligned}
+\]
+
+No deleted-element birth history is stored.
+
+\textbf{Sorting is total on arbitrary lists.} Put $k(z)=K_Q(z.coordinate)$ and define the previously used insertion and merge by
+\[
+\begin{aligned}J(z,[])&=[z],\\J(z,y::Y)&=\begin{cases}z::y::Y&k(y)<_{\mathrm{lex}}k(z),\\y::J(z,Y)&\text{otherwise},\end{cases}\\M([],Y)&=Y,\qquad M(X,[])=X,\\M(x::X,y::Y)&=\begin{cases}x::M(X,y::Y)&k(y)<_{\mathrm{lex}}k(x),\\y::M(x::X,Y)&\text{otherwise}.\end{cases}\end{aligned}
+\]
+
+Here $\operatorname{insert}_{\downarrow}=J$ and $\F{merge}_{\downarrow}=M$.
+
+
+\paragraph{Independent sequential specification.}
+\textbf{Abstract state.} A retained update prefix $h$ and a FIFO list $B$ of birth-ID/value pairs,
+with no implementation coordinates:
+\[
+\Phi=\mathcal E^*\times\operatorname{List}(\mathbb N\times\mathbb N),\qquad\phi_0=([],[]).
+\]
+
+\textbf{Total update helpers.} Enqueue uses event ID $t$ and ignores its carried anchor and coordinate:
+\[
+\begin{aligned}\operatorname{enq}(B,t,v)&=B+\!+[(t,v)],\\\operatorname{delete}(B,x)&=\operatorname{filter}_{id\ne x}(B).\end{aligned}
+\]
+
+
+\textbf{Legal histories.} Let $\operatorname{Born}(h)$ contain all earlier insertion IDs, including deleted ones, and let $B(h)$ be the abstract FIFO fold of update prefix $h$.
+\[
+\begin{aligned}\operatorname{legalEnq}(h,t)&\iff t\notin\operatorname{Born}(h)\land t\notin I(B(h)),\\\operatorname{legalDel}(h,x)&\iff x\in\operatorname{Born}(h)\land\\&\quad(x\notin I(B(h))\lor\operatorname{headId}(B(h))=\operatorname{some}(x)).\end{aligned}
+\]
+
+An absent deletion is legal only for an earlier allocation. There is no special root-delete exception. This legality predicate itself imposes no positivity or timestamp ordering.
+
+\textbf{Admitted transitions.} Initially $(h,B)=([],[])$. Here $h$ retains full update events and $e=(t,r,o)$:
+\[
+\begin{aligned}(h,B)&\xrightarrow{e}(h+\!+[e],\operatorname{enq}(B,t,v))\\&\text{when }o=\operatorname{ins}(v,p,a)\land\operatorname{legalEnq}(h,t),\\(h,B)&\xrightarrow{e}(h+\!+[e],\operatorname{delete}(B,x))\\&\text{when }o=\operatorname{del}(x)\land\operatorname{legalDel}(h,x).\end{aligned}
+\]
+
+For internal or public reads respectively, define
+\[
+\begin{aligned}q_{\mathrm{internal}}(B)&=\operatorname{map}(value,B),\\q_{\mathrm{public}}(B)&=\operatorname{head?}(B),\\(h,B)&\xrightarrow{\F{rd}\Rightarrow a}(h,B)\\&\text{when }a=q_j(B),\quad j\in\{\mathrm{internal},\mathrm{public}\},\end{aligned}
+\]
+
+Here $j$ is fixed by the selected interface. The public head is the optional (ID,value) pair. All finite runs are accepted.
+
+\textbf{Example.} Enqueue IDs $1,2$ with values $10,20$. The head is $\operatorname{some}(1,10)$; after deleting $1$ it is $\operatorname{some}(2,20)$. Deleting $1$ again is legal and changes nothing. Deleting $2$ while both are live is illegal; deleting never-allocated $3$ is also illegal.
+
+The current proof retains full events, $f=\operatorname{id}$. Client labels enqueue(id,value)/delete(target) explain these transitions but do not themselves provide a new projected proof bridge.
+
+
+\paragraph{Issuance.}
+For $e=(t,r,o)$ and original mint state $S$, write $H(S)$ for its optional head ID and $T(S)$ for its optional last (ID,coordinate) pair.
+\[
+G(e,S)\iff\begin{cases}a<t\ \land\bigl((S=[]\land a=0\land p=[])\lor T(S)=\operatorname{some}(a,p)\bigr)&o=\operatorname{ins}(v,p,a),\\H(S)=\operatorname{some}(x)&o=\operatorname{del}(x).\end{cases}
+\]
+
+Timestamp freshness and replica/causal constraints come from the execution model. This guard is checked at the original mint state, not again at each prefix of a reordered abstract history.
+
+\textbf{Client requests:} $\mathsf{enqueue}(v)$ and $\mathsf{dequeue}$ contain no identity or coordinate. Preparation reads the live tail for enqueue and the live head for dequeue. Empty dequeue generates no event. Every message admitted by the original issuer is generated by one of these requests.
+
+For a sorted issuing state with unique IDs and a fresh clock, preparation implements the local value-list transitions
+\[
+L\xrightarrow{\mathsf{enqueue}(v)}L\cdot[v],\qquad
+L\xrightarrow{\mathsf{dequeue}}\operatorname{tail}(L)\quad\text{when }L\ne[].
+\]
+
+The concurrent history still removes the observed head identity: two replicas removing the same head do not consume two different elements.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix diamonds delimit the certified algebraic obligations; this does not assert commutativity on arbitrary raw carrier states. The independent history bridge is a separate obligation.
+
+
+\paragraph{Source and adaptation.}
+This Sal queue uses the embedded RGA coordinate kernel with FIFO issuance and a head query. Its abstract operations are enqueue and deletion of the named head.~\cite{Roh,Peepul}
+
+
+\subsection{RGA}
+\label{app:dt-rga}
+
+% Sal/MRDTs/Instances/RGA.lean: RGAState; rgaUpdate; RGAM; sequence; supportFinset; applicable; generation
+
+% Sal/MRDTs/Instances/RGASequential.lean: listStep; listLegal; listSpec; insertDeleteConflict; eventOrder; rc
+
+% Sal/MRDTs/Paper1/RGAEventSpec.lean: machine, spec, insertion_uses_timestamp, deletion_uses_target
+
+% Sal/MRDTs/Paper1/RGAIdentified.lean: Update, project, machine, strictSpec
+
+% Sal/MRDTs/Paper1/RGAConcretePort.lean: history, conditions, globalCompatibility_impossible
+
+% Sal/MRDTs/Paper1/RGAClientPhysical.lean: certified_query_prepared, certified_query_preparedV
+
+\paragraph{Concrete MRDT}
+Insertion uses timestamp $t$ as its identity; the replica is ignored by the effect. Raw effects are total.
+
+State $(A,T)$ consists of Boolean predicates on insertion edges $(i,a)$ and IDs; $(A_0,T_0)=(\varnothing,\varnothing)$, with sets understood pointwise.
+
+\[
+\begin{aligned}\F{do}((A,T),t,r,\operatorname{AddAfter}(a))&=(A\cup\{(t,a)\},T),\\\F{do}((A,T),t,r,\operatorname{Remove}(x))&=(A,T\cup\{x\}),\\\F{merge}(L,A,B)&=L\cup A\cup B\quad\text{componentwise}.\end{aligned}
+\]
+
+
+Define $\operatorname{supp}(f)=\{x\mid f(x)=\mathrm{true}\}$ when finite, and $\varnothing$ otherwise. Materialize each component independently. Let $P(B,0,t)=t::B$, $P([],a,t)=[]$ for $a\ne0$, and
+
+\[
+P(x::X,a,t)=\begin{cases}x::t::X&x=a\land a\ne0,\\x::P(X,a,t)&x\ne a\land a\ne0.\end{cases}
+\]
+
+
+Enumerate the finite edge support and stable-sort it by increasing first coordinate; call the resulting list $E$. Fold $P(B,a,i)$ over $(i,a)\in E$ starting at $[]$ to obtain $B_E$.
+
+\[
+q(A,T)=[i\in B_E\mid i\notin\operatorname{supp}(T)].
+\]
+
+
+Finite-set enumeration is Lean's chosen enumeration, not an extra tie-break by anchor. Honest histories have unique insertion IDs, so sort ties are absent; the infinite-support fallback only totalizes arbitrary raw predicates.
+
+
+\paragraph{Independent sequential specification.}
+State $(B,H)$: live ID list and permanent allocation set; $(B_0,H_0)=([],\varnothing)$. Use $P$ defined in the MRDT definition. The selected strict identified machine has these admitted transitions:
+
+\[
+\begin{aligned}(B,H)&\xrightarrow{(t,r,\operatorname{AddAfter}(a))}(P(B,a,t),H\cup\{t\})\\&\qquad\text{when }0<t\land t\notin H\land(a=0\lor a\in B),\\(B,H)&\xrightarrow{(t,r,\operatorname{Remove}(x))}([i\in B\mid i\ne x],H),\\q(B,H)&=B.\end{aligned}
+\]
+
+
+Every finite admitted run belongs to the event-spec language. $H$ retains deleted insertion IDs; deletion-event timestamps do not allocate IDs. There is no increasing-ID guard.
+
+\textbf{Positional client boundary.} At a certified source and an actual apply step, successful preparation of a positional insertion/deletion satisfies
+
+\[
+\operatorname{prepare}(V(S),t,r,u)=e\quad\Longrightarrow\quad q(e(S))=\operatorname{edit}_t(V(S),u).
+\]
+
+
+Execution supplies finite birth support, unique positive IDs, timestamp freshness and the required live anchor. The theorem holds for ordinary and recursive certified executions; the global identified-history contract above remains separate.
+
+\paragraph{Issuance.}
+Let $\operatorname{born}(i)\iff\exists a, A(i,a)$. Then:
+
+\[
+\begin{aligned}G((t,r,\operatorname{AddAfter}(a)),(A,T))&\iff\big((a=0\land 0<t)\lor(\neg T(a)\land a<t\land\operatorname{born}(a))\big)\\&\quad\land\neg\operatorname{born}(t)\land\neg T(t),\\G((t,r,\operatorname{Remove}(x)),(A,T))&\iff\operatorname{born}(x)\land\neg T(x).\end{aligned}
+\]
+
+
+ID zero is reserved exclusively for the root. Every issued insertion has a positive ID; global execution freshness is separate.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. The grow-only concrete update effects commute. The strict editor language uses its execution-scoped history bridge.
+
+
+\paragraph{Source and adaptation.}
+The state-based RGA records insertion edges and deletion evidence. The registered observation is an identifier sequence.~\cite{Roh}
+
+
+\subsection{Embedded RGA}
+\label{app:dt-embed-rga}
+
+% Sal/MRDTs/Instances/EmbedRGA.lean: E; EOp; eCoord; eUpdate; eInsert; eMerge; eMerge2; eEventOrder; EEventOrder; eApplicable
+
+% Sal/MRDTs/Instances/EmbedRGASequential.lean: eSpecStep; eInsAfter; eSeqOK
+
+% Sal/MRDTs/Instances/ProductionRGA.lean: embedSpec; embedLegal; embedClientSpec; embedOrder
+
+% Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean: key; keyLt
+
+% Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean: emptyPolicy, canonical_history_data
+
+% Sal/MRDTs/Paper1/EmbedRGAClientLocal.lean: EmbedRGAClient.prepare; EmbedRGAClient.step; EmbedRGAClient.certified_prepared_physical
+
+\paragraph{Concrete MRDT}
+Insertion uses timestamp $t$ as its identity; the replica is ignored by the effect. Raw effects are total.
+
+Fix $\operatorname{enc}:\mathbb N\to\{0,1\}^*$: for $1\le d<e$, $\operatorname{enc}(d)<_{\rm lex}\operatorname{enc}(e)$; distinct positive arguments have no prefix-related codewords. No constraint is imposed on $\operatorname{enc}(0)$. Lexicographic order compares the first differing symbol, with a proper prefix smaller. Define $b_{u,v}$ by mapping $0\mapsto u$, $1\mapsto v$ pointwise; $\bar c$ complements bits.
+
+$S$ is a list of records $z=(i,v,c)$, where $i\in\mathbb N$, $v\in\alpha$, $c,\pi\in\{0,1\}^*$ (the generic payload type $\alpha$ has decidable equality and an inhabitant); $S_0=[]$, $I(S)=[i\mid(i,v,c)\in S]$. Operations are $\operatorname{Ins}(v,\pi,a)$ and $\operatorname{Del}(x)$; for insertion $z_e=(t,v,c_e)$.
+
+\[
+c_e=\pi++\operatorname{enc}(t-a),\qquad K(c)=b_{1,2}(c)++[3].
+\]
+
+
+\textbf{Effect.} Define insertion $J$ recursively, including equal-key behavior:
+
+\[
+\begin{aligned}J(z,[])&=[z],\\J(z,y::Y)&=\begin{cases}z::y::Y&K(y.c)<_{\rm lex}K(z.c),\\y::J(z,Y)&\text{otherwise},\end{cases}\\e(S)&=\begin{cases}S&o=\operatorname{Ins}(v,\pi,a),\ t\in I(S),\\J(z_e,S)&o=\operatorname{Ins}(v,\pi,a),\ t\notin I(S),\\{}[z\in S\mid z.i\ne x]&o=\operatorname{Del}(x).\end{cases}\end{aligned}
+\]
+
+
+\textbf{Three-way merge.} Ancestor $L$, branches $A,B$:
+
+\[
+\begin{aligned}A^*&=[z\in A\mid z.i\in I(B)\lor z.i\notin I(L)],\\B^*&=[z\in B\mid z.i\notin I(L)\land z.i\notin I(A)],\\\F{merge}(L,A,B)&=M(A^*,B^*),\\M([],Y)&=Y,\qquad M(X,[])=X,\\M(x::X,y::Y)&=\begin{cases}x::M(X,y::Y)&K(y.c)<_{\rm lex}K(x.c),\\y::M(x::X,Y)&\text{otherwise}.\end{cases}\end{aligned}
+\]
+
+
+Shared IDs use the left branch's records; key ties emit the right head first. These equations apply even to unsorted or duplicate-ID raw lists. Honest states have unique IDs, distinct coordinates and descending keys.
+
+\[
+q(S)=[v\mid(i,v,c)\in S].
+\]
+
+\paragraph{Independent sequential specification.}
+\textbf{Total editor helper.} For a list $B$ of pairs and new pair $z=(t,v)$, define:
+
+\[
+\begin{aligned}P_s([],a,z)&=[],\\P_s(y::Y,a,z)&=\begin{cases}z::y::Y&y.i=a,\ s=L,\\y::z::Y&y.i=a,\ s=R,\\y::P_s(Y,a,z)&y.i\ne a.\end{cases}\end{aligned}
+\]
+
+
+This uses the first matching anchor; an absent anchor leaves the list unchanged. $B_0=[]$; define $P(B,a,z)=z::B$ if $a=0$, otherwise $P_R(B,a,z)$.
+
+\[
+\begin{aligned}V_e(B)&=\begin{cases}P(B,a,(t,v))&o=\operatorname{Ins}(v,\pi,a),\\{}[(i,v)\in B\mid i\ne x]&o=\operatorname{Del}(x),\end{cases}\\q(B)&=[v\mid(i,v)\in B].\end{aligned}
+\]
+
+
+Let $h$ be the admitted event prefix, initially $[]$, and $\mathcal A(h)$ its insertion events. Define the next-event admission predicate exactly by:
+
+\[
+\begin{aligned}A(h,(t,r,\operatorname{Ins}(v,\pi,a)))&\iff(\forall p\in\mathcal A(h),\ p.t<t)\\&\quad\land\big((a=0\land\pi=[])\lor\exists p\in\mathcal A(h),\ p.t=a\land c_p=\pi\big),\\A(h,(t,r,\operatorname{Del}(x)))&\iff\exists p\in\mathcal A(h),\ p.t=x.\end{aligned}
+\]
+
+
+The admitted transition carries the history solely to check $A$:
+
+\[
+(h,B)\xrightarrow{e}(h++[e],V_e(B))\quad\text{when }A(h,e).
+\]
+
+
+This history language requires earlier allocation, permits repeated deletion and permits insertion after an anchor subsequently deleted. Thus legal histories can contain a missing-anchor no-op; the stronger sequential refinement premise also checks current-fold applicability. Prefix $\pi$ affects legality but not the editor effect.
+
+\textbf{Positional client boundary.} Clients request insertion/deletion at an index; preparation supplies the generated anchor and coordinate prefix. Let $V$ erase coordinates from the physical records while retaining IDs and values, and let $\operatorname{edit}_t$ be the ordinary positional list edit, using $t$ as the new identity. For a certified source state and an actual apply step,
+\[
+\operatorname{prepare}(S,t,r,u)=e\quad\Longrightarrow\quad V(e(S))=\operatorname{edit}_t(V(S),u).
+\]
+
+This physical-effect theorem derives sortedness, identity uniqueness, and the clock bound from the execution. It assumes no separately supplied legal replay history. The global history language displayed above remains distinct from this local client theorem.
+
+
+\paragraph{Issuance.}
+\[
+\begin{aligned}G((t,r,\operatorname{Ins}(v,\pi,a)),S)&\iff a<t\land\big((a=0\land\pi=[])\lor\exists v',(a,v',\pi)\in S\big),\\G((t,r,\operatorname{Del}(x)),S)&\iff x\in I(S).\end{aligned}
+\]
+
+
+These predicates restrict issuance, not the total raw effects.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix diamonds delimit the certified algebraic obligations; this does not assert commutativity on arbitrary raw carrier states. The independent history bridge is a separate obligation.
+
+
+\paragraph{Source and adaptation.}
+Sal replaces the insertion tree by prefix-code coordinates and physically removes deleted records. The independent editor has no coordinates.~\cite{Roh}
+
+
+\subsection{Sided Embedded RGA}
+\label{app:dt-sided-embed-rga}
+
+% Sal/MRDTs/Instances/SidedEmbedRGA.lean: S; SOp; sCoord; sUpdate; sInsert; sMerge; sMerge2; sEventOrder; SEventOrder; sApplicable
+
+% Sal/MRDTs/Instances/SidedEmbedRGASequential.lean: sSpecStep; sInsAfter; sInsBefore; sSpecFold; sSeqOK
+
+% Sal/MRDTs/Instances/ProductionRGA.lean: sidedSpec; sidedLegal; sidedClientSpec; sidedOrder
+
+% Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean: sBlock; sKey
+
+% Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean: keyLt
+
+% Sal/MRDTs/Paper1/CertifiedSidedInvariantHistory.lean: emptyPolicy, canonical_history_data
+
+% Sal/MRDTs/Paper1/SidedRGAClientLocal.lean: SidedRGAClient.prepare; SidedRGAClient.step; SidedRGAClient.certified_prepared_physical
+
+\paragraph{Concrete MRDT}
+Insertion uses timestamp $t$ as its identity; the replica is ignored by the effect. Raw effects are total.
+
+Fix $\operatorname{enc}:\mathbb N\to\{0,1\}^*$: for $1\le d<e$, $\operatorname{enc}(d)<_{\rm lex}\operatorname{enc}(e)$; distinct positive arguments have no prefix-related codewords. No constraint is imposed on $\operatorname{enc}(0)$. Lexicographic order compares the first differing symbol, with a proper prefix smaller. Define $b_{u,v}$ by mapping $0\mapsto u$, $1\mapsto v$ pointwise; $\bar c$ complements bits.
+
+$S$ is a list of records $z=(i,v,c)$, where $i\in\mathbb N$, $v\in\mathbb N$, $c,\pi\in\mathbb N^*$, $s\in\{L,R\}$; $S_0=[]$, $I(S)=[i\mid(i,v,c)\in S]$. Operations are $\operatorname{Ins}(v,\pi,a,s)$ and $\operatorname{Del}(x)$; for insertion $z_e=(t,v,c_e)$.
+
+\[
+\begin{aligned}h_R(d)&=b_{1,2}(\operatorname{enc}(d)),\\h_L(d)&=b_{4,5}(\overline{\operatorname{enc}(d)}),\\c_e&=\pi++h_s(t-a),\qquad K(c)=c++[3].\end{aligned}
+\]
+
+
+\textbf{Effect.} Define insertion $J$ recursively, including equal-key behavior:
+
+\[
+\begin{aligned}J(z,[])&=[z],\\J(z,y::Y)&=\begin{cases}z::y::Y&K(y.c)<_{\rm lex}K(z.c),\\y::J(z,Y)&\text{otherwise},\end{cases}\\e(S)&=\begin{cases}S&o=\operatorname{Ins}(v,\pi,a,s),\ t\in I(S),\\J(z_e,S)&o=\operatorname{Ins}(v,\pi,a,s),\ t\notin I(S),\\{}[z\in S\mid z.i\ne x]&o=\operatorname{Del}(x).\end{cases}\end{aligned}
+\]
+
+
+\textbf{Three-way merge.} Ancestor $L$, branches $A,B$:
+
+\[
+\begin{aligned}A^*&=[z\in A\mid z.i\in I(B)\lor z.i\notin I(L)],\\B^*&=[z\in B\mid z.i\notin I(L)\land z.i\notin I(A)],\\\F{merge}(L,A,B)&=M(A^*,B^*),\\M([],Y)&=Y,\qquad M(X,[])=X,\\M(x::X,y::Y)&=\begin{cases}x::M(X,y::Y)&K(y.c)<_{\rm lex}K(x.c),\\y::M(x::X,Y)&\text{otherwise}.\end{cases}\end{aligned}
+\]
+
+
+Shared IDs use the left branch's records; key ties emit the right head first. These equations apply even to unsorted or duplicate-ID raw lists. Honest states have unique IDs, distinct coordinates and descending keys.
+
+\[
+q(S)=[v\mid(i,v,c)\in S].
+\]
+
+\paragraph{Independent sequential specification.}
+\textbf{Total editor helper.} For a list $B$ of pairs and new pair $z=(t,v)$, define:
+
+\[
+\begin{aligned}P_s([],a,z)&=[],\\P_s(y::Y,a,z)&=\begin{cases}z::y::Y&y.i=a,\ s=L,\\y::z::Y&y.i=a,\ s=R,\\y::P_s(Y,a,z)&y.i\ne a.\end{cases}\end{aligned}
+\]
+
+
+This uses the first matching anchor; an absent anchor leaves the list unchanged. $B_0=[(0,0)]$; ID $0$ is the root sentinel.
+
+\[
+\begin{aligned}V_e(B)&=\begin{cases}P_s(B,a,(t,v))&o=\operatorname{Ins}(v,\pi,a,s),\\{}[(i,v)\in B\mid i\ne x]&o=\operatorname{Del}(x),\end{cases}\\q(B)&=[v\mid(i,v)\in B,\ i\ne0].\end{aligned}
+\]
+
+
+Let $h$ be the admitted event prefix, initially $[]$, and $\mathcal A(h)$ its insertion events. Define the next-event admission predicate exactly by:
+
+\[
+\begin{aligned}A(h,(t,r,\operatorname{Ins}(v,\pi,a,s)))&\iff(\forall p\in\mathcal A(h),\ p.t<t)\\&\quad\land\big((a=0\land\pi=[])\lor\exists p\in\mathcal A(h),\ p.t=a\land c_p=\pi\big),\\A(h,(t,r,\operatorname{Del}(x)))&\iff\exists p\in\mathcal A(h),\ p.t=x.\end{aligned}
+\]
+
+
+The admitted transition carries the history solely to check $A$:
+
+\[
+(h,B)\xrightarrow{e}(h++[e],V_e(B))\quad\text{when }A(h,e).
+\]
+
+
+This history language requires earlier allocation, permits repeated deletion and permits insertion after an anchor subsequently deleted. Thus legal histories can contain a missing-anchor no-op; the stronger sequential refinement premise also checks current-fold applicability. Prefix $\pi$ affects legality but not the editor effect.
+
+\textbf{Positional client boundary.} Clients request insertion/deletion at an index; preparation supplies the generated anchor and coordinate prefix. Let $V$ erase coordinates from the physical records while retaining IDs and values, and let $\operatorname{edit}_t$ be the ordinary positional list edit, using $t$ as the new identity. For a certified source state and an actual apply step,
+\[
+\operatorname{prepare}(S,t,r,u)=e\quad\Longrightarrow\quad V(e(S))=\operatorname{edit}_t(V(S),u).
+\]
+
+This physical-effect theorem derives sortedness, identity uniqueness, and the clock bound from the execution. It assumes no separately supplied legal replay history. The global history language displayed above remains distinct from this local client theorem.
+
+
+\paragraph{Issuance.}
+\[
+\begin{aligned}G((t,r,\operatorname{Ins}(v,\pi,a,s)),S)&\iff a<t\land\big((a=0\land\pi=[])\lor\exists v',(a,v',\pi)\in S\big),\\G((t,r,\operatorname{Del}(x)),S)&\iff x\in I(S).\end{aligned}
+\]
+
+
+These predicates restrict issuance, not the total raw effects.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix diamonds delimit the certified algebraic obligations; this does not assert commutativity on arbitrary raw carrier states. The independent history bridge is a separate obligation.
+
+
+For siblings of one anchor, right-side deltas appear in decreasing order
+and left-side deltas in increasing order. Hence a newer sibling lies
+closer to its anchor on either side. This follows from the symbol bands
+and bit complementation in $h_R$ and $h_L$.
+
+\paragraph{Source and adaptation.}
+Sal extends the embedded RGA with both sides of an anchor. It adapts the sided-tree idea of Fugue with an RGA-derived sibling order; it is a distinct configuration from FugueMax.~\cite{Roh,FugueMax}
+
+
+\subsection{FugueMax with immutable birth records}
+\label{app:dt-fugue-max}
+
+% Sal/MRDTs/Instances/FugueMaxImplementation.lean: Payload, State, recordOf, rawUpdate, rawMerge, datatype, applicable, generation
+
+% Sal/MRDTs/Instances/FugueMaxIssuer.lean: prepareInsert, prepareDelete, canIssue
+
+% Sal/MRDTs/Instances/FugueMax.lean: mStep, mGenInsAfter
+
+% Sal/MRDTs/Instances/FugueMaxContract.lean: listLegal, listSpec
+
+% Sal/MRDTs/Instances/FugueMaxListRefinement.lean: listStep, listRun
+
+% Sal/MRDTs/Paper1/CertifiedFugueRawOrderObstruction.lean: certified_raw_criterion_failure, admitted_history_control
+
+% Sal/MRDTs/Paper1/CertifiedFugueInvariantObstruction.lean: valid_execution_counterexample
+
+% Sal/MRDTs/Instances/RGAKernel/FugueMaxChainLex.lean: FMEntry, fw, fwTag, fmBlock, fmCoordOf
+
+% Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean: symR, symL, compl, sKey
+
+% Sal/MRDTs/Instances/SidedEmbedRGASequential.lean: sInsBefore, sInsAfter
+
+% Sal/MRDTs/Paper1/FugueMaxNaturalSequence.lean: Action; insertAfter; legal; machine; spec; ofMessage
+
+% Sal/MRDTs/Paper1/FugueMaxHonestPhysicalRefinement.lean: honest_physical_insert_refinement
+
+% Sal/MRDTs/Paper1/FugueMaxNaturalCertificate.lean: eventSpec; version_witness_noninterleaving; correct; correctV; virtual_base_valid
+
+\paragraph{Concrete MRDT}
+\textbf{Carrier and records.} Fix a Boolean code $\Gamma:\mathbb N\to\operatorname{List}(\mathbb B)$ satisfying
+\[
+1\le d<e\Rightarrow\Gamma(d)<_{\mathrm{lex}}\Gamma(e),\qquad 1\le d,e\land d\ne e\Rightarrow\neg(\Gamma(d)\text{ is a prefix of }\Gamma(e)).
+\]
+
+Boolean lexicographic order has false < true. An event is $e=(t,r,(o,\ell,\rho,h))$, where $o=\operatorname{ins}(p,s)$ or $\operatorname{del}(x)$, $s\in\{L,R\}$, $\ell\in\mathbb N$, $\rho\in\operatorname{Option}(\mathbb N)$ and $h$ is a chain of entries $L(d)$ or $R(\tau,d)$ with $\tau\in\operatorname{List}(\mathbb N)$. Its immutable record is $g=(t,r,o,\ell,\rho,h)$.
+\[
+\Sigma=\operatorname{List}(\mathbb N\times\mathbb N\times\operatorname{List}(\mathbb N))\times\operatorname{Finset}(MRec),\qquad\sigma_0=([],\varnothing).
+\]
+
+Write $S$ for live records, $B$ for births, and $\operatorname{ids}(S)=\operatorname{map}(id,S)$; membership uses this list's underlying set.
+
+\textbf{Coordinate encoding.} Let $\bar b$ complement a Boolean bit and let $\mathbin{\ominus}$ denote truncated natural subtraction. Concatenation is $+\!+$.
+\[
+\begin{aligned}u_R(\mathrm{false})&=1,&u_R(\mathrm{true})&=2,\\u_L(\mathrm{false})&=4,&u_L(\mathrm{true})&=5,\\W(k)&=[\lfloor(8\mathbin{\ominus} k)/3\rfloor,(8\mathbin{\ominus} k)\bmod3],\\W^*(\tau)&=\mathop{+\!+}_{k\in\tau}W(k),\\D_s(d)&=\operatorname{map}(b\mapsto u_s(\bar b),\Gamma(d)),\\F(L(d))&=D_L(d),&F(R(\tau,d))&=W^*(\tau)+\!+D_R(d),\\C(h)&=\mathop{+\!+}_{v\in h}F(v),&K(c)&=c+\!+[3].\end{aligned}
+\]
+
+Empty concatenations are empty lists. Compare $K(c)$ by strict natural-number lexicographic order (a proper prefix is smaller); IDs and values do not break ties.
+
+\textbf{Sorting helpers.} For record $z$, put $k(z)=K(z.coordinate)$. Define descending insertion $J$ and two-list merge $M$ recursively:
+\[
+\begin{aligned}J(z,[])&=[z],\\J(z,y::Y)&=\begin{cases}z::y::Y&k(y)<_{\mathrm{lex}}k(z),\\y::J(z,Y)&\text{otherwise},\end{cases}\\M([],Y)&=Y,\qquad M(X,[])=X,\\M(x::X,y::Y)&=\begin{cases}x::M(X,y::Y)&k(y)<_{\mathrm{lex}}k(x),\\y::M(x::X,Y)&\text{otherwise}.\end{cases}\end{aligned}
+\]
+
+Insertion passes existing equal keys; merge selects the right head on equal keys.
+
+\textbf{Update, merge, query.} Let $z_g=(t,t,C(h))$ and $D_x(S)=[z\in S\mid z.id\ne x]$.
+\[
+e((S,B))=\begin{cases}(S,B\cup\{g\})&o=\operatorname{ins}(p,s),\ t\in\operatorname{ids}(S),\\(J(z_g,S),B\cup\{g\})&o=\operatorname{ins}(p,s),\ t\notin\operatorname{ids}(S),\\(D_x(S),B)&o=\operatorname{del}(x).\end{cases}
+\]
+
+For $A=(S_A,B_A)$, $L=(S_L,B_L)$ and $R=(S_R,B_R)$, filtered lists retain their original order:
+\[
+\begin{aligned}X&=[z\in S_L\mid z.id\in\operatorname{ids}(S_R)\lor z.id\notin\operatorname{ids}(S_A)],\\Y&=[z\in S_R\mid z.id\notin\operatorname{ids}(S_A)\land z.id\notin\operatorname{ids}(S_L)],\\\F{merge}(A,L,R)&=(M(X,Y),B_L\cup B_R),\\\operatorname{query}((S,B),())&=\operatorname{ids}(S).\end{aligned}
+\]
+
+Deleted births persist. Each inserted ID is also its displayed value. The concrete list contains no root sentinel.
+
+
+\paragraph{Independent sequential specification.}
+\textbf{Client requests and generated labels.} An insertion at visible position $i$ uses the fresh event identity $t$ and the visible predecessor $\ell$ (zero at the front). Deletion at position $i$ names the identity $x$ currently there. Preparation is evaluated at the issuing replica; replay uses those stable identities, not the original numeric positions. The current carrier observes identities rather than arbitrary character values.
+
+\textbf{Independent sequential state.} $(B,T)$ is a permanent identity list and a set of deleted IDs, initially $([0],\varnothing)$. Define insertion immediately after the first occurrence of an origin:
+\[
+P([],\ell,t)=[],\qquad P(x::X,\ell,t)=\begin{cases}x::t::X&x=\ell,\\x::P(X,\ell,t)&x\ne\ell.\end{cases}
+\]
+
+The admitted transitions are
+\[
+\begin{aligned}(B,T)&\xrightarrow{\operatorname{insertAfter}(t,\ell)}(P(B,\ell,t),T)&&\text{when }t\ne0\land t\notin B\land\ell\in B,\\(B,T)&\xrightarrow{\operatorname{deleteID}(x)}(B,T\cup(\{x\}\setminus\{0\}))&&\text{when }x\in B,\\q(B,T)&=[x\in B\mid x\ne0\land x\notin T].\end{aligned}
+\]
+
+Queries are state-preserving transitions returning exactly $q(B,T)$; every finite admitted run is in the language. Deleted IDs remain usable as origins. Root deletion is a no-op. For generated messages,
+\[
+f(t,r,(\operatorname{ins}(p,s),\ell,\rho,h))=\operatorname{insertAfter}(t,\ell),\qquad f(t,r,(\operatorname{del}(x),\ell,\rho,h))=\operatorname{deleteID}(x).
+\]
+
+Structural parent, side, right origin, and coordinate chain are absent from the sequential action.
+
+\textbf{Checked correspondence.} The original issuer's actual physical update implements each legal positional client edit. For every stored version of an ordinary or recursive certified execution, one permutation of its original events respects the invariant-scoped implementation order and specification-conflicting visibility, admits the exact returned list, and carries the existing maximal noninterleaving property. The proof uses the five VCs and common merge theorem.
+
+
+\paragraph{Issuance.}
+\textbf{Original mint guard.} For finite birth set $B$, choose a list $E$ with $\operatorname{Finset}(E)=B$. Repetitions are allowed by this representation equation. Let $H$ be the insertion records of $E$, in enumeration order. All helpers below are scoped to $(\Gamma,S,E)$.
+\[
+\begin{aligned}\chi(x)&=\begin{cases}g.chain&g\text{ is the first record of }H\text{ with }g.ts=x,\\{}[]&\text{no such record exists},\end{cases}\\\kappa(x)&=K(C(\chi(x))),\\V_a&=[(g.ts,\kappa(g.ts))\mid g\in H,\ a=0\lor\kappa(g.ts)<_{\mathrm{lex}}\kappa(a)],\\R_a&\iff\exists g\in E,\ g.op=\operatorname{ins}(a,R).\end{aligned}
+\]
+
+Define $n_a$ as none when $V_a=[]$; otherwise it is the ID of the greatest-key pair in $V_a$, retaining the first candidate on a key tie. Equivalently scan left to right, replacing the candidate only on a strictly greater key. Deleted births remain candidates.
+
+For $0\le i\le|S|$, put $a_i=0$ if $i=0$, otherwise the ID at zero-based position $i-1$ of $S$. With $a=a_i$, the prepared insertion record is
+Define $(o_i,\rho_i,h_i)$ by these mutually exclusive cases:
+\[
+\begin{aligned}n_a=\operatorname{some}(n),\ R_a:\quad&o_i=\operatorname{ins}(n,L),\\&\rho_i=\operatorname{some}(n),\\&h_i=\chi(n)+\!+[L(t\mathbin{\ominus} n)];\\n_a=\operatorname{some}(n),\ \neg R_a:\quad&o_i=\operatorname{ins}(a,R),\\&\rho_i=\operatorname{some}(n),\\&h_i=\chi(a)+\!+[R(\kappa(n),t\mathbin{\ominus} a)];\\n_a=\operatorname{none}:\quad&o_i=\operatorname{ins}(a,R),\\&\rho_i=\operatorname{none},\\&h_i=\chi(a)+\!+[R([0],t\mathbin{\ominus} a)].\end{aligned}
+\]
+
+\[
+\operatorname{PI}(r,t,i)=(t,r,o_i,a,\rho_i,h_i).
+\]
+
+For deletion, $x_i$ is the ID at zero-based position $i$ of $S$ when $i<|S|$, and $x_{|S|}=0$:
+\[
+\operatorname{PD}(r,t,i)=(t,r,\operatorname{del}(x_i),0,\operatorname{none},[]).
+\]
+
+For $g=(t,r,o,\ell,\rho,h)$,
+\[
+\begin{aligned}
+G(e,(S,B))\iff{}&\exists E.\quad
+ \operatorname{Finset}(E)=B\land 0<t\\
+&\land\begin{cases}
+(\forall b\in E,\ b.ts<t)\\
+\quad\land\exists i\le |S|,\ g=\operatorname{PI}(r,t,i)&o\text{ inserts},\\
+\exists i\le |S|,\ g=\operatorname{PD}(r,t,i)&o\text{ deletes}.
+\end{cases}
+\end{aligned}
+\]
+
+Equality checks every record field. Enumeration is a representation witness, not another execution. Global timestamp freshness belongs to the surrounding execution model; the guard is checked at the original mint state.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix diamonds delimit the certified algebraic obligations; this does not assert commutativity on arbitrary raw carrier states. The independent natural-history bridge is proved separately, using the same witness for implementation order, specification visibility, and the query. The valid-state domain and its update/merge closure are established independently of that witness.
+
+
+\paragraph{Source and adaptation.}
+The configuration preserves generated left/right origins and coordinate-chain evidence. Its present observation returns identities, not arbitrary text payloads.~\cite{FugueMax}
+
+
+\subsection{Tree move}
+\label{app:dt-tree-move}
+
+% Sal/MRDTs/Instances/TreeMove.lean: D, doMove, visibleTree, render, eventKey, applicable, generation, spec, sequentialSpec, ClientLegal
+
+% Sal/MRDTs/Paper1/TreeSheetEventSpec.lean: TreeMoveEvent.spec
+
+\paragraph{Concrete MRDT}
+\textbf{State:} a finite event set $E$, initially $\varnothing$, with $e=(t,r,\mathrm{Move}(p,m,c))\in\mathbb N^5$. Root is $0$ and trash is $1$.
+\[
+\operatorname{update}(E,e)=E\cup\{e\},\qquad\F{merge}(l,a,b)=a\cup b.
+\]
+
+\textbf{Render:} a tree is $T:\mathbb N\to\operatorname{Option}(\mathbb N\times\mathbb N)$. Write $x\to_T y\iff\exists m,T(x)=\operatorname{some}(y,m)$ and $\to_T^+$ for a nonempty finite path. Define
+\[
+\operatorname{safe}(T)\iff\forall x,\neg(x\to_T^+x),\quad C=T[c\mapsto\operatorname{some}(p,m)],\quad f(T,e)=\begin{cases}C,&\operatorname{safe}(C),\\T,&\text{otherwise}.\end{cases}
+\]
+
+Let $[e_1,\ldots,e_n]$ enumerate $E$ in increasing lexicographic key $(t,r,p,m,c)$. Set $T_0(x)=\operatorname{none}$ and $T_i=f(T_{i-1},e_i)$; $\operatorname{render}(E)=T_n$.
+\[
+\operatorname{hidden}(T,x)\iff x=1\lor x\to_T^+1,\qquad\operatorname{visible}(T)(x)=\begin{cases}\operatorname{none},&\operatorname{hidden}(T,x),\\T(x),&\text{otherwise}.\end{cases}
+\]
+
+\textbf{Query:} $q(E,())=\operatorname{visible}(\operatorname{render}(E))$. The merge base $l$ is ignored.
+
+
+\paragraph{Independent sequential specification.}
+\textbf{State:} $T:\mathbb N\to\operatorname{Option}(\mathbb N\times\mathbb N)$, initially everywhere $\operatorname{none}$. Track update prefix $H$, initially $[]$, for history admission; it is not an extra concrete field.
+\[
+(H,T)\xrightarrow{e}(H\mathbin{+\!+}[e],f(T,e))\qquad\text{when }\operatorname{Legal}(H\mathbin{+\!+}[e]).
+\]
+
+For $H=[e_1,\ldots,e_n]$ and $k(e)=(t,r,p,m,c)$, the exact condition is
+\[
+\operatorname{Legal}(H)\iff\operatorname{Nodup}(H)\land(\forall i<j,\ k(e_i)\le_{\rm lex}k(e_j))\land\forall i,\exists O\subseteq\{e_j\mid j<i\},G(e_i,O).
+\]
+
+$f$ and $\operatorname{visible}$ are the graph formulas above; cycle rejection keeps $T$ unchanged and still appends the legal event to $H$.
+
+\textbf{Query:}
+\[
+(H,T)\xrightarrow{\F{rd}\Rightarrow y}(H,T)\qquad\text{when }y=\operatorname{visible}(T).
+\]
+
+\paragraph{Issuance.}
+For $e=(t,r,\mathrm{Move}(p,m,c))$ and origin event set $O$, define
+\[
+K_O(x)\iff x=0\lor x=1\lor\exists(t',r',\mathrm{Move}(p',m',c'))\in O,\ c'=x,
+\]
+
+\[
+V_O(x)\iff K_O(x)\land\neg\operatorname{hidden}(\operatorname{render}(O),x).
+\]
+
+The exact guard is
+\[
+G(e,O)\iff(\forall(t',r',o')\in O,(t',r')\ne(t,r))\land V_O(p)\land(\neg K_O(c)\lor V_O(c))\land c\ne0\land c\ne1.
+\]
+
+A rejected cycle does not prevent its event from establishing its child as known. No guard requires $p\ne c$.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$.
+
+
+\paragraph{Source and adaptation.}
+This is canonical sorted replay of cycle-rejecting tree moves. The cited source's incremental undo/redo delivery algorithm is not the replicated implementation defined here.~\cite{TreeMove}
+
+
+\subsection{Embedded Peritext}
+\label{app:dt-peritext-embed-rga}
+
+% Sal/MRDTs/Instances/EmbedRGA.lean: E; EOp; eCoord; eUpdate; eInsert; eMerge; eMerge2; eEventOrder; EEventOrder; eApplicable
+
+% Sal/MRDTs/Instances/EmbedRGASequential.lean: eSpecStep; eInsAfter; eSeqOK
+
+% Sal/MRDTs/Instances/ProductionRGA.lean: embedSpec; embedLegal; embedClientSpec; embedOrder
+
+% Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean: key; keyLt
+
+% Sal/MRDTs/Instances/Peritext.lean: Mark; Element; D; renderAux; render; render_sequentially_correct
+
+% Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean: emptyPolicy, canonical_history_data
+
+\paragraph{Concrete MRDT}
+Payload $v$ is $\operatorname{Char}(c)$ or $\operatorname{Bound}(j,m,b)$, where $b$ says start/end. Formatting marks are bold, italic, underline, strike, link(URL), comment(author,text), color or heading. Boundary insertion ID $t$ and carried mark ID $j$ are independent.
+
+Insertion uses timestamp $t$ as its identity; the replica is ignored by the effect. Raw effects are total.
+
+Fix $\operatorname{enc}:\mathbb N\to\{0,1\}^*$: for $1\le d<e$, $\operatorname{enc}(d)<_{\rm lex}\operatorname{enc}(e)$; distinct positive arguments have no prefix-related codewords. No constraint is imposed on $\operatorname{enc}(0)$. Lexicographic order compares the first differing symbol, with a proper prefix smaller. Define $b_{u,v}$ by mapping $0\mapsto u$, $1\mapsto v$ pointwise; $\bar c$ complements bits.
+
+$S$ is a list of records $z=(i,v,c)$, where $i\in\mathbb N$, $v\in\alpha$, $c,\pi\in\{0,1\}^*$ with $\alpha$ the payload type defined above; $S_0=[]$, $I(S)=[i\mid(i,v,c)\in S]$. Operations are $\operatorname{Ins}(v,\pi,a)$ and $\operatorname{Del}(x)$; for insertion $z_e=(t,v,c_e)$.
+
+\[
+c_e=\pi++\operatorname{enc}(t-a),\qquad K(c)=b_{1,2}(c)++[3].
+\]
+
+
+\textbf{Effect.} Define insertion $J$ recursively, including equal-key behavior:
+
+\[
+\begin{aligned}J(z,[])&=[z],\\J(z,y::Y)&=\begin{cases}z::y::Y&K(y.c)<_{\rm lex}K(z.c),\\y::J(z,Y)&\text{otherwise},\end{cases}\\e(S)&=\begin{cases}S&o=\operatorname{Ins}(v,\pi,a),\ t\in I(S),\\J(z_e,S)&o=\operatorname{Ins}(v,\pi,a),\ t\notin I(S),\\{}[z\in S\mid z.i\ne x]&o=\operatorname{Del}(x).\end{cases}\end{aligned}
+\]
+
+
+\textbf{Three-way merge.} Ancestor $L$, branches $A,B$:
+
+\[
+\begin{aligned}A^*&=[z\in A\mid z.i\in I(B)\lor z.i\notin I(L)],\\B^*&=[z\in B\mid z.i\notin I(L)\land z.i\notin I(A)],\\\F{merge}(L,A,B)&=M(A^*,B^*),\\M([],Y)&=Y,\qquad M(X,[])=X,\\M(x::X,y::Y)&=\begin{cases}x::M(X,y::Y)&K(y.c)<_{\rm lex}K(x.c),\\y::M(x::X,Y)&\text{otherwise}.\end{cases}\end{aligned}
+\]
+
+
+Shared IDs use the left branch's records; key ties emit the right head first. These equations apply even to unsorted or duplicate-ID raw lists. Honest states have unique IDs, distinct coordinates and descending keys.
+
+\[
+q(S)=[v\mid(i,v,c)\in S].
+\]
+
+\paragraph{Independent sequential specification.}
+Payload $v$ is $\operatorname{Char}(c)$ or $\operatorname{Bound}(j,m,b)$, where $b$ says start/end. Formatting marks are bold, italic, underline, strike, link(URL), comment(author,text), color or heading. Boundary insertion ID $t$ and carried mark ID $j$ are independent.
+
+\textbf{Total editor helper.} For a list $B$ of pairs and new pair $z=(t,v)$, define:
+
+\[
+\begin{aligned}P_s([],a,z)&=[],\\P_s(y::Y,a,z)&=\begin{cases}z::y::Y&y.i=a,\ s=L,\\y::z::Y&y.i=a,\ s=R,\\y::P_s(Y,a,z)&y.i\ne a.\end{cases}\end{aligned}
+\]
+
+
+This uses the first matching anchor; an absent anchor leaves the list unchanged. $B_0=[]$; define $P(B,a,z)=z::B$ if $a=0$, otherwise $P_R(B,a,z)$.
+
+\[
+\begin{aligned}V_e(B)&=\begin{cases}P(B,a,(t,v))&o=\operatorname{Ins}(v,\pi,a),\\{}[(i,v)\in B\mid i\ne x]&o=\operatorname{Del}(x),\end{cases}\\q(B)&=[v\mid(i,v)\in B].\end{aligned}
+\]
+
+
+Let $h$ be the admitted event prefix, initially $[]$, and $\mathcal A(h)$ its insertion events. Define the next-event admission predicate exactly by:
+
+\[
+\begin{aligned}A(h,(t,r,\operatorname{Ins}(v,\pi,a)))&\iff(\forall p\in\mathcal A(h),\ p.t<t)\\&\quad\land\big((a=0\land\pi=[])\lor\exists p\in\mathcal A(h),\ p.t=a\land c_p=\pi\big),\\A(h,(t,r,\operatorname{Del}(x)))&\iff\exists p\in\mathcal A(h),\ p.t=x.\end{aligned}
+\]
+
+
+The admitted transition carries the history solely to check $A$:
+
+\[
+(h,B)\xrightarrow{e}(h++[e],V_e(B))\quad\text{when }A(h,e).
+\]
+
+
+This history language requires earlier allocation, permits repeated deletion and permits insertion after an anchor subsequently deleted. Thus legal histories can contain a missing-anchor no-op; the stronger sequential refinement premise also checks current-fold applicability. Prefix $\pi$ affects legality but not the editor effect.
+
+Additional rendering observation (distinct from the registered payload-list query): scan left to right with open list $O=[]$. A start boundary sets $O\leftarrow(j,m)::O$; an end sets $O\leftarrow[(j',m')\in O\mid j'\ne j]$; a character emits $(c,O)$. Physical boundary deletion follows the same buffer effect.
+
+
+\paragraph{Issuance.}
+\[
+\begin{aligned}G((t,r,\operatorname{Ins}(v,\pi,a)),S)&\iff a<t\land\big((a=0\land\pi=[])\lor\exists v',(a,v',\pi)\in S\big),\\G((t,r,\operatorname{Del}(x)),S)&\iff x\in I(S).\end{aligned}
+\]
+
+
+These predicates restrict issuance, not the total raw effects.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix diamonds delimit the certified algebraic obligations; this does not assert commutativity on arbitrary raw carrier states. The independent history bridge is a separate obligation.
+
+
+\paragraph{Source and adaptation.}
+This adaptation stores explicit formatting boundaries as embedded-RGA payloads. The registered query returns the payload list; the scan below is an additional rendering observation.~\cite{Peritext}
+
+
+\subsection{Sided Peritext}
+\label{app:dt-sided-peritext-rich-core}
+
+% Sal/MRDTs/Instances/SidedEmbedRGA.lean: S; SOp; sCoord; sUpdate; sInsert; sMerge; sMerge2; sEventOrder; SEventOrder; sApplicable
+
+% Sal/MRDTs/Instances/SidedEmbedRGASequential.lean: sSpecStep; sInsAfter; sInsBefore; sSpecFold; sSeqOK
+
+% Sal/MRDTs/Instances/ProductionRGA.lean: sidedSpec; sidedLegal; sidedClientSpec; sidedOrder
+
+% Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean: sBlock; sKey
+
+% Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean: keyLt
+
+% Sal/MRDTs/Instances/SidedPeritext.lean: Core; Stores; DeleteStore; MarkStore; coreGuard; generation; richSpec; clientSpec; coreEventOrder; coreOrder
+
+% Sal/MRDTs/Instances/FinsetStore.lean: D; spec
+
+% Sal/MRDTs/Framework/Product.lean: prodSig
+
+% Sal/MRDTs/Instances/SidedPeritext.lean: RichCore; documentOf; renderState; richDocumentOf; richClientSpec; richOrder; richGeneration
+
+% Sal/MRDTs/Instances/PeritextRender.lean: MarkD; DocD; scanRight; scanLeft; skipRight; skipLeft; startIncl; endExcl; markCoversPos; winner; bestCover; fmtAt; renderMarksDoc
+
+% Sal/MRDTs/Paper1/CertifiedRGACoreVC.lean: policy
+
+% Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean: language, history
+
+\paragraph{Concrete MRDT}
+\textbf{Product state.} $\sigma=(S,D,F)$, initially $([],\varnothing,\varnothing)$; $D$ is a finite ID set and $F$ a finite mark-record set. A mark $m$ has an identity, type, operation and value, two endpoint IDs with before/after sides, and two recorded paths; $\mathrm{op}\in\{\mathrm{add},\mathrm{remove}\}$, endpoint sides before/after. Types: bold, italic, underline, strike, link, comment, color, heading. IDs, value and endpoint IDs are natural numbers; paths are lists of natural numbers (default $[]$); the document-order renderer ignores paths and mark value.
+
+\[
+\begin{aligned}\F{do}((S,D,F),t,r,\operatorname{Text}(o))&=(\F{do}(S,t,r,o),D,F),\\\F{do}((S,D,F),t,r,\operatorname{RecordDeletion}(x))&=(S,D\cup\{x\},F),\\\F{do}((S,D,F),t,r,\operatorname{RecordMark}(m))&=(S,D,F\cup\{m\}),\\\F{merge}(L,A,B)&=(\F{merge}(S_L,S_A,S_B),D_A\cup D_B,F_A\cup F_B).\end{aligned}
+\]
+
+
+The evidence-store merge ignores the ancestor.
+
+Insertion uses timestamp $t$ as its identity; the replica is ignored by the effect. Raw effects are total.
+
+Fix $\operatorname{enc}:\mathbb N\to\{0,1\}^*$: for $1\le d<e$, $\operatorname{enc}(d)<_{\rm lex}\operatorname{enc}(e)$; distinct positive arguments have no prefix-related codewords. No constraint is imposed on $\operatorname{enc}(0)$. Lexicographic order compares the first differing symbol, with a proper prefix smaller. Define $b_{u,v}$ by mapping $0\mapsto u$, $1\mapsto v$ pointwise; $\bar c$ complements bits.
+
+$S$ is a list of records $z=(i,v,c)$, where $i\in\mathbb N$, $v\in\mathbb N$, $c,\pi\in\mathbb N^*$, $s\in\{L,R\}$; $S_0=[]$, $I(S)=[i\mid(i,v,c)\in S]$. Operations are $\operatorname{Ins}(v,\pi,a,s)$ and $\operatorname{Del}(x)$; for insertion $z_e=(t,v,c_e)$.
+
+\[
+\begin{aligned}h_R(d)&=b_{1,2}(\operatorname{enc}(d)),\\h_L(d)&=b_{4,5}(\overline{\operatorname{enc}(d)}),\\c_e&=\pi++h_s(t-a),\qquad K(c)=c++[3].\end{aligned}
+\]
+
+
+\textbf{Effect.} Define insertion $J$ recursively, including equal-key behavior:
+
+\[
+\begin{aligned}J(z,[])&=[z],\\J(z,y::Y)&=\begin{cases}z::y::Y&K(y.c)<_{\rm lex}K(z.c),\\y::J(z,Y)&\text{otherwise},\end{cases}\\e(S)&=\begin{cases}S&o=\operatorname{Ins}(v,\pi,a,s),\ t\in I(S),\\J(z_e,S)&o=\operatorname{Ins}(v,\pi,a,s),\ t\notin I(S),\\{}[z\in S\mid z.i\ne x]&o=\operatorname{Del}(x).\end{cases}\end{aligned}
+\]
+
+
+\textbf{Three-way merge.} Ancestor $L$, branches $A,B$:
+
+\[
+\begin{aligned}A^*&=[z\in A\mid z.i\in I(B)\lor z.i\notin I(L)],\\B^*&=[z\in B\mid z.i\notin I(L)\land z.i\notin I(A)],\\\F{merge}(L,A,B)&=M(A^*,B^*),\\M([],Y)&=Y,\qquad M(X,[])=X,\\M(x::X,y::Y)&=\begin{cases}x::M(X,y::Y)&K(y.c)<_{\rm lex}K(x.c),\\y::M(x::X,Y)&\text{otherwise}.\end{cases}\end{aligned}
+\]
+
+
+Shared IDs use the left branch's records; key ties emit the right head first. These equations apply even to unsorted or duplicate-ID raw lists. Honest states have unique IDs, distinct coordinates and descending keys.
+
+The text component alone has projection $q_{\rm component}(S)=[v\mid(i,v,c)\in S]$; the product query is defined below.
+
+The RichCore query replaces the kernel value-list query: set $Z=[(i,v)\mid(i,v,c)\in S]$ and use the renderer below.
+
+\textbf{Document-order rich query.} Let $Z$ be the retained ID/value list, $b=[i\mid(i,v)\in Z]$, $\ell=[i\in b\mid i\notin D]$, $n=|\ell|$. $\operatorname{idx}(X,a)$ is the first index of $a$ in $X$, or $|X|$ if absent. $\operatorname{cp}(a)$ is the value of the first pair in $Z$ with ID $a$, defaulting to $0$.
+
+Define $R(a)$ as the first ID outside $D$ in $b$ strictly after position $\operatorname{idx}(b,a)$, and $L(a)$ as the first such ID in the reversed prefix strictly before that position; either returns $\bot$ if none. Thus an absent ID gives $R(a)=\bot$, while $L(a)$ scans all of $b$. For endpoint side $s$ define:
+
+\[
+\begin{aligned}T(a,s)&=\begin{cases}a&a\in\ell,\\R(a)&a\notin\ell,\ s=\mathrm{before},\\L(a)&a\notin\ell,\ s=\mathrm{after}.\end{cases}\end{aligned}
+\]
+
+
+For mark ID $u$, let $r_u(j)$ be the length of the initial contiguous run of IDs $>u$ in $\ell$ starting at $j$; $l_u(j)$ is that length in the reverse of the prefix of length $j$. Define $g_u(i)=i+1+r_u(i+1)$ and $h_u(i)=i-l_u(i)$. Resolved start $a=T(m.\mathrm{startID},m.\mathrm{startSide})$ and end $z=T(m.\mathrm{endID},m.\mathrm{endSide})$ yield:
+
+\[
+\begin{aligned}\alpha_m&=\begin{cases}\bot&a=\bot,\ \mathrm{startSide}=\mathrm{before},\\0&a=\bot,\ \mathrm{startSide}=\mathrm{after},\\\operatorname{idx}(\ell,a)&a\ne\bot,\ \mathrm{startSide}=\mathrm{before},\\g_{m.\mathrm{mid}}(\operatorname{idx}(\ell,a))&a\ne\bot,\ \mathrm{startSide}=\mathrm{after},\end{cases}\\\beta_m&=\begin{cases}\bot&z=\bot,\ \mathrm{endSide}=\mathrm{after},\\n&z=\bot,\ \mathrm{endSide}=\mathrm{before},\\g_{m.\mathrm{mid}}(\operatorname{idx}(\ell,z))&z\ne\bot,\ \mathrm{endSide}=\mathrm{after},\\h_{m.\mathrm{mid}}(\operatorname{idx}(\ell,z))&z\ne\bot,\ \mathrm{endSide}=\mathrm{before}.\end{cases}\end{aligned}
+\]
+
+
+$\bot$ is a missing optional boundary, not a numeric position. A mark covers $j$ exactly when both boundaries exist and $\alpha_m\le j<\beta_m$. Enumerate $F$ in Lean's finite-set order. Among covering marks of requested type $k$, select maximum mid, retaining the earlier enumerated record on ties; if none, set the flag false. Write that flag as $f_k(j)$, true exactly when the selected mark has op add.
+
+\[
+q_k(Z,D,F)=[(\operatorname{cp}(\ell_j),f_k(j))\mid 0\le j<n].
+\]
+
+
+Issued marks have unique mids; arbitrary equal-mid raw ties depend on the finite-set enumeration.
+
+
+\paragraph{Independent sequential specification.}
+\textbf{Editor product.} State $(B,D,F)$, initially $([(0,0)],\varnothing,\varnothing)$. Total product effects (admission is defined below), using the sided buffer effect $V$:
+
+\[
+\begin{aligned}\operatorname{Text}(o)&:(B,D,F)\mapsto(V_{(t,r,o)}(B),D,F),\\\operatorname{RecordDeletion}(x)&:(B,D,F)\mapsto(B,D\cup\{x\},F),\\\operatorname{RecordMark}(m)&:(B,D,F)\mapsto(B,D,F\cup\{m\}).\end{aligned}
+\]
+
+\textbf{Total editor helper.} For a list $B$ of pairs and new pair $z=(t,v)$, define:
+
+\[
+\begin{aligned}P_s([],a,z)&=[],\\P_s(y::Y,a,z)&=\begin{cases}z::y::Y&y.i=a,\ s=L,\\y::z::Y&y.i=a,\ s=R,\\y::P_s(Y,a,z)&y.i\ne a.\end{cases}\end{aligned}
+\]
+
+
+This uses the first matching anchor; an absent anchor leaves the list unchanged. $B_0=[(0,0)]$; ID $0$ is the root sentinel.
+
+\[
+\begin{aligned}V_e(B)&=\begin{cases}P_s(B,a,(t,v))&o=\operatorname{Ins}(v,\pi,a,s),\\{}[(i,v)\in B\mid i\ne x]&o=\operatorname{Del}(x),\end{cases}\\q(B)&=[v\mid(i,v)\in B,\ i\ne0].\end{aligned}
+\]
+
+
+Let $h$ be the admitted event prefix, initially $[]$, and $\mathcal A(h)$ its insertion events. Define the next-event admission predicate exactly by:
+
+\[
+\begin{aligned}A(h,(t,r,\operatorname{Ins}(v,\pi,a,s)))&\iff(\forall p\in\mathcal A(h),\ p.t<t)\\&\quad\land\big((a=0\land\pi=[])\lor\exists p\in\mathcal A(h),\ p.t=a\land c_p=\pi\big),\\A(h,(t,r,\operatorname{Del}(x)))&\iff\exists p\in\mathcal A(h),\ p.t=x.\end{aligned}
+\]
+
+
+Write $h_T$ for $h$ projected to text events, removing Text tags and retaining timestamps/replicas. The admitted product transitions are:
+
+\[
+\begin{aligned}(h,B,D,F)&\xrightarrow{e=(t,r,\operatorname{Text}(o))}(h++[e],V_{(t,r,o)}(B),D,F)\\&\qquad\text{when }A(h_T,(t,r,o)),\\(h,B,D,F)&\xrightarrow{e=(t,r,\operatorname{RecordDeletion}(x))}(h++[e],B,D\cup\{x\},F),\\(h,B,D,F)&\xrightarrow{e=(t,r,\operatorname{RecordMark}(m))}(h++[e],B,D,F\cup\{m\}).\end{aligned}
+\]
+
+
+This history language requires earlier allocation, permits repeated deletion and permits insertion after an anchor subsequently deleted. Thus legal histories can contain a missing-anchor no-op; the stronger sequential refinement premise also checks current-fold applicability. Prefix $\pi$ affects legality but not the editor effect.
+
+The RichCore query replaces the buffer value-list query: set $Z=[(i,v)\in B\mid i\ne0]$ and use the renderer below.
+
+The pure function $q_k$ is exactly the document-order renderer defined above, applied to the abstract buffer with the root removed. It uses no coordinates, concrete update, or merge. Queries are state-preserving transitions returning this value.
+
+\paragraph{Issuance.}
+\[
+\begin{aligned}G((t,r,\operatorname{Text}(\operatorname{Ins}(v,\pi,a,s))),(S,D,F))&\iff a<t\land\big((a=0\land\pi=[])\lor\exists v',(a,v',\pi)\in S\big),\\G((t,r,\operatorname{Text}(\operatorname{Del}(x))),(S,D,F))&\iff\mathrm{false},\\G((t,r,\operatorname{RecordDeletion}(x)),(S,D,F))&\iff x\in I(S)\land x\notin D,\\G((t,r,\operatorname{RecordMark}(m)),(S,D,F))&\iff m.\mathrm{mid}=t\\&\land m.\mathrm{startID},m.\mathrm{endID}\in I(S)\setminus D\\&\land\forall n\in F,\ n.\mathrm{mid}\ne m.\mathrm{mid}.\end{aligned}
+\]
+
+
+Logical deletion retains the insertion shadow. Native text deletion exists as a total raw effect but cannot be issued.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix diamonds delimit the certified algebraic obligations; this does not assert commutativity on arbitrary raw carrier states. The independent history bridge is a separate obligation.
+
+
+\paragraph{Source and adaptation.}
+One configuration combines a sided coordinate text kernel, retained logical-deletion evidence, and mark records with the document-order rendered query. The internal product kernel is not another datatype row.~\cite{Peritext}
+
+
+\subsection{AegisSheet}
+\label{app:dt-aegis-sheet}
+
+% Sal/MRDTs/Instances/AegisSheet.lean: D, SheetOp, Action, Command, inverseFor, view, axisKeepTimes, axisTokenRemoved, axisLive, axisPositions, cellOverwritten, rangeOverwritten, applicable, generation
+
+% Sal/MRDTs/Instances/AegisSheetSequential.lean: State, empty, applyAxis, applyCell, applyRange, applyPurge, step, view, CausalOriginLegal, clientSpec
+
+% Sal/MRDTs/Paper1/TreeSheetEventSpec.lean: AegisSheetEvent.spec
+
+\paragraph{Concrete MRDT}
+\textbf{Types:} all timestamps, replica IDs, stable IDs, positions and values are natural numbers. $\alpha\in\{\mathrm{row},\mathrm{column}\}$; $k\in\{\mathrm{insert},\mathrm{move},\mathrm{remove},\mathrm{restore}\}$. Let $\epsilon(\operatorname{none})=\varnothing$ and $\epsilon(\operatorname{some}(z))=\{z\}$. All sets below are finite.
+
+An event is $e=(t,r,(S,c))$ with seen timestamps $S$ and command $c=\mathrm{direct}(a)$ or $\mathrm{undo}(u,a)$. Its effect $a_e=a$ in either case; undo adds an inverse event rather than erasing its target. Effects have forms
+\[
+\begin{aligned}\mathrm{Axis}(k,\alpha,i,b,h)&:&b,h\in\operatorname{Option}(\mathbb N),\\\mathrm{Cell}(i,j,B,A,W)&:&B,A,W\subseteq_{\rm fin}\mathbb N,\\\mathrm{Range}(i,b,h,W)&:&b,h\in\operatorname{Option}(\mathbb N^4),\\\mathrm{Purge}(c,C,F,R)&:&C\subseteq_{\rm fin}\mathbb N^2,\ F\subseteq_{\rm fin}(\mathbb N\times\mathbb N^2),\ R\subseteq_{\rm fin}\mathbb N.\end{aligned}
+\]
+
+Range tuples give first row, last row, first column and last column stable IDs. A purge gives cutoff $c$, coordinates $C$, covered timestamp-coordinate pairs $F$, and acknowledgements $R$.
+
+\textbf{State and merge:} $E$ is a finite event set, initially empty.
+\[
+\operatorname{update}(E,e)=E\cup\{e\},\qquad\F{merge}(l,a,b)=a\cup b.
+\]
+
+
+\textbf{Axis query:} write $\pi_{\mathrm{row}}(i,j)=i$ and $\pi_{\mathrm{column}}(i,j)=j$. For an axis and ID define
+\[
+\begin{aligned}N_\alpha(E)&=\{i\mid\exists e\in E,\ a_e=\mathrm{Axis}(k,\alpha,i,b,h)\},\\K_{\alpha i}(E)&=\{t_e\mid e\in E,\ a_e=\mathrm{Axis}(k,\alpha,i,b,h),\ h\ne\operatorname{none}\}\\&\quad\cup\{t_e\mid e\in E,\ a_e=\mathrm{Cell}(u,v,B,A,W),\ \pi_\alpha(u,v)=i\}\\&\quad\cup\{u\mid\exists e\in E,\ a_e=\mathrm{Purge}(c,C,F,R),\ (u,z)\in F,\ \pi_\alpha(z)=i\},\\D_{\alpha i}(E)&=\bigcup\{S_e\mid e\in E,\ a_e=\mathrm{Axis}(k,\alpha,i,b,\operatorname{none})\},\\L_{\alpha i}(E)&=K_{\alpha i}(E)\setminus D_{\alpha i}(E),\\\ell_{\alpha i}(E)&\iff i\in N_\alpha(E)\land L_{\alpha i}(E)\ne\varnothing,\\P_{\alpha i}(E)&=\{(t_e,p)\mid e\in E,\ a_e=\mathrm{Axis}(k,\alpha,i,b,\operatorname{some}(p))\},\\Q_{\alpha i}(E)&=\{p\mid(t,p)\in P_{\alpha i}(E),\ \neg\exists(u,q)\in P_{\alpha i}(E),\ t<u\}.\end{aligned}
+\]
+
+Position sets are computed even for IDs that are not live; equal maximum timestamps retain all tied positions.
+
+\textbf{Cell and range query:} for a cell event $e$ at $(i,j)$ and a range event $e$ respectively, define
+\[
+\begin{aligned}X_C(E,e)&\iff(\exists f\in E,\ a_f=\mathrm{Cell}(u,v,B,A,W),\ t_e\in W)\\&\quad\lor(\exists f\in E,\ a_f=\mathrm{Purge}(c,C,F,R),\ (i,j)\in C,\ t_e\le c),\\X_R(E,e)&\iff\exists f\in E,\ a_f=\mathrm{Range}(u,b,h,W),\ t_e\in W,\\T_C(E,i,j)&=\{t_e\mid e\in E,\ a_e=\mathrm{Cell}(i,j,B,A,W),\neg X_C(E,e)\},\\T_R(E,i)&=\{t_e\mid e\in E,\ a_e=\mathrm{Range}(i,b,h,W),\neg X_R(E,e)\},\\C_E(i,j)&=\begin{cases}\displaystyle\bigcup\{A\mid e\in E,\ a_e=\mathrm{Cell}(i,j,B,A,W),\neg X_C(E,e)\},&\ell_{\mathrm{row},i}(E)\land\ell_{\mathrm{column},j}(E),\\\varnothing,&\text{otherwise},\end{cases}\\R_E(i)&=\bigcup\{\epsilon(h)\mid e\in E,\ a_e=\mathrm{Range}(i,b,h,W),\neg X_R(E,e)\}.\end{aligned}
+\]
+
+The raw overwrite predicates test timestamps globally; they do not compare the overwriting event's coordinate or range ID. Honest issuance provides those identity checks. Even empty cell after-sets and absent range after-values contribute active timestamps.
+
+Write $Q_\alpha:i\mapsto Q_{\alpha i}(E)$. \textbf{Query:} input $()$; return
+\[
+q(E,())=(\{i\mid\ell_{\mathrm{row},i}(E)\},\{j\mid\ell_{\mathrm{column},j}(E)\},Q_{\mathrm{row}},Q_{\mathrm{column}},C_E,R_E).
+\]
+
+Range values are stored stable-ID tuples; endpoint relocation is a separate helper, not this query.
+
+
+\paragraph{Independent sequential specification.}
+\textbf{State:} $s=(N_\alpha,K_{\alpha i},P_{\alpha i},V_{ij},Z_i,M)$: known axis-ID sets; token sets; timestamp-position sets; timestamp-cell-value sets; timestamp-range-tuple sets; and purge-marker set. Initially every set is empty. Event/effect notation and $\epsilon$ are defined above. Fields not explicitly assigned retain their values.
+
+Track update prefix $H$, initially $[]$, for history admission; it is not an extra concrete field. Let $F_e(s)$ be the state resulting from the applicable effect equations below.
+\[
+(H,s)\xrightarrow{e}(H\mathbin{+\!+}[e],F_e(s))\qquad\text{when }\operatorname{Legal}(H\mathbin{+\!+}[e]).
+\]
+
+For $H=[e_1,\ldots,e_n]$, define
+\[
+\operatorname{Legal}(H)\iff(\forall i<j,t_i<t_j)\land\forall i,\exists O\subseteq\{e_j\mid j<i\},G(e_i,O).
+\]
+
+
+\textbf{Axis effect} $\mathrm{Axis}(k,\alpha,i,b,h)$:
+\[
+N'_\alpha=N_\alpha\cup\{i\},\qquad(K'_{\alpha i},P'_{\alpha i})=\begin{cases}(K_{\alpha i}\cup\{t\},P_{\alpha i}\cup\{(t,p)\}),&h=\operatorname{some}(p),\\(K_{\alpha i}\setminus S,P_{\alpha i}),&h=\operatorname{none}.\end{cases}
+\]
+
+\textbf{Cell effect} $\mathrm{Cell}(i,j,B,A,W)$:
+\[
+\begin{aligned}V'_{ij}&=\{(u,v)\in V_{ij}\mid u\notin W\}\cup(\{t\}\times A),\\N'_{\mathrm{row}}&=N_{\mathrm{row}}\cup\{i\},&N'_{\mathrm{column}}&=N_{\mathrm{column}}\cup\{j\},\\K'_{\mathrm{row},i}&=K_{\mathrm{row},i}\cup\{t\},&K'_{\mathrm{column},j}&=K_{\mathrm{column},j}\cup\{t\}.\end{aligned}
+\]
+
+\textbf{Range effect} $\mathrm{Range}(i,b,h,W)$:
+\[
+Z'_i=\{(u,z)\in Z_i\mid u\notin W\}\cup(\{t\}\times\epsilon(h)).
+\]
+
+\textbf{Purge effect} $m=\mathrm{Purge}(c,C,F,R)$, simultaneously at all coordinates:
+\[
+V'_{ij}=\{(u,v)\in V_{ij}\mid(u,(i,j))\notin F\},\qquad M'=M\cup\{m\}.
+\]
+
+A purge preserves axis tokens and positions. The inverse action supplied by undo uses exactly these same transitions.
+
+\textbf{Query:} write $Q^s_\alpha:i\mapsto Q^s_{\alpha i}$ and define
+\[
+\begin{aligned}A_\alpha&=\{i\in N_\alpha\mid K_{\alpha i}\ne\varnothing\},\\Q^s_{\alpha i}&=\{p\mid(t,p)\in P_{\alpha i},\neg\exists(u,q)\in P_{\alpha i},t<u\},\\\operatorname{mask}_M(u,i,j)&\iff\exists\mathrm{Purge}(c,C,F,R)\in M,(i,j)\in C\land u\le c,\\C_s(i,j)&=\begin{cases}\{v\mid(u,v)\in V_{ij},\neg\operatorname{mask}_M(u,i,j)\},&K_{\mathrm{row},i}\ne\varnothing\land K_{\mathrm{column},j}\ne\varnothing,\\\varnothing,&\text{otherwise},\end{cases}\\R_s(i)&=\{z\mid\exists u,(u,z)\in Z_i\},\\q(s,())&=(A_{\mathrm{row}},A_{\mathrm{column}},Q^s_{\mathrm{row}},Q^s_{\mathrm{column}},C_s,R_s).\end{aligned}
+\]
+
+The sequential cell query tests tokens, while returned axis sets additionally test known IDs. On legal histories the known/live facts agree with the declarative query.
+
+\[
+(H,s)\xrightarrow{\F{rd}\Rightarrow y}(H,s)\qquad\text{when }y=q(s,()).
+\]
+
+\paragraph{Issuance.}
+All helpers below are evaluated in the causal-origin event set $O$, using the declarative formulas above. Define the exact causal timestamp summary and live position set:
+\[
+\begin{aligned}T(O)&=\{t_f\mid f\in O\}\cup\{u\mid\exists f\in O,a_f=\mathrm{Purge}(c,C,F,R),(u,z)\in F\},\\J_{\alpha i}(O)&=\begin{cases}Q_{\alpha i}(O),&\ell_{\alpha i}(O),\\\varnothing,&\text{otherwise}.\end{cases}\end{aligned}
+\]
+
+\textbf{Metadata predicate} $\operatorname{Meta}(e,O)$ depends on the effect:
+\[
+\begin{aligned}a_e=\mathrm{Cell}(i,j,B,A,W):\quad&\forall u\in W,\ u<t_e\land\exists f\in O,t_f=u\land a_f=\mathrm{Cell}(i,j,B',A',W'),\\a_e=\mathrm{Range}(i,b,h,W):\quad&\forall u\in W,\ u<t_e\land\exists f\in O,t_f=u\land a_f=\mathrm{Range}(i,b',h',W'),\\a_e=\mathrm{Purge}(c,C,F,R):\quad&\forall(u,z)\in F,z\in C\land u\le c,\\a_e=\mathrm{Axis}(k,\alpha,i,b,h):\quad&\top.\end{aligned}
+\]
+
+Primed fields in existential events are unrestricted.
+
+\textbf{Direct predicate} $G_{\rm dir}(a,r,O)$:
+\[
+\begin{aligned}G_{\rm dir}(\mathrm{Axis}(\mathrm{insert},\alpha,i,b,h),r,O)&\iff i\notin N_\alpha(O)\land b=\operatorname{none}\land h\ne\operatorname{none},\\G_{\rm dir}(\mathrm{Axis}(\mathrm{move},\alpha,i,b,h),r,O)&\iff J_{\alpha i}(O)=\epsilon(b)\land b\ne\operatorname{none}\land h\ne\operatorname{none},\\G_{\rm dir}(\mathrm{Axis}(\mathrm{remove},\alpha,i,b,h),r,O)&\iff J_{\alpha i}(O)=\epsilon(b)\land b\ne\operatorname{none}\land h=\operatorname{none},\\G_{\rm dir}(\mathrm{Axis}(\mathrm{restore},\alpha,i,b,h),r,O)&\iff\bot,\\G_{\rm dir}(\mathrm{Cell}(i,j,B,A,W),r,O)&\iff\ell_{\mathrm{row},i}(O)\land\ell_{\mathrm{column},j}(O)\\&\quad\land C_O(i,j)=B\land T_C(O,i,j)=W,\\G_{\rm dir}(\mathrm{Range}(i,b,h,W),r,O)&\iff R_O(i)=\epsilon(b)\land T_R(O,i)=W,\\G_{\rm dir}(\mathrm{Purge}(c,C,F,R),r,O)&\iff r=0\land\{0,1,2\}\subseteq R\\&\quad\land(\forall(u,z)\in F,z\in C\land u\le c\\&\qquad\land\exists f\in O,t_f=u\land a_f=\mathrm{Cell}(z_1,z_2,B,A,W))\\&\quad\land\forall(i,j)\in C,\neg\ell_{\mathrm{row},i}(O)\lor\neg\ell_{\mathrm{column},j}(O).\end{aligned}
+\]
+
+\textbf{Inverse} for a target event $f$ is
+\[
+\begin{aligned}\operatorname{inv}(f)&=\mathrm{Axis}(\mathrm{restore},\alpha,i,h,b)&&\text{if }a_f=\mathrm{Axis}(k,\alpha,i,b,h),\\&=\mathrm{Cell}(i,j,A,B,\{t_f\})&&\text{if }a_f=\mathrm{Cell}(i,j,B,A,W),\\&=\mathrm{Range}(i,h,b,\{t_f\})&&\text{if }a_f=\mathrm{Range}(i,b,h,W).\end{aligned}
+\]
+
+It is defined here only for nonpurge targets; a target may itself be an undo event.
+
+\textbf{Exact guard} for $e=(t,r,(S,c))$:
+\[
+\begin{aligned}G(e,O)\iff\;&S=T(O)\land(\forall u\in T(O),u<t)\land\operatorname{Meta}(e,O)\\&\land\begin{cases}G_{\rm dir}(a,r,O),&c=\mathrm{direct}(a),\\\begin{aligned}u\in S\land\exists f\in O.\quad&t_f=u\land r_f=r\\&\land a_f\text{ is nonpurge}\\&\land a=\operatorname{inv}(f)\end{aligned},&c=\mathrm{undo}(u,a).\end{cases}\end{aligned}
+\]
+
+Undo does not run the direct predicate on the inverse. Its cell/range inverse overwrites only the target timestamp; unrelated remote versions survive.
+
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$.
+
+
+\paragraph{Source and adaptation.}
+This is a Sal event-set intent model of AegisSheet, with stable axis IDs, multi-value cells and inverse events for undo; it does not reproduce the paper's delivery engine.~\cite{AegisSheet}
+
+
+\subsection{Notion core}
+\label{app:dt-notion-core}
+
+% Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean: CheckedEntry, entry
+
+% Sal/MRDTs/Instances/NotionCoreStructuralFacts.lean: Fact, State, decodeList, decode, integrate, merge, late_integrate, merge_correspondence
+
+% Sal/MRDTs/Instances/NotionCorePayload.lean: BlockKey, Payload, Transaction, operations, textItems, births, reservation, clockMax_reservation
+
+% Sal/MRDTs/Instances/NotionCoreStructuralRows.lean: births, targets, rows, physical, rows_correspondence, honest_physical
+
+% Sal/MRDTs/Instances/NotionCoreStructuralCuts.lean: factRecord, records, honest_records
+
+% Sal/MRDTs/Instances/NotionCoreStructuralDisplay.lean: creatorKey, orderedLinks, displayFacts, honest_display
+
+% Sal/MRDTs/Instances/NotionCoreStructuralRender.lean: cells, recordText, activeEntry, blockText, observe, honest_observe, SPOT.late_split_observe_control
+
+% Sal/MRDTs/Instances/NotionCoreStructuralVC.lean: D, all_comm, fiveVCs, representation_iff
+
+% Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean: D, query, renderer, fiveVCs, versions_witness, specification_ra, operational_reach, registered_query
+
+% Sal/MRDTs/Instances/NotionCoreStructuralHistory.lean: ClosedQueryAgreement, versions_witness, honest_version_agreement, protocol_versions_of_closed
+
+% Sal/MRDTs/Instances/NotionCoreStructuralExecution.lean: mapConfig, step, stepV
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeState.lean: State, insertFact, receive, merge, abstract, Valid
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeQuery.lean: View, traverse, display, observe, Represents, observe_correct
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeAdapter.lean: toView, observeState
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeEngine.lean: State, receive, receiveMany, merge, gap
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeRefinement.lean: NotionCoreRuntimeEngine.Refines, receive_refines, receiveMany_refines, merge_refines
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeMetadata.lean: State, Valid, receive, nextCounter, receive_clock, SPOT.clock_boundary
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeStateProofs.lean: receive_abstract, merge_abstract, receive_valid, merge_valid
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeHonestProgress.lean: receiveMany_honest, merge_honest
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeTheorem.lean: closed_version_query, closed_version_reference, registered_query
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeEndToEnd.lean: load_closed_version
+
+% Sal/MRDTs/Instances/NotionCoreRuntimeMain.lean: execute, main
+
+% Sal/MRDTs/Instances/NotionCoreStructuralIssuanceBoundary.lean: fact_clock_control, next_counter_not_from_facts
+
+% Sal/MRDTs/Instances/NotionCoreIncrementalCounterexample.lean: reconstructCells, honestly_issuable_splits, frozen_endpoint_control, direct_cut_control
+
+% Sal/MRDTs/Instances/NotionCoreMRDT.lean: historyMachine, spec
+
+% Sal/MRDTs/Instances/NotionCoreProtocol.lean: Reach, versions_witness, specification_ra
+
+% Sal/MRDTs/Instances/NotionCoreMRDTClient.lean: issued_update, insert_effect, split_effect, erase_effect
+
+% Sal/MRDTs/Instances/NotionCoreSpec.lean: Document, view, step
+
+% Sal/MRDTs/Instances/NotionCoreSourceDocument.lean: Command.semantic
+
+% Sal/MRDTs/Instances/NotionCoreIssuanceGuard.lean: CanIssue, guard_issues
+
+% Sal/MRDTs/Instances/NotionCoreMachineCommands.lean: commands
+
+\paragraph{Concrete MRDT}
+\textbf{Structural state.} Source IDs are $k=(c,u)$, ordered by counter and then lexicographically by UTF-16 session units. They are distinct from the Sal event timestamp and replica: $e=(t,r,\tau)$, $\tau=(k,p)$. Let $K=\{\mathsf{initial}\}\uplus\{\mathsf{issued}(k)\mid k\in\mathsf{Id}\}$ be block/instance keys and $O=\{\mathsf{start}\}\uplus\{\mathsf{item}(k)\mid k\in\mathsf{Id}\}$ origins. A row records an item ID, its kind and its origin; item kinds are $\mathsf{text}(v,d)$ or $\mathsf{split}$, where $d$ is the deletion bit.
+
+The four fact constructors form a tagged union:
+\[
+\begin{aligned}
+\mathsf{Fact}={}&\mathsf{birth}(i,\rho)\;|\;\mathsf{erased}(i,k)\\
+&|\;\mathsf{created}(b,a)\;|\;\mathsf{cut}(i,k,b),\\
+&i,b\in K,\quad \rho\in\mathsf{Row},\quad a\in\operatorname{Option}(K).
+\end{aligned}
+\]
+
+\[
+\Sigma=\operatorname{Finset}(\mathsf{Fact}),\qquad F_0=\varnothing.
+\]
+
+Births preserve immutable parent rows; erasures preserve target identities; creation links preserve block predecessors; cuts preserve marker-to-owner assignments. The logical carrier has no transaction archive or query cache.
+
+\textbf{Exact atomic decode.} For $x=[x_0,\ldots,x_{n-1}]$, set $k_j=(c+j,u)$ and $o_0=o$, $o_j=\mathsf{item}(k_{j-1})$ for $j>0$. Define the text-run births
+\[
+B(i,k,o,x)=\{\mathsf{birth}(i,(k_j,\mathsf{text}(x_j,\mathsf{false}),o_j))\mid 0\le j<n\}.
+\]
+
+Writing $b_k=\mathsf{issued}(k)$, the decoded fact set is
+\[
+\begin{aligned}
+\Delta(k,\mathsf{bootstrap}(x))={}&B(\mathsf{initial},k,\mathsf{start},x)\\
+&\cup\{\mathsf{created}(\mathsf{initial},\mathsf{none})\},\\
+\Delta(k,\mathsf{create}(a))={}&\{\mathsf{created}(b_k,a)\},\\
+\Delta(k,\mathsf{insert}(b,i,o,x))={}&B(i,k,o,x),\\
+\Delta(k,\mathsf{erase}(b,i,X))={}&\{\mathsf{erased}(i,j)\mid j\in X\},\\
+\Delta(k,\mathsf{split}(b,i,o))={}&\{\mathsf{birth}(i,(k,\mathsf{split},o)),\\
+&\mathsf{created}(b_k,\mathsf{some}(b)),\mathsf{cut}(i,k,b_k)\}.
+\end{aligned}
+\]
+
+All facts from one transaction enter atomically. Empty bootstrap still creates its block. Split's create, marker and ownership fact enter together.
+\[
+\F{do}(F,t,r,\tau)=F\cup\Delta(\tau),\qquad\F{merge}(L,A,B)=A\cup B.
+\]
+
+Receipt is idempotent and independent of arrival order, including a late lower-key transaction. Ordinary and canonical recursive merges use this same union; the ancestor argument is ignored.
+
+\textbf{Rows, cuts and display.}
+Let $\operatorname{enc}$ and $\operatorname{dec}$ be Lean's injective
+encoding and partial inverse for natural-number/list pairs. They encode
+semantic names; they do not preserve source-ID order. Define
+\[
+\begin{aligned}
+\beta(\mathsf{initial})&=0,&
+\beta(\mathsf{issued}(c,u))&=1+\operatorname{enc}(c,u),\\
+a(i,(c,u))&=(\beta(i),\mathsf{event}(\operatorname{enc}(u),c)),&
+a(i,\mathsf{start})&=(\beta(i),\mathsf{start}).
+\end{aligned}
+\]
+For instance $i$, let $T_i$ be the finite set of its birth rows after
+changing a text row's deletion bit $d$ to
+$d\lor\operatorname{Bool}(\mathsf{erased}(i,k)\in F)$.
+A split row is unchanged. Enumerate $T_i$ in the chosen finite-set order;
+write $n_i=|T_i|$, and let $\operatorname{row}_i(k)$ be the first row
+with identity $k$, or absent. Let $\operatorname{children}_i(o)$ be the
+row identities whose origin is $o$, sorted in descending source-ID order.
+Define the fuel-bounded traversal
+\[
+\begin{aligned}
+V_i(0,o)&=[],\\
+V_i(n+1,o)&=\mathop{+\!+}_{k\in\operatorname{children}_i(o)}
+\begin{cases}
+[\operatorname{row}_i(k).\mathsf{item}]
+ +\!+V_i(n,\mathsf{item}(k))&\operatorname{row}_i(k)\text{ exists},\\
+[]&\text{otherwise}.
+\end{cases}
+\end{aligned}
+\]
+The physical list $P_i(F)$ starts with a virtual split atom at
+$(\beta(i),\mathsf{start})$, followed by $V_i(n_i,\mathsf{start})$,
+with each item $k$ addressed by $a(i,k)$. The fuel is sufficient on
+honest closed rows; it also defines the raw query on malformed cycles.
+
+Extract the finite owner/start record set
+\[
+\begin{aligned}
+C(F)={}&\{(\beta(b),(\beta(b),\mathsf{start}))
+       \mid\mathsf{created}(b,a)\in F\}\\
+&\cup\{(\beta(b),a(i,k))\mid\mathsf{cut}(i,k,b)\in F\}.
+\end{aligned}
+\]
+Enumerate $C(F)$ in the chosen finite-set order as $C^*(F)$.
+For each $i$, traverse $P_i(F)$ and, at each atom, emit the first record
+in $C^*(F)$ whose start equals that atom's address and whose start
+instance is $\beta(i)$. This gives boundary records $c_1,\ldots,c_m$ in
+physical order. For $c_j$, scan strictly after its first start occurrence
+up to the first occurrence of $c_{j+1}.\mathsf{start}$, or END for $j=m$.
+The resulting interval contains every intervening atom, including
+tombstones. A missing start gives an empty interval; a missing next endpoint
+retains the remainder of the physical list under the raw endpoint scan. Honest partitions supply all these boundaries exactly
+once. Stops are derived from the present physical order.
+
+For numeric block $b$, select the first record in $C^*(F)$ owned by $b$
+whose start instance differs from $b$; if there is none, select the first
+record owned by $b$. If neither exists, return $\F{none}$.
+Decode the selected start instance to its block key, failing with
+$\F{none}$ if decoding fails. Find its interval by the selected start
+address, failing if absent. Emit the values of its live text atoms only.
+This partial function is $\operatorname{blockText}(F,b)$.
+Honest core shape makes the active record unique. Deleted anchors,
+markers, and inactive title roots remain structural data.
+
+Let $\Lambda(F)=\{(b,a)\mid\mathsf{created}(b,a)\in F\}$.
+The creator key is $(1,[65])$ for $\mathsf{initial}$ and $k$ for
+$\mathsf{issued}(k)$. Stable-sort the chosen enumeration of $\Lambda(F)$
+by increasing creator key. Starting from $H=[]$, fold each $(b,a)$:
+if $\beta(b)\in H$, leave $H$ unchanged; otherwise insert $\beta(b)$
+after the first occurrence of $\beta(a)$ when $a$ names a present
+predecessor, and at the front when $a=\F{none}$ or its predecessor is
+absent. Call the result $H(F)$. This fold reads creation links rather
+than replaying transactions.
+\[
+\operatorname{query}(F)=\operatorname{mapM}
+  \bigl(b\mapsto\operatorname{blockText}(F,b).\operatorname{map}
+  (x\mapsto(b,x)),\ H(F)\bigr).
+\]
+The result is $\operatorname{Option}((\mathbb N\times\mathbb N^*)^*)$;
+any failed block read propagates $\F{none}$. On honest closed versions,
+the query equals the typed reference interpreter's reconstruction and
+render. The computation never calls that interpreter.
+
+\textbf{Compiled indexed refinement.} The executable Lean core stores keyed births, erased IDs, cuts and creation links in hash maps/sets, plus exact descending child buckets and per-instance row counts. Queries use direct lookup/bucket callbacks and the checked creator fold. The engine additionally retains a transaction archive for identity checks and receipt/clock metadata. Thus the archive-free mathematical carrier and the executable engine have different state representations.
+
+Let $\alpha(R)$ enumerate the core's four fact stores. Its proved invariant is
+\[
+\operatorname{Refines}(R,M)\iff\operatorname{Valid}(R)\land\operatorname{Valid}(M)\land\alpha(R)=\bigcup_{\tau\in M.\mathsf{archive}}\Delta(\tau).
+\]
+
+On successful core receipt and merge,
+\[
+\begin{aligned}
+\alpha(R')&=\alpha(R)\cup\Delta(\tau),\\
+\alpha(R_{A\sqcup B})&=\alpha(R_A)\cup\alpha(R_B).
+\end{aligned}
+\]
+
+The engine preserves the displayed invariant while joining receipt metadata and checking archived transaction identities. Neither merge path replays archived payloads. Pure batches return either a complete state or an error; conflicting immutable keys are rejected. The end-to-end loading theorem starts at the actual empty engine, receives any ordering and duplicates of an honest closed version, and derives success, the invariant and the reference answer without caller-supplied acceptance or query-equality premises. The registered-query theorem connects native answers to actual registered Sal versions. The compiled functions implement the native executable; external JavaScript/JSON conversion remains a tested boundary.
+
+
+\paragraph{Independent sequential specification.}
+\textbf{State.} A retained slot records an address, text atom and visibility bit:
+\[
+\begin{aligned}
+\mathsf{Addr}&=\mathbb N\times(\{\mathsf{start}\}\uplus\mathbb N^2),\\
+\mathsf{Slot}&=\mathsf{Addr}\times\mathbb N\times\mathbb B,\quad z=(a,v,\ell),\\
+\Phi&=(\mathbb N\times\mathsf{Slot}^*)^*,\qquad D_0=[].
+\end{aligned}
+\]
+
+Thus $D=[(b_1,L_1),\ldots,(b_n,L_n)]$ is an ordered block list. Define
+\[
+\operatorname{root}(j)=((j,\mathsf{start}),0,\mathsf{false}),
+\]
+
+\[
+\operatorname{text}(L)=[\,v\mid(a,v,\mathsf{true})\text{ occurs in }L\,],
+\]
+
+\[
+\operatorname{view}(D)=[\,(b_i,\operatorname{text}(L_i))\,]_{i=1}^{n}.
+\]
+
+Both comprehensions preserve list order. Deleted characters and cut markers retain addresses. The equations below use the unique block IDs and unique addresses maintained by certified executions. Write $D[b:=L]$ for replacing block $b$'s slots without moving that block, and $\operatorname{blocks}(D)$ for its block IDs. Freshness of supplied slots is established by issuance, rather than an extra implicit transition guard.
+
+\textbf{Create.} Let $B=(b,[\operatorname{root}(j)])$; $\bot$ means no predecessor.
+\[
+D\xrightarrow{\operatorname{create}(b,j,\bot)}B::D
+\quad[\,b\notin\operatorname{blocks}(D)\,].
+\]
+
+\[
+\begin{aligned}
+&D_-\mathbin{+\!+}[(a,L)]\mathbin{+\!+}D_+\\
+&\quad\xrightarrow{\operatorname{create}(b,j,a)}
+D_-\mathbin{+\!+}[(a,L),B]\mathbin{+\!+}D_+\\
+&\qquad[\,b\notin\operatorname{blocks}(D)\,].
+\end{aligned}
+\]
+
+The source document in the second rule is $D$; a named predecessor must occur in it.
+
+\textbf{Insert after an address.} Let $P$ end at the slot whose address is $a$, so the owning block's slots are $P\mathbin{+\!+}Q$. For supplied slots $F$,
+\[
+D\xrightarrow{\operatorname{insert}(a,F)}D[b:=P\mathbin{+\!+}F\mathbin{+\!+}Q]
+\quad[\,D(b)=P\mathbin{+\!+}Q,\ P\text{ ends at }a\,].
+\]
+
+A missing origin admits no transition.
+
+\textbf{Erase named characters.} For a list of target addresses $X$,
+\[
+\operatorname{hide}_X(a,v,\ell)=\begin{cases}(a,v,\mathsf{false}),&a\in X,\\(a,v,\ell),&a\notin X.\end{cases}
+\]
+
+\[
+D\xrightarrow{\operatorname{delete}(X)}
+[\,(b_i,\operatorname{map}(\operatorname{hide}_X,L_i))\,]_{i=1}^{n}.
+\]
+
+Deletion is total: absent targets and previously hidden slots have no additional effect.
+
+\textbf{Split at an address.} The source block retains the prefix through $a$; the destination appends the hidden marker $m$ and the suffix:
+\[
+\begin{aligned}
+&D\xrightarrow{\operatorname{split}(a,m,d)}
+D[b:=P,\ d:=L_d\mathbin{+\!+}[m]\mathbin{+\!+}Q]\\
+&\quad[\,D(b)=P\mathbin{+\!+}Q,\ P\text{ ends at }a,\\
+&\qquad D(d)=L_d,\ b\ne d,\ m.\ell=\mathsf{false}\,].
+\end{aligned}
+\]
+
+The semantic rule allows an existing destination. An honestly prepared split first creates its fresh destination and then splits, in one atomic group; that is a stronger issuance property.
+
+\textbf{Atomic updates and query.}
+For $k=(c,u)$ and text $x=[x_0,\ldots,x_{n-1}]$, define the live slots
+\[
+\operatorname{slots}(i,k,x)=
+ [(a(i,(c+j,u)),x_j,\mathsf{true})\mid0\le j<n].
+\]
+Let $b_k=\mathsf{issued}(k)$. The static event-label translation is
+\[
+\begin{aligned}
+f(k,\mathsf{bootstrap}(x))={}&
+ [\operatorname{create}(0,0,\bot),\\
+ &\quad\operatorname{insert}((0,\mathsf{start}),
+                   \operatorname{slots}(\mathsf{initial},k,x))],\\
+f(k,\mathsf{create}(a))={}&
+ [\operatorname{create}(\beta(b_k),\beta(b_k),a.\operatorname{map}(\beta))],\\
+f(k,\mathsf{insert}(b,i,o,x))={}&
+ [\operatorname{insert}(a(i,o),\operatorname{slots}(i,k,x))],\\
+f(k,\mathsf{erase}(b,i,X))={}&
+ [\operatorname{delete}([a(i,j)\mid j\in X])],\\
+f(k,\mathsf{split}(b,i,o))={}&
+ [\operatorname{create}(\beta(b_k),\beta(b_k),\beta(b)),\\
+ &\quad\operatorname{split}(a(i,o),(a(i,k),0,\mathsf{false}),\beta(b_k))].
+\end{aligned}
+\]
+The scalar predecessor in the last creation command abbreviates a present
+optional predecessor. These are static labels, not calls to the concrete
+renderer. The atomic label $\operatorname{upd}(e)$ denotes the group
+$f(e)$; it is one update label. For $f(e)=[c_1,\ldots,c_k]$, update
+admission requires every command in the group to succeed:
+\[
+\frac{D=D^{(0)}\xrightarrow{c_1}D^{(1)}\ \cdots\ \xrightarrow{c_k}D^{(k)}=D'}
+{D\xrightarrow{\operatorname{upd}(e)}D'}.
+\]
+
+\[
+D\xrightarrow{\F{rd}\Rightarrow\operatorname{some}(\operatorname{view}(D))}D.
+\]
+
+There is no query transition returning $\operatorname{none}$. Histories start at $D_0$ and may query only between complete update groups. This machine contains no transaction archive or sorting rule.
+
+\textbf{Proved local positional effects.} For visible text $x$, inserted text $w$, and supported bounds:
+\[
+\begin{aligned}
+\operatorname{insertAt}(x,i,w)&=\operatorname{take}(i,x)\mathbin{+\!+}w\mathbin{+\!+}\operatorname{drop}(i,x),\\
+&\hspace{8pt}[\,0\le i\le |x|,\ w\ne[]\,],\\
+\operatorname{splitAt}(x,i)&=(\operatorname{take}(i,x),\operatorname{drop}(i,x)),\\
+&\hspace{8pt}[\,0\le i\le |x|\,],\\
+\operatorname{eraseRange}(x,i,j)&=\operatorname{take}(i,x)\mathbin{+\!+}\operatorname{drop}(j,x),\\
+&\hspace{8pt}[\,0\le i<j\le |x|\,].
+\end{aligned}
+\]
+
+These are effects of actual local preparation, update and query. Concurrent histories carry prepared identities rather than replaying numeric positions unchanged.
+
+
+\paragraph{Issuance.}
+\textbf{Original issuance authority.} Structural integration changes receipt, merge and observation. It retains the original protocol: explicit factory initialization, whole-version receipts, guarded ordinary requests and injective replica/session assignment $\eta$. Empty forks may precede initialization; later forks copy received snapshots. Bootstrap remains a separate factory action.
+
+For $e=(t,r,\tau)$, $\tau=((c,u),p)$, reserve $w(\tau)=\max(1,\operatorname{itemCount}(p))$ counters and set $\operatorname{last}(\tau)=c+w(\tau)-1$. Insert/bootstrap count text atoms, split counts one marker, and create/erase count zero. With $S$ the reference transaction archive, the ordinary guard remains
+\[
+\begin{aligned}
+G_\eta(e,S)\iff{}&u=\eta(r)\land c>0\\
+&\land(\forall\tau'\in S.\ \operatorname{last}(\tau')<c)\\
+&\land\operatorname{Prepared}(S,p).
+\end{aligned}
+\]
+
+\[
+\begin{aligned}
+\operatorname{Prepared}(S,p)\iff\exists M,q.\quad
+&\mathcal R(S)=\operatorname{some}(M)\\
+&\land\neg\operatorname{earlyNoop}(q)\\
+&\land\operatorname{prepareRequest}(M,q)=\operatorname{some}(p)\\
+&\land\operatorname{OrdinaryEmits}(p).
+\end{aligned}
+\]
+
+Here $\mathcal R(S)$ is the unchanged typed interpreter replaying the source-ID-sorted archive; preparation selects actual origins and checks request bounds. The ordinary-emission predicate excludes bootstrap and non-emitting empty requests. The structural theorem inherits this authority; direct positional preparation from only structural indexes is not established.
+
+For completeness, the request preparation in this guard is the following
+partial function. Let $\mathcal S_M(b)$ be the list of physical slices of
+block $b$ in the reference interpreter's slice-tree preorder; failure to
+find the block or extract a slice returns $\F{none}$. A slice has a
+retained start address and interior atoms. Let $X_M(b)$ be the concatenation
+of its live text atoms, in this slice order. Put
+\[
+\operatorname{loc}_M(b,j)=
+\begin{cases}
+\F{none}&\mathcal S_M(b)\text{ fails or }j>|X_M(b)|,\\
+\F{some}(X_M(b)_{j-1}.\mathsf{address})&0<j\le |X_M(b)|,\\
+\F{some}(s.\mathsf{start})&j=0,
+\end{cases}
+\]
+where $s$ in the last case is the first slice with nonempty visible text,
+or the last slice when all are empty; an empty slice list returns
+$\F{none}$. Address decoding inverts $\beta$ and the session encoding,
+returning an instance key $i$ and origin $o$, or failing. The four
+request forms prepare as follows:
+\begin{itemize}
+\item $\F{create}(a)$ returns $\mathsf{create}(a)$ for $a=\F{none}$
+  or a predecessor present in the reference forest; otherwise it fails.
+\item $\F{insert}(b,j,x)$ fails for $x=[]$; otherwise it decodes
+  $\operatorname{loc}_M(b,j)$ to $(i,o)$ and returns
+  $\mathsf{insert}(b,i,o,x)$, failing if selection or decoding fails.
+\item $\F{split}(b,j)$ uses the same selection and decoding, returning
+  $\mathsf{split}(b,i,o)$.
+\item $\F{erase}(b,j,k)$ fails when $j=k$ or when the selected list
+  $Y=\operatorname{take}(k-j,\operatorname{drop}(j,X_M(b)))$ is empty.
+  Decode every selected atom's address. The first must name a text item
+  in an instance $i$, and every other target must name a text item in
+  that same instance. Otherwise preparation fails. Return
+  $\mathsf{erase}(b,i,\operatorname{sort}_{\rm source}(\mathsf{ids}(Y)))$.
+  Sorting preserves duplicates; the source range compression followed
+  by expansion is exactly this sorted list.
+\end{itemize}
+The early no-op predicate tests $x=[]$ for insertion and $j=k$ for
+erasure, before reconstruction, and is false for create and split.
+Ordinary emission excludes bootstrap and requires a nonempty inserted
+text or erase-target list; create and split emit even with no text.
+Deletion uses truncated subtraction and clamped list selection, and its
+single-instance preparation fails on mixed-instance selections. The typed
+core's closed shape proves the needed instance property for its supported
+local requests; this is not a claim about the source's general
+multi-instance grouping. Factory initialization is separately admitted
+only while the source network is initial, at session $[65]$, using
+bootstrap identity $(1,[65])$.
+
+\textbf{Facts do not determine allocation.} The allocation counterexample gives two honestly issued erases with equal semantic fact sets but next counters 4 and 10. A function of facts alone cannot reconstruct the original allocator state. The executable therefore retains archive/reservation and local clock metadata. Receipt observes the transaction's reserved last counter; a local unused clock gap stays local and is not copied by merge or clone. These metadata rules do not weaken the issuance guard.
+
+
+\paragraph{Conflict-resolution relation.}
+\textbf{Empty policy; commuting integration.}
+\[
+\rcrel=\varnothing,
+\]
+
+\[
+e_2(e_1(F))=e_1(e_2(F)).
+\]
+
+Union of decoded facts commutes even though the independent document commands need not commute. The five VCs establish the structural carrier's representation and merge laws; document meaning is established separately by the renderer refinement.
+
+\textbf{The same history witness.} The structural carrier retains the reference carrier's independent specification defined above. For every registered honest version $(F,E)$, the reference's source-key-sorted event list $\pi$ satisfies
+\[
+\begin{aligned}
+&\pi\text{ enumerates }E\text{ exactly once},\\
+&\pi\models\loOn{E},\qquad\pi\models\operatorname{sv}_{\Spec},\\
+&\F{ops}_f(\pi)\mathbin{+\!+}[\F{rd}\Rightarrow\F{query}(F,\F{rd})]\in\Spec.
+\end{aligned}
+\]
+
+$\loOn{E}$ is empty for this commuting carrier and empty policy. $\operatorname{sv}_{\Spec}$ orders visible events whose specification updates do not commute; $\models$ means respecting every edge. Coverage, both orders and admission use this same literal list, transported by query equality rather than selecting a new witness.
+
+The five-equation certificate, whole-document refinement, independent history and actual structural execution cover canonical recursive virtual merge bases. The original protocol and document bridge remain reused proof dependencies. This protocol-scoped entry is separate from the uniform production packages and author-effort measurements.
+
+
+\paragraph{Source and adaptation.}
+The configuration covers the typed create/insert/erase/split core and explicit bootstrap. Its structural MRDT and compiled indexed refinement share the original honest protocol; the external JavaScript/JSON adapter is a tested boundary.~\cite{NotionCRDTBlog,NotionCRDTDemo}
+
+
+\paragraph{Boundary of the Notion result.}
+The typed fragment omits the editor's merge-block and formatting requests.
+Sal's merge of replicated versions is a distinct operation from merge-block.
+The pinned educational demo has three preserved failures after honestly
+prepared merge-block requests: a later split at zero can move only part of
+the visible suffix, a bold selection can leave both selected characters
+plain, and a bold selection can affect an unselected character in another
+block. Those traces use requests outside this fragment and do not refute
+its create/insert/erase/split theorem. They are findings about the public
+demo, with no established correspondence to Notion's production system.
+The proof does not establish equivalence of the JavaScript number,
+string, search-label or JSON decoder with the typed model.

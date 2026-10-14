@@ -326,6 +326,22 @@ the [source state refinement](Sal/MRDTs/Paper1/OptionalRegisterSourceValidity.le
 Its five-VC-derived execution certificate covers ordinary and recursive bases
 with the application policy `unset → set`.
 
+The [add-wins priority queue](docs/add-wins-priority-queue-port.md) ports Sal's
+retained-increment variant: the latest live Add supplies an innate priority,
+and all historical signed increments contribute to it. Remove preserves those
+increments. The application policy orders same-element Remove before Add.
+Its five VCs feed the generic merge induction. The public `FullD` interface
+certifies empty, membership, priority and maximum queries for ordinary and
+recursive executions against an independent finite priority-map model.
+Maximum ties choose the greatest element ID; soundness and completeness are
+proved. Derived `rmvMax` returns the locally observed maximum pair and issues
+ordinary removal of its identity, preserving historical increments. Its local
+refinement is proved; two concurrent replicas may return the same pair, so it
+makes no atomic global-extraction claim. No additional local issuance guard is
+needed. Twenty-three PASS+FAIL controls exercise the implementation, queries
+and client. This is Sal's retained-increment variant, not the full Internetware
+2023 Most-Change-Win algorithm.
+
 `GSet`'s alias module has been removed: the single mathematical grow-only-set
 implementation is `AddStore`, with one coverage entry. `FinsetStore` and
 `FlatGrowOnly` provide enumerable and Boolean representations of the same abstract

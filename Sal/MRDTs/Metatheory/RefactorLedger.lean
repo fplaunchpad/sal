@@ -3,6 +3,7 @@ import Sal.MRDTs.Metatheory.NotionCoreStructuralRuntimeLedger
 import Sal.MRDTs.Paper1.SetWinsMapAudit
 import Sal.MRDTs.Paper1.RemoveWinsSetAudit
 import Sal.MRDTs.Paper1.OptionalRegisterAudit
+import Sal.MRDTs.Paper1.AddWinsPriorityQueueAudit
 import Sal.MRDTs.Paper1.NeemFlagAudit
 import Sal.MRDTs.Paper1.AnchoredQueueClient
 import Sal.MRDTs.Paper1.ORSetSharedSpecification
@@ -53,6 +54,23 @@ import Sal.MRDTs.Metatheory.StateGCCoverage
 /-! Build gate for the plain-signature reconstruction. -/
 
 namespace Sal.MRDTs
+
+#check Instances.AddWinsPriorityQueue.FullD
+#check Paper1.AddWinsPriorityQueue.fiveVC
+#check Paper1.AddWinsPriorityQueue.Full.fiveVC
+#check Paper1.AddWinsPriorityQueue.Full.representationJoin
+#check Paper1.AddWinsPriorityQueue.Full.historySound
+#check Paper1.AddWinsPriorityQueue.Full.compatible
+#check Paper1.AddWinsPriorityQueue.Full.certified
+#check Paper1.AddWinsPriorityQueue.Full.certifiedV
+#check Paper1.AddWinsPriorityQueue.Full.executions
+#check Paper1.AddWinsPriorityQueue.Full.executionsV
+#check Instances.AddWinsPriorityQueue.getMax_sound
+#check Instances.AddWinsPriorityQueue.getMax_none_iff
+#check Instances.AddWinsPriorityQueue.prepareRmvMax
+#check Instances.AddWinsPriorityQueue.rmvMax
+#check Paper1.AddWinsPriorityQueue.Full.rmvMax_refines
+#check Paper1.AddWinsPriorityQueue.Full.prepared_remove_effect
 
 #check Paper1.AnchoredQueue.Client.prepared_canIssue
 #check Paper1.AnchoredQueue.Client.canIssue_iff_prepared

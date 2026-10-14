@@ -1,13 +1,17 @@
 {
-  "method": "Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles priority implementation definitions then specification definitions then actual CommonVerification.verify application/evidence closure (root declaration packaging included) then remaining bridge/execution closure; shared libraries excluded. Counts are dependency-footprint LOC, not author handwritten proof bodies or person-hours. Cross-row overlap not subtracted. Direct carrier VC assemblies without CommonVerification.verify are explicitly listed and charged their complete kernel dependency closures.",
-  "git_head": "19fa35173a2639c976a9eaa90221ab5be9bb972c",
-  "deduplicated_concrete_total": 45536,
+  "method": "Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles prioritize implementation definitions, independent specification definitions, VC proof/input-support closures, then remaining bridge/execution closures. The 19 automation-selected cases use actual CommonVerification.verify application/evidence closures; other cases use their named raw five-VC, policy-expansion or direct-assembly dependency closures, with root packaging included. Shared libraries are excluded. Counts are dependency-footprint LOC, not handwritten proof-body sizes or person-hours; cross-row overlap is not subtracted. The direct structural Notion carrier assembly is explicitly listed in direct_vc_dependency_roots.",
+  "git_head": "b45a145d5f316241bb6536fa495ef35d9f48df74",
+  "deduplicated_concrete_total": 46417,
   "deduplicated_shared_dependency_total": 8379,
   "source_sha256": {
     "Sal/MRDTs/Instances/AddStore.lean": "fd22679f86c3405fee06461d91545be5bfb3e5402143fe043a9135d11d5fa07c",
     "Sal/MRDTs/Framework/Base/UpdateSignature.lean": "092ac6fce113c1398a77ccc2f066a948420e3335cec795c1474eaf370d2cc437",
     "Sal/MRDTs/Framework/Signature.lean": "6988c68f3c3aa0c0cb36871ad0ec7a9a58dd35c8f5c2a076e7d96396c44fba06",
     "Sal/MRDTs/Framework/Certificates.lean": "14659ccad800c9ead7583d9e718b040644393a05e29f8946889374d6c4f4e667",
+    "Sal/MRDTs/Instances/AddWinsPriorityQueueFull.lean": "57c2b10d2cebdc0d28c196a9afc222a12fc1dba91b1cdd7ae972bc5a68a1c45d",
+    "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean": "c34547797315045d40edbd3ba2dd5880f7c7e4a31e63b5b361e41a4d87617dd1",
+    "Sal/MRDTs/Instances/AddWinsPriorityQueue.lean": "e9e67702e79eab7ce8edf42e761d6bda0fc472f05eb55e734671f04f66696682",
+    "Sal/MRDTs/Instances/AddWinsPriorityQueueReadSide.lean": "d215ae0d1648a4424b582e1962aab7ed0d200fee090d53dbc3bc7ec08b653969",
     "Sal/MRDTs/Instances/AegisSheet.lean": "e311897e1432dc09e4b3e06c6ea231234e26a2ab0c31f036df3fb86abbe26f6f",
     "Sal/MRDTs/Instances/BalegasBoundedCounter.lean": "3f622b41685acebed19de8cf43b00d1d3bfe5b6b278f7487e74d9fba45054741",
     "Sal/MRDTs/Instances/DisableWinsFlag.lean": "3db714a23bd8e79b1e94f73ba14eb7215488ee37156b1fd0f3d62ea0144989e2",
@@ -25,7 +29,6 @@
     "Sal/MRDTs/Instances/MVR.lean": "8c8fb3c25657f81ed2b0b1e230626ba4667f2b2c8d2e3a3328d5c6d52f7fb876",
     "Sal/MRDTs/Instances/MVRContract.lean": "e1a1cf7eb22ea634d67031480bff87b361fb07b77ba24d2f05ebe6cc173f9627",
     "Sal/MRDTs/Instances/NotionCoreMRDT.lean": "ef3b399ee91a2fc36c4c6542e9ddd32b6590fe8a82a31c367e2c010b8aecc223",
-    "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean": "c34547797315045d40edbd3ba2dd5880f7c7e4a31e63b5b361e41a4d87617dd1",
     "Sal/MRDTs/Instances/NotionCoreHistory.lean": "3e73adbae9a56d3c5303cf2d2c53d3a90c05c598cceb738723ff1b83d762ac33",
     "Sal/MRDTs/Instances/NotionCoreMachine.lean": "5f373d28f238406c205577a67887fbb91d7df5be9adf84d3246c73eb0738b437",
     "Sal/MRDTs/Instances/NotionCoreSliceForest.lean": "1915dadb94daae762fce9bc9585c3c74e6ba91bad8b35f7c3a72fd9edb363670",
@@ -217,6 +220,20 @@
     "Sal/MRDTs/Instances/SidedPeritext.lean": "b277e8ffcb51565b0cd4c26b59b9646057a90cb6160b411efbcc1b17266f92fa",
     "Sal/MRDTs/Instances/PeritextRender.lean": "515f2ed726222fbb8e1c537db7f1da1546989bd84f0f3d06384c8a5f47ace912",
     "Sal/MRDTs/Instances/TreeMove.lean": "4e223a4f9bbb981437f956f8e7455d8a56122bdc78eb2a82fb1a09a99207b10d",
+    "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullCertificate.lean": "d746b9d73b1be11bdbf77ff508ea196e30eadf72bbe51c5486242593b98efe25",
+    "Sal/MRDTs/Paper1/AddWinsPriorityQueueReplay.lean": "0733af6d294f84b74c73dfea539e9bc17e3e29f9440b43e35f458293dd0fd883",
+    "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean": "135b57a1c22f6dcf0299376d1f732859ac16547cbba082f20ea8e38b22743bdf",
+    "Sal/MRDTs/Paper1/Soundness.lean": "cc71df601b4ce91a91727d666e3b4fdf56dd1b22ad41a0fb699887cfba8386a1",
+    "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullSpec.lean": "ebd852872f6602ae439124a2124704c21bf75cbbe7ab566cf92d56e25b9fef3d",
+    "Sal/MRDTs/Paper1/AddWinsPriorityQueueSpec.lean": "60712c3122554ccaae80a71c3f67a9ff772a764ed4460643563f0811c94029ce",
+    "Sal/MRDTs/Paper1/ProjectedSimulation.lean": "e3aa9a945c4d7c4c9f508f986a5b4adacb118b1f1cbd20e1284fe959841e7ab6",
+    "Sal/MRDTs/Paper1/SplitPolicy.lean": "ab127120bedbeacd4f904bc000ed63b3589a0da049e1ce301d5c7d6961a923c7",
+    "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean": "4d9ff0aae322727f876c676b0cce8271fe28fd27674469053cd69f0cbadba705",
+    "Sal/MRDTs/Metatheory/AdequacyResult.lean": "1cae629046dc06327ddf7ae5632007564ec69f18840053d7e738d94740604681",
+    "Sal/MRDTs/Paper1/AddWinsPriorityQueueVC.lean": "cbdd16deb6e18a296f737be5202abd16ba6b021f5e953ce5a913fb91a52fc837",
+    "Sal/MRDTs/Paper1/AddWinsPriorityQueueCanonical.lean": "28ab4e9976ee3e9a7ef834a879705acf47f70f65bbe92ad457aab4a0cd1d4bcd",
+    "Sal/MRDTs/Paper1/ConcreteORSetAlgebra.lean": "07a3d7ddf558864fb2fcc955d4111849d8a2f800ef166912b6c8fcbe125242bc",
+    "Sal/MRDTs/Paper1/ExecutionTrace.lean": "1e194dc1b4f16f4a99fe45ad4584722463d9064ada2bba5a0a720407285af09e",
     "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean": "6fd5a62fb70e9470662091672242b09447202b78b9deb9c5af3ba731fa01b65c",
     "Sal/MRDTs/Paper1/GuardedHistory.lean": "bf125b10404617ca7ded4cb6cea605eab4fdef09f11331a4e7c1e6c39e4001c4",
     "Sal/MRDTs/Instances/AegisSheetSequential.lean": "a351d710bd5a7c44eee65768b258f979fd7ad7a32aa17164ecbdd08b0c54d49c",
@@ -231,8 +248,6 @@
     "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean": "e3f16be201427f395e443cc6fa8413f00b56eb9c61fcf2d8623fcc32fb0d46ab",
     "Sal/MRDTs/Paper1/CertifiedRGAVCReplay.lean": "7821da2c68fb905ff0089bcd220ff5455275b27597e3b2a2c9033c4b391eeed0",
     "Sal/MRDTs/Framework/CertifiedEventInduction.lean": "02cf6d2e14e001d5ad5e441090eec09d7b9f419d2bf1ea683626fb4104545a03",
-    "Sal/MRDTs/Paper1/CertifiedClosedExecution.lean": "4d9ff0aae322727f876c676b0cce8271fe28fd27674469053cd69f0cbadba705",
-    "Sal/MRDTs/Metatheory/AdequacyResult.lean": "1cae629046dc06327ddf7ae5632007564ec69f18840053d7e738d94740604681",
     "Sal/MRDTs/Paper1/CertifiedRGAVC.lean": "b5b7e31058b42f22e3aeb5c46a4a7f21f458c1fd0b6ebe3c411a7f5fbc159989",
     "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean": "86e981d5efe0e160b24b3335dd073e1cfe091c994d58ad1dc902fb2849495ec6",
     "Sal/MRDTs/Paper1/Automation/OrderedInputDerivation.lean": "ace81fe0e25be4aa9f411bff108008008281794e37c1e013b2abd02e60ecd889",
@@ -252,8 +267,6 @@
     "Sal/MRDTs/Paper1/InvariantOrder.lean": "063135f9b9d6c5614d3ea17cc3da2351fb4effa4cf17f348cbecfa6a01a4a976",
     "Sal/MRDTs/Paper1/CertifiedRGAInvariantReplay.lean": "f63a9220c6c24d5a93e65023e2ed51d294152d5eb52ea27a2675eb4b1c831cc9",
     "Sal/MRDTs/Paper1/CertifiedHistoryCommutation.lean": "ece9285963f873f90c22ae94d37e45de63396232a644291cbfc7ef2f0b57cca9",
-    "Sal/MRDTs/Paper1/Soundness.lean": "cc71df601b4ce91a91727d666e3b4fdf56dd1b22ad41a0fb699887cfba8386a1",
-    "Sal/MRDTs/Paper1/ExecutionTrace.lean": "1e194dc1b4f16f4a99fe45ad4584722463d9064ada2bba5a0a720407285af09e",
     "Sal/MRDTs/Paper1/BalegasBoundedCounterCertificate.lean": "8661a775080f7dd4604beecfe330111e37185b3ac3eda2bd4e7a6447338e8b05",
     "Sal/MRDTs/Metatheory/Safety.lean": "08cdf7838b0bd0836b24ce469382158b624f491b7271650fe804a907b85befc8",
     "Sal/MRDTs/Paper1/BalegasBoundedCounterVC.lean": "85eb56e5490d11de583c3670f5dbf00d98b529a70e03da34005dab719da95a49",
@@ -281,7 +294,6 @@
     "Sal/MRDTs/Paper1/InvariantReplay.lean": "56e0ce415e28c4f29c498651364f0c21e1e0c91cd053043d532aa7901e648777",
     "Sal/MRDTs/Paper1/CertifiedScopeRestriction.lean": "912cecdee0e1d4d671600314bef488bb03b520856c6d3f03e317abea137f24bd",
     "Sal/MRDTs/Paper1/CertifiedRGAInvariantHistory.lean": "889e7a23eced92ea506825aa1b386992e141e1894a0c3e106d3e4e0c870a8a8c",
-    "Sal/MRDTs/Paper1/SplitPolicy.lean": "ab127120bedbeacd4f904bc000ed63b3589a0da049e1ce301d5c7d6961a923c7",
     "Sal/MRDTs/Paper1/CertifiedRGAHistory.lean": "4f9c7365237726dc26933aa44cd7dead109f4d12d7c475f7d8f288f783a66b88",
     "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean": "ea463cf477af6db31ab82faafd8a222e869cb9bfc9f8a9b112bb6946d8c804cf",
     "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean": "d3a9fbdd6a76c62e2c00815f3ae5a498eca6a729d0588a36823fcafbd266ca39",
@@ -319,7 +331,6 @@
     "Sal/MRDTs/Paper1/CertifiedSidedInvariantHistory.lean": "27672ee3c49ebd70c62c4391df406eba98dc1f41431106467c0ffc6f2be6dcab",
     "Sal/MRDTs/Paper1/CertifiedRGASidedVCAlgebra.lean": "58a1c5f9104c7027f853878a49fca8b04e2413c718dccd96ec926088751dc99d",
     "Sal/MRDTs/Paper1/ConcreteSimplePorts.lean": "e85f810e9914f7f45a21d64826ec5142554a761e3dc9e2ed84a889d1ef09ec7e",
-    "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean": "135b57a1c22f6dcf0299376d1f732859ac16547cbba082f20ea8e38b22743bdf",
     "Sal/MRDTs/Paper1/RGAEventSpec.lean": "98444667f4032b6aa0aaaf1c429576325578990b52471a067cf23db8d1b0cd89",
     "Sal/MRDTs/Paper1/RGAIdentified.lean": "8351ff818afc70d7994cec00fb89bb4004886b8ba55cc6dc444c9a1a979942fd",
     "Sal/MRDTs/Paper1/RGAConcretePort.lean": "e5753fd2d536c5951074e97d096e1c8296ce7a71d6ae06858eb5ed3595382af1",
@@ -347,7 +358,6 @@
     "Sal/MRDTs/Paper1/EnableWinsFlagCausal.lean": "a5814642c8a5ca3b9fcadc76cd736519c71ff7a4d9b84cf39ed04b94c14219ff",
     "Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean": "79e5c1384f6a1f09eb5fbff839b0b0726bc5fd0fb4d39cb501214d7f22beba34",
     "Sal/MRDTs/Paper1/NaturalSetSpec.lean": "b66be6299ba14ec63b6b496e5005ad155f134d1f430d84b8be7f2c594a851e73",
-    "Sal/MRDTs/Paper1/ProjectedSimulation.lean": "e3aa9a945c4d7c4c9f508f986a5b4adacb118b1f1cbd20e1284fe959841e7ab6",
     "Sal/MRDTs/Paper1/Automation/FiniteSetSimulation.lean": "7d23d85b320147e04a99226926d7cf59bf520228b0d8c831da8ffc1f5a92122b",
     "Sal/MRDTs/Paper1/GuardedRawORSetVC.lean": "8aba3e8cd831fe208b572b47e5e9424ad549c05c34c68136ab8a8361581ffbcb",
     "Sal/MRDTs/Paper1/Automation/ORSetInputs.lean": "f121611f5a44389f5defa1df4ef8ff6eab57ce5b3c18e6034030200cd079d31d",
@@ -420,7 +430,6 @@
     "Sal/MRDTs/Paper1/RemoveWinsSetEvent.lean": "1495e46da9ec8b24a4c717ee76ba1aef55ab19899a649b7e8fe5aa36ed8fdb35",
     "Sal/MRDTs/Paper1/RemoveWinsSetVC.lean": "733d260a0167f44517a47851830b16bbd56063c5ed5aaff16834cb6fd2ad0c1c",
     "Sal/MRDTs/Paper1/RemoveWinsSetCanonical.lean": "7ea511e2c1e837d5c3c456e8a9493b10dd243cb3dc7eb0a93eda1a9c34fa6187",
-    "Sal/MRDTs/Paper1/ConcreteORSetAlgebra.lean": "07a3d7ddf558864fb2fcc955d4111849d8a2f800ef166912b6c8fcbe125242bc",
     "Sal/MRDTs/Paper1/SetWinsMapCertificate.lean": "e948f9b0370ea10c7b0eb1f7c23be4c986287c887884e64bd61d696735abcd72",
     "Sal/MRDTs/Paper1/SetWinsMapEvent.lean": "447def89cdbcf8b0f286062ccf98e635bcb3f620477b53a697a6b21330e6767e",
     "Sal/MRDTs/Paper1/SetWinsMapVC.lean": "07c890b6185011e89ef517cb3e05ff1a8c94f901ef18836779765ae4f78eb58a",
@@ -7318,1108 +7327,36 @@
         }
       }
     },
-    "sided-peritext-core": {
+    "sided-peritext-rich-core": {
       "roots": {
         "implementation": [
+          "Sal.MRDTs.Instances.SidedPeritext.RichCore",
+          "Sal.MRDTs.Instances.SidedPeritext.richGeneration",
           "Sal.MRDTs.Instances.SidedPeritext.Core",
           "Sal.MRDTs.Instances.SidedPeritext.generation"
         ],
         "specification": [
+          "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.language",
           "Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.language"
         ],
         "vc": [
+          "Sal.MRDTs.Paper1.CertifiedRGARichVC.mergeVCs",
           "Sal.MRDTs.Paper1.CertifiedRGACoreMergeVC.mergeVCs"
         ],
         "bridge": [
+          "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.history",
+          "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.executions",
+          "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.executionsV",
           "Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.history",
           "Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.executions",
           "Sal.MRDTs.Paper1.CertifiedRGACoreCertificate.executionsV"
         ]
       },
       "loc": {
-        "implementation": 117,
-        "specification": 55,
-        "vc": 134,
-        "bridge": 2870
-      },
-      "source_ranges": {
-        "implementation": {
-          "Sal/MRDTs/Instances/FinsetStore.lean": [
-            [
-              17,
-              27
-            ]
-          ],
-          "Sal/MRDTs/Instances/PeritextRender.lean": [
-            [
-              51,
-              53
-            ],
-            [
-              57,
-              59
-            ],
-            [
-              63,
-              65
-            ],
-            [
-              71,
-              81
-            ]
-          ],
-          "Sal/MRDTs/Instances/RGAKernel/Code.lean": [
-            [
-              35,
-              35
-            ],
-            [
-              40,
-              41
-            ]
-          ],
-          "Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean": [
-            [
-              42,
-              46
-            ]
-          ],
-          "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean": [
-            [
-              30,
-              33
-            ],
-            [
-              36,
-              36
-            ],
-            [
-              45,
-              45
-            ],
-            [
-              48,
-              48
-            ],
-            [
-              52,
-              52
-            ],
-            [
-              57,
-              59
-            ],
-            [
-              74,
-              74
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedEmbedRGA.lean": [
-            [
-              13,
-              14
-            ],
-            [
-              16,
-              17
-            ],
-            [
-              20,
-              20
-            ],
-            [
-              25,
-              25
-            ],
-            [
-              27,
-              27
-            ],
-            [
-              39,
-              43
-            ],
-            [
-              48,
-              53
-            ],
-            [
-              57,
-              63
-            ],
-            [
-              69,
-              72
-            ],
-            [
-              79,
-              89
-            ],
-            [
-              1137,
-              1140
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedPeritext.lean": [
-            [
-              24,
-              24
-            ],
-            [
-              26,
-              29
-            ],
-            [
-              59,
-              73
-            ],
-            [
-              135,
-              136
-            ]
-          ]
-        },
-        "specification": {
-          "Sal/MRDTs/Instances/ProductionRGA.lean": [
-            [
-              919,
-              934
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedEmbedRGA.lean": [
-            [
-              32,
-              35
-            ],
-            [
-              330,
-              333
-            ],
-            [
-              339,
-              340
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedEmbedRGASequential.lean": [
-            [
-              50,
-              52
-            ],
-            [
-              55,
-              57
-            ],
-            [
-              60,
-              66
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedPeritext.lean": [
-            [
-              140,
-              140
-            ],
-            [
-              142,
-              149
-            ],
-            [
-              565,
-              570
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean": [
-            [
-              14,
-              14
-            ]
-          ]
-        },
-        "vc": {
-          "Sal/MRDTs/Instances/RGAKernel/Code.lean": [
-            [
-              42,
-              43
-            ]
-          ],
-          "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean": [
-            [
-              38,
-              38
-            ],
-            [
-              40,
-              40
-            ],
-            [
-              62,
-              64
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedEmbedRGA.lean": [
-            [
-              143,
-              144
-            ],
-            [
-              336,
-              337
-            ],
-            [
-              629,
-              630
-            ],
-            [
-              632,
-              633
-            ],
-            [
-              637,
-              641
-            ]
-          ],
-          "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean": [
-            [
-              15,
-              19
-            ],
-            [
-              21,
-              24
-            ]
-          ],
-          "Sal/MRDTs/Paper1/Automation/AutomatedRGA.lean": [
-            [
-              183,
-              191
-            ],
-            [
-              193,
-              195
-            ],
-            [
-              197,
-              221
-            ],
-            [
-              223,
-              226
-            ]
-          ],
-          "Sal/MRDTs/Paper1/Automation/SidedOrderedPrimitives.lean": [
-            [
-              9,
-              12
-            ],
-            [
-              14,
-              18
-            ],
-            [
-              20,
-              25
-            ]
-          ],
-          "Sal/MRDTs/Paper1/Automation/TransferSimple.lean": [
-            [
-              15,
-              24
-            ],
-            [
-              28,
-              49
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean": [
-            [
-              19,
-              21
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGACoreVC.lean": [
-            [
-              10,
-              12
-            ],
-            [
-              23,
-              27
-            ],
-            [
-              128,
-              133
-            ]
-          ]
-        },
-        "bridge": {
-          "Sal/MRDTs/Instances/FinsetStore.lean": [
-            [
-              31,
-              36
-            ],
-            [
-              71,
-              76
-            ]
-          ],
-          "Sal/MRDTs/Instances/ProductionRGA.lean": [
-            [
-              612,
-              617
-            ],
-            [
-              619,
-              619
-            ],
-            [
-              621,
-              622
-            ],
-            [
-              624,
-              625
-            ],
-            [
-              627,
-              630
-            ],
-            [
-              632,
-              641
-            ],
-            [
-              643,
-              655
-            ],
-            [
-              657,
-              685
-            ],
-            [
-              687,
-              711
-            ],
-            [
-              713,
-              730
-            ],
-            [
-              732,
-              743
-            ],
-            [
-              747,
-              750
-            ],
-            [
-              785,
-              899
-            ],
-            [
-              936,
-              956
-            ],
-            [
-              984,
-              984
-            ],
-            [
-              986,
-              987
-            ]
-          ],
-          "Sal/MRDTs/Instances/RGAKernel/EmbedChainLex.lean": [
-            [
-              30,
-              33
-            ],
-            [
-              35,
-              47
-            ],
-            [
-              49,
-              78
-            ],
-            [
-              80,
-              92
-            ],
-            [
-              194,
-              199
-            ],
-            [
-              259,
-              274
-            ],
-            [
-              276,
-              279
-            ],
-            [
-              291,
-              295
-            ]
-          ],
-          "Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean": [
-            [
-              66,
-              71
-            ],
-            [
-              78,
-              79
-            ],
-            [
-              81,
-              82
-            ],
-            [
-              84,
-              85
-            ],
-            [
-              87,
-              91
-            ],
-            [
-              100,
-              104
-            ],
-            [
-              108,
-              115
-            ],
-            [
-              117,
-              124
-            ],
-            [
-              126,
-              144
-            ],
-            [
-              147,
-              169
-            ],
-            [
-              174,
-              178
-            ],
-            [
-              182,
-              186
-            ],
-            [
-              189,
-              205
-            ],
-            [
-              208,
-              281
-            ],
-            [
-              306,
-              318
-            ],
-            [
-              342,
-              344
-            ],
-            [
-              346,
-              350
-            ],
-            [
-              352,
-              354
-            ],
-            [
-              356,
-              358
-            ],
-            [
-              361,
-              370
-            ],
-            [
-              375,
-              441
-            ],
-            [
-              510,
-              519
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedEmbedRGA.lean": [
-            [
-              91,
-              92
-            ],
-            [
-              94,
-              100
-            ],
-            [
-              102,
-              104
-            ],
-            [
-              146,
-              155
-            ],
-            [
-              157,
-              180
-            ],
-            [
-              182,
-              197
-            ],
-            [
-              202,
-              235
-            ],
-            [
-              321,
-              322
-            ],
-            [
-              324,
-              328
-            ],
-            [
-              342,
-              344
-            ],
-            [
-              346,
-              353
-            ],
-            [
-              355,
-              365
-            ],
-            [
-              367,
-              369
-            ],
-            [
-              371,
-              373
-            ],
-            [
-              379,
-              383
-            ],
-            [
-              385,
-              396
-            ],
-            [
-              400,
-              428
-            ],
-            [
-              432,
-              445
-            ],
-            [
-              448,
-              480
-            ],
-            [
-              485,
-              553
-            ],
-            [
-              560,
-              575
-            ],
-            [
-              591,
-              593
-            ],
-            [
-              597,
-              605
-            ],
-            [
-              643,
-              663
-            ],
-            [
-              667,
-              686
-            ],
-            [
-              693,
-              744
-            ],
-            [
-              768,
-              784
-            ],
-            [
-              1101,
-              1106
-            ],
-            [
-              1108,
-              1121
-            ],
-            [
-              1145,
-              1217
-            ],
-            [
-              1224,
-              1250
-            ],
-            [
-              1257,
-              1261
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedEmbedRGASequential.lean": [
-            [
-              43,
-              43
-            ],
-            [
-              47,
-              47
-            ],
-            [
-              68,
-              69
-            ],
-            [
-              71,
-              75
-            ],
-            [
-              80,
-              81
-            ],
-            [
-              83,
-              87
-            ],
-            [
-              94,
-              100
-            ],
-            [
-              102,
-              105
-            ],
-            [
-              111,
-              165
-            ],
-            [
-              169,
-              178
-            ],
-            [
-              180,
-              242
-            ],
-            [
-              247,
-              255
-            ],
-            [
-              257,
-              264
-            ],
-            [
-              268,
-              334
-            ],
-            [
-              338,
-              344
-            ],
-            [
-              347,
-              359
-            ],
-            [
-              361,
-              385
-            ],
-            [
-              387,
-              415
-            ],
-            [
-              422,
-              476
-            ],
-            [
-              482,
-              535
-            ],
-            [
-              542,
-              548
-            ],
-            [
-              553,
-              636
-            ],
-            [
-              641,
-              702
-            ],
-            [
-              706,
-              715
-            ],
-            [
-              724,
-              755
-            ],
-            [
-              757,
-              811
-            ],
-            [
-              813,
-              914
-            ],
-            [
-              920,
-              941
-            ]
-          ],
-          "Sal/MRDTs/Instances/SidedPeritext.lean": [
-            [
-              75,
-              76
-            ],
-            [
-              78,
-              102
-            ],
-            [
-              108,
-              133
-            ],
-            [
-              151,
-              167
-            ],
-            [
-              209,
-              224
-            ],
-            [
-              288,
-              294
-            ],
-            [
-              296,
-              298
-            ],
-            [
-              300,
-              308
-            ],
-            [
-              310,
-              318
-            ],
-            [
-              320,
-              328
-            ],
-            [
-              330,
-              338
-            ],
-            [
-              340,
-              348
-            ],
-            [
-              350,
-              371
-            ],
-            [
-              373,
-              382
-            ],
-            [
-              384,
-              393
-            ],
-            [
-              395,
-              409
-            ],
-            [
-              411,
-              420
-            ],
-            [
-              435,
-              480
-            ],
-            [
-              524,
-              559
-            ]
-          ],
-          "Sal/MRDTs/Paper1/Automation/AutomatedCore.lean": [
-            [
-              28,
-              31
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean": [
-            [
-              15,
-              16
-            ],
-            [
-              18,
-              19
-            ],
-            [
-              21,
-              31
-            ],
-            [
-              33,
-              35
-            ],
-            [
-              37,
-              82
-            ],
-            [
-              84,
-              91
-            ],
-            [
-              93,
-              110
-            ],
-            [
-              112,
-              137
-            ],
-            [
-              139,
-              140
-            ],
-            [
-              142,
-              150
-            ],
-            [
-              152,
-              163
-            ],
-            [
-              165,
-              169
-            ],
-            [
-              171,
-              178
-            ],
-            [
-              184,
-              189
-            ],
-            [
-              191,
-              196
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGACoreExecution.lean": [
-            [
-              9,
-              39
-            ],
-            [
-              41,
-              51
-            ],
-            [
-              53,
-              66
-            ],
-            [
-              68,
-              70
-            ],
-            [
-              72,
-              83
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean": [
-            [
-              23,
-              26
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGACoreVC.lean": [
-            [
-              14,
-              21
-            ],
-            [
-              29,
-              42
-            ],
-            [
-              82,
-              102
-            ],
-            [
-              104,
-              114
-            ],
-            [
-              116,
-              126
-            ],
-            [
-              135,
-              144
-            ],
-            [
-              146,
-              153
-            ],
-            [
-              155,
-              158
-            ],
-            [
-              160,
-              164
-            ],
-            [
-              166,
-              189
-            ],
-            [
-              191,
-              238
-            ],
-            [
-              240,
-              247
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGAExecution.lean": [
-            [
-              85,
-              98
-            ],
-            [
-              100,
-              110
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGAIssuance.lean": [
-            [
-              41,
-              45
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGAProducts.lean": [
-            [
-              8,
-              21
-            ],
-            [
-              25,
-              46
-            ],
-            [
-              52,
-              57
-            ],
-            [
-              59,
-              64
-            ],
-            [
-              66,
-              70
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGAScope.lean": [
-            [
-              103,
-              109
-            ],
-            [
-              111,
-              114
-            ],
-            [
-              122,
-              130
-            ],
-            [
-              163,
-              170
-            ]
-          ],
-          "Sal/MRDTs/Paper1/CertifiedRGAVCReplay.lean": [
-            [
-              165,
-              185
-            ],
-            [
-              187,
-              190
-            ],
-            [
-              200,
-              206
-            ],
-            [
-              208,
-              214
-            ]
-          ]
-        }
-      }
-    },
-    "sided-peritext-rich-core": {
-      "roots": {
-        "implementation": [
-          "Sal.MRDTs.Instances.SidedPeritext.RichCore",
-          "Sal.MRDTs.Instances.SidedPeritext.richGeneration"
-        ],
-        "specification": [
-          "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.language"
-        ],
-        "vc": [
-          "Sal.MRDTs.Paper1.CertifiedRGARichVC.mergeVCs"
-        ],
-        "bridge": [
-          "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.history",
-          "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.executions",
-          "Sal.MRDTs.Paper1.CertifiedRGARichCertificate.executionsV"
-        ]
-      },
-      "loc": {
-        "implementation": 206,
-        "specification": 60,
-        "vc": 146,
-        "bridge": 2957
+        "implementation": 208,
+        "specification": 67,
+        "vc": 149,
+        "bridge": 3072
       },
       "source_ranges": {
         "implementation": {
@@ -8647,6 +7584,10 @@
               73
             ],
             [
+              135,
+              136
+            ],
+            [
               853,
               854
             ]
@@ -8697,12 +7638,22 @@
               149
             ],
             [
+              565,
+              570
+            ],
+            [
               786,
               790
             ],
             [
               795,
               800
+            ]
+          ],
+          "Sal/MRDTs/Paper1/CertifiedRGACoreCertificate.lean": [
+            [
+              14,
+              14
             ]
           ],
           "Sal/MRDTs/Paper1/CertifiedRGARichCertificate.lean": [
@@ -8811,6 +7762,12 @@
             [
               28,
               49
+            ]
+          ],
+          "Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean": [
+            [
+              19,
+              21
             ]
           ],
           "Sal/MRDTs/Paper1/CertifiedRGACoreVC.lean": [
@@ -9307,10 +8264,6 @@
               133
             ],
             [
-              135,
-              136
-            ],
-            [
               151,
               167
             ],
@@ -9429,6 +8382,46 @@
             [
               37,
               82
+            ],
+            [
+              84,
+              91
+            ],
+            [
+              93,
+              110
+            ],
+            [
+              112,
+              137
+            ],
+            [
+              139,
+              140
+            ],
+            [
+              142,
+              150
+            ],
+            [
+              152,
+              163
+            ],
+            [
+              165,
+              169
+            ],
+            [
+              171,
+              178
+            ],
+            [
+              184,
+              189
+            ],
+            [
+              191,
+              196
             ]
           ],
           "Sal/MRDTs/Paper1/CertifiedRGACoreExecution.lean": [
@@ -9445,6 +8438,14 @@
               66
             ],
             [
+              68,
+              70
+            ],
+            [
+              72,
+              83
+            ],
+            [
               88,
               92
             ],
@@ -9458,10 +8459,6 @@
             ]
           ],
           "Sal/MRDTs/Paper1/CertifiedRGACoreMergeVC.lean": [
-            [
-              19,
-              21
-            ],
             [
               23,
               26
@@ -9528,6 +8525,10 @@
             ]
           ],
           "Sal/MRDTs/Paper1/CertifiedRGAIssuance.lean": [
+            [
+              41,
+              45
+            ],
             [
               47,
               53
@@ -22349,6 +21350,536 @@
           ]
         }
       }
+    },
+    "add-wins-priority-queue": {
+      "roots": {
+        "implementation": [
+          "Sal.MRDTs.Instances.AddWinsPriorityQueue.FullD",
+          "Sal.MRDTs.Paper1.AddWinsPriorityQueue.Full.generation",
+          "Sal.MRDTs.Instances.AddWinsPriorityQueue.rmvMax"
+        ],
+        "specification": [
+          "Sal.MRDTs.Paper1.AddWinsPriorityQueue.Full.spec",
+          "Sal.MRDTs.Paper1.AddWinsPriorityQueue.Full.seqRmvMax"
+        ],
+        "vc": [
+          "Sal.MRDTs.Paper1.AddWinsPriorityQueue.Full.fiveVC"
+        ],
+        "bridge": [
+          "Sal.MRDTs.Paper1.AddWinsPriorityQueue.Full.executions",
+          "Sal.MRDTs.Paper1.AddWinsPriorityQueue.Full.executionsV",
+          "Sal.MRDTs.Paper1.AddWinsPriorityQueue.Full.rmvMax_refines",
+          "Sal.MRDTs.Paper1.AddWinsPriorityQueue.Full.prepared_remove_effect",
+          "Sal.MRDTs.Instances.AddWinsPriorityQueue.getMax_sound",
+          "Sal.MRDTs.Instances.AddWinsPriorityQueue.getMax_none_iff"
+        ]
+      },
+      "loc": {
+        "implementation": 62,
+        "specification": 31,
+        "vc": 433,
+        "bridge": 370
+      },
+      "source_ranges": {
+        "implementation": {
+          "Sal/MRDTs/Instances/AddWinsPriorityQueue.lean": [
+            [
+              17,
+              21
+            ],
+            [
+              23,
+              25
+            ],
+            [
+              27,
+              31
+            ],
+            [
+              33,
+              34
+            ],
+            [
+              50,
+              51
+            ],
+            [
+              53,
+              54
+            ],
+            [
+              56,
+              57
+            ],
+            [
+              59,
+              69
+            ]
+          ],
+          "Sal/MRDTs/Instances/AddWinsPriorityQueueFull.lean": [
+            [
+              11,
+              16
+            ],
+            [
+              18,
+              22
+            ],
+            [
+              24,
+              24
+            ],
+            [
+              28,
+              29
+            ],
+            [
+              31,
+              32
+            ],
+            [
+              34,
+              34
+            ],
+            [
+              36,
+              40
+            ],
+            [
+              42,
+              42
+            ],
+            [
+              52,
+              54
+            ],
+            [
+              57,
+              58
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullCertificate.lean": [
+            [
+              39,
+              40
+            ]
+          ]
+        },
+        "specification": {
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullSpec.lean": [
+            [
+              10,
+              10
+            ],
+            [
+              12,
+              16
+            ],
+            [
+              18,
+              19
+            ],
+            [
+              21,
+              25
+            ],
+            [
+              27,
+              31
+            ],
+            [
+              33,
+              33
+            ],
+            [
+              90,
+              92
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueSpec.lean": [
+            [
+              14,
+              15
+            ],
+            [
+              17,
+              21
+            ],
+            [
+              23,
+              24
+            ]
+          ]
+        },
+        "vc": {
+          "Sal/MRDTs/Instances/AddWinsPriorityQueue.lean": [
+            [
+              71,
+              75
+            ],
+            [
+              77,
+              78
+            ],
+            [
+              80,
+              84
+            ],
+            [
+              86,
+              91
+            ],
+            [
+              99,
+              107
+            ],
+            [
+              109,
+              121
+            ],
+            [
+              123,
+              124
+            ],
+            [
+              126,
+              131
+            ],
+            [
+              133,
+              138
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueCanonical.lean": [
+            [
+              10,
+              11
+            ],
+            [
+              13,
+              14
+            ],
+            [
+              16,
+              31
+            ],
+            [
+              33,
+              84
+            ],
+            [
+              87,
+              90
+            ],
+            [
+              92,
+              95
+            ],
+            [
+              97,
+              99
+            ],
+            [
+              101,
+              103
+            ],
+            [
+              105,
+              141
+            ],
+            [
+              143,
+              148
+            ],
+            [
+              151,
+              162
+            ],
+            [
+              165,
+              166
+            ],
+            [
+              168,
+              177
+            ],
+            [
+              179,
+              185
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullCertificate.lean": [
+            [
+              11,
+              11
+            ],
+            [
+              13,
+              14
+            ],
+            [
+              16,
+              18
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueReplay.lean": [
+            [
+              11,
+              12
+            ],
+            [
+              14,
+              21
+            ],
+            [
+              23,
+              52
+            ],
+            [
+              60,
+              60
+            ],
+            [
+              62,
+              63
+            ],
+            [
+              65,
+              66
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueVC.lean": [
+            [
+              12,
+              18
+            ],
+            [
+              20,
+              26
+            ],
+            [
+              28,
+              46
+            ],
+            [
+              48,
+              105
+            ],
+            [
+              109,
+              144
+            ],
+            [
+              146,
+              155
+            ],
+            [
+              157,
+              172
+            ]
+          ],
+          "Sal/MRDTs/Paper1/ConcreteORSetAlgebra.lean": [
+            [
+              52,
+              53
+            ],
+            [
+              55,
+              67
+            ]
+          ]
+        },
+        "bridge": {
+          "Sal/MRDTs/Instances/AddWinsPriorityQueueFull.lean": [
+            [
+              60,
+              76
+            ],
+            [
+              80,
+              106
+            ],
+            [
+              108,
+              126
+            ],
+            [
+              128,
+              143
+            ],
+            [
+              145,
+              154
+            ],
+            [
+              156,
+              160
+            ]
+          ],
+          "Sal/MRDTs/Instances/AddWinsPriorityQueueReadSide.lean": [
+            [
+              38,
+              46
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullCertificate.lean": [
+            [
+              9,
+              9
+            ],
+            [
+              22,
+              31
+            ],
+            [
+              33,
+              37
+            ],
+            [
+              42,
+              46
+            ],
+            [
+              48,
+              52
+            ],
+            [
+              54,
+              68
+            ],
+            [
+              70,
+              73
+            ],
+            [
+              82,
+              84
+            ],
+            [
+              86,
+              88
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullSpec.lean": [
+            [
+              35,
+              35
+            ],
+            [
+              37,
+              50
+            ],
+            [
+              52,
+              63
+            ],
+            [
+              65,
+              66
+            ],
+            [
+              68,
+              68
+            ],
+            [
+              70,
+              80
+            ],
+            [
+              82,
+              86
+            ],
+            [
+              95,
+              105
+            ],
+            [
+              110,
+              117
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueReplay.lean": [
+            [
+              54,
+              55
+            ],
+            [
+              57,
+              58
+            ],
+            [
+              68,
+              73
+            ],
+            [
+              75,
+              78
+            ],
+            [
+              80,
+              83
+            ],
+            [
+              85,
+              88
+            ],
+            [
+              90,
+              102
+            ],
+            [
+              104,
+              109
+            ],
+            [
+              111,
+              136
+            ],
+            [
+              138,
+              147
+            ]
+          ],
+          "Sal/MRDTs/Paper1/AddWinsPriorityQueueSpec.lean": [
+            [
+              26,
+              30
+            ],
+            [
+              34,
+              35
+            ],
+            [
+              37,
+              37
+            ],
+            [
+              39,
+              46
+            ],
+            [
+              48,
+              55
+            ],
+            [
+              57,
+              69
+            ],
+            [
+              71,
+              86
+            ],
+            [
+              88,
+              92
+            ],
+            [
+              100,
+              115
+            ]
+          ]
+        }
+      }
     }
   },
   "shared_source_ranges": {
@@ -25400,6 +24931,5 @@
         235
       ]
     ]
-  },
-  "measurement_started_at_git_head": "376bf8dd7ef0b0c9288e6c698e7dbbc4ec25d43c"
+  }
 }
