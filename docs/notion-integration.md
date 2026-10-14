@@ -77,9 +77,15 @@ requests, reconstructs the peer's document, selects identities, reserves the
 issuing clock and publishes the transaction. Its Reach relation derives the
 older typed issuance invariants without caller-supplied knowledge premises.
 
-The remaining correspondence is still global. Deletion-aware prefix rows,
-slice forest and endpoint ownership must describe the same execution together
-with displayed block order. The new network is partial: a successful request
+The latest table increment proves exact deletion-aware rows and chronological
+pending targets through actual accepted replay. Canonical archive freshness
+and row permutations are derived, and actual graph guards, physical address
+uniqueness, next reference presence and successful next-row integration follow.
+The latter conclusions do not assume acceptance of the next transaction.
+
+The remaining correspondence is still global. Slice forest, endpoint ownership
+and displayed block order must be related to those actual tables in the same
+execution, including empty inactive title roots. The new network is partial: a successful request
 transition does not establish that the resulting archive reconstructs. Core
 deletion must also be proved total on the supported normal shape; general
 multi-instance grouping after merge is not implemented in this core model.
@@ -112,8 +118,10 @@ hidden-origin tree splice and integrate-before-route ownership for both
 existing intervals. The earlier 4,500 model comparisons,
 575 directed cases and 18,053 bounded local-effect checks remain separately
 scoped evidence.
-The new structural instrumentation checks all 40 causal ideals of one nine-event
-network: 238 full-transaction prefixes and 646 actual RGA entry calls. It preserves
+The structural instrumentation checks all 40 causal ideals of one nine-event
+network: 238 full-transaction prefixes and 646 actual RGA entry calls. It now
+also compares 293 instance tables and all 1,534 stored rows with independently
+decoded full fields, including 27 tombstoned rows and pending-target Sets. It preserves
 controls for dependency omission, duplicate allocators sharing a session,
 child dominance and non-item reservations, plus a witness refuting an unnecessary
 global-maximum clock premise.
@@ -136,8 +144,8 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the positional-issuance increment:
-40 Notion modules (3,451 Lean jobs), fourteen research result groups, the production
+Both gates passed for the actual-table correspondence increment:
+44 Notion modules (3,455 Lean jobs), fourteen research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
 187 runtime tests, and validation of 569 stored benchmark records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or

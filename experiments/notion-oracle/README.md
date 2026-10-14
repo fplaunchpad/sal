@@ -258,3 +258,11 @@ sorts IDs differently from physical selection, preserves the selected set,
 and excludes markers and prior tombstones. Equal, reversed, and beyond-end
 nonnegative ranges reserve no clock ticks. Expected IDs and ranges are
 hand-derived; this is a focused control, not an additional confirmed bug.
+
+The extended `replay-prefix-instrumentation.mjs` also compares full stored rows
+and pending-target Sets with independent literal transaction decoding: 293
+instance tables and 1,534 rows (27 tombstoned) across the existing 238 prefixes.
+`replay-table-observations.jsonl` saves the three new output records; the older
+campaign record remains historical. A separate raw pending-before-birth check
+is not counted as an honest-client history. No-op-delete and wrong-instance
+mutations must fail. This remains finite source evidence, not replay progress.

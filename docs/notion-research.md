@@ -138,7 +138,7 @@ same user intent. The latter occur in the minimized split trace.
 | Global structural components | Recursive origin search and raw parent-table extraction; endpoint partition/ownership; slice-tree root/leaf and inactive-title induction |
 | Actual source invariant | 43,005 shape/title-owner and 62,849 interval checks, 238 instrumented sorted prefixes, 144 directed endpoint-adjacency checks; joint execution and source decoding proof still open |
 | Positional request admission | Actual per-peer sorted reconstruction; create/insert/single-instance delete/split derive item and creator guards; total replay and core deletion progress remain open |
-| Combined typed interpreter | Kernel controls pass; typed prefix provenance derives checked row insertion; structural cells derive checked slice extraction; whole replay refinement remains open |
+| Combined typed interpreter | Exact deletion-aware actual tables through accepted canonical replay; derived actual graph guards, next reference presence and row integration; joint slice/replay progress remains open |
 | Local effects with merges/formatting | Refuted by fresh-client executable traces; restricted kernel formatting counterparts |
 | Three-way adaptation | Executable transaction-set shell preserving source preparation and rendering |
 | Five VCs | Reused finite-store proof, key-consistency lemmas and arbitrary-render convergence; storage only |
@@ -355,3 +355,28 @@ actual replay tables, endpoint ownership, inactive titles and display order,
 including unconditional reconstruction and supported-request progress. Source
 wire/name/label correspondence and the full same-witness RA theorem remain
 separate. The confirmed published-demo bug count is still three.
+
+
+## Actual replay-table correspondence
+
+The candidate invariant was exact storage equality: each instance contains its
+chronological decoded birth rows with all prefix deletion targets applied.
+The falsifiers are omitted tombstones, wrong parent or instance, and pending
+deletes lost before birth. Independent literal decoding matched 293 actual
+source instance tables and 1,534 rows across the existing 238-prefix campaign;
+mutation controls distinguish no-op deletion and wrong-instance ownership.
+
+The universal typed theorem is now checked. MachineTables follows actual
+accepted storage transitions and atomic phases, while ArchiveOrder derives
+canonical freshness and chronological/archive permutations from issuance.
+MachineTableGraph uses them to derive actual graph invariants, physical ID
+uniqueness, next reference presence and next-row integration success. It does
+not assume next-step acceptance. Accepted prefix reconstruction remains an
+explicit input, so full replay progress is still open.
+
+The remaining structural proof must relate all actual forest slices to each
+instance's endpoint partition, including empty inactive titles. Normal shape,
+endpoint adjacency, unique ownership and display alignment must be preserved
+in that same execution to establish split routing and bounds. Source wire and
+label correspondence and the RA bridge remain separate. No new demo bug was
+found; the three confirmed editing failures remain recorded.

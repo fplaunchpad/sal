@@ -1330,3 +1330,87 @@ tests and validation of 569 stored benchmark records. No admits, custom axioms
 or native decision shortcuts were introduced. These gates do not establish
 whole replay progress, source wire/label correspondence or the Notion RA
 certificate. The three confirmed demo bugs still reproduce.
+
+## Full stored-field replay prefix evidence
+
+The existing nine-event directed campaign was extended, retaining its original
+observations and saving three new records in `replay-table-observations.jsonl`.
+All 40 causal ideals and 238 canonical atomic prefixes compare actual source
+Map tables to an independent decoder of literal transaction payloads: 293
+instance tables, 1534 stored rows, and 27 tombstoned row occurrences. The
+comparison includes full IDs, origins, kind, text content, deleted flags, and
+pending-delete membership. Expected births use explicit consecutive counters
+and predecessor links; deletion ranges are expanded by literal integer loops,
+without source codec helpers, RGA methods, traversal, or selectors. Each text
+birth's final flag reflects all prefix targets in that instance; split births
+remain undeleted. Empty creator instances and chronological Map row order are
+included, rather than comparing only physical traversal or ID sets.
+
+All comparisons pass with pinned hashes checked. Known-broken no-op deletion
+and wrong-instance variants are rejected. A separate fabricated raw
+pending-before-birth control confirms deleted Q text and an undeleted split
+marker when both IDs were targeted beforehand. It is explicitly outside honest
+causal closure. This supports the proposed deletion-aware complete-row prefix
+representation on the bounded campaign; it is not a universal invariant proof,
+a malformed duplicate-content integration theorem, or a new source bug claim.
+
+## Declarative table view and canonical archive order
+
+TableView, ArchiveOrder, and MachineTableGraph independently check cleanly,
+with standard printed axioms. TableView is a declarative storage layout:
+chronological decoded births erased by all prefix targets in that instance.
+Its algebra includes pending deletes before births and leaves markers unchanged;
+it is not a second document replay or a sequential editor specification.
+
+ArchiveOrder derives transaction-key uniqueness from issuance Reach and proves
+that a canonical transaction prefix is exactly a permutation of its selected
+archive entries. The chronological birth-row permutation and global birth-ID
+uniqueness then follow. No row permutation, graph uniqueness, or provider-order
+premise is supplied to these canonical-prefix results. MachineTableGraph uses
+that derived permutation with the actual prefix deletion predicate to inherit
+unique, increasing, closed parent edges. Its physical uniqueness theorem derives
+sufficient actual traversal at table-length fuel and injective event names.
+The latter remains a conditional actual-table graph lemma until a replay
+representation theorem links the machine's table to the declarative view.
+
+The literal full-field oracle decoder was cross-reviewed without rerunning the
+campaign. Expected rows and pending sets derive solely from literal transaction
+operations and language-level string iteration, explicit counters, and integer
+range loops. Source RGA/selector/codec helpers do not produce the expected
+answer. The full chronological Map comparison is stronger than ID-set or
+traversal equality, within the honest no-duplicate-birth domain. The no-op erase
+and wrong-instance mutations are distinguishing controls, while future-target
+raw deletion remains explicitly fabricated.
+
+
+## Final actual-table integration review
+
+The source reviewer and parent inspected the full MachineTables induction.
+Its prior table view is obtained by induction on an actually accepted prefix;
+no final row equality or per-step output view is supplied. Fresh row append
+follows from canonical birth uniqueness, actual lookup and accepted integration.
+Creation and move preserve storage, erasure preserves IDs and parent links,
+and the bootstrap and split cases follow their complete atomic phase lists.
+Raw duplicate birth replay lies outside the uniqueness premise; canonical
+immutable archives discharge that premise rather than assuming it.
+
+MachineTableGraph removes the remaining caller row-permutation premise.
+Actual prefix tables inherit unique IDs, increasing parent rank and closure.
+Physical traversal uniqueness uses the actual table-length fuel. The next-row
+integration and reference-presence results assume only the current prefix was
+accepted; they do not assume acceptance of the next transaction. The independent
+review found no desired-query or observation premise hidden in this chain.
+
+The pending-list equality is a formal-machine statement. Source pending Sets
+correspond by membership; list order and duplicate multiplicity are not claimed
+as source observations. Hand-derived controls distinguish pending future text
+births, undeleted markers, retained parents and wrong destination instances.
+The independent literal decoder compares full source fields and pending Sets.
+
+The final research gate passed 44 modules (3,455 Lean jobs), fourteen result
+groups and all saved failure regressions. Prefix instrumentation now emits
+three records, adding full-field comparison and a separately labeled raw
+pending-before-birth control. The production gate passed 3,694 Lean jobs,
+18 exact contracts and their axiom audit, 187 runtime tests and validation of
+569 benchmark records. Full joint slice/display progress, source wire/label
+correspondence and the Notion RA certificate remain open.

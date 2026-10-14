@@ -74,6 +74,31 @@ RgaText.prototype.insertSplit=function(id,origin) {
  observe(this,id,origin,[id],'split');const result=originalSplit.call(this,id,origin);
  if(active)assert.equal(this.orderedItems().length,this.items.size,'unreachable split after honest prefix');return result;
 };
+// Independent literal payload decoder: no source range helpers, RGA methods,
+// traversal, or document selectors are used to derive expected stored fields.
+function decodedTables(transactions) {
+ const instances=new Map();
+ const get=inst=>{if(!instances.has(inst))instances.set(inst,{rows:[],pending:new Set()});return instances.get(inst);};
+ for(const tx of transactions)for(const op of tx.operations){const a=op.args;
+  if(op.command==='createBlock')get(a.titleTextInstanceId);
+  if(op.command==='insertText'){
+   const target=get(a.textInstanceId);let origin=a.originId;
+   for(const [offset,content] of [...a.content].entries()){
+    const id={sessionId:a.id.sessionId,counter:a.id.counter+offset};
+    target.rows.push({id,originId:origin,kind:'text',content,deleted:false});origin=id;
+   }
+  }
+  if(op.command==='splitText')get(a.textInstanceId).rows.push({id:a.id,originId:a.originId,kind:'split',content:null,deleted:false});
+  if(op.command==='deleteText')for(const [first,length] of a.idRanges)
+   for(let offset=0;offset<length;offset++)get(a.textInstanceId).pending.add(`${first.sessionId}:${first.counter+offset}`);
+ }
+ return [...instances].map(([instance,{rows,pending}])=>({instance,rows:rows.map(row=>({...row,
+  deleted:row.kind==='text'&&pending.has(`${row.id.sessionId}:${row.id.counter}`)})),pending:[...pending].sort()}));
+}
+function actualTables(doc){return [...doc.instances].map(([instance,value])=>({instance,
+ rows:[...value.rga.items.values()].map(row=>({id:row.id,originId:row.originId,kind:row.kind,content:row.content??null,deleted:row.deleted})),
+ pending:[...value.rga.deletedIds].sort()}));}
+let tableChecks=0,rowChecks=0,tombstoneChecks=0,fullTable;
 const events=[...ledger.values()];let closedSets=0,prefixes=0;
 for(let mask=0;mask<2**events.length;mask++) {
  const selected=events.filter((_,i)=>mask&(2**i)),keys=new Set(selected.map(e=>idKey(e.tx.id)));
@@ -83,11 +108,33 @@ for(let mask=0;mask<2**events.length;mask++) {
  for(let end=0;end<=sorted.length;end++) {
   const prefix=sorted.slice(0,end),past=new Set(prefix.map(tx=>idKey(tx.id)));
   assert(prefix.every(tx=>ledger.get(idKey(tx.id)).dependencies.every(dep=>past.has(dep))),'sorted prefix not dependency closed');
-  active={items:new Set(),calls:[]};new CrdtDocument(prefix);active=undefined;prefixes++;
+  active={items:new Set(),calls:[]};const document=new CrdtDocument(prefix);active=undefined;prefixes++;
+  const expected=decodedTables(prefix),actual=actualTables(document);
+  assert.deepEqual(actual,expected);tableChecks+=actual.length;
+  rowChecks+=actual.reduce((n,instance)=>n+instance.rows.length,0);
+  tombstoneChecks+=actual.reduce((n,instance)=>n+instance.rows.filter(row=>row.deleted).length,0);
+  if(prefix.length===events.length)fullTable={transactions:prefix,expected,actual};
  }
 }
 assert(checks>0);assert(dominanceChecks>0);assert(internalOriginChecks>0);assert(internalChildChecks>0);
 assert(nonGlobalMax,'must exercise overlapping atomic run clocks');
+assert(fullTable);assert(tombstoneChecks>0);
+const noOpDelete=fullTable.actual.map(instance=>({...instance,rows:instance.rows.map(row=>({...row,deleted:false}))}));
+assert.notDeepEqual(noOpDelete,fullTable.expected,'full-field check must reject no-op deletion');
+const wrongInstance=fullTable.actual.map((instance,i)=>({...instance,instance:i===0?'wrong-instance':instance.instance}));
+assert.notDeepEqual(wrongInstance,fullTable.expected,'full-field check must reject wrong instance ownership');
+// Fabricated future-target delete is outside honest causal closure. Its
+// tombstone affects text birth, but never changes a split marker's kind/flag.
+const pendingRaw=new RgaText(),pendingId={sessionId:'raw',counter:1},markerId={sessionId:'raw',counter:2};
+pendingRaw.delete([pendingId,markerId]);pendingRaw.insertRun(pendingId,START,'Q');pendingRaw.insertSplit(markerId,pendingId);
+const pendingActual=[...pendingRaw.items.values()].map(row=>({id:row.id,originId:row.originId,kind:row.kind,content:row.content??null,deleted:row.deleted}));
+assert.deepEqual(pendingActual,[{id:pendingId,originId:START,kind:'text',content:'Q',deleted:true},
+ {id:markerId,originId:pendingId,kind:'split',content:null,deleted:false}]);
+assert.notEqual(pendingActual[1].deleted,true);
+console.log(JSON.stringify({name:'fabricated-pending-before-birth-full-fields',pending:[pendingId,markerId],rows:pendingActual,
+ scope:'Direct raw primitive boundary, not a dependency-closed honestly issued version.'}));
+console.log(JSON.stringify({name:'honest-full-prefix-stored-field-comparison',tableChecks,rowChecks,tombstoneChecks,fullTable,
+ controls:{noOpDeleteRejected:true,wrongInstanceRejected:true},scope:'Expected full fields and pending sets decoded independently from literal atomic transactions; Map order is chronological, not traversal order.'}));
 const honestDominanceChecks=dominanceChecks;
 // Known-broken environment: the public API alone does not serialize sessions.
 const same1=new Replica('same','one',initial),same2=new Replica('same','two',initial);

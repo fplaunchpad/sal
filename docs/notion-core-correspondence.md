@@ -597,3 +597,54 @@ arbitrary selected-payload issuer. It is still partial: `none` combines no-op,
 invalid request and failed reconstruction. Successful issuance does not prove
 its next reconstruction succeeds. The joint replay invariant, source label
 validation and same-witness RA bridge remain open.
+
+
+## Exact actual tables and next-row readiness
+
+`NotionCoreTableView.rows` is a declarative storage view: chronological decoded
+births with every prefix deletion target applied. It is not a second document
+interpreter or a sequential specification. The append equation accounts for
+both later deletion of an old birth and earlier pending deletion of a new
+birth. Birth IDs, parent links and marker kinds are retained. Exact codec
+output order is retained in the typed pending list.
+
+`NotionCoreMachineTables.replay_tables` proves that every actual instance
+lookup after accepted replay has exactly these rows and the chronological
+pending-target list. It follows actual get/put operations, fresh checked
+integration, erasure and the complete bootstrap/split phase sequences.
+Creation and slice movement preserve stored rows. A reverse induction derives
+the previous storage view from the accepted prefix; no per-step result view is
+assumed. Global birth-ID uniqueness is its only additional freshness premise.
+Identical duplicate raw birth insertion is outside this theorem's domain;
+canonical immutable archives have unique keys and births.
+
+`NotionCoreArchiveOrder` discharges that premise for canonical prefixes. It
+also derives the permutation between chronological birth rows and the earlier
+archive-ordered prefix view, using actual archive key uniqueness. Neither
+permutation nor fresh IDs are supplied by a caller.
+
+`NotionCoreMachineTableGraph.canonical_tables` composes these results.
+`canonical_prefix_graph` establishes unique rows, increasing parent counters
+and known-parent closure for the actual machine tables. Consequently its
+actual length-fuel physical traversal has unique addresses. The next decoded
+transaction's references occur in the actual same-instance table, and
+`canonical_next_integrates` proves the checked row loop accepts its births.
+Neither theorem assumes acceptance of that next transaction. The existing
+positional network reaches this theorem through its derived payload-network
+reachability. Full transaction success still needs slice routing, valid bounds,
+fresh destination structure, detach/move and display alignment.
+
+The source reality oracle now checks all stored fields against independent
+literal decoding over the existing nine-event campaign: 293 instance tables,
+1,534 stored rows and 27 tombstoned rows across 238 prefixes of 40 causal ideals.
+The expected decoder does not call source range, RGA, traversal or selector
+helpers. Wrong-instance and no-op-deletion variants are rejected. A separate
+raw delete-before-birth fixture checks pending text deletion and undeleted
+markers. It is explicitly not an honest issuance witness.
+
+The source stores pending targets in a Set. The formal machine stores their
+chronological list, including duplicates. The exact list theorem concerns the
+formal machine; source correspondence is membership equality, not equality of
+order or multiplicity. The saved full-field oracle compares pending Sets.
+This increment does not prove the joint slice partition, source wire/label
+validation, complete reconstruction progress or the same-witness RA bridge.

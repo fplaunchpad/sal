@@ -30,9 +30,10 @@ source-selected preparation, global traversal/endpoint lemmas, and guarded
 physical-model history refinement. Typed payload archives now derive item
 freshness and same-instance provider provenance in sorted replay, and exact
 parent rows determine the ordered insertion traversal. The combined typed
-interpreter has checked concrete executions; canonical-prefix provenance derives
-its row-integration checks, and structural partition cells derive successful
-checked slice extraction. Actual positional requests now reconstruct the peer's
+interpreter now has exact deletion-aware table correspondence through accepted
+canonical replay. Issuance derives its actual graph guards, reference presence
+and next-row integration checks; structural partition cells derive checked
+slice extraction. Actual positional requests now reconstruct the peer's
 received, sorted archive and derive item and creator knowledge for typed
 issuance. Single-instance deletion includes the source range codec; the old
 underconstrained admission has a preserved counterexample. Joint replay
