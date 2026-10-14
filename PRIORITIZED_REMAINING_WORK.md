@@ -10,12 +10,17 @@ sole active bounded counter is the published Balegas matrix/max design.
 
 ## Notion catalogue integration and paper handoff
 
-- [ ] Integrate the checked research branch into `paper1`, preserving unrelated work.
+- [x] Integrate the checked research branch into `paper1`, preserving unrelated work.
 - [x] Register a distinct protocol-scoped Notion entry in the theorem ledger,
   catalogue and public site; retain the 18-package registry's exact contract.
-- [ ] Validate public claims, run repository/research gates, and push integration.
-- [ ] Finish the paper-writing handoff and switch to paper work. Defer extraction,
+- [x] Validate public claims, run repository/research gates, and push integration.
+- [x] Finish the paper-writing handoff and switch to paper work. Defer extraction,
   proof compression and editor extensions unless essential to a paper claim.
+
+Integrated on `paper1` at `b938dec`; public reference version 14 is live.
+Both integration gates and independent claim review passed. Paper writing is
+now the next phase; the contribution and exact evidence are in
+[the handoff](docs/notion-integration.md).
 
 ## Notion published-demo MRDT investigation (separate research branch)
 
@@ -165,7 +170,7 @@ results; adopting a repaired full-editor design requires a separate decision.
   must be explicitly selected and validated, never substituted silently.
 - [x] Independently review the research artifacts and pass the research and
   repository gates; provide a separate integration report for the paper session.
-- [ ] Coordinate integration of the separate research branch without promoting
+- [x] Coordinate integration of the separate research branch without promoting
   storage convergence or bounded tests to a verified Notion document claim.
 
 ## Paper1: specialize the framework to the submission formalism

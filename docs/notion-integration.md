@@ -145,5 +145,9 @@ Lean snapshot `986cc36`, three recorded bugs and external correspondence limits.
 Validation covered all 957 mathematical expressions, JavaScript syntax and the
 rendered entry in Chrome. The site's overview now distinguishes its protocol entry.
 
-Branch integration and push are the final administrative steps. The paper
-handoff above is ready; no additional proof-development campaign is needed.
+The reviewed research branch was fast-forwarded into `paper1` at `b938dec`
+and both branches were pushed. Hash checks confirmed all eleven pre-existing
+unrelated files were unchanged. The public Notion entry was also checked in
+Chrome after deployment. Integration is complete: the next phase is paper
+writing, using the claims and evidence above. No additional proof-development
+campaign is needed.
