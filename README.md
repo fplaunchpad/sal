@@ -22,23 +22,25 @@ Its direct sequential lifting theorem
 uses the same public-order witness as the paper, without extra replay-law
 assumptions at that lifting step.
 
-### Incremental Notion research branch
+### Notion core — structured implementation and executable refinement
 
-Branch `research/notion-incremental` investigates direct immutable origin,
-delete, creation-link and cut-owner facts for the typed Notion core. The final
+The integrated `paper1` implementation maintains immutable origin, deletion,
+creation-link and cut-owner facts for the typed Notion core.
 [`NotionCoreStructuralMRDT`](Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean)
 checks full query correspondence, the five VCs, actual execution transport and
 the independent RA specification under the original honest protocol. Queries
 traverse structural rows and cuts and fold creation links; they do not replay
-transactions. The existing catalogue entry below refers to the transaction-set
-reference, which supplies the preserved client protocol and specification.
+transactions. The transaction-set reference supplies the preserved client
+protocol and independent specification; the new implementation inherits its
+history witness through proved query correspondence. Its structural and native
+refinement proofs are additional datatype-specific support, included in the
+[paper measurement](experiments/paper-implementation/README.md).
 
 The [research record](docs/notion-incremental-research.md) explains the candidate
 and preserved frozen-endpoint counterexample. The [reproducible experiment](experiments/notion-incremental/README.md)
 records bounded oracle comparisons and update/query/merge timings, with
-memory proxies and validation-overhead limitations. The JavaScript adapter and
-Lean model are separate artifacts; no extraction or production equivalence is
-claimed.
+memory proxies and validation-overhead limitations. The earlier handwritten JavaScript adapter remains a separate comparison;
+the checked indexed core is compiled directly from Lean.
 
 The [executable refinement record](docs/notion-executable-refinement.md) connects
 a compiled Lean core to its concrete hash indexes and allocator sidecar.
@@ -54,8 +56,8 @@ explicit trusted boundaries.
 
 The [Notion core catalogue entry](docs/notion-catalogue.md) covers a typed
 adaptation of the published demo's create/insert/delete/split fragment.
-[`NotionCoreLedger`](Sal/MRDTs/Metatheory/NotionCoreLedger.lean) registers its
-protocol theorem in the build ledger, separately from the 18 uniform
+The source protocol and structural/native refinement ledgers register the
+checked theorem chain in the build, separately from the 18 uniform
 `PackagedMRDT` entries. Its explicit factory initialization, injective session
 assignment, and locally guarded issuance remain part of the theorem's scope.
 

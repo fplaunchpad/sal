@@ -1,5 +1,13 @@
 # Structured incremental Notion core
 
+Current integration: `paper1` includes this structural result and the subsequent
+[compiled executable refinement](notion-executable-refinement.md). The following
+measurements describe the earlier JavaScript adapter and structural proof
+checkpoint; they are not native-runtime timings or the final combined proof
+footprint. The current [paper measurement](../experiments/paper-implementation/README.md)
+includes the original bridge and both refinement layers.
+
+
 Research question: can stable identities, origin trees, interval ownership and
 the restricted core slice shape eliminate full transaction replay and make
 sequential correctness proofs modular?

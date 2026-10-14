@@ -46,7 +46,29 @@ for case in V.CASES:
 rows['fugue-max']['bridge']=[P+'FugueMaxNaturalCertificate.executions',P+'FugueMaxNaturalCertificate.executionsV']
 for ident,vc,bridge in [('balegas-bounded-counter','BalegasBoundedCounterVC.fiveVC','BalegasBoundedCounterEvent.certifiedV'),('enable-wins-flag','NeemFlagVC.certifiedFiveVCFor','EnableWinsFlagEvent.certifiedV'),('disable-wins-flag','NeemFlagVC.certifiedFiveVCFor','DisableWinsFlagEvent.certifiedV')]:
  d,g,s=impl[ident];rows[ident]={'implementation':[I+d,I+g],'specification':[P+s],'vc':[P+vc],'bridge':[P+bridge]}
-d,g,s=impl['notion-core']; rows['notion-core']={'implementation':[I+d,I+g],'specification':[I+s[1:]],'vc':[I+'NotionCoreMRDT.fiveVCs'],'bridge':['Sal.MRDTs.Research.NotionCoreLedger.entry']}
+# One Notion case retains its reference protocol/local-effect evidence and
+# charges the structural renderer and executable refinement as additional work.
+# The deployed typed driver/codec definitions are counted, without claiming a
+# universal codec theorem. The original independent history spec is unchanged.
+d,g,s=impl['notion-core']; rows['notion-core']={
+ 'implementation':[I+d,I+g,I+'NotionCoreStructuralMRDT.D']+
+   [I+'NotionCoreRuntimeEngine.'+n for n in ('empty','receive','receiveMany','merge','gap')]+
+   [I+'NotionCoreRuntimeAdapter.observeState']+
+   [I+'NotionCoreRuntimeMain.'+n for n in ('decodeRequest','execute','encodeReply')]+
+   [I+'NotionCoreRuntimeWire.encodeTransaction'],
+ 'specification':[I+s[1:]],
+ 'vc':[I+'NotionCoreMRDT.fiveVCs',I+'NotionCoreStructuralMRDT.fiveVCs'],
+ 'bridge':['Sal.MRDTs.Research.NotionCoreLedger.entry',
+   'Sal.MRDTs.Research.NotionCoreStructuralRuntimeLedger.entry']+
+   [I+'NotionCoreStructuralMRDT.'+n for n in
+     ('renderer','versions_witness','specification_ra','operational_reach','registered_query')]+
+   [I+'NotionCoreRuntimeEngine.'+n for n in
+     ('empty_refines','gap_refines','receive_refines','receiveMany_refines','merge_refines')]+
+   [I+'NotionCoreRuntimeHonestProgress.'+n for n in
+     ('receive_honest','receiveMany_honest','merge_honest')]+
+   [I+'NotionCoreRuntimeTheorem.'+n for n in
+     ('closed_version_query','closed_version_reference','registered_query')]+
+   [I+'NotionCoreRuntimeEndToEnd.load_closed_version']}
 rows['set-wins-map']={'implementation':[I+'SetWinsMap.D',I+'SetWinsMap.issuance'],'specification':[P+'SetWinsMap.spec'],'vc':[P+'SetWinsMap.fiveVC'],'bridge':[P+'SetWinsMap.executions',P+'SetWinsMap.executionsV']}
 rows['remove-wins-set']={'implementation':[I+'RemoveWinsSet.D',P+'RemoveWinsSet.generation'],'specification':[P+'RemoveWinsSet.spec'],'vc':[P+'RemoveWinsSet.fiveVC'],'bridge':[P+'RemoveWinsSet.executions',P+'RemoveWinsSet.executionsV']}
 rows['optional-register']={'implementation':[I+'OptionalRegister.D',I+'OptionalRegister.generation'],'specification':[P+'OptionalRegister.spec'],'vc':[P+'OptionalRegister.fiveVC'],'bridge':[P+'OptionalRegister.executions',P+'OptionalRegister.executionsV',P+'OptionalRegister.sourceWellFormed']}
@@ -62,7 +84,12 @@ else:
  r=subprocess.run(['lake','env','lean',str(OUT/'Audit.lean')],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
  (OUT/'kernel.log').write_text(r.stdout)
  if r.returncode:raise SystemExit(r.stdout[-6000:])
-vc_roots=sorted({n for case in V.CASES for n in case['vc_roots']})
+# The structural carrier discharges EmptyPastKernels with TransferSimple.assemble
+# directly, rather than invoking CommonVerification.verify. Charge its complete
+# VC dependency closure; do not invent verifier-application evidence for it.
+direct_vc_roots={I+'NotionCoreStructuralMRDT.fiveVCs'}
+vc_roots=sorted({n for case in V.CASES for n in case['vc_roots']} |
+                (set(rows['notion-core']['vc'])-direct_vc_roots))
 (OUT/'VCEvidence.lean').write_text('import Sal.MRDTs.Metatheory.RefactorLedger\n'+V.LEAN_AUDIT+'\n'+'\n'.join('audit_production_vc_evidence '+n for n in vc_roots)+'\n')
 if not args.reuse_audit or not (OUT/'vc-evidence.log').exists():
  evidence=subprocess.run(['lake','env','lean',str(OUT/'VCEvidence.lean')],cwd=ROOT,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -81,6 +108,8 @@ concrete_stems={'SimpleConcretePorts','IssuedConcretePorts','SimpleEventPorts','
 generic_stems={'ProjectedCriterion','SequentialAbstraction','CertifiedPolicy','CertifiedHistoryBridge','Common','History','EventHistory','EventSequentialSimulation','SequentialSimulation','CertifiedHistoryCommutation','CertifiedHistory','CertifiedInvariant','CertifiedIssuance','GuardedHistory','Specification','Policy','EventConflict','EventSpec','Execution','EventExecution','RawExecution','ConcreteMRDT','Replay','Certificate','Criterion','Invariant','Issuance','HistorySpec','SpecificationVisibility','EventBridge','HistoryInputs','CommutationBridge','ProjectedSimulation','ConcreteFormalism','ConcreteMetadata','ConcreteJoin','ConcreteReplay','ConcreteHistoryBridge','ConcreteVCExecution','RestrictedReplay','GuardedReplay','GuardedOrder','InvariantOrder','InvariantReplay','CertifiedReplay','CertifiedPrefixScope','CertifiedScopeRestriction','CertifiedClosedExecution','SplitPolicy','SplitCertificates','SplitSoundness','GuardedEqualityVC','GuardedConvergence','GuardedProjectionHistory','Soundness','RALinearizability','ExecutionTrace','ConcreteHistoryBridge','ConcreteCommutingVCReplay','GuardedHistory'}
 def shared(n,d):
  f=d['file'];stem=Path(f).stem
+ # These ledgers package one concrete protocol/refinement, not reusable laws.
+ if stem in {'NotionCoreLedger','NotionCoreStructuralRuntimeLedger'}:return False
  if f.startswith(('Sal/MRDTs/Framework/','Sal/MRDTs/Metatheory/','Sal/Interfaces/','Sal/Tactic/')):return True
  if '/Automation/' in f:return not stem.startswith(('Automated','Transfer')) and stem not in {'SimpleInputs','MVRInput','ORSetInputs','FugueCodePrimitives','EmbeddedOrderedPrimitives','SidedOrderedPrimitives'}
  if stem in concrete_stems:return False
@@ -117,6 +146,8 @@ for role in ['implementation','specification','vc','bridge']:
  combined['roots'][role]=sum((report[c]['roots'][role] for c in gsetids),[]);combined['loc'][role]=len(exclusive);combined['exclusive_code_lines'][role]=sorted(exclusive)
 paper={k:v for k,v in report.items() if k not in gsetids};paper={'grow-only-set-three-carriers':combined,**paper}
 result={'method':'Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles priority implementation definitions then specification definitions then actual CommonVerification.verify application/evidence closure (root declaration packaging included) then remaining bridge/execution closure; shared libraries excluded. Counts are dependency-footprint LOC, not author handwritten proof bodies or person-hours. Cross-row overlap not subtracted.','git_head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'configuration_rows':report,'paper_rows':paper,'deduplicated_concrete_total':len(union),'deduplicated_shared_dependency_total':len(shared_union),'shared_code_lines':sorted(shared_union),'source_sha256':{f:hashlib.sha256(s.encode()).hexdigest() for f,s in source.items()},'source_locations':decl}
+result['direct_vc_dependency_roots']=sorted(direct_vc_roots)
+result['method'] += ' Direct carrier VC assemblies without CommonVerification.verify are explicitly listed and charged their complete kernel dependency closures.'
 (OUT/'measurement.json').write_text(json.dumps(result,indent=2)+'\n')
 md=['| Configuration | Definition | Spec | VC support | Bridge + execution support |','|---|---:|---:|---:|---:|']
 for ident,row in paper.items():md.append('| '+ident+' | '+' | '.join(str(row['loc'][k]) for k in ['implementation','specification','vc','bridge'])+' |')

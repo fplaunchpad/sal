@@ -1,4 +1,5 @@
 import Sal.MRDTs.Metatheory.NotionCoreLedger
+import Sal.MRDTs.Metatheory.NotionCoreStructuralRuntimeLedger
 import Sal.MRDTs.Paper1.SetWinsMapAudit
 import Sal.MRDTs.Paper1.RemoveWinsSetAudit
 import Sal.MRDTs.Paper1.OptionalRegisterAudit
@@ -357,3 +358,4 @@ end Sal.MRDTs
 
 #check Sal.MRDTs.Research.NotionCoreLedger.registry
 #check Sal.MRDTs.Research.NotionCoreLedger.entry
+#check Sal.MRDTs.Research.NotionCoreStructuralRuntimeLedger.entry

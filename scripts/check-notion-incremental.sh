@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
-# Isolated research gate. Keep the historical cache/structured controls and add
-# the exact compiled indexed core; no production catalogue/ledger is changed.
+# Integrated Notion gate. Keep the historical cache/structured controls and
+# check the exact compiled indexed core alongside the production ledger.
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/notion-incremental-check.XXXXXX")
 printf 'Incremental Notion check logs: %s\n' "$check_dir"
 

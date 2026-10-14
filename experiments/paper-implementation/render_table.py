@@ -63,6 +63,7 @@ def compress(points):
   out[f]=ranges
  return out
 compact={k:full[k] for k in ['method','git_head','deduplicated_concrete_total','deduplicated_shared_dependency_total','source_sha256']}
+compact['direct_vc_dependency_roots']=full.get('direct_vc_dependency_roots',[])
 compact['configuration_count']=len(full.get('configuration_rows',full.get('rows_23',{})))
 compact['paper_row_count']=len(data)
 compact['paper_rows']={k:{'roots':v['roots'],'loc':v['loc'],'source_ranges':{role:compress(points) for role,points in v['exclusive_code_lines'].items()}} for k,v in data.items()}

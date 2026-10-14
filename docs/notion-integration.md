@@ -1,5 +1,22 @@
 # Integration handoff for the paper session
 
+## Current structured and executable implementation
+
+The research commits `1b8ffa3` and `e79fd76` are integrated into `paper1` by
+`376bf8d`. The active implementation maintains structural facts and explicit
+indexes, with direct receipt and merge. Its renderer and executable query are
+proved equal to the reference query on the unchanged honest protocol. This
+reuses the existing independent document specification and history witness,
+while adding structural transport and executable refinement proof support.
+The current [catalogue](notion-catalogue.md) lists the exact endpoints; the
+[executable research record](notion-executable-refinement.md) distinguishes the
+checked algorithms, compiler/codec boundary and recorded performance limits.
+The following original handoff documents the reference proof reused by this
+implementation. Publication and final validation for this integration are
+recorded below when complete.
+
+## Reference protocol theorem
+
 The typed create/insert/delete/split core now has a Sal same-witness RA theorem
 for an explicit honest factory/client protocol. This is a document result over
 the actual typed interpreter and renderer, beyond the earlier transaction-set
@@ -151,3 +168,25 @@ unrelated files were unchanged. The public Notion entry was also checked in
 Chrome after deployment. Integration is complete: the next phase is paper
 writing, using the claims and evidence above. No additional proof-development
 campaign is needed.
+
+
+## Structured/native integration validation (14 October 2026)
+
+The combined `paper1` gate passed 3,852 Lean build jobs, the existing eighteen
+contract audits, 187 runtime tests and 569 benchmark-record validations.
+`scripts/check-notion-incremental.sh` built the native executable (6,871 jobs),
+audited 107 maintained endpoints with standard logical axioms only, and passed
+fresh structured/native oracle smokes. The native smoke covered 20 cases and
+1,011 query comparisons, plus typed-wire fixtures, atomic rollback and fork/merge
+clock-gap controls. These are fresh regression checks; the published 200-case,
+10,008-comparison native performance corpus is retained with its original hashes.
+
+The new `NotionCoreStructuralRuntimeLedger.entry` retains exact theorem types
+for structural RA/execution, the original protocol and local effects, native
+operation/refinement and honest merge progress, registered-query agreement and
+constructive loading from empty. It does not claim an unrestricted native
+`Configuration` RA certificate or a universal JSON codec translation theorem.
+The single Notion paper row includes this refinement chain rather than counting
+it as another abstract datatype. Concrete certificate wrappers are included in
+the datatype footprint; the earlier census mistakenly treated them as shared
+metatheory because of their directory.

@@ -21,6 +21,13 @@ sole active bounded counter is the published Balegas matrix/max design.
 - [x] Add completed cases to the catalogue, measured paper table, and public
   datatype reference Site. JSON is outside this campaign.
 
+## Structured Notion integration and paper update
+
+- [x] Merge the checked structural and executable research commits into `paper1`.
+- [x] Register and audit the new theorem endpoints in the production ledger.
+- [x] Remeasure the complete Notion implementation and bridge/refinement footprint.
+- [ ] Update the paper, public Site and catalogue; run integration gates and push.
+
 ## Executable Notion refinement (completed research goal)
 
 - [x] Connect the actual executable core to an explicit semantics/compiler

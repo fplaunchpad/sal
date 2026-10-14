@@ -1,20 +1,38 @@
 # Notion typed core: protocol-scoped catalogue entry
 
-The instance is `NotionCoreMRDT.D`: a finite set of immutable typed transactions,
-whole-transaction insertion, union merge, and source-key-sorted actual typed
-replay/render query (`Option View`). Its theorem is scoped to
-`NotionCoreProtocol.Reach`, with injective session assignment, explicit factory
-initialization and guarded ordinary client issuance. It is a distinguished
-protocol-scoped research entry, not an additional unrestricted contract in the
-eighteen-entry `Production.registry`.
+The current implementation is `NotionCoreStructuralMRDT.D`: a finite set of
+immutable origin rows, deletion targets, creation links and split-owner facts.
+Updates decode one transaction into facts; merge unions facts. Its query traverses
+those structures and folds creation links without replaying transactions.
+`NotionCoreMRDT.D` remains the transaction-set reference used in the proof.
+The original `NotionCoreProtocol.Reach`, injective session assignment, explicit
+factory initialization and guarded client issuance remain the correctness scope.
+This protocol-scoped entry is separate from the eighteen uniform contracts in
+`Production.registry`.
+
+The compiled indexed implementation maintains concrete row maps and child indexes,
+plus transaction/archive and allocator metadata. Refinement connects its actual
+receipt, direct merge and query functions to the structural model. The archive
+still supports the original issuance protocol; semantic facts alone do not
+recover allocation history.
 
 | Claim | Checked endpoint |
 | --- | --- |
-| Carrier merge proof | `NotionCoreMRDT.fiveVCs`, transported from finite-store VCs through `QueryLift` |
-| Every registered version | `NotionCoreProtocol.versions_witness`: one event witness for enumeration, required order, specification visibility and actual query admission |
-| Current-head RA criterion | `NotionCoreProtocol.specification_ra` |
-| Actual client/MRDT transport | `NotionCoreMRDTClient.issued_update`, with valid insert/split/bounded-delete visible-effect wrappers |
-| Merge-base scope | Actual ordinary and canonical recursive virtual-base Sal merge steps |
+| Structural carrier five VCs | `NotionCoreStructuralMRDT.fiveVCs` |
+| Every registered version and current-head RA | `NotionCoreStructuralMRDT.versions_witness`, `specification_ra` |
+| Actual target operations, including recursive bases | `NotionCoreStructuralMRDT.operational_reach` |
+| Structural/reference query agreement | `NotionCoreStructuralMRDT.registered_query` |
+| Indexed receipt and merge refinement | `NotionCoreRuntimeRefinement.receive_refines`, `merge_refines` |
+| Acceptance on the honest domain | `NotionCoreRuntimeHonestProgress.receiveMany_honest`, `merge_honest` |
+| Executable query for registered versions | `NotionCoreRuntimeTheorem.registered_query` |
+| Constructive initialization and arbitrary-order receipt | `NotionCoreRuntimeEndToEnd.load_closed_version` |
+| Original local positional effects | `NotionCoreMRDTClient.insert_effect`, `split_effect`, `erase_effect` |
+
+The sequential machine is unchanged. Structural history transport reuses the same
+reference witness after proving query agreement; it does not assume that
+agreement. Native representation and query proofs provide a further refinement.
+All these datatype-specific dependencies belong in the combined bridge/refinement
+footprint, alongside the original sequential-history argument.
 
 The independent document specification retains ordered semantic slots, hidden
 anchors and split boundaries. It contains no transaction log, replay sort,
@@ -49,3 +67,10 @@ See [the paper handoff](notion-integration.md), [current research claims](notion
 [the proof boundary](notion-proof.md), and [independent reviews](notion-core-review.md).
 Publication and integration status are recorded separately; this entry alone
 is not evidence that deployment or branch integration has completed.
+
+The indexed algorithms are compiled from their checked Lean definitions. Native
+execution additionally trusts the Lean/C compiler and runtime, JSON parsing and
+the tested demo-to-typed codec. The recorded native oracle corpus passed 200
+cases and 10,008 query comparisons. Native queries remain slower on the measured
+mixed workload; no universal speedup or memory-saving claim is made. See
+[the executable refinement](notion-executable-refinement.md).
