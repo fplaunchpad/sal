@@ -1,12 +1,12 @@
 # Current implementation-table measurement
 
-Checked code snapshot: `4069f75ea054b9820e428018db15b4dc4372a3af`, including the three new Neem ports. Measurement began at `c9e945d62cb04e26515e35a7792ff91d0b7addf0`; `current-counts.json` retains that starting revision and pins the measured files with SHA-256 hashes. All recorded hashes match both the working tree and the checked code commit.
+Checked code snapshot: `19fa35173a2639c976a9eaa90221ab5be9bb972c`, including the structured and executable Notion integration. Measurement began at `376bf8d`; `current-counts.json` retains that starting revision and pins 430 files with SHA-256 hashes verified against the committed source.
 
 Run from the Sal checkout with its checked current Lean build:
 
     python3 experiments/paper-implementation/measure.py --repo . --out /tmp/sal-paper-instances
 
-The script imports RefactorLedger and applies the existing kernel declaration-dependency audit to 181 explicit implementation, issuance, independent-specification, VC, and end-to-end correctness roots. The 19 existing automation cases use actual CommonVerification.verify applications and input dependencies, rather than entire condition bundles. Set-wins map uses the generic PolicyExpansion.assemble derivation; the remaining six cases use named raw five-VC declarations. All audited roots have only the standard Lean axioms propext, Classical.choice, Quot.sound.
+The script imports RefactorLedger and applies the existing kernel declaration-dependency audit to 211 explicit implementation, issuance, independent-specification, VC, and end-to-end correctness roots. The 19 existing automation cases use actual CommonVerification.verify applications and input dependencies, rather than entire condition bundles. Set-wins map uses the generic PolicyExpansion.assemble derivation; the remaining six cases use named raw five-VC declarations. All audited roots have only the standard Lean axioms propext, Classical.choice, Quot.sound.
 
 Counts are nonblank, noncomment physical lines in unions of complete declaration source ranges, including statements, proof bodies, proof-bearing definitions, finite descriptions, and packaging annotations. They are current dependency-footprint measurements, not handwritten proof-body counts, generated proof sizes, author hours, or historical automation effort. Generated theorem/definition range overlap is assigned to proof/support roles.
 
@@ -14,11 +14,11 @@ The roles are disjoint within each row in this priority: implementation/issuer d
 
 Framework/metatheory/interfaces/general history and policy modules and generic automation are shared. Concrete specialisations (including Automated*, Transfer*, finite input descriptions and the sequence kernels under Instances) are charged to the rows using them. The script contains the explicit classification. Dependencies shared between datatype rows, especially the grow-only store, embedded sequence kernels, Core/RichCore, and the flag dual, appear in multiple rows. Do not add row totals as repository LOC. measurement.json separately gives the deduplicated concrete and shared dependency unions and all source-line membership sets.
 
-The three grow-only set carriers (AddStore, FinsetStore, pointwise-Boolean FlatGrowOnly) are combined by physical-line union into one paper row. There are 26 selected checked configurations and 24 resulting paper rows. This is not a count of distinct abstract datatypes. The historical unanchored Queue is excluded; anchored Queue is included. Ordinary OR-set, published Balegas, both corrected Neem flags, Neem remove-wins set, set-wins map, optional register, and the typed Notion core protocol are included. Notion uses the distinct CheckedProtocolEntry, not VerifiedMRDT: its theorem covers the typed protocol and factory/ordinary issuance, not production Notion or whole-program JavaScript extraction. Production.registry separately has 18 exact VerifiedMRDT packages and contains the historical Queue; it is not the basis of this table's N. Historical 23-case automation JSON includes retired bounded-counter/counter duplicates and is not used.
+The three grow-only set carriers (AddStore, FinsetStore, pointwise-Boolean FlatGrowOnly) are combined by physical-line union into one paper row. There are 26 selected checked configurations and 24 resulting paper rows. This is not a count of distinct abstract datatypes. The historical unanchored Queue is excluded; anchored Queue is included. Ordinary OR-set, published Balegas, both corrected Neem flags, Neem remove-wins set, set-wins map, optional register, and the typed Notion core protocol are included. Notion is one combined structural/native case: its distinguished typed ledgers retain the original protocol, structural RA and executable refinement. It is not a VerifiedMRDT package, production Notion proof or whole-program JavaScript extraction. Production.registry separately has 18 exact VerifiedMRDT packages and contains the historical Queue; it is not the basis of this table's N. Historical 23-case automation JSON includes retired bounded-counter/counter duplicates and is not used.
 
 I denotes a nontrivial datatype-specific local issuance guard. E denotes an execution-scoped sequential/history bridge using reachable-version evidence to select/admit an explaining history; it does not mean an extra invariant supplied by the caller. Every listed case provides ordinary and recursive-virtual execution correctness. Nontrivial rc here denotes a nonempty application OperationPolicy.before, not specification conflict or invariant-scoped event ordering. Seven rows have nontrivial rc: the two OR-sets, two flags, remove-wins set, set-wins map, and optional register. An empty application policy does not make sequence-event order trivial.
 
-Evidence for E=no: SimpleEventPorts.*.simulation, ORSet.EventSpec.foldHistorySound, EfficientORSet.EventSpec.foldHistorySound, NeemFlagEvent.historySound, RemoveWinsSet.historySound, and SetWinsMap.historySound use universal fold/simulation bridges. Evidence for E=yes: LWW.GuardedPort.history; RGA.ConcretePort.history; GuardedPorts.Tree/Sheet.history; CertifiedMVRHistory.replay_history; CertifiedRGAInvariantHistory.canonical_valid_history; CertifiedSidedInvariantHistory.canonical_valid_history; CertifiedRGACoreCertificate.history; CertifiedRGARichCertificate.history; AnchoredQueue.History.schedule_publicWitness; FugueMaxNaturalCertificate.version_witness; BalegasBoundedCounterEvent.certifiedV; NotionCoreProtocol.versions_witness; OptionalRegister.history.
+Evidence for E=no: SimpleEventPorts.*.simulation, ORSet.EventSpec.foldHistorySound, EfficientORSet.EventSpec.foldHistorySound, NeemFlagEvent.historySound, RemoveWinsSet.historySound, and SetWinsMap.historySound use universal fold/simulation bridges. Evidence for E=yes: LWW.GuardedPort.history; RGA.ConcretePort.history; GuardedPorts.Tree/Sheet.history; CertifiedMVRHistory.replay_history; CertifiedRGAInvariantHistory.canonical_valid_history; CertifiedSidedInvariantHistory.canonical_valid_history; CertifiedRGACoreCertificate.history; CertifiedRGARichCertificate.history; AnchoredQueue.History.schedule_publicWitness; FugueMaxNaturalCertificate.version_witness; BalegasBoundedCounterEvent.certifiedV; NotionCoreStructuralMRDT.versions_witness (reusing NotionCoreProtocol.versions_witness through proved query agreement); OptionalRegister.history.
 
 The three new Neem sources expose no query. Sal selects ordinary membership for remove-wins set, accumulating multimap lookup for set-wins map, and the greatest-timestamp active payload for optional register. Set retains older values at the same key, so the map specification accumulates values. Remove-wins set reserves timestamp zero for its initial removal tags; optional register requires positive timestamps to preserve the source's inactive/zero-payload refinement. Both use explicit positive-time issuance. OptionalRegister.sourceWellFormed derives the exact source refinement for actual stored versions, including recursive executions. The new measured columns (Def., Spec, VC support, Bridge/execution support) are respectively 28/18/434/168, 25/12/19/136, and 61/9/717/880.
 
@@ -31,3 +31,35 @@ python3 experiments/paper-implementation/measure_metatheory.py --repo . --out /t
 ```
 
 See [the manuscript evidence note](../../docs/paper-implementation-evidence.md) for scope and source attribution. These are current footprint measurements, separate from historical author-effort reductions in vc-automation.
+
+## Structured and executable Notion accounting
+
+The independent retained-slot specification and original history witness are
+reused. Structural renderer/transport and indexed-runtime refinement proofs are
+additional support: they prove the new implementation returns the same answer
+on the unchanged honest protocol. The Notion row counts both the reference and
+new implementation dependencies, including the executable typed wire/request
+boundary and the concrete certificate wrappers. It excludes the benchmark
+harness, IO loop/timers and optional unproved tree-display optimization.
+The compiled core has operation and query refinement theorems; the RA endpoint
+belongs to the structural MRDT. Compiler/runtime and JSON/source conversion
+remain explicit execution boundaries.
+
+Both Notion ledger modules are now classified as concrete datatype support.
+Previously the directory-based shared-metatheory rule omitted the original
+concrete wrapper. Changes to this row therefore include that correction as
+well as the new implementation and refinement proofs. Source line roles remain
+disjoint: a larger definition footprint can move helper definitions previously
+counted under bridge support into the MRDT column.
+
+Current Notion columns are **729 / 112 / 73 / 18,082** (MRDT / Spec / VCs /
+Bridge). The previous 316 / 112 / 153 / 15,288 row is not a like-for-like
+proof-reduction baseline: 103 old VC lines now belong to Bridge, 56 old Bridge
+definition lines now belong to MRDT, and the structural VCs add 23 lines. No
+previously counted concrete lines were dropped. The combined concrete union
+adds 3,127 lines, including the newly charged 79-line original ledger wrapper
+and 64-line new wrapper. The unchanged independent specification still costs
+112 lines. The original finite-store VC route is measured from actual verifier
+application evidence; the structural carrier directly uses `TransferSimple.assemble`,
+so its complete VC dependency closure is charged and recorded in
+`direct_vc_dependency_roots`.

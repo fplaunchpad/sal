@@ -190,3 +190,12 @@ The single Notion paper row includes this refinement chain rather than counting
 it as another abstract datatype. Concrete certificate wrappers are included in
 the datatype footprint; the earlier census mistakenly treated them as shared
 metatheory because of their directory.
+
+
+Publication completed: the integrated code is pinned at `19fa351`; the public
+Site version 17 presents structural and executable definitions with 1,077
+validated mathematical expressions across the catalogue. Overleaf `f5aad25`
+updates the Notion narrative and measured row while preserving the author's
+latest related-work edits. The combined PDF compiles, but its body now extends
+onto page 25 before references; the 23-page budget requires a separate edit.
+The checked-in preview and measurement bundle record this state.

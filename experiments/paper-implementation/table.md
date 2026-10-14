@@ -20,7 +20,7 @@
 | disable-wins-flag | 35 | 11 | 532 | 582 | – | – | ✓ |
 | tree-move | 56 | 15 | 65 | 94 | ✓ | ✓ | – |
 | aegis-sheet | 336 | 140 | 53 | 2173 | ✓ | ✓ | – |
-| notion-core | 316 | 112 | 153 | 15288 | ✓ | ✓ | – |
+| notion-core | 729 | 112 | 73 | 18082 | ✓ | ✓ | – |
 | remove-wins-set | 28 | 18 | 434 | 168 | ✓ | – | ✓ |
 | set-wins-map | 25 | 12 | 19 | 136 | – | – | ✓ |
 | optional-register | 61 | 9 | 717 | 880 | ✓ | ✓ | ✓ |

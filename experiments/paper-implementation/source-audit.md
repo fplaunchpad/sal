@@ -97,3 +97,24 @@ There are stale lower-priority sentences: `docs/notion-bugs.md` still says the c
 - **Anchored FIFO queue:** Sal's compact live-list construction uses the embedded-chain kernel, captures observed tail coordinates for enqueue and observed head identity for dequeue. It stores no removed birth records. This is an additional **Sal variant**, distinct from the Peepul canonical-survivor-set queue; cite RGA/Peepul as context, not as literal authorship of this algorithm.
 
 Draft Notion paragraph audit: replace `NotionCRDT` with proposed `NotionCRDTBlog,NotionCRDTDemo`; describe retained **character and boundary identities**. Prefer “source-audited and tested against pinned JavaScript; no extraction theorem” to a generic “correspondence is tested” statement. A “largest case study” label needs the paper's actual size metric. The draft correctly distinguishes block-merge editing from version merges and correctly limits the positive theorem to the typed core.
+
+
+## Integrated structured and native Notion follow-up
+
+The current single Notion row includes `NotionCoreStructuralMRDT` and the compiled
+`NotionCoreRuntime*` algorithms, alongside their reference dependencies. It uses
+the unchanged independent retained-slot history through the checked structural
+renderer. Native operation/query refinement, honest receipt/merge progress and
+constructive closed-version loading are additional proof support. The new typed
+ledger is `NotionCoreStructuralRuntimeLedger`; neither it nor the original
+concrete Notion ledger is classified as shared metatheory.
+
+Fresh validation passed 3,852 production Lean jobs, 187 runtime tests and 569
+benchmark records; the native gate built 6,871 jobs, audited 107 endpoints and
+passed 20 cases / 1,011 native query comparisons plus wire/rollback/clock controls.
+The earlier 200-case / 10,008-comparison native corpus remains recorded research
+evidence, not a fresh performance rerun. Its measurements do not establish a
+native query speedup, memory improvement, JavaScript extraction or production
+Notion correspondence. The updated measurement audits 211 roots and records
+430 source hashes; only the Notion row changes. See the current measurement
+README for disjoint column attribution and the original wrapper correction.

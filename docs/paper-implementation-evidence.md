@@ -1,6 +1,6 @@
 # Implementation section: scope and evidence
 
-Manuscript snapshot: Overleaf `5e51f35`; checked Sal `paper1` code snapshot `4069f75ea054b9820e428018db15b4dc4372a3af` (14 October 2026), including the three new Neem ports. The measurement JSON pins the sources by SHA-256 and retains `c9e945d` as the revision at which measurement began.
+Manuscript snapshot: Overleaf `f5aad25`; checked Sal code snapshot `19fa35173a2639c976a9eaa90221ab5be9bb972c` (14 October 2026), including the new Neem ports and structured/executable Notion. The current measurement pins 430 source files and retains `376bf8d` as its starting revision.
 This is evidence for the manuscript, not a development task list.
 
 ## Section plan
@@ -101,11 +101,11 @@ venue's appendix/page-budget rules before including any appendix in the submissi
 
 [Reproducible measurement bundle](../experiments/paper-implementation/README.md), [table](../experiments/paper-implementation/table.md), [generic theorem audit](../experiments/paper-implementation/metatheory-audit.md), and [datatype citation/source audit](../experiments/paper-implementation/source-audit.md).
 
-Validation checked all 400 recorded source hashes, all 24 per-row column partitions, and each reported line total. The generic theorem census is 4,020 lines, with 1,688 shared automation theorem lines. The instance audit resolved 181 distinct roots and checked their standard-axiom dependencies. The table has seven nontrivial application-rc rows. The three Notion failure traces and positive formatting control were freshly rerun.
+Validation checked all 430 recorded source hashes, all 24 per-row column partitions, and each reported line total. The generic theorem census is 4,020 lines, with 1,688 shared automation theorem lines. The instance audit resolved 211 distinct roots and checked their standard-axiom dependencies. The table has seven nontrivial application-rc rows. The three Notion failure traces and positive formatting control were freshly rerun.
 
-The source hashes match both the working tree and code commit `4069f75`.
-The public datatype reference was deployed as Site version 16 with all 24 entries.
-The final integration gate passed 3,821 Lean jobs, 187 JavaScript runtime tests,
+The source hashes match both the working tree and code commit `19fa351`.
+The public datatype reference was deployed as Site version 17 with all 24 entries.
+The final integration gate passed 3,852 Lean jobs, 187 JavaScript runtime tests,
 and 569 benchmark records.
 
 The new rows' Def./Spec/VC-support/bridge-and-execution footprints are
@@ -124,12 +124,33 @@ table. No other manuscript section was edited. The pre-existing local
 `main.pdf` was preserved.
 
 [Compiled review PDF](paper-implementation-preview.pdf): the current draft has
-24 pages total; the implementation table is on page 22 and references begin
-on page 23. The manuscript therefore reaches 22 pages before references.
-The preview PDF matches the compiled manuscript at Overleaf commit `5e51f35`.
+27 pages total; the implementation table is on page 22 and references begin
+on page 25, after the end of the body. The body therefore extends onto page 25
+and exceeds the stated 23-page budget. This includes the author's newly supplied
+Related Work and Conclusion; a separate empty Conclusion input also remains.
+The preview matches Overleaf commit `f5aad25`. The integration did not trim
+unrelated manuscript sections.
 
 Tectonic compilation succeeds; new citations and cross-references resolve.
 The table on page 22 was rendered and visually checked. The existing overfull box in
 `proof_strategy.tex` remains outside this edit; the implementation section and table have
 no overfull boxes. The Lean ports and their audits belong to code commit
-`4069f75`; this evidence update changes only documentation.
+`4069f75`; the subsequent structural/native integration is recorded below.
+
+
+## Structured Notion integration
+
+The Notion row now includes the structural MRDT, compiled indexed algorithm,
+original independent history proof and both refinement layers. Its current
+columns are 729 definition / 112 specification / 73 VC-support / 18,082
+bridge-and-execution lines. This includes concrete certificate wrappers formerly
+misclassified as shared. See the measurement README for exact role movements;
+the smaller VC column is not a proof reduction. The 211-root audit preserves
+all prior datatype cases, with only the Notion row changing.
+
+The structural target has actual operational reach and RA theorems. The compiled
+runtime has receipt/merge representation preservation, honest-domain progress,
+registered-query agreement and constructive loading of a closed honest version.
+It does not have a separate unrestricted native Configuration RA package.
+The unchanged specification is reused through proved equality of observations;
+new datatype-specific refinement dependencies are counted rather than hidden.
