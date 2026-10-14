@@ -309,7 +309,24 @@ and the confirmed demo bug count remains three.
 Review exposed a specific reason the typed allocation network does not yet
 supply whole-interpreter progress: START has no item-reference requirement, so
 it permits an unseeded insertion that creates a table without a block title.
-A following item-referencing split lacks a source slice. This is an inspected
-countermodel to the intermediate admission model's sufficiency, not a trace
-from an honest demo client. It sharpens the creator-provenance obligation;
-no fourth demo bug or kernel Reach counterexample is claimed.
+A following item-referencing split lacks a source slice. This countermodel now has kernel-checked old-admission Reach witnesses and
+failed interpreter replay; it is not a trace from an honest demo client. It sharpens the creator-provenance obligation;
+no fourth demo bug is claimed.
+
+
+## Source preparation and creator increment
+
+The falsified claim was that item-provider reachability suffices for source
+replay progress. A two-transaction kernel counterexample preserves the failure.
+Creator-aware admission now derives metadata providers, and actual interpreter
+provenance connects created forest blocks and touched text instances to received
+creator transactions. Actual create/insert/split preparation discharges these
+metadata guards from the reconstructed document. Whole replay success and
+selected item providers are separate remaining claims.
+
+The source comparison also rules out an excessive repair: an edit's replay
+origin owner need not equal the block selected at issuance. Honest concurrent
+splits of `abc` exhibit the difference and render `a|c|b`. Preparation must
+validate the local selection, while replay must retain global interval routing.
+A source guard counterexample and an underconstrained model counterexample are
+both research evidence; neither increases the confirmed demo bug count of three.

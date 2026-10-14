@@ -40,13 +40,19 @@ formal-reference PDF or public Site from this branch; GC stays out of scope.
   check the combined typed interpreter, derive its row-integration guards, and
   connect its checked slice extraction to physical partition cells. Preserve
   directed source controls for canonical labels and endpoint adjacency.
+- [x] Preserve the missing-creator admission counterexample, derive block and
+  instance creator provenance through actual accepted replay, and derive
+  metadata guards for actual create/insert/split preparation. Connect actual
+  root/leaf selection to an independent prepared gap under physical invariants.
 - [ ] Finish the split/insert/delete-only milestone: connect actual source
   issuance and sorted replay to the physical interval model, deriving structural
   guards. Prove each actual machine table represents deletion-aware prefix
   births; preserve the joint slice endpoint partition, empty inactive titles
   and display alignment through complete atomic transactions. Connect those
-  invariants to the actual preparation rule. Derive block-creator and same-instance selection provenance;
-  cover source name/range decoding and search-label validation. Instantiate
+  invariants to the actual preparation rule. Derive selected item providers
+  from actual table execution and finish grouped deletion preparation. Connect
+  source name/range decoding and search-label validation. Creator knowledge
+  alone does not imply active slice selection or successful replay. Instantiate
   the same-witness RA bridge
   with event enumeration, required order and specification visibility. Keep
   source compound IDs distinct from Sal event labels. State ordinary and recursive

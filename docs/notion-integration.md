@@ -68,9 +68,10 @@ Directed source checks validate endpoint adjacency in 144 instances and
 canonical label encoding on 8,191 bounded paths plus twelve repeated splits.
 
 The remaining correspondence is still global. The source's actual selection
-must establish the located-reference premise of typed emission. Block creator
-provenance, deletion-aware prefix rows, slice forest and endpoint ownership must
-describe the same execution together with displayed block order. The typed
+must establish item-provider membership for typed emission. Deletion-aware
+prefix rows, slice forest and endpoint ownership must describe the same
+execution together with displayed block order. The new creator results are
+retrospective; they do not replace that joint progress invariant. The typed
 interpreter takes ordered transactions; source constructor sorting and runtime
 validation still need the complete correspondence proof. Name/range decoding and
 search-label uniqueness/runtime validation also remain source boundaries. Raw isolated receipt
@@ -78,11 +79,14 @@ permits unresolved origins; the adaptation's whole versions preserve closure.
 Independent payload values are opaque atoms, so rendering and string
 encoding remain explicit. The Sal witness still needs finite event enumeration,
 required order and specification visibility together with the source history.
-Read-only review shows why creator provenance is necessary: current typed
-admission allows an unseeded START insertion without a block title, so a later
-split need not find a slice. This is an intermediate-model countermodel, not
-an honest demo trace. Neither ordinary nor recursive Notion document
-correctness is claimed.
+The item-only typed admission counterexample is now kernel checked: unseeded
+START insertion creates no title, so a later split cannot find a slice. A
+separate creator-aware relation excludes it. Actual replay now derives block
+and instance creators, and actual create/insert/split preparation derives
+metadata guards from that provenance. This is a source-preparation increment,
+not a proof of future replay success. Honest concurrent splits also refute
+requiring replay origin ownership to equal the original requested block.
+Neither ordinary nor recursive Notion document correctness is claimed.
 
 The oracle now includes 5,348 additional comparisons covering multiscalar runs,
 Unicode session ties, clock gaps, deleted anchors and repeated splits, all with
@@ -118,8 +122,8 @@ Run `scripts/check-notion-research.sh` for all Notion research modules, directed
 oracle, known-failure regressions, independent model comparisons and mutation
 controls. Run `scripts/check-mrdt-refactor.sh` before pushing; the production
 ledger deliberately does not register an unfinished Notion document certificate.
-Both gates passed for the combined-interpreter and prefix/slice increment:
-32 Notion modules (3,443 Lean jobs), twelve research result groups, the production
+Both gates passed for the actual-client and creator-provenance increment:
+35 Notion modules (3,446 Lean jobs), thirteen research result groups, the production
 build (3,694 Lean jobs), 18 exact public contracts and their axiom audit,
 187 runtime tests, and validation of 569 stored benchmark records. Known-failure regression assertions passed by
 reproducing the documented failures. This is not a claim of semantic review or

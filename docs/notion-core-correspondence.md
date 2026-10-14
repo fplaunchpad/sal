@@ -453,7 +453,8 @@ not an exhaustive network test or a proof of the invariant.
 
 ## Creator provenance is necessary for unconditional replay
 
-Read-only review identifies a concrete missing admission obligation.
+Review identified a concrete missing admission obligation; the counterexample
+is now kernel checked in `NotionCoreCreatorNetwork.missing_creator_control`.
 `PayloadNetwork.Known` covers item references; START introduces no such
 reference. From the unseeded initial network, an insert into `.initial` at
 START can therefore be admitted without a preceding block creation. Its typed
@@ -462,10 +463,10 @@ that item can meet item-provider admission yet find no source slice for its
 marker. Similarly, a create with an absent predecessor has no item reference;
 the raw machine's front fallback is not the independent guarded create rule.
 
-This is an inspection-derived countermodel to using current typed network
-reachability alone as a whole-interpreter progress premise. It is not an
-honest-client trace, a new public demo bug, or a kernel-checked Reach
-counterexample. Existing graph, freshness and row-integration theorems retain
+This is a kernel-checked countermodel to using the earlier item-only typed
+network reachability as a whole-interpreter progress premise. It includes
+actual Reach witnesses and failed interpreter replay. It is not an honest
+client trace or a new public demo bug. Existing graph, freshness and row-integration theorems retain
 their stated scopes. Actual source selection and block/instance creator
 provenance must refine the issuance model before unconditional replay progress
 can follow. Assuming accepted replay would prove only conditional table
@@ -475,8 +476,9 @@ The inspected two-message witness uses session `[66]`: first key `(1,[66])`
 inserts `[97]` into `.initial` at START; key `(2,[66])` splits `.initial` after
 that first item. Both item-reference obligations are satisfiable, but the first
 message never created an initial title. A separate missing-predecessor witness
-is a first create after `.issued (99,[90])`. These literal typed messages are
-preserved to guide a kernel counterexample and source-selection refinement.
+is a first create after `.issued (99,[90])`. These literal typed messages are preserved in the kernel counterexample.
+Source selection now rejects the unseeded block, and creator-aware admission
+excludes that first insertion.
 
 Creator provenance must be paired with issuer-side active-gap selection.
 Creation alone would still permit START in an empty inactive title instance.
@@ -485,3 +487,60 @@ requested block: concurrent splitting can transfer that interval, and source
 routing deliberately searches globally. The current owner follows from the
 physical partition, while the requested block's creator justifies placement
 of the new destination block.
+
+
+## Actual preparation and creator knowledge
+
+`NotionCoreCreatorNetwork` reuses the typed archive's state and transitions.
+Its separate Reach relation requires received creators for payload block and
+text-instance keys, including START references with no item provider. It
+forgets to the earlier item-only Reach and derives creator providers in saved
+emission pasts and canonical replay prefixes. Creator births are metadata,
+not RGA item births. This layer alone still permits inactive-title selection;
+it is not the final source issuance policy or a replay-progress theorem.
+
+`NotionCoreMachineCreators` follows the actual interpreter. Accepted replay
+from the empty state can produce a forest block only through an actual
+creation phase, and can touch an instance only through a created or referenced
+payload key. Split/detach/move preserve block names. Received transaction
+membership and creator-aware reachability therefore derive received creator
+knowledge for every resulting block and instance. The accepted-replay premise
+concerns the client's current reconstructed document. These retrospective
+statements do not assume or establish success of its next edit or merged replay.
+
+`NotionCoreMachineClient` extracts every actual slice in tree preorder, then
+implements source selection: positive indices select the preceding live atom;
+zero selects the first nonempty slice or the final slice if all are empty.
+The source create-predecessor check uses forest membership in this core without
+removed blocks. Empty insertions and empty deletions produce no payload.
+Deletion address selection uses nonnegative JS slice clamping; negative or
+fractional indices, instance grouping, ID-range compression, source string
+parsing and search labels are outside these definitions. `decodeAddress` only
+inverts the Lean interpreter's internal semantic names, with roundtrip proofs.
+Option failure abstracts source exceptions and no-op returns, not their messages.
+
+`locate_storage` derives both requested-block presence and selected-instance
+presence from actual selection and checked extraction. `prepared_create_creators`,
+`prepared_insert_creators`, and `prepared_split_creators` combine this result
+with actual replay provenance to discharge metadata guards. No creator assertion
+is supplied by the caller. The previous received transaction list and successful
+current reconstruction remain explicit inputs. Actual item-provider guards,
+delete message construction and complete replay progress remain open.
+
+`own_selection_prepared` and `attached_selection_prepared` derive successful
+actual location and the independent `PreparedGap` from unique block membership,
+physical partition cells, valid index and, for attached leaves, an empty title.
+They do not assume the chosen address or the desired semantic gap. The physical
+partition still needs preservation in the same full replay. Controls cover
+inherited zero selection before and after complete deletion, positive live
+predecessors, missing blocks/predecessors and clamped deletion ranges.
+
+Three pinned source fixtures validate the preparation boundaries. Public create
+rejects an unknown predecessor before reservation; a clearly fabricated raw
+payload instead uses the document interpreter's front fallback. Live and fully
+deleted inherited leaves select the original instance's split marker at zero.
+Finally, honest concurrent splits of `abc` move the second request's origin
+into the first split's destination before replay. This refutes requiring replay
+owner to equal requested block; it preserves global source routing and is not
+an ordinary local-effect bug. The canonical replay remains source-key ordered,
+while creator theorem membership works for any accepted received replay list.

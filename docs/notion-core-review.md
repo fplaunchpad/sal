@@ -1111,3 +1111,96 @@ The directed 144-instance adjacency evidence above supports the proposed full
 replay invariant without replacing it. Its stored-root versus active-instance
 quantifier distinction and incomplete-receipt negative remain necessary. No
 additional broad campaign was run during these final component reviews.
+
+## Honest client selection and creator domain controls
+
+Three new directed pinned-source controls in `client-provenance-controls.mjs`
+pass with literal records retained and all source hashes checked. Public
+`Replica.createBlock('missing')` throws before clock reservation or archive
+change. A separately labelled fabricated raw create payload with that missing
+predecessor succeeds in CrdtDocument and inserts at the front. Thus the valid
+public request domain and raw document-dispatch fallback are distinct; neither
+is misreported as the other's rejection behavior.
+
+For both visible and all-deleted inherited intervals, zero-index preparation
+selects the original instance's split-marker boundary and excludes the unused
+fresh title instance. A following honest insertion materializes in the selected
+block. Positive preparation in a locally unsplit abc block selects the visible
+predecessor b and its actual text instance, establishing concrete local item
+provenance.
+
+The concurrent split control rejects a stronger replay-time block guard:
+A splits abc at 1 and B independently splits it at 2. B's local predecessor b
+belongs to the requested original block when issued; after A's earlier
+canonical split it belongs to A's new block before B replays. Both requests
+are honestly issued and locally valid, and the final text is a|c|b. Requiring
+replay origin ownership to equal the original requested block would therefore
+reject an honest core transaction. Same-instance located birth provenance is
+preserved; block ownership can change concurrently. This is a guard-strength
+counterexample, not a violation of the ordinary local positional contract.
+No broad suite was repeated.
+
+## Creator admission and actual client locator review
+
+CreatorNetwork independently checks cleanly with standard printed axioms.
+It strengthens admission over the existing typed archive state rather than
+silently changing its earlier Reach relation. Required block and instance keys
+obtain metadata creator providers in the saved emission past, hence in the
+canonical prior prefix. Metadata creator births remain distinct from RGA item
+births. The old-admission countermodel includes actual witnesses for both
+unseeded transactions and an actual failed Machine replay; its stronger Reach
+exclusion belongs to the theorem layer. Creator presence alone is not claimed
+to establish active-gap selection or replay progress.
+
+MachineClient's definitions were audited against pinned local preparation.
+Actual arbitrary-tree preorder extraction supplies visible character indexing,
+zero-position first-visible/final-fallback selection, and positive visible
+predecessors. The attached selection theorem derives an independent PreparedGap
+from physical cell factorization, empty title ownership, real unique-key forest
+membership, and an in-range index; no selected-address or desired-gap premise
+is supplied. Internal semantic name decoding is roundtripped, not equated with
+source string parsing. Nonnegative deletion selection matches JS slice clamping;
+negative/fractional indices, per-instance grouping, compressed ranges, and
+transaction/clock issuance remain separate. Known forest predecessor is the
+public create check in this core with no removed blocks. Invalid selections
+return none here, abstracting source exceptions rather than preserving their
+messages. The controls' inherited-marker and visible-predecessor expectations
+match the new pinned source controls above.
+
+An independent draft compilation caught a neg-case simplification failure in
+`locate_member`: flatMap length was normalized before its original bound could
+rewrite the if. The owner repaired it, and the final expanded MachineClient independently
+checks cleanly below; this records the resolved draft failure.
+
+
+## Final actual-storage creator and locator coupling
+
+MachineCreators and the expanded MachineClient independently check cleanly,
+with standard printed axioms and the earlier locator draft failure resolved.
+MachineCreators derives actual forest names from successful operation effects;
+split, detach, and append preserve block IDs. It similarly derives actual
+instance keys from decoded operations, including insert/erase allocation.
+Received transaction/archive linkage then supplies creator knowledge: created
+keys use their own received emitter, while required keys use saved creator
+provenance and closure of the received version. No caller creator guard appears
+in these retrospective conclusions. Accepted current replay remains explicit;
+there is no assertion that every admitted replay succeeds.
+
+MachineClient derives requested forest membership and selected instance
+presence from actual successful lookup and checked slice extraction.
+`located_creators` uses those storage facts, MachineCreators, and internal
+name decoding to derive known creators for both requested block and selected
+instance. The prepared create/insert/split theorems discharge metadata creator
+requirements for actual client preparation. They do not yet discharge selected
+RGA item birth membership, establish replay progress, or assert replay owner
+equals requested block. The latter stronger condition is refuted by the honest
+concurrent source fixture above. Acceptance of the client's current document
+is distinct from acceptance of its newly issued edit or a future merged replay.
+
+Both root-only and attached selection theorems derive successful source-style
+location and independent semantic gaps from physical cell representation,
+unique real forest membership, existing instances, and in-range indices.
+Attached selection additionally checks the empty inactive title. The internal
+codec roundtrips remain separate from source wire names, and deletion still
+models selected nonnegative addresses before source operation grouping and
+range encoding. These limits are unchanged by the creator coupling.
