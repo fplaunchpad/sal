@@ -6,6 +6,10 @@ no fabricated payload is needed. The transaction-set adaptation preserves the
 failures. These are findings about the educational demo, with no established
 correspondence to Notion's production implementation.
 
+The paper's [Appendix B source](notion-bugs-appendix.tex) gives a self-contained
+account of the three traces, their expected and observed results, and the
+scope of the formal checks.
+
 The source snapshot is identified by the seven SHA-256 hashes in
 [sources.json](../experiments/notion-oracle/sources.json). The permanent
 [regression runner](../experiments/notion-oracle/regressions.mjs) reissues the

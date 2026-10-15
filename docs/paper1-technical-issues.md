@@ -244,6 +244,14 @@ Validation: the paper and formal reference compile; the main text ends on page
 references, duplicate labels or overfull boxes in the final build. The required
 Sal repository checks passed.
 
+Appendix follow-up (paper commit `8628d1e`): each of the 24 datatype entries now places its source
+citations immediately below the heading, and the appendix prose no longer
+names Sal. Appendix B explains the three public Notion-demo bugs, including
+the requests, expected and observed results, and the scope of the Lean checks.
+The pinned JavaScript regression rerun reproduced all three failures and passed
+the nearby formatting control. These additions do not resolve the ten
+substantive issues above.
+
 ## Case-study work still in progress
 
 The priority-queue and incremental tree-move replacements are separate from

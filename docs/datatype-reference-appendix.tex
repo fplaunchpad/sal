@@ -6,8 +6,8 @@
 This appendix defines the datatype implementations in Table~\ref{tab:implementation}.
 For each implementation we give the concrete state space $\Sigma$, initial state
 $\sigma_0$, update $\F{do}$, three-way merge, and query, followed by an
-independent sequential machine. The concrete definitions are the Sal
-adaptations of the cited designs; the source and adaptation boundaries are
+independent sequential machine. The concrete definitions are adaptations of
+the cited designs; the source and adaptation boundaries are
 stated where they affect the interface.
 
 As in \S\ref{sec:opsem}, an event is $e=(t,r,o)\in\mathcal E$.
@@ -75,6 +75,8 @@ states.
 \subsection{Counter}
 \label{app:dt-counter}
 
+\noindent Source references: \cite{neem}.
+
 % Sal/MRDTs/Instances/FlatCounters.lean: D, CounterOp, counterDelta, Counter, generation
 
 % Sal/MRDTs/Paper1/SimpleEventPorts.lean: deltaMachine
@@ -130,11 +132,13 @@ $\rcrel=\varnothing$.
 
 
 \paragraph{Source and adaptation.}
-The integer-delta three-way counter uses ancestor subtraction; it is not a saturating natural-number counter.~\cite{neem}
+The integer-delta three-way counter uses ancestor subtraction; it is not a saturating natural-number counter.
 
 
 \subsection{Grow-only set}
 \label{app:dt-grow-only-set}
+
+\noindent Source references: \cite{shapiro2011comprehensive}.
 
 % Sal/MRDTs/Instances/AddStore.lean: D, generation, verified
 
@@ -206,11 +210,13 @@ $\rcrel=\varnothing$.
 
 
 \paragraph{Source and adaptation.}
-The three carriers implement one grow-only-set abstraction. They are three implementation configurations displayed in one row of Table~\ref{tab:implementation}.~\cite{shapiro2011comprehensive}
+The three carriers implement one grow-only-set abstraction. They are three implementation configurations displayed in one row of Table~\ref{tab:implementation}.
 
 
 \subsection{Flat grow-only map}
 \label{app:dt-flat-grow-only-map}
+
+\noindent Source references: \cite{shapiro2011comprehensive}.
 
 % Sal/MRDTs/Instances/FlatGrowOnly.lean: D, generation, verified
 
@@ -269,11 +275,13 @@ $\rcrel=\varnothing$.
 
 
 \paragraph{Source and adaptation.}
-This configuration stores immutable key--value pairs and permits several values at a key.~\cite{shapiro2011comprehensive}
+This configuration stores immutable key--value pairs and permits several values at a key.
 
 
 \subsection{Last-writer-wins register}
 \label{app:dt-lww-register}
+
+\noindent Source references: \cite{shapiro2011comprehensive}.
 
 % Sal/MRDTs/Instances/LWWRegister.lean: State, packedWrite, update, D, read, issuance, spec
 
@@ -326,11 +334,13 @@ $\rcrel=\varnothing$. Chronological history legality still applies.
 
 
 \paragraph{Source and adaptation.}
-This maximum-key implementation refines an ordinary overwrite register using its chronological history order.~\cite{shapiro2011comprehensive}
+This maximum-key implementation refines an ordinary overwrite register using its chronological history order.
 
 
 \subsection{Multi-value register}
 \label{app:dt-mvr}
+
+\noindent Source references: \cite{shapiro2011comprehensive}.
 
 % Sal/MRDTs/Instances/MVRLive.lean: State, update, merge, D, canIssue, issuance, spec
 
@@ -397,11 +407,13 @@ $\rcrel=\varnothing$. Original issuance and execution visibility carry overwrite
 
 
 \paragraph{Source and adaptation.}
-The configuration uses compact live tagged writes. Overwrite IDs are prepared from the original live state; the abstract language preserves those supplied identities.~\cite{shapiro2011comprehensive}
+The configuration uses compact live tagged writes. Overwrite IDs are prepared from the original live state; the abstract language preserves those supplied identities.
 
 
 \subsection{Optional register}
 \label{app:dt-optional-register}
+
+\noindent Source references: \cite{neem}.
 
 % Sal/MRDTs/Instances/OptionalRegister.lean: D, initial, update, mergePayload, mergeCell, merge, query, generation
 
@@ -499,11 +511,13 @@ A concurrent Set follows Unset. Sets at different replicas commute in the implem
 
 
 \paragraph{Source and adaptation.}
-The arithmetic and equal-timestamp averaging branch are retained from the source implementation. The source supplies no query; Sal selects the greatest active timestamped payload.~\cite{neem}
+The arithmetic and equal-timestamp averaging branch are retained from the source implementation. The source supplies no query; the query used here selects the greatest active timestamped payload.
 
 
 \subsection{Enable-wins flag}
 \label{app:dt-enable-wins-flag}
+
+\noindent Source references: \cite{neem}.
 
 % Sal/MRDTs/Instances/EnableWinsFlag.lean: D, enable, disable, generation
 
@@ -578,11 +592,13 @@ Equal-operation updates commute. Enable and disable do not commute, in either th
 
 
 \paragraph{Source and adaptation.}
-The counter-and-bit update and ternary merge follow the source implementation. The source supplies no query; Sal adds the surviving-winning-bit observation.~\cite{neem}
+The counter-and-bit update and ternary merge follow the source implementation. The source supplies no query; we add the surviving-winning-bit observation.
 
 
 \subsection{Disable-wins flag}
 \label{app:dt-disable-wins-flag}
+
+\noindent Source references: \cite{neem}.
 
 % Sal/MRDTs/Instances/DisableWinsFlag.lean: D, enable, disable, generation
 
@@ -657,12 +673,14 @@ Equal-operation updates commute. Enable and disable do not commute, in either th
 
 
 \paragraph{Source and adaptation.}
-The counter-and-bit update and ternary merge follow the source implementation. Sal complements the outstanding-disable observation to expose whether the flag is enabled.~\cite{neem}
+The counter-and-bit update and ternary merge follow the source implementation. The query complements the outstanding-disable observation to expose whether the flag is enabled.
 
 
 
 \subsection{Ordinary OR-set (paper example)}
 \label{app:dt-ordinary-or-set-paper-example}
+
+\noindent Source references: \cite{neem}.
 % Sal/MRDTs/Paper1/ORSet.lean; Paper1/ORSetEventSpec.lean
 
 \paragraph{Concrete MRDT}
@@ -712,11 +730,13 @@ The relation orders a concurrent removal before an addition of the same
 element, subject to the absorber clause of Definition~\ref{def:lo-local}.
 
 \paragraph{Source and adaptation.}
-This is the live-tag OR-set of the motivating example, represented by finite sets in the mechanization.~\cite{neem}
+This is the live-tag OR-set of the motivating example, represented by finite sets in the mechanization.
 
 
 \subsection{Efficient OR-set}
 \label{app:dt-efficient-or-set}
+
+\noindent Source references: \cite{neem}.
 % Sal/MRDTs/Instances/EfficientORSet.lean; Paper1/EfficientORSetEventSpec.lean
 
 \paragraph{Concrete MRDT}
@@ -766,10 +786,12 @@ The relation orders a concurrent removal before an addition of the same
 element, subject to the absorber clause of Definition~\ref{def:lo-local}.
 
 \paragraph{Source and adaptation.}
-The state retains at most one live tag per replica and element; a new addition replaces that tag, while removal filters every observed tag for the element.~\cite{neem}
+The state retains at most one live tag per replica and element; a new addition replaces that tag, while removal filters every observed tag for the element.
 
 \subsection{Remove-wins set}
 \label{app:dt-remove-wins-set}
+
+\noindent Source references: \cite{neem}.
 
 % Sal/MRDTs/Instances/RemoveWinsSet.lean: D, initial, step, merge, view, query
 
@@ -834,11 +856,13 @@ Addition and removal of the same element do not commute. This policy orders a co
 
 
 \paragraph{Source and adaptation.}
-The finite-universe generalization retains the source implementation's initial zero tags and survivor merge. Positive timestamps reserve those initial identities.~\cite{neem}
+The finite-universe generalization retains the source implementation's initial zero tags and survivor merge. Positive timestamps reserve those initial identities.
 
 
 \subsection{Set-wins multimap}
 \label{app:dt-set-wins-map}
+
+\noindent Source references: \cite{neem}.
 
 % Sal/MRDTs/Instances/SetWinsMap.lean: D, update, merge, lookup, policy, issuance
 
@@ -902,11 +926,13 @@ A concurrent set is placed after deletion of its key. Two sets commute, as do de
 
 
 \paragraph{Source and adaptation.}
-The source supplies updates and merge but no query. Sal exposes an accumulating multimap lookup, whose independent state erases timestamps.~\cite{neem}
+The source supplies updates and merge but no query. We expose an accumulating multimap lookup, whose independent state erases timestamps.
 
 
-\subsection{Priority queue (Sal retained-increment variant)}
+\subsection{Priority queue}
 \label{app:dt-add-wins-priority-queue}
+
+\noindent Source references: \cite{PriorityQueue2023}.
 % Sources: Sal/MRDTs/Instances/AddWinsPriorityQueue.lean;
 % Sal/MRDTs/Instances/AddWinsPriorityQueueFull.lean;
 % Sal/MRDTs/Paper1/AddWinsPriorityQueueSpec.lean;
@@ -1030,18 +1056,20 @@ The five-equation certificate and independent projection bridge cover all
 four query forms in ordinary and recursive-base executions.
 
 \paragraph{Source and adaptation.}
-This is the archived Sal sum-of-increments adaptation of the priority-queue
-design~\cite{PriorityQueue2023}. It retains signed increments independently
+This is a sum-of-increments adaptation of the priority-queue
+design. It retains signed increments independently
 of Add records. It does not implement the source's per-Add observation
 counts or Most-Change-Win rule. The archived survivor merge for increments
 equals union when the ancestor's increments occur in both branches; union
 extends the raw operation outside that coherent domain. Maximum ties use
-Sal's explicit greatest-element rule. The maximum read and derived local
+the greatest-element rule. The maximum read and derived local
 removal are now included, while the retained-increment priority semantics
-remain this Sal variant.
+differ from the source algorithm.
 
 \subsection{Bounded counter with rights transfer}
 \label{app:dt-bounded-counter}
+
+\noindent Source references: \cite{BalegasBoundedCounter}.
 
 % Sal/MRDTs/Instances/BalegasBoundedCounter.lean: Action, State, initial, update, merge, localRights, value, query, applicable, generation
 
@@ -1139,11 +1167,13 @@ This records cumulative single-writer prefixes for max merge. All five VCs feed 
 
 
 \paragraph{Source and adaptation.}
-The effectors and componentwise maximum merge follow the escrow counter of Balegas et al.; nonnegative amounts and a fixed replica universe delimit the port.~\cite{BalegasBoundedCounter}
+The effectors and componentwise maximum merge follow the escrow counter of Balegas et al.; nonnegative amounts and a fixed replica universe delimit the port.
 
 
 \subsection{Anchored FIFO queue}
 \label{app:dt-anchored-queue-paper-variant}
+
+\noindent Source references: \cite{Roh,Peepul}.
 
 % Sal/MRDTs/Instances/EmbedRGA.lean: E, eUpdate, eInsert, eMerge, eMerge2
 
@@ -1259,11 +1289,13 @@ $\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix di
 
 
 \paragraph{Source and adaptation.}
-This Sal queue uses the embedded RGA coordinate kernel with FIFO issuance and a head query. Its abstract operations are enqueue and deletion of the named head.~\cite{Roh,Peepul}
+This queue uses the embedded RGA coordinate kernel with FIFO issuance and a head query. Its abstract operations are enqueue and deletion of the named head.
 
 
 \subsection{RGA}
 \label{app:dt-rga}
+
+\noindent Source references: \cite{Roh}.
 
 % Sal/MRDTs/Instances/RGA.lean: RGAState; rgaUpdate; RGAM; sequence; supportFinset; applicable; generation
 
@@ -1339,11 +1371,13 @@ $\rcrel=\varnothing$. The grow-only concrete update effects commute. The strict 
 
 
 \paragraph{Source and adaptation.}
-The state-based RGA records insertion edges and deletion evidence. The registered observation is an identifier sequence.~\cite{Roh}
+The state-based RGA records insertion edges and deletion evidence. The registered observation is an identifier sequence.
 
 
 \subsection{Embedded RGA}
 \label{app:dt-embed-rga}
+
+\noindent Source references: \cite{Roh}.
 
 % Sal/MRDTs/Instances/EmbedRGA.lean: E; EOp; eCoord; eUpdate; eInsert; eMerge; eMerge2; eEventOrder; EEventOrder; eApplicable
 
@@ -1442,11 +1476,13 @@ $\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix di
 
 
 \paragraph{Source and adaptation.}
-Sal replaces the insertion tree by prefix-code coordinates and physically removes deleted records. The independent editor has no coordinates.~\cite{Roh}
+This implementation replaces the insertion tree by prefix-code coordinates and physically removes deleted records. The independent editor has no coordinates.
 
 
 \subsection{Sided Embedded RGA}
 \label{app:dt-sided-embed-rga}
+
+\noindent Source references: \cite{Roh,FugueMax}.
 
 % Sal/MRDTs/Instances/SidedEmbedRGA.lean: S; SOp; sCoord; sUpdate; sInsert; sMerge; sMerge2; sEventOrder; SEventOrder; sApplicable
 
@@ -1552,11 +1588,13 @@ closer to its anchor on either side. This follows from the symbol bands
 and bit complementation in $h_R$ and $h_L$.
 
 \paragraph{Source and adaptation.}
-Sal extends the embedded RGA with both sides of an anchor. It adapts the sided-tree idea of Fugue with an RGA-derived sibling order; it is a distinct configuration from FugueMax.~\cite{Roh,FugueMax}
+This implementation extends the embedded RGA with both sides of an anchor. It adapts the sided-tree idea of Fugue with an RGA-derived sibling order; it is a distinct configuration from FugueMax.
 
 
 \subsection{FugueMax with immutable birth records}
 \label{app:dt-fugue-max}
+
+\noindent Source references: \cite{FugueMax}.
 
 % Sal/MRDTs/Instances/FugueMaxImplementation.lean: Payload, State, recordOf, rawUpdate, rawMerge, datatype, applicable, generation
 
@@ -1691,11 +1729,13 @@ $\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix di
 
 
 \paragraph{Source and adaptation.}
-The configuration preserves generated left/right origins and coordinate-chain evidence. Its present observation returns identities, not arbitrary text payloads.~\cite{FugueMax}
+The configuration preserves generated left/right origins and coordinate-chain evidence. Its present observation returns identities, not arbitrary text payloads.
 
 
 \subsection{Tree move}
 \label{app:dt-tree-move}
+
+\noindent Source references: \cite{TreeMove}.
 
 % Sal/MRDTs/Instances/TreeMove.lean: D, doMove, visibleTree, render, eventKey, applicable, generation, spec, sequentialSpec, ClientLegal
 
@@ -1761,11 +1801,13 @@ $\rcrel=\varnothing$.
 
 
 \paragraph{Source and adaptation.}
-This is canonical sorted replay of cycle-rejecting tree moves. The cited source's incremental undo/redo delivery algorithm is not the replicated implementation defined here.~\cite{TreeMove}
+This is canonical sorted replay of cycle-rejecting tree moves. The cited source's incremental undo/redo delivery algorithm is not the replicated implementation defined here.
 
 
 \subsection{Embedded Peritext}
 \label{app:dt-peritext-embed-rga}
+
+\noindent Source references: \cite{Peritext}.
 
 % Sal/MRDTs/Instances/EmbedRGA.lean: E; EOp; eCoord; eUpdate; eInsert; eMerge; eMerge2; eEventOrder; EEventOrder; eApplicable
 
@@ -1863,11 +1905,13 @@ $\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix di
 
 
 \paragraph{Source and adaptation.}
-This adaptation stores explicit formatting boundaries as embedded-RGA payloads. The registered query returns the payload list; the scan below is an additional rendering observation.~\cite{Peritext}
+This adaptation stores explicit formatting boundaries as embedded-RGA payloads. The registered query returns the payload list; the scan below is an additional rendering observation.
 
 
 \subsection{Sided Peritext}
 \label{app:dt-sided-peritext-rich-core}
+
+\noindent Source references: \cite{Peritext}.
 
 % Sal/MRDTs/Instances/SidedEmbedRGA.lean: S; SOp; sCoord; sUpdate; sInsert; sMerge; sMerge2; sEventOrder; SEventOrder; sApplicable
 
@@ -2015,11 +2059,13 @@ $\rcrel=\varnothing$. Original-issuance and valid-state or represented-prefix di
 
 
 \paragraph{Source and adaptation.}
-One configuration combines a sided coordinate text kernel, retained logical-deletion evidence, and mark records with the document-order rendered query. The internal product kernel is not another datatype row.~\cite{Peritext}
+One configuration combines a sided coordinate text kernel, retained logical-deletion evidence, and mark records with the document-order rendered query. The internal product kernel is not another datatype row.
 
 
 \subsection{AegisSheet}
 \label{app:dt-aegis-sheet}
+
+\noindent Source references: \cite{AegisSheet}.
 
 % Sal/MRDTs/Instances/AegisSheet.lean: D, SheetOp, Action, Command, inverseFor, view, axisKeepTimes, axisTokenRemoved, axisLive, axisPositions, cellOverwritten, rangeOverwritten, applicable, generation
 
@@ -2150,11 +2196,13 @@ $\rcrel=\varnothing$.
 
 
 \paragraph{Source and adaptation.}
-This is a Sal event-set intent model of AegisSheet, with stable axis IDs, multi-value cells and inverse events for undo; it does not reproduce the paper's delivery engine.~\cite{AegisSheet}
+This is an event-set intent model of AegisSheet, with stable axis IDs, multi-value cells and inverse events for undo; it does not reproduce the paper's delivery engine.
 
 
 \subsection{Notion core}
 \label{app:dt-notion-core}
+
+\noindent Source references: \cite{NotionCRDTBlog,NotionCRDTDemo}.
 
 % Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean: CheckedEntry, entry
 
@@ -2219,7 +2267,7 @@ This is a Sal event-set intent model of AegisSheet, with stable axis IDs, multi-
 % Sal/MRDTs/Instances/NotionCoreMachineCommands.lean: commands
 
 \paragraph{Concrete MRDT}
-\textbf{Structural state.} Source IDs are $k=(c,u)$, ordered by counter and then lexicographically by UTF-16 session units. They are distinct from the Sal event timestamp and replica: $e=(t,r,\tau)$, $\tau=(k,p)$. Let $K=\{\mathsf{initial}\}\uplus\{\mathsf{issued}(k)\mid k\in\mathsf{Id}\}$ be block/instance keys and $O=\{\mathsf{start}\}\uplus\{\mathsf{item}(k)\mid k\in\mathsf{Id}\}$ origins. A row records an item ID, its kind and its origin; item kinds are $\mathsf{text}(v,d)$ or $\mathsf{split}$, where $d$ is the deletion bit.
+\textbf{Structural state.} Source IDs are $k=(c,u)$, ordered by counter and then lexicographically by UTF-16 session units. They are distinct from the event timestamp and replica: $e=(t,r,\tau)$, $\tau=(k,p)$. Let $K=\{\mathsf{initial}\}\uplus\{\mathsf{issued}(k)\mid k\in\mathsf{Id}\}$ be block/instance keys and $O=\{\mathsf{start}\}\uplus\{\mathsf{item}(k)\mid k\in\mathsf{Id}\}$ origins. A row records an item ID, its kind and its origin; item kinds are $\mathsf{text}(v,d)$ or $\mathsf{split}$, where $d$ is the deletion bit.
 
 The four fact constructors form a tagged union:
 \[
@@ -2360,7 +2408,7 @@ On successful core receipt and merge,
 \end{aligned}
 \]
 
-The engine preserves the displayed invariant while joining receipt metadata and checking archived transaction identities. Neither merge path replays archived payloads. Pure batches return either a complete state or an error; conflicting immutable keys are rejected. The end-to-end loading theorem starts at the actual empty engine, receives any ordering and duplicates of an honest closed version, and derives success, the invariant and the reference answer without caller-supplied acceptance or query-equality premises. The registered-query theorem connects native answers to actual registered Sal versions. The compiled functions implement the native executable; external JavaScript/JSON conversion remains a tested boundary.
+The engine preserves the displayed invariant while joining receipt metadata and checking archived transaction identities. Neither merge path replays archived payloads. Pure batches return either a complete state or an error; conflicting immutable keys are rejected. The end-to-end loading theorem starts at the actual empty engine, receives any ordering and duplicates of an honest closed version, and derives success, the invariant and the reference answer without caller-supplied acceptance or query-equality premises. The registered-query theorem connects native answers to versions of the MRDT. The compiled functions implement the native executable; external JavaScript/JSON conversion remains a tested boundary.
 
 
 \paragraph{Independent sequential specification.}
@@ -2594,12 +2642,12 @@ The five-equation certificate, whole-document refinement, independent history an
 
 
 \paragraph{Source and adaptation.}
-The configuration covers the typed create/insert/erase/split core and explicit bootstrap. Its structural MRDT and compiled indexed refinement share the original honest protocol; the external JavaScript/JSON adapter is a tested boundary.~\cite{NotionCRDTBlog,NotionCRDTDemo}
+The configuration covers the typed create/insert/erase/split core and explicit bootstrap. Its structural MRDT and compiled indexed refinement share the original honest protocol; the external JavaScript/JSON adapter is a tested boundary.
 
 
 \paragraph{Boundary of the Notion result.}
 The typed fragment omits the editor's merge-block and formatting requests.
-Sal's merge of replicated versions is a distinct operation from merge-block.
+The merge of replicated versions is a distinct operation from merge-block.
 The pinned educational demo has three preserved failures after honestly
 prepared merge-block requests: a later split at zero can move only part of
 the visible suffix, a bold selection can leave both selected characters
