@@ -1,9 +1,12 @@
 # Paper revision: essential changes and presentation choices
 
 15 October 2026. Revised after Claude's fourth appendix review and KC's
-instruction to favour understandability over mechanization-level detail.
-Baseline: Overleaf `803a9a4`, Sal `ae7e1c8`, datatype Site version 20.
-Minor edits and reference corrections are published in Overleaf `1664c1d`.
+instruction to favour understandability over mechanisation-level detail.
+Current manuscript checked: Overleaf `444b217` (15 October 2026).
+This includes the latest human introduction edit, fetched during this update.
+The last locally compiled revision is `fd11344`; `444b217` is text-reviewed only.
+The latest review also includes Claude's prose edits, UK spelling and the
+corrected variant markers (`2c4aa36`). Datatype Site: version 20.
 This is an author-facing review; `PRIORITIZED_REMAINING_WORK.md` remains the
 only development task list. Earlier audit and publication detail is retained
 in this file's Git history.
@@ -19,6 +22,12 @@ that changes whether a theorem is true must be stated or explicitly referenced.
 GC remains outside this paper.
 
 ## Recommended changes, in priority order
+
+Status: items 1–4 remain open. Item 5 is partly addressed: the explicit
+equivalence claim is removed, but the surrounding arguments still need repair.
+In item 6, the abstract and implementation wording are updated; aligning the
+introduction with the certified scope and adding the Section 7 cross-reference
+remain open. The wording updates do not complete the theorem work in item 3.
 
 ### 1. Complete the commutation assumption — Section 4
 
@@ -66,7 +75,7 @@ needed. Keep concrete equality for implementation states.
 
 Retain the two-proof structure: the five VCs establish the implementation
 result; a separate proof establishes agreement with the sequential
-specification. Explain three generalizations in familiar terms:
+specification. Explain three generalisations in familiar terms:
 
 - **Which events and states the laws concern.** Issuance and execution facts
   justify restricting the relevant comparisons and states. The restriction
@@ -156,6 +165,15 @@ that version. The bottom-up construction problem should be explained
 separately. Carry this distinction into the abstract, introduction, Section 4
 and related work wherever they make the same claim.
 
+The new introduction in `444b217` still needs this correction. Its explanation
+of unseen events affecting a version's order is useful, but it continues to
+conflate a global sequence with a configuration-wide relation and says that
+bottom-up linearization requires a global order. Preserve the useful local
+absorber explanation when repairing those claims. It also describes visibility
+only between updates at the same replica in one sentence: visibility can cross
+replicas after communication, and the ordering clauses concern non-commuting
+visible pairs. Check this summary against the precise definition.
+
 Do not claim a convergence counterexample merely because two permitted replay
 orders differ. Attribute convergence to the state-agreement theorem and its
 hypotheses, not to query-history admission alone. Say briefly that recursive
@@ -164,15 +182,24 @@ extension proof. No GC discussion is needed.
 
 ### 6. Align the headline and implementation claims
 
-KC approved this abstract sentence, published in Overleaf `109323c`:
+The approved abstract qualification is published (originally `109323c`,
+with UK spelling in `2c4aa36`):
 
-> We mechanize the framework and its extension to issuance- and
+> We mechanise the framework and its extension to issuance- and
 > execution-certified implementations in Lean, and verify 26 implementations
 > against their sequential specifications.
 
 Keep the Notion case-study mention. Use the same scope when updating the
-introduction. This is a fair description of the mechanization; it does not
+introduction. This is a fair description of the mechanisation; it does not
 replace the theorem work in item 3.
+
+The implementation opening now explicitly says (`fd11344`):
+
+> We have mechanised the framework in Lean 4, including its operational
+> semantics, correctness definitions, and proofs of the meta-theoretic results.
+
+It distinguishes the proofs established once for the framework from those
+supplied for each MRDT. This wording change is complete.
 
 The implementation section already distinguishes restrictions on algebraic
 laws from issuance/protocol evidence used by a history proof. Keep that
@@ -182,12 +209,19 @@ raw update equations fail.
 
 ## Lower-priority readability
 
+The new introduction (`444b217`) reintroduces `it's own` (use `its own`),
+`behavior` (use `behaviour`), `sub-sequences` (use `subsequences`), and
+`RA-Linearizability` in running prose (use `RA-linearizability`).
+
 Deduplicate the two flag entries and repeated sequence kernels when practical.
 Rename an insertion anchor where it clashes with `merge(l,a,b)`'s branch `a`.
 Keep the existing datatype explanations and source references. These edits
 should not delay fixing a false theorem premise or an incorrect attribution.
 
 ## What is already resolved
+
+The explicit meta-theory mechanisation sentence is published in Overleaf
+`fd11344`. Its rebuild passes with 72 pages and the main text ending on page 23.
 
 Claude's prose edits were reviewed and published in Overleaf `2c4aa36`.
 The title is now “Every Version Tells a Story: Verifying MRDTs Against Their
@@ -205,7 +239,6 @@ The revised PDF has 72 pages, with the main text ending and references beginning
 on page 23; all 42 citations resolve and there are no overfull boxes or
 undefined references. The root README was reviewed; its theorem-scope wording
 remains accurate and needs no change for this prose-only revision.
-
 
 Overleaf commit `1664c1d` (15 October) corrects grammar, missing set braces in the
 Section 2 example, the direction stated for following parent links, and the
