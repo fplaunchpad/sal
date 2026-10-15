@@ -1,0 +1,237 @@
+# Sal paper: consolidated technical review
+
+15 October 2026. Combines Claude's [review](paper1-claude-review.md) with the
+Codex [section review](paper-writing-review.md) and
+[reconciliation note](paper1-formalism-reconciliation.md), checked against
+paper commit `864ad6a` and Sal `paper1` commit `1f9c30d`.
+This is a review record, not another development task list.
+
+The main issue is correspondence: the paper's stated assumptions and
+criterion do not yet describe all the checked case studies. This does not
+show that their Lean proofs are wrong. It means the paper must state the
+theorem those proofs actually establish. Tightening prose alone will not
+resolve this.
+
+“Confirmed” below means checked against the current manuscript and the cited
+source or Lean declarations. Recommendations are proposed manuscript changes,
+not claims that those changes have already been made. GC stays outside this paper.
+
+## Changes needed before submission
+
+### 1. Distinguish Wang's total sequence from Neem's partial relation
+
+**Confirmed — abstract, Introduction, §2, §4 discussion and Related Work.**
+Wang fixes a single total sequence. Neem fixes one configuration-wide partial
+relation `lo_C`; each replica may have a different linear extension of its
+restriction. These are not equivalent requirements.
+
+Figure 2's opposing branch orders refute a single total sequence. They do
+not refute Neem's definition: both branch witnesses can extend its partial
+relation. The separate issue with Neem is that an event outside a version
+can remove an ordering edge inside that version. The resulting restriction
+need not determine a unique implementation fold.
+
+**Change:** distinguish these two problems throughout. Attribute the forced
+cycle to the total-sequence requirement. Explain why Sal searches for absorbers
+inside the event set being explained. Identify Figure 2's annotations as Sal's
+version-relative relations. Explain the failure of constructing a merged
+history from branch endings separately. Do not claim a counterexample to SEC
+from this figure alone.
+
+**Evidence:** Neem source, `lin.tex`, Definitions `lin-relation` and `lin`;
+Claude review §2, independently cross-checked. No new implementation proof is
+needed to correct the attribution.
+
+### 2. Complete Kartik's commutation assumptions
+
+**Confirmed — §4, displayed datatype laws.** The paper exempts equal operation
+labels from `rc-non-comm`, but does not separately require equal-label events
+to commute. The determinacy proof needs that missing case. Applying the exact
+same event twice is not the issue: two events can carry the same operation
+and different identities.
+
+**Change:** keep Kartik's unequal-operation formulation and add equal-operation
+commutation, on the same eligible-event and state domains. State the event
+guards explicitly. The policy remains a relation supplied on operations.
+
+This corrects Claude's suggested remedy: deleting the unequal-operation guard
+is not necessary. Lean already proves equivalence between the split and
+combined formulations, including the certified and invariant-restricted forms.
+
+**Evidence:** [SplitPolicy.lean](../Sal/MRDTs/Paper1/SplitPolicy.lean),
+`guarded_iff_repaired`, `Certified.existing_iff_repaired`, and
+`Invariant.existing_iff_repaired`.
+
+### 3. Put specification ordering in the criterion used by the case studies
+
+**Confirmed — §4, RA-linearizability and `spec-non-comm`; §7 theorem.**
+The paper makes implementation/specification commutation compatibility
+mandatory. Native RGA cannot satisfy it: concrete birth-record additions
+commute, while the corresponding list operations need not. Its checked proof
+instead chooses a history that preserves visibility between
+specification-conflicting updates directly.
+
+**Recommended change:** require the same history to respect both `lo_E` and
+visibility between updates that do not commute in the sequential
+specification. Present `spec-non-comm` as a sufficient way to obtain the latter
+property, rather than a mandatory law excluding the RGA case study. Update
+the lifting statements consistently. The no-op-remove example still motivates
+this requirement.
+
+**Evidence:** [EventBridge.lean](../Sal/MRDTs/Paper1/EventBridge.lean),
+`EventVersionsSpecificationRA`; [RGAConcretePort.lean](../Sal/MRDTs/Paper1/RGAConcretePort.lean),
+`globalCompatibility_impossible`.
+
+### 4. State the certified five-VC extension, including its state domain
+
+**Confirmed — §§4–5 and §7; Table 1.** The general exposition quantifies over
+all implementation states and claims uniqueness for all allowed folds.
+Several checked implementations use a justified set of states and certified
+events. §7 currently restricts executions but does not state the corresponding
+commutation, representation and reconstruction assumptions.
+
+**Change:** define the state invariant and its preservation, restrict the
+relevant laws explicitly, and state the conditions that allow the inductive
+proof to reconstruct smaller states and retain required predecessor events.
+Then state the five-VC sufficient-condition theorem on that domain. Preserve
+concrete state equality. Merely saying “reachable states” or “operations that
+can both be issued here” is insufficient: already-issued updates are also
+applied during reconstruction.
+
+For the independent history proof, distinguish one suitable history from
+every linear extension. Do not claim the stronger result for a case study
+whose theorem only supplies the former.
+
+**Evidence:** [InvariantOrder.lean](../Sal/MRDTs/Paper1/InvariantOrder.lean),
+`Commutes`, `Closed`, `VersionsRA`; the certified replay and execution
+theorems linked in the [correctness audit](paper1-correctness-audit.md).
+
+**Coverage correction:** the current table uses `AnchoredQueue.publicQueue`,
+not the old `Instances.Queue` in Claude's obstruction. Its public certificate
+concludes invariant-restricted RA-linearizability. The MVR row does use
+`MVRLive`, but its proof derives restrictions on concurrent issued events.
+An impossibility over arbitrary events does not refute that certified result.
+Complete the per-row theorem mapping before saying all rows instantiate one
+unrestricted theorem; an extra jargon-heavy table column is not essential.
+
+### 5. Restore the specification's event-to-label projection
+
+**Confirmed — §2 labels, §4 sequential specification, §§6–7.** The paper's
+`ops` discards timestamps and replica identities, while its RGA specification
+needs the inserted identity. Other case studies also retain relevant event
+information. The appendix already explains this extension.
+
+**Change:** define a projection `f(e)` and use `ops_f` consistently. The
+ordinary-set specification ignores metadata; identity-based sequences retain
+the identities named by later operations. Explain that distinction without
+requiring all specifications to expose implementation bookkeeping.
+
+### 6. Give canonical states the domain used by the induction
+
+**Confirmed — §4 order/determinacy/canonical-state definitions; §5 VCs.**
+Section 4 requires causal closure. Section 5 removes maximal events and uses
+sets closed only under noncommuting predecessors. Such a set need not be
+causally closed, so the earlier definition does not cover every use of `can`.
+
+**Change:** state existence and uniqueness on the exact finite, supported,
+weakly closed domain used by the raw proof. State the certified reconstruction
+domain separately. Check every canonical-state expression in the VCs and
+Join lemma against those premises. This is a theorem-scope correction, not
+just a terminology replacement.
+
+### 7. Check issuance at the actual source state
+
+**Confirmed — §7, definition of certified executions.** The current definition
+requires a guard to hold at *some* ordered replay of predecessors. The intended
+operational condition checks it at the replica head where the event was
+created. Those are not interchangeable without a state-agreement argument.
+
+**Change:** add `G(e,s)` to the issuing Apply step and retain that issuance
+evidence. Keep the existing explanation that reconstruction does not issue
+the event again. State the state-agreement premises used when transferring
+this evidence into the history proof.
+
+**Evidence:** [Certificates.lean](../Sal/MRDTs/Framework/Certificates.lean)
+and the [formal reference](paper1-formal-reference/main.pdf), certified-execution
+definitions.
+
+### 8. Replace the RGA example with the specification and argument actually proved
+
+**Confirmed — §7 RGA example.** The manuscript uses a retained list plus
+tombstones and guarded deletion. The checked native-RGA specification uses a
+live list plus an allocation registry, a live-anchor insertion condition and
+total deletion. Its concrete insertions commute, contradicting the example's
+claim that `lo_E` must order an anchor's birth before its use.
+
+**Change:** use the checked specification, handle root `0` separately, and
+explain how the proof selects an admitted history with the correct query
+answer. Enabled operations alone do not establish answer agreement: two
+insertions after the same anchor can be legal in either order and produce
+different lists.
+
+**Evidence:** [RGAConcretePort.lean](../Sal/MRDTs/Paper1/RGAConcretePort.lean),
+[RGAIdentified.lean](../Sal/MRDTs/Paper1/RGAIdentified.lean), and Appendix A's
+native-RGA entry.
+
+### 9. Require the sequential specification to admit the returned query answer
+
+**Confirmed — §6, simulation condition (iii); §4 specification notation.**
+Condition (iii) only says that an admitted answer equals the implementation's
+answer. It is vacuously true when no answer is admitted. Also, an arbitrary
+transition relation need not have a unique state after a history.
+
+**Change:** directly require the query transition labelled with the
+implementation's answer to exist. Use relational execution notation, or
+explicitly assume determinism before writing the reached state as a function.
+The current update condition (ii) already requires a transition: earlier
+notes claiming it too is implication-only are stale.
+
+### 10. Scope the convergence and recursive-merge claims correctly
+
+**Confirmed — abstract/Introduction/conclusion; §3 recursive-base paragraph.**
+Admission of query histories alone does not imply equality of hidden
+implementation states. Convergence follows from the canonical or represented
+state theorem and its hypotheses. Also, recursively combining common
+ancestors produces a base state, not necessarily an allocated version.
+
+**Change:** attribute convergence to the relevant sufficient-condition
+theorem. Scope “all linearizations produce the same state” to that theorem's
+domain. Give a concise statement of the recursive-base extension and point
+to its proof, rather than treating the computed base as an allocated LCA.
+Do not add GC to this discussion.
+
+## Smaller corrections and stale findings
+
+| Location | Correction or status |
+|---|---|
+| §3 Apply rule and explanation | `range(S)` contains state/event-set pairs; union the event-set components. |
+| §4 quantification over `dom(S)` | Say all stored versions; distinguish these from current replica heads. |
+| §4 example | Replace the repeated `A_q` in `[A_q,A_q,R_p]` with `A_p`. |
+| §5 principal downset | Every **other** member precedes the event through a path; the set also contains the event itself. |
+| §5 Join lemma | “Supported” is not defined in the active text; write the subset premise explicitly. |
+| §5 VC4 explanation | `B` is the predecessor/base state; the second branch is `e(B)`. |
+| §5 worked example | Identify the smaller inner merge by induction before applying VC4. |
+| §5 `Admissible` | The old unbound-`E` complaint is resolved: the current formula uses `E_i`. |
+| Formal reference versus paper | Align VC4/VC5 numbering by their equations, not their old numbers. |
+| Related Work/conclusion | Remove the extra empty Conclusion section and duplicate label. |
+| Bibliography | `Notion` and `NotionCRDTBlog` cite the same blog post; consolidate uses. |
+| Implementation section | Old reports that it is empty are obsolete. Framework/per-MRDT obligations and proof columns are now explained. |
+
+## Case-study work still in progress
+
+The priority-queue and incremental tree-move replacements are separate from
+the manuscript corrections above. The published priority-queue design has
+different semantics from the currently measured variant; an agent has reported
+a checked obstruction against an ordinary sequential queue, whose exact scope
+still needs parent review. The incremental tree-move proof is also not yet
+integrated. Do not describe either replacement as completed in the paper or
+change its table counts before integration and verification.
+
+## Suggested order for the paper review
+
+Resolve items 2–5 first: they determine the statement the paper claims and
+which implementations it covers. Then repair §§5–7 using items 6–9. Apply
+the Wang/Neem correction consistently across the motivation, abstract,
+introduction and related work. Finally align the contribution claims,
+recursive-base scope and reference notation. The page-recovery pass can
+remove repetition in parallel, but must leave room for these missing premises.
