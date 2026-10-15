@@ -21,3 +21,6 @@ __pycache__/
 # Tectonic diagnostics for the two tracked working-paper PDFs.
 /docs/framework-paper/main.diagnose
 /docs/collaborative-editing-paper/main.diagnose
+
+# Generated standalone paper artifact (rebuild with artifact/export-paper1.py).
+/artifact/dist/

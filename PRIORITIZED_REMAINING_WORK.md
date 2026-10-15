@@ -10,6 +10,14 @@ sole active bounded counter is the published Balegas matrix/max design.
 
 ## Appendix round 2 and theorem-scope alignment
 
+- [x] Produce the documented standalone paper source artifact. The exporter
+  packages the measured source/import closure, 242 checked roots, claim/datatype
+  guides, exact table-count reproduction and three public Notion demo regressions.
+  Fresh local-source build passes (3,783 jobs); all 24 row counts, 444 measured
+  source hashes and selected metatheory totals reproduce. Initial external Lean
+  package acquisition is separate; the clean build reused pinned package caches.
+  Fresh demo acquisition plus offline regression passes. No GC result is claimed.
+
 - [x] Align the appendix with pointwise `ops`: required identifiers are operation
   arguments fixed at issuance. Add checked Lean transport of the existing
   configuration-level history results to that representation, including
