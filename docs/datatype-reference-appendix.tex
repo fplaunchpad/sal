@@ -361,7 +361,10 @@ This maximum-key implementation refines an ordinary overwrite register using the
 
 % Sal/MRDTs/Instances/MVRContract.lean: clientStep, clientLegal, queryValues
 
-% Sal/MRDTs/Paper1/CertifiedMVRHistory.lean: language
+% Sal/MRDTs/Paper1/CertifiedMVRHistory.lean: language, replay_history
+% Sal/MRDTs/Paper1/CertifiedQueueMVRCommutation.lean: overwrite_implies_visibility, concurrent_commutes, concurrent_empty_exact
+% Sal/MRDTs/Paper1/CertifiedMVRCertificate.lean: versions, versionsV, executions, executionsV
+% Sal/MRDTs/Paper1/PolicyObstructions.lean: MVR.overwrite_noncommute, MVR.metadata_control, MVR.no_operation_exact_policy
 
 % Sal/MRDTs/Paper1/MVRClient.lean: prepare; issuance_prepare_iff; prepared_public_read; historical_issued_prepared_public_read
 
@@ -420,7 +423,16 @@ List order and duplicate overwrite IDs do not affect this guard. $W$ names only 
 
 
 \paragraph{Conflict-resolution relation.}
-$\rcrel=\varnothing$. The supplied overwrite IDs retain the dependencies on observed writes.
+$\rcrel=\varnothing$. This adds no precedence between concurrent writes.
+A write need not commute with a write it names in $W$: for example,
+$(1,0,\operatorname{write}(10,[]))$ and
+$(2,1,\operatorname{write}(20,[1]))$ do not commute. Changing the first
+write's timestamp to an identity outside $W$ can change commutation without
+changing either operation payload. Thus no operation-only relation describes
+all non-commuting event pairs. In guarded executions, a named overwrite
+always targets a visible write, so concurrent issued writes commute. The
+certificate uses this concurrent-event scope and preserves the causal
+overwrite dependencies; it does not assert that all concrete writes commute.
 
 
 \paragraph{Source and adaptation.}
@@ -436,13 +448,14 @@ The configuration uses compact live tagged writes. Overwrite IDs are prepared fr
 
 % Sal/MRDTs/Paper1/OptionalRegisterVC.lean: fiveVC, representationJoin
 
-% Sal/MRDTs/Paper1/OptionalRegisterHistory.lean: model, spec, sorted_refines, history_from_representation
+% Sal/MRDTs/Paper1/OptionalRegisterHistory.lean: model, spec, Early, rank, sorted_refines, history_from_representation
 
 % Sal/MRDTs/Paper1/OptionalRegisterCertificate.lean: certified, certifiedV, executions, executionsV
 
 % Sal/MRDTs/Paper1/OptionalRegisterSourceValidity.lean: sourceWellFormed, sourceWellFormedV, sourceWellFormedOrdinary
 
-% Sal/MRDTs/Paper1/OptionalRegisterPolicy.lean: policy
+% Sal/MRDTs/Paper1/OptionalRegisterPolicy.lean: policy, sets_commute, guarded_exact, conditional, laws
+% Sal/MRDTs/Paper1/OptionalRegisterExecution.lean: same_rep_sets_noncomm
 
 Set installs a value and Unset clears the values it has observed. A concurrent Set survives Unset; among surviving sets, the greatest timestamp determines the returned value.
 
@@ -512,7 +525,10 @@ x&\xrightarrow{\F{rd}\Rightarrow y}x&&\text{when }y=x.
 \end{aligned}
 \]
 
-The specification has no replica rows, counters, or timestamps in its state. The witness places unsets and the sets they observed first, followed by surviving sets in timestamp order.
+The specification has no replica rows, counters, or timestamps in its state.
+The witness first lists all Unsets and all events visible to any Unset,
+in increasing timestamp order. It then lists all remaining Sets, also in
+increasing timestamp order.
 
 
 \paragraph{Issuance.}
@@ -528,7 +544,14 @@ Positive timestamps ensure an active row never has payload $(0,0)$. Globally fre
 \rcrel(o_1,o_2)\iff\exists v.\ o_1=\mathrm{unset}\land o_2=\mathrm{set}(v).
 \]
 
-A concurrent Set follows Unset. Sets at different replicas commute in the implementation because they update different rows. The independent scalar specification still distinguishes writes of different values, so the witness also respects specification-conflicting visibility.
+A concurrent Set follows Unset. Sets at different replicas commute because
+they update different rows. Two Sets with distinct timestamps from the same
+replica do not commute: the last Set determines that row's timestamped
+payload. The policy's exact correspondence with non-commuting event pairs is
+therefore proved for different replicas; events from one replica are ordered
+by visibility in the executions covered here. The independent scalar
+specification still distinguishes Sets of different values, so the witness
+also respects specification-conflicting visibility.
 
 
 \paragraph{Source and adaptation.}
@@ -776,7 +799,11 @@ This is the live-tag OR-set of the motivating example, represented by finite set
 \label{app:dt-efficient-or-set}
 
 \noindent Source references: \cite{neem}.
-% Sal/MRDTs/Instances/EfficientORSet.lean; Paper1/EfficientORSetEventSpec.lean
+% Sal/MRDTs/Instances/EfficientORSet.lean: State, update, merge, D, issuance
+% Sal/MRDTs/Paper1/GuardedORSet.lean: EfficientORSet.Guarded.laws, EfficientORSet.Guarded.conditional
+% Sal/MRDTs/Paper1/NeemScope.lean: guarded_noncomm_exact, guarded_vs_unqualified
+% Sal/MRDTs/Paper1/GuardedRawEfficientCertificate.lean: certificate, storedCanonical, versionsV, executions, executionsV
+% Sal/MRDTs/Paper1/EfficientORSetEventSpec.lean: conflict, spec, foldHistorySound, commutationCompatibility, noncommutation_does_not_factor, restrictedLaws_impossible
 
 This variant keeps only the newest live tag for each replica and element. Removal deletes observed tags, and additions at other replicas survive concurrently.
 
@@ -813,18 +840,40 @@ $G(e,\sigma)\iff\top$; no additional datatype guard is required.
 \]
 The relation orders a concurrent removal before an addition of the same
 element, subject to the absorber clause of Definition~\ref{def:lo-local}.
-Unlike the ordinary OR-set, two additions of the same element at the same
-replica do not commute: each replaces the other's tag. At different replicas
-the same application operations commute. Thus no relation on application
-operations alone characterizes all non-commuting event pairs, and the
-unrestricted policy laws do not hold. In certified executions, events issued
-under one replica identity are visibility-ordered, so these overwrites are
-never concurrent. The execution theorem proves the displayed policy and
-sequential specification under that scope, using the merge verification
-conditions and the ordinary-set interpretation of sequential folds.
+Unlike the ordinary OR-set, two additions of the same element at one replica
+with distinct timestamps do not commute: each replaces the other's tag.
+At different replicas these additions commute. This example is exempt from
+the body's \textsc{rc-non-comm} clause because its operation payloads are
+equal; it refutes the stronger requirement that $\rcrel$ classify every
+non-commuting event pair, including equal-payload pairs.
+
+The certificate instead proves exact conflict coverage for events from
+different replicas. Conditional commutation uses an event that actually
+fails to commute with the $\rcrel$-later addition as its absorber. A removal
+of the same element qualifies; another addition can qualify only at the same
+replica as that addition. An addition at a different replica commutes and
+is not an absorber for this pair. In fact the body's operation-level
+\textsc{cond-comm} law fails. From the empty set, take
+$a=(1,2,\mathrm{remove}(x))$, $b=(2,0,\mathrm{add}(x))$ and
+$c=(3,1,\mathrm{add}(x))$. Then
+\[
+c(a(b(\varnothing)))=\{(1,3,x)\},\qquad
+c(b(a(\varnothing)))=\{(0,2,x),(1,3,x)\}.
+\]
+The payloads of $b$ and $c$ fail universal commutation because same-replica
+instances do not commute. Nevertheless these particular events commute;
+$c$ cannot absorb the difference in replica $0$'s row. The event-level
+conditional law excludes this choice of absorber.
+In the executions covered here, events under one replica identity are
+visibility-ordered, so same-replica overwrites are never concurrent. The
+certificate derives the displayed policy and ordinary-set specification
+using these event-scoped laws, the merge verification conditions and the
+ordinary-set interpretation of sequential folds.
 
 \paragraph{Source and adaptation.}
-The state retains at most one live tag per replica and element. Its event timestamp plays the counter role of the source's replica/counter tag; a new addition replaces that replica's tag for the element.
+Like the cited source, this implementation uses
+$(r,t,x)$ tags, containing replica, timestamp and element. A new addition
+replaces that replica's live tag for the element.
 
 \subsection{Remove-wins set}
 \label{app:dt-remove-wins-set}
@@ -987,13 +1036,16 @@ The source supplies updates and merge but no query. We expose an accumulating mu
 % Sal/MRDTs/Paper1/PriorityQueueSameRecordHistory.lean: Targets, present_order, present_replay, absent_replay, historyAdequacy
 % Sal/MRDTs/Paper1/PriorityQueueSameRecordCertificate.lean: certified, certifiedV, executions, executionsV
 % Sal/MRDTs/Paper1/PriorityQueueSameRecordAudit.lean: audit_same_record_priority_queue
+% Sal/MRDTs/Paper1/PublishedPriorityQueueObstruction.lean: honest_preparation, source_records_and_unique_winner, relaxed_no_causal_serialization
 % Sal/MRDTs/Paper1/PriorityQueueSameRecordComposition.lean: keyHistory, assemble_key_histories
 
 Each addition creates an insertion record. An increment attaches to the
 insertions visible at its issuer, and removal disables those observed
 insertions; an unseen concurrent addition survives. The returned priority
 uses the latest surviving insertion's innate value and that same record's
-increments. Removing and reinserting an element therefore resets its priority.
+increments. Concurrent additions resolve by greatest timestamp; an increment
+attached only to an older insertion does not affect the newer one. Removing
+and reinserting an element resets its priority.
 
 \paragraph{Concrete MRDT}
 Element IDs and event timestamps are natural numbers; innate priorities and
@@ -1040,10 +1092,10 @@ p_\sigma(x)&=\begin{cases}
 \end{aligned}
 \]
 The greatest insertion timestamp selects both the innate value and its
-increment attachments. Innate value breaks a forged equal-timestamp birth
-tie on raw states; globally unique issued timestamps exclude this fallback.
+increment attachments. If an arbitrary state contains two births with the same timestamp, their
+initial values break the tie. Globally unique issued timestamps exclude this case.
 Attachments naming an unknown birth do not create a query candidate. In
-states built by honest preparation from the initial state, every attachment
+states built from the initial state using the issuance guards, every attachment
 has a birth; this property is preserved by union merge and is not an extra
 issuance guard. Removed births and their attachments remain stored, but
 never contribute to a new insertion.
@@ -1156,7 +1208,7 @@ requires a separately selected sequential order.
 
 \paragraph{Mechanization status.}
 The five merge verification conditions establish replay and convergence
-for the immutable carrier, including recursive merge bases. For every stored
+for the three finite sets, including recursive merge bases. For every stored
 version of an execution satisfying the issuance guards, a single sequential
 history explains all four queries and preserves visible pairs that do not
 commute in the specification. The proof derives the required insertion and
@@ -1165,16 +1217,27 @@ The local maximum-removal refinement also equates the returned pair and the
 resulting priority map.
 
 \paragraph{Source and adaptation.}
-This is an intentional query repair of the cited add-wins priority queue,
+This is an intentional query adaptation of the cited add-wins priority queue,
 marked as an adaptation in Table~\ref{tab:implementation}. Its Add, Inc,
 Remove effects and original preparation snapshots preserve the published
 algorithm's per-insertion structure. The published query chooses the latest
 innate priority and independently a Most-Change-Win record's acquired priority;
 this repair takes both from the same latest surviving insertion. It therefore
 changes the source query rather than proving source equivalence. For example,
-Add$(x,10)$; Inc$(x,5)$; Remove$(x)$; Add$(x,2)$ returns priority $2$,
-not $7$: the previous insertion's acquired increment is retained as data but
-cannot leak into the new insertion. Maximum ties use the greatest element ID.
+two replicas concurrently execute
+\[
+\begin{array}{ll}
+r_0:&\F{add}(x,0)_{t=1};\ \F{inc}(x,2)_{t=3},\\
+r_1:&\F{add}(x,10)_{t=2};\ \F{inc}(x,1)_{t=4}.
+\end{array}
+\]
+Each increment observes only its replica's addition. The published query
+combines the latest initial value $10$ with the other record's acquired
+value $2$, returning $12$. This variant returns $10+1=11$. The possible
+ordinary sequential results preserving each Add-before-Inc pair are
+$2,3,11,13$, so none explains $12$. By contrast, both algorithms reset
+priority after removal and reinsertion; that sequential case does not
+distinguish them. Maximum ties use the greatest element ID.
 
 \subsection{Bounded counter with rights transfer}
 \label{app:dt-bounded-counter}
@@ -1275,8 +1338,21 @@ Raw arithmetic updates commute, but maximum merge relies on cumulative
 single-writer cells. Each replica's events are visibility-ordered, and the
 witness respects causal order, so its own preceding increments, decrements
 and transfers are present when reconstructing a cell. The issuance guard
-funds each decrease from rights available at its original state. The merge
-laws and resulting bound hold in both ordinary and recursive-merge executions.
+funds each decrease from rights available at its original state.
+
+The mechanized five-VC proof takes the dependencies of $e$ to be its full
+causal past, rather than only its non-commuting visible predecessors. This
+is necessary: for consecutive increments $e_1,e_2$ of one replica, the
+latter choice gives $\down{e_2}=\{e_2\}$. Then VC4 would require
+\[
+\F{merge}(\sigma_0,e_1(\sigma_0),e_2(\sigma_0))
+=e_2(e_1(\sigma_0)),
+\]
+but the updated diagonal cell is $1$ on the left and $2$ on the right.
+The checked result therefore uses a generalization of the dependency sets
+in Section~\ref{sec:proof-strategy}, not that section's fixed choice.
+With full causal dependencies, the five VCs and the resulting bound hold
+for ordinary and recursive-merge executions.
 
 \paragraph{Source and adaptation.}
 The effectors and componentwise maximum merge follow the escrow counter of Balegas et al.; nonnegative amounts and a fixed replica universe delimit the port.
@@ -1508,11 +1584,11 @@ replica tie-break, unlike the timestamp/replica ordering of the source.
 
 \noindent Source references: \cite{Roh}.
 
-% Sal/MRDTs/Instances/EmbedRGA.lean: E; EOp; eCoord; eUpdate; eInsert; eMerge; eMerge2; eEventOrder; EEventOrder; eApplicable
+% Sal/MRDTs/Instances/EmbedRGA.lean: E; EOp; eCoord; eUpdate; eInsert; eMerge; eMerge2; eApplicable
 
 % Sal/MRDTs/Instances/EmbedRGASequential.lean: eSpecStep; eInsAfter; eSeqOK
 
-% Sal/MRDTs/Instances/ProductionRGA.lean: embedSpec; embedLegal; embedClientSpec; embedOrder
+% Sal/MRDTs/Instances/ProductionRGA.lean: embedSpec; embedLegal; embedClientSpec
 
 % Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean: key; keyLt
 
@@ -1621,11 +1697,11 @@ This implementation replaces the insertion tree by prefix-code coordinates and p
 
 \noindent Source references: \cite{Roh,FugueMax}.
 
-% Sal/MRDTs/Instances/SidedEmbedRGA.lean: S; SOp; sCoord; sUpdate; sInsert; sMerge; sMerge2; sEventOrder; SEventOrder; sApplicable
+% Sal/MRDTs/Instances/SidedEmbedRGA.lean: S; SOp; sCoord; sUpdate; sInsert; sMerge; sMerge2; sApplicable
 
 % Sal/MRDTs/Instances/SidedEmbedRGASequential.lean: sSpecStep; sInsAfter; sInsBefore; sSpecFold; sSeqOK
 
-% Sal/MRDTs/Instances/ProductionRGA.lean: sidedSpec; sidedLegal; sidedClientSpec; sidedOrder
+% Sal/MRDTs/Instances/ProductionRGA.lean: sidedSpec; sidedLegal; sidedClientSpec
 
 % Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean: sBlock; sKey
 
@@ -1906,8 +1982,9 @@ T,&c=p\lor p\to_T^+c,\\
 T[c\mapsto\operatorname{some}(p,m)],&\text{otherwise}.
 \end{cases}
 \]
-On an acyclic tree this test is equivalent to requiring that the new tree
-be acyclic: $c\ne p$ and $c$ is not an ancestor of $p$.
+The first branch is the rejection test: $c=p$ or the parent $p$ already
+has a path to $c$. On an acyclic input tree, its negation is equivalent to
+acyclicity of the candidate $T[c\mapsto\operatorname{some}(p,m)]$.
 
 \textbf{Log and state.} A log entry $q=(e,u)$ stores its event and the
 previous parent/metadata $u\in\operatorname{Option}(\mathbb N^2)$ of that
@@ -1990,18 +2067,32 @@ prefix $h$ used for admission. For $h=[e_1,\ldots,e_n]$, define
 \land(\forall i<j,\ k(e_i)\le_{\rm lex}k(e_j))
 \land\forall e\in h,\ e.c\ne0\land e.c\ne1.
 \]
-The admitted transitions are the ordinary in-place moves
+The specification tests the resulting graph directly. Write
+$\operatorname{Acyclic}(T)\iff\forall x,\neg(x\to_T^+x)$, and define
+\[
+\operatorname{move}_{\rm spec}(T,e)=
+\begin{cases}
+T',&\operatorname{Acyclic}(T'),\\
+T,&\text{otherwise},
+\end{cases}
+\qquad T'=T[c\mapsto\operatorname{some}(p,m)].
+\]
+The admitted transitions are ordinary in-place moves:
 \[
 \begin{aligned}
-(h,T)&\xrightarrow{e}(h\mathbin{+\!+}[e],f(T,e))
+(h,T)&\xrightarrow{e}(h\mathbin{+\!+}[e],\operatorname{move}_{\rm spec}(T,e))
  &&\text{when }\operatorname{Legal}(h\mathbin{+\!+}[e]),\\
 (h,T)&\xrightarrow{\F{rd}\Rightarrow y}(h,T)
  &&\text{when }y=\operatorname{visible}(T).
 \end{aligned}
 \]
 A cycle-rejected move still extends the prefix. This machine has no undo
-log. The selected witness sorts events by increasing $k$; Lamport timestamp
-growth ensures that this witness respects visibility.
+log and does not call the implementation's ancestor test. Its states remain
+acyclic from $T_0$. The equivalence above proves
+$\operatorname{move}_{\rm spec}(T,e)=f(T,e)$ on those states
+(\texttt{candidate\_safe\_iff} and \texttt{sourceMove\_eq\_doMove}).
+The selected witness sorts events by increasing $k$; Lamport timestamp
+growth ensures that it respects visibility.
 
 \paragraph{Issuance.}
 For original issuing state $s$ and $e=(t,r,\mathrm{Move}(p,m,c))$,
@@ -2033,11 +2124,11 @@ query, without an executable performance claim.
 
 \noindent Source references: \cite{Peritext}.
 
-% Sal/MRDTs/Instances/EmbedRGA.lean: E; EOp; eCoord; eUpdate; eInsert; eMerge; eMerge2; eEventOrder; EEventOrder; eApplicable
+% Sal/MRDTs/Instances/EmbedRGA.lean: E; EOp; eCoord; eUpdate; eInsert; eMerge; eMerge2; eApplicable
 
 % Sal/MRDTs/Instances/EmbedRGASequential.lean: eSpecStep; eInsAfter; eSeqOK
 
-% Sal/MRDTs/Instances/ProductionRGA.lean: embedSpec; embedLegal; embedClientSpec; embedOrder
+% Sal/MRDTs/Instances/ProductionRGA.lean: embedSpec; embedLegal; embedClientSpec
 
 % Sal/MRDTs/Instances/RGAKernel/EmbedRead.lean: key; keyLt
 
@@ -2086,11 +2177,11 @@ This adaptation stores explicit formatting boundaries as embedded-RGA payloads. 
 
 \noindent Source references: \cite{Peritext}.
 
-% Sal/MRDTs/Instances/SidedEmbedRGA.lean: S; SOp; sCoord; sUpdate; sInsert; sMerge; sMerge2; sEventOrder; SEventOrder; sApplicable
+% Sal/MRDTs/Instances/SidedEmbedRGA.lean: S; SOp; sCoord; sUpdate; sInsert; sMerge; sMerge2; sApplicable
 
 % Sal/MRDTs/Instances/SidedEmbedRGASequential.lean: sSpecStep; sInsAfter; sInsBefore; sSpecFold; sSeqOK
 
-% Sal/MRDTs/Instances/ProductionRGA.lean: sidedSpec; sidedLegal; sidedClientSpec; sidedOrder
+% Sal/MRDTs/Instances/ProductionRGA.lean: sidedSpec; sidedLegal; sidedClientSpec
 
 % Sal/MRDTs/Instances/RGAKernel/SidedChainLex.lean: sBlock; sKey
 
@@ -2212,12 +2303,29 @@ shadow values and the deletion/mark stores; the rendered interface observes
 formatted live text. The reported line counts are the deduplicated union of
 both interfaces' dependencies, not a second datatype row.
 
-This adaptation has timestamp-dependent boundary expansion: only an
-after-end expands to include the following run of character IDs greater than
-the mark identity. It uses this rule rather than Peritext's gap-based
+Boundary behavior depends on the mark identity, not only on which side
+is selected. At a resolved anchor, the four cases are:
+\begin{itemize}
+\item A before-start begins at the anchor, with no timestamp-based left growth.
+\item An after-start excludes the anchor and the contiguous newer-than-mark
+  run immediately to its right.
+\item A before-end excludes the anchor and the contiguous newer-than-mark
+  run immediately to its left.
+\item An after-end includes the anchor and the contiguous newer-than-mark
+  run immediately to its right.
+\end{itemize}
+A run stops at the first ID no greater than the mark ID. After deletion,
+anchors resolve by $T$ above and the interval is recomputed. Coverage is
+empty if either resolved bound is $\bot$, or if both are numerical and
+$\alpha_m\ge\beta_m$.
+Deleting every originally marked character does not by itself guarantee
+collapse. For example, take birth order $z_1,a_2,b_3,x_5$, mark
+$[\mathrm{before}\ a_2,\mathrm{after}\ b_3]$ with mid $4$, and delete $a_2,b_3$.
+The start resolves to $x_5$; the end resolves to $z_1$ and grows over $x_5$,
+so $x_5$ remains formatted. These rules differ from Peritext's gap-based
 expansion. Every mark type, including comments, resolves last-writer-wins
-per character. The rendered query returns a Boolean for the requested type;
-link values and other stored mark values are not rendered.
+per character. The query returns a Boolean for the requested type; stored
+link values and other mark values are not rendered.
 
 
 \subsection{AegisSheet}
@@ -2231,7 +2339,7 @@ link values and other stored mark values are not rendered.
 
 % Sal/MRDTs/Paper1/TreeSheetEventSpec.lean: AegisSheetEvent.spec
 
-Stable row and column identities use observed-remove presence, and cells retain concurrent values. Events also record inverse actions for undo and acknowledged purge information for garbage collection; merge unions the events.
+Stable row and column identities use observed-remove presence, and cells retain concurrent values. Events also record inverse actions for undo and explicit purge markers that mask pre-cutoff cell values; merge unions the events.
 
 \paragraph{Concrete MRDT}
 \textbf{Types:} all timestamps, replica IDs, stable IDs, positions and values are natural numbers. $\alpha\in\{\mathrm{row},\mathrm{column}\}$; $k\in\{\mathrm{insert},\mathrm{move},\mathrm{remove},\mathrm{restore}\}$. Let $\epsilon(\operatorname{none})=\varnothing$ and $\epsilon(\operatorname{some}(z))=\{z\}$. All sets below are finite.
@@ -2245,9 +2353,11 @@ For an axis effect, $i$ is its stable ID and $b,h$ are before/after
 positions. For a cell effect, $(i,j)$ names its stable row and column,
 $B,A$ are before/after value sets and $W$ lists overwritten event IDs.
 For a range, $i$ names the range and $b,h$ are its before/after endpoints.
-Range tuples give first row, last row, first column and last column stable IDs. A purge gives cutoff $c$, coordinates $C$, covered timestamp-coordinate pairs $F$, and acknowledgements $R$. The covered set retains the event-coordinate
-pairs needed to account for values removed by garbage collection. Purge requires acknowledgements from the fixed roster $\{0,1,2\}$ and
-is issued by coordinator $0$.
+Range tuples give first row, last row, first column and last column stable IDs.
+A purge supplies a cutoff $c$, coordinates $C$, covered timestamp-coordinate
+pairs $F$, and an acknowledgement list $R$. The guard requires
+$\{0,1,2\}\subseteq R$ and issuer $0$. This checks the supplied list, not
+evidence that those replicas acknowledged the cutoff.
 
 \textbf{State and merge:} $E$ is a finite event set, initially empty.
 \[
@@ -2362,7 +2472,15 @@ $\rcrel=\varnothing$.
 
 
 \paragraph{Source and adaptation.}
-This is an event-set intent model of AegisSheet, with stable axis IDs, multi-value cells and inverse events for undo; it does not reproduce the paper's delivery engine.
+This is an event-set model of AegisSheet, with stable axis IDs, multi-value
+cells and inverse events for undo; it does not reproduce the paper's delivery
+engine. The purge cutoff is not bounded by the issuer's observed timestamps.
+Consequently a purge can mask a concurrent write it has not seen, provided
+that write's timestamp is at or below the cutoff. The sequential specification
+includes the same masking rule, so RA-linearizability does not establish an
+acknowledgement protocol or a rule limiting purges to observed writes. The
+source explicitly permits late pre-cutoff changes to restore an axis without
+restoring its purged contents.
 
 
 \subsection{Notion core}
@@ -2432,7 +2550,13 @@ This is an event-set intent model of AegisSheet, with stable axis IDs, multi-val
 
 % Sal/MRDTs/Instances/NotionCoreMachineCommands.lean: commands
 
-Each block contains an RGA-like text instance. A split inserts a hidden marker and transfers the following interval into a new block. Replicas merge immutable birth, erasure, creation and cut facts by union, then reconstruct text and block order.
+A text instance is an RGA-like parent graph; a displayed block presents
+slices of text instances. Splitting a block inserts a hidden marker and gives the new
+block the following interval of the same source instance. The new block's own
+instance may therefore be empty. Insert and erase name both a displayed block
+and the instance holding its characters; these names can differ after a split.
+Replicas merge immutable births, erasures, block creations and cut assignments
+by union, then reconstruct the displayed block list.
 
 \paragraph{Concrete MRDT}
 \textbf{Structural state.} Source IDs are $k=(c,u)$, ordered by counter and then lexicographically by UTF-16 session units. They are distinct from the event timestamp and replica: $e=(t,r,\tau)$, $\tau=(k,p)$. Let $K=\{\mathsf{initial}\}\uplus\{\mathsf{issued}(k)\mid k\in\mathsf{Id}\}$ be block/instance keys and $\mathsf{Origin}=\{\mathsf{start}\}\uplus\{\mathsf{item}(k)\mid k\in\mathsf{Id}\}$ origins. A row records an item ID, its kind and its origin; item kinds are $\mathsf{text}(v,d)$ or $\mathsf{split}$, where $d$ is the deletion bit.
@@ -2722,6 +2846,46 @@ prepared identities rather than replaying numeric positions unchanged.
 \paragraph{Issuance.}
 \textbf{Original issuance authority.} Structural integration changes receipt, merge and observation. It retains the original protocol: explicit factory initialization, whole-version receipts, guarded ordinary requests and injective replica/session assignment $\eta$. Empty forks may precede initialization; later forks copy received snapshots. Bootstrap remains a separate factory action.
 
+\textbf{Reference reconstruction.} The guard reconstructs a reference state
+$M=(\mathcal I,\mathcal H,\mathcal O)$: $\mathcal I$ maps instance keys to
+parent rows and pending erasure IDs; $\mathcal H$ is an ordered forest of
+block-title slice trees; $\mathcal O$ is displayed block order. Initially all
+three are empty: $M_0=(\varnothing,\varnothing,[])$. A slice $(a,z)$ denotes the atoms strictly after start $a$
+and before optional stop $z$, or to END. Physical atoms use the parent-row
+traversal defined above, including tombstones, markers and the virtual start.
+Slice trees render their intervals in preorder.
+
+Define the partial transaction effect $A_\tau$ by these rules, with all phases
+of a transaction committed together:
+\begin{itemize}
+\item Create ensures the instance exists, preserving its rows if already
+present and starting empty otherwise. It adds a title slice
+  $((\beta(b),\mathsf{start}),\mathrm{END})$, then inserts $\beta(b)$ after its
+  predecessor in $\mathcal O$, or at the front if that predecessor is absent.
+  An already existing block leaves the state unchanged.
+\item Insert adds the run rows $B(i,k,o,x)$ to instance $i$. A text item whose
+  ID is pending-erased is born deleted. Equal immutable rows are idempotent;
+  conflicting IDs/origins or a new self-origin row cause failure.
+\item Erase hides the named rows in $i$ and retains their IDs as pending
+  erasures, including targets not yet born.
+\item Split first creates $b_k$ after $b$, then inserts marker $a(i,k)$.
+  At the first slice-tree node whose interval contains the marker, replace
+  $\mathsf{node}(a,z,H)$ by
+  $\mathsf{node}(a,a(i,k),[\mathsf{node}(a(i,k),z,H)])$.
+  Detach that new right subtree and append it under $b_k$'s title root.
+  Missing targets, intervals or endpoints, or non-increasing interval bounds,
+  cause failure. Bootstrap creates the initial block and inserts its text.
+\end{itemize}
+The reference interpreter is the partial left-to-right fold of these effects:
+\[
+\mathcal R(S)=\operatorname{foldM}
+ (A,M_0,\operatorname{sort}_{\rm source\ ID}(S)).
+\]
+Here $\operatorname{foldM}$ starts with $M_0$, feeds each successful state to
+the next transaction, and returns $\operatorname{none}$ at the first failure.
+This defines the state used for positional preparation; it is separate from
+the independent retained-slot specification.
+
 For $e=(t,r,\tau)$, $\tau=((c,u),p)$, reserve $w(\tau)=\max(1,\operatorname{itemCount}(p))$ counters and set $\operatorname{last}(\tau)=c+w(\tau)-1$. Insert/bootstrap count text atoms, split counts one marker, and create/erase count zero. With $S$ the reference transaction archive, the ordinary guard remains
 \[
 \begin{aligned}
@@ -2741,8 +2905,10 @@ G_\eta(e,S)\iff{}&u=\eta(r)\land c>0\\
 \end{aligned}
 \]
 
-Here $\mathcal R(S)$ is the reference reconstruction from the archive sorted by source ID; preparation selects actual origins and checks request bounds. The ordinary-emission predicate excludes bootstrap and non-emitting empty requests. Preparation uses this reference state; direct positional preparation from
-only the fact indexes is not established.
+Preparation selects actual origins and checks request bounds in $\mathcal R(S)$.
+The ordinary-emission predicate excludes bootstrap and non-emitting empty
+requests. Direct positional preparation from only the fact indexes is not
+established.
 
 For completeness, the request preparation in this guard is the following
 partial function. Let $\mathcal S_M(b)$ be the list of physical slices of
@@ -2820,35 +2986,22 @@ $\loOn{E}$ is empty for this commuting carrier and empty policy. $\operatorname{
 document. Query equality with the reference interpreter justifies its use
 for the fact-based carrier.
 
-\paragraph{Mechanization and executable representation.}
-The five merge verification conditions establish the fact carrier's laws.
-A whole-document query refinement transfers the original protocol's
-independent history theorem to this carrier, including canonical recursive
-virtual merge bases. Issuance still depends on the original protocol and
-reference interpreter. This protocol-scoped entry is outside the uniform
-production registry. It is included in Table~\ref{tab:implementation},
-whose counts include its protocol-specific proof dependencies.
+\paragraph{Proof and executable scope.}
+The five VCs are proved for the fact-based implementation. Whole-document query agreement
+transfers the original guarded protocol's independent history theorem to the
+fact carrier, including recursive merge bases. This protocol-scoped entry is
+outside the uniform production registry; its proof dependencies are included
+in Table~\ref{tab:implementation}.
 
-\textbf{Compiled indexed refinement.} The executable core stores keyed births, erased IDs, cuts and creation links in hash maps/sets, plus exact descending child buckets and per-instance row counts. Queries use direct lookup/bucket callbacks and the checked creator fold. The engine additionally retains a transaction archive for identity checks and receipt/clock metadata. Thus the archive-free mathematical carrier and the executable engine have different state representations.
-
-Let $\alpha(R)$ enumerate the core's four fact stores. Its proved invariant is
-\[
-\operatorname{Refines}(R,M)\iff\operatorname{Valid}(R)\land\operatorname{Valid}(M)\land\alpha(R)=\bigcup_{\tau\in M.\mathsf{archive}}\Delta(\tau).
-\]
-
-On successful core receipt and merge,
-\[
-\begin{aligned}
-\alpha(R')&=\alpha(R)\cup\Delta(\tau),\\
-\alpha(R_{A\sqcup B})&=\alpha(R_A)\cup\alpha(R_B).
-\end{aligned}
-\]
-
-The engine preserves the displayed invariant while joining receipt metadata and checking archived transaction identities. Neither merge path replays archived payloads. Pure batches return either a complete state or an error; conflicting immutable keys are rejected. The end-to-end loading theorem starts at the actual empty engine, receives any ordering and duplicates of an honest closed version, and derives success, the invariant and the reference answer without caller-supplied acceptance or query-equality premises. The registered-query theorem connects native answers to versions of the MRDT. The compiled functions implement the native executable; external JavaScript/JSON conversion remains a tested boundary.
-
-
-\textbf{Facts do not determine allocation.} The allocation counterexample gives two honestly issued erases with equal semantic fact sets but next counters 4 and 10. A function of facts alone cannot reconstruct the original allocator state. The executable therefore retains archive/reservation and local clock metadata. Receipt observes the transaction's reserved last counter; a local unused clock gap stays local and is not copied by merge or clone. These metadata rules do not weaken the issuance guard.
-
+The executable stores facts and child indexes in hash maps/sets, and retains
+an archive for identity checks and allocation metadata. Its receipt and merge
+refine fact union, and its query refines the reference answer. Loading an honest
+closed version from the empty engine succeeds for any receipt order and
+duplicates. Conflicting immutable keys return errors; merge does not replay
+archived payloads. Facts alone do not determine allocation: two honestly issued
+erases can yield equal facts but next counters $4$ and $10$. The executable
+therefore retains reservation and local-clock metadata; unused local clock
+gaps are not copied by merge or clone.
 
 \paragraph{Source and adaptation.}
 The configuration covers the typed create/insert/erase/split core and explicit bootstrap. Its structural MRDT and compiled indexed refinement share the original honest protocol; the external JavaScript/JSON adapter is a tested boundary.

@@ -22,6 +22,10 @@ Its direct sequential lifting theorem
 uses the same public-order witness as the paper, without extra replay-law
 assumptions at that lifting step.
 
+The [prioritized technical review](docs/paper1-technical-issues.md) records
+where the manuscript still needs to state the checked extensions used by the
+case studies: event-scoped laws, invariant domains and full causal dependencies.
+
 ### Notion core — structured implementation and executable refinement
 
 The integrated `paper1` implementation maintains immutable origin, deletion,

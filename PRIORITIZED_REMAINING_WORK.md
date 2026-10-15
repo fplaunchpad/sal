@@ -8,6 +8,23 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Appendix round 2 and theorem-scope alignment
+
+- [x] Verify Claude's round-2 correctness findings against actual selected Lean
+  endpoints; distinguish the false universal Sided Peritext deletion claim
+  and the AegisSheet source's explicit pre-cutoff masking semantics.
+- [x] Correct appendix definitions, examples and source attributions; explicitly
+  qualify the implementation table's use of event-scoped laws and full-causal
+  dependencies. Retain kernel-checked regression controls.
+- [ ] Render and independently verify the combined manuscript and updated Site;
+  run the repository gate and publish the reviewed corrections.
+- [ ] State the body extensions precisely: guarded actual-event laws, certified
+  concurrent-event/prefix laws, parameterized dependency closure/maximality and
+  decomposition supply, and specification-visible explaining histories. See
+  priority items 1–3 of `docs/paper1-technical-issues.md`.
+- [ ] After correctness, deduplicate repeated flag/sequence descriptions and
+  finish local symbol hygiene. Keep GC outside the paper's contributions.
+
 ## Source-faithful tree move and priority semantics
 
 Research question: can source-faithful tree operations and a priority queue with

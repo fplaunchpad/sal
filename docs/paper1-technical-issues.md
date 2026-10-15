@@ -99,6 +99,25 @@ An impossibility over arbitrary events does not refute that certified result.
 Complete the per-row theorem mapping before saying all rows instantiate one
 unrestricted theorem; an extra jargon-heavy table column is not essential.
 
+Round 2 adds a concrete dependency-set obstruction. Bounded counter and MVR
+use full causal metadata, not merely noncommuting visibility. For bounded
+counter, `empty_metadata_causal_obstruction` proves that two same-replica
+increments yield 1 under the body's empty-base VC4 merge and 2 under the
+required update. Generalizing the dependency relation requires changing
+closure, peeled-event maximality and reconstruction premises together. The
+Lean interface is `MetadataDependencies`, with noncommuting visibility
+contained in `before` and `before` contained in visibility. Relation inclusion
+alone does not discharge `PeelChoice`/`ReplaySupply`.
+
+Event-law domains also differ. Efficient OR-set and optional register use
+different-replica exactness and actual-event conditional commutation; MVR
+uses eligible **concurrent** writes and causally ready represented prefixes.
+Its causal overwrite example crosses replica IDs, so simply exempting
+same-replica pairs does not cover MVR. The implementation section now states
+these distinctions explicitly. This qualifies the table's coverage claim;
+the formal body extension remains to be stated.
+
+
 ### 4. Make the operation-label convention explicit
 
 **Clarification from Vimala — §2 labels, §4 sequential specification, §§6–7.**
@@ -310,3 +329,42 @@ checkpoints above describe the TreeMove publication, not this replacement.
 
 These appendix and case-study changes do not resolve the substantive theory
 issues listed above.
+
+
+## Appendix round 2 — verified corrections and review qualifications
+
+Checked against Sal `85428c3` and paper `97e92d7`; the corrections below
+are applied and locally verified for publication. No datatype algorithm or existing certificate
+was changed in response to this review.
+
+| Finding | Result and correction |
+|---|---|
+| R2-1, bounded counter | Confirmed VC4 scope mismatch; appendix states the full-causal dependency choice and displays the existing 1-versus-2 obstruction. Body work remains under priority 3 above. |
+| R2-2, priority queue | Confirmed editorial error: both algorithms reset after remove/reinsert. Replaced the purported separating trace with two concurrent Add/Inc branches: published answer 12, same-record answer 11; ordinary causal outcomes are 2, 3, 11, 13. |
+| R2-3, MVR | Confirmed for current MVRLive.D. Added causal overwrite noncommutation and the concurrent-issued-event scope. |
+| R2-4, efficient OR-set | Confirmed: identical-label exemption avoids the body's rc-non-comm objection; payload cond-comm fails instead. Added a kernel-checked counterexample and actual-event absorber explanation; corrected certificate citations. |
+| R2-5, efficient OR-set source | Confirmed; source already stores replica/timestamp/element triples. Attribution corrected. |
+| R2-6, Sided Peritext | Three timestamp-sensitive boundary cases confirmed. The proposed universal deletion-collapse claim is false: a checked example retains a newer marked character after both original anchors are deleted. Appendix states all four boundary rules and the exact collapse conditions. |
+| R2-7, AegisSheet | Guard checks supplied roster membership, not acknowledgement evidence, and does not bound the cutoff by observed timestamps. Documented this limit. The source explicitly permits late pre-cutoff masking, so this behavior alone is not a demonstrated source-intent violation. |
+| R2-8, optional register | Added same-replica Set noncommutation and corrected the witness to all Unsets/their visible predecessors first, remaining Sets second, each timestamp-sorted. |
+| R2-9, TreeMove | Replaced the specification's implementation test with candidate acyclicity; fixed rejection-test polarity and identified the proved equivalence. |
+| R2-10, Notion | Corrected block/instance ownership; defined the reference reconstruction used by the guard and shortened executable-proof discussion. |
+| R2-11, order citations | Removed dormant nonempty RGA-family event-order citations from empty-policy entries. |
+
+The new `AppendixReviewControls.lean` retains hand-derived PASS+FAIL controls
+for all four Sided Peritext boundaries, deletion with surviving grown text,
+a nearby genuine collapse, and the efficient OR-set operation-level
+conditional-law failure. These are review regressions, not extra premises of
+production certificates. Main theorem definitions remain unchanged.
+
+Lower-priority readability work remains: deduplicate the flags and repeated
+sequence kernels, and complete symbol hygiene across the long entries. It is
+not a substitute for the body-level corrections above.
+
+Validation: the full repository gate passed 3,876 Lean jobs, 18 public
+contracts, 13 certificate controls, 187 runtime tests and 569 benchmark records.
+All 444 measured source hashes remain unchanged. The manuscript compiles to
+72 pages, with 23 pages of main text. The root README was reviewed and now
+links this remaining theorem-scope work. The Site preparation contains 25
+panels and 1,296 checked KaTeX expressions. Publication checkpoints follow
+after the repository and manuscript pushes.
