@@ -273,17 +273,37 @@ carrier; GC remains outside this paper.
 The revised appendix compiles and its TreeMove, Notion and table pages have
 been visually checked. The table's variant explanation is now part of the
 preceding paragraph; Sided Peritext is marked as an adaptation. Measurement and
-publication revisions are recorded in the paper implementation report.
+publication revisions are recorded in the paper implementation report. Published
+as Sal `2854bec`, Overleaf `2a11435` and datatype Site version 18 (source snapshot
+`2854bec`). The parent checked the Site diff and rendered TreeMove page; all
+1,090 mathematical expressions passed rendering validation.
 
-Priority queue remains in progress. Parent review of Algorithm 2 and §5.1.3
-confirmed that the published design can combine the newest insertion's initial
-priority with another insertion's increments. Its priority-12 example contradicts
-ordinary reset/additive semantics under the specified causal order, while the
-source itself claims convergence, not that sequential property. The same-record
-repair has checked five VCs, local maximum-removal refinement and seven
-positive/negative test blocks; its general certified history proof is still
-pending. Until that proof passes, the measured row and appendix continue to
-identify the existing retained-increment variant explicitly.
+The same-record priority-queue repair now has a complete independent-history
+certificate. Parent review of Algorithm 2 and §5.1.3 confirmed that the published
+query can combine the latest insertion's initial priority with another
+insertion's increments. Its priority-12 witness conflicts with ordinary
+reset/additive semantics under specification-conflicting visibility; the source
+claims convergence, not that sequential theorem. The intentional repair selects
+both contributions from one latest surviving Add, retaining observed increment
+attachments, observed removals and the actual Add-absent / Inc-and-Remove-present
+preparation guards. The independent finite-map specification uses total
+Add/overwrite, additive Inc with absent no-op, and Remove with absent no-op.
+
+`PriorityQueueSameRecord.historyAdequacy` constructs per-element causal replays
+and composes one history explaining every query, including maximum. The
+ordinary/recursive certificates consume the named five VCs and shared finite
+Join induction; the audit passed 3,424 jobs and 562 declarations with only
+standard axioms. Maximum soundness/completeness and derived local removal's
+returned pair, effect and actual issuance guard are proved. Seven PASS+FAIL
+blocks pin the repair. The replacement has I=yes, E=yes and empty application rc;
+seven table rows retain nonempty rc. Measurement and checked integration are
+complete: base `2854bec`, 222 roots, 444 source hashes, 26 configurations / 24
+paper rows, and PQ columns 98 / 28 / 99 / 1,285. The full gate passed 3,875 Lean
+jobs, 18 exact public contracts, 13 certificate controls, 187 runtime tests and
+569 benchmark records (`/private/tmp/sal-pq-full-gate.log`); measurement logs are
+in `/private/tmp/sal-pq-current-counts`. Appendix, table and public Site
+publication remain pending. Earlier checkpoints above describe the TreeMove
+publication, not this replacement.
 
 These appendix and case-study changes do not resolve the substantive theory
 issues listed above.

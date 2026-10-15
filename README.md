@@ -326,21 +326,28 @@ the [source state refinement](Sal/MRDTs/Paper1/OptionalRegisterSourceValidity.le
 Its five-VC-derived execution certificate covers ordinary and recursive bases
 with the application policy `unset → set`.
 
-The [add-wins priority queue](docs/add-wins-priority-queue-port.md) ports Sal's
-retained-increment variant: the latest live Add supplies an innate priority,
-and all historical signed increments contribute to it. Remove preserves those
-increments. The application policy orders same-element Remove before Add.
-Its five VCs feed the generic merge induction. The public `FullD` interface
-certifies empty, membership, priority and maximum queries for ordinary and
-recursive executions against an independent finite priority-map model.
-Maximum ties choose the greatest element ID; soundness and completeness are
-proved. Derived `rmvMax` returns the locally observed maximum pair and issues
-ordinary removal of its identity, preserving historical increments. Its local
-refinement is proved; two concurrent replicas may return the same pair, so it
-makes no atomic global-extraction claim. No additional local issuance guard is
-needed. Twenty-three PASS+FAIL controls exercise the implementation, queries
-and client. This is Sal's retained-increment variant, not the full Internetware
-2023 Most-Change-Win algorithm.
+The [add-wins priority queue](docs/add-wins-priority-queue-port.md) uses an
+intentional same-record adaptation of Internetware 2023 Add-Win CRPQ: the latest
+surviving Add supplies both the initial priority and its attached signed
+increments. Inc targets the Add identities observed at issuance; Remove disables
+observed records, so removal and reinsertion reset priority. Add requires local
+absence; Inc and Remove require presence. Prepared effects commute and the
+application replay policy is empty. The named five VCs feed the shared Join
+induction, and an execution-scoped bridge certifies ordinary and recursive
+histories against an independent finite priority map with total Add/overwrite,
+additive Inc (absent no-op), and Remove (absent no-op).
+
+The public `PriorityQueueSameRecord.D` interface certifies empty, membership,
+priority and maximum queries. Maximum ties choose the greatest element ID;
+soundness and completeness are proved. Derived `rmvMax` returns the local
+maximum pair and issues its observed Remove; its local map refinement and
+actual issuance guard are proved. Two replicas may return the same pair, so this
+is not atomic global extraction. Seven PASS+FAIL blocks distinguish reset,
+attached increments, the published MCW answer, maximum selection and removal.
+The source model and its checked specification obstruction are preserved
+separately. This replaces the former element-wide retained-increment variant;
+measurement and the full repository gate have passed. Publication of the
+revised table, appendix and Site description remains pending.
 
 `GSet`'s alias module has been removed: the single mathematical grow-only-set
 implementation is `AddStore`, with one coverage entry. `FinsetStore` and

@@ -977,140 +977,204 @@ The source supplies updates and merge but no query. We expose an accumulating mu
 \label{app:dt-add-wins-priority-queue}
 
 \noindent Source references: \cite{PriorityQueue2023}.
-% Sources: Sal/MRDTs/Instances/AddWinsPriorityQueue.lean;
-% Sal/MRDTs/Instances/AddWinsPriorityQueueFull.lean;
-% Sal/MRDTs/Paper1/AddWinsPriorityQueueSpec.lean;
-% Sal/MRDTs/Paper1/AddWinsPriorityQueueFullSpec.lean;
-% Sal/MRDTs/Paper1/AddWinsPriorityQueueFullCertificate.lean.
-% Sal/MRDTs/Paper1/AddWinsPriorityQueueReplay.lean: conflict
 
-This add-wins queue assigns each present element its greatest-timestamp innate priority plus all retained signed increments. Removal clears observed adds; concurrent adds survive. Maximum queries compare priority first, then element ID.
+% Sal/MRDTs/Instances/PublishedAddWinsPriorityQueue.lean: State, Payload, Request, step, merge, recordTags, liveTags, observed, acquired, prepare, requestOf
+% Sal/MRDTs/Instances/PriorityQueueSameRecord.lean: candidates, priority, elements, getMax, read, D, generation, prepareRmvMax, rmvMax, priority_selected_record, prepared_remove_effect, effects_commute
+% Sal/MRDTs/Instances/PriorityQueueSameRecordSPOT.lean: reset_discards_old_acquired, actual_prepare_guards, unique_mcw_anomaly_repaired, unrelated_record_increment_does_not_leak, no_independent_mcw_tie, maximum_is_computed, extraction_observes_then_removes
+% Sal/MRDTs/Paper1/PriorityQueueSameRecordSpec.lean: SeqState, seqStep, seqRead, model, spec, seqRmvMax, project, rmvMax_refines, cross_key_commutes, total_update_controls
+% Sal/MRDTs/Paper1/PriorityQueueSameRecordVC.lean: policy, fiveVC, representationJoin, canonicalVersions
+% Sal/MRDTs/Paper1/PriorityQueueSameRecordProvenance.lean: BirthComplete, birthComplete_prepared, birthComplete_merge, elements_eq_source
+% Sal/MRDTs/Paper1/PriorityQueueSameRecordHistory.lean: Targets, present_order, present_replay, absent_replay, historyAdequacy
+% Sal/MRDTs/Paper1/PriorityQueueSameRecordCertificate.lean: certified, certifiedV, executions, executionsV
+% Sal/MRDTs/Paper1/PriorityQueueSameRecordAudit.lean: audit_same_record_priority_queue
+% Sal/MRDTs/Paper1/PriorityQueueSameRecordComposition.lean: keyHistory, assemble_key_histories
+
+Each addition creates an insertion record. An increment attaches to the
+insertions visible at its issuer, and removal disables those observed
+insertions; an unseen concurrent addition survives. The returned priority
+uses the latest surviving insertion's innate value and that same record's
+increments. Removing and reinserting an element therefore resets its priority.
 
 \paragraph{Concrete MRDT}
-Elements and innate priorities are natural numbers; increments are signed.
-The state and initial state are
-\[
- \Sigma=\operatorname{Finset}(\mathbb N\times\mathbb N\times\mathbb N)
-       \times\operatorname{Finset}(\mathbb N\times\mathbb N\times\mathbb Z),
- \qquad\sigma_0=(\varnothing,\varnothing).
-\]
-Write $(P,I)$ for Add records $(x,t,v)$ and retained increment records
-$(x,t,n)$. Operations are $\F{add}(x,v)$, $\F{inc}(x,n)$, and
-$\F{remove}(x)$.
+Element IDs and event timestamps are natural numbers; innate priorities and
+increments are integers. An insertion tag is $(x,u)$ for element $x$ and
+its Add timestamp $u$. The state is three finite sets, initially empty:
 \[
 \begin{aligned}
-\F{do}((P,I),t,r,\F{add}(x,v))&=(P\cup\{(x,t,v)\},I),\\
-\F{do}((P,I),t,r,\F{inc}(x,n))&=(P,I\cup\{(x,t,n)\}),\\
-\F{do}((P,I),t,r,\F{remove}(x))&=(\{(y,u,v)\in P\mid y\ne x\},I),\\
-\F{merge}(l,a,b)&=((P_l\cap P_a\cap P_b)
- \cup(P_a\setminus P_l)\cup(P_b\setminus P_l),I_a\cup I_b).
+\Sigma&=\mathcal P_{\rm fin}((\mathbb N\times\mathbb N)\times\mathbb Z)
+ \times\mathcal P_{\rm fin}((\mathbb N\times\mathbb N)\times\mathbb N\times\mathbb Z)
+ \times\mathcal P_{\rm fin}(\mathbb N\times\mathbb N),\\
+\sigma&=(B,I,R),\qquad\sigma_0=(\varnothing,\varnothing,\varnothing).
 \end{aligned}
 \]
-Let $E(P)=\{x\mid\exists u,v.\ (x,u,v)\in P\}$,
-$w_x=\max_{\rm lex}\{(u,v)\mid(x,u,v)\in P\}$, with
-$w_x=\bot$ for an empty set, and $d_x=\sum_{(x,u,n)\in I}n$.
-Define the partial priority map
+$B$ stores births $((x,u),v)$ with innate value $v$; $I$ stores increment
+attachments $((x,u),t,n)$, recording increment identity $t$ and amount $n$;
+$R$ stores removed insertion tags. Payloads are $\F{add}(x,v)$,
+$\F{inc}(x,n,W)$ and $\F{remove}(x,W)$, where $W$ is the finite set of
+observed insertion timestamps carried by the latter two operations.
 \[
- p_{P,I}(x)=
-\begin{cases}\operatorname{none}&w_x=\bot,\\
-\operatorname{some}(v+d_x)&w_x=(u,v).
+\begin{aligned}
+\F{do}((B,I,R),t,r,\F{add}(x,v))
+ &= (B\cup\{((x,t),v)\},I,R),\\
+\F{do}((B,I,R),t,r,\F{inc}(x,n,W))
+ &= (B,I\cup\{((x,u),t,n)\mid u\in W\},R),\\
+\F{do}((B,I,R),t,r,\F{remove}(x,W))
+ &= (B,I,R\cup\{(x,u)\mid u\in W\}),\\
+\F{merge}(l,a,b)&=(B_a\cup B_b,I_a\cup I_b,R_a\cup R_b).
+\end{aligned}
+\]
+Here $a=(B_a,I_a,R_a)$ and $b=(B_b,I_b,R_b)$; the ancestor is ignored.
+All three effects are additions to immutable stores and commute. Repeated
+receipt of one increment does not count it twice because attachments form a set.
+
+\textbf{Same-record priority.} For insertion tag $(x,u)$, define
+\[
+\begin{aligned}
+A_\sigma(x,u)&=\sum_{((x,u),t,n)\in I}n,\\
+C_\sigma(x)&=\{(u,v)\mid((x,u),v)\in B,\ (x,u)\notin R\},\\
+E_\sigma&=\{x\mid C_\sigma(x)\ne\varnothing\},\\
+p_\sigma(x)&=\begin{cases}
+\operatorname{none},&C_\sigma(x)=\varnothing,\\
+\operatorname{some}(v+A_\sigma(x,u)),&(u,v)=\max_{\rm lex}C_\sigma(x).
 \end{cases}
+\end{aligned}
 \]
-For finite support $E$ and partial priorities $p$, define
+The greatest insertion timestamp selects both the innate value and its
+increment attachments. Innate value breaks a forged equal-timestamp birth
+tie on raw states; globally unique issued timestamps exclude this fallback.
+Attachments naming an unknown birth do not create a query candidate. In
+states built by honest preparation from the initial state, every attachment
+has a birth; this property is preserved by union merge and is not an extra
+issuance guard. Removed births and their attachments remain stored, but
+never contribute to a new insertion.
+
+For finite support $E$ and optional priority map $p$, put
 \[
 \begin{aligned}
-R(E,p)&=\{(v,x)\mid x\in E\land p(x)=\operatorname{some}(v)\},\\
-\operatorname{maximum}(E,p)&=
-\begin{cases}
-\operatorname{none}&R(E,p)=\varnothing,\\
-\operatorname{some}(x,v)&(v,x)=\max_{\rm lex}R(E,p).
+M(E,p)&=\{(v,x)\mid x\in E,\ p(x)=\operatorname{some}(v)\},\\
+\operatorname{maximum}(E,p)&=\begin{cases}
+\operatorname{none},&M(E,p)=\varnothing,\\
+\operatorname{some}(x,v),&(v,x)=\max_{\rm lex}M(E,p).
 \end{cases}
 \end{aligned}
 \]
-Thus maximum ties choose the greatest element ID. The query alphabet is
-\[
-Q_\tau=\{\F{empty},\F{getMax}\}\cup
-\{\F{lookup}(x),\F{getPri}(x)\mid x\in\mathbb N\}.
-\]
-The result type is the tagged sum
-$Val_\tau=\mathbb B\uplus\operatorname{Option}(\mathbb Z)
-\uplus\operatorname{Option}(\mathbb N\times\mathbb Z)$.
-The query returns tagged Booleans, optional priorities, or optional pairs:
+Maximum ties select the greatest element ID. Negative priorities are allowed.
+The query alphabet and tagged answers are
 \[
 \begin{aligned}
-q((P,I),\F{empty})&=\F{boolean}([E(P)=\varnothing]),\\
-q((P,I),\F{lookup}(x))&=\F{boolean}([x\in E(P)]),\\
-q((P,I),\F{getPri}(x))&=\F{priority}(p_{P,I}(x)),\\
-q((P,I),\F{getMax})&=\F{maximum}(\operatorname{maximum}(E(P),p_{P,I})).
+Q_\tau&=\{\F{empty},\F{getMax}\}\cup
+ \{\F{lookup}(x),\F{getPri}(x)\mid x\in\mathbb N\},\\
+Val_\tau&=\mathbb B\uplus\operatorname{Option}(\mathbb Z)
+ \uplus\operatorname{Option}(\mathbb N\times\mathbb Z).
 \end{aligned}
 \]
-The innate value breaks a raw timestamp tie; globally fresh event timestamps
-exclude this tie in certified histories. Increment records remain through
-remove and re-add, and increments issued while an element is absent
-contribute to its later priority. Negative resulting priorities are allowed.
+\[
+\begin{aligned}
+q(\sigma,\F{empty})&=\F{boolean}([E_\sigma=\varnothing]),\\
+q(\sigma,\F{lookup}(x))&=\F{boolean}([x\in E_\sigma]),\\
+q(\sigma,\F{getPri}(x))&=\F{priority}(p_\sigma(x)),\\
+q(\sigma,\F{getMax})&=\F{maximum}(\operatorname{maximum}(E_\sigma,p_\sigma)).
+\end{aligned}
+\]
 
 \paragraph{Independent sequential specification.}
-The abstract state is $(E,s)$, where $E\subseteq_{\rm fin}\mathbb N$ and
-$s:\mathbb N\to(W\times\operatorname{Finset}(\mathbb N\times\mathbb Z))$.
-Here $W=\{\bot\}\uplus(\mathbb N\times\mathbb N)$ is ordered
-lexicographically above $\bot$. Concurrent adds commute, so the specification
-retains the greatest-timestamp add rather than the last add in the witness. Initially $E=\varnothing$ and
-$s(x)=(\bot,\varnothing)$. For $s(x)=(w,J)$, updates change the named
-cell and the finite support:
+The independent state is a finite partial priority map
+$m:\mathbb N\rightharpoonup_{\rm fin}\mathbb Z$, initially empty. All
+updates are total; timestamp, replica and observed snapshots do not affect
+the abstract transition:
 \[
 \begin{aligned}
-(E,s)&\xrightarrow{(t,r,\F{add}(x,v))}
- (E\cup\{x\},s[x\mapsto(\max(w,(t,v)),J)]),\\
-(E,s)&\xrightarrow{(t,r,\F{inc}(x,n))}
- (E,s[x\mapsto(w,J\cup\{(t,n)\})]),\\
-(E,s)&\xrightarrow{(t,r,\F{remove}(x))}
- (E\setminus\{x\},s[x\mapsto(\bot,J)]).
+m&\xrightarrow{(t,r,\F{add}(x,v))}m[x\mapsto v],\\
+m&\xrightarrow{(t,r,\F{inc}(x,n,W))}
+ \begin{cases}m[x\mapsto v+n],&m(x)=\operatorname{some}(v),\\
+ m,&m(x)=\operatorname{none},\end{cases}\\
+m&\xrightarrow{(t,r,\F{remove}(x,W))}m\setminus\{x\}.
 \end{aligned}
 \]
-These transitions are total. Let $p_s(x)=\operatorname{none}$ for $w=\bot$, and
-$p_s(x)=\operatorname{some}(v+\sum_{(u,n)\in J}n)$ for $w=(t,v)$.
-The four query equations are respectively
-$\F{boolean}([E=\varnothing])$,
-$\F{boolean}([x\in E])$,
-$\F{priority}(p_s(x))$, and
-$\F{maximum}(\operatorname{maximum}(E,p_s))$.
-The abstract state retains one winning candidate per element, rather than
-all live Add records. Increment identities account for repeated raw
-delivery; freshness counts each issued increment once. The finite support
-records live element IDs independently of the priority cells.
+Add overwrites a present key; increment and removal of an absent key are
+no-ops. These are admitted transitions even where the source issuer would
+reject the corresponding client request. There is no insertion identity,
+attachment store, retained history or timestamp order in this state. The
+mechanization represents the map by finite support and optional cells;
+the invariant $x\in\operatorname{dom}(m)\iff m(x)\ne\operatorname{none}$ is
+preserved from the initial state.
+
+The four queries use the same tagged equations as above with
+$E=\operatorname{dom}(m)$ and $p=m$. Query transitions preserve the map
+and return exactly those answers. Every finite run from the empty map is
+admitted. The full-event label projection is $f=\operatorname{id}$.
 
 \paragraph{Derived maximum removal.}
-At the issuer's state $\sigma$, preparation returns $\operatorname{none}$ when the maximum query returns no pair. Otherwise, for the selected pair $(x,v)$, it returns
+At issuance, an empty queue emits no event. Otherwise, for the maximum
+pair $(x,v)$ observed in $\sigma$, prepare
 \[
- \F{prepareRmvMax}(\sigma,t,r)
-   =\operatorname{some}((t,r,\F{remove}(x)),(x,v)).
+\F{prepareRmvMax}(\sigma,t,r)=
+ \operatorname{some}((t,r,\F{remove}(x,W_\sigma(x))),(x,v)),
 \]
-The local client action returns $(x,v)$ and applies this ordinary Remove.
-The abstract derived action selects
-$\operatorname{maximum}(E,p_s)$ and takes the corresponding Remove
-transition. The checked local refinement equates both the returned pair
-and the projected resulting state. The selected element becomes absent,
-and its acquired increments remain. Replication carries the stable
-selected identity: replay does not recompute a maximum. Two replicas can
-select the same element concurrently; this is a local selection-and-remove
-contract, not globally atomic extraction.
+where the observed set $W_\sigma(x)$ is defined below. The local client
+returns $(x,v)$ and applies that ordinary observed Remove. It makes $x$
+absent locally and preserves every other priority. The independent derived
+client selects the maximum of $m$ and clears that key. Their returned pair
+and resulting finite map agree.
 
-\paragraph{Issuance and policy.}
-$G(e,O)\iff\top$, and
+Replication carries the selected identity and snapshot; it does not select
+a new maximum during replay. Two replicas may select the same element
+concurrently, and an unseen concurrent Add may survive. This is local
+observation followed by removal, not a globally atomic extraction operation.
+
+\paragraph{Issuance.}
+Preparation preserves the source's exact live-record snapshot, including
+its raw-state behavior for increment placeholders. Define
 \[
-\rcrel(o_1,o_2)\iff\exists x,v.\quad
- o_1=\F{remove}(x)\land o_2=\F{add}(x,v).
+\begin{aligned}
+T_\sigma&=\{(x,u)\mid\exists v,((x,u),v)\in B\}
+ \cup\{(x,u)\mid\exists t,n,((x,u),t,n)\in I\},\\
+L_\sigma&=T_\sigma\setminus R,\qquad
+W_\sigma(x)=\{u\mid(x,u)\in L_\sigma\}.
+\end{aligned}
 \]
-The merge laws and independent sequential interpretation cover all four
-query forms in ordinary and recursive-merge executions.
+For original issuing state $\sigma=\pi_e(\sigma_0)$,
+\[
+\begin{aligned}
+G((t,r,\F{add}(x,v)),\sigma)&\iff W_\sigma(x)=\varnothing,\\
+G((t,r,\F{inc}(x,n,W)),\sigma)&\iff
+ W_\sigma(x)\ne\varnothing\land W=W_\sigma(x),\\
+G((t,r,\F{remove}(x,W)),\sigma)&\iff
+ W_\sigma(x)\ne\varnothing\land W=W_\sigma(x).
+\end{aligned}
+\]
+Thus the client prepares Add only when absent, and Inc/Remove only when
+present, with exactly the observed insertion IDs. Event timestamp freshness
+comes from the execution model rather than an additional preparation test.
+The guard is checked at original issuance, not at reordered sequential prefixes.
+
+\paragraph{Conflict-resolution relation.}
+$\rcrel=\varnothing$: the immutable concrete effects commute, and addition
+wins unseen removal through the retained insertion tags. The ordinary map
+updates at one element need not commute, so explaining replicated answers
+requires a separately selected sequential order.
+
+\paragraph{Mechanization status.}
+The five merge verification conditions establish replay and convergence
+for the immutable carrier, including recursive merge bases. For every stored
+version of an execution satisfying the issuance guards, a single sequential
+history explains all four queries and preserves visible pairs that do not
+commute in the specification. The proof derives the required insertion and
+snapshot facts from the execution, then combines the per-element histories.
+The local maximum-removal refinement also equates the returned pair and the
+resulting priority map.
 
 \paragraph{Source and adaptation.}
-This is a sum-of-increments adaptation of the priority-queue
-design. It retains signed increments independently
-of Add records. It does not implement the source's per-Add observation
-counts or Most-Change-Win rule. Increment records merge by union. Maximum ties use
-the greatest-element rule. The maximum read and derived local removal use these retained-increment
-priorities.
+This is an intentional query repair of the cited add-wins priority queue,
+marked as an adaptation in Table~\ref{tab:implementation}. Its Add, Inc,
+Remove effects and original preparation snapshots preserve the published
+algorithm's per-insertion structure. The published query chooses the latest
+innate priority and independently a Most-Change-Win record's acquired priority;
+this repair takes both from the same latest surviving insertion. It therefore
+changes the source query rather than proving source equivalence. For example,
+Add$(x,10)$; Inc$(x,5)$; Remove$(x)$; Add$(x,2)$ returns priority $2$,
+not $7$: the previous insertion's acquired increment is retained as data but
+cannot leak into the new insertion. Maximum ties use the greatest element ID.
 
 \subsection{Bounded counter with rights transfer}
 \label{app:dt-bounded-counter}

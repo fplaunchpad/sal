@@ -48,12 +48,12 @@ order = [
 assert set(data) <= set(order), 'Missing complexity order for a measured row'
 names = {k: names[k] for k in order}
 no_i={'grow-only-set-three-carriers','counter','flat-grow-only-map','lww-register','ordinary-or-set-paper-example','efficient-or-set','enable-wins-flag','disable-wins-flag'}
-no_i.update({'set-wins-map','add-wins-priority-queue'})
+no_i.update({'set-wins-map'})
 no_e=(no_i-{'lww-register'})|{'remove-wins-set'}
 rc={'ordinary-or-set-paper-example','efficient-or-set','enable-wins-flag','disable-wins-flag'}
 lines=[r'\begin{table}[t]',r'\caption{Verified implementations and lines of Lean code. MRDT and Spec count definitions. The VCs column counts proofs of the five VCs; Seq.\ proof counts proofs of sequential conformance, including the required facts about issuance and executions. Both proof columns include supporting definitions and lemmas; shared framework code is excluded.}',r'\label{tab:implementation}',r'\centering',r'\normalsize',r'\setlength{\tabcolsep}{3pt}',r'\begin{tabular}{@{}lrrrrccc@{}}',r'\toprule',r'Implementation & MRDT & Spec & VCs & Seq.\ proof & I & E & $\rcrel\ne\varnothing$ \\',r'\midrule']
 assert set(data)<=set(names), 'Missing display metadata for a measured row'
-rc.update({'remove-wins-set','set-wins-map','optional-register','add-wins-priority-queue'})
+rc.update({'remove-wins-set','set-wins-map','optional-register'})
 for k in names:
  if k not in data: continue
  row=data[k]['loc']; nums=[f'{row[x]:,}' for x in ['implementation','specification','vc','bridge']]

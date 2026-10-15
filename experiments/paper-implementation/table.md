@@ -12,7 +12,7 @@
 | efficient-or-set | 27 | 18 | 72 | 1092 | – | – | ✓ |
 | remove-wins-set | 28 | 18 | 434 | 168 | ✓ | – | ✓ |
 | set-wins-map | 25 | 12 | 19 | 136 | – | – | ✓ |
-| add-wins-priority-queue | 62 | 31 | 433 | 370 | – | – | ✓ |
+| add-wins-priority-queue | 98 | 28 | 99 | 1285 | ✓ | ✓ | – |
 | balegas-bounded-counter | 51 | 35 | 133 | 501 | ✓ | ✓ | – |
 | anchored-queue-paper-variant | 71 | 26 | 135 | 2606 | ✓ | ✓ | – |
 | rga | 54 | 19 | 55 | 910 | ✓ | ✓ | – |

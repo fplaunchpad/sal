@@ -73,12 +73,13 @@ rows['set-wins-map']={'implementation':[I+'SetWinsMap.D',I+'SetWinsMap.issuance'
 rows['remove-wins-set']={'implementation':[I+'RemoveWinsSet.D',P+'RemoveWinsSet.generation'],'specification':[P+'RemoveWinsSet.spec'],'vc':[P+'RemoveWinsSet.fiveVC'],'bridge':[P+'RemoveWinsSet.executions',P+'RemoveWinsSet.executionsV']}
 rows['optional-register']={'implementation':[I+'OptionalRegister.D',I+'OptionalRegister.generation'],'specification':[P+'OptionalRegister.spec'],'vc':[P+'OptionalRegister.fiveVC'],'bridge':[P+'OptionalRegister.executions',P+'OptionalRegister.executionsV',P+'OptionalRegister.sourceWellFormed']}
 rows['add-wins-priority-queue']={
- 'implementation':[I+'AddWinsPriorityQueue.FullD',P+'AddWinsPriorityQueue.Full.generation',I+'AddWinsPriorityQueue.rmvMax'],
- 'specification':[P+'AddWinsPriorityQueue.Full.spec',P+'AddWinsPriorityQueue.Full.seqRmvMax'],
- 'vc':[P+'AddWinsPriorityQueue.Full.fiveVC'],
- 'bridge':[P+'AddWinsPriorityQueue.Full.executions',P+'AddWinsPriorityQueue.Full.executionsV',
-   P+'AddWinsPriorityQueue.Full.rmvMax_refines',P+'AddWinsPriorityQueue.Full.prepared_remove_effect',
-   I+'AddWinsPriorityQueue.getMax_sound',I+'AddWinsPriorityQueue.getMax_none_iff']}
+ 'implementation':[I+'PriorityQueueSameRecord.D',I+'PriorityQueueSameRecord.generation',I+'PriorityQueueSameRecord.rmvMax'],
+ 'specification':[P+'PriorityQueueSameRecord.spec',P+'PriorityQueueSameRecord.seqRmvMax'],
+ 'vc':[P+'PriorityQueueSameRecord.fiveVC'],
+ 'bridge':[P+'PriorityQueueSameRecord.executions',P+'PriorityQueueSameRecord.executionsV',
+   P+'PriorityQueueSameRecord.rmvMax_refines',I+'PriorityQueueSameRecord.prepared_remove_effect',
+   I+'PriorityQueueSameRecord.prepared_remove_issued',
+   I+'PriorityQueueSameRecord.getMax_sound',I+'PriorityQueueSameRecord.getMax_none_iff']}
 # Core is an internal query/proof layer of the same sided Peritext MRDT.
 # Charge both dependency closures to the single public rendered endpoint.
 for role, ns in rows.pop('sided-peritext-core').items():

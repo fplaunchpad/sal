@@ -19,11 +19,14 @@ semantic changes against an independent sequential specification.
   preserve its checked ordinary-specification obstruction. Parent reviewed
   Algorithm 2 and §5.1.3 and reran the SPOT build. The source claims convergence,
   not the ordinary sequential property; do not call this a refuted source theorem.
-- [ ] Test and prove a priority-queue variant that uses the same winning Add
-  for its initial priority and acquired increments, with reset on removal and
-  reinsertion. Keep the source change explicit. Parent bounded search passed
-  29,880 reachable-version checks (2,000 seeds, 3 replicas, ≤8 events), with a
-  known-negative control; this is not a general proof.
+- [x] Implement and certify the same-record priority-queue adaptation: one
+  surviving Add supplies its initial priority and attached increments; removal
+  and reinsertion reset priority. Exact source preparation guards, empty rc,
+  five-VC-derived Join, independent total priority-map histories, ordinary and
+  recursive certificates, full maximum query and derived local extraction are
+  checked. The targeted audit passed 3,424 jobs and 562 declarations with only
+  standard axioms; seven PASS+FAIL blocks distinguish the source MCW answer.
+  The earlier 29,880-check bounded search remains supporting evidence, not proof.
 - [x] Implement source tree-move undo/redo, prove exact refinement and the five
   VCs, and stage ordinary/recursive certificates under the former client guard.
 - [x] Correct the tree client guard and independent legality to support
@@ -31,9 +34,22 @@ semantic changes against an independent sequential specification.
   positive/negative controls and ordinary/recursive certificates.
 - [x] Independently verify and integrate incremental TreeMove into the registry
   and exact-package coverage checks; retain source deletion/restoration behavior.
-- [ ] Finish the priority-queue history theorem before replacing its public row.
-- [ ] Remeasure and publish the completed TreeMove replacement, reviewed appendix
-  and site descriptions; repeat for the priority queue only after certification.
+- [x] Complete `PriorityQueueSameRecord.historyAdequacy`, composing causal
+  per-element ordinary replays into one word explaining every query while
+  preserving specification-conflicting visibility. Public certificate endpoints
+  consume the named five VCs and shared finite Join induction.
+- [x] Integrate the same-record priority queue as the single public measured row,
+  remeasure and rerun the repository gate. I=yes, E=yes, empty rc; seven table
+  rows have nonempty rc. At base `2854bec`, 222 roots and 444 source hashes cover
+  26 configurations / 24 paper rows; PQ columns are 98 / 28 / 99 / 1,285.
+  The gate passed 3,875 Lean jobs, 18 exact public contracts, 13 certificate
+  controls, 187 runtime tests and 569 benchmark records. Logs:
+  `/private/tmp/sal-pq-current-counts`, `/private/tmp/sal-pq-full-gate.log`.
+- [ ] Publish the reviewed same-record priority-queue table, appendix and Site
+  description. Parent owns publication; older checkpoints remain historical.
+- [x] Remeasure and publish the completed TreeMove replacement and reviewed
+  appendix: Sal `2854bec`, Overleaf `2a11435`, Site version 18. Main text remains
+  23 pages; full repository gate passed. Repeat for priority queue after certification.
 - [x] Replace parenthetical table qualifications by an asterisk and move their
   explanations to the supplementary datatype descriptions.
 
