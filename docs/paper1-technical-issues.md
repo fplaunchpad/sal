@@ -3,7 +3,7 @@
 15 October 2026. Combines Claude's [review](paper1-claude-review.md) with the
 Codex [section review](paper-writing-review.md) and
 [reconciliation note](paper1-formalism-reconciliation.md), checked against
-paper commit `edacc2c` and Sal `paper1` commit `1f9c30d`.
+paper commit `6089af1` and Sal `paper1` commit `1f9c30d`.
 This is a review record, not another development task list.
 
 The main issue is correspondence: the paper's stated assumptions and
@@ -216,22 +216,33 @@ domain. Give a concise statement of the recursive-base extension and point
 to its proof, rather than treating the computed base as an allocated LCA.
 Do not add GC to this discussion.
 
-## Smaller corrections and stale findings
+## Completed local corrections — 15 October
 
-| Location | Correction or status |
+The small corrections below are applied in paper commit `6089af1`, with the
+matching appendix source and formal-reference numbering updated in Sal. The ten substantive issues above
+remain open; this pass does not change the RA criterion or theorem domains.
+
+| Location | Completed correction |
 |---|---|
-| §3 Apply rule and explanation | `range(S)` contains state/event-set pairs; union the event-set components. |
-| §4 quantification over `dom(S)` | Say all stored versions; distinguish these from current replica heads. |
-| §4 example | Replace the repeated `A_q` in `[A_q,A_q,R_p]` with `A_p`. |
-| §5 principal downset | Every **other** member precedes the event through a path; the set also contains the event itself. |
-| §5 Join lemma | “Supported” is not defined in the active text; write the subset premise explicitly. |
-| §5 VC4 explanation | `B` is the predecessor/base state; the second branch is `e(B)`. |
-| §5 worked example | Identify the smaller inner merge by induction before applying VC4. |
-| §5 `Admissible` | The old unbound-`E` complaint is resolved: the current formula uses `E_i`. |
-| Formal reference versus paper | Align VC4/VC5 numbering by their equations, not their old numbers. |
-| Related Work/conclusion | Resolved in `edacc2c`: the extra empty Conclusion section is no longer included. |
-| Bibliography | `Notion` and `NotionCRDTBlog` cite the same blog post; consolidate uses. |
-| Implementation section | Old reports that it is empty are obsolete. Framework/per-MRDT obligations and proof columns are now explained. |
+| §3 Apply rule and explanation | Union the event-set components as `⋃ w ∈ dom(S), E(w)`, rather than unioning state/event-set pairs. |
+| §§3–6 version terminology | Use “stored version” for `dom(S)` and retain “active replica” for `dom(H)`. |
+| §4 example | Checked that the repeated-event typo was already fixed: the sequence is `[A_p,A_q,R_p]`. |
+| §5 principal downset | Explain that every other member precedes the event through a path, in a linear extension containing the downset. |
+| §5 Join lemma | Remove the undefined word “supported”; the explicit `E_i ⊆ E_C` premise remains. |
+| §5 VC4 explanation | Identify `B` as the base and `e(B)` as the second branch. |
+| §5 worked example | State the smaller-union induction arguments before applying VC4; fix `A_p`, set braces and malformed parentheses. |
+| §5 `Admissible` | Confirmed that the formula already uses `E_i`. |
+| Formal reference | Reorder the displayed equations and update proof references: VC4 is causal delta, VC5 is shared redistribution. The PDF is rebuilt. |
+| Related Work/conclusion | The empty duplicate Conclusion heading was removed in `edacc2c`. |
+| Bibliography | Use `NotionCRDTBlog` consistently and remove the duplicate `Notion` entry. |
+| Paper appendix | Replace the ten prose uses of “Neem” with the cited authors or source implementation. Internal citation keys and Lean identifiers remain unchanged. |
+| Throughout edited sections | Correct grammar and typos; replace hard-coded definition/lemma numbers with cross-references; use `rd_a` consistently for the set query. |
+| Implementation section | The section is present; framework/per-MRDT obligations and proof columns are explained. |
+
+Validation: the paper and formal reference compile; the main text ends on page
+23, references start on page 24, and there are no missing citations, undefined
+references, duplicate labels or overfull boxes in the final build. The required
+Sal repository checks passed.
 
 ## Case-study work still in progress
 

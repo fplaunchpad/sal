@@ -40,3 +40,7 @@ named-head history contract.
 The natural FugueMax example now states the origin-list language, physical
 positional refinement, and certified five-VC RA theorem. Native RGA explicitly
 reserves zero for the root in issuance and its sequential language.
+
+The 15 October notation update aligns the VC numbering with the current paper:
+VC4 is causal delta and VC5 is shared redistribution. Their equations and
+hypotheses are unchanged; this does not update the older manuscript mapping.

@@ -1,5 +1,9 @@
 # Remaining changes to the Sal paper
 
+**15 October update:** the [priority-ordered technical review](paper1-technical-issues.md)
+records the current open issues and completed local corrections. The comparison
+below retains its historical baseline.
+
 Compared with Overleaf **`bd18900` (14 October 2026)** and checked Sal
 `paper1` **`12886ba`**, including the natural-specification proofs in `706036c`.
 Locations below refer to this manuscript snapshot; definition numbers refer
@@ -13,7 +17,7 @@ removes the undefined `Supported` premise in VC2. These are no longer missing.
 The operation-inequality guard and version-local lifting premise remain, as
 does the correct diagnosis of no-op removal as a specification-compatibility
 failure. **Manuscript VC4 is causal-delta and VC5 is shared redistribution**,
-opposite to the reference's numbering; compare them by name until aligned.
+now aligned with the reference after its 15 October numbering correction.
 General label projection and the recursive-base proof remain absent from the
 active text.
 

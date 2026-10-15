@@ -152,6 +152,16 @@ Then
 The event occurs in one branch only. The equation moves its effect from
 inside the reconstructed branch to outside the merge of the remaining events.
 
+\item \emph{Causal delta.} Assume transitive, irreflexive visibility,
+$A_C(U)$, $e\in U$, both $\mathsf{Max}^{\F{lo}}_{C,U}(e)$ and
+$\mathsf{Max}^{M}_{C,U}(e)$, and
+\[
+ R_C(U^-,s),\quad R_C(D^-,B),\quad R_C(D,\F{do}(B,e)),\quad R_C(U,\F{do}(s,e)).
+\]
+Then $\F{merge}(B,s,\F{do}(B,e))=\F{do}(s,e)$.
+After redistribution this equation removes the last merge: the event is
+applied once to the represented remainder.
+
 \item \emph{Shared redistribution.} Assume $\mathsf{Admissible}_C(E_1,E_2,e)$,
 $e\in E_1\cap E_2$, and
 \[
@@ -174,21 +184,11 @@ Then
 \]
 The event occurs in both branches and their intersection. The equation
 moves the three reconstructed occurrences outside the merge, leaving one.
-
-\item \emph{Causal delta.} Assume transitive, irreflexive visibility,
-$A_C(U)$, $e\in U$, both $\mathsf{Max}^{\F{lo}}_{C,U}(e)$ and
-$\mathsf{Max}^{M}_{C,U}(e)$, and
-\[
- R_C(U^-,s),\quad R_C(D^-,B),\quad R_C(D,\F{do}(B,e)),\quad R_C(U,\F{do}(s,e)).
-\]
-Then $\F{merge}(B,s,\F{do}(B,e))=\F{do}(s,e)$.
-After redistribution this equation removes the last merge: the event is
-applied once to the represented remainder.
 \end{enumerate}
-The represented smaller-union merge in VC3 and VC4 is obtained by a
+The represented smaller-union merge in VC3 and VC5 is obtained by a
 \emph{strictly smaller} induction call. Its presence is not a premise
 asserting the desired join theorem for the original union. The represented
-side reconstructions are also derived on proper subsets, or by VC5 when a
+side reconstructions are also derived on proper subsets, or by VC4 when a
 side equals the whole union.
 \end{definition}
 
@@ -302,8 +302,8 @@ supply chooses a peel witness. Removing its event preserves metadata closure
 by $M_C$-maximality. Supply gives represented predecessor states for the
 branches and their intersection. The smaller induction calls establish
 side reconstruction and the smaller-union merge representation. Uniqueness
-identifies the reconstructed sides with the original sides; VC3 or VC4
-then brings the event outside. VC5 and the peel witness's represented update
+identifies the reconstructed sides with the original sides; VC3 or VC5
+then brings the event outside. VC4 and the peel witness's represented update
 reconstruct the union. Every recursive call has a strictly smaller event
 set; none assumes representation preservation of an unresolved merge.
 \end{proof}

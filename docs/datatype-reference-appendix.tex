@@ -419,7 +419,7 @@ The state is a finite partial map of replica rows:
 s:\mathbb N\rightharpoonup((\mathbb Z\times\mathbb B)\times(\mathbb N\times\mathbb N)),\qquad s_0=\varnothing.
 \]
 
-Write $s(r)=((c_r,b_r),(t_r,v_r))$; absent rows read as $z=((0,\mathsf{false}),(0,0))$. The domain remains part of the state. Neem additionally refines stored rows by $b_r=\mathsf{false}\iff(t_r,v_r)=(0,0)$; the Lean raw carrier is broader, and this property is derived on the certified execution domain.
+Write $s(r)=((c_r,b_r),(t_r,v_r))$; absent rows read as $z=((0,\mathsf{false}),(0,0))$. The domain remains part of the state. The implementation of~\citet{neem} additionally refines stored rows by $b_r=\mathsf{false}\iff(t_r,v_r)=(0,0)$; the Lean raw carrier is broader, and this property is derived on the certified execution domain.
 \[
 \begin{aligned}
 \F{do}(s,t,r,\mathrm{set}(v))&=s[r\mapsto((c_r+1,\mathsf{true}),(t,v))],\\
@@ -499,7 +499,7 @@ A concurrent Set follows Unset. Sets at different replicas commute in the implem
 
 
 \paragraph{Source and adaptation.}
-The arithmetic and equal-timestamp averaging branch are retained from Neem. The source supplies no query; Sal selects the greatest active timestamped payload.~\cite{neem}
+The arithmetic and equal-timestamp averaging branch are retained from the source implementation. The source supplies no query; Sal selects the greatest active timestamped payload.~\cite{neem}
 
 
 \subsection{Enable-wins flag}
@@ -516,7 +516,7 @@ The arithmetic and equal-timestamp averaging branch are retained from Neem. The 
 % Sal/MRDTs/Paper1/EnableWinsFlagCertificate.lean: certified, certifiedV
 
 \paragraph{Concrete MRDT}
-State is $s:\mathbb N\to\mathbb Z\times\mathrm{Bool}$, with $s(i)=(c_i,b_i)$ and $s_0(i)=(0,\mathsf{false})$ for every replica index. Neem's source constant map has universal domain.
+State is $s:\mathbb N\to\mathbb Z\times\mathrm{Bool}$, with $s(i)=(c_i,b_i)$ and $s_0(i)=(0,\mathsf{false})$ for every replica index. The source's constant map has universal domain.
 
 For an event $(t,i,o)$,
 \[
@@ -578,7 +578,7 @@ Equal-operation updates commute. Enable and disable do not commute, in either th
 
 
 \paragraph{Source and adaptation.}
-The counter-and-bit update and ternary merge follow Neem. The source supplies no query; Sal adds the surviving-winning-bit observation.~\cite{neem}
+The counter-and-bit update and ternary merge follow the source implementation. The source supplies no query; Sal adds the surviving-winning-bit observation.~\cite{neem}
 
 
 \subsection{Disable-wins flag}
@@ -595,7 +595,7 @@ The counter-and-bit update and ternary merge follow Neem. The source supplies no
 % Sal/MRDTs/Paper1/DisableWinsFlagCertificate.lean: certified, certifiedV
 
 \paragraph{Concrete MRDT}
-State is $s:\mathbb N\to\mathbb Z\times\mathrm{Bool}$, with $s(i)=(c_i,b_i)$ and $s_0(i)=(0,\mathsf{true})$ for every replica index. Neem's source constant map has universal domain.
+State is $s:\mathbb N\to\mathbb Z\times\mathrm{Bool}$, with $s(i)=(c_i,b_i)$ and $s_0(i)=(0,\mathsf{true})$ for every replica index. The source's constant map has universal domain.
 
 For an event $(t,i,o)$,
 \[
@@ -657,7 +657,7 @@ Equal-operation updates commute. Enable and disable do not commute, in either th
 
 
 \paragraph{Source and adaptation.}
-The counter-and-bit update and ternary merge follow Neem. Sal complements the outstanding-disable observation to expose whether the flag is enabled.~\cite{neem}
+The counter-and-bit update and ternary merge follow the source implementation. Sal complements the outstanding-disable observation to expose whether the flag is enabled.~\cite{neem}
 
 
 
@@ -801,7 +801,7 @@ For $e=(t,r,o)$,
 \operatorname{contains}(s,x)=\mathsf{true}\iff\neg\exists t.\ (x,t)\in s.
 \]
 
-The initial zero tags make every element absent. Neem uses $K=\{1,2\}$; the Lean model generalizes the same equations to any finite $K$, swapping the coordinates of source tags.
+The initial zero tags make every element absent. The source uses $K=\{1,2\}$; the Lean model generalizes the same equations to any finite $K$, swapping the coordinates of source tags.
 
 
 \paragraph{Independent sequential specification.}
@@ -834,7 +834,7 @@ Addition and removal of the same element do not commute. This policy orders a co
 
 
 \paragraph{Source and adaptation.}
-The finite-universe generalization retains Neem's initial zero tags and survivor merge. Positive timestamps reserve those initial identities.~\cite{neem}
+The finite-universe generalization retains the source implementation's initial zero tags and survivor merge. Positive timestamps reserve those initial identities.~\cite{neem}
 
 
 \subsection{Set-wins multimap}
@@ -890,7 +890,7 @@ The specification stores no timestamps. It exposes an accumulating multimap, rat
 G(e,s)\iff\top.
 \]
 
-There is no datatype-specific issuance guard. The execution model supplies globally fresh timestamps. Neem restricts timestamps to positive numbers; the Lean proof also admits timestamp zero.
+There is no datatype-specific issuance guard. The execution model supplies globally fresh timestamps. The source restricts timestamps to positive numbers; the Lean proof also admits timestamp zero.
 
 
 \paragraph{Conflict-resolution relation.}
@@ -902,7 +902,7 @@ A concurrent set is placed after deletion of its key. Two sets commute, as do de
 
 
 \paragraph{Source and adaptation.}
-Neem supplies updates and merge but no query. Sal exposes an accumulating multimap lookup, whose independent state erases timestamps.~\cite{neem}
+The source supplies updates and merge but no query. Sal exposes an accumulating multimap lookup, whose independent state erases timestamps.~\cite{neem}
 
 
 \subsection{Priority queue (Sal retained-increment variant)}
