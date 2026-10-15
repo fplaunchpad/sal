@@ -62,12 +62,12 @@ its retained reference-protocol state separately from the structural carrier.
 The relation $\rcrel$ below is the selected application-operation policy.
 The policy constrains concurrent conflicts as specified by
 Definition~\ref{def:lo-local}; an empty policy adds no application precedence
-edges. The mechanized sequential-conformance results also preserve visible
+edges. The mechanised sequential-conformance results also preserve visible
 pairs whose specification updates do not commute.
 Guards are checked when an event is created, at its original issuing state.
 The results concern executions of the operational semantics with these guards,
 globally fresh timestamps and honest origin metadata. Per-replica cumulative
-implementations also require serialized issuance under each replica identity.
+implementations also require serialised issuance under each replica identity.
 These execution assumptions apply to both ordinary and recursively constructed
 merge bases; total update equations alone make no claim about unreachable states.
 
@@ -536,7 +536,7 @@ increasing timestamp order.
 G(e,s)\iff \F{time}(e)>0.
 \]
 
-Positive timestamps ensure an active row never has payload $(0,0)$. Globally fresh timestamps, causal growth and serialized issuance at each replica ensure that equal-timestamp active payloads identify the same write.
+Positive timestamps ensure an active row never has payload $(0,0)$. Globally fresh timestamps, causal growth and serialised issuance at each replica ensure that equal-timestamp active payloads identify the same write.
 
 
 \paragraph{Conflict-resolution relation.}
@@ -631,7 +631,7 @@ Replica and timestamp are carried in update labels; they do not affect the Boole
 G(e,O)\iff\top.
 \]
 
-No datatype guard is added. Execution certification supplies unique events and serialized issuance at each replica. Full causal metadata retains the per-replica counter prefixes needed by the source merge.
+No datatype guard is added. Execution certification supplies unique events and serialised issuance at each replica. Full causal metadata retains the per-replica counter prefixes needed by the source merge.
 
 
 \paragraph{Conflict-resolution relation.}
@@ -719,7 +719,7 @@ Replica and timestamp are carried in update labels; they do not affect the Boole
 G(e,O)\iff\top.
 \]
 
-No datatype guard is added. Execution certification supplies unique events and serialized issuance at each replica. Full causal metadata retains the per-replica counter prefixes needed by the source merge.
+No datatype guard is added. Execution certification supplies unique events and serialised issuance at each replica. Full causal metadata retains the per-replica counter prefixes needed by the source merge.
 
 
 \paragraph{Conflict-resolution relation.}
@@ -778,7 +778,7 @@ $\phi_0=\varnothing$, with transitions
 \end{aligned}
 \]
 The label projection is $f(t,r,o)=o$: timestamps and replicas do not affect
-these transitions. The mechanized event-labelled presentation retains them
+these transitions. The mechanised event-labelled presentation retains them
 as ignored parameters.
 
 \paragraph{Issuance.}
@@ -792,7 +792,7 @@ The relation orders a concurrent removal before an addition of the same
 element, subject to the absorber clause of Definition~\ref{def:lo-local}.
 
 \paragraph{Source and adaptation.}
-This is the live-tag OR-set of the motivating example, represented by finite sets in the mechanization.
+This is the live-tag OR-set of the motivating example, represented by finite sets in the mechanisation.
 
 
 \subsection{Efficient OR-set}
@@ -914,7 +914,7 @@ For $e=(t,r,o)$,
 \operatorname{contains}(s,x)=\mathsf{true}\iff\neg\exists t.\ (x,t)\in s.
 \]
 
-The initial zero tags make every element absent. The source uses $K=\{1,2\}$; the model generalizes the same equations to any finite $K$, swapping the coordinates of source tags.
+The initial zero tags make every element absent. The source uses $K=\{1,2\}$; the model generalises the same equations to any finite $K$, swapping the coordinates of source tags.
 
 
 \paragraph{Independent sequential specification.}
@@ -947,7 +947,7 @@ Addition and removal of the same element do not commute. This policy orders a co
 
 
 \paragraph{Source and adaptation.}
-The finite-universe generalization retains the source implementation's initial zero tags and survivor merge. Positive timestamps reserve those initial identities.
+The finite-universe generalisation retains the source implementation's initial zero tags and survivor merge. Positive timestamps reserve those initial identities.
 
 
 \subsection{Set-wins multimap}
@@ -1147,7 +1147,7 @@ Add overwrites a present key; increment and removal of an absent key are
 no-ops. These are admitted transitions even where the source issuer would
 reject the corresponding client request. There is no insertion identity,
 attachment store, retained history or timestamp order in this state. The
-mechanization represents the map by finite support and optional cells;
+mechanisation represents the map by finite support and optional cells;
 the invariant $x\in\operatorname{dom}(m)\iff m(x)\ne\operatorname{none}$ is
 preserved from the initial state.
 
@@ -1176,7 +1176,7 @@ observation followed by removal, not a globally atomic extraction operation.
 
 \paragraph{Issuance.}
 Preparation preserves the source's exact live-record snapshot, including
-its raw-state behavior for increment placeholders. Define
+its raw-state behaviour for increment placeholders. Define
 \[
 \begin{aligned}
 T_\sigma&=\{(x,u)\mid\exists v,((x,u),v)\in B\}
@@ -1206,7 +1206,7 @@ wins unseen removal through the retained insertion tags. The ordinary map
 updates at one element need not commute, so explaining replicated answers
 requires a separately selected sequential order.
 
-\paragraph{Mechanization status.}
+\paragraph{Mechanisation status.}
 The five merge verification conditions establish replay and convergence
 for the three finite sets, including recursive merge bases. For every stored
 version of an execution satisfying the issuance guards, a single sequential
@@ -1325,7 +1325,7 @@ G((t,i,\mathrm{transfer}(a,j)),O)&\iff i,j\in I\land i\ne j\land a\le B_i(O).
 \end{aligned}
 \]
 
-Execution certification serializes updates from each replica and records their causal past. Missing incoming transfers can underestimate local rights; an issuer must retain all its own preceding updates. Stale forks issuing concurrently under the same replica identity are excluded. Zero amounts are allowed; negative amounts are outside the operation domain.
+Execution certification serialises updates from each replica and records their causal past. Missing incoming transfers can underestimate local rights; an issuer must retain all its own preceding updates. Stale forks issuing concurrently under the same replica identity are excluded. Zero amounts are allowed; negative amounts are outside the operation domain.
 
 
 \paragraph{Conflict-resolution relation.}
@@ -1340,7 +1340,7 @@ witness respects causal order, so its own preceding increments, decrements
 and transfers are present when reconstructing a cell. The issuance guard
 funds each decrease from rights available at its original state.
 
-The mechanized five-VC proof takes the dependencies of $e$ to be its full
+The mechanised five-VC proof takes the dependencies of $e$ to be its full
 causal past, rather than only its non-commuting visible predecessors. This
 is necessary: for consecutive increments $e_1,e_2$ of one replica, the
 latter choice gives $\down{e_2}=\{e_2\}$. Then VC4 would require
@@ -1349,7 +1349,7 @@ latter choice gives $\down{e_2}=\{e_2\}$. Then VC4 would require
 =e_2(e_1(\sigma_0)),
 \]
 but the updated diagonal cell is $1$ on the left and $2$ on the right.
-The checked result therefore uses a generalization of the dependency sets
+The checked result therefore uses a generalisation of the dependency sets
 in Section~\ref{sec:proof-strategy}, not that section's fixed choice.
 With full causal dependencies, the five VCs and the resulting bound hold
 for ordinary and recursive-merge executions.
@@ -1516,7 +1516,7 @@ convention below also defines queries on predicates with infinite support.
 \]
 
 
-Define $\operatorname{supp}(f)=\{x\mid f(x)=\mathsf{true}\}$ when finite, and $\varnothing$ otherwise. Materialize each component independently. Let $P(B,0,t)=t::B$, $P([],a,t)=[]$ for $a\ne0$, and
+Define $\operatorname{supp}(f)=\{x\mid f(x)=\mathsf{true}\}$ when finite, and $\varnothing$ otherwise. Materialise each component independently. Let $P(B,0,t)=t::B$, $P([],a,t)=[]$ for $a\ne0$, and
 
 \[
 P(x::X,a,t)=\begin{cases}x::t::X&x=a\land a\ne0,\\x::P(X,a,t)&x\ne a\land a\ne0.\end{cases}
@@ -1616,7 +1616,7 @@ $[2,1,2,1,3]$, $[2,1,2,2,1,3]$: descending order reads the ancestor,
 then the newer child, then the older child.
 
 
-\textbf{Effect.} Define insertion $J$ recursively, including equal-key behavior:
+\textbf{Effect.} Define insertion $J$ recursively, including equal-key behaviour:
 
 \[
 \begin{aligned}J(z,[])&=[z],\\J(z,y::Y)&=\begin{cases}z::y::Y&K(y.c)<_{\rm lex}K(z.c),\\y::J(z,Y)&\text{otherwise},\end{cases}\\e(S)&=\begin{cases}S&o=\operatorname{Ins}(v,\pi,a),\ t\in I(S),\\J(z_e,S)&o=\operatorname{Ins}(v,\pi,a),\ t\notin I(S),\\{}[z\in S\mid z.i\ne x]&o=\operatorname{Del}(x).\end{cases}\end{aligned}
@@ -1732,7 +1732,7 @@ closer to its anchor on either side. This follows from the symbol bands
 and bit complementation in $h_R$ and $h_L$.
 
 
-\textbf{Effect.} Define insertion $J$ recursively, including equal-key behavior:
+\textbf{Effect.} Define insertion $J$ recursively, including equal-key behaviour:
 
 \[
 \begin{aligned}J(z,[])&=[z],\\J(z,y::Y)&=\begin{cases}z::y::Y&K(y.c)<_{\rm lex}K(z.c),\\y::J(z,Y)&\text{otherwise},\end{cases}\\e(S)&=\begin{cases}S&o=\operatorname{Ins}(v,\pi,a,s),\ t\in I(S),\\J(z_e,S)&o=\operatorname{Ins}(v,\pi,a,s),\ t\notin I(S),\\{}[z\in S\mid z.i\ne x]&o=\operatorname{Del}(x).\end{cases}\end{aligned}
@@ -2034,7 +2034,7 @@ s,&e\in\operatorname{events}(s),\\
 e(s)&=\operatorname{receive}(s,e).
 \end{aligned}
 \]
-The full key defines collision behavior on all states. With globally unique
+The full key defines collision behaviour on all states. With globally unique
 timestamps, comparison is exactly the source algorithm's timestamp test.
 Receive preserves log consistency and suppresses duplicate events.
 
@@ -2115,7 +2115,7 @@ executions.
 Update implements the source's incremental undo/insert/redo algorithm.
 The MRDT adaptation exchanges state by delivering the other log, suppresses
 duplicates, and reserves root/trash in the editor interface. Full event keys
-totalize timestamp collisions; unique timestamps recover the source comparison.
+totalise timestamp collisions; unique timestamps recover the source comparison.
 The result establishes the mathematical algorithm and its maintained-tree
 query, without an executable performance claim.
 
@@ -2139,7 +2139,7 @@ query, without an executable performance claim.
 Characters and formatting boundaries share the embedded sequence. A mark uses two independent boundary insertions; the scan collects all open marks, without last-writer-wins resolution. Sibling order determines which boundary contains a concurrent character.
 
 \paragraph{Concrete MRDT}
-Payload $v$ is $\operatorname{Char}(\gamma)$ or $\operatorname{Bound}(j,m,b)$, where $b$ says start/end. Formatting marks are bold, italic, underline, strike, link(URL), comment(author,text), color or heading. Boundary insertion ID $t$ and carried mark ID $j$ are independent.
+Payload $v$ is $\operatorname{Char}(\gamma)$ or $\operatorname{Bound}(j,m,b)$, where $b$ says start/end. Formatting marks are bold, italic, underline, strike, link(URL), comment(author,text), colour or heading. Boundary insertion ID $t$ and carried mark ID $j$ are independent.
 
 The concrete state, initial state, update, merge and payload-list query are
 those of Embedded RGA (\S\ref{app:dt-embed-rga}), with this payload type.
@@ -2208,7 +2208,7 @@ A retained insertion shadow orders text, while separate grow-only stores record 
 
 \paragraph{Concrete MRDT}
 \textbf{Product state.} $\sigma=(S,D,F)$, initially $([],\varnothing,\varnothing)$; $D$ is a finite ID set and $F$ a finite mark-record set. A mark $m$ has fields mid (identity), type, op, value, startID, endID,
-startSide, endSide, startPath and endPath; $m.\mathrm{op}\in\{\mathrm{add},\mathrm{remove}\}$, endpoint sides before/after. Types: bold, italic, underline, strike, link, comment, color, heading. IDs, value and endpoint IDs are natural numbers; paths are lists of natural numbers (default $[]$); the document-order renderer ignores paths and mark value.
+startSide, endSide, startPath and endPath; $m.\mathrm{op}\in\{\mathrm{add},\mathrm{remove}\}$, endpoint sides before/after. Types: bold, italic, underline, strike, link, comment, colour, heading. IDs, value and endpoint IDs are natural numbers; paths are lists of natural numbers (default $[]$); the document-order renderer ignores paths and mark value.
 
 \[
 \begin{aligned}\F{do}((S,D,F),t,r,\operatorname{Text}(o))&=(\F{do}(S,t,r,o),D,F),\\\F{do}((S,D,F),t,r,\operatorname{RecordDeletion}(x))&=(S,D\cup\{x\},F),\\\F{do}((S,D,F),t,r,\operatorname{RecordMark}(m))&=(S,D,F\cup\{m\}),\\\F{merge}(l,a,b)&=(\F{merge}(S_l,S_a,S_b),D_a\cup D_b,F_a\cup F_b).\end{aligned}
@@ -2303,7 +2303,7 @@ shadow values and the deletion/mark stores; the rendered interface observes
 formatted live text. The reported line counts are the deduplicated union of
 both interfaces' dependencies, not a second datatype row.
 
-Boundary behavior depends on the mark identity, not only on which side
+Boundary behaviour depends on the mark identity, not only on which side
 is selected. At a resolved anchor, the four cases are:
 \begin{itemize}
 \item A before-start begins at the anchor, with no timestamp-based left growth.
@@ -2847,7 +2847,7 @@ prepared identities rather than replaying numeric positions unchanged.
 
 
 \paragraph{Issuance.}
-\textbf{Original issuance authority.} Structural integration changes receipt, merge and observation. It retains the original protocol: explicit factory initialization, whole-version receipts, guarded ordinary requests and injective replica/session assignment $\eta$. Empty forks may precede initialization; later forks copy received snapshots. Bootstrap remains a separate factory action.
+\textbf{Original issuance authority.} Structural integration changes receipt, merge and observation. It retains the original protocol: explicit factory initialisation, whole-version receipts, guarded ordinary requests and injective replica/session assignment $\eta$. Empty forks may precede initialisation; later forks copy received snapshots. Bootstrap remains a separate factory action.
 
 \textbf{Reference reconstruction.} The guard reconstructs a reference state
 $M=(\mathcal I,\mathcal H,\mathcal O)$: $\mathcal I$ maps instance keys to
@@ -2957,7 +2957,7 @@ Deletion uses truncated subtraction and clamped list selection, and its
 single-instance preparation fails on mixed-instance selections. The typed
 core's closed shape proves the needed instance property for its supported
 local requests; this is not a claim about the source's general
-multi-instance grouping. Factory initialization is separately admitted
+multi-instance grouping. Factory initialisation is separately admitted
 only while the source network is initial, at session $[65]$, using
 bootstrap identity $(1,[65])$.
 

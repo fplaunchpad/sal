@@ -25,7 +25,7 @@ names={
 'balegas-bounded-counter':r'Bounded counter\cite{BalegasBoundedCounter}',
 'enable-wins-flag':r'Enable-wins flag\cite{neem}',
 'disable-wins-flag':r'Disable-wins flag\cite{neem}',
-'tree-move':r'Tree move\textsuperscript{*}\cite{TreeMove}',
+'tree-move':r'Tree move\cite{TreeMove}',
 'aegis-sheet':r'AegisSheet\textsuperscript{*}\cite{AegisSheet}',
 'notion-core':r'Notion core\cite{NotionCRDTBlog}',
 'remove-wins-set':r'Remove-wins set\cite{neem}',

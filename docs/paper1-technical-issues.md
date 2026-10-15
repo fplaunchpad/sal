@@ -189,6 +189,24 @@ should not delay fixing a false theorem premise or an incorrect attribution.
 
 ## What is already resolved
 
+Claude's prose edits were reviewed and published in Overleaf `2c4aa36`.
+The title is now “Every Version Tells a Story: Verifying MRDTs Against Their
+Natural Specifications”. UK spelling is used in the body and appendices;
+published reference titles and source identifiers retain their original spelling.
+The established technical spelling of linearizability/linearization is retained.
+The sentence calling Wang's sequence and Soundarapandian et al.'s relation
+equivalent now explicitly distinguishes the two. The remaining Section 2
+attribution and argument repairs in item 5 still need to be made.
+
+The stale Tree move asterisk is removed: its measured implementation now uses
+the source's incremental undo/insert/redo algorithm. Four semantic adaptations
+remain marked: priority queue, Peritext, Sided Peritext and AegisSheet.
+The revised PDF has 72 pages, with the main text ending and references beginning
+on page 23; all 42 citations resolve and there are no overfull boxes or
+undefined references. The root README was reviewed; its theorem-scope wording
+remains accurate and needs no change for this prose-only revision.
+
+
 Overleaf commit `1664c1d` (15 October) corrects grammar, missing set braces in the
 Section 2 example, the direction stated for following parent links, and the
 wording about the initial-state abstraction condition. Appendix B now says
