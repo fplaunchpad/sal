@@ -1,11 +1,10 @@
 # Measured datatypes and proof routes
 
-The measurement selects **26 configurations, displayed as 24 paper rows**.
+The measurement selects **26 implementations, displayed as 24 paper rows**.
 Three grow-only-set carriers form one row. Sided Peritext's internal core is
-charged to its public rich-text configuration rather than counted separately.
-These counts describe the selection in
-[current-counts.json](../measurements/current-counts.json), not the number of
-entries in a production registry.
+charged to its public rich-text implementation rather than counted separately.
+The measured declarations are listed in
+[current-counts.json](../measurements/current-counts.json).
 
 This catalogue is a reading map. It does not replace the hypotheses in the
 linked declarations. `P.` abbreviates `Sal.MRDTs.Paper1.` and `I.` abbreviates

@@ -2,10 +2,24 @@
 """Check every shipped file, source measurement and local Lean import."""
 import hashlib
 import json
+import os
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 manifest = json.loads((root / 'manifest.json').read_text())['sha256']
+# Build products and locally downloaded demo modules are not shipped sources.
+ignored_dirs = {'.lake', 'results', 'vendor/notion'}
+actual = set()
+for directory, dirs, names in os.walk(root):
+    relative = Path(directory).relative_to(root)
+    dirs[:] = [name for name in dirs
+               if name != '__pycache__' and str(relative / name) not in ignored_dirs]
+    for name in names:
+        if not name.endswith('.pyc'):
+            actual.add(str(relative / name))
+extra = actual - set(manifest) - {'manifest.json'}
+if extra:
+    raise SystemExit('Unexpected artifact file(s): ' + ', '.join(sorted(extra)))
 for filename, expected in manifest.items():
     path = root / filename
     if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:

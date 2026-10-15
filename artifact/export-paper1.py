@@ -3,6 +3,7 @@
 import argparse
 import ast
 import hashlib
+import gzip
 import json
 from pathlib import Path
 import re
@@ -21,6 +22,78 @@ def sha(path):
 def write(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(data)
+
+
+def anonymous_text(text):
+    # Token-boundary replacements preserve words such as “causal” and all lines.
+    text = text.replace('Types* (Soundarapandian,\nKamath, Nagar, Sivaramakrishnan; PLDI 2022)', 'Types* (PLDI\n2022)')
+    text = re.sub(r'\bVimala\b', 'CertifiedMRDTs2022', text)
+    return re.sub(r'\bsal\b', 'artifact', re.sub(r'\bSal\b', 'Artifact', text))
+
+
+def anonymise(out):
+    """Rename the project without changing proof structure or source line counts."""
+    # The paper closure never invokes this legacy tactic macro. Remove it and
+    # its import, retaining blank lines so paper/source references remain exact.
+    interface = out / 'Sal/Interfaces/Set_Extended.lean'
+    original = interface.read_text()
+    unused = 'macro "neem" : tactic =>\n  `(tactic| first | grind | blaster)'
+    assert original.count('import Blaster\n') == original.count(unused) == 1
+    for path in (out / 'Sal').rglob('*.lean'):
+        if path != interface and re.search(r'\b(neem|blaster|Blaster)\b', path.read_text()):
+            raise SystemExit('Unexpected dependency on the removed tactic: ' + str(path))
+    stripped = original.replace('import Blaster\n', '\n').replace(unused, '\n')
+    assert stripped.count('\n') == original.count('\n')
+    write(interface, stripped)
+    config = (out / 'lakefile.toml').read_text()
+    config, removed = re.subn(r'\[\[require\]\]\nname = "Blaster"\n.*?(?=\[\[)', '', config, flags=re.S)
+    assert removed == 1
+    write(out / 'lakefile.toml', config)
+    lock = json.loads((out / 'lake-manifest.json').read_text())
+    lock['packages'] = [p for p in lock['packages'] if p['name'] != 'Blaster']
+    write(out / 'lake-manifest.json', json.dumps(lock, indent=2) + '\n')
+    # Transform text and paths in one pass. Third-party notices remain untouched.
+    for path in sorted(out.rglob('*')):
+        if not path.is_file() or 'vendor' in path.relative_to(out).parts:
+            continue
+        data = anonymous_text(path.read_text())
+        if path.suffix == '.json':
+            obj = json.loads(data)
+            for key in ('source_revision', 'repo_head', 'git_head'):
+                if key in obj:
+                    obj[key] = 'anonymous-source-snapshot'
+            data = json.dumps(obj, indent=2) + '\n'
+        write(path, data)
+    (out / 'Sal').rename(out / 'Artifact')
+    for path in sorted(out.rglob('*'), key=lambda p: len(p.parts), reverse=True):
+        if 'vendor' in path.relative_to(out).parts:
+            continue
+        new_name = anonymous_text(path.name)
+        if new_name != path.name:
+            path.rename(path.with_name(new_name))
+    # The published digests describe the renamed sources; line counts are invariant.
+    for name in ('provenance.json', 'measurements/current-counts.json'):
+        path = out / name
+        obj = json.loads(path.read_text())
+        obj['source_sha256'] = {f: sha(out / f) for f in obj['source_sha256']}
+        if name == 'provenance.json':
+            obj['packaging_adaptations'] += [
+                'Neutral project/module names; no change to proof structure or source line counts.',
+                'Repository revision metadata removed; source hashes recomputed after renaming.',
+                'Unused legacy tactic macro and its package dependency removed; source line numbers preserved.']
+        write(path, json.dumps(obj, indent=2) + '\n')
+    forbidden = re.compile(r'\bSal\b|\bsal\b|kayceesrk|kcsrk|fplaunchpad|Sivaramakrishnan|Soundarapandian|Vimala|Kartik|/Users/kc|olp_[A-Za-z0-9]+', re.I)
+    for path in out.rglob('*'):
+        if path.is_file() and (forbidden.search(str(path.relative_to(out))) or forbidden.search(path.read_text())):
+            raise SystemExit('Anonymity check failed in generated file: ' + str(path.relative_to(out)))
+
+
+def anonymous_tar_info(info):
+    info.uid = info.gid = 0
+    info.uname = info.gname = ''
+    info.mtime = 0
+    info.pax_headers = {}
+    return info
 
 
 def main():
@@ -108,8 +181,8 @@ def main():
 /-!
 # Paper artifact entry point
 
-Build with `lake build Sal.Artifact.Paper`. Imports retain the exact source
-files measured for the paper; no repository-wide ledger or Git checkout is
+Build with `lake build Sal.Artifact.Paper`. Imports retain the proofs measured
+for the paper, with neutral module names; no repository-wide ledger or Git checkout is
 required. See docs/claims-and-theorems.md for the research claims and hypotheses,
 and measurements/current-counts.json for each datatype's selected roots.
 The checks below fail if any advertised root is absent or depends on an axiom
@@ -137,14 +210,18 @@ elab "audit_paper " n:ident : command => do
                   'dependency_only_gc_modules': sorted(f for f in files if 'GC' in f),
                   'scope': 'Paper proofs and supporting reproductions; no GC result is an artifact claim.'}
     write(out / 'provenance.json', json.dumps(provenance, indent=2) + '\n')
+    anonymise(out)
     hashes = {str(p.relative_to(out)): sha(p) for p in sorted(out.rglob('*')) if p.is_file()}
     write(out / 'manifest.json', json.dumps({'sha256': hashes}, indent=2) + '\n')
     if args.archive:
         archive = out.with_suffix('.tar.gz')
         if archive.exists():
             raise SystemExit('Refusing to overwrite archive: ' + str(archive))
-        with tarfile.open(archive, 'w:gz') as tar:
-            tar.add(out, arcname=out.name)
+        with archive.open('wb') as raw:
+            with gzip.GzipFile(filename='', mode='wb', fileobj=raw, mtime=0) as zipped:
+                with tarfile.open(fileobj=zipped, mode='w') as tar:
+                    tar.add(out, arcname=out.name, filter=anonymous_tar_info)
+        write(Path(str(archive) + '.sha256'), sha(archive) + '  ' + archive.name + '\n')
         print(archive)
     print(f'Exported {len(files)} Lean sources, {len(roots)} checked roots, {len(hashes)} files to {out}')
 

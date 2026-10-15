@@ -7,11 +7,14 @@
   "validation": "pass",
   "original_lean_sources": 507,
   "selected_roots": 242,
-  "build_jobs": 3783,
+  "build_jobs": 3612,
   "fresh_project_build": true,
-  "build_scope": "No Sal compiled outputs copied; only pinned external Lake package cache reused. No fresh external dependency bootstrap claimed.",
+  "build_scope": "Fresh project build with only standard Lean/Mathlib dependencies available; no optional solver package or project compiled outputs reused. No fresh external dependency bootstrap claimed.",
   "notion": "Fresh download verified all seven hashes; offline runner reproduced three known demo bugs and one positive control.",
-  "measurements": "All 24 row count dictionaries and all 444 measured source hashes match; all generic metatheory category counts match.",
+  "measurements": "All 24 row counts, 444 renamed-source hashes and generic metatheory category counts reproduced after renaming.",
   "excluded": "No Git history, credentials, original repository .lake directory, untracked research files, or third-party Notion sources in source archive.",
-  "negative_controls": "Unapproved Lean axiom rejected; existing export directory refused; Notion corrupt-cache and output-overwrite rejection checked."
+  "negative_controls": "Unapproved Lean axiom rejected; existing export directory refused; Notion corrupt-cache and output-overwrite rejection checked. Unexpected additional source file rejected by the manifest checker.",
+  "navigation_declaration_checks": 52,
+  "numbered_paper_statements": 16,
+  "anonymity": "Neutral project/module names; project revision identifiers and author references removed; official dependency attributions retained. Archive owner names, numeric owners and timestamps cleared."
 }

@@ -13,10 +13,17 @@ sole active bounded counter is the published Balegas matrix/max design.
 - [x] Produce the documented standalone paper source artifact. The exporter
   packages the measured source/import closure, 242 checked roots, claim/datatype
   guides, exact table-count reproduction and three public Notion demo regressions.
-  Fresh local-source build passes (3,783 jobs); all 24 row counts, 444 measured
+  Fresh anonymous-source build passes (3,612 jobs); all 24 row counts, 444 measured
   source hashes and selected metatheory totals reproduce. Initial external Lean
   package acquisition is separate; the clean build reused pinned package caches.
   Fresh demo acquisition plus offline regression passes. No GC result is claimed.
+  Anonymous export uses neutral namespaces and filenames, strips project revisions
+  and archive ownership, and omits the unused legacy tactic dependency.
+  The latest manuscript index covers 16 numbered statements
+  with exact source lines; the annotated Lean guide checks 52 declarations.
+  Reviewer corrections align implementation terminology, explain the 242-root
+  audit and native examples, remove development-history prose, and supply all
+  table citation entries under neutral keys. Integrity checks reject added files.
 
 - [x] Align the appendix with pointwise `ops`: required identifiers are operation
   arguments fixed at issuance. Add checked Lean transport of the existing

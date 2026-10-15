@@ -21,9 +21,10 @@ remain proof helpers; this result does not assert correctness for arbitrary
 executions with inconsistently supplied arguments.
 
 The [paper artifact exporter](artifact/README.md) produces a standalone Lean
-source bundle with the theorem/datatype guides, reproducible implementation-table
+source bundle with neutral project/module names, numbered paper-to-source
+references, an annotated Lean reading guide, reproducible implementation-table
 counts, and three public Notion demo bug reproductions. Its clean source build
-checks 242 selected roots; no original Sal checkout is needed to use the bundle.
+checks 242 selected roots; no development checkout is needed to use the bundle.
 
 The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
 changes against the current Overleaf manuscript, with numbered references to a

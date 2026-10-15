@@ -1,5 +1,5 @@
 /.lake/
-/vendor/
+/vendor/notion/
 /results/
 __pycache__/
 *.pyc
