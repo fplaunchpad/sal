@@ -16,33 +16,16 @@ resolve this.
 source or Lean declarations. Recommendations are proposed manuscript changes,
 not claims that those changes have already been made. GC stays outside this paper.
 
-## Changes needed before submission
+## Changes in priority order
 
-### 1. Distinguish Wang's total sequence from Neem's partial relation
+Items 1–4 establish the criterion and assumptions used by the case studies;
+items 5–8 repair the supporting proof statements and examples. Item 9 is
+also submission-critical and can be handled in parallel with both groups.
+Item 10 then aligns the headline claims with the repaired theory. Finish with
+the smaller corrections below. This orders the manuscript work by dependency;
+it does not make the later correctness issues optional.
 
-**Confirmed — abstract, Introduction, §2, §4 discussion and Related Work.**
-Wang fixes a single total sequence. Neem fixes one configuration-wide partial
-relation `lo_C`; each replica may have a different linear extension of its
-restriction. These are not equivalent requirements.
-
-Figure 2's opposing branch orders refute a single total sequence. They do
-not refute Neem's definition: both branch witnesses can extend its partial
-relation. The separate issue with Neem is that an event outside a version
-can remove an ordering edge inside that version. The resulting restriction
-need not determine a unique implementation fold.
-
-**Change:** distinguish these two problems throughout. Attribute the forced
-cycle to the total-sequence requirement. Explain why Sal searches for absorbers
-inside the event set being explained. Identify Figure 2's annotations as Sal's
-version-relative relations. Explain the failure of constructing a merged
-history from branch endings separately. Do not claim a counterexample to SEC
-from this figure alone.
-
-**Evidence:** Neem source, `lin.tex`, Definitions `lin-relation` and `lin`;
-Claude review §2, independently cross-checked. No new implementation proof is
-needed to correct the attribution.
-
-### 2. Complete Kartik's commutation assumptions
+### 1. Complete Kartik's commutation assumptions
 
 **Confirmed — §4, displayed datatype laws.** The paper exempts equal operation
 labels from `rc-non-comm`, but does not separately require equal-label events
@@ -64,7 +47,7 @@ combined formulations, including the certified and invariant-restricted forms.
 `guarded_iff_repaired`, `Certified.existing_iff_repaired`, and
 `Invariant.existing_iff_repaired`.
 
-### 3. Put specification ordering in the criterion used by the case studies
+### 2. Put specification ordering in the criterion used by the case studies
 
 **Confirmed — §4, RA-linearizability and `spec-non-comm`; §7 theorem.**
 The paper makes implementation/specification commutation compatibility
@@ -84,7 +67,7 @@ this requirement.
 `EventVersionsSpecificationRA`; [RGAConcretePort.lean](../Sal/MRDTs/Paper1/RGAConcretePort.lean),
 `globalCompatibility_impossible`.
 
-### 4. State the certified five-VC extension, including its state domain
+### 3. State the certified five-VC extension, including its state domain
 
 **Confirmed — §§4–5 and §7; Table 1.** The general exposition quantifies over
 all implementation states and claims uniqueness for all allowed folds.
@@ -116,7 +99,7 @@ An impossibility over arbitrary events does not refute that certified result.
 Complete the per-row theorem mapping before saying all rows instantiate one
 unrestricted theorem; an extra jargon-heavy table column is not essential.
 
-### 5. Make the operation-label convention explicit
+### 4. Make the operation-label convention explicit
 
 **Clarification from Vimala — §2 labels, §4 sequential specification, §§6–7.**
 Vimala proposes keeping `ops`, with any required timestamp and replica identity
@@ -132,7 +115,7 @@ The current §4 text alone describes `ops` as projecting the operation out of
 `(t,r,o)`, while §7's insertion label also includes `t`; this connection needs
 one explicit explanation, not a new abstraction.
 
-### 6. Give canonical states the domain used by the induction
+### 5. Give canonical states the domain used by the induction
 
 **Confirmed — §4 order/determinacy/canonical-state definitions; §5 VCs.**
 Section 4 requires causal closure. Section 5 removes maximal events and uses
@@ -148,7 +131,7 @@ domain separately. Check every canonical-state expression in the VCs and
 Join lemma against those premises. This is a theorem-scope correction, not
 just a terminology replacement.
 
-### 7. Check issuance at the actual source state
+### 6. Check issuance at the actual source state
 
 **Confirmed — §7, definition of certified executions.** The current definition
 requires a guard to hold at *some* ordered replay of predecessors. The intended
@@ -164,7 +147,7 @@ this evidence into the history proof.
 and the [formal reference](paper1-formal-reference/main.pdf), certified-execution
 definitions.
 
-### 8. Replace the RGA example with the specification and argument actually proved
+### 7. Replace the RGA example with the specification and argument actually proved
 
 **Confirmed — §7 RGA example.** The manuscript uses a retained list plus
 tombstones and guarded deletion. The checked native-RGA specification uses a
@@ -182,7 +165,7 @@ different lists.
 [RGAIdentified.lean](../Sal/MRDTs/Paper1/RGAIdentified.lean), and Appendix A's
 native-RGA entry.
 
-### 9. Require the sequential specification to admit the returned query answer
+### 8. Require the sequential specification to admit the returned query answer
 
 **Confirmed — §6, simulation condition (iii); §4 specification notation.**
 Condition (iii) only says that an admitted answer equals the implementation's
@@ -194,6 +177,30 @@ implementation's answer to exist. Use relational execution notation, or
 explicitly assume determinism before writing the reached state as a function.
 The current update condition (ii) already requires a transition: earlier
 notes claiming it too is implication-only are stale.
+
+### 9. Distinguish Wang's total sequence from Neem's partial relation
+
+**Confirmed — abstract, Introduction, §2, §4 discussion and Related Work.**
+Wang fixes a single total sequence. Neem fixes one configuration-wide partial
+relation `lo_C`; each replica may have a different linear extension of its
+restriction. These are not equivalent requirements.
+
+Figure 2's opposing branch orders refute a single total sequence. They do
+not refute Neem's definition: both branch witnesses can extend its partial
+relation. The separate issue with Neem is that an event outside a version
+can remove an ordering edge inside that version. The resulting restriction
+need not determine a unique implementation fold.
+
+**Change:** distinguish these two problems throughout. Attribute the forced
+cycle to the total-sequence requirement. Explain why Sal searches for absorbers
+inside the event set being explained. Identify Figure 2's annotations as Sal's
+version-relative relations. Explain the failure of constructing a merged
+history from branch endings separately. Do not claim a counterexample to SEC
+from this figure alone.
+
+**Evidence:** Neem source, `lin.tex`, Definitions `lin-relation` and `lin`;
+Claude review §2, independently cross-checked. No new implementation proof is
+needed to correct the attribution.
 
 ### 10. Scope the convergence and recursive-merge claims correctly
 
@@ -235,12 +242,3 @@ a checked obstruction against an ordinary sequential queue, whose exact scope
 still needs parent review. The incremental tree-move proof is also not yet
 integrated. Do not describe either replacement as completed in the paper or
 change its table counts before integration and verification.
-
-## Suggested order for the paper review
-
-Resolve items 2–5 first: they determine the statement the paper claims and
-which implementations it covers. Then repair §§5–7 using items 6–9. Apply
-the Wang/Neem correction consistently across the motivation, abstract,
-introduction and related work. Finally align the contribution claims,
-recursive-base scope and reference notation. The page-recovery pass can
-remove repetition in parallel, but must leave room for these missing premises.
