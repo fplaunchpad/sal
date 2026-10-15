@@ -23,10 +23,13 @@ sole active bounded counter is the published Balegas matrix/max design.
   page 23, references start on page 24; 72 pages including supplementary material.
   Gate: 3,876 Lean jobs, 18 contracts, 13 controls, 187 runtime tests,
   569 benchmark records. All 444 measured source hashes unchanged.
-- [ ] State the body extensions precisely: guarded actual-event laws, certified
-  concurrent-event/prefix laws, parameterized dependency closure/maximality and
-  decomposition supply, and specification-visible explaining histories. See
-  priority items 1–3 of `docs/paper1-technical-issues.md`.
+- [ ] Keep Sections 4–6 as the simple account and explain the certified extension
+  in Section 7. State assumptions that affect truth; put detailed side conditions
+  and proofs in the appendix. Preserve the distinction between five-VC proofs
+  and sequential-history proofs; avoid a new table of Lean proof routes. See
+  priority items 1–3 of `docs/paper1-technical-issues.md` and KC's readability
+  guidance there. The approved abstract qualification is published in Overleaf
+  `109323c`; the matching introduction and theorem edits remain pending.
 - [ ] After correctness, deduplicate repeated flag/sequence descriptions and
   finish local symbol hygiene. Keep GC outside the paper's contributions.
 
