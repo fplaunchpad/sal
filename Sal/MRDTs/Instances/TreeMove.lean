@@ -12,9 +12,10 @@ Kleppmann et al., "A Highly-Available Move Operation for Replicated Trees"
 move events.  `render` sorts that set by timestamp and replays the ordinary
 cycle-rejecting tree move operation.
 
-The paper implements out-of-order delivery with undo/redo.  Keeping canonical
-replay as the specification makes the MRDT merge set union and leaves
-undo/redo as a separate implementation-refinement problem.
+The paper implements out-of-order delivery with undo/redo.
+`TreeMoveIncremental` implements and refines that algorithm; the production
+registry selects its coherent log/tree carrier. This finite-event model
+remains the mathematical replay model and supports the older internal proofs.
 -/
 
 set_option maxHeartbeats 1000000

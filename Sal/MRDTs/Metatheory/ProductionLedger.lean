@@ -7,7 +7,7 @@ import Sal.MRDTs.Instances.RGASequential
 import Sal.MRDTs.Instances.ProductionRGA
 import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.Instances.SidedPeritext
-import Sal.MRDTs.Instances.TreeMove
+import Sal.MRDTs.Instances.TreeMoveIncrementalCertificate
 import Sal.MRDTs.Instances.AegisSheetSequential
 import Sal.MRDTs.Instances.EfficientORSetCertified
 import Sal.MRDTs.Instances.QueueCorrectness
@@ -47,7 +47,7 @@ noncomputable def registry : List PackagedMRDT :=
       (Instances.SidedPeritext.verified unaryCode)
   , PackagedMRDT.of "sided-peritext-rich-core"
       (Instances.SidedPeritext.richVerified unaryCode)
-  , PackagedMRDT.of "tree-move" Instances.TreeMove.verified
+  , PackagedMRDT.of "tree-move" Instances.TreeMove.Incremental.verified
   , PackagedMRDT.of "aegis-sheet" Instances.AegisSheet.verified
   , PackagedMRDT.of "efficient-or-set"
       (Instances.EfficientORSet.verified (α := Nat))

@@ -44,6 +44,7 @@ import Sal.MRDTs.Instances.SidedPeritextStateGC
 import Sal.MRDTs.Instances.SidedPeritextInteraction
 import Sal.MRDTs.Instances.SidedPeritextProtocol
 import Sal.MRDTs.Instances.TreeMove
+import Sal.MRDTs.Instances.TreeMoveIncrementalSPOT
 import Sal.MRDTs.Instances.TreeMoveGC
 import Sal.MRDTs.Instances.AegisSheetGC
 import Sal.MRDTs.Instances.AegisSheetAbstraction
@@ -150,6 +151,7 @@ namespace Sal.MRDTs
 #check StateGCCoverage
 #check PackagedStateGC
 #check Production.StateGC.registry
+#check Production.StateGC.packages_eq_production
 #check StateGCProtocol
 #check prodSig
 #check applySeq_prod
@@ -209,6 +211,19 @@ namespace Sal.MRDTs
 #check Instances.ORSet.fabricated_tag_rejected
 #check Instances.ORSet.concurrent_remove_add_wins
 #check Instances.ORSet.omitted_tag_breaks_ordinary_refinement
+-- Public source undo/redo carrier, source forest/trash client language, and
+-- ordinary/recursive certificates. Legacy replay helpers below serve GC only.
+#check Instances.TreeMove.Incremental.sourceApplicable
+#check Instances.TreeMove.Incremental.run_coherent
+#check Instances.TreeMove.Incremental.applyRaw_eq_sourceApply
+#check Instances.TreeMove.Incremental.fiveVC
+#check Instances.TreeMove.Incremental.joinAt
+#check Instances.TreeMove.Incremental.sourceClientLegal_iff
+#check Instances.TreeMove.Incremental.history
+#check Instances.TreeMove.Incremental.verified
+#check Instances.TreeMove.Incremental.certifiedV
+#check Instances.TreeMove.Incremental.executions
+#check Instances.TreeMove.Incremental.executionsV
 #check Instances.TreeMove.applicable
 #check Instances.TreeMove.render_safe
 #check Instances.TreeMove.join

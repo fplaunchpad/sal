@@ -1,8 +1,8 @@
 {
   "method": "Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles prioritize implementation definitions, independent specification definitions, VC proof/input-support closures, then remaining bridge/execution closures. The 19 automation-selected cases use actual CommonVerification.verify application/evidence closures; other cases use their named raw five-VC, policy-expansion or direct-assembly dependency closures, with root packaging included. Shared libraries are excluded. Counts are dependency-footprint LOC, not handwritten proof-body sizes or person-hours; cross-row overlap is not subtracted. The direct structural Notion carrier assembly is explicitly listed in direct_vc_dependency_roots.",
-  "git_head": "b45a145d5f316241bb6536fa495ef35d9f48df74",
-  "deduplicated_concrete_total": 46417,
-  "deduplicated_shared_dependency_total": 8379,
+  "git_head": "9b18853be10de4197db6c6e42757b70ebe6909db",
+  "deduplicated_concrete_total": 46732,
+  "deduplicated_shared_dependency_total": 8364,
   "source_sha256": {
     "Sal/MRDTs/Instances/AddStore.lean": "fd22679f86c3405fee06461d91545be5bfb3e5402143fe043a9135d11d5fa07c",
     "Sal/MRDTs/Framework/Base/UpdateSignature.lean": "092ac6fce113c1398a77ccc2f066a948420e3335cec795c1474eaf370d2cc437",
@@ -219,11 +219,20 @@
     "Sal/MRDTs/Instances/Fugue.lean": "c2071799d0a759f1a693461e2ad08829890cf624d17f57073bb2753b3d2d90f7",
     "Sal/MRDTs/Instances/SidedPeritext.lean": "b277e8ffcb51565b0cd4c26b59b9646057a90cb6160b411efbcc1b17266f92fa",
     "Sal/MRDTs/Instances/PeritextRender.lean": "515f2ed726222fbb8e1c537db7f1da1546989bd84f0f3d06384c8a5f47ace912",
-    "Sal/MRDTs/Instances/TreeMove.lean": "4e223a4f9bbb981437f956f8e7455d8a56122bdc78eb2a82fb1a09a99207b10d",
+    "Sal/MRDTs/Instances/TreeMoveIncrementalMRDT.lean": "41c0a6405f8c185ec844257d5fc0a5b77f87508dc02b94a2ddaf93e7f75ff228",
+    "Sal/MRDTs/Instances/TreeMoveIncremental.lean": "8d22b7b6e9a209e64d478808167717c7f33d74b38af1e978de1bf43ca48e08a0",
+    "Sal/MRDTs/Instances/TreeMove.lean": "92980904c2550486230638c7bd14cb816a1750d4e2ea9ed922af61f10bde8520",
+    "Sal/MRDTs/Instances/TreeMoveIncrementalCertificate.lean": "dfd8191530daa3d4cc2b5cfc3d57326344331c10740b82cd4e00d42d6655c330",
+    "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean": "135b57a1c22f6dcf0299376d1f732859ac16547cbba082f20ea8e38b22743bdf",
+    "Sal/MRDTs/Paper1/GuardedHistory.lean": "bf125b10404617ca7ded4cb6cea605eab4fdef09f11331a4e7c1e6c39e4001c4",
+    "Sal/MRDTs/Paper1/Soundness.lean": "cc71df601b4ce91a91727d666e3b4fdf56dd1b22ad41a0fb699887cfba8386a1",
+    "Sal/MRDTs/Paper1/ExecutionTrace.lean": "1e194dc1b4f16f4a99fe45ad4584722463d9064ada2bba5a0a720407285af09e",
+    "Sal/MRDTs/Framework/GuardedStateProjection.lean": "6f3bfcd8e755995055ba509da64e580df172e63d9ab95adc8b62d8149024c3d7",
+    "Sal/MRDTs/Framework/SequentialInduction.lean": "a52c9f9f4573d842a96ce333e812bce65bd7382ddbb0a1fc3e05138c2b5dddeb",
+    "Sal/MRDTs/Paper1/Automation/CertifiedOriginBridge.lean": "3424c7e0d3924624cf166adc4723c257842d3126b0a1a66794766d803f463295",
+    "Sal/MRDTs/Paper1/Automation/OriginPrefixEvidence.lean": "aa141fc98a00db9a66033380689625cc7d6f7f0e4d13c5546c330ce9cfb60887",
     "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullCertificate.lean": "d746b9d73b1be11bdbf77ff508ea196e30eadf72bbe51c5486242593b98efe25",
     "Sal/MRDTs/Paper1/AddWinsPriorityQueueReplay.lean": "0733af6d294f84b74c73dfea539e9bc17e3e29f9440b43e35f458293dd0fd883",
-    "Sal/MRDTs/Paper1/ConcreteHistoryBridge.lean": "135b57a1c22f6dcf0299376d1f732859ac16547cbba082f20ea8e38b22743bdf",
-    "Sal/MRDTs/Paper1/Soundness.lean": "cc71df601b4ce91a91727d666e3b4fdf56dd1b22ad41a0fb699887cfba8386a1",
     "Sal/MRDTs/Paper1/AddWinsPriorityQueueFullSpec.lean": "ebd852872f6602ae439124a2124704c21bf75cbbe7ab566cf92d56e25b9fef3d",
     "Sal/MRDTs/Paper1/AddWinsPriorityQueueSpec.lean": "60712c3122554ccaae80a71c3f67a9ff772a764ed4460643563f0811c94029ce",
     "Sal/MRDTs/Paper1/ProjectedSimulation.lean": "e3aa9a945c4d7c4c9f508f986a5b4adacb118b1f1cbd20e1284fe959841e7ab6",
@@ -233,9 +242,7 @@
     "Sal/MRDTs/Paper1/AddWinsPriorityQueueVC.lean": "cbdd16deb6e18a296f737be5202abd16ba6b021f5e953ce5a913fb91a52fc837",
     "Sal/MRDTs/Paper1/AddWinsPriorityQueueCanonical.lean": "28ab4e9976ee3e9a7ef834a879705acf47f70f65bbe92ad457aab4a0cd1d4bcd",
     "Sal/MRDTs/Paper1/ConcreteORSetAlgebra.lean": "07a3d7ddf558864fb2fcc955d4111849d8a2f800ef166912b6c8fcbe125242bc",
-    "Sal/MRDTs/Paper1/ExecutionTrace.lean": "1e194dc1b4f16f4a99fe45ad4584722463d9064ada2bba5a0a720407285af09e",
     "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean": "6fd5a62fb70e9470662091672242b09447202b78b9deb9c5af3ba731fa01b65c",
-    "Sal/MRDTs/Paper1/GuardedHistory.lean": "bf125b10404617ca7ded4cb6cea605eab4fdef09f11331a4e7c1e6c39e4001c4",
     "Sal/MRDTs/Instances/AegisSheetSequential.lean": "a351d710bd5a7c44eee65768b258f979fd7ad7a32aa17164ecbdd08b0c54d49c",
     "Sal/MRDTs/Paper1/AnchoredQueueCertificate.lean": "f46cfa1a6a05843177c74a393679222eda43def3a0add12652c8ec19c70d9bc2",
     "Sal/MRDTs/Paper1/AnchoredQueuePublic.lean": "2a7fc9e22f34afd235daf635886b48d45a55690690fcb8a9a083efa7a71a6f60",
@@ -298,7 +305,6 @@
     "Sal/MRDTs/Paper1/CertifiedRGAHistoryCommutation.lean": "ea463cf477af6db31ab82faafd8a222e869cb9bfc9f8a9b112bb6946d8c804cf",
     "Sal/MRDTs/Paper1/Automation/EmbeddedSequentialBridge.lean": "d3a9fbdd6a76c62e2c00815f3ae5a498eca6a729d0588a36823fcafbd266ca39",
     "Sal/MRDTs/Paper1/Automation/GenericGuardedFold.lean": "2e9ee2d3c73acb0017e5b8135e8c22fcaa36615c46b15a19b3b2181b096e3097",
-    "Sal/MRDTs/Framework/SequentialInduction.lean": "a52c9f9f4573d842a96ce333e812bce65bd7382ddbb0a1fc3e05138c2b5dddeb",
     "Sal/MRDTs/Paper1/CertifiedPeritextVC.lean": "355d57fc7f586bcf64f6452253a78c41333734a277b8c31a9cb5af0a9d4a8b5b",
     "Sal/MRDTs/Paper1/CertifiedMVRCertificate.lean": "13f263cb881cd5bf128238a766780931d8e2891a7b565c985f72c22df300008b",
     "Sal/MRDTs/Paper1/CertifiedMVRExecution.lean": "04a6d0b3131e31ac50e9bb448a6e41665f0033d65991d217edb2cc70a616257d",
@@ -340,13 +346,9 @@
     "Sal/MRDTs/Paper1/Automation/TransferNativeRGA.lean": "bc2821d34b2c69fc06b963e5554532a86ad9b27c66d073ee3cd06dedb8cef2db",
     "Sal/MRDTs/Paper1/IssuedConcretePorts.lean": "616d19e02e2c8638eca9fde291745147eff9af765c324fbfbb10441eea9ca7b8",
     "Sal/MRDTs/Paper1/Automation/TransferAegisSheet.lean": "d28e5cfd5c557decd2e2d345d59b46340920884abf5210635ed2236ad382f8db",
-    "Sal/MRDTs/Paper1/Automation/CertifiedOriginBridge.lean": "3424c7e0d3924624cf166adc4723c257842d3126b0a1a66794766d803f463295",
-    "Sal/MRDTs/Paper1/Automation/OriginPrefixEvidence.lean": "aa141fc98a00db9a66033380689625cc7d6f7f0e4d13c5546c330ce9cfb60887",
     "Sal/MRDTs/Instances/AegisSheetGC.lean": "34724d351cfae43b67d623becd9fba4cfd03c34ff45e8197b701e84b3065fd0f",
     "Sal/MRDTs/Paper1/GuardedProjectionHistory.lean": "5eac356408c9e5d3d00c4a9cc7edfd8aa1ad15147040582e0bce1d3336552027",
-    "Sal/MRDTs/Framework/GuardedStateProjection.lean": "6f3bfcd8e755995055ba509da64e580df172e63d9ab95adc8b62d8149024c3d7",
     "Sal/MRDTs/Framework/CertifiedInvariant.lean": "5facc21b310c34f4c24decf6e535444b136e2af0508749b3472597f5267c78ac",
-    "Sal/MRDTs/Paper1/Automation/TransferGuardedCommuting.lean": "04e378ee1d04e47432584dda04d621573273c45d6006d19a7c04841659d1dfd4",
     "Sal/MRDTs/Paper1/DisableWinsFlagCertificate.lean": "0b1bd93ca62e201febf8702aac4ffa296144ae7b317c93698415c73a6399a9fb",
     "Sal/MRDTs/Paper1/DisableWinsFlagEvent.lean": "27425af5ade0d0d10d1a34b34cfda0476fc583f2287866b81e984c056f17fc57",
     "Sal/MRDTs/Paper1/NeemFlagEvent.lean": "18a2c20a786a5fbbd32b5b3f1bf472f67c176c576e160991b6fb1c3a8eb8bc0e",
@@ -1734,149 +1736,211 @@
     "tree-move": {
       "roots": {
         "implementation": [
-          "Sal.MRDTs.Instances.TreeMove.D",
-          "Sal.MRDTs.Instances.TreeMove.generation"
+          "Sal.MRDTs.Instances.TreeMove.Incremental.D",
+          "Sal.MRDTs.Instances.TreeMove.Incremental.generation"
         ],
         "specification": [
-          "Sal.MRDTs.Paper1.TreeMoveEvent.spec"
+          "Sal.MRDTs.Instances.TreeMove.Incremental.language"
         ],
         "vc": [
-          "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.conditions"
+          "Sal.MRDTs.Instances.TreeMove.Incremental.fiveVC"
         ],
         "bridge": [
-          "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.history",
-          "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.executions",
-          "Sal.MRDTs.Paper1.ConcreteMRDT.GuardedPorts.Tree.executionsV",
-          "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.treeExecutions",
-          "Sal.MRDTs.Paper1.ConcreteMRDT.Guarded.ScopedPorts.treeExecutionsV"
+          "Sal.MRDTs.Instances.TreeMove.Incremental.history",
+          "Sal.MRDTs.Instances.TreeMove.Incremental.executions",
+          "Sal.MRDTs.Instances.TreeMove.Incremental.executionsV"
         ]
       },
       "loc": {
-        "implementation": 56,
-        "specification": 15,
-        "vc": 65,
-        "bridge": 94
+        "implementation": 85,
+        "specification": 20,
+        "vc": 178,
+        "bridge": 256
       },
       "source_ranges": {
         "implementation": {
           "Sal/MRDTs/Instances/TreeMove.lean": [
             [
-              27,
-              28
+              28,
+              29
             ],
             [
-              30,
-              31
+              31,
+              32
             ],
             [
-              34,
-              38
+              35,
+              39
             ],
             [
-              40,
-              40
+              41,
+              41
             ],
             [
-              43,
-              43
+              44,
+              44
             ],
             [
-              45,
-              46
+              46,
+              47
             ],
             [
-              48,
-              49
+              52,
+              52
             ],
             [
-              51,
-              51
+              54,
+              55
             ],
             [
-              53,
-              54
+              108,
+              109
             ],
             [
-              58,
-              60
+              119,
+              119
             ],
             [
-              95,
-              96
+              121,
+              121
             ],
             [
-              107,
-              108
+              180,
+              181
             ],
             [
-              118,
-              118
+              185,
+              186
+            ]
+          ],
+          "Sal/MRDTs/Instances/TreeMoveIncremental.lean": [
+            [
+              13,
+              14
             ],
             [
-              120,
-              120
+              16,
+              17
             ],
             [
-              127,
+              92,
+              95
+            ],
+            [
+              97,
+              99
+            ],
+            [
+              101,
+              101
+            ],
+            [
+              104,
+              105
+            ],
+            [
+              108,
+              109
+            ],
+            [
+              122,
               127
             ],
             [
-              173,
-              174
+              131,
+              133
             ],
             [
-              179,
-              180
+              148,
+              149
             ],
             [
-              184,
+              154,
+              155
+            ],
+            [
+              185,
               185
             ],
             [
-              222,
-              232
+              189,
+              190
+            ]
+          ],
+          "Sal/MRDTs/Instances/TreeMoveIncrementalMRDT.lean": [
+            [
+              13,
+              14
             ],
             [
-              267,
-              268
+              16,
+              18
             ],
             [
-              270,
-              271
+              34,
+              35
             ],
             [
-              286,
-              290
+              59,
+              60
             ],
             [
-              292,
-              293
+              74,
+              75
+            ],
+            [
+              88,
+              88
+            ],
+            [
+              95,
+              105
+            ],
+            [
+              111,
+              113
+            ],
+            [
+              115,
+              115
+            ],
+            [
+              125,
+              126
             ]
           ]
         },
         "specification": {
           "Sal/MRDTs/Instances/TreeMove.lean": [
             [
-              300,
-              303
+              49,
+              50
             ],
             [
-              325,
-              326
+              59,
+              61
             ],
             [
-              330,
-              333
+              301,
+              304
             ],
             [
-              335,
-              338
+              326,
+              327
             ]
           ],
-          "Sal/MRDTs/Paper1/TreeSheetEventSpec.lean": [
+          "Sal/MRDTs/Instances/TreeMoveIncrementalCertificate.lean": [
             [
-              15,
-              15
+              16,
+              19
+            ],
+            [
+              45,
+              48
+            ],
+            [
+              50,
+              50
             ]
           ]
         },
@@ -1889,22 +1953,96 @@
           ],
           "Sal/MRDTs/Instances/TreeMove.lean": [
             [
-              110,
-              116
-            ],
-            [
-              121,
-              125
-            ],
-            [
-              234,
-              238
+              111,
+              117
             ]
           ],
-          "Sal/MRDTs/Paper1/Automation/TransferGuardedCommuting.lean": [
+          "Sal/MRDTs/Instances/TreeMoveIncremental.lean": [
             [
-              16,
-              17
+              111,
+              117
+            ],
+            [
+              135,
+              138
+            ],
+            [
+              150,
+              152
+            ],
+            [
+              157,
+              172
+            ],
+            [
+              174,
+              183
+            ],
+            [
+              192,
+              193
+            ],
+            [
+              195,
+              203
+            ]
+          ],
+          "Sal/MRDTs/Instances/TreeMoveIncrementalMRDT.lean": [
+            [
+              20,
+              23
+            ],
+            [
+              25,
+              27
+            ],
+            [
+              29,
+              32
+            ],
+            [
+              37,
+              40
+            ],
+            [
+              42,
+              45
+            ],
+            [
+              47,
+              54
+            ],
+            [
+              62,
+              66
+            ],
+            [
+              68,
+              72
+            ],
+            [
+              77,
+              80
+            ],
+            [
+              82,
+              85
+            ],
+            [
+              128,
+              132
+            ],
+            [
+              137,
+              155
+            ],
+            [
+              157,
+              160
+            ],
+            [
+              162,
+              165
             ]
           ],
           "Sal/MRDTs/Paper1/Automation/TransferSimple.lean": [
@@ -1916,83 +2054,167 @@
               28,
               49
             ]
-          ],
-          "Sal/MRDTs/Paper1/IssuedConcretePorts.lean": [
-            [
-              67,
-              69
-            ]
           ]
         },
         "bridge": {
           "Sal/MRDTs/Instances/TreeMove.lean": [
             [
-              129,
-              131
+              63,
+              66
             ],
             [
-              133,
-              135
+              68,
+              72
             ],
             [
-              312,
-              317
+              84,
+              90
             ],
             [
-              354,
-              356
+              96,
+              97
             ],
             [
-              358,
-              360
+              99,
+              103
             ],
             [
-              364,
-              371
+              122,
+              126
             ],
             [
-              375,
-              378
+              128,
+              128
             ],
             [
-              380,
-              388
+              130,
+              132
             ],
             [
-              392,
-              393
+              134,
+              136
+            ],
+            [
+              174,
+              175
+            ],
+            [
+              223,
+              233
+            ],
+            [
+              313,
+              318
+            ],
+            [
+              320,
+              321
+            ],
+            [
+              355,
+              357
+            ],
+            [
+              365,
+              372
+            ],
+            [
+              376,
+              379
+            ],
+            [
+              381,
+              389
+            ],
+            [
+              396,
+              398
             ]
           ],
-          "Sal/MRDTs/Paper1/ConcreteSimplePorts.lean": [
+          "Sal/MRDTs/Instances/TreeMoveIncremental.lean": [
             [
-              49,
-              49
-            ],
-            [
-              52,
-              53
-            ]
-          ],
-          "Sal/MRDTs/Paper1/IssuedConcretePorts.lean": [
-            [
-              14,
-              19
+              19,
+              27
             ],
             [
               29,
-              38
+              47
             ],
             [
-              40,
-              65
+              49,
+              64
             ],
             [
-              76,
-              79
-            ],
-            [
-              81,
+              66,
               84
+            ],
+            [
+              86,
+              90
+            ],
+            [
+              140,
+              146
+            ],
+            [
+              205,
+              213
+            ],
+            [
+              215,
+              217
+            ]
+          ],
+          "Sal/MRDTs/Instances/TreeMoveIncrementalCertificate.lean": [
+            [
+              21,
+              23
+            ],
+            [
+              52,
+              62
+            ],
+            [
+              64,
+              66
+            ],
+            [
+              68,
+              103
+            ],
+            [
+              105,
+              107
+            ],
+            [
+              115,
+              118
+            ],
+            [
+              120,
+              123
+            ]
+          ],
+          "Sal/MRDTs/Instances/TreeMoveIncrementalMRDT.lean": [
+            [
+              90,
+              93
+            ],
+            [
+              117,
+              118
+            ],
+            [
+              167,
+              168
+            ],
+            [
+              170,
+              177
+            ],
+            [
+              179,
+              184
             ]
           ]
         }
@@ -22283,10 +22505,6 @@
       [
         59,
         62
-      ],
-      [
-        66,
-        77
       ]
     ],
     "Sal/MRDTs/Framework/MergeLaws.lean": [
@@ -23143,10 +23361,6 @@
       [
         20,
         22
-      ],
-      [
-        28,
-        30
       ],
       [
         35,

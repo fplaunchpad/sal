@@ -26,7 +26,7 @@ impl={
 'peritext-embed-rga':('Peritext.D','EmbedRGA.generation','CertifiedPeritextInvariantCertificate.language'),
 'sided-peritext-core':('SidedPeritext.Core','SidedPeritext.generation','CertifiedRGACoreCertificate.language'),
 'sided-peritext-rich-core':('SidedPeritext.RichCore','SidedPeritext.richGeneration','CertifiedRGARichCertificate.language'),
-'tree-move':('TreeMove.D','TreeMove.generation','TreeMoveEvent.spec'),
+'tree-move':('TreeMove.Incremental.D','TreeMove.Incremental.generation','@TreeMove.Incremental.language'),
 'aegis-sheet':('AegisSheet.D','AegisSheet.generation','AegisSheetEvent.spec'),
 'efficient-or-set':('EfficientORSet.D','EfficientORSet.issuance','EfficientORSet.EventSpec.spec'),
 'mvr':('MVRLive.D','MVRLive.issuance','CertifiedMVRHistory.language'),

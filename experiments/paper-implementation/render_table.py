@@ -19,7 +19,7 @@ names={
 'sided-embed-rga':r'Sided RGA\cite{Roh,FugueMax}',
 'peritext-embed-rga':r'Peritext\textsuperscript{*}\cite{Peritext}',
 'sided-peritext-core':r'Sided Peritext (core)\cite{Peritext}',
-'sided-peritext-rich-core':r'Sided Peritext\cite{Peritext}',
+'sided-peritext-rich-core':r'Sided Peritext\textsuperscript{*}\cite{Peritext}',
 'anchored-queue-paper-variant':r'Anchored queue\cite{Roh,Peepul}',
 'fugue-max':r'FugueMax\cite{FugueMax}',
 'balegas-bounded-counter':r'Bounded counter\cite{BalegasBoundedCounter}',
@@ -58,7 +58,7 @@ for k in names:
  if k not in data: continue
  row=data[k]['loc']; nums=[f'{row[x]:,}' for x in ['implementation','specification','vc','bridge']]
  lines.append(names[k].replace(r'\cite',r'~\cite')+' & '+' & '.join(nums)+f" & {'--' if k in no_i else 'Y'} & {'--' if k in no_e else 'Y'} & {'Y' if k in rc else '--'} "+r'\\')
-lines += [r'\bottomrule',r'\end{tabular}',r'\par\smallskip',r'\begin{minipage}{\linewidth}',r'\footnotesize',r'I: requires a datatype-specific issuance guard. E: proving sequential conformance uses properties of certified executions. The last column indicates whether $\rcrel$ is nonempty.',r'\par\smallskip',r'\textsuperscript{*}Variant of the source algorithm. Full datatype descriptions and the differences from the cited algorithms are given in the supplementary material (Appendix~\ref{app:datatypes}).',r'\end{minipage}',r'\end{table}']
+lines += [r'\bottomrule',r'\end{tabular}',r'\par\smallskip',r'\begin{minipage}{\linewidth}',r'\footnotesize',r'I: requires a datatype-specific issuance guard. E: proving sequential conformance uses properties of certified executions. The last column indicates whether $\rcrel$ is nonempty. \textsuperscript{*}Variant of the source algorithm. Full datatype descriptions and the differences from the cited algorithms are given in the supplementary material (Appendix~\ref{app:datatypes}).',r'\end{minipage}',r'\end{table}']
 (root/'implementation_table.tex').write_text('\n'.join(lines)+'\n')
 
 md=['| Configuration | Def. | Spec | VC support | Bridge/execution support | I | E | Nontrivial rc |','|---|---:|---:|---:|---:|:---:|:---:|:---:|']

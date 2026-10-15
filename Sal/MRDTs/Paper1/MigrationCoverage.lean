@@ -87,9 +87,10 @@ noncomputable def inventory : List Entry :=
       (RGA.EmbeddingObstructions.SidedPeritext.core_no_restricted_policy unaryCode)
   , incompatible "sided-peritext-rich-core" (Instances.SidedPeritext.richVerified unaryCode)
       (RGA.EmbeddingObstructions.SidedPeritext.rich_no_restricted_policy unaryCode)
-  , compatible "tree-move" Instances.TreeMove.verified
-      ⟨commutingPolicy Instances.TreeMove.D.AppOp, TreeMoveEvent.spec,
-        TreeMoveEvent.restricted, TreeMoveEvent.certifiedV⟩
+  , compatible "tree-move" Instances.TreeMove.Incremental.verified
+      ⟨commutingPolicy Instances.TreeMove.Incremental.D.AppOp, Instances.TreeMove.Incremental.language,
+        restricted_of_all_commute Instances.TreeMove.Incremental.all_comm,
+        Instances.TreeMove.Incremental.certifiedV⟩
   , compatible "aegis-sheet" Instances.AegisSheet.verified
       ⟨commutingPolicy Instances.AegisSheet.D.AppOp, AegisSheetEvent.spec,
         AegisSheetEvent.restricted, AegisSheetEvent.certifiedV⟩

@@ -8,6 +8,35 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Source-faithful tree move and priority semantics
+
+Research question: can source-faithful tree operations and a priority queue with
+ordinary assignment/increment/removal semantics replace the measured variants?
+User authorization: fix source discrepancies where possible; justify intentional
+semantic changes against an independent sequential specification.
+
+- [x] Model the published priority queue's per-insertion records and query;
+  preserve its checked ordinary-specification obstruction. Parent reviewed
+  Algorithm 2 and §5.1.3 and reran the SPOT build. The source claims convergence,
+  not the ordinary sequential property; do not call this a refuted source theorem.
+- [ ] Test and prove a priority-queue variant that uses the same winning Add
+  for its initial priority and acquired increments, with reset on removal and
+  reinsertion. Keep the source change explicit. Parent bounded search passed
+  29,880 reachable-version checks (2,000 seeds, 3 replicas, ≤8 events), with a
+  known-negative control; this is not a general proof.
+- [x] Implement source tree-move undo/redo, prove exact refinement and the five
+  VCs, and stage ordinary/recursive certificates under the former client guard.
+- [x] Correct the tree client guard and independent legality to support
+  source deletion-to-trash and retained-subtree restoration; prove concrete
+  positive/negative controls and ordinary/recursive certificates.
+- [x] Independently verify and integrate incremental TreeMove into the registry
+  and exact-package coverage checks; retain source deletion/restoration behavior.
+- [ ] Finish the priority-queue history theorem before replacing its public row.
+- [ ] Remeasure and publish the completed TreeMove replacement, reviewed appendix
+  and site descriptions; repeat for the priority queue only after certification.
+- [x] Replace parenthetical table qualifications by an asterisk and move their
+  explanations to the supplementary datatype descriptions.
+
 ## Priority queue integration and datatype appendix
 
 - [x] Port the historical Sal retained-increment priority queue through the five

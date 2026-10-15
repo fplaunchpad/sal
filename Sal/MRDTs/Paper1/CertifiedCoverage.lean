@@ -223,7 +223,8 @@ noncomputable def inventory : List Entry :=
       .rawOrderObstruction _ peritextObstruction⟩
   , ⟨PackagedMRDT.of "sided-peritext-core" (Instances.SidedPeritext.verified unaryCode),.scoped coreResult⟩
   , ⟨PackagedMRDT.of "sided-peritext-rich-core" (Instances.SidedPeritext.richVerified unaryCode),.scoped richResult⟩
-  , guarded "tree-move" Instances.TreeMove.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.treeCertificate)
+  , guarded "tree-move" Instances.TreeMove.Incremental.verified
+      (GuardedCoverage.provedScoped Instances.TreeMove.Incremental.conditions.toCertificate)
   , guarded "aegis-sheet" Instances.AegisSheet.verified (GuardedCoverage.provedScoped Guarded.ScopedPorts.sheetCertificate)
   , guarded "efficient-or-set" (Instances.EfficientORSet.verified (α := Nat))
       (GuardedCoverage.provedScoped (EfficientORSet.RawCertificate.certificate (α := Nat)))

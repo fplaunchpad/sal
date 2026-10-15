@@ -22,6 +22,13 @@ in `FugueMaxNaturalCertificate`. The former live-parent language remains
 refuted; historical effort reports do not measure the new bridge. The 19-case automation inventory is distinct
 from the 18-package production registry; the latter retains the historical queue.
 
+TreeMove's current public case is the source algorithm's incremental undo/redo
+implementation, with the five VCs and an independent in-place tree specification.
+Its issuance guard permits deletion to trash and restoration. The historical
+TreeMove effort figures below concern the earlier finite-event carrier;
+[current paper measurements](../paper-implementation/README.md) account for
+the incremental implementation and its refinement proofs.
+
 Kartik's split policy interfaces are integrated and checked for these same
 19 retained cases, with the original event/state scopes and five-VC dependencies.
 The published Balegas matrix/max counter is the sole bounded-counter algorithm

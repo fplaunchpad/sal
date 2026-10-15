@@ -107,7 +107,8 @@ noncomputable def inventory : List Entry :=
       (GuardedRGAObstructions.SidedPeritext.core_no_laws unaryCode)
   , blocked "sided-peritext-rich-core" (Instances.SidedPeritext.richVerified unaryCode)
       (GuardedRGAObstructions.SidedPeritext.rich_no_laws unaryCode)
-  , proved "tree-move" Instances.TreeMove.verified (provedScoped Guarded.ScopedPorts.treeCertificate)
+  , proved "tree-move" Instances.TreeMove.Incremental.verified
+      (provedScoped Instances.TreeMove.Incremental.conditions.toCertificate)
   , proved "aegis-sheet" Instances.AegisSheet.verified (provedScoped Guarded.ScopedPorts.sheetCertificate)
   , proved "efficient-or-set" (Instances.EfficientORSet.verified (α := Nat))
       (provedScoped (EfficientORSet.RawCertificate.certificate (α := Nat)))

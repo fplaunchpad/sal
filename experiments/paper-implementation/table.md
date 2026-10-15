@@ -19,7 +19,7 @@
 | embed-rga | 57 | 42 | 129 | 2422 | ✓ | ✓ | – |
 | sided-embed-rga | 66 | 48 | 137 | 3102 | ✓ | ✓ | – |
 | fugue-max | 162 | 38 | 386 | 6738 | ✓ | ✓ | – |
-| tree-move | 56 | 15 | 65 | 94 | ✓ | ✓ | – |
+| tree-move | 85 | 20 | 178 | 256 | ✓ | ✓ | – |
 | peritext-embed-rga | 69 | 43 | 130 | 2400 | ✓ | ✓ | – |
 | sided-peritext-rich-core | 208 | 67 | 149 | 3072 | ✓ | ✓ | – |
 | aegis-sheet | 336 | 140 | 53 | 2173 | ✓ | ✓ | – |

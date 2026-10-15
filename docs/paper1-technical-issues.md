@@ -252,12 +252,38 @@ The pinned JavaScript regression rerun reproduced all three failures and passed
 the nearby formatting control. These additions do not resolve the ten
 substantive issues above.
 
-## Case-study work still in progress
+## Appendix corrections and case-study integration
 
-The priority-queue and incremental tree-move replacements are separate from
-the manuscript corrections above. The published priority-queue design has
-different semantics from the currently measured variant; an agent has reported
-a checked obstruction against an ordinary sequential queue, whose exact scope
-still needs parent review. The incremental tree-move proof is also not yet
-integrated. Do not describe either replacement as completed in the paper or
-change its table counts before integration and verification.
+Claude's eight appendix findings have been corrected. Parent review checked the
+efficient OR-set execution scope, both Sided Peritext interfaces and boundary
+semantics, LWW's unrestricted history language, RGA/map references, FugueMax's
+guard, and Notion's deterministic command behavior with duplicate IDs. Each
+of the 24 entries retains source citations and now starts with an explanation
+of its operations. Merge arguments consistently use `merge(l,a,b)`.
+
+The new TreeMove implementation performs the source paper's incremental
+undo/insert/redo, retaining the tree and old-parent log. The parent independently
+built its 15 positive/negative test blocks (3,418 jobs), checked its exact-state
+five-VC and ordinary/recursive sequential proofs, and integrated it into the
+production registry and coverage inventories. Deletion to trash, hidden-node
+restoration and descendant rescue are supported. The appendix gives the new
+state and equations. The separate legacy GC proof is not claimed for this
+carrier; GC remains outside this paper.
+
+The revised appendix compiles and its TreeMove, Notion and table pages have
+been visually checked. The table's variant explanation is now part of the
+preceding paragraph; Sided Peritext is marked as an adaptation. Measurement and
+publication revisions are recorded in the paper implementation report.
+
+Priority queue remains in progress. Parent review of Algorithm 2 and §5.1.3
+confirmed that the published design can combine the newest insertion's initial
+priority with another insertion's increments. Its priority-12 example contradicts
+ordinary reset/additive semantics under the specified causal order, while the
+source itself claims convergence, not that sequential property. The same-record
+repair has checked five VCs, local maximum-removal refinement and seven
+positive/negative test blocks; its general certified history proof is still
+pending. Until that proof passes, the measured row and appendix continue to
+identify the existing retained-increment variant explicitly.
+
+These appendix and case-study changes do not resolve the substantive theory
+issues listed above.

@@ -69,15 +69,23 @@
       "replayOrder": "Instances.SidedPeritext.richOrder unaryCode", "spec": "Instances.SidedPeritext.richClientSpec unaryCode", "relation": "Instances.SidedPeritext.richRel"
     },
     {
-      "id": "tree-move", "certificate": "Instances.TreeMove.verified",
-      "implementation": "Instances.TreeMove.D", "issuance": "Instances.TreeMove.generation",
-      "replayOrder": "EventOrder.unconstrained Instances.TreeMove.D.toUpdateSig",
-      "spec": "Instances.TreeMove.sequentialSpec", "relation": "Instances.TreeMove.stateRel",
-      "obligations": [{
-        "name": "issuable-causal-origin-in-replay-prefix",
-        "statement": "∀ (ops : List Instances.TreeMove.Event), Instances.TreeMove.sequentialSpec.Legal ops → ∀ pre e post, ops = pre ++ e :: post → ∃ origin : Finset Instances.TreeMove.Event, origin ⊆ pre.toFinset ∧ Instances.TreeMove.applicable e origin",
-        "proof": "Instances.TreeMove.clientLegal_origin"
-      }]
+      "id": "tree-move", "certificate": "Instances.TreeMove.Incremental.verified",
+      "implementation": "Instances.TreeMove.Incremental.D", "issuance": "Instances.TreeMove.Incremental.generation",
+      "replayOrder": "EventOrder.unconstrained Instances.TreeMove.Incremental.D.toUpdateSig",
+      "spec": "Instances.TreeMove.Incremental.sequentialSpec", "relation": "Instances.TreeMove.Incremental.stateRel",
+      "obligations": [
+        {
+          "name": "issuable-source-causal-origin-in-replay-prefix",
+          "statement": "∀ (ops : List Instances.TreeMove.Event), Instances.TreeMove.Incremental.sequentialSpec.Legal ops → ∀ pre e post, ops = pre ++ e :: post → ∃ origin : Finset Instances.TreeMove.Event, origin ⊆ pre.toFinset ∧ Instances.TreeMove.Incremental.sourceApplicable e origin",
+          "proof": "fun ops h => h.2"
+        },
+        {
+          "name": "source-forest-client-language",
+          "statement": "∀ (ops : List Instances.TreeMove.Event), Instances.TreeMove.Incremental.sequentialSpec.Legal ops ↔ Instances.TreeMove.SequentialLegal ops ∧ ∀ e ∈ ops, e.op.child ≠ Instances.TreeMove.root ∧ e.op.child ≠ Instances.TreeMove.trash",
+          "proof": "Instances.TreeMove.Incremental.sourceClientLegal_iff"
+        }
+      ],
+      "note": "The coherent undo/log/tree carrier implements source incremental undo/redo. The independent sequential tree language permits deletion to trash, hidden-child restoration, and absent or hidden destinations; root and trash are reserved as children by the editor wrapper. This Lean package has no released JavaScript runtime counterpart or transported incremental GC protocol."
     },
     {
       "id": "aegis-sheet", "certificate": "Instances.AegisSheet.verified",

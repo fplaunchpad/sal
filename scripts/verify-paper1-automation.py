@@ -20,6 +20,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'experiments/vc-automation/results'
 P = 'Sal.MRDTs.Paper1.'
+I = 'Sal.MRDTs.Instances.'
 VERIFY = P + 'Automation.CommonVerification.verify'
 JOIN = P + 'ConcreteMRDT.Raw.join_at_sizes'
 STANDARD = {'propext', 'Classical.choice', 'Quot.sound'}
@@ -42,10 +43,13 @@ for identifier, name, family in [
         vc_root_kind='existing conditions bundle; no separate named datatype raw-VC theorem'))
 case('lww-register', 'LWW.GuardedPort', 'LWW.GuardedPort.certificate', 'LWW.GuardedPort.history')
 case('rga', 'RGA.ConcretePort', 'RGA.ConcretePort.conditions', 'RGA.ConcretePort.history')
-for identifier, family in [('tree-move', 'Tree'), ('aegis-sheet', 'Sheet')]:
-    case(identifier, 'ConcreteMRDT.GuardedPorts.' + family,
-         'ConcreteMRDT.GuardedPorts.' + family + '.conditions',
-         'ConcreteMRDT.GuardedPorts.' + family + '.history')
+CASES.append(dict(id='tree-move',
+    endpoints=[I + 'TreeMove.Incremental.' + s for s in ('executions', 'executionsV')],
+    vc_roots=[I + 'TreeMove.Incremental.fiveVC'],
+    required_bridge=[I + 'TreeMove.Incremental.history'],
+    claim='production source undo/redo certificate with forest/trash client language'))
+case('aegis-sheet', 'ConcreteMRDT.GuardedPorts.Sheet',
+     'ConcreteMRDT.GuardedPorts.Sheet.conditions', 'ConcreteMRDT.GuardedPorts.Sheet.history')
 case('ordinary-or-set-paper-example', 'ORSet.RawExecution', 'ORSet.GuardedRawVC.mergeVCs', 'ORSet.EventSpec.foldHistorySound')
 case('efficient-or-set', 'EfficientORSet.RawCertificate', 'EfficientORSet.GuardedRawVC.mergeVCs', 'EfficientORSet.EventSpec.foldHistorySound')
 case('mvr', 'CertifiedQueueMVR.MVR.Certificate', 'CertifiedQueueMVR.MVR.RawVC.mergeVCs', 'CertifiedMVRHistory.replay_history')
@@ -66,7 +70,9 @@ CASES.append(dict(id='fugue-max', endpoints=[P + 'CertifiedFugueVCExecution.repr
 for c in CASES:
     if c['id'] in {'grow-only-set','finite-add-store','counter','flat-grow-only-set','flat-grow-only-map'}:
         c['endpoints'] += [n.replace('ConcreteMRDT.SimplePorts.', 'ConcreteMRDT.Guarded.SimplePorts.') for n in c['endpoints']]
-    facade = {'tree-move':'tree', 'aegis-sheet':'sheet', 'rga':'rga'}.get(c['id'])
+    # The old tree facade is retained internally for the legacy replay/GC carrier;
+    # it is not an endpoint of the public incremental TreeMove case.
+    facade = {'aegis-sheet':'sheet', 'rga':'rga'}.get(c['id'])
     if facade:
         c['endpoints'] += [P + 'ConcreteMRDT.Guarded.ScopedPorts.' + facade + 'Executions' + suffix for suffix in ('','V')]
 assert len(CASES) == 19 and len({c['id'] for c in CASES}) == 19

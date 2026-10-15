@@ -437,9 +437,12 @@ production package to the restricted policy.
 
 `Paper1.EventBridge` exposes full-input simulations, independent fold-history
 acceptance, mint-sensitive and execution-sensitive chosen-history premises,
-Join/five-VC soundness, and finite-trace guarantees. TreeMove and AegisSheet use
-`GuardedHistory` to retain their independent in-place machines and causal-origin
-legality. The published bounded counter retains sufficient-local-rights
+Join/five-VC soundness, and finite-trace guarantees. TreeMove now uses the
+[source algorithm’s incremental undo/redo implementation](docs/tree-move-incremental-port.md),
+with a maintained tree and descending undo log. Its five VCs identify complete
+log/tree states, and its independent sequential machine supports deletion to
+trash, restoration and descendant rescue. AegisSheet retains its independent
+in-place machine and causal-origin legality. The published bounded counter retains sufficient-local-rights
 guards and single-writer causal predecessors. Its independently legal causal
 histories prove specification-visible correctness and the global lower bound.
 
@@ -513,8 +516,10 @@ A datatype may separately supply state-GC representation and protocol
 certificates. RGA has a checked `(id,parent)`/live-set packing
 certificate. It retains deleted identifiers internally to integrate operations
 minted concurrently with deletion, while issuance permits a new insertion only
-at a root or live anchor. Rich SidedPeritext, TreeMove, and
-AegisSheet supply the other representation-changing collectors or protocols.
+at a root or live anchor. Rich SidedPeritext and AegisSheet supply the other
+production representation-changing collectors or protocols. TreeMove’s older
+finite-event carrier retains its GC proof; collection for the new incremental
+log/tree carrier is staged.
 The runtime implementation lives in [`runtime`](runtime).
 
 ## Verification

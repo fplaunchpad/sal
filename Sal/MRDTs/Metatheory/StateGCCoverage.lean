@@ -110,8 +110,9 @@ noncomputable def registry : List PackagedStateGC :=
   , PackagedStateGC.ofProtocol "sided-peritext-rich-core"
       (Instances.SidedPeritext.richVerified unaryCode)
       (Instances.SidedPeritext.StateGC.Protocol.protocol unaryCode)
-  , PackagedStateGC.ofProtocol "tree-move" Instances.TreeMove.verified
-      Instances.TreeMove.GC.protocol
+  -- The source undo/redo carrier has no transported GC protocol yet.
+  -- TreeMove.GC remains checked for the legacy finite-event carrier.
+  , PackagedStateGC.ofStaged "tree-move" Instances.TreeMove.Incremental.verified
   , PackagedStateGC.ofCollector "aegis-sheet"
       Instances.AegisSheet.verified Instances.AegisSheet.GC.certificate
   , PackagedStateGC.ofExactState "efficient-or-set"
@@ -126,6 +127,9 @@ noncomputable def names : List String :=
 
 example : registry.length = 18 := by rfl
 example : names = Production.names := by rfl
+
+/-- Check carrier, issuer and production certificate as well as row names. -/
+theorem packages_eq_production : registry.map PackagedStateGC.package = Production.registry := rfl
 
 end Production.StateGC
 
