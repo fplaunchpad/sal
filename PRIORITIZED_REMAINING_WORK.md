@@ -10,6 +10,12 @@ sole active bounded counter is the published Balegas matrix/max design.
 
 ## Appendix round 2 and theorem-scope alignment
 
+- [x] Align the appendix with pointwise `ops`: required identifiers are operation
+  arguments fixed at issuance. Add checked Lean transport of the existing
+  configuration-level history results to that representation, including
+  consistency of carried arguments. This is not a new unrestricted-execution
+  theorem or a repair of the separate algebraic-law/theorem-coverage issues.
+
 - [x] Verify Claude's round-2 correctness findings against actual selected Lean
   endpoints; distinguish the false universal Sided Peritext deletion claim.
   Round 3 additionally identifies the persistent purge-mask difference from
@@ -29,7 +35,7 @@ sole active bounded counter is the published Balegas matrix/max design.
   and sequential-history proofs; avoid a new table of Lean proof routes. See
   priority items 1–3 of `docs/paper1-technical-issues.md` and KC's readability
   guidance there. The approved abstract qualification is published in Overleaf
-  `109323c`; the matching introduction and theorem edits remain pending.
+  `109323c`; the theorem edits remain pending.
 - [ ] After correctness, deduplicate repeated flag/sequence descriptions and
   finish local symbol hygiene. Keep GC outside the paper's contributions.
 

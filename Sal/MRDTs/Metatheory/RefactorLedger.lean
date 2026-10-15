@@ -1,3 +1,4 @@
+import Sal.MRDTs.Paper1.OperationLabelsInvariant
 import Sal.MRDTs.Paper1.AppendixReviewControls
 import Sal.MRDTs.Metatheory.NotionCoreLedger
 import Sal.MRDTs.Metatheory.NotionCoreStructuralRuntimeLedger
@@ -395,3 +396,12 @@ end Sal.MRDTs
 #check Sal.MRDTs.Research.NotionCoreLedger.registry
 #check Sal.MRDTs.Research.NotionCoreLedger.entry
 #check Sal.MRDTs.Research.NotionCoreStructuralRuntimeLedger.entry
+
+-- The manuscript's pointwise ops convention, with identifiers carried by operations.
+#check Sal.MRDTs.Paper1.OperationLabels.projectedUpdates_eq_ops
+#check Sal.MRDTs.Paper1.OperationLabels.specificationRA
+#check Sal.MRDTs.Paper1.OperationLabels.eventVersionsRA
+#check Sal.MRDTs.Paper1.OperationLabels.issuance_issue
+#check Sal.MRDTs.Paper1.OperationLabels.issuance_rejects_mismatch
+#check Sal.MRDTs.Paper1.OperationLabels.identified_labels_control
+#check Sal.MRDTs.Paper1.OperationLabelsInvariant.versionsRA

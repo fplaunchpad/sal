@@ -2,9 +2,15 @@
 
 15 October 2026. Revised after Claude's fourth appendix review and KC's
 instruction to favour understandability over mechanisation-level detail.
-Current manuscript checked: Overleaf `444b217` (15 October 2026).
-This includes the latest human introduction edit, fetched during this update.
-The last locally compiled revision is `fd11344`; `444b217` is text-reviewed only.
+Current manuscript checked: Overleaf `7be5bf8` (15 October 2026), including
+Vimala’s sequential-specification fixes from `bdb90ba` and the operation-label
+appendix update. The later `5792525` author commit had no source diff. The appendix convention is now aligned
+with pointwise `ops`, with required identifiers carried as operation arguments.
+Lean checks the corresponding translation of certified configurations, including
+invariant-scoped witnesses. The manuscript compiles to 72 pages with no
+overfull boxes or undefined references; the updated formal-reference PDF also
+compiles cleanly. The repository gate passes: 3,878 Lean jobs, 18 public
+contracts, 13 controls, 187 runtime tests and 569 benchmark records.
 The latest review also includes Claude's prose edits, UK spelling and the
 corrected variant markers (`2c4aa36`). Datatype Site: version 20.
 This is an author-facing review; `PRIORITIZED_REMAINING_WORK.md` remains the
@@ -23,11 +29,11 @@ GC remains outside this paper.
 
 ## Recommended changes, in priority order
 
-Status: items 1–4 remain open. Item 5 is partly addressed: the explicit
-equivalence claim is removed, but the surrounding arguments still need repair.
-In item 6, the abstract and implementation wording are updated; aligning the
-introduction with the certified scope and adding the Section 7 cross-reference
-remain open. The wording updates do not complete the theorem work in item 3.
+Status: items 1–3 and 4a remain open. Items 4b–4d are addressed: the
+operation-label convention is agreed and aligned below, query admission is
+explicit, and specification transitions are assumed deterministic. Item 5 has
+remaining attribution/argument issues. Item 6's wording is complete; the
+substantive theorem coverage remains item 3.
 
 ### 1. Complete the commutation assumption — Section 4
 
@@ -129,7 +135,10 @@ Two changes belong alongside this explanation:
 
 - Define issuance operationally: check `G(e,s)` at the actual source state in
   the issuing Apply step. Keep the existing sentence that guards are not
-  rechecked during reconstruction. An existential replay with a passing guard
+  rechecked during reconstruction. The current introduction promises guard
+  satisfaction in the generated linearizations; replace that promise with
+  admission by the sequential specification, justified using original issuance
+  evidence. An existential replay with a passing guard
   is not automatically equivalent to checking the source state.
 - Repair the RGA example using Appendix A's checked specification and history
   argument. Root `0` is reserved. Do not argue that concrete insertion
@@ -148,9 +157,9 @@ internal validation requirement, not another table for the reader.
 | Location | Minimal change | Why it matters |
 |---|---|---|
 | Canonical states and Section 5's induction | State the event-set domain on which `can(E)` is defined, including the weakly closed subsets used by the proof. Give the precise domain in the appendix if necessary. | Causal closure alone does not cover all uses in the induction. |
-| Sequential labels | Keep `ops`; state once that labels retain the identities needed by the specification. | RGA needs the inserted identity. No separate projection framework is needed. |
-| Simulation condition (iii) | Require the specification to admit the query transition returning the implementation's answer. | Merely constraining answers *if* admitted is vacuous when no answer exists. |
-| State after a specification history | Use relational execution, or state determinism before treating the reached state as a function. | The stated transition-system definition does not automatically imply determinism. |
+| Sequential labels (4b, addressed) | `ops` projects operation labels pointwise. Required timestamps, replica IDs and stable identities are operation arguments. | The appendix now uses this convention. Lean proves a representation translation preserving the configuration-level correctness results; old event translations remain internal helpers. |
+| Simulation condition (iii) (4c, fixed) | `seq_spec.tex` now requires the query transition returning the implementation’s answer. | Fix verified in `bdb90ba`. |
+| State after a specification history (4d, fixed) | The specification definition now explicitly assumes deterministic transitions for each state and label. | Fix verified in `bdb90ba`. |
 
 These are local mathematical corrections, not reasons to expand the exposition
 with implementation terminology.
@@ -165,7 +174,7 @@ that version. The bottom-up construction problem should be explained
 separately. Carry this distinction into the abstract, introduction, Section 4
 and related work wherever they make the same claim.
 
-The new introduction in `444b217` still needs this correction. Its explanation
+The introduction in `bdb90ba` still needs this correction. Its explanation
 of unseen events affecting a version's order is useful, but it continues to
 conflate a global sequence with a configuration-wide relation and says that
 bottom-up linearization requires a global order. Preserve the useful local
@@ -189,8 +198,7 @@ with UK spelling in `2c4aa36`):
 > execution-certified implementations in Lean, and verify 26 implementations
 > against their sequential specifications.
 
-Keep the Notion case-study mention. Use the same scope when updating the
-introduction. This is a fair description of the mechanisation; it does not
+Keep the Notion case-study mention. The introduction also describes issuance-guarded implementations. This is a fair description of the mechanisation; it does not
 replace the theorem work in item 3.
 
 The implementation opening now explicitly says (`fd11344`):
@@ -199,7 +207,7 @@ The implementation opening now explicitly says (`fd11344`):
 > semantics, correctness definitions, and proofs of the meta-theoretic results.
 
 It distinguishes the proofs established once for the framework from those
-supplied for each MRDT. This wording change is complete.
+supplied for each MRDT. This wording change is complete; item 6 can be closed as a wording task.
 
 The implementation section already distinguishes restrictions on algebraic
 laws from issuance/protocol evidence used by a history proof. Keep that

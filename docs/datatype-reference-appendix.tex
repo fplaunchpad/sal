@@ -35,24 +35,36 @@ between updates. A retained prefix $H$ in a guarded sequential machine
 checks admission; it is not the replica-head map $H$ of a store
 configuration. These sequential rules contain no three-way merge.
 
-\paragraph{Event-label projections.}
-The identified specifications below retain event metadata when their
-labels need stable identities. This extends the payload-only label
-convention of \S\ref{sec:ralin-new}; it does not identify all these
-specifications with that convention. For an abstract update alphabet
-$\mathcal U$, let $f:\mathcal E\to\mathcal U$ translate an event to its
-update label, and define
+\paragraph{Operation labels and prepared arguments.}
+As in \S\ref{sec:ralin-new}, $\F{ops}$ projects the operation field
+pointwise:
 \[
-\F{ops}_{f}(e_1\cdots e_n)=f(e_1)\cdots f(e_n).
+\F{ops}((t_1,r_1,o_1)\cdots(t_n,r_n,o_n))=o_1\cdots o_n.
 \]
-The paper's $\F{ops}$ is the case $f(t,r,o)=o$. In a transition labelled
-by the complete event $(t,r,o)$, take $f$ to be the identity; its timestamp
-and replica remain in the label even when the transition ignores them.
-The FugueMax section defines an identified-action projection. The Notion
-section translates one event into an atomic command group; the group
-remains one admitted update, with queries allowed only between groups.
-A statement of sequential conformance for these machines uses
-$\F{ops}_f$ and its stated projection.
+An operation includes the arguments needed by its sequential specification.
+For an original input $x=(t,r,p)$, with payload $p$, prepare these arguments
+once at issuance and form the operation and event
+\[
+o_x=(p,\operatorname{args}(x)),\qquad e_x=(t,r,o_x).
+\]
+The concrete update uses $(t,r,p)$ and ignores the added arguments; the
+sequential transition uses the prepared arguments. The issuance guard checks
+the original input and that the carried arguments equal $\operatorname{args}(x)$;
+$\rcrel$ applies to the original payloads.
+Thus timestamps, replica names and stable identities needed by a sequential
+rule are supplied as operation arguments, fixed at issuance.
+
+For readability, the concrete equations below retain their original-input
+notation $e=(t,r,o)$, where $o$ names the original payload $p$.
+Displayed operation alphabets and constructors suppress added arguments;
+sequential labels show the relevant arguments, suppressing unused components.
+A sequential label displaying the complete original input $(t,r,p)$ uses
+$\operatorname{args}(x)=x$ and abbreviates the operation $(p,x)$.
+When the sequential rule needs only the payload, redundant packing is omitted.
+FugueMax prepares an identified action; Notion prepares an atomic command
+group. In each case $\F{ops}$ still selects the operation field: it performs
+no further translation of events. A Notion group is one admitted update,
+with queries allowed only between complete groups.
 
 The issuance guard is $G(e,s)$, as in Definition~\ref{def:issuance}.
 Each displayed guard is evaluated on the original issuing state
@@ -777,9 +789,9 @@ $\phi_0=\varnothing$, with transitions
   &&\text{when }b=[x\in\phi].
 \end{aligned}
 \]
-The label projection is $f(t,r,o)=o$: timestamps and replicas do not affect
-these transitions. The mechanised event-labelled presentation retains them
-as ignored parameters.
+These transitions use only the payload. Timestamps and replicas, when
+retained as prepared operation arguments in the mechanisation, are ignored
+by the sequential rule.
 
 \paragraph{Issuance.}
 $G(e,\sigma)\iff\top$; no additional datatype guard is required.
@@ -828,8 +840,9 @@ Here $\mathcal P_{\rm fin}$ denotes finite subsets. The operations are
 \]
 
 \paragraph{Independent sequential specification.}
-Use the ordinary-set machine and payload projection $f(t,r,o)=o$ of
-\S\ref{app:dt-ordinary-or-set-paper-example}, unchanged.
+Use the ordinary-set machine of
+\S\ref{app:dt-ordinary-or-set-paper-example}, with the same operation
+arguments and transitions.
 
 \paragraph{Issuance.}
 $G(e,\sigma)\iff\top$; no additional datatype guard is required.
@@ -1154,7 +1167,8 @@ preserved from the initial state.
 The four queries use the same tagged equations as above with
 $E=\operatorname{dom}(m)$ and $p=m$. Query transitions preserve the map
 and return exactly those answers. Every finite run from the empty map is
-admitted. The full-event label projection is $f=\operatorname{id}$.
+admitted. The displayed triples are prepared operation arguments; the
+sequential transitions ignore their timestamp and replica components.
 
 \paragraph{Derived maximum removal.}
 At issuance, an empty queue emits no event. Otherwise, for the maximum
@@ -1452,7 +1466,8 @@ Here $j$ is fixed by the selected interface. The public head is the optional (ID
 
 \textbf{Example.} Enqueue IDs $1,2$ with values $10,20$. The head is $\operatorname{some}(1,10)$; after deleting $1$ it is $\operatorname{some}(2,20)$. Deleting $1$ again is legal and changes nothing. Deleting $2$ while both are live is illegal; deleting never-allocated $3$ is also illegal.
 
-The update labels retain full events, $f=\operatorname{id}$; the abstract effect ignores the carried anchor and coordinate.
+The update operations carry the original inputs as prepared arguments;
+the abstract effect ignores the carried anchor and coordinate.
 
 
 \paragraph{Issuance.}
@@ -1896,12 +1911,19 @@ The admitted transitions are
 \begin{aligned}(B,T)&\xrightarrow{\operatorname{insertAfter}(t,\ell)}(P(B,\ell,t),T)&&\text{when }t\ne0\land t\notin B\land\ell\in B,\\(B,T)&\xrightarrow{\operatorname{deleteID}(x)}(B,T\cup(\{x\}\setminus\{0\}))&&\text{when }x\in B,\\q(B,T)&=[x\in B\mid x\ne0\land x\notin T].\end{aligned}
 \]
 
-Queries are state-preserving transitions returning exactly $q(B,T)$; every finite admitted run is in the language. Deleted IDs remain usable as origins. Root deletion is a no-op. For generated messages,
+Queries are state-preserving transitions returning exactly $q(B,T)$; every finite admitted run is in the language. Deleted IDs remain usable as origins. Root deletion is a no-op. For generated messages, prepare the operation arguments at issuance:
 \[
-f(t,r,(\operatorname{ins}(p,s),\ell,\rho,h))=\operatorname{insertAfter}(t,\ell),\qquad f(t,r,(\operatorname{del}(x),\ell,\rho,h))=\operatorname{deleteID}(x).
+\begin{aligned}
+\operatorname{args}(t,r,(\operatorname{ins}(p,s),\ell,\rho,h))
+ &=\operatorname{insertAfter}(t,\ell),\\
+\operatorname{args}(t,r,(\operatorname{del}(x),\ell,\rho,h))
+ &=\operatorname{deleteID}(x).
+\end{aligned}
 \]
 
-Structural parent, side, right origin, and coordinate chain are absent from the sequential action.
+The displayed sequential labels name these prepared actions. Structural
+parent, side, right origin, and coordinate chain are absent from the
+sequential action; they remain in the concrete payload.
 
 \textbf{Checked correspondence.} The original issuer's actual physical update implements each legal positional client edit. For every stored version of an ordinary or recursive certified execution, one permutation of its original events respects the invariant-scoped implementation order and specification-conflicting visibility, admits the exact returned list, and satisfies the three maximal non-interleaving conditions: forward
 non-interleaving, backward non-interleaving with its exception, and
@@ -2794,32 +2816,35 @@ For $k=(c,u)$ and text $x=[x_0,\ldots,x_{n-1}]$, define the live slots
 \operatorname{slots}(i,k,x)=
  [(a(i,(c+j,u)),x_j,\mathsf{true})\mid0\le j<n].
 \]
-Let $b_k=\mathsf{issued}(k)$. The static event-label translation is
+Let $b_k=\mathsf{issued}(k)$. For original input
+$e=(t,r,(k,p))$, prepare the atomic command group
+$\operatorname{args}(e)=\operatorname{commands}(k,p)$ at issuance, where
 \[
 \begin{aligned}
-f(k,\mathsf{bootstrap}(x))={}&
+\operatorname{commands}(k,\mathsf{bootstrap}(x))={}&
  [\operatorname{create}(0,0,\bot),\\
  &\quad\operatorname{insert}((0,\mathsf{start}),
                    \operatorname{slots}(\mathsf{initial},k,x))],\\
-f(k,\mathsf{create}(a))={}&
+\operatorname{commands}(k,\mathsf{create}(a))={}&
  [\operatorname{create}(\beta(b_k),\beta(b_k),a.\operatorname{map}(\beta))],\\
-f(k,\mathsf{insert}(b,i,o,x))={}&
+\operatorname{commands}(k,\mathsf{insert}(b,i,o,x))={}&
  [\operatorname{insert}(a(i,o),\operatorname{slots}(i,k,x))],\\
-f(k,\mathsf{erase}(b,i,X))={}&
+\operatorname{commands}(k,\mathsf{erase}(b,i,X))={}&
  [\operatorname{delete}([a(i,j)\mid j\in X])],\\
-f(k,\mathsf{split}(b,i,o))={}&
+\operatorname{commands}(k,\mathsf{split}(b,i,o))={}&
  [\operatorname{create}(\beta(b_k),\beta(b_k),\beta(b)),\\
  &\quad\operatorname{split}(a(i,o),(a(i,k),0,\mathsf{false}),\beta(b_k))].
 \end{aligned}
 \]
 The scalar predecessor in the last creation command abbreviates a present
-optional predecessor. These are static labels, not calls to the concrete
-renderer. The atomic label $\operatorname{upd}(e)$ denotes the group
-$f(e)$; it is one update label. For $f(e)=[c_1,\ldots,c_k]$, update
-admission requires every command in the group to succeed:
+optional predecessor. These arguments are fixed at issuance without calling
+the concrete renderer. For $C=\operatorname{args}(e)=[c_1,\ldots,c_k]$,
+the displayed label $\operatorname{upd}(C)$ abbreviates the operation
+carrying this group. It is one update, admitted when every command in the
+group succeeds:
 \[
 \frac{D=D^{(0)}\xrightarrow{c_1}D^{(1)}\ \cdots\ \xrightarrow{c_k}D^{(k)}=D'}
-{D\xrightarrow{\operatorname{upd}(e)}D'}.
+{D\xrightarrow{\operatorname{upd}(C)}D'}.
 \]
 
 \[
@@ -2981,7 +3006,7 @@ protocol with the guard above, the source-key-sorted event list $\pi$ satisfies
 \begin{aligned}
 &\pi\text{ enumerates }E\text{ exactly once},\\
 &\pi\models\loOn{E},\qquad\pi\models\operatorname{sv}_{\Spec},\\
-&\F{ops}_f(\pi)\mathbin{+\!+}[\F{rd}\Rightarrow\F{query}(F,\F{rd})]\in\Spec.
+&\F{ops}(\pi)\mathbin{+\!+}[\F{rd}\Rightarrow\F{query}(F,\F{rd})]\in\Spec.
 \end{aligned}
 \]
 

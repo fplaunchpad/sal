@@ -12,6 +12,14 @@ execution evidence, with local sequential simulations or suitable-history
 proofs supplying the bridge to specification acceptance. The paper
 OR-set retains every addition tag and has an ancestor-aware Join proof.
 
+The paper's `ops` projects operation labels pointwise. When a specification
+needs event identifiers, those identifiers can be carried in the operation
+itself. [`OperationLabels.lean`](Sal/MRDTs/Paper1/OperationLabels.lean) proves
+that the existing configuration-level results have this presentation, preserving
+updates, visibility, ordering and query answers. The internal event translations
+remain proof helpers; this result does not assert correctness for arbitrary
+executions with inconsistently supplied arguments.
+
 The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
 changes against the current Overleaf manuscript, with numbered references to a
 [self-contained formal reference PDF](docs/paper1-formal-reference/main.pdf).

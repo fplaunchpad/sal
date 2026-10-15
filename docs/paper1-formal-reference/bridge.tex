@@ -9,8 +9,8 @@ Definition~\ref{def:history}. This section states the paper's sequential lifting
 theorem, distinguishes its literal RA criterion from the criterion retaining
 specification conflicts, and gives an additional route for guarded operations.
 Write $\pi(\sigma_0)$ for the merge-free fold of $\doop$ along $\pi$,
-$\F{ops}_f(\pi)$ for its projected update labels, and $\loOn{E}$
-for the raw implementation order of Definition~\ref{def:order}. The scoped bridge below also uses this raw order. Ports using the invariant
+$\F{ops}(\pi)$ for its operation fields (viewed as update labels in histories),
+and $\loOn{E}$ for the raw implementation order of Definition~\ref{def:order}. The scoped bridge below also uses this raw order. Ports using the invariant
 order $\F{lo}^{C,I}_E$ instead supply their own exact history witnesses.
 
 \begin{example}[A convergent implementation which is not a set]
@@ -55,9 +55,8 @@ version $(s,E)$ of $C$ have an exact canonical witness: a list $\pi$ enumerating
 $E$, respecting $\loOn{E}$, with $\pi(\sigma_0)=s$.
 Suppose also that, for every event list $\pi$ and every query $q$,
 \begin{equation}
- \F{ops}_f(\pi)\cdot
- [q\Rightarrow\F{query}(\pi(\sigma_0),q)]\in\Spec,
- \qquad f(e)=e.o.
+ \F{ops}(\pi)\cdot
+ [q\Rightarrow\F{query}(\pi(\sigma_0),q)]\in\Spec.
  \label{eq:total-fold-sound}
 \end{equation}
 Then every stored version, hence every replica head, satisfies the paper's
@@ -97,7 +96,7 @@ The last two clauses quantify over every concrete state, event, and query.
 Totality supplies the displayed transitions; determinism fixes their targets
 and answers. There is no issuance, freshness, or invariant premise.
 Induction on $\pi$ relates its implementation fold to the abstract state reached
-by $\F{ops}_f(\pi)$, and the query clause proves
+by $\F{ops}(\pi)$, and the query clause proves
 Equation~\eqref{eq:total-fold-sound}. The checked simulation permits a relation
 $R\subseteq\Sigma\times\Phi$ in place of a function: initially
 $R(\sigma_0,\phi_0)$, each event preserves $R$, and related states agree on all
@@ -164,7 +163,7 @@ For the stronger criterion of Definition~\ref{def:ra}, additionally require
 \begin{equation}
  a\comm b
  \quad\Longrightarrow\quad
- f(a)\commS f(b).
+ a.o\commS b.o.
  \label{eq:commutation-compatibility}
 \end{equation}
 Here $\comm$ is raw concrete commutation, as used in $\loOn{E}$; the right-hand relation is contextual language commutation.
@@ -174,9 +173,10 @@ respects specification visibility. Equation~\eqref{eq:total-fold-sound} supplies
 admission; compatibility supplies only the additional order obligation.
 For an invariant-order variant, require the same implication with $\comm_I$
 in place of raw commutation; raw compatibility alone does not discharge that
-stronger premise. For full-event specifications take $f=\mathrm{id}$ and require the corresponding
-full-event fold premise. Erasing event metadata is an explicit specification
-choice, rather than a consequence of the bridge.
+stronger premise. When a proof helper uses complete original inputs,
+carry those inputs as prepared operation arguments, using the convention
+following Definition~\ref{def:history}, and require the corresponding fold premise.
+The specification's choice of arguments is independent of this bridge.
 % CommutationBridge.lean: CommutationCompatibility;
 % projectedSpecVisibility_sub_paperOrder; specificationRA_of_fiveVCs_compatible.
 % ConcreteHistoryBridge.lean: of_canonical; ScopedCertificate.ofTotal.
@@ -191,14 +191,18 @@ A second route proves existence of a suitable history on the supported,
 causally closed event sets of certified executions.
 
 \begin{definition}[Execution-scoped history adequacy]\label{def:history-adequacy}
-Fix an issuance discipline $G$, the raw implementation order $\loOn{E}$, and an independent
-full-event language $\Spec$; take $f=\mathrm{id}$. They satisfy execution-scoped history adequacy when, for every
-$G$-certified configuration $C$, every stored version $(s,E)$ and every query $q$,
+Fix an issuance discipline $G$, the raw implementation order $\loOn{E}$,
+and an independent language $\Spec$ over the operation alphabet.
+For a transported datatype, the configurations quantified over here and in
+Theorem~\ref{thm:history-bridge} are mapped images of $G$-certified source
+configurations; otherwise they are the $G$-certified configurations themselves.
+They satisfy execution-scoped history adequacy when, for every such
+configuration $C$, every stored version $(s,E)$ and every query $q$,
 there is a word $\pi$ such that
 \begin{align*}
  &\pi\text{ enumerates }E\text{ exactly once},\\
- &\pi\text{ respects }\loOn{E}\text{ and }\operatorname{sv}^{f,\Spec}_C,\\
- &\F{ops}_f(\pi)\cdot
+ &\pi\text{ respects }\loOn{E}\text{ and }\operatorname{sv}^{\Spec}_C,\\
+ &\F{ops}(\pi)\cdot
    [q\Rightarrow\F{query}(\pi(\sigma_0),q)]\in\Spec.
 \end{align*}
 The quantifier order is $\forall q\,\exists\pi$. The accepted answer describes the

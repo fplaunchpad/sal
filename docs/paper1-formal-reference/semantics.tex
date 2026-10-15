@@ -6,7 +6,7 @@ the updates visible at the queried version. Following the paper, we first
 define the order that this execution must respect, relative to the event set
 of that version, and then give its sequential specification. The formal
 reference retains the paper's configuration predicate and also gives the
-stronger full-event criterion used by the certified results.
+stronger criterion retaining specification conflicts used by the certified results.
 
 \paragraph{Notation.}
 For an event $e=(t,r,o)$, write $\doop(\sigma,e)$ for
@@ -109,8 +109,8 @@ silently redefine the public semantic order.
 
 \begin{definition}[Sequential specification and specification conflict]
 \label{def:history}
-For an explicitly chosen update alphabet $U$, let labels be
-$\operatorname{upd}(x)$, $x\in U$, and $(q\Rightarrow v)$.
+For the operation alphabet $O_\tau$, let labels be
+$\operatorname{upd}(x)$, $x\in O_\tau$, and $(q\Rightarrow v)$.
 A history specification $\Spec$ is a prefix-closed set of finite label lists
 containing the empty list. As in the paper, a labelled transition system
 $\Spec=\langle L,\Phi,\phi_0,\longrightarrow\rangle$ gives such a
@@ -127,20 +127,38 @@ Define contextual specification commutation by
  &\Longleftrightarrow
  \rho\cdot[\operatorname{upd}(y),\operatorname{upd}(x)]\cdot\tau\in\Spec.
 \end{align*}
-For a fixed label projection $f:(\mathbb N\times\mathbb N\times O_\tau)\to U$,
-let $\F{ops}_f(\pi)$ retain the original event order while
-mapping each update through $f$. The independent specification visibility
-relation is
+Let $\F{ops}(\pi)=e_1.o\cdots e_n.o$ project the operation field
+pointwise. The independent specification visibility relation is
 \[
- a\mathrel{\operatorname{sv}^{f,\Spec}_C}b
+ a\mathrel{\operatorname{sv}^{\Spec}_C}b
  \quad\Longleftrightarrow\quad
- a\vis b\land\neg\bigl(f(a)\commS f(b)\bigr).
+ a\vis b\land\neg\bigl(a.o\commS b.o\bigr).
 \]
 \end{definition}
-Full-input specifications use $f=\mathrm{id}$.
-Payload projection $f(e)=e.o$ is an explicit interface choice. It cannot be
-assumed adequate for specifications that distinguish original enqueue or
-insertion identities.
+
+\paragraph{Prepared operation arguments.}
+When a sequential rule needs an original input $x=(t,r,p)$, or an identified
+action computed from it, prepare its arguments once at issuance:
+\[
+ o_x=(p,\operatorname{args}(x)),\qquad e_x=(t,r,o_x).
+\]
+The concrete update uses $(t,r,p)$ and ignores the added arguments; the
+policy reads $p$, while the specification interprets the prepared arguments.
+The issuance discipline checks both their consistency with the original input
+and the original datatype guard. Full-input proof helpers use
+$\operatorname{args}(x)=x$; payload-only specifications may omit redundant
+packing. In every case $\F{ops}$ selects the complete operation field.
+
+The checked transport maps source configurations and their stored event sets
+through $x\mapsto e_x$, preserving states, visibility and implementation
+order. Existing proofs using event-to-label maps remain history-construction
+helpers; \nolinkurl{OperationLabels.ra} gives the pointwise-$\F{ops}$ criterion
+for their mapped configurations. For invariant-scoped full-input proofs,
+\nolinkurl{OperationLabelsInvariant.versionsRA} gives it at every mapped stored
+version. These results concern the images of the certified source
+configurations, not arbitrary executions over the enlarged operation alphabet.
+% OperationLabels.lean: ra; eventVersionsRA.
+% OperationLabelsInvariant.lean: versionsRA.
 
 \begin{definition}[Globally guarded replay laws]
 \label{def:guards}
@@ -195,30 +213,28 @@ where $\F{ops}(\pi)=e_1.o\cdots e_n.o$. Executions satisfy this at every
 configuration, and implementations at every execution. The global replay laws are assumptions of the paper's correctness argument,
 rather than fields of the configuration predicate.
 
-The certified full-event interface strengthens this witness as follows.
-\begin{definition}[The full-event invariant criterion]
+The certified interface strengthens this witness as follows. When operation
+arguments have been added, use the mapped configuration and its event sets.
+\begin{definition}[The invariant criterion with specification conflicts]
 \label{def:ra}
 For every allocated version $v$ with stored record $(s,E)$ and every query $q$,
 there must exist \emph{one} list $\pi$ such that
 \begin{enumerate}[nosep]
 \item $\pi$ enumerates exactly $E$;
 \item $\pi$ respects $\operatorname{lo}^{C,I}_{E}$;
-\item $\pi$ respects $\operatorname{sv}^{\mathrm{id},\Spec}_C$;
-\item $\F{ops}_{\mathrm{id}}(\pi)\cdot
+\item $\pi$ respects $\operatorname{sv}^{\Spec}_C$;
+\item $\F{ops}(\pi)\cdot
  [q\Rightarrow\F{query}(s,q)]\in\Spec$.
 \end{enumerate}
 \end{definition}
 The universal invariant $I(s)\equiv\mathrm{True}$ recovers the raw
-full-event criterion, including specification visibility. Checking every
-allocated version implies the corresponding guarantee for current replica
-heads. A projected criterion replaces the specification alphabet through $f$;
-it still preserves the specification conflicts of those projected labels.
-The paper's Definition ``RA-linearizability'' instead checks active heads,
-uses $\F{ops}(\pi)=e_1.o\cdots e_n.o$, and omits item~3.
-The full-event invariant criterion retains original update identities.
-For a fixed label projection, requiring the same witness to preserve
-specification conflicts strengthens its order obligation. These are different
-criteria, and changing the label alphabet is an explicit interface choice.
+criterion, including specification visibility. Checking every allocated
+version implies the corresponding guarantee for current replica heads.
+The paper's Definition ``RA-linearizability'' instead checks active heads
+and omits item~3. Both criteria use the same pointwise $\F{ops}$.
+Prepared arguments retain original identities when the specification needs
+them. Requiring the same witness to preserve specification conflicts
+strengthens its order obligation.
 
 An independent sequential simulation may use a relation, or an abstraction
 function $\alpha:\Sigma\to\Phi$, to relate implementation states to the
