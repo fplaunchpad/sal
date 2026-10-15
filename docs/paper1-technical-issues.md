@@ -3,6 +3,7 @@
 15 October 2026. Revised after Claude's fourth appendix review and KC's
 instruction to favour understandability over mechanization-level detail.
 Baseline: Overleaf `803a9a4`, Sal `ae7e1c8`, datatype Site version 20.
+Minor edits and reference corrections are published in Overleaf `1664c1d`.
 This is an author-facing review; `PRIORITIZED_REMAINING_WORK.md` remains the
 only development task list. Earlier audit and publication detail is retained
 in this file's Git history.
@@ -25,6 +26,18 @@ Keep Kartik's `rc-non-comm` formulation for unequal operations. Add the missing
 assumption that events carrying the same operation commute under the same
 comparison conditions. Having no `rc` edge does not itself establish this.
 Without the missing case, the determinacy proof is incomplete.
+
+Make the qualification explicit beside the new assumption:
+
+> The equal-operation assumption uses the same event and state restrictions
+> as `rc-non-comm`. Section 7 describes these restrictions for certified
+> implementations.
+
+Do not state unconditional equal-operation commutation: efficient OR-set,
+optional register and MVR have counterexamples outside their certified law
+domains. Section 3 needs no additional lemma or timestamp assumption here.
+Same-replica visibility ordering already follows from the operational rules
+and is stated there.
 
 Use one convention explaining that the implementation laws concern event
 instances, while the author supplies `rc` on operations. In particular,
@@ -70,6 +83,24 @@ specification. Explain three generalizations in familiar terms:
   not establish that every possible implementation fold is a legal sequential
   history. Issuance evidence for this argument does not necessarily restrict
   the update or merge equations themselves.
+
+Before the certified theorem, explain the event restriction briefly:
+
+> These assumptions concern the event pairs compared by the proof.
+> Same-replica events are already ordered by visibility. For MVR, issuance
+> additionally ensures that a write overwrites only observed writes, so
+> concurrent issued writes commute.
+
+Explicitly include equal-operation commutation among the restricted
+assumptions. The same-replica observation alone does not justify MVR's
+restriction; its observed-overwrite argument is also needed. Keep the exact
+guards in the appendix, separately for each law.
+
+State the history requirement in words: the selected history respects the
+required implementation and specification ordering, is admitted by the
+sequential specification, and explains the implementation's query answer.
+Retain the qualification above that state restrictions cover reconstruction
+states as well as stored states.
 
 A suitable *summary*, not yet a complete formal theorem, is:
 
@@ -157,6 +188,27 @@ Keep the existing datatype explanations and source references. These edits
 should not delay fixing a false theorem premise or an incorrect attribution.
 
 ## What is already resolved
+
+Overleaf commit `1664c1d` (15 October) corrects grammar, missing set braces in the
+Section 2 example, the direction stated for following parent links, and the
+wording about the initial-state abstraction condition. Appendix B now says
+that we record source hashes and request traces in the code repository.
+These edits do not implement the substantive theorem repairs above.
+
+The bibliography pass consolidates `Peepul` into `Vimala`, and folds the
+separately listed extended versions into the corresponding published entries,
+retaining their arXiv links. It corrects the Banyan thesis to a master's thesis
+([title page](https://kcsrk.info/papers/shashank_ms_thesis.pdf)), adds the
+priority-queue paper's pages 302–312, fixes the F* title and protects proper
+names and acronyms. Author, title, year, venue and page metadata were checked
+against publisher-deposited Crossref records; VeriFx was checked against
+[Dagstuhl's record](https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ECOOP.2023.9).
+The Notion blog's author list and date agree with its original page.
+The Banyan conference paper and thesis remain separate publications.
+All 42 cited references resolve; there are no duplicate citation keys or
+DOIs, duplicate labels, or unresolved cross-references. The PDF compiles
+without overfull boxes, retains 23 main-text pages, and has 72 pages in total.
+The remaining prior-work interpretation issues are still tracked in item 5.
 
 Claude's round-4 review found no new appendix correctness errors. The checked
 corrections include efficient OR-set's conditional-commutation example, the

@@ -20,7 +20,7 @@ names={
 'peritext-embed-rga':r'Peritext\textsuperscript{*}\cite{Peritext}',
 'sided-peritext-core':r'Sided Peritext (core)\cite{Peritext}',
 'sided-peritext-rich-core':r'Sided Peritext\textsuperscript{*}\cite{Peritext}',
-'anchored-queue-paper-variant':r'Anchored queue\cite{Roh,Peepul}',
+'anchored-queue-paper-variant':r'Anchored queue\cite{Roh,Vimala}',
 'fugue-max':r'FugueMax\cite{FugueMax}',
 'balegas-bounded-counter':r'Bounded counter\cite{BalegasBoundedCounter}',
 'enable-wins-flag':r'Enable-wins flag\cite{neem}',

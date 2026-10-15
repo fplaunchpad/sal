@@ -84,8 +84,8 @@ still has order $abc$. Its interval from before $a$ to after $c$ includes
 $b$, even though $b$ is displayed in a different block.
 
 \paragraph{Reproduction and formal checks.}
-The artifact records the source-file hashes and complete request traces.
-Its regression tests reproduce all three outcomes and include a nearby
+We record the source-file hashes and complete request traces in the code repository.
+The regression tests reproduce all three outcomes and include a nearby
 formatting case that agrees with the specification. In Lean, we check that
 the split outcome violates the ordinary split-at-zero rule, and that the
 interval calculation in the two formatting examples disagrees with
