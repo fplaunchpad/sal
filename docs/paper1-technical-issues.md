@@ -3,7 +3,7 @@
 15 October 2026. Combines Claude's [review](paper1-claude-review.md) with the
 Codex [section review](paper-writing-review.md) and
 [reconciliation note](paper1-formalism-reconciliation.md), checked against
-paper commit `864ad6a` and Sal `paper1` commit `1f9c30d`.
+paper commit `edacc2c` and Sal `paper1` commit `1f9c30d`.
 This is a review record, not another development task list.
 
 The main issue is correspondence: the paper's stated assumptions and
@@ -54,6 +54,8 @@ and different identities.
 commutation, on the same eligible-event and state domains. State the event
 guards explicitly. The policy remains a relation supplied on operations.
 
+Vimala confirms that equal operations have no policy edge. That fact alone
+does not establish their commutation; the separate assumption is still needed.
 This corrects Claude's suggested remedy: deleting the unequal-operation guard
 is not necessary. Lean already proves equivalence between the split and
 combined formulations, including the certified and invariant-restricted forms.
@@ -114,17 +116,21 @@ An impossibility over arbitrary events does not refute that certified result.
 Complete the per-row theorem mapping before saying all rows instantiate one
 unrestricted theorem; an extra jargon-heavy table column is not essential.
 
-### 5. Restore the specification's event-to-label projection
+### 5. Make the operation-label convention explicit
 
-**Confirmed — §2 labels, §4 sequential specification, §§6–7.** The paper's
-`ops` discards timestamps and replica identities, while its RGA specification
-needs the inserted identity. Other case studies also retain relevant event
-information. The appendix already explains this extension.
+**Clarification from Vimala — §2 labels, §4 sequential specification, §§6–7.**
+Vimala proposes keeping `ops`, with any required timestamp and replica identity
+included as arguments of the operation label. This is a valid presentation;
+a separate projection function `f` is not necessary.
 
-**Change:** define a projection `f(e)` and use `ops_f` consistently. The
-ordinary-set specification ignores metadata; identity-based sequences retain
-the identities named by later operations. Explain that distinction without
-requiring all specifications to expose implementation bookkeeping.
+**Change:** state that convention explicitly and apply it consistently to the
+sequential labels and simulation conditions. The ordinary-set specification
+can ignore these arguments; RGA retains the inserted identity named by later
+operations. Keep the distinction between the operation-level policy supplied
+by the datatype author and the event information exposed to a specification.
+The current §4 text alone describes `ops` as projecting the operation out of
+`(t,r,o)`, while §7's insertion label also includes `t`; this connection needs
+one explicit explanation, not a new abstraction.
 
 ### 6. Give canonical states the domain used by the induction
 
@@ -132,6 +138,9 @@ requiring all specifications to expose implementation bookkeeping.
 Section 4 requires causal closure. Section 5 removes maximal events and uses
 sets closed only under noncommuting predecessors. Such a set need not be
 causally closed, so the earlier definition does not cover every use of `can`.
+For example, if `a` is visible to a commuting event `b`, removing `a` from
+`{a,b}` leaves a weakly closed set `{b}` that is not causally closed. Vimala
+has asked Kartik to confirm this point; his response is pending.
 
 **Change:** state existence and uniqueness on the exact finite, supported,
 weakly closed domain used by the raw proof. State the certified reconstruction
@@ -213,7 +222,7 @@ Do not add GC to this discussion.
 | §5 worked example | Identify the smaller inner merge by induction before applying VC4. |
 | §5 `Admissible` | The old unbound-`E` complaint is resolved: the current formula uses `E_i`. |
 | Formal reference versus paper | Align VC4/VC5 numbering by their equations, not their old numbers. |
-| Related Work/conclusion | Remove the extra empty Conclusion section and duplicate label. |
+| Related Work/conclusion | Resolved in `edacc2c`: the extra empty Conclusion section is no longer included. |
 | Bibliography | `Notion` and `NotionCRDTBlog` cite the same blog post; consolidate uses. |
 | Implementation section | Old reports that it is empty are obsolete. Framework/per-MRDT obligations and proof columns are now explained. |
 
