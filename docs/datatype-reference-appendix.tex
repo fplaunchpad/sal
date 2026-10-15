@@ -2478,9 +2478,12 @@ engine. The purge cutoff is not bounded by the issuer's observed timestamps.
 Consequently a purge can mask a concurrent write it has not seen, provided
 that write's timestamp is at or below the cutoff. The sequential specification
 includes the same masking rule, so RA-linearizability does not establish an
-acknowledgement protocol or a rule limiting purges to observed writes. The
-source explicitly permits late pre-cutoff changes to restore an axis without
-restoring its purged contents.
+acknowledgement protocol or a rule limiting purges to observed writes.
+This differs from the published Scala implementation: it removes observed
+cell updates, allowing an unseen concurrent edit to revive the row with its
+new value. Our model instead applies a persistent timestamp cutoff. Its
+correctness theorem concerns that specification and does not establish
+equivalence to the Scala implementation.
 
 
 \subsection{Notion core}

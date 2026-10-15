@@ -11,8 +11,9 @@ sole active bounded counter is the published Balegas matrix/max design.
 ## Appendix round 2 and theorem-scope alignment
 
 - [x] Verify Claude's round-2 correctness findings against actual selected Lean
-  endpoints; distinguish the false universal Sided Peritext deletion claim
-  and the AegisSheet source's explicit pre-cutoff masking semantics.
+  endpoints; distinguish the false universal Sided Peritext deletion claim.
+  Round 3 additionally identifies the persistent purge-mask difference from
+  AegisSheet's observed-remove Scala implementation.
 - [x] Correct appendix definitions, examples and source attributions; explicitly
   qualify the implementation table's use of event-scoped laws and full-causal
   dependencies. Retain kernel-checked regression controls.

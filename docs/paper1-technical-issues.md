@@ -345,7 +345,7 @@ was changed in response to this review.
 | R2-4, efficient OR-set | Confirmed: identical-label exemption avoids the body's rc-non-comm objection; payload cond-comm fails instead. Added a kernel-checked counterexample and actual-event absorber explanation; corrected certificate citations. |
 | R2-5, efficient OR-set source | Confirmed; source already stores replica/timestamp/element triples. Attribution corrected. |
 | R2-6, Sided Peritext | Three timestamp-sensitive boundary cases confirmed. The proposed universal deletion-collapse claim is false: a checked example retains a newer marked character after both original anchors are deleted. Appendix states all four boundary rules and the exact collapse conditions. |
-| R2-7, AegisSheet | Guard checks supplied roster membership, not acknowledgement evidence, and does not bound the cutoff by observed timestamps. Documented this limit. The source explicitly permits late pre-cutoff masking, so this behavior alone is not a demonstrated source-intent violation. |
+| R2-7, AegisSheet | Guard checks supplied roster membership, not acknowledgement evidence, and does not bound the cutoff by observed timestamps. Documented this limit. Round 3 corrects the source comparison: Scala removes observed updates and retains unseen concurrent edits; the model's persistent timestamp mask differs. The proof establishes the model specification, not Scala equivalence. |
 | R2-8, optional register | Added same-replica Set noncommutation and corrected the witness to all Unsets/their visible predecessors first, remaining Sets second, each timestamp-sorted. |
 | R2-9, TreeMove | Replaced the specification's implementation test with candidate acyclicity; fixed rejection-test polarity and identified the proved equivalence. |
 | R2-10, Notion | Corrected block/instance ownership; defined the reference reconstruction used by the guard and shortened executable-proof discussion. |
@@ -364,7 +364,38 @@ not a substitute for the body-level corrections above.
 Validation: the full repository gate passed 3,876 Lean jobs, 18 public
 contracts, 13 certificate controls, 187 runtime tests and 569 benchmark records.
 All 444 measured source hashes remain unchanged. The manuscript compiles to
-72 pages, with 23 pages of main text. The root README was reviewed and now
+72 pages. A subsequent page-boundary check found four conclusion lines on
+page 24; the round-3 edit removes the repeated conclusion inventory to recover
+the 23-page main-text limit. The root README was reviewed and now
 links this remaining theorem-scope work. The Site preparation contains 25
-panels and 1,296 checked KaTeX expressions. Publication checkpoints follow
-after the repository and manuscript pushes.
+panels and 1,296 checked KaTeX expressions. Round-2 corrections were pushed as Sal `84afa3a` and Overleaf `328e995`.
+Site publication was held for the round-3 source correction below.
+
+## Appendix round 3 — source fidelity and scope presentation
+
+Claude independently confirmed all eleven round-2 corrections. Two follow-ups:
+
+- AegisSheet's paper prose about purged contents does not justify equating our
+  timestamp mask with its Scala implementation. Scala removes observed cell
+  updates; a concurrent unseen edit survives and can revive the row with its
+  new value. The appendix now states this difference explicitly. Evidence:
+  `docs/aegissheet-scala-audit.md`, the concurrent purge/edit regression in
+  `audits/aegissheet/AegisSheetRegressionSuite.scala`, and
+  `AegisSheet.cellOverwritten` / `AegisSheet.Sequential.versionPurged`.
+- The implementation paragraph's named list of state-restricted examples was
+  incomplete. It now describes the classes of conditions and defers each
+  datatype's exact scope to the appendix. Invariant-scoped commutation,
+  represented merge states and protocol issuance are distinct restrictions;
+  a protocol guard alone does not imply that raw update commutation fails.
+  The native RGA and incremental tree-move update/merge laws hold on their
+  declared states; issuance enters their independent history proofs. Tree
+  move's declared state already requires log/tree coherence. Notion's union
+  laws also hold universally, while document correspondence uses its protocol.
+  `CertifiedRGARichCertificate` concerns Sided Peritext RichCore, not plain RGA;
+  `CertifiedSidedInvariantCertificate` concerns Sided RGA. Consequently the
+  proposed count of rows outside the unrestricted theorem cannot be inferred
+  merely from a declaration containing the word `Scoped`.
+
+No new theorem or source-equivalence claim follows from these editorial fixes.
+The formal body extension remains priority 3. Duplicated datatype descriptions
+and the anchor/merge-branch symbol collision remain lower-priority work.
