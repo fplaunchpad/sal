@@ -301,9 +301,12 @@ complete: base `2854bec`, 222 roots, 444 source hashes, 26 configurations / 24
 paper rows, and PQ columns 98 / 28 / 99 / 1,285. The full gate passed 3,875 Lean
 jobs, 18 exact public contracts, 13 certificate controls, 187 runtime tests and
 569 benchmark records (`/private/tmp/sal-pq-full-gate.log`); measurement logs are
-in `/private/tmp/sal-pq-current-counts`. Appendix, table and public Site
-publication remain pending. Earlier checkpoints above describe the TreeMove
-publication, not this replacement.
+in `/private/tmp/sal-pq-current-counts`. Published as Sal `3d924a0`, Overleaf
+`97e92d7`, and datatype Site version 19, with the new panel pinned to `3d924a0`.
+All 444 measured source hashes match that committed snapshot. Parent checked the
+rendered table, appendix equations and live Site. Main text remains 23 pages,
+references start on page 24; the complete document has 70 pages. Earlier
+checkpoints above describe the TreeMove publication, not this replacement.
 
 These appendix and case-study changes do not resolve the substantive theory
 issues listed above.

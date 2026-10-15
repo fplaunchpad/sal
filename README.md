@@ -346,8 +346,10 @@ is not atomic global extraction. Seven PASS+FAIL blocks distinguish reset,
 attached increments, the published MCW answer, maximum selection and removal.
 The source model and its checked specification obstruction are preserved
 separately. This replaces the former element-wide retained-increment variant;
-measurement and the full repository gate have passed. Publication of the
-revised table, appendix and Site description remains pending.
+measurement and the full repository gate have passed. The reviewed table and
+appendix are published to Overleaf; the
+[datatype reference](https://sal-datatype-reference.fizzyearth10.chatgpt.site/#priority-queue-same-record)
+describes the verified replacement.
 
 `GSet`'s alias module has been removed: the single mathematical grow-only-set
 implementation is `AddStore`, with one coverage entry. `FinsetStore` and

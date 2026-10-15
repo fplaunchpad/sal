@@ -1,6 +1,6 @@
 # Current implementation-table measurement
 
-Measured source: the current working tree based on `2854bec`, including the source undo/redo TreeMove replacement, certified same-record priority queue and structured/executable Notion. `current-counts.json` records this base revision and pins 444 measured Lean source files with verified SHA-256 hashes. The hashes identify the measured working source, including uncommitted port files; `git_head` alone is not a claim that those files are committed. The measurement and repository gate are complete. Publication of the priority-queue replacement remains pending.
+Measured source: the current working tree based on `2854bec`, including the source undo/redo TreeMove replacement, certified same-record priority queue and structured/executable Notion. `current-counts.json` records this base revision and pins 444 measured Lean source files with verified SHA-256 hashes. All 444 hashes also match the committed source at `3d924a0`; `git_head` records the measurement base, not the later integration commit. The repository gate passed. The appendix and table are published to Overleaf at `97e92d7`, and the datatype Site is published as version 19.
 
 Run from the Sal checkout with its checked current Lean build:
 
@@ -134,4 +134,6 @@ The same-record priority-queue integration gate passed **3,875 Lean build jobs**
 **18 exact public contracts**, **13 certificate controls**, **187 runtime tests**
 and **569 benchmark records**. The full log is
 `/private/tmp/sal-pq-full-gate.log`. Measurement and checked integration are
-complete; the revised appendix, table and Site publication remain pending.
+complete. Published: Sal `3d924a0`, Overleaf `97e92d7`, and
+[datatype Site version 19](https://sal-datatype-reference.fizzyearth10.chatgpt.site/#priority-queue-same-record).
+The rendered main text remains 23 pages; references start on page 24.

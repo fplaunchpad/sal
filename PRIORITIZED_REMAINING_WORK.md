@@ -45,11 +45,15 @@ semantic changes against an independent sequential specification.
   The gate passed 3,875 Lean jobs, 18 exact public contracts, 13 certificate
   controls, 187 runtime tests and 569 benchmark records. Logs:
   `/private/tmp/sal-pq-current-counts`, `/private/tmp/sal-pq-full-gate.log`.
-- [ ] Publish the reviewed same-record priority-queue table, appendix and Site
-  description. Parent owns publication; older checkpoints remain historical.
+- [x] Publish the reviewed same-record priority-queue table, appendix and Site
+  description: Sal `3d924a0`, Overleaf `97e92d7`, Site version 19. All 444
+  measured source hashes match the committed code. Parent checked the rendered
+  table, appendix equations and live Site; main text remains 23 pages, references
+  start on page 24. Older checkpoints remain historical.
 - [x] Remeasure and publish the completed TreeMove replacement and reviewed
   appendix: Sal `2854bec`, Overleaf `2a11435`, Site version 18. Main text remains
-  23 pages; full repository gate passed. Repeat for priority queue after certification.
+  23 pages; full repository gate passed. The priority-queue replacement is
+  recorded above.
 - [x] Replace parenthetical table qualifications by an asterisk and move their
   explanations to the supplementary datatype descriptions.
 
