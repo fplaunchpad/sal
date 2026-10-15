@@ -399,3 +399,16 @@ Claude independently confirmed all eleven round-2 corrections. Two follow-ups:
 No new theorem or source-equivalence claim follows from these editorial fixes.
 The formal body extension remains priority 3. Duplicated datatype descriptions
 and the anchor/merge-branch symbol collision remain lower-priority work.
+
+### Publication checkpoint after round 3
+
+Corrections are published as Sal `84afa3a` / `4863cc7`, Overleaf `803a9a4`,
+and datatype Site version 20. The Site source is
+`f6734e46959a992d5db8df9fcb960419db66dce5`; its 13 corrected panels link to
+Sal `4863cc744c2b0924bb61fd3d8a38f909e1833677`. Deployment
+`appgdep_6ad048b4aa4481918d12d620d95f38dd` succeeded at the existing public URL.
+Parent verified the live Aegis source-difference note and final source pin.
+The final PDF has 72 pages: main text ends on page 23 and page 24 starts with
+references, with no conclusion spill. No overfull boxes or unresolved references
+were reported. The proof-size table is unchanged. The general certified theorem
+statement and the lower-priority readability items remain open above.

@@ -17,8 +17,12 @@ sole active bounded counter is the published Balegas matrix/max design.
 - [x] Correct appendix definitions, examples and source attributions; explicitly
   qualify the implementation table's use of event-scoped laws and full-causal
   dependencies. Retain kernel-checked regression controls.
-- [ ] Render and independently verify the combined manuscript and updated Site;
-  run the repository gate and publish the reviewed corrections.
+- [x] Render and independently verify the combined manuscript and updated Site;
+  run the repository gate and publish the reviewed corrections. Sal `84afa3a`
+  and `4863cc7`; Overleaf `803a9a4`; Site version 20. The main text ends on
+  page 23, references start on page 24; 72 pages including supplementary material.
+  Gate: 3,876 Lean jobs, 18 contracts, 13 controls, 187 runtime tests,
+  569 benchmark records. All 444 measured source hashes unchanged.
 - [ ] State the body extensions precisely: guarded actual-event laws, certified
   concurrent-event/prefix laws, parameterized dependency closure/maximality and
   decomposition supply, and specification-visible explaining histories. See
