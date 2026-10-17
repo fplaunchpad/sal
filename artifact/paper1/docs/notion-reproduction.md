@@ -123,9 +123,16 @@ The Lean results have a separate, narrower role:
 | `NotionFormattingCounterexample.two_character_reversal` | A restricted interval-rule model selects nothing for a reversed two-character selection |
 | `NotionFormattingCounterexample.noncontiguous_selection_overformats` | That interval-rule model includes an unselected intervening character |
 | `NotionFormattingCounterexample.contiguous_selection_control` | A contiguous selection agrees with the ordinary target set and is nonempty |
+| `NotionMergeLossCounterexample.merge_into_removed_block_hides_document` | In a restricted merge model on the slice trees dumped before the update, merging into a removed block's slice hides `abc`, which stays stored |
+| `NotionMergeLossCounterexample.document_loss_unexplained` | No sequential history of ordinary splits and merges from `a · b · c` produces that display |
+| `NotionMergeLossCounterexample.live_target_control` | The same merge into a live block keeps `abc` visible |
+| `NotionMergeLossCounterexample.cyclic_merge_removal_hides_character` | The delayed merge's move is skipped as cyclic and its block removal hides `x`, which stays stored |
+| `NotionMergeLossCounterexample.character_loss_unexplained` | No sequential history of ordinary splits and merges from `x` produces that display |
+| `NotionMergeLossCounterexample.acyclic_target_control` | Moving the same subtree under the live first block keeps `x` visible |
 
-N-004 and N-005 have no Lean counterpart; they need the editor's merge-block
-request, which is outside the verified typed core.
+N-004 and N-005 need the editor's merge-block request, which is outside the
+verified typed core. Their model keeps a merge's move and block removal, not
+its preceding split step.
 
 The formatting model has one text instance, no hidden characters, and no
 prior annotations. These theorems do not mechanize the complete JavaScript

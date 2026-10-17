@@ -113,7 +113,8 @@ def main():
     seeds |= {d['file'] for d in meta['declarations'].values() if d['file'].startswith('Sal/')}
     seeds |= {'Sal/MRDTs/Paper1/OperationLabelsInvariant.lean',
               'Sal/MRDTs/Instances/NotionSplitSpec.lean',
-              'Sal/MRDTs/Instances/NotionFormattingCounterexample.lean'}
+              'Sal/MRDTs/Instances/NotionFormattingCounterexample.lean',
+              'Sal/MRDTs/Instances/NotionMergeLossCounterexample.lean'}
     files, pending = set(), list(seeds)
     tracked = set(subprocess.check_output(['git', 'ls-files'], cwd=ROOT, text=True).splitlines())
     while pending:
@@ -175,6 +176,12 @@ def main():
         'Sal.MRDTs.Instances.NotionFormattingCounterexample.two_character_reversal',
         'Sal.MRDTs.Instances.NotionFormattingCounterexample.noncontiguous_selection_overformats',
         'Sal.MRDTs.Instances.NotionFormattingCounterexample.contiguous_selection_control',
+        'Sal.MRDTs.Instances.NotionMergeLossCounterexample.merge_into_removed_block_hides_document',
+        'Sal.MRDTs.Instances.NotionMergeLossCounterexample.document_loss_unexplained',
+        'Sal.MRDTs.Instances.NotionMergeLossCounterexample.live_target_control',
+        'Sal.MRDTs.Instances.NotionMergeLossCounterexample.cyclic_merge_removal_hides_character',
+        'Sal.MRDTs.Instances.NotionMergeLossCounterexample.character_loss_unexplained',
+        'Sal.MRDTs.Instances.NotionMergeLossCounterexample.acyclic_target_control',
     }
     imports = '\n'.join('import ' + f[:-5].replace('/', '.') for f in sorted(seeds))
     audit = r'''

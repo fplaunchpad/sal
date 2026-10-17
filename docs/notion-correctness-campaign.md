@@ -172,5 +172,6 @@ traces are in [results](../experiments/notion-correctness/results/)
 (`network-loss-diagnosis.json`, `offline-conservation-minimised.json`,
 `offline-conservation-regression.json`, `offline-structural-17102.json`). Both
 failures need the editor's merge-block request, which lies outside the verified
-typed core; no Lean counterpart is claimed. The search is finite and does not
-exclude further bugs.
+typed core. Their Lean counterparts are in `NotionMergeLossCounterexample` (see
+[the bug catalogue](notion-bugs.md)). The search is finite and does not exclude
+further bugs.

@@ -139,9 +139,12 @@ The regression tests reproduce all five outcomes and include nearby cases
 that agree with the specification. In Lean, we check that
 the split outcome violates the ordinary split-at-zero rule, and that the
 interval calculation in the two formatting examples disagrees with
-formatting exactly the selected characters. These checks do not formalise
-the complete JavaScript execution or prove its correspondence to Lean, and
-the last two bugs have no Lean counterpart.
+formatting exactly the selected characters. For the last two bugs, we model
+a merge's move and block removal over the demo's slice trees, check that
+the update hides the text while it stays stored, and prove that every
+sequential history of splits and merges preserves the document's characters.
+These checks do not formalise
+the complete JavaScript execution or prove its correspondence to Lean.
 The results concern the public demo; we have not established that Notion's
 production system has these bugs. The setups use merge-block and formatting
 requests outside the verified create/insert/erase/split fragment, so they

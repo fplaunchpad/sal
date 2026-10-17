@@ -149,8 +149,17 @@ display. No sequential order of split and merge requests removes a character,
 so no linearization of the requests explains the observed display.
 
 **Formal scope of N-004 and N-005.** Both need the editor's merge-block request,
-which is outside the verified typed core. They are executable evidence only; no
-Lean counterpart is claimed.
+which is outside the verified typed core. `NotionMergeLossCounterexample` models
+a merge's move and block removal over a slice forest owned by blocks, with the
+source's cycle no-op, and uses the slice trees dumped from the demo just before
+each failing update. `merge_into_removed_block_hides_document` and
+`cyclic_merge_removal_hides_character` check that the update hides the text
+while it stays stored. `flatten_run` proves that every sequential history of
+ordinary splits and merges preserves the document's characters in order, so
+`document_loss_unexplained` and `character_loss_unexplained` rule out every
+sequential explanation. `live_target_control` and `acyclic_target_control` are
+positive controls. The model does not mechanise the JavaScript replay or the
+split step that precedes the move.
 
 ## Preserved counterexamples that are not additional demo bugs
 

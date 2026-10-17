@@ -6,6 +6,7 @@ set -eu
 lake build \
   Sal.MRDTs.Instances.NotionSplitSpec \
   Sal.MRDTs.Instances.NotionFormattingCounterexample \
+  Sal.MRDTs.Instances.NotionMergeLossCounterexample \
   Sal.MRDTs.Instances.NotionTransactionSet \
   Sal.MRDTs.Instances.NotionRunAllocation \
   Sal.MRDTs.Instances.NotionCoreSpec \

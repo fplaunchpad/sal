@@ -123,12 +123,14 @@ predictions. An empty classification list does **not** mean no bugs were found.
 
 ```sh
 lake build Sal.MRDTs.Instances.NotionFormattingCounterexample \
-  Sal.MRDTs.Instances.NotionSplitSpec
+  Sal.MRDTs.Instances.NotionSplitSpec \
+  Sal.MRDTs.Instances.NotionMergeLossCounterexample
 ```
 
-These existing Lean files prove restricted semantic counterparts of the split
-and interval failures. They do not verify execution of the JavaScript traces.
-This campaign found variants of known problems, so it adds executable evidence
-and controls without adding redundant Lean examples or changing paper claims.
+These Lean files prove restricted semantic counterparts of the split and
+interval failures and of the two text-loss failures, N-004 and N-005. They do
+not verify execution of the JavaScript traces. The complete-exchange search
+found only variants of known problems and adds no Lean examples; the
+partial-delivery search found the two text-loss failures.
 Its scope is correctness of the public demo; it establishes no correspondence
 with Notion's production editor.
