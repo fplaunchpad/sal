@@ -1,14 +1,20 @@
 # Preserved Notion demo bugs and counterexamples
 
-Three confirmed failures violate ordinary local editing behaviour in the pinned
-public demo. Every setup uses valid `Replica` requests with distinct sessions;
+Five confirmed failures violate ordinary editing behaviour in the pinned public
+demo. N-001 to N-003 give a local request the wrong effect; N-004 and N-005
+lose text after split and block-merge requests alone. Every setup uses valid `Replica` requests with distinct sessions;
 no fabricated payload is needed. The transaction-set adaptation preserves the
 failures. These are findings about the educational demo, with no established
 correspondence to Notion's production implementation.
 
 The paper's [Appendix B source](notion-bugs-appendix.tex) gives a self-contained
-account of the three traces, their expected and observed results, and the
+account of the five traces, their expected and observed results, and the
 scope of the formal checks.
+
+The [follow-up correctness campaign](notion-correctness-campaign.md) records the
+generated histories. Its complete-exchange search found only variants of N-001
+to N-003, including a six-request split/merge setup for N-001. Its search with
+persistent replicas and partial causal delivery found N-004 and N-005.
 
 The source snapshot is identified by the seven SHA-256 hashes in
 [sources.json](../experiments/notion-oracle/sources.json). The permanent
@@ -17,7 +23,7 @@ requests and asserts the anomaly and disagreement with the independent local
 specification. [Saved regression records](../experiments/notion-oracle/regression-observations.jsonl)
 retain literal transactions, expected answers and actual answers.
 
-Reproduce all three bugs and the passing formatting control from the repository root:
+Reproduce all five bugs and the passing formatting control from the repository root:
 
 ```sh
 python3 experiments/notion-oracle/run.py --trace regressions.mjs
@@ -89,6 +95,62 @@ directed fixture, with no global minimality claim.
 **Formal scope.** `NotionFormattingCounterexample.noncontiguous_selection_overformats`
 checks the restricted interval-rule counterpart. Its contiguous selection
 control rules out constantly formatting every character.
+
+## N-004: a block merge into a removed block hides the whole document
+
+**Trigger.** Start with three blocks `a · b · c` and two replicas. A merges `c`
+into `b` (`a · bc`), splits that block at zero (`a · empty · bc`), and merges
+`bc` back into the empty block (`a · bc`). Concurrently, B merges `b` into `a`
+(`ab · c`). B receives A's first two requests and sees `empty · abc`. B merges
+`abc` into its predecessor, seeing `abc`. B then receives A's last merge.
+
+**Expected:** `abc` remains visible; split and block merge never delete text.
+**Actual:** no block is visible. All three characters remain stored, but only in
+removed blocks. A reaches the same empty display after receiving B's merges.
+
+A block merge is one transaction: split the source block's text, move it after
+the target's last text slice, and remove the source block. The move locates its
+target by the end item of a text slice and does not check whether the block that
+now holds that slice is alive. When A's last merge reaches B, that slice lies in
+a block that a merge has already removed, so the text moves into it.
+
+**Evidence.** Regression name `merge-into-removed-block-loses-document-failure`;
+the record keeps all five transactions and the stored characters. Two passing
+controls change one ingredient and keep `abc` visible: B omits its first merge,
+or B receives A's last merge before issuing its own. Found by the
+persistent-replica search of the
+[correctness campaign](notion-correctness-campaign.md) and shrunk to five requests;
+no global minimality is claimed.
+
+## N-005: a delayed block merge hides a character
+
+**Trigger.** Start with one block `x` and two replicas. A splits at zero
+(`empty · x`). Concurrently, B splits at one (`x · empty`) and merges the new
+empty block back (`x`). A receives only B's split, sees `empty · empty · x`, and
+merges `x` into its predecessor (`empty · x`). B's held merge then arrives.
+
+**Expected:** `x` remains visible. **Actual:** `x` disappears; it is stored only
+in a removed block.
+
+The delayed merge would move text into a slice that now lies inside the slice
+being moved. The source treats such cyclic moves as deterministic no-ops and
+restores the slice, but the same transaction still removes the source block,
+which now holds `x`. This trace never moves text into an already removed block,
+so the cause is distinct from N-004.
+
+**Evidence.** Regression name `cyclic-merge-removal-hides-character-failure`.
+Three passing controls keep `x` visible: the held merge never arrives, A does
+not merge, or the held merge arrives before A merges. Both replicas converge on
+the same display after exchanging all transactions.
+
+**Classification.** Both are failures of sequential correctness, not of
+convergence: replicas that have received the same transactions show the same
+display. No sequential order of split and merge requests removes a character,
+so no linearization of the requests explains the observed display.
+
+**Formal scope of N-004 and N-005.** Both need the editor's merge-block request,
+which is outside the verified typed core. They are executable evidence only; no
+Lean counterpart is claimed.
 
 ## Preserved counterexamples that are not additional demo bugs
 

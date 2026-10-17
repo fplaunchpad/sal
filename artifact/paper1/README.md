@@ -2,7 +2,7 @@
 
 This is a standalone Lean source package for the paper's framework, MRDT
 implementations and sequential specifications. It also includes reproducible
-experiments for three bugs in Notion's public CRDT demo and the data and scripts
+experiments for five bugs in Notion's public CRDT demo and the data and scripts
 behind the implementation table. No development checkout, Git history, browser,
 Overleaf account or private credentials are needed.
 
@@ -65,7 +65,7 @@ python3 scripts/reproduce-notion.py --download /tmp/sal-notion-demo
 python3 scripts/reproduce-notion.py --vendor-cache /tmp/sal-notion-demo
 ```
 
-The second command is offline. A successful run reports **three reproduced
+The second command is offline. A successful run reports **five reproduced
 bugs and one passing control**; success means the bugs are present, not fixed.
 [The reproduction guide](docs/notion-reproduction.md) gives the request
 sequences, expected/observed results, source boundaries and Lean counterparts.
@@ -114,7 +114,7 @@ paper *Certified mergeable replicated data types*.
 [validation.json](validation.json) records the checked environment and results:
 a clean build of all supplied Lean sources with 242 root audits, an exact match
 of all 24 table rows and 444 measured source hashes, the generic theorem counts,
-and a fresh download followed by offline reproduction of the three demo bugs.
+and a fresh download followed by offline reproduction of the five demo bugs.
 The clean build reused the pinned third-party Lake package cache; it did not
 reuse any compiled project output. Full initial dependency acquisition was not part
 of this validation run.

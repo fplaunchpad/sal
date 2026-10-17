@@ -1,0 +1,48 @@
+{
+  "scope": "Public demo correctness campaign; executable evidence is separate from Lean model facts.",
+  "runtime": {
+    "node": "v26.3.1",
+    "python": "3.14.6",
+    "lean": "4.28.0"
+  },
+  "lean": {
+    "command": "lake build Sal.MRDTs.Instances.NotionFormattingCounterexample Sal.MRDTs.Instances.NotionSplitSpec",
+    "exitCode": 0,
+    "jobs": 469,
+    "newLeanTheorems": 0
+  },
+  "controls": [
+    "Three original demo regressions and passing control",
+    "Hand-derived list edit and formatting controls",
+    "Invalid request bounds rejected",
+    "Six-request split regression and same-display passing control",
+    "Source hash changes rejected",
+    "Existing output files preserved"
+  ],
+  "minimisation": {
+    "record": "six-step-minimisation.json",
+    "traceUnchanged": true,
+    "attempts": 18,
+    "invalidCandidatesRejected": 10
+  },
+  "limits": [
+    "No full JavaScript execution theorem",
+    "ASCII text and bold only",
+    "Insertion formatting inheritance unspecified",
+    "Complete causal archives exchanged between rounds",
+    "Finite search, not exhaustive bug discovery"
+  ],
+  "classification": {
+    "failingProbes": 422,
+    "unexplained": 0,
+    "records": [
+      "classification-17002.json",
+      "classification-17005.json"
+    ]
+  },
+  "replay": {
+    "concurrentRepresentatives": 6,
+    "structuralRepresentatives": 1,
+    "allPassed": true
+  }
+}

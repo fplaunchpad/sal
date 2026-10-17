@@ -1,9 +1,10 @@
-# Reproduce the three public Notion demo bugs
+# Reproduce the five public Notion demo bugs
 
 This experiment reissues valid editing requests against seven hash-pinned
 JavaScript modules from Notion's public educational CRDT demo. It checks three
-violations of an independent ordinary local editing contract and one passing
-formatting control. **Exit code 0 means the known bugs reproduced.**
+violations of an independent ordinary local editing contract, two histories in
+which split and block-merge requests hide text, and one passing formatting
+control. **Exit code 0 means the known bugs reproduced.**
 
 The findings concern the pinned demo. Correspondence to Notion's production
 implementation has not been established.
@@ -13,7 +14,7 @@ implementation has not been established.
 Use Python 3 and Node.js 18 or newer. Source acquisition also requires `curl`.
 No Python packages, npm packages, browser,
 Lean installation, or service account are needed for this experiment. It was
-checked with Python 3.14.6 and Node.js 26.3.1 on 15 October 2026.
+checked with Python 3.14.6 and Node.js 26.3.1 on 17 October 2026.
 
 The artifact includes these first-party experiment files:
 
@@ -59,11 +60,11 @@ does not modify the source cache or the supplied experiment files. A missing
 or mismatched cache fails without attempting a download. The default cache,
 when `--vendor-cache` is omitted, is `vendor/notion` under the artifact root.
 
-Successful execution writes four JSONL records and prints this message to
+Successful execution writes six JSONL records and prints this message to
 standard error:
 
 ```text
-Reproduced 3 known demo bugs and 1 passing control (4 records).
+Reproduced 5 known demo bugs and 1 passing control (6 records).
 ```
 
 Each record includes the literal transactions, the visible state before the
@@ -76,6 +77,8 @@ record names and `specAgreement` fields:
 | `bold-control` | `true` | In `b · a`, bold only `b` | Only `b` becomes bold |
 | `bold-outside-selected-block-failure` (N-003) | `false` | In `ac · b`, bold `a` and `c`, leaving `b` plain | All three become bold |
 | `split-zero-leaves-suffix-sibling-failure` (N-001) | `false` | Splitting the second block of `empty · aX` at zero yields `empty · empty · aX` | `empty · X · a` |
+| `merge-into-removed-block-loses-document-failure` (N-004) | `false` | After all merges arrive, `abc` stays visible | No visible block |
+| `cyclic-merge-removal-hides-character-failure` (N-005) | `false` | After the delayed merge arrives, `x` stays visible | `empty` |
 
 Here `empty` denotes an empty block and `·` separates blocks. Bold requests
 change character flags, so their `before` and `actual` text strings agree;
@@ -96,6 +99,19 @@ into `b`. The displayed selection `ba` reverses the underlying text-instance
 order, and its annotation interval becomes empty. N-003 starts with `abc`,
 concurrently splits at one and two, and merges `c` into `a`. The selected `ac`
 spans `b` in text-instance order even though `b` is in another displayed block.
+N-004 starts with blocks `a · b · c`. Replica A merges `c` into `b`, splits that
+block at zero and merges `bc` back. Replica B concurrently merges `b` into `a`,
+receives A's first two requests (`empty · abc`), and merges `abc` into its
+predecessor. When A's last merge arrives, B shows no block. A merge locates its
+target slice by an identifier rather than by block, and that slice now lies in
+a block a merge has removed. N-005 starts with `x`. A splits at zero; B splits
+at one and merges the empty block back. A receives only B's split and merges
+`x` into its predecessor. B's delayed merge would move a slice inside itself;
+the demo skips that move but still removes the block now holding `x`. In both
+records, `storedCharacters` shows the hidden text is still stored, the
+`controls` field holds displays of passing variants, and the replicas converge.
+No sequential order of these split and merge requests removes a character, so
+these are failures of sequential correctness, not of convergence.
 All setups use valid `Replica` requests with distinct sessions; they do not
 require fabricated payloads. The fixtures use ASCII text.
 
@@ -107,6 +123,9 @@ The Lean results have a separate, narrower role:
 | `NotionFormattingCounterexample.two_character_reversal` | A restricted interval-rule model selects nothing for a reversed two-character selection |
 | `NotionFormattingCounterexample.noncontiguous_selection_overformats` | That interval-rule model includes an unselected intervening character |
 | `NotionFormattingCounterexample.contiguous_selection_control` | A contiguous selection agrees with the ordinary target set and is nonempty |
+
+N-004 and N-005 have no Lean counterpart; they need the editor's merge-block
+request, which is outside the verified typed core.
 
 The formatting model has one text instance, no hidden characters, and no
 prior annotations. These theorems do not mechanize the complete JavaScript

@@ -10,7 +10,7 @@
   "build_jobs": 3612,
   "fresh_project_build": true,
   "build_scope": "Fresh project build with only standard Lean/Mathlib dependencies available; no optional solver package or project compiled outputs reused. No fresh external dependency bootstrap claimed.",
-  "notion": "Fresh download verified all seven hashes; offline runner reproduced three known demo bugs and one positive control.",
+  "notion": "Fresh download verified all seven hashes; offline runner reproduced five known demo bugs and one positive control (Notion rerun 2026-10-17).",
   "measurements": "All 24 row counts, 444 renamed-source hashes and generic metatheory category counts reproduced after renaming.",
   "excluded": "No Git history, credentials, original repository .lake directory, untracked research files, or third-party Notion sources in source archive.",
   "negative_controls": "Unapproved Lean axiom rejected; existing export directory refused; Notion corrupt-cache and output-overwrite rejection checked. Unexpected additional source file rejected by the manifest checker.",

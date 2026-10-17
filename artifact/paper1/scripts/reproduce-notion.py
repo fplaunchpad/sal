@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Acquire the hash-pinned public demo, or reproduce its three known bugs offline."""
+"""Acquire the hash-pinned public demo, or reproduce its five known bugs offline."""
 import argparse
 import hashlib
 import json
@@ -78,16 +78,18 @@ def main():
         "bold-control": True,
         "bold-outside-selected-block-failure": False,
         "split-zero-leaves-suffix-sibling-failure": False,
+        "merge-into-removed-block-loses-document-failure": False,
+        "cyclic-merge-removal-hides-character-failure": False,
     }
     actual = {record["name"]: record["specAgreement"] for record in records}
-    if len(records) != 4 or actual != expected:
+    if len(records) != 6 or actual != expected:
         raise ValueError(f"Unexpected regression records: {actual}")
     if args.output:
         with args.output.open("x") as output:
             output.write(result.stdout)
     else:
         sys.stdout.write(result.stdout)
-    print("Reproduced 3 known demo bugs and 1 passing control (4 records).", file=sys.stderr)
+    print("Reproduced 5 known demo bugs and 1 passing control (6 records).", file=sys.stderr)
 
 
 if __name__ == "__main__":

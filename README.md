@@ -92,12 +92,18 @@ refinement, issuance invariants and the sequential-history bridge use explicit
 Lean proofs with routine tactic automation. This result is not included in the
 19-case `mrdt_verify` automation measurements below.
 
-The [three recorded demo bugs](docs/notion-bugs.md) obstruct the broader
+The [five recorded demo bugs](docs/notion-bugs.md) obstruct the broader
 merge-block/formatting contract; Sal version merges are distinct from the
 editor's merge-block request. Pinned executable traces support the source
 comparison. JavaScript number/string/JSON extraction and production Notion
 correspondence are not proved. See the [research conclusion](docs/notion-research.md)
 and [paper-writing handoff](docs/notion-integration.md).
+
+The [follow-up correctness campaign](docs/notion-correctness-campaign.md)
+tests ordinary local edits after concurrent restructuring, preserves generated
+failures, and gives a smaller split-bug reproduction with a passing control.
+Its [runner](experiments/notion-correctness/README.md) uses the same pinned
+public-demo sources and an independent list specification.
 
 The [natural-specification audit](docs/natural-sequential-specifications.md)
 separates client requests from generated replication messages. Simple sets and

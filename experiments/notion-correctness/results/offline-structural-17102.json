@@ -1,0 +1,1409 @@
+{
+  "mode": "structural",
+  "seed": 17102,
+  "trials": 12,
+  "steps": 110,
+  "counts": {
+    "trials": 12,
+    "locals": 913,
+    "receives": 1826,
+    "probes": 0,
+    "equalSetChecks": 48,
+    "localFailures": 6,
+    "conservationFailures": 8,
+    "exceptions": 0
+  },
+  "findings": [
+    {
+      "kind": "local",
+      "signature": "split:placement",
+      "before": [
+        {
+          "id": "seed-block-1",
+          "chars": [
+            {
+              "text": "a",
+              "bold": false
+            },
+            {
+              "text": "b",
+              "bold": false
+            },
+            {
+              "text": "c",
+              "bold": false
+            },
+            {
+              "text": "d",
+              "bold": false
+            }
+          ]
+        }
+      ],
+      "expected": [
+        [
+          {
+            "text": "a",
+            "bold": false
+          },
+          {
+            "text": "b",
+            "bold": false
+          },
+          {
+            "text": "c",
+            "bold": false
+          }
+        ],
+        [
+          {
+            "text": "d",
+            "bold": false
+          }
+        ]
+      ],
+      "actual": [
+        [
+          {
+            "text": "a",
+            "bold": false
+          },
+          {
+            "text": "b",
+            "bold": false
+          },
+          {
+            "text": "c",
+            "bold": false
+          },
+          {
+            "text": "d",
+            "bold": false
+          }
+        ],
+        []
+      ],
+      "trace": {
+        "text": [
+          "ab",
+          "cd"
+        ],
+        "events": [
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 4
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 3
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 3
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 3
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 1,
+            "transaction": 0
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 4
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 1,
+            "transaction": 1
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 7
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 0
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 9
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 10
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 14
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 15
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 5
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 16
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 4
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 4
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 1,
+            "transaction": 14
+          },
+          {
+            "kind": "receive",
+            "client": 1,
+            "transaction": 15
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 3
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 3,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 3
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 1
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 11
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 7
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 9
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 10
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 35
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 4,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 12
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 7
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 9,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 7
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 6,
+              "index": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 36
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 11
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 12
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 28
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 31
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 37
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 10
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 3
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "conservation",
+      "before": [
+        {
+          "id": "seed-block-1",
+          "chars": [
+            {
+              "text": "a",
+              "bold": false
+            }
+          ]
+        },
+        {
+          "id": "p5c1-block-165",
+          "chars": [
+            {
+              "text": "b",
+              "bold": false
+            },
+            {
+              "text": "c",
+              "bold": false
+            },
+            {
+              "text": "d",
+              "bold": false
+            }
+          ]
+        }
+      ],
+      "actual": [
+        {
+          "id": "seed-block-1",
+          "chars": [
+            {
+              "text": "a",
+              "bold": false
+            }
+          ]
+        },
+        {
+          "id": "p5c1-block-165",
+          "chars": [
+            {
+              "text": "b",
+              "bold": false
+            }
+          ]
+        }
+      ],
+      "trace": {
+        "text": [
+          "ab",
+          "cd"
+        ],
+        "events": [
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 3,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 3,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 3
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 3
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 7
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 0
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 8
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 9
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 7
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 14
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 1,
+            "transaction": 14
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 5
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 1,
+            "transaction": 15
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 10
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 4
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 4,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 5,
+              "index": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 11
+          },
+          {
+            "kind": "receive",
+            "client": 2,
+            "transaction": 12
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 15
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 8
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 9
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 16
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "merge",
+              "block": 3
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 5
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 4
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 1,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 3,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 4,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 8
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 5
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 5,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 2,
+              "index": 0
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 10
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 11
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 36
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 37
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 38
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 39
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 12
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 5
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "split",
+              "block": 3,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 5
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 1,
+            "request": {
+              "kind": "merge",
+              "block": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 5,
+              "index": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 0,
+              "index": 2
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 3
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "split",
+              "block": 8,
+              "index": 0
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 2,
+            "request": {
+              "kind": "merge",
+              "block": 1
+            }
+          },
+          {
+            "kind": "local",
+            "client": 0,
+            "request": {
+              "kind": "split",
+              "block": 5,
+              "index": 1
+            }
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 13
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 56
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 29
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 57
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 58
+          },
+          {
+            "kind": "receive",
+            "client": 0,
+            "transaction": 59
+          },
+          {
+            "kind": "receive",
+            "client": 1,
+            "transaction": 16
+          }
+        ]
+      }
+    }
+  ],
+  "scope": "persistent distinct sessions; complete known archive recorded as causal dependencies; only whole transactions received; local immediate list semantics; equal-set display convergence; structural mode conserves character multiset across local edits and receives",
+  "sourceManifest": {
+    "observed": "2026-10-14",
+    "scope": "Public Notion demo; production correspondence and source licence unconfirmed. Source files are fetched separately.",
+    "modules": [
+      {
+        "file": "replica.js",
+        "sha256": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/replica.js"
+      },
+      {
+        "file": "document.js",
+        "sha256": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/document.js"
+      },
+      {
+        "file": "text-slice-tree.js",
+        "sha256": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/text-slice-tree.js"
+      },
+      {
+        "file": "ids.js",
+        "sha256": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/ids.js"
+      },
+      {
+        "file": "rga.js",
+        "sha256": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/rga.js"
+      },
+      {
+        "file": "rich-text.js",
+        "sha256": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/rich-text.js"
+      },
+      {
+        "file": "search-labels.js",
+        "sha256": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/search-labels.js"
+      }
+    ]
+  }
+}

@@ -62,3 +62,59 @@ for(const mergeWhich of ['left','right']) {
   assert.notDeepEqual(observable(actual),expected);
   console.log(JSON.stringify({name:'split-zero-leaves-suffix-sibling-failure',initial:seed.transactions(),transactions:c.transactions(),before,beforeStructure,afterStructure:structure(c),request:{kind:'split',block:bi,index:0},expected,actual,specAgreement:false}));
 }
+// Split and block-merge requests never delete text, so every character of the
+// seed must stay visible. These two failures hide text in removed blocks.
+{
+  const seedBlocks=texts=>{const r=new Replica('seed','seed',[]);let previous;
+    for(const t of texts){previous=r.createBlock(previous).newBlockId;r.insertText(previous,0,t);}return r.transactions();};
+  const idAt=(r,i)=>r.document().aliveBlocks()[i].id;
+  const shown=r=>view(r).map(b=>b.text);
+  const visible=r=>shown(r).join('').split('').sort().join('');
+  const stored=r=>{const d=r.document();return [...d.blocks.values()].map(b=>d.blockText(b.id)).join('').split('').sort().join('');};
+  // Each request may emit several transactions; deliver all of them, in order.
+  const issue=(r,f)=>{const prior=new Set(r.transactions().map(t=>JSON.stringify(t.id)));f();
+    return r.transactions().filter(t=>!prior.has(JSON.stringify(t.id)));};
+  const deliver=(r,txs)=>{for(const t of txs)r.receive(t);};
+  const merge=(r,i)=>issue(r,()=>r.mergeBlock(idAt(r,i)));
+  const split=(r,i,k)=>issue(r,()=>r.splitBlock(idAt(r,i),k));
+  // Five requests from a | b | c leave no visible block. A's last merge removes
+  // a block that is empty in A's view, but B has meanwhile merged the text into
+  // the block that this merge appends to and then removes.
+  const lose=({firstMerge=true,lastEarly=false}={})=>{
+    const initial=seedBlocks(['a','b','c']),a=new Replica('A','A',initial),b=new Replica('B','B',initial);
+    const a0=merge(a,2),a1=split(a,1,0),a2=merge(a,2);
+    const b0=firstMerge?merge(b,1):[];deliver(b,a0);deliver(b,a1);
+    if(lastEarly)deliver(b,a2);
+    const before=view(b),b1=lastEarly?[]:merge(b,1),afterLocal=view(b);
+    if(!lastEarly)deliver(b,a2);
+    deliver(a,b0);deliver(a,b1);
+    assert.deepEqual(shown(a),shown(b));
+    return {initial,transactions:[...a0,...a1,...a2,...b0,...b1],before,afterLocal,actual:view(b),visible:visible(b),stored:stored(b)};
+  };
+  const lost=lose(),controls4={noFirstMerge:lose({firstMerge:false}),lastMergeDeliveredEarly:lose({lastEarly:true})};
+  assert.deepEqual(lost.before.map(x=>x.text),['','abc']);assert.deepEqual(lost.afterLocal.map(x=>x.text),['abc']);
+  assert.deepEqual(lost.actual,[]);assert.equal(lost.visible,'');assert.notEqual(lost.visible,'abc');
+  assert.equal(lost.stored,'abc');
+  for(const c of Object.values(controls4)){assert.equal(c.visible,'abc');assert.notDeepEqual(c.actual,[]);}
+  console.log(JSON.stringify({name:'merge-into-removed-block-loses-document-failure',initial:lost.initial,transactions:lost.transactions,
+    before:lost.before,afterLocal:lost.afterLocal,expected:'abc',actual:lost.actual,storedCharacters:lost.stored,
+    controls:Object.fromEntries(Object.entries(controls4).map(([k,c])=>[k,c.actual])),specAgreement:false}));
+  // One character is lost when a delayed merge arrives. The move it carries
+  // would create a cycle and is skipped, but its block removal still runs.
+  const hide=({held=true,localMerge=true,early=false}={})=>{
+    const initial=seedBlocks(['x']),a=new Replica('A','A',initial),b=new Replica('B','B',initial);
+    const a0=split(a,0,0),b0=split(b,0,1),b1=merge(b,1);
+    deliver(a,b0);if(early)deliver(a,b1);
+    const before=view(a),a1=localMerge?merge(a,early?1:2):[];
+    if(held&&!early)deliver(a,b1);
+    deliver(b,a0);deliver(b,a1);
+    if(held)assert.deepEqual(shown(a),shown(b));
+    return {initial,transactions:[...a0,...b0,...b1,...a1],before,actual:view(a),visible:visible(a),stored:stored(a)};
+  };
+  const hidden=hide(),controls={notDelivered:hide({held:false}),noLocalMerge:hide({localMerge:false}),deliveredEarly:hide({early:true})};
+  assert.equal(hidden.visible,'');assert.notEqual(hidden.visible,'x');assert.equal(hidden.stored,'x');
+  for(const c of Object.values(controls)){assert.equal(c.visible,'x');assert.notEqual(c.visible,'');}
+  console.log(JSON.stringify({name:'cyclic-merge-removal-hides-character-failure',initial:hidden.initial,transactions:hidden.transactions,
+    before:hidden.before,expected:'x',actual:hidden.actual,storedCharacters:hidden.stored,
+    controls:Object.fromEntries(Object.entries(controls).map(([k,c])=>[k,c.actual])),specAgreement:false}));
+}

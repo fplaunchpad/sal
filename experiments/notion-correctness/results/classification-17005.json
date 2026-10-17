@@ -1,0 +1,51 @@
+{
+  "mode": "classify",
+  "counts": {
+    "bold:missed": 44,
+    "bold:outside": 17,
+    "split:placement": 61
+  },
+  "findings": [],
+  "scope": "Measured match to interval/subtree explanation; source inspection is not a correctness oracle.",
+  "sourceManifest": {
+    "observed": "2026-10-14",
+    "scope": "Public Notion demo; production correspondence and source licence unconfirmed. Source files are fetched separately.",
+    "modules": [
+      {
+        "file": "replica.js",
+        "sha256": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/replica.js"
+      },
+      {
+        "file": "document.js",
+        "sha256": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/document.js"
+      },
+      {
+        "file": "text-slice-tree.js",
+        "sha256": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/text-slice-tree.js"
+      },
+      {
+        "file": "ids.js",
+        "sha256": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/ids.js"
+      },
+      {
+        "file": "rga.js",
+        "sha256": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/rga.js"
+      },
+      {
+        "file": "rich-text.js",
+        "sha256": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/rich-text.js"
+      },
+      {
+        "file": "search-labels.js",
+        "sha256": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09",
+        "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/search-labels.js"
+      }
+    ]
+  }
+}

@@ -132,7 +132,7 @@ so its one-minimal claim applies to the final seed.
 ## Direct failures of ordinary local editing
 
 The [permanent bug catalogue](../../docs/notion-bugs.md) records N-001 through
-N-003 with their contracts, literal evidence, minimization limits and formal scope.
+N-005 with their contracts, literal evidence, minimization limits and formal scope.
 
 `regressions.mjs` reissues concise histories and checks both the observed anomaly
 and its disagreement with the independent local contract. These expectations
@@ -161,10 +161,24 @@ are semantic controls, not observations promoted into Lean test oracles.
   `ac`. The unselected `b` also becomes bold. The implementation groups selected
   characters by text instance and emits an interval covering the intervening
   unselected character in that instance.
+* **Document loss:** Start with blocks `a · b · c`. A merges `c` into `b`,
+  splits that block at zero and merges `bc` back. B concurrently merges `b`
+  into `a`, receives A's first two requests, and merges `abc` into the empty
+  block before it. When A's last merge arrives, no block is visible, although
+  `abc` is still stored. In `document.js:149`, `#moveTextSlice` finds its target
+  by a slice's end item and appends there without checking that the owning
+  block is alive, and a merge has already removed that block.
+* **Character loss:** Start with `x`. A splits at zero; B concurrently splits at
+  one and merges the empty block back. A receives only B's split and merges `x`
+  into the empty block before it. B's delayed merge then hides `x`. Its move
+  would create a cycle, so `#moveTextSlice` restores the slice
+  (`document.js:159`), but the transaction's `removeBlock` still removes the
+  block holding `x`.
 
 These measured failures concern the pinned public demo and a faithful
 transaction-set adaptation. They prevent an unrestricted local-preparation
-theorem for the ordinary visible split/bold contract on those reachable states.
+theorem for the ordinary visible split/bold contract on those reachable states,
+and show that split and block-merge requests alone can lose text.
 They do not establish a defect in Notion production, and they do not refute the
 restricted split/insert/delete-only milestone. Fixing the demo semantics would
 create a different implementation requiring a separate correspondence claim.
@@ -253,7 +267,7 @@ both clock and transaction archive unchanged. A raw RGA fixture deliberately
 deletes a future ID, then distinguishes tombstoned text birth from an undeleted
 split marker. That fixture tests primitive semantics, not honest issuance.
 `payload-provenance-observations.jsonl` preserves the literal inputs and outputs.
-These controls do not add to the three confirmed bugs in `docs/notion-bugs.md`.
+These controls do not add to the five confirmed bugs in `docs/notion-bugs.md`.
 
 The five `delete-group-controls.mjs` records check inherited-instance deletion
 with concurrent runs from emoji and U+E000 sessions. The source range codec
