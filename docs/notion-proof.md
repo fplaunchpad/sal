@@ -20,7 +20,7 @@ Empty forks before factory initialization and bootstrap after lower-key creates
 in canonical replay are retained. The result does not assert correctness of
 unrestricted carrier-True issuance executions.
 
-Actual bounded valid insert/delete/split request theorems derive issuance,
+Actual bounded valid insert/delete/split/merge request theorems derive issuance,
 reconstruction and the immediate requested visible effect. `MRDTClient` proves
 exact transport of issued transactions to concrete MRDT update/query. Ranges
 are bounded natural-number ranges, insertion is nonempty, and source early
@@ -34,8 +34,31 @@ pinned JavaScript audit and distinguishing executable traces. Mathematical
 name/range codecs and actual labeled replay uniqueness are checked, but
 JavaScript JSON decoding, safe-number printing, and opaque atom/string
 extraction are not proved program translations. No Notion production claim is
-made. Merge/movement and formatting remain a separate, counterexample-bearing
-extension.
+made. Block merge is part of the request set in the corrected form described
+below; unrestricted movement and formatting remain a separate,
+counterexample-bearing extension.
+
+## Block merge extension
+
+The [merge design note](notion-merge-block-design.md) asks whether a block
+merge over the same slice-tree and RGA state has a sequential meaning. Its
+answer is a merge whose removal of the source is the move itself: the source's
+whole chain attaches under the last node of the tree holding the target's root,
+and the source stays in the display order as a tombstone. The sequential
+specification gains `Command.merge` with an absorb rule (a merge into a
+merged-away target lands in its absorber) and `NotionCoreSpecMerge` proves
+conservation of visible text (`merge_text_conserved`) and preservation of the
+document invariants. On the machine, every slice tree is a chain
+(`NotionCoreSliceForest.ChainForest`), and `NotionCoreMRDTClient.merge_effect`
+gives the issuer's local effect. `NotionCoreProtocol.versions_witness` and
+`specification_ra` keep their statements over the larger request set. The
+structural fact-set carrier keeps the merge-free fragment
+(`NotionCoreMergeFree.MergeFree`), and
+`NotionCoreStructuralRender.SPOT.merge_outside_scope` proves that restriction
+is forced. The executable gate in
+[experiments/notion-merge-design](../experiments/notion-merge-design/README.md)
+tests the same design on a patched copy of the pinned demo, with negative
+controls.
 
 ## Chronological proof record
 
@@ -69,7 +92,7 @@ The independent identity fragment stores ordered semantic character slots, each 
 
 ## Exact boundary of the fragment
 
-The identity fragment is executable but is not a complete specification of the published demo. It currently addresses the first block, uses a single left character as its gap anchor, and lacks insertion at the beginning, block identities, concurrent split ownership, slice restoration/duplication, block merges, movement, formatting, transaction atomicity, and message preparation. Missing-anchor behavior is totalized, so issuance must separately establish presence and uniqueness before any claim of ordinary editing legality. Insertions assume fresh semantic identities; this invariant has not been derived from an issuer.
+The identity fragment is executable but is not a complete specification of the published demo. It currently addresses the first block, uses a single left character as its gap anchor, and lacks insertion at the beginning, block identities, concurrent split ownership, slice restoration/duplication, block merges, movement, formatting, transaction atomicity, and message preparation. The later core machine adds block merges; see [Block merge extension](#block-merge-extension). Missing-anchor behavior is totalized, so issuance must separately establish presence and uniqueness before any claim of ordinary editing legality. Insertions assume fresh semantic identities; this invariant has not been derived from an issuer.
 
 No faithful demo MRDT adaptation is defined by this fragment. The generic transaction-storage shell below supplies convergence only. No Notion-specific editing representation invariant, replay-policy proof, sequential-history bridge, or end-to-end correctness certificate is claimed. The fragment's checked commutation theorem supplies a candidate local lemma, not the whole requested milestone.
 

@@ -39,7 +39,7 @@ theorem canonical_bootstrap_fresh_version (network : NotionCorePayloadNetwork.St
     (atoms : List Nat) (payload : tx.payload = .bootstrap atoms)
     (state : State) (accepted : replay {} pre = some state) :
     (∀ entry ∈ state.instances, entry.1 ≠ blockName .initial) ∧
-      (∀ block ∈ state.forest, block.id ≠ blockName .initial) := by
+      FreshBlock state (blockName .initial) := by
   have excluded := NotionCoreRootCreators.canonical_no_initial_use_version network reachable version closed pre suffix tx position atoms payload
   have noInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName .initial := by
     intro stored member equal
@@ -47,11 +47,14 @@ theorem canonical_bootstrap_fresh_version (network : NotionCorePayloadNetwork.St
     obtain ⟨previous,present,key,used,encoded⟩ := NotionCoreMachineCreators.replay_instance_used pre state accepted stored.1 keyMember
     have sameKey : key = .initial := blockName_injective (encoded.symm.trans equal)
     exact excluded previous present (sameKey ▸ used)
-  refine ⟨noInstance,?_⟩
-  intro block member equal
   have supported := (NotionCoreMachineCreatorPresence.replay_created_instances pre state accepted).1
-  obtain ⟨entry,present,name⟩ := supported block.id (List.mem_map.mpr ⟨block,member,rfl⟩)
-  exact noInstance entry present (name.trans equal)
+  refine ⟨noInstance,?_,?_⟩
+  · intro block member equal
+    obtain ⟨entry,present,name⟩ := supported block.id (List.mem_append_left _ (List.mem_map.mpr ⟨block,member,rfl⟩))
+    exact noInstance entry present (name.trans equal)
+  · intro shown
+    obtain ⟨entry,present,name⟩ := supported _ (List.mem_append_right _ shown)
+    exact noInstance entry present name
 
 theorem canonical_bootstrap_fresh (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (peer : Session)
@@ -60,7 +63,7 @@ theorem canonical_bootstrap_fresh (network : NotionCorePayloadNetwork.State)
     (atoms : List Nat) (payload : tx.payload = .bootstrap atoms)
     (state : State) (accepted : replay {} pre = some state) :
     (∀ entry ∈ state.instances, entry.1 ≠ blockName .initial) ∧
-      (∀ block ∈ state.forest, block.id ≠ blockName .initial) := by
+      FreshBlock state (blockName .initial) := by
   have issued := NotionCorePayloadNetwork.forget_reachable
     (NotionCoreCreatorNetwork.payload_reachable reachable)
   exact canonical_bootstrap_fresh_version network reachable (network.allocation.peers peer).received

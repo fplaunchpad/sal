@@ -6,7 +6,10 @@ import Sal.MRDTs.Instances.NotionCoreMachineGenesisControl
 explicit factory/ordinary issuance and canonical recursive-base reachability.
 It is not a PackagedMRDT and does not extend the production VerifiedMRDT list.
 The implementation is the typed public-demo core, not production Notion or a
-whole-program JavaScript extraction. Merge-block/formatting are outside scope. -/
+whole-program JavaScript extraction. Create, insert, erase, split and
+merge-block are in scope; formatting is not. Local insert and split effects are
+stated for a displayed (alive) block, since a materialised document keeps
+merged-away blocks as tombstones. -/
 namespace Sal.MRDTs.Research.NotionCoreLedger
 open Sal.MRDTs Sal.MRDTs.Foundation Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT
 open Instances
@@ -38,7 +41,7 @@ def InsertEffect : Prop :=
     (before afterBlocks : NotionCoreSourceDocument.Document) (source : NotionCoreSource.Block)
     (_materialized : NotionCoreMachineDocument.materializeDocument document = some (before ++ source :: afterBlocks))
     (block : NotionCorePayload.BlockKey) (_name : source.id = NotionCoreMachine.blockName block)
-    (index : Nat) (atoms : List Nat) (_nonempty : atoms ≠ [])
+    (_alive : source.alive = true) (index : Nat) (atoms : List Nat) (_nonempty : atoms ≠ [])
     (_bound : index ≤ NotionCoreMachineDeleteTotal.visibleLength document block)
     (time : Timestamp) (replica : Replica),
     ∃ tx, IssuedTransaction network peer (.insert block index atoms) tx ∧
@@ -55,7 +58,7 @@ def SplitEffect : Prop :=
     (before afterBlocks : NotionCoreSourceDocument.Document) (source : NotionCoreSource.Block)
     (_materialized : NotionCoreMachineDocument.materializeDocument document = some (before ++ source :: afterBlocks))
     (block : NotionCorePayload.BlockKey) (_name : source.id = NotionCoreMachine.blockName block)
-    (index : Nat) (_bound : index ≤ NotionCoreMachineDeleteTotal.visibleLength document block)
+    (_alive : source.alive = true) (index : Nat) (_bound : index ≤ NotionCoreMachineDeleteTotal.visibleLength document block)
     (time : Timestamp) (replica : Replica),
     ∃ tx target, IssuedTransaction network peer (.split block index) tx ∧
       D.query (D.update (peerCarrier network peer) (time,replica,tx)) () =
@@ -81,6 +84,26 @@ def EraseEffect : Prop :=
             (NotionCoreSpec.text source.project.slots).drop stop)] ++
           NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks))
 
+/-- The issuer's own merge of a displayed block into the previous displayed
+block: the target shows its text followed by the source's, and the source
+leaves the display. -/
+def MergeEffect : Prop :=
+  ∀ (network : State) (_honest : NotionCoreMachineNetwork.Reach network)
+    (peer : Session) (document : NotionCoreMachine.State)
+    (_reconstructed : NotionCoreReconstruction.reconstruct network peer = some document)
+    (before gap afterBlocks : NotionCoreSourceDocument.Document) (target source : NotionCoreSource.Block)
+    (_materialized : NotionCoreMachineDocument.materializeDocument document =
+      some (before ++ target :: gap ++ source :: afterBlocks))
+    (_targetAlive : target.alive = true) (_sourceAlive : source.alive = true)
+    (_gapDead : ∀ block ∈ gap, block.alive = false)
+    (block : NotionCorePayload.BlockKey) (_name : source.id = NotionCoreMachine.blockName block)
+    (time : Timestamp) (replica : Replica),
+    ∃ tx, IssuedTransaction network peer (.merge block) tx ∧
+      D.query (D.update (peerCarrier network peer) (time,replica,tx)) () =
+        some (NotionCoreSpec.view (NotionCoreSourceDocument.project before) ++
+          [(target.id,NotionCoreSpec.text target.project.slots ++ NotionCoreSpec.text source.project.slots)] ++
+          NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks))
+
 /-- The ledger stores exact proofs, rather than strings naming a raw signature
 or a storage-only certificate. Local effects retain the real issued request. -/
 structure CheckedProtocolEntry where
@@ -91,6 +114,7 @@ structure CheckedProtocolEntry where
   insertEffect : InsertEffect
   splitEffect : SplitEffect
   eraseEffect : EraseEffect
+  mergeEffect : MergeEffect
   factory : NotionCoreProtocol.Reach NotionCoreMachineGenesisControl.sessions
     (fun _ => NotionCoreMachineGenesisControl.factoryEvent)
     NotionCoreMachineGenesisControl.factoryConfig (NotionCorePayloadNetwork.seeded [97,98])
@@ -105,6 +129,7 @@ noncomputable def entry : CheckedProtocolEntry where
   insertEffect := NotionCoreMRDTClient.insert_effect
   splitEffect := NotionCoreMRDTClient.split_effect
   eraseEffect := NotionCoreMRDTClient.erase_effect
+  mergeEffect := NotionCoreMRDTClient.merge_effect
   factory := NotionCoreMachineGenesisControl.protocol_factory
 
 /-- Separate from Production.registry, whose eighteen exact VerifiedMRDT
@@ -128,5 +153,6 @@ end TypeGate
 #print axioms NotionCoreMRDTClient.insert_effect
 #print axioms NotionCoreMRDTClient.split_effect
 #print axioms NotionCoreMRDTClient.erase_effect
+#print axioms NotionCoreMRDTClient.merge_effect
 #print axioms NotionCoreMachineGenesisControl.protocol_factory
 end Sal.MRDTs.Research.NotionCoreLedger

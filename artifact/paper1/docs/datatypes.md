@@ -38,7 +38,7 @@ reference implementations.
 | Embedded Peritext | `I.Peritext.D` | `P.CertifiedPeritextInvariantCertificate.language` | [CertifiedPeritextVC](../Sal/MRDTs/Paper1/CertifiedPeritextVC.lean): `P.CertifiedPeritextVC.mergeVCs`; [CertifiedPeritextInvariantCertificate](../Sal/MRDTs/Paper1/CertifiedPeritextInvariantCertificate.lean): `P.CertifiedPeritextInvariantCertificate.executionsV` |
 | Sided Peritext, rich endpoint and internal core | `I.SidedPeritext.RichCore`, `Core` | `P.CertifiedRGARichCertificate.language`, `P.CertifiedRGACoreCertificate.language` | [CertifiedRGARichVC](../Sal/MRDTs/Paper1/CertifiedRGARichVC.lean): `P.CertifiedRGARichVC.mergeVCs`; [CertifiedRGARichCertificate](../Sal/MRDTs/Paper1/CertifiedRGARichCertificate.lean): `P.CertifiedRGARichCertificate.executionsV`; internal core uses `P.CertifiedRGACoreMergeVC.mergeVCs` and `P.CertifiedRGACoreCertificate.executionsV` |
 | AegisSheet | `I.AegisSheet.D` | `P.AegisSheetEvent.spec` | [IssuedConcretePorts](../Sal/MRDTs/Paper1/IssuedConcretePorts.lean): `P.ConcreteMRDT.GuardedPorts.Sheet.conditions`, `history`, `executionsV` |
-| Notion typed core | `I.NotionCoreMRDT.D`, `I.NotionCoreStructuralMRDT.D`, indexed typed runtime | `I.NotionCoreMRDT.spec` | [NotionCoreStructuralMRDT](../Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean): `I.NotionCoreStructuralMRDT.fiveVCs`, `versions_witness`, `operational_reach`; [NotionCoreStructuralRuntimeLedger](../Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean): `Sal.MRDTs.Research.NotionCoreStructuralRuntimeLedger.entry` |
+| Notion typed core | `I.NotionCoreMRDT.D`, `I.NotionCoreStructuralMRDT.D`, indexed typed runtime | `I.NotionCoreMRDT.spec` | [NotionCoreStructuralMRDT](../Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean): `I.NotionCoreStructuralMRDT.fiveVCs`, `versions_witness`, `operational_reach`; [NotionCoreStructuralRuntimeLedger](../Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean): `Sal.MRDTs.Research.NotionCoreStructuralRuntimeLedger.entry`; reference protocol with block merge: [NotionCoreProtocol](../Sal/MRDTs/Instances/NotionCoreProtocol.lean): `I.NotionCoreProtocol.versions_witness`, `specification_ra`; [NotionCoreMRDTClient](../Sal/MRDTs/Instances/NotionCoreMRDTClient.lean): `I.NotionCoreMRDTClient.merge_effect` |
 
 `executionsV` denotes the named finite-trace theorem, not an assumption-free
 guarantee. Where the table uses `certifiedV`, its conclusion covers the
@@ -73,7 +73,12 @@ language and immutable birth records.
 
 Notion has a separate protocol-scoped research package. Its reference carrier,
 structural renderer and typed indexed implementation share an independent
-document specification and original honest protocol. They are included in one
+document specification and original honest protocol. The reference carrier's
+theorems cover create, insert, erase, split and a corrected block merge whose
+removal of the source is the move itself. The structural and executable
+carriers cover merge-free networks (`I.NotionCoreMergeFree.MergeFree`), since
+an order-free fact query cannot evaluate a block merge
+(`I.NotionCoreStructuralRender.SPOT.merge_outside_scope`). They are included in one
 measurement row without promoting that row to the uniform production registry.
 The [claim map](claims-and-theorems.md#notion-theory-and-external-reproduction)
 states the verified fragment and the boundary of external demo comparisons.

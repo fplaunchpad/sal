@@ -182,6 +182,10 @@ def main():
         'Sal.MRDTs.Instances.NotionMergeLossCounterexample.cyclic_merge_removal_hides_character',
         'Sal.MRDTs.Instances.NotionMergeLossCounterexample.character_loss_unexplained',
         'Sal.MRDTs.Instances.NotionMergeLossCounterexample.acyclic_target_control',
+        'Sal.MRDTs.Instances.NotionCoreProtocol.specification_ra',
+        'Sal.MRDTs.Instances.NotionCoreMRDTClient.merge_effect',
+        'Sal.MRDTs.Instances.NotionCoreSpecMerge.merge_text_conserved',
+        'Sal.MRDTs.Instances.NotionCoreStructuralRender.SPOT.merge_outside_scope',
     }
     imports = '\n'.join('import ' + f[:-5].replace('/', '.') for f in sorted(seeds))
     audit = r'''

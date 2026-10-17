@@ -1,5 +1,5 @@
 import Sal.MRDTs.Instances.NotionCoreMachineDocumentBootstrap
-import Sal.MRDTs.Instances.NotionCoreMachineDocumentSplit
+import Sal.MRDTs.Instances.NotionCoreMachineDocumentMerge
 import Sal.MRDTs.Instances.NotionCoreSourceHistory
 
 /-! Composition of actual canonical transaction simulations into the existing
@@ -72,12 +72,15 @@ theorem canonical_step_version (network : NotionCorePayloadNetwork.State)
     simpa only [commands,payload,NotionCoreMachineCommands.text] using
       NotionCoreMachineDocumentInsert.canonical_insert_execution_version network reachable version closed pre suffix tx position
         state replayed document materialized block inst origin atoms payload
-  | erase block inst targets =>
+  | erase block groups =>
     simpa only [commands,payload] using NotionCoreMachineDocumentErase.canonical_erase_execution_version
-      network reachable version closed pre suffix tx position state replayed document materialized block inst targets payload
+      network reachable version closed pre suffix tx position state replayed document materialized block groups payload
   | split block inst origin =>
     exact NotionCoreMachineDocumentSplit.canonical_split_execution_version network reachable version closed pre suffix tx position
       state replayed document materialized block inst origin payload
+  | merge source target =>
+    simpa only [commands,payload] using NotionCoreMachineDocumentMerge.canonical_merge_execution_version
+      network reachable version closed pre suffix tx position state replayed document materialized source target payload
 
 /-- An arbitrary closed version of one honest archive has an atomic source
 history on exactly its canonical transaction list. Successful replay and projection are conclusions. -/
@@ -95,11 +98,11 @@ theorem honest_source_history_version (network : NotionCorePayloadNetwork.State)
 
 /-- Attach the actual renderer's answer to an established source history.
 The same ordered updates are transported into the independent language; the
-answer is derived from honest reconstruction and checked materialization. -/
+answer is derived from checked materialization, tombstones included. -/
 theorem observed_history_version (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
-    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
-    (state : State) (reconstructed : replay {} (NotionCoreReconstruction.transactionsFor network version) = some state)
+    (_reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (_closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (state : State) (_reconstructed : replay {} (NotionCoreReconstruction.transactionsFor network version) = some state)
     (document : NotionCoreSourceDocument.Document)
     (materialized : materializeDocument state = some document)
     (history : Runs NotionCoreSourceHistory.machine.transition []
@@ -108,11 +111,7 @@ theorem observed_history_version (network : NotionCorePayloadNetwork.State)
       NotionCoreHistory.spec.admits
         ((labels (NotionCoreReconstruction.transactionsFor network version)).map
           NotionCoreSourceHistory.semanticLabel ++ [.query () answer]) := by
-  obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
-    NotionCoreMachineHonestReplay.honest_reconstruct_version network reachable version closed
-  have equal : checked = state := Option.some.inj (checkedReplay.symm.trans reconstructed)
-  subst checked
-  have rendered := NotionCoreMachineDocument.materialized_render state part shape.1 shape.2.2 document materialized
+  have rendered := NotionCoreMachineDocument.materialized_render state document materialized
   refine ⟨NotionCoreSpec.view (NotionCoreSourceDocument.project document),rendered,?_⟩
   have projected := NotionCoreSourceHistory.runs_sound history
   exact ⟨NotionCoreSourceDocument.project document,

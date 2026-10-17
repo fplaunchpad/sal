@@ -140,13 +140,16 @@ theorem create_labels (state : NotionCoreMachine.State)
   obtain ⟨entry,stored,instEq⟩ := part.refsExist owned member
   exact fresh entry stored (instEq.trans ((congrArg Prod.fst equal).trans same))
 
+theorem starts_list (forest : Forest) (address : Address) :
+    address ∈ Starts forest ↔ address ∈ (ownedRefs forest).map (fun owned => owned.2.start) := by
+  simp [Starts]
+
 /-- Couple the actual recursive split/detach/move result to label splitting.
 The selected slice is recovered from source traversal, never supplied by caller. -/
 theorem atomicSplit_labels (physical : Nat → List NotionCoreSource.Atom)
     (marker : Address) (target : Nat) (forest : Forest)
-    (normal : NormalForest forest) (fresh : FreshMarker forest marker)
+    (chains : ∀ block ∈ forest, Chain block.title) (fresh : FreshMarker forest marker)
     (freshTarget : target ∉ forest.map Block.id)
-    (inactive : ∀ block ∈ forest, attached block.title = true → contains physical (titleRef block.id) marker = false)
     (empty : physical target = emptyPhysical target)
     (witness : ∃ block ∈ forest, ∃ ref ∈ preorderTree block.title, contains physical ref marker = true)
     (labels : Labels) (good : Good (Starts (forest ++ [⟨target,freshTitle target⟩])) labels)
@@ -156,9 +159,11 @@ theorem atomicSplit_labels (physical : Nat → List NotionCoreSource.Atom)
       selected ∈ Starts (forest ++ [⟨target,freshTitle target⟩]) ∧
       (∃ owned ∈ ownedRefs forest, owned.2.start = selected ∧ contains physical owned.2 marker = true) ∧
       Good (Starts result) (splitLabels labels selected marker) := by
-  obtain ⟨result,before,owner,ref,after,accepted,old,contained,new⟩ :=
-    NotionCoreMachinePartitionSplit.atomicSplit_refs physical marker target forest normal fresh freshTarget
-      inactive empty witness
+  obtain ⟨result,accepted⟩ :=
+    NotionCoreMachinePartitionSplit.atomicSplit_progress physical marker target forest chains fresh empty witness
+  obtain ⟨before,owner,pre,ref,post,after,old,contained,new⟩ :=
+    NotionCoreMachinePartitionSplit.atomicSplit_refs physical marker target forest result chains fresh freshTarget
+      empty accepted
   have member : ref.start ∈ Starts (forest ++ [⟨target,freshTitle target⟩]) := by
     refine ⟨(owner,ref),?_,rfl⟩
     rw [old]
@@ -168,9 +173,10 @@ theorem atomicSplit_labels (physical : Nat → List NotionCoreSource.Atom)
     exact of_decide_eq_true contained.1
   have starts : Starts result = Starts (forest ++ [⟨target,freshTitle target⟩]) ∪ {marker} := by
     ext address
-    simp only [Starts,new,old,List.mem_append,List.mem_cons,Set.mem_union,Set.mem_singleton_iff]
-    simp only [leftRef,rightRef]
-    aesop
+    rw [Set.mem_union,starts_list,starts_list,new,old]
+    simp only [List.map_append,List.map_cons,List.map_map,List.mem_append,List.mem_cons,
+      List.map_nil,List.not_mem_nil,Set.mem_singleton_iff,Function.comp_def,leftRef,rightRef]
+    tauto
   have oldMember : (owner,ref) ∈ ownedRefs forest := by
     have extended : (owner,ref) ∈ ownedRefs (forest ++ [⟨target,freshTitle target⟩]) := by rw [old]; simp
     rw [ownedRefs_create] at extended
@@ -183,6 +189,29 @@ theorem atomicSplit_labels (physical : Nat → List NotionCoreSource.Atom)
   refine ⟨result,ref.start,accepted,member,⟨(owner,ref),oldMember,rfl,contained⟩,?_⟩
   rw [starts]
   exact split_good good member markerFresh inst
+
+theorem starts_iff (forest : Forest) (address : Address) :
+    address ∈ Starts forest ↔ ∃ ref ∈ forestRefs forest, ref.start = address := by
+  have refs := ownedRefs_refs forest
+  constructor
+  · rintro ⟨owned,member,equal⟩
+    exact ⟨owned.2,refs ▸ List.mem_map.mpr ⟨owned,member,rfl⟩,equal⟩
+  · rintro ⟨ref,member,equal⟩
+    rw [← refs] at member
+    obtain ⟨owned,ownedMember,same⟩ := List.mem_map.mp member
+    exact ⟨owned,ownedMember,same ▸ equal⟩
+
+/-- Merge moves slices between blocks; the set of slice starts is unchanged. -/
+theorem starts_merge (forest : Forest) (source target : Nat) (unique : (forest.map Block.id).Nodup) :
+    Starts (mergeForest forest source target) = Starts forest := by
+  ext address
+  rw [starts_iff,starts_iff]
+  have perm := mergeForest_refs forest source target unique
+  constructor
+  · rintro ⟨ref,member,equal⟩
+    exact ⟨ref,perm.subset member,equal⟩
+  · rintro ⟨ref,member,equal⟩
+    exact ⟨ref,perm.symm.subset member,equal⟩
 
 open NotionCoreMachine
 open NotionCoreMachineShape
@@ -201,7 +230,6 @@ theorem canonical_split_labels (network : NotionCorePayloadNetwork.State)
     (part : NotionCoreMachinePartition.Partitioned state) (shape : ShapeInvariant state)
     (block inst : BlockKey) (origin : NotionCoreOriginTree.Origin)
     (payload : tx.payload = .split block inst origin)
-    (activeInstance : ActiveInstance state (blockName inst))
     (labels : Labels) (good : Good (Starts state.forest) labels) :
     ∃ result nextLabels, applyTransaction state tx = some result ∧ Good (Starts result.forest) nextLabels ∧
       ∃ owned ∈ ownedRefs state.forest, contains (physical result) owned.2
@@ -219,24 +247,13 @@ theorem canonical_split_labels (network : NotionCorePayloadNetwork.State)
   have freshTarget : target ∉ state.forest.map Block.id := by
     intro member
     obtain ⟨old,member,equal⟩ := List.mem_map.mp member
-    exact freshBlock old member equal
-  have createShape := fresh_create_shape_preserves state created (.issued tx.id) (some block)
-    shape freshInstance freshBlock createStep
-  have createActive := fresh_create_active state created (.issued tx.id) (some block)
-    freshInstance freshBlock createStep (blockName inst) activeInstance
-  have rawShape : ShapeInvariant raw := raw_marker_shape_preserves created inst rows createShape createActive
+    exact freshBlock.1 old member equal
   have freshMarker : FreshMarker state.forest marker := by
     intro old member key
     obtain ⟨ref,inTree,equal⟩ := List.mem_map.mp key
     have oldMember : old ∈ raw.forest := by rw [rawForest]; exact List.mem_append_left _ member
     exact stage.fresh (old.id,ref)
       (List.mem_flatMap.mpr ⟨old,oldMember,List.mem_map.mpr ⟨ref,inTree,rfl⟩⟩) equal
-  have inactive : ∀ old ∈ state.forest, attached old.title = true →
-      contains (physical raw) (titleRef old.id) marker = false := by
-    intro old member attached
-    apply inactive_title_rejects raw rawShape old _ attached marker
-    rw [rawForest]
-    exact List.mem_append_left _ member
   have existsInstance : ∃ entry ∈ raw.instances, entry.1 = marker.1 := by
     by_cases present : created.instances.any (fun entry => entry.1 == blockName inst) = true
     · have old : ∃ entry ∈ created.instances, entry.1 = blockName inst := by simpa using present
@@ -262,7 +279,7 @@ theorem canonical_split_labels (network : NotionCorePayloadNetwork.State)
     obtain ⟨owned,member,equal⟩ := member
     exact stage.fresh owned (by simpa only [rawForest] using member) equal
   obtain ⟨forest,selected,atomic,_,selectedRef,finalLabels⟩ := atomicSplit_labels (physical raw) marker target state.forest
-    shape.1 freshMarker freshTarget inactive emptyTarget witness (addRootLabels labels target) rootGood markerFresh
+    (fun found member => (shape.1 found member).1) freshMarker freshTarget emptyTarget witness (addRootLabels labels target) rootGood markerFresh
   refine ⟨{raw with forest := forest},splitLabels (addRootLabels labels target) selected marker,
     split_transaction_of_atomic state created tx block inst origin rows forest payload createStep
       integrated stage rawForest atomic,finalLabels,?_⟩
@@ -285,13 +302,29 @@ private theorem insert_forest (state result : NotionCoreMachine.State) (block in
     unfold putInstance
     split <;> rfl
 
+private theorem erase_groups_forest (state result : NotionCoreMachine.State) (block : BlockKey)
+    (groups : List (BlockKey × List NotionRunAllocation.Id))
+    (accepted : applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result) :
+    result.forest = state.forest := by
+  induction groups generalizing state with
+  | nil =>
+    simp only [List.map_nil,applyOperations,Option.some.injEq] at accepted
+    rw [accepted]
+  | cons group rest ih =>
+    cases first : applyOperation state (.erase block group.1 group.2) with
+    | none => simp [applyOperations,first] at accepted
+    | some middle =>
+      have later : applyOperations middle (rest.map fun group => .erase block group.1 group.2) =
+          some result := by simpa [applyOperations,first] using accepted
+      rw [ih middle later,(NotionCoreMachineErase.erase_physical state middle block group.1 group.2 first).1]
+
 /-- The source label lifecycle, attached to actual interpreter states. Split
 routing witnesses an old stored ref containing the newly integrated marker. -/
 def Update (state result : NotionCoreMachine.State) (tx : Transaction)
     (labels nextLabels : Labels) : Prop := match tx.payload with
   | .bootstrap _ => nextLabels = addRootLabels labels 0
   | .create _ => nextLabels = addRootLabels labels (blockName (.issued tx.id))
-  | .insert .. | .erase .. => nextLabels = labels
+  | .insert .. | .erase .. | .merge .. => nextLabels = labels
   | .split _ inst _ => ∃ owned ∈ ownedRefs state.forest,
       contains (physical result) owned.2 (NotionCorePhysicalReplay.address (blockName inst) tx.id) = true ∧
       nextLabels = splitLabels (addRootLabels labels (blockName (.issued tx.id))) owned.2.start
@@ -350,21 +383,26 @@ theorem canonical_labels_step (network : NotionCorePayloadNetwork.State)
     · rw [insert_forest state result block inst tx.id origin atoms op]
       exact good
     · simp [Update,payload]
-  | erase block inst targets =>
-    have op : applyOperation state (.erase block inst targets) = some result := by
-      simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations] using operation
+  | erase block groups =>
+    have ops : applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result := by
+      simpa [applyTransaction,NotionCorePayload.operations,payload] using operation
     refine ⟨labels,?_,?_⟩
-    · rw [(NotionCoreMachineErase.erase_physical state result block inst targets op).1]
+    · rw [erase_groups_forest state result block groups ops]
+      exact good
+    · simp [Update,payload]
+  | merge source target =>
+    have op : some {state with forest := mergeForest state.forest (blockName source) (blockName target)} =
+        some result := by
+      simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations,applyOperation] using operation
+    refine ⟨labels,?_,?_⟩
+    · rw [← Option.some.inj op]
+      change Good (Starts (mergeForest state.forest _ _)) labels
+      rw [starts_merge state.forest _ _ shape.2.1]
       exact good
     · simp [Update,payload]
   | split block inst origin =>
-    obtain ⟨provider,member,born,_⟩ := NotionCoreRootCreators.canonical_selected_root_provider_version
-      network creator (NotionCoreMachineHonestReplay.honest_root_provenance network reachable)
-      version closed pre suffix tx position inst (by simp [NotionCoreRootCreators.selectedInstances,payload])
-    have activeInstance : ActiveInstance state (blockName inst) :=
-      (rootActive _).mpr ⟨provider,member,inst,born,rfl⟩
     obtain ⟨next,nextLabels,step,goodNext,lifecycle⟩ := canonical_split_labels network creator version closed
-      pre suffix tx position state accepted part shape block inst origin payload activeInstance labels good
+      pre suffix tx position state accepted part shape block inst origin payload labels good
     have equal : next = result := Option.some.inj (step.symm.trans operation)
     refine ⟨nextLabels,equal ▸ goodNext,?_⟩
     simpa only [Update,payload,equal] using lifecycle

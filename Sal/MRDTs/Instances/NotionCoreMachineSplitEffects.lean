@@ -14,16 +14,17 @@ open NotionCoreSource (Block Atom)
 open NotionCoreSpec (Address)
 
 /-- Both actual preparers use the same selected gap. The inherited marker at
-attached index zero is therefore related to the independent PreparedGap. -/
+a split destination's index zero is therefore related to the independent
+PreparedGap. -/
 theorem prepared_split_gap (txs : List Transaction) (state : State)
-    (accepted : replay {} txs = some state) (part : NotionCoreMachinePartition.Partitioned state)
-    (shape : NotionCoreMachineShape.ShapeInvariant state)
+    (accepted : replay {} txs = some state)
     (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
     (source : Block) (member : source ∈ document) (block inst : BlockKey) (name : source.id = blockName block)
     (index : Nat) (origin : NotionCoreOriginTree.Origin)
     (prepared : prepareSplit state block index = some (.split block inst origin)) :
     NotionCorePreparation.locate source index = some (NotionCorePhysicalReplay.originAddress (blockName inst) origin) ∧
-    NotionCoreSpec.PreparedGap source.project.slots (NotionCorePhysicalReplay.originAddress (blockName inst) origin) index := by
+    NotionCoreSpec.PreparedGap source.project.slots (NotionCorePhysicalReplay.originAddress (blockName inst) origin) index ∧
+    source.alive = true := by
   have insert : prepareInsert state block index [0] = some (.insert block inst origin [0]) := by
     cases located : locateAddress state block index with
     | none => simp [prepareSplit,located] at prepared
@@ -35,16 +36,16 @@ theorem prepared_split_gap (txs : List Transaction) (state : State)
         have same : actual = inst ∧ selected = origin := by simpa [prepareSplit,located,decoded] using prepared
         obtain ⟨rfl,rfl⟩ := same
         simp [prepareInsert,located,decoded]
-  exact NotionCoreMachineInsertEffects.prepared_insert_gap txs state accepted part shape document materialized
+  exact NotionCoreMachineInsertEffects.prepared_insert_gap txs state accepted document materialized
     source member block inst name index origin [0] insert
 
 private theorem projected_address_instance (state : State) (part : NotionCoreMachinePartition.Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
-    (shape : NotionCoreMachineShape.ShapeInvariant state) (aligned : NotionCoreMachineDisplay.Aligned state)
+    (aligned : NotionCoreMachineDisplay.Aligned state)
     (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
     (address : Address) (member : address ∈ NotionCoreInvariant.addresses (NotionCoreSourceDocument.project document)) :
     ∃ entry ∈ state.instances, entry.1 = address.1 := by
-  have permutation := NotionCoreMachineDocumentInvariant.projected_addresses_perm state part shape aligned document materialized
+  have permutation := NotionCoreMachineDocumentInvariant.projected_addresses_perm state aligned document materialized
   obtain ⟨owned,present,inside⟩ := List.mem_flatMap.mp (permutation.mem_iff.mp member)
   obtain ⟨atoms,extracted⟩ := NotionCoreMachinePartition.ref_extracts state part unique owned present
   rw [NotionCoreMachineDocumentInvariant.interval_extracted state owned.2 atoms extracted] at inside
@@ -93,7 +94,7 @@ theorem canonical_prepared_split_effect (network : NotionCorePayloadNetwork.Stat
         [(source.id,(NotionCoreSpec.text source.project.slots).take index),
           (blockName (.issued tx.id),(NotionCoreSpec.text source.project.slots).drop index)] ++
         NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
-  obtain ⟨checked,checkedReplay,part,shape,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
+  obtain ⟨checked,checkedReplay,part,_,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
     network reachable peer pre (tx :: suffix) position
   have same : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
@@ -101,36 +102,32 @@ theorem canonical_prepared_split_effect (network : NotionCorePayloadNetwork.Stat
     (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
     peer pre (tx :: suffix) position state accepted
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
-    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) accepted
-  have addresses := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part unique shape aligned _ materialized
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names,
+      NotionCoreDisplayOrder.shown]) accepted
+  have addresses := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part unique aligned _ materialized
   have ids := materialized_ids state _ materialized
   have blockUnique : ((before ++ source :: afterBlocks).map Block.id).Nodup := by
     rw [ids]
-    exact aligned.2.nodup_iff.mpr aligned.1
-  have located := (prepared_split_gap pre state accepted part shape _ materialized source (by simp) block inst name
-    index origin (by simpa only [payload] using prepared)).1
-  have bound : index ≤ (NotionCorePreparation.characters source.active).length := by
-    by_contra outside
-    have tooLarge : ¬index ≤ ((NotionCorePreparation.nodes source).flatMap NotionCorePreparation.characters).length := by
-      simpa only [NotionCorePreparation.nodes_characters] using outside
+    exact aligned.2.1
+  obtain ⟨located,_,alive⟩ := prepared_split_gap pre state accepted _ materialized source (by simp) block inst name
+    index origin (by simpa only [payload] using prepared)
+  have bound : index ≤ ((NotionCorePreparation.nodes source).flatMap NotionCorePreparation.characters).length := by
+    by_contra tooLarge
     simp only [NotionCorePreparation.locate,if_neg tooLarge,reduceCtorEq] at located
   obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh network
     (NotionCoreMachineNetwork.creator_reachable reachable) peer pre suffix tx position state accepted
   have freshName : blockName (.issued tx.id) ∉ (before ++ source :: afterBlocks).map Block.id := by
     rw [ids]
-    intro member
-    have old := aligned.2.mem_iff.mp member
-    obtain ⟨stored,present,equal⟩ := List.mem_map.mp old
-    exact freshBlock stored present equal
+    exact freshBlock.2
   have freshRoot : (NotionCoreSpec.root (blockName (.issued tx.id))).address ∉
       NotionCoreInvariant.addresses (NotionCoreSourceDocument.project (before ++ source :: afterBlocks)) := by
     intro member
-    obtain ⟨entry,present,equal⟩ := projected_address_instance state part unique shape aligned _ materialized _ member
+    obtain ⟨entry,present,equal⟩ := projected_address_instance state part unique aligned _ materialized _ member
     exact freshInstance entry present equal
   let markerId := (Encodable.encode tx.id.session,tx.id.counter)
   obtain ⟨selected,created,expected,selection,createStep,splitStep,effect⟩ := NotionCorePreparation.source_split_effect
     before afterBlocks source index (blockName (.issued tx.id)) (blockName (.issued tx.id)) markerId
-    addresses blockUnique bound freshName freshRoot
+    addresses blockUnique alive bound freshName freshRoot
   have selectedEq : selected = NotionCorePhysicalReplay.originAddress (blockName inst) origin :=
     Option.some.inj (selection.symm.trans located)
   obtain ⟨next,after,transaction,extracted,execution⟩ := NotionCoreMachineDocumentSplit.canonical_split_execution
@@ -145,15 +142,7 @@ theorem canonical_prepared_split_effect (network : NotionCorePayloadNetwork.Stat
   have middleEq : created = middle := Option.some.inj (createStep.symm.trans actualCreate)
   rw [← middleEq] at actualSplit
   have afterEq : expected = after := Option.some.inj (splitStep.symm.trans actualSplit)
-  have nextReplay : replay {} (pre ++ [tx]) = some next := by
-    simp [replay_append,accepted,replay,transaction,Bind.bind,Option.bind]
-  have nextPosition : NotionCoreReconstruction.transactions network peer = (pre ++ [tx]) ++ suffix := by
-    simpa [List.append_assoc] using position
-  obtain ⟨checked,checkedReplay,nextPart,nextShape,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
-    network reachable peer (pre ++ [tx]) suffix nextPosition
-  have sameNext : checked = next := Option.some.inj (checkedReplay.symm.trans nextReplay)
-  subst checked
-  have rendered := materialized_render next nextPart nextShape.1 nextShape.2.2 after extracted
+  have rendered := materialized_render next after extracted
   rw [← afterEq,effect] at rendered
   exact ⟨next,after,transaction,extracted,rendered⟩
 
@@ -225,7 +214,7 @@ theorem honest_split_request_effect (network : NotionCorePayloadNetwork.State)
     (state : State) (reconstructed : NotionCoreReconstruction.reconstruct network peer = some state)
     (before afterBlocks : NotionCoreSourceDocument.Document) (source : Block)
     (materialized : materializeDocument state = some (before ++ source :: afterBlocks))
-    (block : BlockKey) (name : source.id = blockName block) (index : Nat)
+    (block : BlockKey) (name : source.id = blockName block) (alive : source.alive = true) (index : Nat)
     (bound : index ≤ NotionCoreMachineDeleteTotal.visibleLength state block) :
     ∃ nextNetwork target, NotionCoreMachineNetwork.issue network peer (.split block index) = some nextNetwork ∧
       (NotionCoreReconstruction.reconstruct nextNetwork peer >>= render) =
@@ -233,10 +222,7 @@ theorem honest_split_request_effect (network : NotionCorePayloadNetwork.State)
           [(source.id,(NotionCoreSpec.text source.project.slots).take index),
             (target,(NotionCoreSpec.text source.project.slots).drop index)] ++
           NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
-  obtain ⟨checked,current,part,shape,_⟩ := NotionCoreMachineHonestReplay.honest_reconstruct network reachable peer
-  have same : checked = state := Option.some.inj (current.symm.trans reconstructed)
-  subst checked
-  have slices := document_block_slices state part shape _ materialized source (by simp) block name
+  have slices := document_block_slices state _ materialized source (by simp) alive block name
   have stored : ∃ found ∈ state.forest, found.id = blockName block := by
     cases found : state.forest.find? (fun old => old.id == blockName block) with
     | none => simp [blockSlices,found] at slices
@@ -257,8 +243,8 @@ private def afterSplit : Option (List (Nat × List Nat)) := do
   let state ← replay {} [NotionCorePayload.bootstrap [97,98],⟨cutId,.split .initial .initial (.item ⟨1,[65]⟩)⟩]
   let payload ← prepareSplit state (.issued cutId) 0
   applyTransaction state ⟨nextId,payload⟩ >>= render
-/-- Repeated attached zero split cuts a | b into a | empty | b. The inherited
-marker selects b's active interval, rather than the inactive own-title root. -/
+/-- Repeated zero split of a split destination cuts a | b into a | empty | b.
+The inherited marker selects b's interval, rather than the empty dead title. -/
 theorem attached_zero_split_control :
     afterSplit = some [(0,[97]),(blockName (.issued cutId),[]),(blockName (.issued nextId),[98])] ∧
     afterSplit ≠ some [(0,[]),(blockName (.issued cutId),[98]),(blockName (.issued nextId),[97])] ∧

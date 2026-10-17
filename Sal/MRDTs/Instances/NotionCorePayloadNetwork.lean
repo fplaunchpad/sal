@@ -17,12 +17,13 @@ abbrev Address := BlockKey × Id
 
 def locatedReferences : Payload → List Address
   | .insert _ inst origin _ | .split _ inst origin => (originReference origin).map (inst, ·)
-  | .erase _ inst targets => targets.map (inst, ·)
-  | .bootstrap _ | .create _ => []
+  | .erase _ groups => groups.flatMap fun group => group.2.map (group.1, ·)
+  | .bootstrap _ | .create _ | .merge _ _ => []
 
 theorem located_references_ids (payload : Payload) :
     (locatedReferences payload).map Prod.snd = payload.references := by
-  cases payload <;> simp [locatedReferences, Payload.references, List.map_map]
+  cases payload <;> simp [locatedReferences, Payload.references, List.map_map, List.map_flatMap,
+    Function.comp_def]
 
 def birthAddresses (tx : Transaction) : List Address :=
   (births tx (fun _ _ => false)).map (fun birth => (birth.1, birthId birth))
@@ -44,7 +45,9 @@ theorem birthAddresses_deleted (tx : Transaction) (deleted : BlockKey → Id →
     (births tx deleted).map (fun birth => (birth.1, birthId birth)) = birthAddresses tx := by
   cases tx with
   | mk id payload =>
-    cases payload <;>
+    cases payload with
+    | erase block groups => simp [birthAddresses]
+    | _ =>
       simp only [birthAddresses, births, operations, Operation.births,
         List.flatMap_cons, List.flatMap_nil, List.append_nil, List.nil_append,
         List.map_cons, List.map_nil, runRows_addresses,

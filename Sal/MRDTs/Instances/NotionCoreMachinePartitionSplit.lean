@@ -2,9 +2,9 @@ import Sal.MRDTs.Instances.NotionCoreMachinePartition
 import Sal.MRDTs.Instances.NotionCoreMachinePartitionUpdates
 import Sal.MRDTs.Instances.NotionCoreMachineMarkerProgress
 
-/-! Whole split/detach/move restores owner uniqueness after the transient tree
-split duplicates its owner's two endpoint references. The raw marker is already
-physical, and the fresh destination's empty title must remain represented. -/
+/-! Whole split/detach/move restores the partition. The containing reference
+is cut in two; the moved suffix chain, including the new right reference, is
+re-owned by the fresh destination, whose empty title remains represented. -/
 namespace Sal.MRDTs.Instances.NotionCoreMachinePartitionSplit
 open NotionCoreSpec (Address)
 open NotionCoreSource (Atom)
@@ -12,137 +12,6 @@ open NotionCoreSliceForest
 open NotionCoreForestRefs (ownedRefs leftRef rightRef)
 open NotionCoreMachinePartition (Partitioned cellRefs)
 open NotionCoreMachine
-
-private theorem split_detach_context (physical : Nat → List Atom) (marker : Address)
-    (forest divided : Forest) (normal : NormalForest forest) (fresh : FreshMarker forest marker)
-    (inactive : ∀ block ∈ forest, attached block.title = true → contains physical (titleRef block.id) marker = false)
-    (split : splitForest physical marker forest = some divided) :
-    ∃ before source after, forest = before ++ source :: after ∧
-      contains physical (active source.title) marker = true ∧
-      detachForest marker divided = some
-        (before ++ {source with title := cutActive source.title marker} :: after,
-         .node ⟨marker,(active source.title).stop⟩ .nil) := by
-  induction forest generalizing divided with
-  | nil => simp [splitForest] at split
-  | cons block rest ih =>
-    have headNormal := normal block (by simp)
-    have tailNormal : NormalForest rest := fun found member => normal found (List.mem_cons_of_mem _ member)
-    have tailFresh : FreshMarker rest marker := fun found member => fresh found (List.mem_cons_of_mem _ member)
-    have tailInactive : ∀ found ∈ rest, attached found.title = true → contains physical (titleRef found.id) marker = false :=
-      fun found member => inactive found (List.mem_cons_of_mem _ member)
-    cases selected : splitTree physical marker block.title with
-    | some title =>
-      simp only [splitForest,selected,Option.some.injEq] at split
-      subst divided
-      have detached := splitTree_detach physical block.id block.title title marker headNormal
-        (fresh block (by simp)) (inactive block (by simp)) selected
-      exact ⟨[],block,rest,rfl,detached.2,by simp [detachForest,detached.1]⟩
-    | none =>
-      simp only [splitForest,selected,Option.map_eq_some_iff] at split
-      obtain ⟨tail,selectedTail,equal⟩ := split
-      subst divided
-      obtain ⟨before,source,after,shape,contained,detached⟩ :=
-        ih tail tailNormal tailFresh tailInactive selectedTail
-      have headNone := detach_normal_none block.id block.title marker headNormal (fresh block (by simp))
-      exact ⟨block :: before,source,after,by simp [shape],contained,
-        by simp [detachForest,headNone,detached]⟩
-
-private theorem append_fresh (forest : Forest) (target : Nat) (child : Tree)
-    (fresh : target ∉ forest.map Block.id) :
-    appendToBlock target child (forest ++ [⟨target,freshTitle target⟩]) =
-      forest ++ [⟨target,appendRoot (freshTitle target) child⟩] := by
-  simp only [appendToBlock,List.map_append,List.map_cons,List.map_nil]
-  have untouched : forest.map (fun block => if block.id = target then {block with title := appendRoot block.title child} else block) = forest := by
-    induction forest with
-    | nil => rfl
-    | cons block rest ih =>
-      have absent : block.id ≠ target ∧ target ∉ rest.map Block.id := by simpa [eq_comm] using fresh
-      simp only [List.map_cons,if_neg absent.1]
-      rw [ih absent.2]
-  simp [untouched]
-
-/-- The moved subtree is a leaf and its old owner/ref are recovered from
-literal recursive search and detachment. No chosen output forest is assumed. -/
-theorem atomicSplit_context (physical : Nat → List Atom) (marker : Address) (target : Nat)
-    (forest : Forest) (normal : NormalForest forest) (fresh : FreshMarker forest marker)
-    (freshTarget : target ∉ forest.map Block.id)
-    (inactive : ∀ block ∈ forest, attached block.title = true → contains physical (titleRef block.id) marker = false)
-    (empty : physical target = emptyPhysical target)
-    (witness : ∃ block ∈ forest, ∃ ref ∈ preorderTree block.title, contains physical ref marker = true) :
-    ∃ before source after, forest = before ++ source :: after ∧
-      contains physical (active source.title) marker = true ∧
-      atomicSplit physical marker target forest = some
-        ((before ++ {source with title := cutActive source.title marker} :: after) ++
-          [⟨target,.node (titleRef target) (.cons (.node ⟨marker,(active source.title).stop⟩ .nil) .nil)⟩]) := by
-  obtain ⟨divided,split⟩ := NotionCoreMachineRouting.splitForest_progress physical marker forest witness
-  obtain ⟨before,source,after,shape,contained,detached⟩ :=
-    split_detach_context physical marker forest divided normal fresh inactive split
-  have selected : splitDetach physical marker forest = some
-      (before ++ {source with title := cutActive source.title marker} :: after,
-       .node ⟨marker,(active source.title).stop⟩ .nil) := by simp [splitDetach,split,detached]
-  have freshRemaining : target ∉ (before ++ {source with title := cutActive source.title marker} :: after).map Block.id := by
-    simpa [shape] using freshTarget
-  refine ⟨before,source,after,shape,contained,?_⟩
-  rw [atomicSplit_route physical marker target forest empty,selected]
-  simp only [Option.map_some,append_fresh _ target _ freshRemaining]
-  rfl
-
-/-- Exact endpoint replacement and final reownership, including the fresh
-title root already appended to the input forest. The leaf endpoint is moved
-past forest-map enumeration; physical cells need only a permutation. -/
-theorem atomicSplit_refs (physical : Nat → List Atom) (marker : Address) (target : Nat)
-    (forest : Forest) (normal : NormalForest forest) (fresh : FreshMarker forest marker)
-    (freshTarget : target ∉ forest.map Block.id)
-    (inactive : ∀ block ∈ forest, attached block.title = true → contains physical (titleRef block.id) marker = false)
-    (empty : physical target = emptyPhysical target)
-    (witness : ∃ block ∈ forest, ∃ ref ∈ preorderTree block.title, contains physical ref marker = true) :
-    ∃ result before owner ref after,
-      atomicSplit physical marker target forest = some result ∧
-      ownedRefs (forest ++ [⟨target,freshTitle target⟩]) = before ++ (owner,ref) :: after ∧
-      contains physical ref marker = true ∧
-      ownedRefs result = (before ++ (owner,leftRef ref marker) :: after) ++ [(target,rightRef ref marker)] := by
-  obtain ⟨lead,source,suffix,shape,contained,executed⟩ :=
-    atomicSplit_context physical marker target forest normal fresh freshTarget inactive empty witness
-  have sourceMember : source ∈ forest := by rw [shape]; simp
-  have sourceNormal := normal source sourceMember
-  rcases source with ⟨owner,title⟩
-  change Normal owner title at sourceNormal
-  cases sourceNormal with
-  | own stop =>
-    refine ⟨_,ownedRefs lead,owner,⟨(owner,.start),stop⟩,
-      ownedRefs suffix ++ [(target,titleRef target)],executed,?_,contained,?_⟩
-    all_goals simp [shape,ownedRefs,preorderTree,preorderChildren,active,cutActive,freshTitle,titleRef,leftRef,rightRef,
-      Tree.children,Tree.slice,List.append_assoc]
-  | attached slice =>
-    refine ⟨_,ownedRefs lead ++ [(owner,titleRef owner)],owner,slice,
-      ownedRefs suffix ++ [(target,titleRef target)],executed,?_,contained,?_⟩
-    all_goals simp [shape,ownedRefs,preorderTree,preorderChildren,active,cutActive,freshTitle,titleRef,leftRef,rightRef,
-      Tree.children,Tree.slice,List.append_assoc]
-
-private theorem cellRefs_owners (cells : List NotionCorePartition.Cell) :
-    (cellRefs cells).map Prod.fst = cells.map NotionCorePartition.Cell.owner := by
-  induction cells with
-  | nil => rfl
-  | cons cell rest ih => simp [cellRefs,ih]
-
-private theorem replace_perm {α : Type} [DecidableEq α] (a b c d : List α) (old left right : α)
-    (permutation : (a ++ old :: b).Perm (c ++ old :: d))
-    (uniqueA : (a ++ old :: b).Nodup) (uniqueC : (c ++ old :: d).Nodup) :
-    ((a ++ left :: b) ++ [right]).Perm (c ++ left :: right :: d) := by
-  have absentA : old ∉ a := fun member =>
-    (List.nodup_cons.mp (List.nodup_middle.mp uniqueA)).1 (List.mem_append_left _ member)
-  have absentC : old ∉ c := fun member =>
-    (List.nodup_cons.mp (List.nodup_middle.mp uniqueC)).1 (List.mem_append_left _ member)
-  have erased := permutation.erase old
-  rw [List.erase_append_right _ absentA,List.erase_append_right _ absentC] at erased
-  simp only [List.erase_cons_head] at erased
-  have lifted := ((erased.cons left).cons right)
-  have source : ((a ++ left :: b) ++ [right]).Perm (right :: left :: (a ++ b)) :=
-    (List.perm_append_comm.append_left []).trans ((List.perm_middle (a := left)).cons right)
-  have target : (c ++ left :: right :: d).Perm (right :: left :: (c ++ d)) := by
-    have moved : (c ++ left :: right :: d).Perm (left :: (c ++ right :: d)) := List.perm_middle
-    exact moved.trans ((List.perm_middle (a := right)).cons left) |>.trans (List.Perm.swap _ _ _)
-  exact source.trans (lifted.trans target.symm)
 
 private theorem cellRefs_cut (before after : List NotionCorePartition.Cell)
     (cell : NotionCorePartition.Cell) (marker : Address) (target : Nat) (left right : List Atom) :
@@ -181,23 +50,22 @@ private theorem extractIds_cell (before after : List NotionCorePartition.Cell)
 
 /-- The actual strict endpoint scan and the physical marker kind recover the
 cut inside the represented cell. No selected final cell or suffix is supplied. -/
-theorem containing_cell_cut (state : NotionCoreMachine.State) (partitioned : Partitioned state)
+theorem containing_cell_cut (state : NotionCoreMachine.State) (refs : List Ref)
+    (covers : NotionCoreMachinePartition.Covers state refs)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
-    (owner : Nat) (ref : Ref) (marker : Address)
-    (member : (owner,ref) ∈ ownedRefs state.forest)
+    (ref : Ref) (marker : Address) (member : ref ∈ refs)
     (contained : contains (physical state) ref marker = true)
     (literal : NotionCorePartition.boundary marker ∈ physical state marker.1) :
     ∃ before cell after left right,
       physical state marker.1 = NotionCorePartition.flatten (before ++ cell :: after) ∧
-      (owner,ref) = (cell.owner,⟨cell.slice.start,after.head?.map (fun next => next.slice.start)⟩) ∧
+      ref = ⟨cell.slice.start,after.head?.map (fun next => next.slice.start)⟩ ∧
       cell.slice.atoms = left ++ NotionCorePartition.boundary marker :: right ∧
-      ((before ++ cell :: after).map NotionCorePartition.Cell.owner).Nodup ∧
-      ((ownedRefs state.forest).filter (fun owned => owned.2.start.1 == marker.1)).Perm
-        (cellRefs (before ++ cell :: after)) := by
-  obtain ⟨cells,physicalEq,owners,permutation⟩ := partitioned.partitions ref.start.1
-    (partitioned.refsExist (owner,ref) member)
+      (refs.filter (fun ref => ref.start.1 == marker.1)).Perm
+        ((cellRefs (before ++ cell :: after)).map Prod.snd) := by
+  obtain ⟨cells,physicalEq,permutation⟩ := covers.partitions ref.start.1 (covers.refsExist ref member)
   have matched := permutation.mem_iff.mp (List.mem_filter.mpr ⟨member,by simp⟩)
-  obtain ⟨before,cell,after,shape,equal⟩ := (NotionCoreMachinePartition.cellRefs_member cells (owner,ref)).mp matched
+  obtain ⟨owned,ownedMember,ownedRef⟩ := List.mem_map.mp matched
+  obtain ⟨before,cell,after,shape,equal⟩ := (NotionCoreMachinePartition.cellRefs_member cells owned).mp ownedMember
   have factor := shape ▸ physicalEq
   have conditions : ref.start.1 = marker.1 ∧
       (NotionCorePartition.extractIds (physical state ref.start.1) ref.start ref.stop).contains (some marker) = true := by
@@ -205,7 +73,8 @@ theorem containing_cell_cut (state : NotionCoreMachine.State) (partitioned : Par
   have sameInst := conditions.1
   have scanned : some marker ∈ NotionCorePartition.extractIds (physical state ref.start.1) ref.start ref.stop := by
     exact List.contains_iff_mem.mp conditions.2
-  have endpoint : ref = ⟨cell.slice.start,after.head?.map (fun next => next.slice.start)⟩ := congrArg Prod.snd equal
+  have endpoint : ref = ⟨cell.slice.start,after.head?.map (fun next => next.slice.start)⟩ := by
+    rw [← ownedRef, equal]
   have localUnique : ((NotionCorePartition.flatten (before ++ cell :: after)).map Atom.address).Nodup := by
     rw [← factor]; exact unique ref.start.1
   rw [factor,endpoint,extractIds_cell before after cell localUnique] at scanned
@@ -222,137 +91,139 @@ theorem containing_cell_cut (state : NotionCoreMachine.State) (partitioned : Par
   have atomEq : atom = NotionCorePartition.boundary marker := Option.some.inj (found.symm.trans foundMarker)
   have markerMember : NotionCorePartition.boundary marker ∈ cell.slice.atoms := atomEq ▸ atomMember
   obtain ⟨left,right,atoms⟩ := List.append_of_mem markerMember
-  exact ⟨before,cell,after,left,right,by simpa only [sameInst] using factor,equal,atoms,shape ▸ owners,
+  exact ⟨before,cell,after,left,right,by simpa only [sameInst] using factor,endpoint,atoms,
     by simpa only [shape,sameInst] using permutation⟩
 
 /-- Cutting an interior physical boundary retains the same traversal while
-adding exactly the freshly reowned right interval. -/
+adding exactly the right interval. -/
 theorem cut_cells (before after : List NotionCorePartition.Cell) (cell : NotionCorePartition.Cell)
-    (marker : Address) (target : Nat) (left right : List Atom)
-    (atoms : cell.slice.atoms = left ++ NotionCorePartition.boundary marker :: right)
-    (owners : ((before ++ cell :: after).map NotionCorePartition.Cell.owner).Nodup)
-    (fresh : target ∉ (before ++ cell :: after).map NotionCorePartition.Cell.owner) :
+    (marker : Address) (owner : Nat) (left right : List Atom)
+    (atoms : cell.slice.atoms = left ++ NotionCorePartition.boundary marker :: right) :
     let next : List NotionCorePartition.Cell := before ++
-      [⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨target,⟨marker,right⟩⟩] ++ after
+      [⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨owner,⟨marker,right⟩⟩] ++ after
     NotionCorePartition.flatten next = NotionCorePartition.flatten (before ++ cell :: after) ∧
-      (next.map NotionCorePartition.Cell.owner).Nodup ∧
       ∃ prefixRefs,
         cellRefs (before ++ cell :: after) = prefixRefs ++
           (cell.owner,⟨cell.slice.start,after.head?.map (fun next => next.slice.start)⟩) :: cellRefs after ∧
         cellRefs next = prefixRefs ++ (cell.owner,⟨cell.slice.start,some marker⟩) ::
-          (target,⟨marker,after.head?.map (fun next => next.slice.start)⟩) :: cellRefs after := by
+          (owner,⟨marker,after.head?.map (fun next => next.slice.start)⟩) :: cellRefs after := by
   dsimp only
-  refine ⟨?_,?_,cellRefs_cut before after cell marker target left right⟩
-  · simp [NotionCorePartition.flatten,NotionCorePartition.Cell.physical,atoms,List.append_assoc]
-  · have middle : ((before.map NotionCorePartition.Cell.owner ++ [cell.owner]) ++
-        target :: after.map NotionCorePartition.Cell.owner).Nodup := by
-      apply List.nodup_middle.mpr
-      apply List.nodup_cons.mpr
-      constructor
-      · simpa [List.map_append,List.map_cons,List.append_assoc] using fresh
-      · simpa [List.map_append,List.map_cons,List.append_assoc] using owners
-    simpa [List.map_append,List.map_cons,List.append_assoc] using middle
+  refine ⟨?_,cellRefs_cut before after cell marker owner left right⟩
+  simp [NotionCorePartition.flatten,NotionCorePartition.Cell.physical,atoms,List.append_assoc]
 
-/-- Exact reference substitution follows from uniqueness and the old
-permutation; it does not assume the desired next endpoint table. -/
-theorem cut_refs_permutation (beforeRefs afterRefs : List (Nat × Ref))
-    (before after : List NotionCorePartition.Cell) (cell : NotionCorePartition.Cell)
-    (marker : Address) (target : Nat) (left right : List Atom)
-    (permutation : (beforeRefs ++
-      (cell.owner,⟨cell.slice.start,after.head?.map (fun next => next.slice.start)⟩) :: afterRefs).Perm
-      (cellRefs (before ++ cell :: after)))
-    (owners : ((before ++ cell :: after).map NotionCorePartition.Cell.owner).Nodup) :
-    ((beforeRefs ++ (cell.owner,(⟨cell.slice.start,some marker⟩ : Ref)) :: afterRefs) ++
-      [(target,(⟨marker,after.head?.map (fun next => next.slice.start)⟩ : Ref))]).Perm
-      (cellRefs (before ++ ([⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨target,⟨marker,right⟩⟩] : List NotionCorePartition.Cell) ++ after)) := by
-  obtain ⟨prefixRefs,old,next⟩ := cellRefs_cut before after cell marker target left right
-  have unique : (cellRefs (before ++ cell :: after)).Nodup := by
-    apply List.Nodup.of_map Prod.fst
-    rw [cellRefs_owners]
-    exact owners
-  rw [old] at permutation unique
-  rw [next]
-  exact replace_perm beforeRefs afterRefs prefixRefs (cellRefs after) _ _ _ permutation
-    (permutation.nodup_iff.mpr unique) unique
+private theorem perm_replace {α : Type} {a b c d : List α} {old : α} (new : List α)
+    (permutation : (a ++ old :: b).Perm (c ++ old :: d)) :
+    (a ++ new ++ b).Perm (c ++ new ++ d) := by
+  have removed : (a ++ b).Perm (c ++ d) :=
+    (List.perm_middle.symm.trans (permutation.trans List.perm_middle)).cons_inv
+  have shift : ∀ x y : List α, (x ++ new ++ y).Perm (new ++ (x ++ y)) := fun x y => by
+    rw [List.append_assoc]
+    exact List.perm_append_comm_assoc x new y
+  exact (shift a b).trans ((removed.append_left new).trans (shift c d).symm)
 
-/-- Reference replacement is sufficient to restore the complete physical
-partition; the cut and the moved interval are derived by scanning the marker. -/
-theorem reference_cut_partitioned (state : NotionCoreMachine.State) (result : Forest)
-    (marker : Address) (target owner : Nat) (ref : Ref)
-    (beforeRefs afterRefs : List (Nat × Ref))
-    (partitioned : Partitioned state)
+/-- Replacing a containing reference by its two halves preserves coverage;
+the cut is derived by scanning the marker. Owners play no part. -/
+theorem cut_covers (state : NotionCoreMachine.State) (before after : List Ref) (ref : Ref)
+    (marker : Address)
+    (covers : NotionCoreMachinePartition.Covers state (before ++ ref :: after))
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
-    (old : ownedRefs state.forest = beforeRefs ++ (owner,ref) :: afterRefs)
-    (next : ownedRefs result = (beforeRefs ++ (owner,leftRef ref marker) :: afterRefs) ++
-      [(target,rightRef ref marker)])
     (contained : contains (physical state) ref marker = true)
-    (literal : NotionCorePartition.boundary marker ∈ physical state marker.1)
-    (fresh : ∀ owned ∈ ownedRefs state.forest, owned.2.start.1 = marker.1 → owned.1 ≠ target) :
-    Partitioned {state with forest := result} := by
+    (literal : NotionCorePartition.boundary marker ∈ physical state marker.1) :
+    NotionCoreMachinePartition.Covers state
+      (before ++ leftRef ref marker :: rightRef ref marker :: after) := by
   have conditions : ref.start.1 = marker.1 ∧
       (NotionCorePartition.extractIds (physical state ref.start.1) ref.start ref.stop).contains (some marker) = true := by
     simpa only [contains,Bool.and_eq_true,decide_eq_true_eq] using contained
   have sameInst := conditions.1
-  have selected : (owner,ref) ∈ ownedRefs state.forest := by rw [old]; simp
-  have sourceExists := partitioned.refsExist (owner,ref) selected
+  have sourceExists := covers.refsExist ref (by simp)
   constructor
   · intro owned member
-    rw [next] at member
-    simp only [List.mem_append,List.mem_cons,List.not_mem_nil,or_false] at member
-    rcases member with ((previous | rfl | later) | rfl)
-    · exact partitioned.refsExist owned (by rw [old]; simp [previous])
+    simp only [List.mem_append,List.mem_cons] at member
+    rcases member with previous | rfl | rfl | later
+    · exact covers.refsExist owned (by simp [previous])
     · exact sourceExists
-    · exact partitioned.refsExist owned (by rw [old]; simp [later])
     · simpa only [rightRef,sameInst] using sourceExists
+    · exact covers.refsExist owned (by simp [later])
   · intro inst existsInstance
     by_cases same : inst = marker.1
     · subst inst
-      obtain ⟨before,cell,after,left,right,factor,equal,atoms,owners,permutation⟩ :=
-        containing_cell_cut state partitioned unique owner ref marker selected contained literal
-      have freshOwner : target ∉ (before ++ cell :: after).map NotionCorePartition.Cell.owner := by
-        intro member
-        obtain ⟨found,foundMember,foundOwner⟩ := List.mem_map.mp member
-        obtain ⟨lead,tail,shape⟩ := List.append_of_mem foundMember
-        have ownMember := (NotionCoreMachinePartition.cellRefs_member (before ++ cell :: after)
-          (found.owner,⟨found.slice.start,tail.head?.map (fun next => next.slice.start)⟩)).mpr
-            ⟨lead,found,tail,shape,rfl⟩
-        have oldMember := permutation.mem_iff.mpr ownMember
-        have decoded := List.mem_filter.mp oldMember
-        have belongs : found.slice.start.1 = marker.1 := by simpa using decoded.2
-        exact fresh _ decoded.1 belongs foundOwner
-      obtain ⟨physicalSame,nextOwners,refs,oldCells,nextCells⟩ := cut_cells before after cell marker target left right atoms owners freshOwner
-      refine ⟨before ++ [⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨target,⟨marker,right⟩⟩] ++ after,
-        factor.trans physicalSame.symm,nextOwners,?_⟩
-      have refEq : ref = ⟨cell.slice.start,after.head?.map (fun next => next.slice.start)⟩ := congrArg Prod.snd equal
-      have ownerEq : owner = cell.owner := congrArg Prod.fst equal
-      have cellInst : cell.slice.start.1 = marker.1 := by simpa only [refEq] using sameInst
-      rw [old,List.filter_append,List.filter_cons] at permutation
-      simp only [sameInst,beq_self_eq_true,ite_true] at permutation
-      have changed := cut_refs_permutation
-        (beforeRefs.filter (fun owned => owned.2.start.1 == marker.1))
-        (afterRefs.filter (fun owned => owned.2.start.1 == marker.1))
-        before after cell marker target left right (by simpa only [refEq,ownerEq] using permutation) owners
-      simpa [next,leftRef,rightRef,sameInst,cellInst,refEq,ownerEq] using changed
-    · obtain ⟨cells,factor,owners,permutation⟩ := partitioned.partitions inst existsInstance
-      refine ⟨cells,factor,owners,?_⟩
+      obtain ⟨cells,cell,tail,left,right,factor,refEq,atoms,permutation⟩ :=
+        containing_cell_cut state _ covers unique ref marker (by simp) contained literal
+      obtain ⟨physicalSame,prefixRefs,oldCells,nextCells⟩ := cut_cells cells tail cell marker cell.owner
+        left right atoms
+      refine ⟨cells ++ [⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨cell.owner,⟨marker,right⟩⟩] ++ tail,
+        factor.trans physicalSame.symm,?_⟩
+      have refSelected : (ref.start.1 == marker.1) = true := by simp [sameInst]
+      have leftSelected : ((leftRef ref marker).start.1 == marker.1) = true := by simp [leftRef, sameInst]
+      have rightSelected : ((rightRef ref marker).start.1 == marker.1) = true := by simp [rightRef]
+      rw [oldCells, List.filter_append, List.filter_cons_of_pos (p := fun ref : Ref => ref.start.1 == marker.1) refSelected,
+        List.map_append, List.map_cons] at permutation
+      rw [nextCells, List.filter_append, List.filter_cons_of_pos (p := fun ref : Ref => ref.start.1 == marker.1) leftSelected,
+        List.filter_cons_of_pos (p := fun ref : Ref => ref.start.1 == marker.1) rightSelected, List.map_append, List.map_cons, List.map_cons]
+      have oldRef : ((cell.owner, (⟨cell.slice.start, tail.head?.map (fun next => next.slice.start)⟩ : Ref)) :
+          Nat × Ref).2 = ref := refEq.symm
+      rw [oldRef] at permutation
+      have replaced := perm_replace [leftRef ref marker, rightRef ref marker] permutation
+      have leftEq : leftRef ref marker = ⟨cell.slice.start, some marker⟩ := by simp [leftRef, refEq]
+      have rightEq : rightRef ref marker = ⟨marker, tail.head?.map (fun next => next.slice.start)⟩ := by
+        simp [rightRef, refEq]
+      rw [leftEq, rightEq] at replaced ⊢
+      simpa [List.append_assoc] using replaced
+    · obtain ⟨cells,factor,permutation⟩ := covers.partitions inst existsInstance
+      refine ⟨cells,factor,?_⟩
       have absent : (ref.start.1 == inst) = false := by simp [sameInst,Ne.symm same]
       have markerAbsent : (marker.1 == inst) = false := by simp [Ne.symm same]
-      simpa [next,old,leftRef,rightRef,absent,markerAbsent] using permutation
+      simpa [leftRef,rightRef,absent,markerAbsent,List.filter_append,List.filter_cons] using permutation
+
+/-- Actual atomic split progress: partition coverage supplies a containing
+reference, and on a chain forest detachment of the fresh right node succeeds. -/
+theorem atomicSplit_progress (physical : Nat → List Atom) (marker : Address) (target : Nat)
+    (forest : Forest) (chains : ∀ block ∈ forest, Chain block.title) (fresh : FreshMarker forest marker)
+    (empty : physical target = emptyPhysical target)
+    (witness : ∃ block ∈ forest, ∃ ref ∈ preorderTree block.title, contains physical ref marker = true) :
+    ∃ result, atomicSplit physical marker target forest = some result := by
+  obtain ⟨divided,split⟩ := NotionCoreMachineRouting.splitForest_progress physical marker forest witness
+  obtain ⟨before,block,after,pre,ref,post,title,moved,_,_,_,_,_,_,_,detached⟩ :=
+    splitForest_detach physical marker forest divided chains fresh split
+  rw [atomicSplit_route physical marker target forest empty]
+  have pair : splitDetach physical marker forest =
+      some (before ++ {block with title := title} :: after, moved) := by
+    simp [splitDetach, split, detached]
+  rw [pair]
+  exact ⟨_, rfl⟩
+
+/-- Exact reference rewriting of an atomic split. The containing reference is
+cut; the right half and every reference of the suffix after it change owner to
+the fresh destination, behind its empty title root. -/
+theorem atomicSplit_refs (physical : Nat → List Atom) (marker : Address) (target : Nat)
+    (forest result : Forest) (chains : ∀ block ∈ forest, Chain block.title)
+    (fresh : FreshMarker forest marker) (freshTarget : target ∉ forest.map Block.id)
+    (empty : physical target = emptyPhysical target)
+    (accepted : atomicSplit physical marker target forest = some result) :
+    ∃ before owner pre ref post after,
+      ownedRefs (forest ++ [⟨target,freshTitle target⟩]) =
+        before ++ (pre ++ ref :: post).map (owner,·) ++ after ++ [(target,titleRef target)] ∧
+      contains physical ref marker = true ∧
+      ownedRefs result = before ++ (pre ++ [leftRef ref marker]).map (owner,·) ++ after ++
+        (target,titleRef target) :: (target,rightRef ref marker) :: post.map (target,·) := by
+  obtain ⟨lead,block,tail,pre,ref,post,title,moved,shape,old,inside,_,titleEq,_,movedEq,resultEq⟩ :=
+    atomicSplit_result physical marker target forest result chains fresh freshTarget empty accepted
+  refine ⟨ownedRefs lead,block.id,pre,ref,post,ownedRefs tail,?_,inside,?_⟩
+  · simp [shape,ownedRefs,old,freshTitle,preorderTree,preorderChildren,List.append_assoc]
+  · subst resultEq
+    simp [ownedRefs,titleEq,preorderTree,preorderChildren,movedEq,List.append_assoc]
 
 /-- Whole atomic split restores every instance's represented endpoint table.
 The source interval is recovered from raw physical coverage and actual forest
-search, and the right cell is reowned only after detachment and move. -/
+search; owners of the moved suffix are recomputed from the result forest. -/
 theorem atomicSplit_partitioned (state : NotionCoreMachine.State) (forest : Forest)
     (marker : Address) (target : Nat)
     (shape : state.forest = forest ++ [⟨target,freshTitle target⟩])
     (partitioned : Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
-    (normal : NormalForest forest) (fresh : FreshMarker forest marker)
+    (chains : ∀ block ∈ forest, Chain block.title) (fresh : FreshMarker forest marker)
     (freshTarget : target ∉ forest.map Block.id)
-    (inactive : ∀ block ∈ forest, attached block.title = true →
-      contains (physical state) (titleRef block.id) marker = false)
     (empty : physical state target = emptyPhysical target)
-    (distinct : marker.1 ≠ target)
     (existsInstance : ∃ entry ∈ state.instances, entry.1 = marker.1)
     (literal : NotionCorePartition.boundary marker ∈ physical state marker.1)
     (newBoundary : ∀ owned ∈ ownedRefs state.forest, owned.2.start ≠ marker) :
@@ -362,22 +233,47 @@ theorem atomicSplit_partitioned (state : NotionCoreMachine.State) (forest : Fore
     List.mem_map.mpr ⟨NotionCorePartition.boundary marker,literal,rfl⟩
   obtain ⟨block,member,ref,refMember,contained⟩ :=
     NotionCoreMachinePartition.containing_tree_ref state partitioned unique marker existsInstance present newBoundary
-  rw [shape] at member
-  rcases List.mem_append.mp member with old | newest
-  · obtain ⟨result,before,owner,sourceRef,after,executed,oldRefs,inside,nextRefs⟩ :=
-      atomicSplit_refs (physical state) marker target forest normal fresh freshTarget inactive empty
-        ⟨block,old,ref,refMember,contained⟩
-    refine ⟨result,executed,reference_cut_partitioned state result marker target owner sourceRef before after
-      partitioned unique (by simpa only [shape] using oldRefs) nextRefs inside literal ?_⟩
-    rw [shape]
-    exact NotionCoreMachineMarkerProgress.fresh_target_ref_owner forest target marker.1 freshTarget distinct
-  · have equal := List.mem_singleton.mp newest
-    subst block
-    have refEq : ref = titleRef target := by simpa [freshTitle,preorderTree,preorderChildren] using refMember
-    rw [refEq,empty_title_rejects _ target marker empty] at contained
-    contradiction
+  have witness : ∃ block ∈ forest, ∃ ref ∈ preorderTree block.title,
+      contains (physical state) ref marker = true := by
+    rw [shape] at member
+    rcases List.mem_append.mp member with old | newest
+    · exact ⟨block,old,ref,refMember,contained⟩
+    · have equal := List.mem_singleton.mp newest
+      subst block
+      have refEq : ref = titleRef target := by simpa [freshTitle,preorderTree,preorderChildren] using refMember
+      rw [refEq,empty_title_rejects _ target marker empty] at contained
+      contradiction
+  obtain ⟨result,executed⟩ := atomicSplit_progress (physical state) marker target forest chains fresh empty witness
+  refine ⟨result,executed,?_⟩
+  obtain ⟨lead,block,tail,pre,ref,post,title,moved,blocks,old,inside,_,titleEq,_,movedEq,resultEq⟩ :=
+    atomicSplit_result (physical state) marker target forest result chains fresh freshTarget empty executed
+  have covers := NotionCoreMachinePartition.covers_of_partitioned partitioned
+  have oldRefs : forestRefs state.forest = (forestRefs lead ++ pre) ++ ref ::
+      (post ++ forestRefs tail ++ [titleRef target]) := by
+    rw [shape,blocks]
+    simp [forestRefs,old,freshTitle,preorderTree,preorderChildren,List.append_assoc]
+  rw [oldRefs] at covers
+  have cut := cut_covers state _ _ ref marker covers unique inside literal
+  apply NotionCoreMachinePartition.partitioned_of_covers _ _ _ unique
+  apply NotionCoreMachinePartition.covers_perm cut
+  subst resultEq
+  have newRefs : forestRefs ((lead ++ {block with title := title} :: tail) ++
+      [⟨target,.node (titleRef target) (.cons moved .nil)⟩]) =
+      (forestRefs lead ++ pre) ++ leftRef ref marker ::
+        (forestRefs tail ++ titleRef target :: rightRef ref marker :: post) := by
+    simp [forestRefs,titleEq,preorderTree,preorderChildren,movedEq,List.append_assoc]
+  rw [newRefs]
+  refine List.Perm.append_left _ (List.Perm.cons _ ?_)
+  have moved : (forestRefs tail ++ titleRef target :: rightRef ref marker :: post).Perm
+      (rightRef ref marker :: post ++ (forestRefs tail ++ [titleRef target])) := by
+    have step : forestRefs tail ++ titleRef target :: rightRef ref marker :: post =
+        (forestRefs tail ++ [titleRef target]) ++ (rightRef ref marker :: post) := by simp
+    rw [step]
+    exact List.perm_append_comm
+  simpa [List.append_assoc] using moved
 
 #print axioms atomicSplit_partitioned
+#print axioms atomicSplit_refs
 #print axioms containing_cell_cut
 
 namespace SPOT

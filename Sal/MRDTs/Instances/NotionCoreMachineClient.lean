@@ -72,6 +72,16 @@ def prepareCreate (state : State) (after : Option BlockKey) : Option Payload :=
   | some block => if state.forest.any (fun entry => entry.id == blockName block) then
       some (.create after) else none
 
+/-- The demo merges a block into the previous visible block; the first
+visible block, or an absent one, has no merge. -/
+def prepareMerge (state : State) (source : BlockKey) : Option Payload := do
+  let shown := visible state
+  if blockName source ∈ shown then do
+    let previous ← (shown.take (shown.idxOf (blockName source))).getLast?
+    let target ← decodeBlock previous
+    pure (.merge source target)
+  else none
+
 /-- Visible deletion targets before per-instance grouping and ID-range
 compression. Empty ranges are skipped before block lookup, as in the source. -/
 def deleteAddresses (state : State) (block : BlockKey) (start stop : Nat) : Option (List Address) := do
@@ -527,6 +537,63 @@ theorem prepared_create_creators (network : NotionCorePayloadNetwork.State)
         simpa [NotionCoreCreatorNetwork.requiredBlocks, equal] using known
       · simp [prepareCreate, present] at prepared
 
+/-- Both blocks a merge names are visible, so both have received creators. -/
+theorem prepared_merge_creators (network : NotionCorePayloadNetwork.State)
+    (session : NotionRunAllocation.Session) (txs : List NotionCorePayload.Transaction) (state : State)
+    (received : ∀ tx ∈ txs, ∃ entry ∈ network.entries, entry.tx = tx ∧
+      NotionCorePayload.reservation tx ∈ (network.allocation.peers session).received)
+    (accepted : replay {} txs = some state) (source : BlockKey) (payload : Payload)
+    (prepared : prepareMerge state source = some payload) :
+    ∀ key ∈ NotionCoreCreatorNetwork.requiredBlocks payload,
+      NotionCoreCreatorNetwork.KnownCreator network session key := by
+  have visibleCreator : ∀ name ∈ visible state, ∃ key, name = blockName key ∧
+      NotionCoreCreatorNetwork.KnownCreator network session key := by
+    intro name member
+    obtain ⟨_, present⟩ := List.mem_filter.mp member
+    obtain ⟨found, foundMember, foundId⟩ : ∃ found ∈ state.forest, found.id = name := by simpa using present
+    obtain ⟨key, encoded, known⟩ := NotionCoreMachineCreators.replay_known_creator
+      network session txs state received accepted found foundMember
+    exact ⟨key, foundId.symm.trans encoded, known⟩
+  simp only [prepareMerge] at prepared
+  split at prepared
+  · rename_i shown
+    cases last : ((visible state).take ((visible state).idxOf (blockName source))).getLast? with
+    | none => simp [last] at prepared
+    | some previous =>
+      cases decoded : decodeBlock previous with
+      | none => simp [last, decoded] at prepared
+      | some target =>
+        have same : Payload.merge source target = payload := by simpa [last, decoded] using prepared
+        subst payload
+        obtain ⟨sourceKey, sourceName, sourceKnown⟩ := visibleCreator _ shown
+        have sourceEq : source = sourceKey := blockName_injective sourceName
+        have previousMember : previous ∈ visible state :=
+          List.mem_of_mem_take (List.mem_of_getLast? last)
+        obtain ⟨targetKey, targetName, targetKnown⟩ := visibleCreator _ previousMember
+        have targetEq : target = targetKey := by
+          rw [targetName, decode_blockName] at decoded
+          exact (Option.some.inj decoded).symm
+        intro key member
+        simp only [NotionCoreCreatorNetwork.requiredBlocks, List.mem_cons, List.not_mem_nil,
+          or_false] at member
+        rcases member with rfl | rfl
+        · exact sourceEq ▸ sourceKnown
+        · exact targetEq ▸ targetKnown
+  · contradiction
+
+/-- On any extracted nonempty chain, actual location prepares the independent
+visible gap over the chain's concatenated slots. -/
+theorem selection_prepared (state : State) (block : BlockKey) (slices : List Slice)
+    (extracted : blockSlices state block = some slices) (nonempty : slices ≠ [])
+    (index : Nat) (bound : index ≤ (slices.flatMap characters).length) :
+    ∃ origin, locateAddress state block index = some origin ∧
+      NotionCoreSpec.PreparedGap (slices.flatMap Slice.slots) origin index := by
+  let source : NotionCoreSource.Block := ⟨blockName block, blockName block, slices⟩
+  have alive : source.alive = true := by simpa [source, NotionCoreSource.Block.alive] using nonempty
+  obtain ⟨origin, selected⟩ := NotionCorePreparation.locate_progress source index alive bound
+  refine ⟨origin, ?_, NotionCorePreparation.locate_prepared source index origin selected⟩
+  simpa [locateAddress, extracted, ← locate_normal] using selected
+
 /-- Root-only core blocks use the same source selector and prepare the
 independent visible gap from an actual stored physical partition. -/
 theorem own_selection_prepared (state : State) (block : BlockKey)
@@ -541,16 +608,14 @@ theorem own_selection_prepared (state : State) (block : BlockKey)
     (index : Nat) (bound : index ≤ (characters cell.slice).length) :
     ∃ origin, locateAddress state block index = some origin ∧
       NotionCoreSpec.PreparedGap cell.slice.slots origin index := by
-  let source : NotionCoreSource.Block := ⟨blockName block, .own, cell.slice⟩
   have found := find_block_member state.forest uniqueBlocks _ member
   have extracted := materialize_leaf state before after cell existsInstance physicalEq unique
-  obtain ⟨origin, selected⟩ := NotionCorePreparation.locate_progress source index bound
-  refine ⟨origin, ?_, NotionCorePreparation.locate_active_prepared source index origin selected⟩
-  simpa [locateAddress, blockSlices, found, extracted, locateSlices,
-    NotionCorePreparation.locate, NotionCorePreparation.nodes, source] using selected
+  simpa using selection_prepared state block [cell.slice]
+    (by simpa [blockSlices, found] using extracted) (by simp) index (by simpa using bound)
 
 /-- Physical partition and real forest membership derive successful source
-selection and the independent semantic gap, including an all-deleted leaf. -/
+selection and the independent semantic gap, including an all-deleted leaf
+below an empty dead title. -/
 theorem attached_selection_prepared (state : State) (block : BlockKey)
     (before after : List NotionCorePartition.Cell) (cell : NotionCorePartition.Cell)
     (uniqueBlocks : (state.forest.map (·.id)).Nodup)
@@ -564,17 +629,15 @@ theorem attached_selection_prepared (state : State) (block : BlockKey)
     (unique : ((physical state cell.slice.start.1).map Atom.address).Nodup)
     (index : Nat) (bound : index ≤ (characters cell.slice).length) :
     ∃ origin, locateAddress state block index = some origin ∧
-      NotionCoreSpec.PreparedGap
-        (NotionCoreSource.Block.project ⟨blockName block, .attached (blockName block), cell.slice⟩).slots
+      NotionCoreSpec.PreparedGap (NotionCoreSpec.root (blockName block) :: cell.slice.slots)
         origin index := by
-  let source : NotionCoreSource.Block := ⟨blockName block, .attached (blockName block), cell.slice⟩
   have found := find_block_member state.forest uniqueBlocks _ member
   have extracted := materialize_attached state (blockName block) before after cell
     titleExists titleEmpty activeExists physicalEq unique
-  obtain ⟨origin, selected⟩ := NotionCorePreparation.locate_progress source index bound
-  refine ⟨origin, ?_, NotionCorePreparation.locate_prepared source index origin selected⟩
-  simpa [locateAddress, blockSlices, found, extracted, locateSlices,
-    NotionCorePreparation.locate, NotionCorePreparation.nodes, source] using selected
+  simpa [Slice.slots, Slice.anchor, NotionCoreSpec.root] using
+    selection_prepared state block [⟨(blockName block,.start),[]⟩,cell.slice]
+      (by simpa [blockSlices, found] using extracted) (by simp) index
+      (by simpa [characters] using bound)
 
 private def a : NotionRunAllocation.Id := ⟨1,[65]⟩
 private def b : NotionRunAllocation.Id := ⟨3,[66]⟩
@@ -582,7 +645,7 @@ private def seed : NotionCorePayload.Transaction := NotionCorePayload.bootstrap 
 private def cut : NotionCorePayload.Transaction := ⟨b,.split .initial .initial (.item a)⟩
 private def splitState : Option State := replay {} [seed,cut]
 private def deadState : Option State := replay {} [seed,cut,
-  ⟨⟨4,[66]⟩,.erase (.issued b) .initial [⟨2,[65]⟩]⟩]
+  ⟨⟨4,[66]⟩,.erase (.issued b) [(.initial,[⟨2,[65]⟩])]⟩]
 
 /-- Both a live inherited leaf and its all-deleted continuation select the
 split marker at zero, not the unused destination title's START boundary. -/
@@ -612,6 +675,7 @@ theorem deletion_selection_control :
     deleteAddresses {} .initial 1 1 = none := by decide +kernel
 
 #print axioms decode_originAddress
+#print axioms prepared_merge_creators
 #print axioms materialize_attached
 #print axioms attached_selection_prepared
 #print axioms locate_member
@@ -625,6 +689,7 @@ theorem deletion_selection_control :
 #print axioms prepared_split_creators
 #print axioms prepared_create_creators
 #print axioms own_selection_prepared
+#print axioms selection_prepared
 #print axioms inherited_zero_control
 #print axioms client_boundaries_control
 #print axioms deletion_selection_control

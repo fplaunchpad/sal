@@ -150,16 +150,18 @@ theorem honest_issue_erase (network : NotionCorePayloadNetwork.State)
     (bounded : stop ≤ visibleLength ((NotionCoreReconstruction.reconstruct network peer).getD {}) block) :
     ∃ next, NotionCoreMachineNetwork.issue network peer (.erase block start stop) = some next ∧
       NotionCoreMachineNetwork.Reach next := by
-  obtain ⟨state,inst,ids,accepted,prepared,idsNonempty⟩ :=
+  obtain ⟨state,groups,accepted,prepared,groupsNonempty,targetsNonempty⟩ :=
     NotionCoreMachineDeleteTotal.honest_erase_request_total network reachable peer block start stop
       stored nonempty bounded
-  have sortedNonempty : (NotionCoreRanges.sorted ids).isEmpty = false := by
-    rw [(NotionCoreRanges.sorted_perm ids).isEmpty_eq]
-    simp [idsNonempty]
+  have emits : (groups.flatMap Prod.snd).isEmpty = false := by
+    obtain ⟨group,rest,groupsEq⟩ := List.exists_cons_of_ne_nil groupsNonempty
+    have first := targetsNonempty group (by simp [groupsEq])
+    obtain ⟨id,ids,firstEq⟩ := List.exists_cons_of_ne_nil first
+    simp [groupsEq,firstEq]
   have success : ∃ next, NotionCoreMachineNetwork.issue network peer (.erase block start stop) = some next := by
     simp [NotionCoreMachineNetwork.issue,NotionCoreMachineNetwork.Request.earlyNoop,
       show start ≠ stop by omega,accepted,NotionCoreMachineNetwork.prepareRequest,prepared,
-      NotionCorePayload.prepare,NotionCorePayload.Payload.emits,sortedNonempty]
+      NotionCorePayload.prepare,NotionCorePayload.Payload.emits,emits]
   obtain ⟨next,issued⟩ := success
   exact ⟨next,issued,NotionCoreMachineNetwork.Reach.request peer (.erase block start stop) reachable issued⟩
 

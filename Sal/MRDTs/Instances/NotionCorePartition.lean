@@ -54,11 +54,13 @@ def scanCells (physical : List Atom) : List Entry → List Cell
       ⟨entry.owner, ⟨entry.start, extract physical entry.start (rest.head?.map Entry.start)⟩⟩ ::
         scanCells physical rest
 
-/-- Structural coverage and uniqueness of a raw endpoint state. This records
-physical/table factorization, not equality with the result of `scanCells`. -/
+/-- Structural coverage and address uniqueness of a raw endpoint state. This
+records physical/table factorization, not equality with the result of
+`scanCells`. Owners need not be distinct: one block may own several cells of
+an instance. -/
 def Represents (state : State) (cells : List Cell) : Prop :=
   state.physical = flatten cells ∧ state.endpoints = cells.map Cell.entry ∧
-  (state.physical.map Atom.address).Nodup ∧ (cells.map Cell.owner).Nodup
+  (state.physical.map Atom.address).Nodup
 
 private theorem middle_absent {α : Type} (before after : List α) (item : α)
     (unique : (before ++ item :: after).Nodup) : item ∉ before ∧ item ∉ after := by
@@ -171,12 +173,12 @@ private theorem scanCells_suffix (before after : List Cell)
 satisfying the structural endpoint factorization and uniqueness invariant. -/
 theorem extraction_correct {state : State} {cells : List Cell}
     (representation : Represents state cells) : scanCells state.physical state.endpoints = cells := by
-  rcases representation with ⟨physical, table, unique, _⟩
+  rcases representation with ⟨physical, table, unique⟩
   rw [physical, table]
   exact scanCells_suffix [] cells (by simpa only [physical, List.nil_append] using unique)
 
 def semanticCells (cells : List Cell) : NotionCoreSpec.Document :=
-  cells.map fun cell => ⟨cell.owner, cell.slice.slots⟩
+  cells.map fun cell => ⟨cell.owner, cell.slice.start.1, cell.slice.slots, true⟩
 
 theorem semantic_addresses (cells : List Cell) :
     (semanticCells cells).flatMap (fun block => block.slots.map NotionCoreSpec.Slot.address) =
@@ -201,17 +203,17 @@ theorem findCell_of_member {cells : List Cell} (cell : Cell) (origin : Address)
   obtain ⟨before, after, shape⟩ := List.append_of_mem member
   subst cells
   have semanticUnique : ((semanticCells before ++
-      (⟨cell.owner, cell.slice.slots⟩ : NotionCoreSpec.Block) :: semanticCells after).flatMap
+      (⟨cell.owner, cell.slice.start.1, cell.slice.slots, true⟩ : NotionCoreSpec.Block) :: semanticCells after).flatMap
         (fun block => block.slots.map NotionCoreSpec.Slot.address)).Nodup := by
     simpa only [← semantic_addresses, semanticCells, List.map_append, List.map_cons] using unique
   have present : origin ∈ cell.slice.slots.map NotionCoreSpec.Slot.address := by
     simpa only [NotionCoreSourceDocument.active_addresses] using active
   have separated := (NotionCoreSpec.address_focus (semanticCells before) (semanticCells after)
-    ⟨cell.owner, cell.slice.slots⟩ origin semanticUnique present).2
+    ⟨cell.owner, cell.slice.start.1, cell.slice.slots, true⟩ origin semanticUnique present).2
   apply List.find?_eq_some_iff_append.mpr
   refine ⟨by simp [active], before, after, rfl, ?_⟩
   intro other otherMember
-  have absent := separated (⟨other.owner, other.slice.slots⟩ : NotionCoreSpec.Block)
+  have absent := separated (⟨other.owner, other.slice.start.1, other.slice.slots, true⟩ : NotionCoreSpec.Block)
     (List.mem_append_left _ (List.mem_map.mpr ⟨other, otherMember, rfl⟩))
   simp only [NotionCoreSourceDocument.active_addresses] at absent
   simp [absent]
@@ -235,7 +237,7 @@ theorem locate_of_member {state : State} {cells : List Cell} (cell : Cell) (orig
     (representation : Represents state cells) (member : cell ∈ cells)
     (active : origin ∈ cell.slice.traversal) : locate state origin = some cell := by
   rw [locate, extraction_correct representation]
-  exact findCell_of_member cell origin (by simpa only [representation.1] using representation.2.2.1) member active
+  exact findCell_of_member cell origin (by simpa only [representation.1] using representation.2.2) member active
 
 /-- Splice after the first physical/key occurrence. Origin membership is an
 issuance guard; indices are computed by the executable search. -/
@@ -348,26 +350,19 @@ theorem split_represents {state : State} (before after : List Cell) (cell : Cell
     (origin marker : Address) (freshOwner : Nat)
     (representation : Represents state (before ++ cell :: after))
     (active : origin ∈ cell.slice.traversal)
-    (freshMarker : marker ∉ state.physical.map Atom.address)
-    (freshBlock : freshOwner ∉ (before ++ cell :: after).map Cell.owner) :
+    (freshMarker : marker ∉ state.physical.map Atom.address) :
     ∃ next, split state origin marker freshOwner = some next ∧
       Represents next (before ++ splitCell cell origin marker freshOwner ++ after) := by
   have located := locate_of_member cell origin representation (by simp) active
   have unique : ((flatten (before ++ cell :: after)).map Atom.address).Nodup := by
-    simpa only [representation.1] using representation.2.2.1
+    simpa only [representation.1] using representation.2.2
   refine ⟨⟨spliceAfterBy Atom.address origin [boundary marker] state.physical,
     spliceAfterBy Entry.start cell.slice.start [⟨freshOwner, marker⟩] state.endpoints⟩,
-    by simp only [split, located], ?_, ?_, ?_, ?_⟩
+    by simp only [split, located], ?_, ?_, ?_⟩
   · simpa only [representation.1] using split_physical before after cell origin marker freshOwner unique active
   · simpa only [representation.2.1] using split_table before after cell origin marker freshOwner unique
   · exact splice_singleton_nodup Atom.address state.physical (boundary marker) origin
-      representation.2.2.1 freshMarker
-  · have prior : ((before ++ [cell]).map Cell.owner ++ after.map Cell.owner).Nodup := by
-      simpa only [List.map_append, List.map_cons, List.append_assoc, List.singleton_append] using representation.2.2.2
-    have absent : freshOwner ∉ (before ++ [cell]).map Cell.owner ++ after.map Cell.owner := by
-      simpa only [List.map_append, List.map_cons, List.append_assoc, List.singleton_append] using freshBlock
-    have inserted := List.nodup_middle.mpr (List.nodup_cons.mpr ⟨absent, prior⟩)
-    simpa [splitCell, NotionCoreSource.splitSlice, List.map_append, List.append_assoc] using inserted
+      representation.2.2 freshMarker
 
 /-- Every raw physical identity has exactly one cell/owner. This includes
 retained starts, split markers and tombstoned characters. -/
@@ -383,7 +378,7 @@ theorem physical_unique_owner {state : State} {cells : List Cell} (origin : Addr
     exact List.mem_map.mpr ⟨atom, atomMember, rfl⟩
   refine ⟨cell, ⟨member, active⟩, ?_⟩
   intro other h
-  exact unique_cell (by simpa only [representation.1] using representation.2.2.1)
+  exact unique_cell (by simpa only [representation.1] using representation.2.2)
     h.1 member h.2 active
 
 /-- The affected interval is derived from raw origin membership and global
@@ -391,8 +386,7 @@ ownership, rather than supplied as a chosen final projection. -/
 theorem split_refines {state : State} {cells : List Cell} (origin marker : Address)
     (freshOwner : Nat) (representation : Represents state cells)
     (present : origin ∈ state.physical.map Atom.address)
-    (freshMarker : marker ∉ state.physical.map Atom.address)
-    (freshBlock : freshOwner ∉ state.endpoints.map Entry.owner) :
+    (freshMarker : marker ∉ state.physical.map Atom.address) :
     ∃ before cell after next,
       cells = before ++ cell :: after ∧ locate state origin = some cell ∧
       split state origin marker freshOwner = some next ∧
@@ -400,11 +394,9 @@ theorem split_refines {state : State} {cells : List Cell} (origin marker : Addre
   obtain ⟨cell, ownership, _⟩ := physical_unique_owner origin representation present
   obtain ⟨before, after, shape⟩ := List.append_of_mem ownership.1
   have located := locate_of_member cell origin representation ownership.1 ownership.2
-  have freshOwner' : freshOwner ∉ cells.map Cell.owner := by
-    simpa only [representation.2.1, List.map_map, Cell.entry, Function.comp_def] using freshBlock
   subst cells
   obtain ⟨next, executed, represented⟩ := split_represents before after cell origin marker freshOwner
-    representation ownership.2 freshMarker freshOwner'
+    representation ownership.2 freshMarker
   exact ⟨before, cell, after, next, rfl, located, executed, represented⟩
 
 def insertCell (cell : Cell) (origin : Address) (fresh : List Atom) : Cell :=
@@ -457,13 +449,12 @@ theorem insert_represents {state : State} (before after : List Cell) (cell : Cel
       Represents next (before ++ insertCell cell origin fresh :: after) := by
   have located := locate_of_member cell origin representation (by simp) active
   have unique : ((flatten (before ++ cell :: after)).map Atom.address).Nodup := by
-    simpa only [representation.1] using representation.2.2.1
+    simpa only [representation.1] using representation.2.2
   refine ⟨{state with physical := spliceAfterBy Atom.address origin fresh state.physical},
-    by simp only [insert, located], ?_, ?_, ?_, ?_⟩
+    by simp only [insert, located], ?_, ?_, ?_⟩
   · simpa only [representation.1] using insert_physical before after cell origin fresh unique active
   · simpa [insertCell, NotionCoreSource.insertSlice, Cell.entry, List.map_append] using representation.2.1
-  · exact splice_nodup Atom.address state.physical fresh origin representation.2.2.1 newUnique apart
-  · simpa [insertCell, List.map_append] using representation.2.2.2
+  · exact splice_nodup Atom.address state.physical fresh origin representation.2.2 newUnique apart
 
 /-- The published split path integrates its marker before routing it to a
 slice. With the endpoint table still unchanged, that marker belongs exactly
@@ -512,7 +503,7 @@ def eraseCell (targets : List Address) (cell : Cell) : Cell :=
 theorem erase_represents {state : State} {cells : List Cell} (targets : List Address)
     (representation : Represents state cells) :
     Represents (erase state targets) (cells.map (eraseCell targets)) := by
-  refine ⟨?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_⟩
   · rw [show (erase state targets).physical =
       (flatten cells).map (NotionCoreSource.eraseAtom targets) from congrArg
         (List.map (NotionCoreSource.eraseAtom targets)) representation.1]
@@ -520,8 +511,7 @@ theorem erase_represents {state : State} {cells : List Cell} (targets : List Add
     congr 1
   · simpa only [erase, List.map_map, eraseCell, NotionCoreSource.eraseSlice,
       Cell.entry, Function.comp_def] using representation.2.1
-  · simpa only [erase, List.map_map, Function.comp_def, erase_atom_address] using representation.2.2.1
-  · simpa only [List.map_map, eraseCell, Function.comp_def] using representation.2.2.2
+  · simpa only [erase, List.map_map, Function.comp_def, erase_atom_address] using representation.2.2
 
 def InteriorText (cells : List Cell) : Prop :=
   ∀ cell ∈ cells, ∀ atom ∈ cell.slice.atoms,
@@ -575,7 +565,7 @@ def initial (owner inst : Nat) : State :=
 def initialCell (owner inst : Nat) : Cell := ⟨owner, ⟨(inst, .start), []⟩⟩
 
 theorem initial_represents (owner inst : Nat) : Represents (initial owner inst) [initialCell owner inst] := by
-  exact ⟨rfl, rfl, by simp [initial], by simp⟩
+  exact ⟨rfl, rfl, by simp [initial]⟩
 
 /-- Actual raw endpoint execution with input freshness and source-shaped item
 kinds. There is no materialized partition, output invariant, or projection
@@ -583,8 +573,7 @@ equality in these guards. Origin membership is checked by raw lookup itself. -/
 inductive Reach : State → Prop where
   | init (owner inst : Nat) : Reach (initial owner inst)
   | split {state next : State} {origin marker : Address} {freshOwner : Nat} :
-      Reach state → marker ∉ state.physical.map Atom.address →
-      freshOwner ∉ state.endpoints.map Entry.owner → marker.1 = origin.1 →
+      Reach state → marker ∉ state.physical.map Atom.address → marker.1 = origin.1 →
       split state origin marker freshOwner = some next → Reach next
   | insert {state next : State} {origin : Address} {fresh : List Atom} :
       Reach state → (fresh.map Atom.address).Nodup →
@@ -601,7 +590,7 @@ private theorem located_materialized {state : State} {cells : List Cell} {cell :
   simpa only [findCell, decide_eq_true_eq] using List.find?_some located
 
 /-- Arbitrarily many raw splits, run insertions and tombstoning deletions
-preserve global endpoint coverage and unique ownership. Split markers occur
+preserve global endpoint coverage and address uniqueness. Split markers occur
 only at the table's interval boundaries because every interior atom is text. -/
 theorem reachable_represents {state : State} (reachable : Reach state) :
     ∃ cells, Represents state cells ∧ InteriorText cells := by
@@ -609,7 +598,7 @@ theorem reachable_represents {state : State} (reachable : Reach state) :
   | init owner inst =>
       exact ⟨[initialCell owner inst], initial_represents owner inst,
         by simp [InteriorText, initialCell]⟩
-  | @split state next origin marker freshOwner _ freshMarker freshOwnerName sameInstance accepted ih =>
+  | @split state next origin marker freshOwner _ freshMarker sameInstance accepted ih =>
       obtain ⟨cells, representation, interior⟩ := ih
       cases found : locate state origin with
       | none => simp [split, found] at accepted
@@ -617,10 +606,8 @@ theorem reachable_represents {state : State} (reachable : Reach state) :
           have ownership := located_materialized representation found
           obtain ⟨before, after, shape⟩ := List.append_of_mem ownership.1
           subst cells
-          have freshBlock : freshOwner ∉ (before ++ cell :: after).map Cell.owner := by
-            simpa only [representation.2.1, List.map_map, Cell.entry, Function.comp_def] using freshOwnerName
           obtain ⟨result, executed, represented⟩ := split_represents before after cell origin marker freshOwner
-            representation ownership.2 freshMarker freshBlock
+            representation ownership.2 freshMarker
           rw [executed] at accepted
           have equal := Option.some.inj accepted
           subst next
@@ -719,11 +706,11 @@ theorem repeated_operations_control :
     (by simp [initial, boundary, a, b, c])
     (by simp [a, b, c, start]) (by decide)
   have r2 : Reach s2 := .erase [b.address] r1
-  have r3 : Reach s3 := .split (origin := b.address) (marker := m1) (freshOwner := 11) r2 (by decide) (by decide) rfl (by decide)
+  have r3 : Reach s3 := .split (origin := b.address) (marker := m1) (freshOwner := 11) r2 (by decide) rfl (by decide)
   have r4 : Reach s4 := .insert (origin := b.address) (fresh := [x]) r3 (by decide)
     (by simp [s3, boundary, start, a, deadB, b, m1, c, x])
     (by simp [x, b]) (by decide)
-  have r5 : Reach s5 := .split (origin := start) (marker := m2) (freshOwner := 12) r4 (by decide) (by decide) rfl (by decide)
+  have r5 : Reach s5 := .split (origin := start) (marker := m2) (freshOwner := 12) r4 (by decide) rfl (by decide)
   exact ⟨r5, by decide, by decide⟩
 
 #print axioms extraction_correct

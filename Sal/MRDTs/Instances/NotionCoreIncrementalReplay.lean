@@ -76,7 +76,7 @@ theorem duplicate_control :
     query (updateTo old [seed,x]).cache = some [(0,[97,88,98])] ∧
     query (updateTo old [seed,x]).cache ≠ some [(0,[97,98])] := by decide +kernel
 private def choices : List Transaction :=
-  [seed,x,late, ⟨⟨5,[68]⟩,.erase .initial .initial [⟨1,[65]⟩]⟩,
+  [seed,x,late, ⟨⟨5,[68]⟩,.erase .initial [(.initial,[⟨1,[65]⟩])]⟩,
    ⟨⟨6,[69]⟩,.split .initial .initial (.item ⟨1,[65]⟩)⟩]
 def words : Nat → List (List Transaction)
   | 0 => [[]]

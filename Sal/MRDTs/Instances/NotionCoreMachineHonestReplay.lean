@@ -67,7 +67,7 @@ theorem prepared_root_knowledge (network : NotionCorePayloadNetwork.State)
           simpa [prepareRequest,prepareSplit,selected,decoded] using prepared
         subst payload
         have active := NotionCoreMachineClientShape.prepared_split_active _ state accepted
-          shape.1 shape.2.2 block inst index origin prepared
+          shape.2.2 block inst index origin prepared
         intro key member
         have same : key = inst := by simpa [selectedInstances] using member
         exact same ▸ active_known_root network session state roots inst active
@@ -86,10 +86,23 @@ theorem prepared_root_knowledge (network : NotionCorePayloadNetwork.State)
             simpa [prepareRequest,prepareInsert,skipped,selected,decoded] using prepared
           subst payload
           have active := NotionCoreMachineClientShape.prepared_insert_active _ state accepted
-            shape.1 shape.2.2 block inst index atoms origin prepared
+            shape.2.2 block inst index atoms origin prepared
           intro key member
           have same : key = inst := by simpa [selectedInstances] using member
           exact same ▸ active_known_root network session state roots inst active
+  | merge source =>
+    simp only [prepareRequest,prepareMerge] at prepared
+    split at prepared
+    · cases last : ((visible state).take ((visible state).idxOf (blockName source))).getLast? with
+      | none => simp [last] at prepared
+      | some previous =>
+        cases decoded : decodeBlock previous with
+        | none => simp [last,decoded] at prepared
+        | some target =>
+          have same : Payload.merge source target = payload := by simpa [last,decoded] using prepared
+          subst payload
+          simp [selectedInstances]
+    · contradiction
 
 /-- The real request transition preserves root provenance. Its reconstruction
 invariant follows from the old archive property; local preparation supplies

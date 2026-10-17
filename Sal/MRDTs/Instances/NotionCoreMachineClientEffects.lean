@@ -12,27 +12,30 @@ open NotionCoreMachineDocumentClient
 open NotionCorePayload (BlockKey Transaction reservation)
 open NotionCoreSource (Block Atom)
 
-private theorem selected_instance_exists (network : NotionCorePayloadNetwork.State)
+private theorem selected_instances_exist (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
     (state : State) (accepted : replay {} (NotionCoreReconstruction.transactions network peer) = some state)
-    (block inst : BlockKey) (start stop : Nat) (ids : List NotionRunAllocation.Id)
-    (prepared : NotionCoreMachineDelete.selectErase state block start stop = some (.erase block inst ids)) :
-    ∃ entry ∈ state.instances, entry.1 = blockName inst := by
+    (block : BlockKey) (start stop : Nat) (groups : List (BlockKey × List NotionRunAllocation.Id))
+    (prepared : NotionCoreMachineDelete.selectErase state block start stop = some (.erase block groups)) :
+    ∀ group ∈ groups, ∃ entry ∈ state.instances, entry.1 = blockName group.1 := by
+  intro group member
   have known := NotionCoreMachineDelete.selectErase_creators network
     (NotionCoreMachineNetwork.creator_reachable reachable) peer _ state
     (NotionCoreReconstruction.transactions_received network peer) accepted block start stop _ prepared
-  obtain ⟨provider,published,received,created⟩ := known inst
-    (by simp [NotionCoreCreatorNetwork.requiredBlocks])
+  obtain ⟨provider,published,received,created⟩ := known group.1
+    (by simp only [NotionCoreCreatorNetwork.requiredBlocks]
+        exact List.mem_cons_of_mem _ (List.mem_map.mpr ⟨group,member,rfl⟩))
   have inReplay : provider.tx ∈ NotionCoreReconstruction.transactions network peer :=
     (NotionCoreReconstruction.transactions_membership network peer provider.tx).mpr
       ⟨⟨provider,published,rfl⟩,received⟩
   exact (NotionCoreMachineCreatorPresence.replay_created_instances _ state accepted).2
-    provider.tx inReplay inst created
+    provider.tx inReplay group.1 created
 
 /-- Valid nonempty deletion preparation and execution have the ordinary local
-range effect on the actual renderer, preserving every other displayed block.
-No acceptance, structural invariant, slot uniqueness, selection, or desired
-after-render equation is supplied for the resulting operation. -/
+range effect on the actual renderer, preserving every other displayed block,
+also when the range spans several text instances of a merged block. No
+acceptance, structural invariant, slot uniqueness, selection, or desired
+after-render equation is supplied for the resulting operations. -/
 theorem honest_erase_effect (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
     (state : State) (reconstructed : NotionCoreReconstruction.reconstruct network peer = some state)
@@ -40,9 +43,9 @@ theorem honest_erase_effect (network : NotionCorePayloadNetwork.State)
     (materialized : materializeDocument state = some (pre ++ source :: post))
     (block : BlockKey) (name : source.id = blockName block) (start stop : Nat)
     (nonempty : start < stop) (bound : stop ≤ NotionCoreMachineDeleteTotal.visibleLength state block) :
-    ∃ inst ids result after,
-      NotionCoreMachineDelete.selectErase state block start stop = some (.erase block inst ids) ∧
-      applyOperation state (.erase block inst ids) = some result ∧
+    ∃ groups result after,
+      NotionCoreMachineDelete.selectErase state block start stop = some (.erase block groups) ∧
+      applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result ∧
       materializeDocument result = some after ∧
       render result = some (NotionCoreSpec.view (NotionCoreSourceDocument.project pre) ++
         [(source.id,(NotionCoreSpec.text source.project.slots).take start ++
@@ -57,33 +60,53 @@ theorem honest_erase_effect (network : NotionCorePayloadNetwork.State)
     (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable)) peer
     (NotionCoreReconstruction.transactions network peer) [] (by simp) state accepted
   have aligned := NotionCoreMachineDisplay.reconstructed_aligned network peer state accepted
-  have addresses := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part physicalUnique shape aligned
+  have addresses := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part physicalUnique aligned
     _ materialized
-  obtain ⟨inst,ids,result,after,prepared,operation,extracted,effect⟩ := erase_request_effect _ state accepted part shape
+  obtain ⟨groups,result,after,prepared,operations,extracted,effect⟩ := erase_request_effect _ state accepted part
     physicalUnique pre post source materialized block name start stop nonempty bound addresses
-  have existsInstance := selected_instance_exists network reachable peer state accepted block inst start stop ids prepared
-  obtain ⟨checked,checkedOperation,nextPart⟩ := NotionCoreMachinePartitionUpdates.erase_operation_partitioned
-    state block inst ids part existsInstance
-  have sameResult : checked = result := Option.some.inj (checkedOperation.symm.trans operation)
+  have existsInstance := selected_instances_exist network reachable peer state accepted block start stop
+    groups prepared
+  obtain ⟨checked,checkedOperations,nextPart⟩ := NotionCoreMachinePartitionUpdates.erase_operations_partitioned
+    state block groups part existsInstance
+  have sameResult : checked = result := Option.some.inj (checkedOperations.symm.trans operations)
   subst checked
-  have nextShape := (NotionCoreMachineRootReplay.erase_shape_active state result block inst ids shape operation).1
-  have rendered := materialized_render result nextPart nextShape.1 nextShape.2.2 after extracted
+  have nextShape := (NotionCoreMachineRootReplay.erase_groups_shape_active state result block groups shape
+    operations).1
+  have rendered := materialized_render result after extracted
   rw [effect] at rendered
-  exact ⟨inst,ids,result,after,prepared,operation,extracted,rendered,nextPart,nextShape⟩
+  exact ⟨groups,result,after,prepared,operations,extracted,rendered,nextPart,nextShape⟩
 
 #print axioms honest_erase_effect
 
 namespace SPOT
-private def erasedView (state : State) : Option (List (Nat × List Nat)) := do
-  let payload ← NotionCoreMachineDelete.selectErase state .initial 0 1
+private def erasedView (state : State) (start stop : Nat) : Option (List (Nat × List Nat)) := do
+  let payload ← NotionCoreMachineDelete.selectErase state .initial start stop
   match payload with
-  | .erase block inst ids => applyOperation state (.erase block inst ids) >>= render
+  | .erase block groups =>
+    applyOperations state (groups.map fun group => .erase block group.1 group.2) >>= render
   | _ => none
 /-- Actual positional preparation and erasure remove a, retain b, and retain
 its block. The rival no-op and wrong-range renderings are explicitly rejected. -/
 theorem actual_range_control :
-    (replay {} [NotionCorePayload.bootstrap [97,98]] >>= erasedView) = some [(0,[98])] ∧
-    (replay {} [NotionCorePayload.bootstrap [97,98]] >>= erasedView) ≠ some [(0,[97])] ∧
-    (replay {} [NotionCorePayload.bootstrap [97,98]] >>= erasedView) ≠ some [(0,[97,98])] := by decide +kernel
+    (replay {} [NotionCorePayload.bootstrap [97,98]] >>= fun state => erasedView state 0 1) =
+      some [(0,[98])] ∧
+    (replay {} [NotionCorePayload.bootstrap [97,98]] >>= fun state => erasedView state 0 1) ≠
+      some [(0,[97])] ∧
+    (replay {} [NotionCorePayload.bootstrap [97,98]] >>= fun state => erasedView state 0 1) ≠
+      some [(0,[97,98])] := by decide +kernel
+
+private def x : NotionRunAllocation.Id := ⟨3,[66]⟩
+private def merged : List Transaction :=
+  [NotionCorePayload.bootstrap [97], ⟨x,.create (some .initial)⟩,
+    ⟨⟨4,[66]⟩,.insert (.issued x) (.issued x) .start [98,99]⟩, ⟨⟨6,[66]⟩,.merge (.issued x) .initial⟩]
+
+/-- After merging bc into a, erasing the range ab spanning the merged
+boundary leaves c alone, in one transaction of two instance groups. Erasing
+only the first instance's part, or nothing, is rejected. -/
+theorem merged_range_control :
+    (replay {} merged >>= fun state => erasedView state 0 2) = some [(0,[99])] ∧
+    (replay {} merged >>= fun state => erasedView state 0 2) ≠ some [(0,[98,99])] ∧
+    (replay {} merged >>= fun state => erasedView state 0 2) ≠ some [(0,[97,98,99])] := by
+  decide +kernel
 end SPOT
 end Sal.MRDTs.Instances.NotionCoreMachineClientEffects

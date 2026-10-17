@@ -19,9 +19,15 @@ structure Slot where
   visible : Bool
   deriving DecidableEq, Repr
 
+/-- A block of the document. `inst` is the text instance the block was
+created with; its root slot is `root inst`. A tombstone (`alive = false`) is a
+block that has been merged into another; it keeps its place in the document
+order and its instance, holds no slots, and is absent from the view. -/
 structure Block where
   id : Nat
+  inst : Nat
   slots : List Slot
+  alive : Bool := true
   deriving DecidableEq, Repr
 
 abbrev Document := List Block
@@ -33,8 +39,10 @@ def character (inst : Nat) (id : Nat × Nat) (value : Nat) : Slot := ⟨(inst, .
 def text (slots : List Slot) : List Nat :=
   (slots.filter Slot.visible).map Slot.value
 
+/-- The displayed document: the alive blocks in document order with their
+visible text. Tombstones are filtered out. -/
 def view (doc : Document) : List (Nat × List Nat) :=
-  doc.map fun b => (b.id, text b.slots)
+  (doc.filter Block.alive).map fun b => (b.id, text b.slots)
 
 @[simp] theorem text_nil : text [] = [] := rfl
 @[simp] theorem text_append (a b : List Slot) : text (a ++ b) = text a ++ text b := by
@@ -86,10 +94,21 @@ uniqueness prevents ambiguous origins and duplicate prepared character IDs. -/
 def Anchored (block : Block) : Prop :=
   ∃ head tail, block.slots = head :: tail ∧ head.visible = false
 
+/-- Block names and slot addresses are unique over all blocks, tombstones
+included, and every alive block is anchored. A tombstone holds no slots, so it
+has no head anchor; the invariant does not constrain tombstones beyond
+uniqueness. -/
 def WellFormed (doc : Document) : Prop :=
   (doc.map Block.id).Nodup ∧
   (doc.flatMap (fun b => b.slots.map Slot.address)).Nodup ∧
-  ∀ block ∈ doc, Anchored block
+  ∀ block ∈ doc, block.alive = true → Anchored block
+
+/-- Every alive block is headed by its own root slot `root inst`, and every
+tombstone holds no slots. On a document with unique slot addresses this makes
+an alive block the holder of its own root, and makes every holder alive. -/
+def Rooted (doc : Document) : Prop :=
+  ∀ block ∈ doc, (block.alive = true → ∃ tail, block.slots = root block.inst :: tail) ∧
+    (block.alive = false → block.slots = [])
 
 /-- Preparation only reads the current block and a visible index. The selected
 anchor is the retained head at zero or the requested predecessor character. -/
@@ -290,16 +309,30 @@ inductive Command where
   | insert (origin : Address) (fresh : List Slot)
   | delete (targets : List Address)
   | split (origin : Address) (marker : Slot) (target : Nat)
+  | merge (source target : Nat)
   deriving DecidableEq, Repr
+
+def findBlock (doc : Document) (bid : Nat) : Option Block :=
+  doc.find? (fun block => decide (block.id = bid))
 
 /-- Independent command execution. A split appends its hidden marker and
 suffix to an already created fresh target block; creation separately places
-that block after the request's original block. -/
+that block after the request's original block, alive or a tombstone.
+
+A merge looks up the target's holder: the block whose slots contain the
+target's root slot. Root slots move with merges and tombstones hold no slots,
+so on rooted documents the holder is the target itself when it is alive, and
+otherwise the alive block that absorbed it. If the source is alive and the
+holder exists and is not the source, the holder's slots become its old slots
+followed by the source's, including the source's hidden root, and the source
+becomes a tombstone in place: no slots, `alive = false`. Any other merge,
+including one whose holder is the source itself, leaves the document
+unchanged. The target's liveness is not checked. -/
 def step (doc : Document) (command : Command) : Option Document :=
   match command with
   | .create id inst after =>
       if id ∈ doc.map Block.id then none
-      else let fresh : Block := ⟨id, [root inst]⟩
+      else let fresh : Block := ⟨id, inst, [root inst], true⟩
         match after with
         | none => some (fresh :: doc)
         | some previous =>
@@ -323,6 +356,19 @@ def step (doc : Document) (command : Command) : Option Document :=
               if block.id = source.id then {block with slots := pre}
               else if block.id = target then {block with slots := block.slots ++ marker :: post}
               else block)
+  | .merge source target =>
+      match findBlock doc source, findBlock doc target with
+      | some src, some tgt =>
+          match owner doc (root tgt.inst).address with
+          | some holder =>
+              if src.alive = true ∧ holder.id ≠ source then
+                some (doc.map fun block =>
+                  if block.id = holder.id then {block with slots := block.slots ++ src.slots}
+                  else if block.id = source then {block with slots := [], alive := false}
+                  else block)
+              else some doc
+          | none => some doc
+      | _, _ => some doc
 
 def execute (doc : Document) : List Command → Option Document
   | [] => some doc
@@ -388,12 +434,12 @@ theorem step_insert_focus (pre post : Document) (source : Block) (origin : Addre
 /-- Full-document local insert correctness. The structural hypotheses say the
 head is hidden and every semantic address occurs once; they do not assert the
 visible editing effect. Preparation may insert any supplied character run. -/
-theorem local_insert_document (pre post : Document) (bid : Nat)
+theorem local_insert_document (pre post : Document) {blockInst : Nat} (bid : Nat)
     (head : Slot) (tail fresh : List Slot) (index : Nat)
     (invisible : head.visible = false)
-    (unique : ((pre ++ ⟨bid, head :: tail⟩ :: post).flatMap
+    (unique : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup) :
-    ∃ result, step (pre ++ ⟨bid, head :: tail⟩ :: post)
+    ∃ result, step (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post)
         (.insert (preparedAnchor head tail index) fresh) = some result ∧
       view result = view pre ++ [(bid,
         (text (head :: tail)).take index ++ text fresh ++
@@ -402,9 +448,10 @@ theorem local_insert_document (pre post : Document) (bid : Nat)
     simpa using Nat.lt_succ_of_le (gapIndex_le tail index)
   have present : preparedAnchor head tail index ∈ (head :: tail).map Slot.address := by
     exact List.mem_map.mpr ⟨_, List.getElem_mem bound, rfl⟩
-  have structural := address_focus pre post ⟨bid, head :: tail⟩ _ unique present
-  refine ⟨_, step_insert_focus pre post ⟨bid, head :: tail⟩ _ fresh present structural.2, ?_⟩
-  simp only [view, List.map_append, List.map_cons]
+  have structural := address_focus pre post ⟨bid, blockInst, head :: tail, true⟩ _ unique present
+  refine ⟨_, step_insert_focus pre post ⟨bid, blockInst, head :: tail, true⟩ _ fresh present structural.2, ?_⟩
+  simp only [view, List.filter_append, List.filter_cons, List.map_append, List.map_cons,
+    ↓reduceIte]
   rw [prepared_insert_visible head tail fresh index invisible structural.1]
   simp [List.append_assoc]
 
@@ -417,35 +464,36 @@ theorem prepareDelete_subset (slots : List Slot) (start count : Nat) :
 
 /-- Full-document local delete correctness. Address uniqueness proves that
 selected identities cannot erase characters belonging to another block. -/
-theorem local_delete_document (pre post : Document) (bid : Nat)
+theorem local_delete_document (pre post : Document) {blockInst : Nat} (bid : Nat)
     (head : Slot) (tail : List Slot) (start count : Nat)
-    (unique : ((pre ++ ⟨bid, head :: tail⟩ :: post).flatMap
+    (unique : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup) :
-    ∃ result, step (pre ++ ⟨bid, head :: tail⟩ :: post)
+    ∃ result, step (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post)
         (.delete (prepareDelete (head :: tail) start count)) = some result ∧
       view result = view pre ++ [(bid,
         (text (head :: tail)).take start ++
         (text (head :: tail)).drop (start + count))] ++ view post := by
   let targets := prepareDelete (head :: tail) start count
-  have source_unique := (address_focus pre post ⟨bid, head :: tail⟩ head.address unique
+  have source_unique := (address_focus pre post ⟨bid, blockInst, head :: tail, true⟩ head.address unique
     (by simp)).1
   have unchanged : ∀ b ∈ pre ++ post,
       ({b with slots := b.slots.map (eraseSlot targets)} : Block) = b := by
     intro b hb
     have outside : ∀ slot ∈ b.slots, slot.address ∉ targets := by
       intro slot member selected
-      have separated := (address_focus pre post ⟨bid, head :: tail⟩ slot.address unique
+      have separated := (address_focus pre post ⟨bid, blockInst, head :: tail, true⟩ slot.address unique
         (prepareDelete_subset _ start count _ selected)).2
       exact separated b hb (List.mem_map.mpr ⟨slot, member, rfl⟩)
     rw [show b.slots.map (eraseSlot targets) = b.slots from
       eraseSlots_unchanged targets b.slots outside]
-  refine ⟨pre ++ {id := bid, slots := eraseSlots targets (head :: tail)} :: post, ?_, ?_⟩
+  refine ⟨pre ++ {id := bid, inst := blockInst, slots := eraseSlots targets (head :: tail)} :: post, ?_, ?_⟩
   · simp only [step, List.map_append, List.map_cons]
     congr 1
     rw [map_identity _ pre (fun b hb => unchanged b (List.mem_append_left _ hb)),
       map_identity _ post (fun b hb => unchanged b (List.mem_append_right _ hb))]
     rfl
-  · simp only [view, List.map_append, List.map_cons]
+  · simp only [view, List.filter_append, List.filter_cons, List.map_append, List.map_cons,
+    ↓reduceIte]
     rw [prepared_delete_visible _ start count source_unique]
     simp [List.append_assoc]
 
@@ -475,15 +523,16 @@ private theorem two_block_ids (pre post : Document) (source target : Block)
 
 /-- The split command has the requested visible effect on a prepared local
 gap and a newly created, empty successor block. Other blocks are unchanged.
-The premises are address/block uniqueness, anchor position, and empty target;
-none assumes the split's visible result. -/
+The premises are address/block uniqueness, anchor position, empty target, and
+that both blocks are alive; none assumes the split's visible result. -/
 theorem local_split_document (pre post : Document) (source target : Block)
     (origin : Address) (index : Nat) (marker : Slot)
     (addresses : ((pre ++ source :: target :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup)
     (blocks : ((pre ++ source :: target :: post).map Block.id).Nodup)
     (prepared : PreparedGap source.slots origin index)
-    (emptyTarget : text target.slots = []) (hidden : marker.visible = false) :
+    (emptyTarget : text target.slots = []) (hidden : marker.visible = false)
+    (sourceLive : source.alive = true) (targetLive : target.alive = true) :
     ∃ result, step (pre ++ source :: target :: post)
         (.split origin marker target.id) = some result ∧
       view result = view pre ++ [(source.id, (text source.slots).take index),
@@ -515,8 +564,8 @@ theorem local_split_document (pre post : Document) (source target : Block)
       map_identity _ post (fun b hb => unchanged b (List.mem_append_right _ hb))]
     simp [result, cut, ids.1.symm]
   · have visible := preparedGap_visible source.slots origin index structural.1 prepared
-    simp only [result, view, List.map_append, List.map_cons, text_append, text_cons,
-      emptyTarget, hidden, Bool.false_eq_true, ↓reduceIte, List.nil_append]
+    simp only [result, view, List.filter_append, List.filter_cons, sourceLive, targetLive,
+      List.map_append, List.map_cons, text_append, text_cons, emptyTarget, hidden, Bool.false_eq_true, ↓reduceIte, List.nil_append]
     rw [visible.1, visible.2]
     simp [List.append_assoc]
 
@@ -553,13 +602,13 @@ theorem step_create_focus (pre post : Document) (source : Block) (bid inst : Nat
     (blocks : ((pre ++ source :: post).map Block.id).Nodup)
     (fresh : bid ∉ (pre ++ source :: post).map Block.id) :
     step (pre ++ source :: post) (.create bid inst (some source.id)) =
-      some (pre ++ source :: ⟨bid, [root inst]⟩ :: post) := by
+      some (pre ++ source :: ⟨bid, inst, [root inst], true⟩ :: post) := by
   have present : source.id ∈ (pre ++ source :: post).map Block.id := by simp
   simp only [step, fresh, ↓reduceIte, present]
   congr 1
   simp only [List.flatMap_append, List.flatMap_cons, ↓reduceIte]
   have unchanged : ∀ b ∈ pre ++ post,
-      (if b.id = source.id then [b, ⟨bid, [root inst]⟩] else [b]) = [b] := by
+      (if b.id = source.id then [b, ⟨bid, inst, [root inst], true⟩] else [b]) = [b] := by
     intro b hb
     simp [block_id_focus pre post source blocks b hb]
   rw [flatMap_singletons _ pre (fun b hb => unchanged b (List.mem_append_left _ hb)),
@@ -572,8 +621,9 @@ private theorem nodup_insert_middle {α : Type} (pre post : List α) (fresh : α
   List.nodup_middle.mpr (List.nodup_cons.mpr ⟨absent, unique⟩)
 
 /-- The complete independent local split client: create a successor and issue
-an identity-addressed split. Fresh block/root names and uniqueness establish
-the preconditions of the command theorem, rather than assuming its result. -/
+an identity-addressed split from an alive block. Fresh block/root names and
+uniqueness establish the preconditions of the command theorem, rather than
+assuming its result. -/
 theorem local_split_client (pre post : Document) (source : Block)
     (origin : Address) (index bid inst : Nat) (marker : Slot)
     (addresses : ((pre ++ source :: post).flatMap
@@ -583,13 +633,13 @@ theorem local_split_client (pre post : Document) (source : Block)
     (freshBlock : bid ∉ (pre ++ source :: post).map Block.id)
     (freshRoot : (root inst).address ∉ (pre ++ source :: post).flatMap
       (fun b => b.slots.map Slot.address))
-    (hidden : marker.visible = false) :
+    (hidden : marker.visible = false) (live : source.alive = true) :
     ∃ result, execute (pre ++ source :: post)
         [.create bid inst (some source.id), .split origin marker bid] = some result ∧
       view result = view pre ++ [(source.id, (text source.slots).take index),
         (bid, (text source.slots).drop index)] ++ view post := by
   have created := step_create_focus pre post source bid inst blocks freshBlock
-  have addresses' : ((pre ++ source :: ⟨bid, [root inst]⟩ :: post).flatMap
+  have addresses' : ((pre ++ source :: ⟨bid, inst, [root inst], true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup := by
     have inserted := nodup_insert_middle
       (pre.flatMap (fun b => b.slots.map Slot.address) ++ source.slots.map Slot.address)
@@ -598,13 +648,13 @@ theorem local_split_client (pre post : Document) (source : Block)
       (by simpa only [List.flatMap_append, List.flatMap_cons, List.append_assoc] using freshRoot)
     simpa only [List.flatMap_append, List.flatMap_cons, List.map_cons, List.map_nil,
       List.singleton_append, List.append_assoc] using inserted
-  have blocks' : ((pre ++ source :: ⟨bid, [root inst]⟩ :: post).map Block.id).Nodup := by
+  have blocks' : ((pre ++ source :: ⟨bid, inst, [root inst], true⟩ :: post).map Block.id).Nodup := by
     have inserted := nodup_insert_middle (pre.map Block.id ++ [source.id]) (post.map Block.id) bid
       (by simpa only [List.map_append, List.map_cons, List.append_assoc, List.singleton_append] using blocks)
       (by simpa only [List.map_append, List.map_cons, List.append_assoc, List.singleton_append] using freshBlock)
     simpa only [List.map_append, List.map_cons, List.append_assoc, List.singleton_append] using inserted
   obtain ⟨result, executed, visible⟩ := local_split_document pre post source
-    ⟨bid, [root inst]⟩ origin index marker addresses' blocks' prepared (by simp [root]) hidden
+    ⟨bid, inst, [root inst], true⟩ origin index marker addresses' blocks' prepared (by simp [root]) hidden live rfl
   refine ⟨result, ?_, visible⟩
   simp only [execute, created, Option.bind_some, executed]
 
@@ -623,12 +673,12 @@ def characterRun (inst : Nat) (entries : List ((Nat × Nat) × Nat)) : List Slot
 its theorem states the values requested by the caller rather than a projection
 of an arbitrary supplied implementation state. Fresh names are required for
 subsequent structural-invariant preservation, but not this immediate effect. -/
-theorem local_insert_client (pre post : Document) (bid inst : Nat)
+theorem local_insert_client (pre post : Document) {blockInst : Nat} (bid inst : Nat)
     (head : Slot) (tail : List Slot) (entries : List ((Nat × Nat) × Nat)) (index : Nat)
     (invisible : head.visible = false)
-    (unique : ((pre ++ ⟨bid, head :: tail⟩ :: post).flatMap
+    (unique : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup) :
-    ∃ result, step (pre ++ ⟨bid, head :: tail⟩ :: post)
+    ∃ result, step (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post)
         (.insert (preparedAnchor head tail index) (characterRun inst entries)) = some result ∧
       view result = view pre ++ [(bid,
         (text (head :: tail)).take index ++ entries.map Prod.snd ++
@@ -642,9 +692,6 @@ theorem prepareGap_succeeds (head : Slot) (tail : List Slot) (index : Nat) :
     simpa using Nat.lt_succ_of_le (gapIndex_le tail index)
   simp only [prepareGap, List.getElem?_eq_getElem bound, Option.map_some]
   rfl
-
-def findBlock (doc : Document) (bid : Nat) : Option Block :=
-  doc.find? (fun block => decide (block.id = bid))
 
 def prepareInsert (doc : Document) (bid index inst : Nat)
     (entries : List ((Nat × Nat) × Nat)) : Option Command := do
@@ -677,44 +724,44 @@ theorem findBlock_focus (pre post : Document) (source : Block)
   intro block member
   simp [block_id_focus pre post source blocks block (List.mem_append_left _ member)]
 
-theorem prepareInsert_success (pre post : Document) (bid inst index : Nat)
+theorem prepareInsert_success (pre post : Document) {blockInst : Nat} (bid inst index : Nat)
     (head : Slot) (tail : List Slot) (entries : List ((Nat × Nat) × Nat))
-    (blocks : ((pre ++ ⟨bid, head :: tail⟩ :: post).map Block.id).Nodup)
+    (blocks : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).map Block.id).Nodup)
     (bound : index ≤ (text (head :: tail)).length) :
-    prepareInsert (pre ++ ⟨bid, head :: tail⟩ :: post) bid index inst entries =
+    prepareInsert (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) bid index inst entries =
       some (.insert (preparedAnchor head tail index) (characterRun inst entries)) := by
-  simp [prepareInsert, findBlock_focus pre post ⟨bid, head :: tail⟩ blocks, prepareGap_succeeds]
+  simp [prepareInsert, findBlock_focus pre post ⟨bid, blockInst, head :: tail, true⟩ blocks, prepareGap_succeeds]
   simpa only [text_cons] using bound
 
-theorem prepareDelete_success (pre post : Document) (bid start stop : Nat)
+theorem prepareDelete_success (pre post : Document) {blockInst : Nat} (bid start stop : Nat)
     (slots : List Slot)
-    (blocks : ((pre ++ ⟨bid, slots⟩ :: post).map Block.id).Nodup)
+    (blocks : ((pre ++ ⟨bid, blockInst, slots, true⟩ :: post).map Block.id).Nodup)
     (bound : start ≤ stop ∧ stop ≤ (text slots).length) :
-    prepareDeleteRequest (pre ++ ⟨bid, slots⟩ :: post) bid start stop =
+    prepareDeleteRequest (pre ++ ⟨bid, blockInst, slots, true⟩ :: post) bid start stop =
       some (.delete (prepareDelete slots start (stop - start))) := by
-  simp [prepareDeleteRequest, findBlock_focus pre post ⟨bid, slots⟩ blocks, bound]
+  simp [prepareDeleteRequest, findBlock_focus pre post ⟨bid, blockInst, slots, true⟩ blocks, bound]
 
-theorem prepareSplit_success (pre post : Document) (bid index freshBlock freshInstance : Nat)
+theorem prepareSplit_success (pre post : Document) {blockInst : Nat} (bid index freshBlock freshInstance : Nat)
     (head : Slot) (tail : List Slot) (markerId : Nat × Nat)
-    (blocks : ((pre ++ ⟨bid, head :: tail⟩ :: post).map Block.id).Nodup)
+    (blocks : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).map Block.id).Nodup)
     (bound : index ≤ (text (head :: tail)).length) :
-    prepareSplit (pre ++ ⟨bid, head :: tail⟩ :: post) bid index freshBlock freshInstance markerId =
+    prepareSplit (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) bid index freshBlock freshInstance markerId =
       some [.create freshBlock freshInstance (some bid),
         .split (preparedAnchor head tail index)
           (boundary (preparedAnchor head tail index).1 markerId) freshBlock] := by
-  simp [prepareSplit, findBlock_focus pre post ⟨bid, head :: tail⟩ blocks, prepareGap_succeeds]
+  simp [prepareSplit, findBlock_focus pre post ⟨bid, blockInst, head :: tail, true⟩ blocks, prepareGap_succeeds]
   simpa only [text_cons] using bound
 /-- Executable positional preparation followed by command execution inserts
 exactly the requested values on the addressed block. -/
-theorem prepared_insert_effect (pre post : Document) (bid inst index : Nat)
+theorem prepared_insert_effect (pre post : Document) {blockInst : Nat} (bid inst index : Nat)
     (head : Slot) (tail : List Slot) (entries : List ((Nat × Nat) × Nat))
-    (addresses : ((pre ++ ⟨bid, head :: tail⟩ :: post).flatMap
+    (addresses : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup)
-    (blocks : ((pre ++ ⟨bid, head :: tail⟩ :: post).map Block.id).Nodup)
+    (blocks : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).map Block.id).Nodup)
     (hidden : head.visible = false) (bound : index ≤ (text (head :: tail)).length) :
     ∃ command result,
-      prepareInsert (pre ++ ⟨bid, head :: tail⟩ :: post) bid index inst entries = some command ∧
-      step (pre ++ ⟨bid, head :: tail⟩ :: post) command = some result ∧
+      prepareInsert (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) bid index inst entries = some command ∧
+      step (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) command = some result ∧
       view result = view pre ++ [(bid, (text (head :: tail)).take index ++
         entries.map Prod.snd ++ (text (head :: tail)).drop index)] ++ view post := by
   obtain ⟨result, executed, visible⟩ := local_insert_client pre post bid inst head tail entries index hidden addresses
@@ -723,15 +770,15 @@ theorem prepared_insert_effect (pre post : Document) (bid inst index : Nat)
 
 /-- Executable range preparation and execution delete exactly [start,stop),
 with the start and stop expressed in the current visible block. -/
-theorem prepared_delete_effect (pre post : Document) (bid start stop : Nat)
+theorem prepared_delete_effect (pre post : Document) {blockInst : Nat} (bid start stop : Nat)
     (head : Slot) (tail : List Slot)
-    (addresses : ((pre ++ ⟨bid, head :: tail⟩ :: post).flatMap
+    (addresses : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup)
-    (blocks : ((pre ++ ⟨bid, head :: tail⟩ :: post).map Block.id).Nodup)
+    (blocks : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).map Block.id).Nodup)
     (bound : start ≤ stop ∧ stop ≤ (text (head :: tail)).length) :
     ∃ command result,
-      prepareDeleteRequest (pre ++ ⟨bid, head :: tail⟩ :: post) bid start stop = some command ∧
-      step (pre ++ ⟨bid, head :: tail⟩ :: post) command = some result ∧
+      prepareDeleteRequest (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) bid start stop = some command ∧
+      step (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) command = some result ∧
       view result = view pre ++ [(bid, (text (head :: tail)).take start ++
         (text (head :: tail)).drop stop)] ++ view post := by
   obtain ⟨result, executed, visible⟩ := local_delete_document pre post bid head tail start (stop - start) addresses
@@ -743,32 +790,32 @@ theorem prepared_delete_effect (pre post : Document) (bid start stop : Nat)
 /-- Executable positional split preparation and its atomic command sequence
 have the ordinary local split effect. Fresh block and root names establish
 the intermediate structural uniqueness needed by the split command. -/
-theorem prepared_split_effect (pre post : Document) (bid index freshBlock freshInstance : Nat)
+theorem prepared_split_effect (pre post : Document) {blockInst : Nat} (bid index freshBlock freshInstance : Nat)
     (head : Slot) (tail : List Slot) (markerId : Nat × Nat)
-    (addresses : ((pre ++ ⟨bid, head :: tail⟩ :: post).flatMap
+    (addresses : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup)
-    (blocks : ((pre ++ ⟨bid, head :: tail⟩ :: post).map Block.id).Nodup)
+    (blocks : ((pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).map Block.id).Nodup)
     (hidden : head.visible = false) (bound : index ≤ (text (head :: tail)).length)
-    (freshBlockName : freshBlock ∉ (pre ++ ⟨bid, head :: tail⟩ :: post).map Block.id)
-    (freshRootName : (root freshInstance).address ∉ (pre ++ ⟨bid, head :: tail⟩ :: post).flatMap
+    (freshBlockName : freshBlock ∉ (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).map Block.id)
+    (freshRootName : (root freshInstance).address ∉ (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)) :
     ∃ commands result,
-      prepareSplit (pre ++ ⟨bid, head :: tail⟩ :: post) bid index freshBlock freshInstance markerId = some commands ∧
-      execute (pre ++ ⟨bid, head :: tail⟩ :: post) commands = some result ∧
+      prepareSplit (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) bid index freshBlock freshInstance markerId = some commands ∧
+      execute (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) commands = some result ∧
       view result = view pre ++ [(bid, (text (head :: tail)).take index),
         (freshBlock, (text (head :: tail)).drop index)] ++ view post := by
   have prepared := preparedAnchor_structural head tail index hidden bound
-  obtain ⟨result, executed, visible⟩ := local_split_client pre post ⟨bid, head :: tail⟩
+  obtain ⟨result, executed, visible⟩ := local_split_client pre post ⟨bid, blockInst, head :: tail, true⟩
     (preparedAnchor head tail index) index freshBlock freshInstance
     (boundary (preparedAnchor head tail index).1 markerId)
-    addresses blocks prepared freshBlockName freshRootName rfl
+    addresses blocks prepared freshBlockName freshRootName rfl rfl
   exact ⟨_, result, prepareSplit_success pre post bid index freshBlock freshInstance head tail markerId blocks bound,
     executed, visible⟩
 
 /-! Hand-derived PASS+FAIL scenarios, independent of the source renderer. -/
 private def abcd : Document :=
-  [⟨10, [root 0, character 0 (0, 1) 0, character 0 (0, 2) 1,
-    character 0 (0, 3) 2, character 0 (0, 4) 3]⟩]
+  [⟨10, 0, [root 0, character 0 (0, 1) 0, character 0 (0, 2) 1,
+    character 0 (0, 3) 2, character 0 (0, 4) 3], true⟩]
 
 private def splitAtTwo : List Command :=
   [.create 11 11 (some 10), .split (0, .event (0, 2)) (boundary 0 (1, 10)) 11]

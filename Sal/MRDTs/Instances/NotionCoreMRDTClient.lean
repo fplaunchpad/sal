@@ -2,6 +2,7 @@ import Sal.MRDTs.Instances.NotionCoreMRDTArchive
 import Sal.MRDTs.Instances.NotionCoreMachineInsertEffects
 import Sal.MRDTs.Instances.NotionCoreMachineEraseIssueEffects
 import Sal.MRDTs.Instances.NotionCoreMachineSplitEffects
+import Sal.MRDTs.Instances.NotionCoreMachineMergeEffects
 
 /-! Exact transport from actual client issuance to the concrete MRDT update
 and query. Existing local visible-effect theorems can use this equality; no
@@ -84,7 +85,7 @@ theorem insert_effect (network : State) (honest : NotionCoreMachineNetwork.Reach
     (before afterBlocks : NotionCoreSourceDocument.Document) (source : NotionCoreSource.Block)
     (materialized : NotionCoreMachineDocument.materializeDocument document = some (before ++ source :: afterBlocks))
     (block : NotionCorePayload.BlockKey) (name : source.id = NotionCoreMachine.blockName block)
-    (index : Nat) (atoms : List Nat) (nonempty : atoms ≠ [])
+    (alive : source.alive = true) (index : Nat) (atoms : List Nat) (nonempty : atoms ≠ [])
     (bound : index ≤ NotionCoreMachineDeleteTotal.visibleLength document block)
     (time : Timestamp) (replica : Replica) :
     ∃ tx, IssuedTransaction network peer (.insert block index atoms) tx ∧
@@ -94,7 +95,8 @@ theorem insert_effect (network : State) (honest : NotionCoreMachineNetwork.Reach
             (NotionCoreSpec.text source.project.slots).drop index)] ++
           NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
   obtain ⟨next, issued, effect⟩ := NotionCoreMachineInsertEffects.honest_insert_request_effect
-    network honest peer document reconstructed before afterBlocks source materialized block name index atoms nonempty bound
+    network honest peer document reconstructed before afterBlocks source materialized block name alive index atoms
+    nonempty bound
   obtain ⟨tx, prepared, _, query⟩ := issued_update network next honest peer _ issued time replica
   exact ⟨tx, prepared, query.trans effect⟩
 
@@ -104,7 +106,8 @@ theorem split_effect (network : State) (honest : NotionCoreMachineNetwork.Reach 
     (before afterBlocks : NotionCoreSourceDocument.Document) (source : NotionCoreSource.Block)
     (materialized : NotionCoreMachineDocument.materializeDocument document = some (before ++ source :: afterBlocks))
     (block : NotionCorePayload.BlockKey) (name : source.id = NotionCoreMachine.blockName block)
-    (index : Nat) (bound : index ≤ NotionCoreMachineDeleteTotal.visibleLength document block)
+    (alive : source.alive = true) (index : Nat)
+    (bound : index ≤ NotionCoreMachineDeleteTotal.visibleLength document block)
     (time : Timestamp) (replica : Replica) :
     ∃ tx target, IssuedTransaction network peer (.split block index) tx ∧
       D.query (D.update (peerCarrier network peer) (time,replica,tx)) () =
@@ -113,7 +116,7 @@ theorem split_effect (network : State) (honest : NotionCoreMachineNetwork.Reach 
             (target,(NotionCoreSpec.text source.project.slots).drop index)] ++
           NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
   obtain ⟨next, target, issued, effect⟩ := NotionCoreMachineSplitEffects.honest_split_request_effect
-    network honest peer document reconstructed before afterBlocks source materialized block name index bound
+    network honest peer document reconstructed before afterBlocks source materialized block name alive index bound
   obtain ⟨tx, prepared, _, query⟩ := issued_update network next honest peer _ issued time replica
   exact ⟨tx, target, prepared, query.trans effect⟩
 
@@ -139,6 +142,31 @@ theorem erase_effect (network : State) (honest : NotionCoreMachineNetwork.Reach 
   refine ⟨tx, prepared, ?_⟩
   simpa [nextReplay, effect] using query
 
+/-- The issuer's own merge of a displayed block that is not the first: its
+next query shows the previous displayed block's text followed by the merged
+block's text, and the merged block is absent from the display. -/
+theorem merge_effect (network : State) (honest : NotionCoreMachineNetwork.Reach network)
+    (peer : Session) (document : NotionCoreMachine.State)
+    (reconstructed : NotionCoreReconstruction.reconstruct network peer = some document)
+    (before gap afterBlocks : NotionCoreSourceDocument.Document) (target source : NotionCoreSource.Block)
+    (materialized : NotionCoreMachineDocument.materializeDocument document =
+      some (before ++ target :: gap ++ source :: afterBlocks))
+    (targetAlive : target.alive = true) (sourceAlive : source.alive = true)
+    (gapDead : ∀ block ∈ gap, block.alive = false)
+    (block : NotionCorePayload.BlockKey) (name : source.id = NotionCoreMachine.blockName block)
+    (time : Timestamp) (replica : Replica) :
+    ∃ tx, IssuedTransaction network peer (.merge block) tx ∧
+      D.query (D.update (peerCarrier network peer) (time,replica,tx)) () =
+        some (NotionCoreSpec.view (NotionCoreSourceDocument.project before) ++
+          [(target.id,NotionCoreSpec.text target.project.slots ++ NotionCoreSpec.text source.project.slots)] ++
+          NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
+  obtain ⟨next, issued, effect⟩ := NotionCoreMachineMergeEffects.honest_merge_request_effect
+    network honest peer document reconstructed before gap afterBlocks target source materialized
+    targetAlive sourceAlive gapDead block name
+  obtain ⟨tx, prepared, _, query⟩ := issued_update network next honest peer _ issued time replica
+  exact ⟨tx, prepared, query.trans effect⟩
+
+#print axioms merge_effect
 #print axioms insert_effect
 #print axioms split_effect
 #print axioms erase_effect

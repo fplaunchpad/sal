@@ -15,6 +15,7 @@ inductive Request where
   | insert (block : BlockKey) (index : Nat) (atoms : List Nat)
   | erase (block : BlockKey) (start stop : Nat)
   | split (block : BlockKey) (index : Nat)
+  | merge (source : BlockKey)
   deriving DecidableEq, Repr
 
 /-- Source early returns precede document reconstruction. Other empty clamped
@@ -29,6 +30,7 @@ def prepareRequest (document : NotionCoreMachine.State) : Request → Option Pay
   | .insert block index atoms => NotionCoreMachineClient.prepareInsert document block index atoms
   | .erase block start stop => NotionCoreMachineDelete.selectErase document block start stop
   | .split block index => NotionCoreMachineClient.prepareSplit document block index
+  | .merge source => NotionCoreMachineClient.prepareMerge document source
 
 /-- After the source early no-op checks, reconstruct the received version and select its actual
 identities, then reserve the source transaction's whole item run. Empty requests
@@ -75,6 +77,20 @@ theorem prepared_references (network : State) (session : Session)
   | split block index =>
       exact NotionCoreMachineClient.prepared_split_references
         network session _ document received accepted block index payload prepared
+  | merge source =>
+      simp only [prepareRequest, NotionCoreMachineClient.prepareMerge] at prepared
+      split at prepared
+      · cases last : ((NotionCoreMachine.visible document).take
+            ((NotionCoreMachine.visible document).idxOf (NotionCoreMachine.blockName source))).getLast? with
+        | none => simp [last] at prepared
+        | some previous =>
+          cases decoded : NotionCoreMachineClient.decodeBlock previous with
+          | none => simp [last, decoded] at prepared
+          | some target =>
+            have same : Payload.merge source target = payload := by simpa [last, decoded] using prepared
+            subst payload
+            simp [NotionCorePayloadNetwork.locatedReferences]
+      · contradiction
 
 theorem prepared_creators (network : State) (reachable : NotionCoreCreatorNetwork.Reach network)
     (session : Session) (document : NotionCoreMachine.State)
@@ -97,6 +113,9 @@ theorem prepared_creators (network : State) (reachable : NotionCoreCreatorNetwor
   | split block index =>
       exact NotionCoreMachineClient.prepared_split_creators
         network reachable session _ document received accepted block index payload prepared
+  | merge source =>
+      exact NotionCoreMachineClient.prepared_merge_creators
+        network session _ document received accepted source payload prepared
 
 /-- The concrete request transition supplies all of the old abstract admission
 checks; it does not require the caller to prove those checks. -/

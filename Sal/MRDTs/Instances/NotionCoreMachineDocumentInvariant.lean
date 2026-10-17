@@ -3,7 +3,8 @@ import Sal.MRDTs.Instances.NotionCoreSourceGuards
 import Sal.MRDTs.Instances.NotionCoreMachineDocumentClient
 
 /-! Projected semantic address uniqueness comes from the all-reference physical
-partition. Empty title anchors participate; display order only permutes blocks. -/
+partition. Dead title anchors participate; tombstones hold no address, and
+display order only permutes the stored blocks. -/
 namespace Sal.MRDTs.Instances.NotionCoreMachineDocumentInvariant
 open NotionCoreMachine
 open NotionCoreMachinePartition
@@ -56,7 +57,7 @@ theorem instance_addresses (state : State) (part : Partitioned state)
     (inst : Nat) (stored : ∃ entry ∈ state.instances, entry.1 = inst) :
     (((ownedRefs state.forest).filter (fun owned => owned.2.start.1 == inst)).flatMap
       (fun owned => intervalAddresses state owned.2)).Perm ((physical state inst).map Atom.address) := by
-  obtain ⟨cells,physicalEq,_,permutation⟩ := part.partitions inst stored
+  obtain ⟨cells,physicalEq,permutation⟩ := part.partitions inst stored
   have sameInst : ∀ cell ∈ cells, cell.slice.start.1 = inst := by
     intro cell member
     obtain ⟨before,after,shape⟩ := List.mem_iff_append.mp member
@@ -161,63 +162,43 @@ private theorem slices_addresses (state : State) (refs : List Ref) (slices : Lis
       have later := ih tail following
       rw [List.flatMap_cons,List.map_append,later,List.flatMap_cons,interval_extracted state ref atoms extracted]
       simp [NotionCoreSource.Slice.slots,NotionCoreSource.Slice.anchor,List.map_map,
-        Function.comp_def,NotionCoreSourceDocument.slot_address]
+        Function.comp_def]
 
 def blockAddresses (state : State) (block : NotionCoreSliceForest.Block) : List Address :=
   (NotionCoreSliceForest.preorderTree block.title).flatMap (intervalAddresses state)
 
-/-- Semantic anchors and retained atoms are exactly all the actual tree's
-interval addresses, including the unused title anchor of an attached block. -/
-theorem materialized_block_addresses (state : State) (part : Partitioned state)
-    (shape : NotionCoreMachineShape.ShapeInvariant state)
-    (block : NotionCoreSliceForest.Block) (member : block ∈ state.forest)
-    (source : NotionCoreSource.Block)
+/-- Semantic anchors and retained atoms are exactly all the actual chain's
+interval addresses, including the anchor of a dead title root. -/
+theorem materialized_block_addresses (state : State)
+    (block : NotionCoreSliceForest.Block) (source : NotionCoreSource.Block)
     (accepted : NotionCoreMachineDocument.materializeBlock state block = some source) :
     source.project.slots.map NotionCoreSpec.Slot.address = blockAddresses state block := by
-  have normal := shape.1 block member
-  have owned : (block.id,block.title.slice) ∈ ownedRefs state.forest := by
-    apply List.mem_flatMap.mpr
-    refine ⟨block,member,List.mem_map.mpr ⟨block.title.slice,?_,rfl⟩⟩
-    cases block.title
-    simp [NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.Tree.slice]
-  have rootName : ∀ bid tree, NotionCoreSliceForest.Normal bid tree → tree.slice.start.1 = bid := by
-    intro bid tree h
-    cases h <;> rfl
-  have name : block.title.slice.start.1 = block.id := rootName _ _ normal
-  have stored : state.instances.any (fun entry => entry.1 == block.id) = true := by
-    simpa [name] using part.refsExist _ owned
-  have empty : NotionCoreSliceForest.attached block.title = true →
-      physical state block.id = NotionCoreSliceForest.emptyPhysical block.id :=
-    fun inactive => shape.2.2 _ (List.mem_map.mpr ⟨block,member,rfl⟩) inactive
-  have nodes := NotionCoreMachineDocumentClient.materialized_nodes state block source normal empty (fun _ => stored) accepted
+  have nodes := (NotionCoreMachineDocument.materialized_slices state block source accepted).1
   have addresses := slices_addresses state (NotionCoreSliceForest.preorderTree block.title)
-    (NotionCorePreparation.nodes source) nodes
-  simpa [NotionCoreMachineDocumentClient.nodes_project_slots,blockAddresses] using addresses
+    source.slices nodes
+  exact addresses
 
 private def lookupAddresses (state : State) (bid : Nat) : List Address :=
   ((state.forest.find? (fun block => block.id == bid)).map (blockAddresses state)).getD []
 
-private theorem named_addresses (state : State) (part : Partitioned state)
-    (shape : NotionCoreMachineShape.ShapeInvariant state) (bid : Nat) (source : NotionCoreSource.Block)
-    (accepted : (do let block ← state.forest.find? (fun block => block.id == bid)
-                    NotionCoreMachineDocument.materializeBlock state block) = some source) :
+private theorem named_addresses (state : State) (bid : Nat) (source : NotionCoreSource.Block)
+    (accepted : NotionCoreMachineDocument.materializeEntry state bid = some source) :
     source.project.slots.map NotionCoreSpec.Slot.address = lookupAddresses state bid := by
   cases found : state.forest.find? (fun block => block.id == bid) with
-  | none => simp [found] at accepted
+  | none =>
+    rw [NotionCoreMachineDocument.materializeEntry_tombstone state bid found] at accepted
+    cases accepted
+    simp [lookupAddresses,found,NotionCoreSource.Block.project,NotionCoreSource.Block.slots]
   | some block =>
-    have projected : NotionCoreMachineDocument.materializeBlock state block = some source := by simpa [found] using accepted
-    simpa [lookupAddresses,found] using materialized_block_addresses state part shape block
-      (List.mem_of_find?_eq_some found) source projected
+    rw [NotionCoreMachineDocument.materializeEntry_stored state bid block found] at accepted
+    simpa [lookupAddresses,found] using materialized_block_addresses state block source accepted
 
-private theorem projected_addresses (state : State) (part : Partitioned state)
-    (shape : NotionCoreMachineShape.ShapeInvariant state) (document : NotionCoreSourceDocument.Document)
+private theorem projected_addresses (state : State) (document : NotionCoreSourceDocument.Document)
     (accepted : NotionCoreMachineDocument.materializeDocument state = some document) :
     NotionCoreInvariant.addresses (NotionCoreSourceDocument.project document) =
       state.display.flatMap (lookupAddresses state) := by
   have sequence : ∀ (ids : List Nat) (doc : NotionCoreSourceDocument.Document),
-      ids.mapM (fun bid => do
-        let block ← state.forest.find? (fun block => block.id == bid)
-        NotionCoreMachineDocument.materializeBlock state block) = some doc →
+      ids.mapM (NotionCoreMachineDocument.materializeEntry state) = some doc →
       NotionCoreInvariant.addresses (NotionCoreSourceDocument.project doc) = ids.flatMap (lookupAddresses state) := by
     intro ids
     induction ids with
@@ -229,21 +210,34 @@ private theorem projected_addresses (state : State) (part : Partitioned state)
       obtain ⟨tail,following,same⟩ := Option.bind_eq_some_iff.mp later
       have equal : source :: tail = doc := Option.some.inj same
       subst doc
-      have headEq := named_addresses state part shape bid source first
+      have headEq := named_addresses state bid source first
       have tailEq := ih tail following
       simpa [NotionCoreInvariant.addresses,NotionCoreSourceDocument.project] using congrArg₂ List.append headEq tailEq
   exact sequence state.display document accepted
 
+private theorem flatMap_shown (state : State) (ids : List Nat) :
+    ids.flatMap (lookupAddresses state) =
+      (ids.filter fun bid => state.forest.any fun block => block.id == bid).flatMap (lookupAddresses state) := by
+  induction ids with
+  | nil => rfl
+  | cons bid rest ih =>
+    by_cases present : (state.forest.any fun block => block.id == bid) = true
+    · simp [present, ih]
+    · have absent : state.forest.find? (fun block => block.id == bid) = none := by
+        apply List.find?_eq_none.mpr
+        intro block member equal
+        exact present (List.any_eq_true.mpr ⟨block,member,equal⟩)
+      simp [present, ih, lookupAddresses, absent]
+
 /-- The projected global address list permutes the actual forest's complete
 physical partition; it is not inferred from visible text alone. -/
-theorem projected_addresses_perm (state : State) (part : Partitioned state)
-    (shape : NotionCoreMachineShape.ShapeInvariant state) (aligned : NotionCoreMachineDisplay.Aligned state)
+theorem projected_addresses_perm (state : State) (aligned : NotionCoreMachineDisplay.Aligned state)
     (document : NotionCoreSourceDocument.Document)
     (accepted : NotionCoreMachineDocument.materializeDocument state = some document) :
     (NotionCoreInvariant.addresses (NotionCoreSourceDocument.project document)).Perm
       ((ownedRefs state.forest).flatMap (fun owned => intervalAddresses state owned.2)) := by
-  rw [projected_addresses state part shape document accepted]
-  have permutation := aligned.2.flatMap_right (lookupAddresses state)
+  rw [projected_addresses state document accepted, flatMap_shown]
+  have permutation := aligned.2.2.flatMap_right (lookupAddresses state)
   have exactForest : (state.forest.map NotionCoreSliceForest.Block.id).flatMap (lookupAddresses state) =
       state.forest.flatMap (blockAddresses state) := by
     rw [List.flatMap_map]
@@ -251,25 +245,26 @@ theorem projected_addresses_perm (state : State) (part : Partitioned state)
     intro block member
     have found := NotionCoreMachineClient.find_block_member state.forest aligned.1 block member
     simp [lookupAddresses,found]
-  change (state.display.flatMap (lookupAddresses state)).Perm
+  change ((NotionCoreDisplayOrder.shown ⟨state.forest,state.display⟩).flatMap (lookupAddresses state)).Perm
     ((state.forest.map NotionCoreSliceForest.Block.id).flatMap (lookupAddresses state)) at permutation
   rw [exactForest] at permutation
-  simpa [ownedRefs,List.flatMap_assoc,blockAddresses,List.flatMap_map,Function.comp_def] using permutation
+  simpa [ownedRefs,List.flatMap_assoc,blockAddresses,List.flatMap_map,Function.comp_def,
+    NotionCoreDisplayOrder.shown] using permutation
 
 theorem projected_addresses_unique (state : State) (part : Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
-    (shape : NotionCoreMachineShape.ShapeInvariant state) (aligned : NotionCoreMachineDisplay.Aligned state)
+    (aligned : NotionCoreMachineDisplay.Aligned state)
     (document : NotionCoreSourceDocument.Document)
     (accepted : NotionCoreMachineDocument.materializeDocument state = some document) :
     (NotionCoreInvariant.addresses (NotionCoreSourceDocument.project document)).Nodup :=
-  (projected_addresses_perm state part shape aligned document accepted).nodup_iff.mpr
+  (projected_addresses_perm state aligned document accepted).nodup_iff.mpr
     (all_addresses_unique state part unique)
 
 /-- Every accepted source step from an actual projected state has the guards
 needed by the existing same-sequence history simulation. -/
 theorem accepted_source_guard (state : State) (part : Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
-    (shape : NotionCoreMachineShape.ShapeInvariant state) (aligned : NotionCoreMachineDisplay.Aligned state)
+    (aligned : NotionCoreMachineDisplay.Aligned state)
     (document after : NotionCoreSourceDocument.Document)
     (materialized : NotionCoreMachineDocument.materializeDocument state = some document)
     (command : NotionCoreSourceDocument.Command)
@@ -277,9 +272,9 @@ theorem accepted_source_guard (state : State) (part : Partitioned state)
     NotionCoreSourceDocument.Guard document command := by
   have names : (document.map NotionCoreSource.Block.id).Nodup := by
     rw [NotionCoreMachineDocument.materialized_ids state document materialized]
-    exact aligned.2.nodup_iff.mpr aligned.1
+    exact aligned.2.1
   exact NotionCoreSourceGuards.accepted_guard_of_unique command names
-    (projected_addresses_unique state part unique shape aligned document materialized) accepted
+    (projected_addresses_unique state part unique aligned document materialized) accepted
 
 /-- At any honest canonical prefix, accepted source transitions satisfy the
 independent specification. All projection guards are derived from replay. -/
@@ -294,7 +289,7 @@ theorem honest_prefix_source_step (network : NotionCorePayloadNetwork.State)
     (accepted : NotionCoreSourceDocument.step document command = some after) :
     NotionCoreSpec.step (NotionCoreSourceDocument.project document) command.semantic =
       some (NotionCoreSourceDocument.project after) := by
-  obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
+  obtain ⟨checked,checkedReplay,part,_,_⟩ :=
     NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre suffix position
   have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
   subst checked
@@ -302,8 +297,9 @@ theorem honest_prefix_source_step (network : NotionCorePayloadNetwork.State)
     (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
     peer pre suffix position state replayed
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
-    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) replayed
-  have guard := accepted_source_guard state part unique shape aligned document after materialized command accepted
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names,
+      NotionCoreDisplayOrder.shown]) replayed
+  have guard := accepted_source_guard state part unique aligned document after materialized command accepted
   exact NotionCoreSourceDocument.step_sound command guard.1 guard.2 accepted
 
 #print axioms honest_prefix_source_step

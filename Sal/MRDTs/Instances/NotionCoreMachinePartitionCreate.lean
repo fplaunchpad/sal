@@ -17,6 +17,10 @@ theorem create_preserves_partitioned (state result : State) (block : BlockKey)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)
     (freshBlock : ∀ old ∈ state.forest, old.id ≠ blockName block)
     (accepted : applyOperation state (.create block afterBlock) = some result) : Partitioned result := by
+  by_cases shown : blockName block ∈ state.display
+  · have same : result = state := by simpa [applyOperation, shown] using accepted.symm
+    subst result
+    exact prior
   let bid := blockName block
   have absentInstance : state.instances.any (fun entry => entry.1 == bid) = false := by
     apply Bool.eq_false_iff.mpr
@@ -29,7 +33,7 @@ theorem create_preserves_partitioned (state result : State) (block : BlockKey)
     obtain ⟨old,member,equal⟩ := List.any_eq_true.mp found
     exact freshBlock old member (by simpa using equal)
   have same : result = {instances := state.instances ++ [(bid,{})], forest := state.forest ++ [⟨bid,freshTitle bid⟩], display := NotionCoreDisplayOrder.insert (state.display.filter (· != bid)) bid (afterBlock.map blockName)} := by
-    simpa [applyOperation, bid, absentInstance, absentBlock, putInstance] using accepted.symm
+    simpa [applyOperation, bid, shown, absentInstance, absentBlock, putInstance] using accepted.symm
   subst result
   let next : State := {instances := state.instances ++ [(bid,{})], forest := state.forest ++ [⟨bid,freshTitle bid⟩], display := NotionCoreDisplayOrder.insert (state.display.filter (· != bid)) bid (afterBlock.map blockName)}
   change Partitioned next
@@ -71,7 +75,7 @@ theorem create_preserves_partitioned (state result : State) (block : BlockKey)
     by_cases selected : inst = bid
     · clear equal
       subst inst
-      refine ⟨[NotionCorePartition.initialCell bid bid],?_,by simp,?_⟩
+      refine ⟨[NotionCorePartition.initialCell bid bid],?_,?_⟩
       · simp [physicalNext,flatten,NotionCorePartition.Cell.physical,
           NotionCorePartition.initialCell,NotionCoreSliceForest.emptyPhysical]
       · have oldFilter : (ownedRefs state.forest).filter (fun owned => owned.2.start.1 == bid) = [] := by
@@ -84,8 +88,8 @@ theorem create_preserves_partitioned (state result : State) (block : BlockKey)
         · exact ⟨entry,old,equal⟩
         · have pair := Prod.mk.inj (List.mem_singleton.mp new)
           exact False.elim (selected (equal.symm.trans pair.1))
-      obtain ⟨cells,physicalEq,owners,permutation⟩ := prior.partitions inst oldExists
-      refine ⟨cells,?_,owners,?_⟩
+      obtain ⟨cells,physicalEq,permutation⟩ := prior.partitions inst oldExists
+      refine ⟨cells,?_,?_⟩
       · simpa [physicalNext,selected] using physicalEq
       · simpa [references,List.filter_append,titleRef,Ne.symm selected] using permutation
 
@@ -119,7 +123,7 @@ though it changes no visible text. This is a structural read-side falsifier. -/
 theorem missing_empty_title_invalid :
     ¬ Partitioned ({instances := [(0,{})],forest := [],display := [0]} : State) := by
   intro claimed
-  obtain ⟨cells,physicalEq,_,permutation⟩ := claimed.partitions 0
+  obtain ⟨cells,physicalEq,permutation⟩ := claimed.partitions 0
     ⟨(0,{}),by simp,rfl⟩
   simp only [ownedRefs,List.flatMap_nil,List.filter_nil] at permutation
   have noRefs := List.Perm.nil_eq permutation

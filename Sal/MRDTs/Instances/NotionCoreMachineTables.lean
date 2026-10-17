@@ -162,6 +162,40 @@ private theorem erase_storage (state result : State) (block inst : BlockKey) (ta
   simp only [applyOperation, Option.some.injEq] at accepted; subst result
   exact fun key => getInstance_put state (blockName inst) key _
 
+/-- Applying one erase per instance group erases, in each instance, the
+targets of every group naming it, in group order. -/
+private theorem erase_groups_storage (state result : State) (block : BlockKey)
+    (groups : List (BlockKey × List Id))
+    (accepted : applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result) :
+    ∀ query, getInstance result (blockName query) =
+      ⟨NotionCoreParentErase.erase (groups.flatMap fun group => if group.1 = query then group.2 else [])
+          (getInstance state (blockName query)).rows,
+       (getInstance state (blockName query)).pending ++
+          groups.flatMap fun group => if group.1 = query then group.2 else []⟩ := by
+  induction groups generalizing state with
+  | nil =>
+    simp only [List.map_nil, applyOperations, Option.some.injEq] at accepted
+    subst result
+    intro query
+    simp [NotionCoreTableView.erase_empty]
+  | cons group rest ih =>
+    let middle := putInstance state (blockName group.1)
+      ⟨NotionCoreParentErase.erase group.2 (getInstance state (blockName group.1)).rows,
+        (getInstance state (blockName group.1)).pending ++ group.2⟩
+    have first : applyOperation state (.erase block group.1 group.2) = some middle := rfl
+    have later : applyOperations middle (rest.map fun group => .erase block group.1 group.2) = some result := by
+      simpa [applyOperations, first] using accepted
+    intro query
+    rw [ih middle later query]
+    have step := erase_storage state middle block group.1 group.2 first (blockName query)
+    by_cases same : group.1 = query
+    · subst query
+      rw [step, if_pos rfl]
+      simp [NotionCoreParentErase.erase_erase]
+    · have different : blockName query ≠ blockName group.1 := by
+        intro equal; exact same (blockName_injective equal).symm
+      simp only [step, if_neg different, List.flatMap_cons, if_neg same, List.nil_append]
+
 private theorem marker_storage (state result : State) (block inst : BlockKey)
     (id : Id) (origin : NotionCoreOriginTree.Origin)
     (fresh : id ∉ (getInstance state (blockName inst)).rows.map (fun row => row.item.id))
@@ -290,19 +324,13 @@ private theorem transaction_storage (state result : State) (pre : List Transacti
       rw [create_storage state result (.issued id) afterBlock step]
       simp [NotionCoreTableView.transactionTargets, NotionCoreMachinePrefix.transactionRows,
         NotionCorePayload.births, NotionCorePayload.operations, NotionCorePayload.Operation.births]
-    | erase block key ids =>
-      have step : applyOperation state (.erase block key ids) = some result := by
-        simpa [applyTransaction, NotionCorePayload.operations, applyOperations] using accepted
+    | erase block groups =>
+      have steps : applyOperations state (groups.map fun group => .erase block group.1 group.2) =
+          some result := by
+        simpa [applyTransaction, NotionCorePayload.operations] using accepted
       intro query
-      rw [erase_storage state result block key ids step]
-      by_cases same : key = query
-      · subst query
-        simp [NotionCoreTableView.transactionTargets, NotionCoreMachinePrefix.transactionRows,
-          NotionCorePayload.births, NotionCorePayload.operations, NotionCorePayload.Operation.births]
-      · have different : blockName query ≠ blockName key := by
-          intro equal; exact same (blockName_injective equal).symm
-        simp [different, same, NotionCoreTableView.transactionTargets, NotionCoreMachinePrefix.transactionRows,
-          NotionCorePayload.births, NotionCorePayload.operations, NotionCorePayload.Operation.births]
+      rw [erase_groups_storage state result block groups steps query]
+      simp [NotionCoreTableView.transactionTargets, NotionCoreMachinePrefix.transactionRows]
     | insert block key origin atoms =>
       have step : applyOperation state (.insert block key id origin atoms) = some result := by
         simpa [applyTransaction, NotionCorePayload.operations, applyOperations] using accepted
@@ -368,6 +396,14 @@ private theorem transaction_storage (state result : State) (pre : List Transacti
       · have different : blockName query ≠ blockName key := by
           intro equal; exact same (blockName_injective equal).symm
         simp [different, same, NotionCoreTableView.transactionTargets]
+    | merge source target =>
+      have step : applyOperation state (.merge source target) = some result := by
+        simpa [applyTransaction, NotionCorePayload.operations, applyOperations] using accepted
+      simp only [applyOperation, Option.some.injEq] at step
+      subst result
+      intro query
+      simp [getInstance, NotionCoreTableView.transactionTargets, NotionCoreMachinePrefix.transactionRows,
+        NotionCorePayload.births, NotionCorePayload.operations, NotionCorePayload.Operation.births]
 
 
 private theorem singleton_rows (tx : Transaction) (inst : BlockKey) :
@@ -377,8 +413,7 @@ private theorem singleton_rows (tx : Transaction) (inst : BlockKey) :
   cases tx with
   | mk id payload =>
     cases payload <;> simp [NotionCoreTableView.transactionTargets]
-    simp [NotionCoreMachinePrefix.transactionRows, NotionCorePayload.births,
-      NotionCorePayload.operations, NotionCorePayload.Operation.births, NotionCoreParentErase.erase]
+    simp [NotionCoreMachinePrefix.transactionRows, NotionCoreParentErase.erase]
 
 private theorem transaction_view (state result : State) (pre : List Transaction) (tx : Transaction)
     (view : View state pre) (unique : (birthIds (pre ++ [tx])).Nodup)
@@ -434,11 +469,11 @@ private def b : Id := ⟨2,[65]⟩
 private def x : Id := ⟨4,[66]⟩
 private def marker : Id := ⟨3,[66]⟩
 private def seed : Transaction := NotionCorePayload.bootstrap [97,98]
-private def earlyDelete : Transaction := ⟨⟨3,[67]⟩,.erase .initial .initial [x]⟩
+private def earlyDelete : Transaction := ⟨⟨3,[67]⟩,.erase .initial [(.initial,[x])]⟩
 private def insertion : Transaction := ⟨x,.insert .initial .initial (.item a) [88]⟩
 private def cut : Transaction := ⟨marker,.split .initial .initial (.item a)⟩
-private def markerDelete : Transaction := ⟨⟨4,[67]⟩,.erase .initial .initial [marker]⟩
-private def repeatedDelete : Transaction := ⟨⟨5,[67]⟩,.erase .initial .initial [b,b]⟩
+private def markerDelete : Transaction := ⟨⟨4,[67]⟩,.erase .initial [(.initial,[marker])]⟩
+private def repeatedDelete : Transaction := ⟨⟨5,[67]⟩,.erase .initial [(.initial,[b,b])]⟩
 
 /-- PASS+FAIL: raw accepted replay preserves an early deletion at a later
 birth. This tests pending-delete semantics; it is not an honest-client

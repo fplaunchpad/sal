@@ -49,10 +49,10 @@ private theorem located_roundtrip (txs : List Transaction) (state : State)
     exact encoded
 
 /-- Actual successful insertion preparation selects a PreparedGap in the
-same displayed block's independent slots, including attached index zero. -/
+same displayed block's independent slots, including a zero gap after empty
+slices of its chain; the prepared block is alive. -/
 theorem prepared_insert_gap (txs : List Transaction) (state : State)
-    (accepted : replay {} txs = some state) (part : NotionCoreMachinePartition.Partitioned state)
-    (shape : NotionCoreMachineShape.ShapeInvariant state)
+    (accepted : replay {} txs = some state)
     (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
     (source : Block) (member : source ∈ document) (block inst : BlockKey) (name : source.id = blockName block)
     (index : Nat) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
@@ -60,7 +60,8 @@ theorem prepared_insert_gap (txs : List Transaction) (state : State)
     NotionCorePreparation.locate source index =
       some (NotionCorePhysicalReplay.originAddress (blockName inst) origin) ∧
     NotionCoreSpec.PreparedGap source.project.slots
-      (NotionCorePhysicalReplay.originAddress (blockName inst) origin) index := by
+      (NotionCorePhysicalReplay.originAddress (blockName inst) origin) index ∧
+    source.alive = true := by
   cases empty : atoms.isEmpty with
   | true => simp [prepareInsert,empty] at prepared
   | false =>
@@ -74,11 +75,16 @@ theorem prepared_insert_gap (txs : List Transaction) (state : State)
         have same : actual = inst ∧ selected = origin := by simpa [prepareInsert,empty,located,decoded] using prepared
         obtain ⟨rfl,rfl⟩ := same
         have roundtrip := located_roundtrip txs state accepted block index address located actual selected decoded
-        have slices := document_block_slices state part shape document materialized source member block name
+        have alive : source.alive = true := by
+          cases live : source.alive
+          · have none := document_block_tombstone state document materialized source member live block name
+            simp [locateAddress,none] at located
+          · rfl
+        have slices := document_block_slices state document materialized source member alive block name
         have sourceLocated : NotionCorePreparation.locate source index = some address := by
           simpa [locateAddress,slices,locateSlices,NotionCorePreparation.locate] using located
         rw [← roundtrip] at sourceLocated
-        exact ⟨sourceLocated,NotionCorePreparation.locate_prepared source index _ sourceLocated⟩
+        exact ⟨sourceLocated,NotionCorePreparation.locate_prepared source index _ sourceLocated,alive⟩
 
 private theorem run_values (atoms : List Nat) :
     (List.range atoms.length).map (fun index => atoms[index]?.getD 0) = atoms := by
@@ -124,7 +130,7 @@ theorem canonical_prepared_insert_effect (network : NotionCorePayloadNetwork.Sta
         [(source.id,(NotionCoreSpec.text source.project.slots).take index ++ atoms ++
           (NotionCoreSpec.text source.project.slots).drop index)] ++
         NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
-  obtain ⟨checked,checkedReplay,part,shape,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
+  obtain ⟨checked,checkedReplay,part,_,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
     network reachable peer pre (tx :: suffix) position
   have same : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
@@ -132,10 +138,11 @@ theorem canonical_prepared_insert_effect (network : NotionCorePayloadNetwork.Sta
     (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
     peer pre (tx :: suffix) position state accepted
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
-    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) accepted
-  have unique := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part physicalUnique shape aligned _ materialized
-  have gap := (prepared_insert_gap pre state accepted part shape _ materialized source (by simp) block inst name
-    index origin atoms (by simpa only [payload] using prepared)).2
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names,
+      NotionCoreDisplayOrder.shown]) accepted
+  have unique := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part physicalUnique aligned _ materialized
+  obtain ⟨_,gap,alive⟩ := prepared_insert_gap pre state accepted _ materialized source (by simp) block inst name
+    index origin atoms (by simpa only [payload] using prepared)
   obtain ⟨next,after,transaction,extracted,sourceStep⟩ := NotionCoreMachineDocumentInsert.canonical_insert_source_step
     network reachable peer pre suffix tx position state accepted _ materialized block inst origin atoms payload
   let fresh := ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map (NotionCorePhysicalReplay.atom (blockName inst)))
@@ -147,7 +154,7 @@ theorem canonical_prepared_insert_effect (network : NotionCorePayloadNetwork.Sta
     simpa [NotionCoreInvariant.addresses,NotionCoreSourceDocument.project] using unique
   obtain ⟨semantic,semanticAccepted,semanticEffect⟩ := NotionCorePreparation.insert_at_prepared_gap
     (NotionCoreSourceDocument.project before) (NotionCoreSourceDocument.project afterBlocks)
-    source.project (NotionCorePhysicalReplay.originAddress (blockName inst) origin) index (fresh.map Atom.slot) semanticUnique gap
+    source.project (NotionCorePhysicalReplay.originAddress (blockName inst) origin) index (fresh.map Atom.slot) semanticUnique gap alive
   have sourceSemantic : NotionCoreSpec.step (NotionCoreSourceDocument.project before ++ source.project ::
       NotionCoreSourceDocument.project afterBlocks)
       (.insert (NotionCorePhysicalReplay.originAddress (blockName inst) origin) (fresh.map Atom.slot)) =
@@ -161,15 +168,7 @@ theorem canonical_prepared_insert_effect (network : NotionCorePayloadNetwork.Sta
         NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks) := by
     rw [← projectEq]
     simpa only [fresh,fresh_text_values] using semanticEffect
-  have nextReplay : replay {} (pre ++ [tx]) = some next := by
-    simp [replay_append,accepted,replay,transaction,Bind.bind,Option.bind]
-  have nextPosition : NotionCoreReconstruction.transactions network peer = (pre ++ [tx]) ++ suffix := by
-    simpa [List.append_assoc] using position
-  obtain ⟨checked,checkedReplay,nextPart,nextShape,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
-    network reachable peer (pre ++ [tx]) suffix nextPosition
-  have sameNext : checked = next := Option.some.inj (checkedReplay.symm.trans nextReplay)
-  subst checked
-  have rendered := materialized_render next nextPart nextShape.1 nextShape.2.2 after extracted
+  have rendered := materialized_render next after extracted
   rw [effect] at rendered
   exact ⟨next,after,transaction,extracted,rendered⟩
 
@@ -322,7 +321,8 @@ theorem honest_insert_request_effect (network : NotionCorePayloadNetwork.State)
     (state : State) (reconstructed : NotionCoreReconstruction.reconstruct network peer = some state)
     (before afterBlocks : NotionCoreSourceDocument.Document) (source : Block)
     (materialized : materializeDocument state = some (before ++ source :: afterBlocks))
-    (block : BlockKey) (name : source.id = blockName block) (index : Nat) (atoms : List Nat)
+    (block : BlockKey) (name : source.id = blockName block) (alive : source.alive = true)
+    (index : Nat) (atoms : List Nat)
     (nonempty : atoms ≠ []) (bound : index ≤ NotionCoreMachineDeleteTotal.visibleLength state block) :
     ∃ nextNetwork, NotionCoreMachineNetwork.issue network peer (.insert block index atoms) = some nextNetwork ∧
       (NotionCoreReconstruction.reconstruct nextNetwork peer >>= render) =
@@ -330,10 +330,7 @@ theorem honest_insert_request_effect (network : NotionCorePayloadNetwork.State)
           [(source.id,(NotionCoreSpec.text source.project.slots).take index ++ atoms ++
             (NotionCoreSpec.text source.project.slots).drop index)] ++
           NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
-  obtain ⟨checked,current,part,shape,_⟩ := NotionCoreMachineHonestReplay.honest_reconstruct network reachable peer
-  have same : checked = state := Option.some.inj (current.symm.trans reconstructed)
-  subst checked
-  have slices := document_block_slices state part shape _ materialized source (by simp) block name
+  have slices := document_block_slices state _ materialized source (by simp) alive block name
   have stored : ∃ found ∈ state.forest, found.id = blockName block := by
     cases found : state.forest.find? (fun old => old.id == blockName block) with
     | none => simp [blockSlices,found] at slices
@@ -356,7 +353,7 @@ private def afterInsert : Option (List (Nat × List Nat)) := do
   | .insert block inst origin atoms => applyOperation state (.insert block inst ⟨4,[65]⟩ origin atoms) >>= render
   | _ => none
 /-- Actual preparation and insertion at an inherited leaf's zero gap yield
- a | Xb. Its unused title cannot redirect X into the preceding block or end. -/
+ a | Xb. Its empty dead title cannot redirect X into the preceding block or end. -/
 theorem attached_zero_control :
     afterInsert = some [(0,[97]),(blockName (.issued cutId),[88,98])] ∧
     afterInsert ≠ some [(0,[97,88]),(blockName (.issued cutId),[98])] ∧

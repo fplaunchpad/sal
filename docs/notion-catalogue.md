@@ -26,7 +26,19 @@ recover allocation history.
 | Acceptance on the honest domain | `NotionCoreRuntimeHonestProgress.receiveMany_honest`, `merge_honest` |
 | Executable query for registered versions | `NotionCoreRuntimeTheorem.registered_query` |
 | Constructive initialization and arbitrary-order receipt | `NotionCoreRuntimeEndToEnd.load_closed_version` |
-| Original local positional effects | `NotionCoreMRDTClient.insert_effect`, `split_effect`, `erase_effect` |
+| Original local positional effects | `NotionCoreMRDTClient.insert_effect`, `split_effect`, `erase_effect`, `merge_effect` |
+| Reference RA with block merge | `NotionCoreProtocol.versions_witness`, `specification_ra` |
+| The fact-set query cannot evaluate merge | `NotionCoreStructuralRender.SPOT.merge_outside_scope` |
+
+The request set is create, insert, erase, split and block merge. The reference
+carrier `NotionCoreMRDT.D` and its protocol theorems cover all five requests.
+The structural carrier's RA, execution and query-agreement theorems take a
+`NotionCoreMergeFree.MergeFree` premise: a merge's effect depends on which
+blocks are alive when it replays, and `merge_outside_scope` proves that no
+query on the fact set agrees with replay once merges are present. The
+executable runtime refines the structural query on the same fragment and
+refuses a merge transaction on receipt, so its registered-version query needs
+no merge-freedom premise (`NotionCoreRuntimeRefinement.received_merge_free`).
 
 The sequential machine is unchanged. Structural history transport reuses the same
 reference witness after proving query agreement; it does not assume that
@@ -38,7 +50,8 @@ The independent document specification retains ordered semantic slots, hidden
 anchors and split boundaries. It contains no transaction log, replay sort,
 search labels, parent table or slice tree. These identities are necessary to
 interpret prepared edits after concurrent deletion or splitting. Local requests
-have ordinary positional effects at the issuer; concurrent histories execute
+have ordinary positional effects at the issuer; a merged block stays in the
+specification as a tombstone that the view omits; concurrent histories execute
 the resulting identity-addressed atomic command groups. Natural-number valid
 gaps, nonempty insertion and bounded nonempty deletion are supported. Early
 no-ops intentionally emit no transaction.
@@ -51,10 +64,14 @@ shared-archive execution pairing were proved separately. Those datatype-specific
 proofs constitute the main manual burden. No measured person-hours or automatic
 proof-generation success rate is claimed.
 
-The positive core excludes editor merge-block/movement and formatting. Three
-honest-client pinned traces expose two bold-selection failures and one local
-suffix-split failure after editing merges; see [the bug catalogue](notion-bugs.md).
-These editing merges differ from the verified Sal version merges.
+The positive core excludes formatting. Its block merge is the corrected design
+of [the merge design note](notion-merge-block-design.md), not the demo's
+three-operation merge. Five honest-client pinned traces expose two
+bold-selection failures (N-002, N-003), one local suffix-split failure after
+editing merges (N-001), and two merge histories that hide stored text (N-004,
+N-005); see [the bug catalogue](notion-bugs.md). The merge extension removes
+N-001, N-004 and N-005; the formatting failures remain. These editing merges
+differ from the verified Sal version merges.
 
 Correspondence with the seven hash-pinned demo modules is supported by source
 audit and distinguishing executable evidence. The typed certificate is not a

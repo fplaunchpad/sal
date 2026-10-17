@@ -2,9 +2,12 @@ import Sal.MRDTs.Instances.NotionCoreSliceForest
 
 /-! Source creation keeps two orders: blocks Map enumeration appends, while
 blockOrder splices after a present predecessor and otherwise at the front.
-Fresh block creation only: source revival/recreation checks are separate.
-Nat names use the existing SliceForest encoding; source string/typed BlockKey
-injection and truthiness of afterBlockId remain a decoder boundary. -/
+A merged block leaves the Map but keeps its place in blockOrder as a
+tombstone; the shown order filters tombstones out, and a create after a
+tombstone lands at its position. Fresh block creation only: source
+revival/recreation checks are separate. Nat names use the existing SliceForest
+encoding; source string/typed BlockKey injection and truthiness of
+afterBlockId remain a decoder boundary. -/
 namespace Sal.MRDTs.Instances.NotionCoreDisplayOrder
 open NotionCoreSliceForest
 
@@ -31,9 +34,18 @@ theorem insert_unique (order : List Nat) (fresh : Nat) (after : Option Nat)
     (unique : order.Nodup) (new : fresh ∉ order) : (insert order fresh after).Nodup := by
   exact (insert_perm order fresh after).nodup_iff.mpr (List.nodup_cons.mpr ⟨new, unique⟩)
 
+/-- The front is the rule for a predecessor absent from the order, including
+tombstones; a tombstone itself is present. -/
 theorem missing_front (order : List Nat) (fresh previous : Nat) (missing : previous ∉ order) :
     insert order fresh (some previous) = fresh :: order := by
   simp [insert, insertionIndex, missing]
+
+/-- A predecessor in the order, alive or a tombstone, is immediately followed
+by the fresh name. -/
+theorem insert_after_present (order : List Nat) (fresh previous : Nat) (present : previous ∈ order) :
+    insert order fresh (some previous) =
+      order.take (order.idxOf previous + 1) ++ fresh :: order.drop (order.idxOf previous + 1) := by
+  simp [insert, insertionIndex, present]
 
 /-- At a present unique predecessor, the source index splice is exactly the
 independent document specification's insert-after traversal. -/
@@ -68,24 +80,81 @@ structure State where
   search : Forest
   display : List Nat
 
+/-- Display entries whose block is in the search Map: tombstones filtered out. -/
+def shown (state : State) : List Nat :=
+  state.display.filter fun bid => state.search.any fun block => block.id == bid
+
+/-- Unique names, a duplicate-free display order, and the shown order is a
+permutation of the search Map's names. Tombstones may remain in the display. -/
 def Aligned (state : State) : Prop :=
-  (names state.search).Nodup ∧ state.display.Perm (names state.search)
+  (names state.search).Nodup ∧ state.display.Nodup ∧ (shown state).Perm (names state.search)
+
+theorem shown_member (state : State) (bid : Nat) :
+    bid ∈ shown state ↔ bid ∈ state.display ∧ bid ∈ names state.search := by
+  simp [shown, names]
 
 def create (state : State) (fresh : Nat) (after : Option Nat) : State :=
-  ⟨state.search ++ [⟨fresh, freshTitle fresh⟩], insert state.display fresh after⟩
+  ⟨state.search ++ [⟨fresh, freshTitle fresh⟩], insert (state.display.filter (· != fresh)) fresh after⟩
+
+private theorem perm_of_members {xs ys : List Nat} (left : xs.Nodup) (right : ys.Nodup)
+    (same : ∀ x, x ∈ xs ↔ x ∈ ys) : xs.Perm ys :=
+  (List.perm_ext_iff_of_nodup left right).mpr same
 
 theorem create_aligned (state : State) (fresh : Nat) (after : Option Nat)
     (aligned : Aligned state) (new : fresh ∉ names state.search) :
     Aligned (create state fresh after) := by
-  obtain ⟨unique, same⟩ := aligned
-  have middle : (names state.search ++ [fresh]).Perm (fresh :: names state.search) := by
-    simpa only [List.append_nil] using (List.perm_middle : (names state.search ++ fresh :: []).Perm (fresh :: (names state.search ++ [])))
-  have p : (insert state.display fresh after).Perm (names state.search ++ [fresh]) :=
-    ((insert_perm _ _ _).trans (same.cons fresh)).trans middle.symm
-  have freshUnique : (fresh :: names state.search).Nodup := List.nodup_cons.mpr ⟨new, unique⟩
-  have appendedUnique : (names state.search ++ [fresh]).Nodup :=
-    middle.nodup_iff.mpr freshUnique
-  exact ⟨by simpa [create, names] using appendedUnique, by simpa [create, names] using p⟩
+  obtain ⟨unique, displayUnique, same⟩ := aligned
+  have namesNext : names (create state fresh after).search = names state.search ++ [fresh] := by
+    simp [create, names]
+  have namesUnique : (names state.search ++ [fresh]).Nodup :=
+    List.nodup_append'.mpr ⟨unique, by simp,
+      List.disjoint_left.mpr fun id old new' => new (by rw [List.mem_singleton.mp new'] at old; exact old)⟩
+  have filteredUnique : (state.display.filter (· != fresh)).Nodup := displayUnique.filter _
+  have displayNext : (create state fresh after).display.Nodup :=
+    insert_unique _ fresh after filteredUnique (by simp)
+  refine ⟨by rw [namesNext]; exact namesUnique, displayNext, ?_⟩
+  rw [namesNext]
+  refine perm_of_members (xs := shown _) (displayNext.filter _) namesUnique ?_
+  intro bid
+  rw [shown_member, namesNext]
+  have inserted := (insert_perm (state.display.filter (· != fresh)) fresh after).mem_iff (a := bid)
+  have shownOld := same.mem_iff (a := bid)
+  rw [shown_member] at shownOld
+  simp only [create] at inserted ⊢
+  rw [inserted]
+  simp only [List.mem_cons, List.mem_filter, bne_iff_ne, ne_eq, List.mem_append, List.not_mem_nil,
+    or_false]
+  constructor
+  · rintro ⟨rfl | ⟨inDisplay, _⟩, inNames⟩
+    · exact Or.inr rfl
+    · rcases inNames with old | rfl
+      · exact Or.inl old
+      · exact Or.inr rfl
+  · rintro (old | rfl)
+    · have shownBid := shownOld.mpr old
+      refine ⟨Or.inr ⟨shownBid.1, fun equal => new (equal ▸ old)⟩, Or.inl old⟩
+    · exact ⟨Or.inl rfl, Or.inr rfl⟩
+
+/-- Removing names from the search Map, as a merge does, keeps the display
+order and stays aligned: the removed names become tombstones. -/
+theorem filter_aligned (state : State) (search : Forest) (keep : Nat → Bool)
+    (aligned : Aligned state) (filtered : names search = (names state.search).filter keep) :
+    Aligned ⟨search, state.display⟩ := by
+  obtain ⟨unique, displayUnique, same⟩ := aligned
+  have namesUnique : (names search).Nodup := by rw [filtered]; exact unique.filter _
+  refine ⟨namesUnique, displayUnique, ?_⟩
+  refine perm_of_members (xs := shown _) (displayUnique.filter _) namesUnique ?_
+  intro bid
+  have shownOld := same.mem_iff (a := bid)
+  rw [shown_member] at shownOld
+  rw [shown_member]
+  simp only
+  rw [filtered, List.mem_filter]
+  constructor
+  · rintro ⟨inDisplay, inNames, kept⟩
+    exact ⟨inNames, kept⟩
+  · rintro ⟨inNames, kept⟩
+    exact ⟨(shownOld.mpr inNames).1, inNames, kept⟩
 
 /-- Materialization queries the search Map by display ID, then selects the
 active leaf. Physical endpoint rendering remains a separate interpretation. -/
@@ -97,11 +166,27 @@ def materialize (state : State) : List (Nat × Ref) := state.display.filterMap (
 def canonical (state : State) : List (Nat × Ref) :=
   (names state.search).filterMap (lookup state.search)
 
+private theorem lookup_absent (forest : Forest) (id : Nat)
+    (absent : (forest.any fun block => block.id == id) = false) : lookup forest id = none := by
+  simp only [lookup, Option.map_eq_none_iff]
+  apply List.find?_eq_none.mpr
+  intro block member
+  simp only [List.any_eq_false] at absent
+  exact absent block member
+
 /-- Display materialization enumerates exactly the same lookups as Map order,
-with a potentially different order; no display equality is assumed. -/
+with a potentially different order; tombstones look up nothing. -/
 theorem materialize_perm (state : State) (aligned : Aligned state) :
     (materialize state).Perm (canonical state) := by
-  exact aligned.2.filterMap _
+  have filtered : materialize state = (shown state).filterMap (lookup state.search) := by
+    simp only [materialize, shown, List.filterMap_filter]
+    apply List.filterMap_congr
+    intro bid _
+    cases present : state.search.any (fun block => block.id == bid) with
+    | true => rfl
+    | false => simp [lookup_absent state.search bid present]
+  rw [filtered]
+  exact aligned.2.2.filterMap _
 
 theorem lookup_member (forest : Forest) (unique : (names forest).Nodup)
     (block : Block) (member : block ∈ forest) :

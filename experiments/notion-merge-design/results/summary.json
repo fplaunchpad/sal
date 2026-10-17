@@ -1,0 +1,1276 @@
+{
+ "design": "docs/notion-merge-block-design.md",
+ "quick": false,
+ "calibration": {
+  "original-regressions.mjs": 0,
+  "regressions.mjs": 0,
+  "controls.mjs": 0,
+  "network-controls.mjs": 0,
+  "offline-regression.mjs": 0,
+  "spec-controls.mjs": {
+   "specControls": "passed",
+   "checks": 31
+  }
+ },
+ "node": "v26.3.1",
+ "sourceManifest": {
+  "observed": "2026-10-14",
+  "scope": "Public Notion demo; production correspondence and source licence unconfirmed. Source files are fetched separately.",
+  "modules": [
+   {
+    "file": "replica.js",
+    "sha256": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/replica.js"
+   },
+   {
+    "file": "document.js",
+    "sha256": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/document.js"
+   },
+   {
+    "file": "text-slice-tree.js",
+    "sha256": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/text-slice-tree.js"
+   },
+   {
+    "file": "ids.js",
+    "sha256": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/ids.js"
+   },
+   {
+    "file": "rga.js",
+    "sha256": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/rga.js"
+   },
+   {
+    "file": "rich-text.js",
+    "sha256": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/rich-text.js"
+   },
+   {
+    "file": "search-labels.js",
+    "sha256": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09",
+    "url": "https://www.notion.com/front-static/crdt-demo/src/crdt/search-labels.js"
+   }
+  ]
+ },
+ "variants": [
+  {
+   "variant": "demo",
+   "ownMode": "absorb",
+   "ra": {
+    "archives": 162802,
+    "absorb": {
+     "agree": 97826,
+     "stuck": 42046,
+     "conservation": 622,
+     "placement": 22308
+    },
+    "skip": {
+     "agree": 92495,
+     "stuck": 42046,
+     "conservation": 622,
+     "placement": 27639
+    },
+    "removed": {
+     "agree": 97259,
+     "stuck": 48770,
+     "conservation": 299,
+     "placement": 16474
+    },
+    "orderInversions": 20551,
+    "replayExceptions": 12,
+    "shape": {
+     "archives": 162802,
+     "branching": 62981,
+     "maxChildren": 4
+    },
+    "deletesCrossing": [
+     2952,
+     2952
+    ],
+    "deletesSingle": [
+     25621,
+     25621
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "split:placement": 10,
+      "structure:empty": 6,
+      "bold:missed": 1
+     },
+     "mergePasses": 1023
+    },
+    "offline-17102": {
+     "localFailures": 6,
+     "conservationFailures": 8,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 153,
+      "bold:outside": 48,
+      "split:placement": 99
+     },
+     "mergePasses": 6763
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 44,
+      "bold:outside": 17,
+      "split:placement": 61
+     },
+     "mergePasses": 2704
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {
+      "split:placement": 1
+     }
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "abc"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "placement"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 2236,
+    "localChecks": 6544,
+    "localFailures": 0,
+    "finalChecks": 48,
+    "finalFailures": 0,
+    "finalSkipFailures": 2,
+    "divergent": 0,
+    "exceptions": 12
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "sequential-17004": 0,
+    "network-27002": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0,
+    "network-27002-shrink": 0
+   }
+  },
+  {
+   "variant": "design",
+   "ownMode": "absorb",
+   "ra": {
+    "archives": 161630,
+    "absorb": {
+     "agree": 161630,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 0
+    },
+    "skip": {
+     "agree": 138453,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 23177
+    },
+    "removed": {
+     "agree": 119363,
+     "stuck": 42267,
+     "conservation": 0,
+     "placement": 0
+    },
+    "orderInversions": 0,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 161630,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletesCrossing": [
+     2789,
+     2789
+    ],
+    "deletesSingle": [
+     25688,
+     25688
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "bold:outside": 1
+     },
+     "mergePasses": 997
+    },
+    "offline-17102": {
+     "localFailures": 0,
+     "conservationFailures": 0,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 132,
+      "bold:outside": 22
+     },
+     "mergePasses": 6807
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 76,
+      "bold:outside": 32
+     },
+     "mergePasses": 2694
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {}
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": true,
+     "precondition": false,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "abc"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "placement"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 2332,
+    "localChecks": 6736,
+    "localFailures": 0,
+    "finalChecks": 52,
+    "finalFailures": 0,
+    "finalSkipFailures": 2,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "sequential-17004": 0,
+    "network-27002": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0
+   }
+  },
+  {
+   "variant": "skip",
+   "ownMode": "skip",
+   "ra": {
+    "archives": 162616,
+    "absorb": {
+     "agree": 147504,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 15112
+    },
+    "skip": {
+     "agree": 162616,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 0
+    },
+    "removed": {
+     "agree": 112824,
+     "stuck": 46513,
+     "conservation": 0,
+     "placement": 3279
+    },
+    "orderInversions": 0,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 162616,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletesCrossing": [
+     2678,
+     2678
+    ],
+    "deletesSingle": [
+     25552,
+     25552
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "bold:missed": 2
+     },
+     "mergePasses": 1056
+    },
+    "offline-17102": {
+     "localFailures": 0,
+     "conservationFailures": 0,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 129,
+      "bold:outside": 28
+     },
+     "mergePasses": 6893
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 65,
+      "bold:outside": 32
+     },
+     "mergePasses": 2780
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {}
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": true,
+     "precondition": false,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "ab"
+      ],
+      [
+       "seed-block-5",
+       "c"
+      ]
+     ],
+     "spec": "placement",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 2328,
+    "localChecks": 6724,
+    "localFailures": 0,
+    "finalChecks": 52,
+    "finalFailures": 2,
+    "finalSkipFailures": 0,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "network-27002": 0,
+    "sequential-17004": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0
+   }
+  },
+  {
+   "variant": "no-source-check",
+   "ownMode": "absorb",
+   "ra": {
+    "archives": 161472,
+    "absorb": {
+     "agree": 154562,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 6910
+    },
+    "skip": {
+     "agree": 134855,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 26617
+    },
+    "removed": {
+     "agree": 116680,
+     "stuck": 43162,
+     "conservation": 0,
+     "placement": 1630
+    },
+    "orderInversions": 0,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 161472,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletesCrossing": [
+     2760,
+     2760
+    ],
+    "deletesSingle": [
+     25683,
+     25683
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "bold:missed": 3,
+      "bold:outside": 2
+     },
+     "mergePasses": 1027
+    },
+    "offline-17102": {
+     "localFailures": 0,
+     "conservationFailures": 0,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 128,
+      "bold:outside": 23
+     },
+     "mergePasses": 6799
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 77,
+      "bold:outside": 32
+     },
+     "mergePasses": 2687
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {}
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": true,
+     "precondition": false,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "abc"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "placement"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 2332,
+    "localChecks": 6736,
+    "localFailures": 0,
+    "finalChecks": 52,
+    "finalFailures": 0,
+    "finalSkipFailures": 2,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "sequential-17004": 0,
+    "network-27002": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0,
+    "network-27002-shrink": 0
+   }
+  },
+  {
+   "variant": "remove-independently",
+   "ownMode": "absorb",
+   "ra": {
+    "archives": 161606,
+    "absorb": {
+     "agree": 161514,
+     "stuck": 0,
+     "conservation": 92,
+     "placement": 0
+    },
+    "skip": {
+     "agree": 138418,
+     "stuck": 0,
+     "conservation": 92,
+     "placement": 23096
+    },
+    "removed": {
+     "agree": 119338,
+     "stuck": 42267,
+     "conservation": 1,
+     "placement": 0
+    },
+    "orderInversions": 0,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 161606,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletesCrossing": [
+     2785,
+     2785
+    ],
+    "deletesSingle": [
+     25680,
+     25680
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "bold:outside": 1
+     },
+     "mergePasses": 997
+    },
+    "offline-17102": {
+     "localFailures": 0,
+     "conservationFailures": 3,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 132,
+      "bold:outside": 22
+     },
+     "mergePasses": 6807
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 76,
+      "bold:outside": 32
+     },
+     "mergePasses": 2694
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {}
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": true,
+     "precondition": false,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "abc"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "placement"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 2284,
+    "localChecks": 6640,
+    "localFailures": 0,
+    "finalChecks": 52,
+    "finalFailures": 2,
+    "finalSkipFailures": 4,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "network-27002": 0,
+    "sequential-17004": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0,
+    "network-27002-shrink": 0
+   }
+  },
+  {
+   "variant": "skip-remove-independently",
+   "ownMode": "skip",
+   "ra": {
+    "archives": 153512,
+    "absorb": {
+     "agree": 147320,
+     "stuck": 0,
+     "conservation": 6103,
+     "placement": 89
+    },
+    "skip": {
+     "agree": 138693,
+     "stuck": 0,
+     "conservation": 6103,
+     "placement": 8716
+    },
+    "removed": {
+     "agree": 114033,
+     "stuck": 36812,
+     "conservation": 2667,
+     "placement": 0
+    },
+    "orderInversions": 0,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 153512,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletesCrossing": [
+     2660,
+     2660
+    ],
+    "deletesSingle": [
+     25167,
+     25167
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "bold:outside": 2,
+      "bold:missed": 2
+     },
+     "mergePasses": 1024
+    },
+    "offline-17102": {
+     "localFailures": 0,
+     "conservationFailures": 51,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 127,
+      "bold:outside": 20
+     },
+     "mergePasses": 6825
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 76,
+      "bold:outside": 32
+     },
+     "mergePasses": 2713
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 577,
+     "failures": {
+      "text-loss": 2
+     }
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": false,
+     "precondition": false,
+     "controlsHold": false
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "ab"
+      ]
+     ],
+     "spec": "conservation",
+     "mutants": {
+      "MergeNoOp": "conservation",
+      "MergeSourceFirst": "conservation",
+      "skipMeaning": "conservation"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 2252,
+    "localChecks": 6544,
+    "localFailures": 0,
+    "finalChecks": 52,
+    "finalFailures": 4,
+    "finalSkipFailures": 4,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "network-27002": 0,
+    "sequential-17004": 0,
+    "offline-17102": 0,
+    "structural-17003": 0,
+    "campaign-17005": 0,
+    "campaign-17002": 0,
+    "network-27002-shrink": 0
+   }
+  },
+  {
+   "variant": "design-order-splice",
+   "ownMode": "absorb",
+   "ra": {
+    "archives": 163365,
+    "absorb": {
+     "agree": 134365,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 29000
+    },
+    "skip": {
+     "agree": 119708,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 43657
+    },
+    "removed": {
+     "agree": 118786,
+     "stuck": 44579,
+     "conservation": 0,
+     "placement": 0
+    },
+    "orderInversions": 40606,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 163365,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletesCrossing": [
+     2871,
+     2871
+    ],
+    "deletesSingle": [
+     26120,
+     26120
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "bold:outside": 3,
+      "bold:missed": 1
+     },
+     "mergePasses": 1016
+    },
+    "offline-17102": {
+     "localFailures": 0,
+     "conservationFailures": 0,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 187,
+      "bold:outside": 22
+     },
+     "mergePasses": 6875
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 99,
+      "bold:outside": 30
+     },
+     "mergePasses": 2689
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {}
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": true,
+     "precondition": false,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "abc"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "placement"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 2332,
+    "localChecks": 6736,
+    "localFailures": 0,
+    "finalChecks": 52,
+    "finalFailures": 8,
+    "finalSkipFailures": 10,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "sequential-17004": 0,
+    "network-27002": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0,
+    "network-27002-shrink": 0
+   }
+  }
+ ]
+}

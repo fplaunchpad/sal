@@ -56,7 +56,7 @@ theorem seeded_partitioned (atoms : List Nat) : Partitioned (seeded atoms) := by
     let cell : NotionCorePartition.Cell :=
       ⟨0,⟨(0,.start),(traversal (rows atoms).length (rows atoms) .start).map
         (NotionCorePhysicalReplay.atom 0)⟩⟩
-    refine ⟨[cell],?_,by simp,?_⟩
+    refine ⟨[cell],?_,?_⟩
     · simp [cell,physical,seeded,getInstance,NotionCorePhysicalReplay.physical,
         NotionCorePhysicalReplay.start,NotionCorePartition.flatten,
         NotionCorePartition.Cell.physical,NotionCorePartition.boundary]
@@ -75,12 +75,12 @@ is sufficient for actual execution and partition preservation. -/
 theorem fresh_bootstrap_preserves (state : State) (atoms : List Nat)
     (prior : Partitioned state)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ 0)
-    (freshBlock : ∀ old ∈ state.forest, old.id ≠ 0) :
+    (freshBlock : FreshBlock state 0) :
     ∃ result, applyTransaction state (bootstrap atoms) = some result ∧ Partitioned result ∧
       result.forest = state.forest ++ [⟨0,NotionCoreSliceForest.freshTitle 0⟩] ∧
       ∀ other, other ≠ 0 → physical result other = physical state other := by
   obtain ⟨created,createStep,createdPart⟩ := NotionCoreMachinePartitionCreate.create_partitioned
-    state .initial none prior freshInstance freshBlock
+    state .initial none prior freshInstance freshBlock.1
   have shape := NotionCoreMachineCanonicalCreate.fresh_create_shape state created .initial none
     freshInstance freshBlock createStep
   have storage := NotionCoreMachineCanonicalCreate.fresh_create_storage state created .initial none

@@ -1,7 +1,8 @@
 import Sal.MRDTs.Instances.NotionCoreRuntimeRefinement
 
 /-! Progress of the actual wrapper, separately from successful-result refinement.
-The common allowed archive is later supplied by the existing honest protocol. -/
+The common allowed archive is later supplied by the existing honest protocol.
+Receipt progress covers merge-free transactions; merges are refused on receipt. -/
 namespace Sal.MRDTs.Instances.NotionCoreRuntimeEngine
 open NotionCorePayload (Transaction)
 
@@ -48,22 +49,23 @@ theorem receiveMetadata_fold_total (allowed : List Transaction)
 theorem receive_total (allowed : List Transaction) (unique : IdentityConsistent allowed)
     (state : State) (valid : Refines state)
     (included : ∀ tx ∈ state.metadata.archive, tx ∈ allowed)
-    (tx : Transaction) (member : tx ∈ allowed)
+    (tx : Transaction) (member : tx ∈ allowed) (notMerge : NotionCoreMergeFree.NotMerge tx)
     (compatible : NotionCoreRuntimeState.Compatible
       (NotionCoreRuntimeState.abstract state.core ∪ NotionCoreStructuralFacts.decode tx)) :
     ∃ next, receive state tx = .ok next ∧ Refines next := by
   have existsNext : ∃ next, receive state tx = .ok next := by
+    simp only [receive,admissible_of_notMerge notMerge,if_true]
     cases found : prior state.metadata tx with
     | none =>
       obtain ⟨core,accepted⟩ := NotionCoreRuntimeState.receive_total state.core valid.1 tx compatible
-      exact ⟨⟨core,NotionCoreRuntimeMetadata.receive state.metadata tx⟩,by simp [receive,found,accepted]⟩
+      exact ⟨⟨core,NotionCoreRuntimeMetadata.receive state.metadata tx⟩,by simp [receiveAdmitted,found,accepted]⟩
     | some old =>
       have oldMember := List.mem_of_find?_eq_some found
       have idEq : old.id = tx.id := by
         have h := List.find?_some found
         simpa [prior] using h
       have equal := unique old (included old oldMember) tx member idEq
-      exact ⟨state,by simp [receive,found,equal,pure,Except.pure]⟩
+      exact ⟨state,by simp [receiveAdmitted,found,equal,pure,Except.pure]⟩
   obtain ⟨next,accepted⟩ := existsNext
   exact ⟨next,accepted,receive_refines valid tx accepted⟩
 

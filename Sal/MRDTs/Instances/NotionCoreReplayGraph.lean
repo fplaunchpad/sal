@@ -165,7 +165,8 @@ theorem located_birth_parent (tx : Transaction) (deleted : BlockKey → Id → B
       change origin = .item old at parent
       simp [locatedReferences, originReference, parent]
     | create afterBlock => simp [births, operations, Operation.births] at born
-    | erase block instKey targets => simp [births, operations, Operation.births] at born
+    | erase block groups => simp at born
+    | merge source target => simp [births, operations, Operation.births] at born
 
 /-- Closure for every prefix of a canonical whole-version replay. External
 parent providers are derived from reception provenance; internal predecessors

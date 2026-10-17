@@ -17,7 +17,7 @@ recorded below when complete.
 
 ## Reference protocol theorem
 
-The typed create/insert/delete/split core now has a Sal same-witness RA theorem
+The typed create/insert/delete/split/merge core has a Sal same-witness RA theorem
 for an explicit honest factory/client protocol. This is a document result over
 the actual typed interpreter and renderer, beyond the earlier transaction-set
 storage shell. It is not a JavaScript extraction theorem or a production Notion
@@ -35,16 +35,16 @@ with no free archive coupling, stored-state equality, or desired-answer premise.
 The proof route is now complete inside this typed boundary:
 
 - Honest whole-version issuance derives allocation freshness, complete origin
-  providers, active-instance provenance, successful replay, normal slice shape,
+  providers, active-instance provenance, successful replay, chain-shaped slice trees,
   physical partition ownership, and empty inactive titles.
-- Actual create/insert/erase/split replay projects to the existing independent
+- Actual create/insert/erase/split/merge replay projects to the existing independent
   retained-slot document. Display order is proved separately from RGA interval
   order. Transactions remain atomic groups in the history language.
 - The finite carrier's five VCs supply registered state representation with the
   actual `Option` document query. Source execution pairing and the independent
   history proof supply the document meaning of that representation.
 - `MRDTClient.issued_update` connects actual client issuance to concrete MRDT
-  update/query. Its insert, split, and erase effect theorems give the requested
+  update/query. Its insert, split, erase and merge effect theorems give the requested
   local visible effects at supported bounds, including inherited zero gaps.
 - Actual repeated split/move label lifecycle derives duplicate-key exclusion.
   Wire-name proofs preserve this result through source-shaped decimal names and
@@ -58,16 +58,29 @@ sessions, clocks, receipts, and archive unchanged. This proves finite availabili
 not an arbitrary timed-source-trace rearrangement theorem. Post-factory Sal forks
 copy current snapshots, so they are not silently equated with new empty replicas.
 
-The full merge-block/formatting extension remains refuted by three honest-client
-traces:
+Block merge is verified under the corrected design of
+[the merge design note](notion-merge-block-design.md): removal of the source
+is the move itself, a merge into a merged-away target lands in its absorber,
+and merged blocks stay in the display order as tombstones.
+`NotionCoreProtocol.versions_witness` and `specification_ra` cover
+create/insert/erase/split/merge with unchanged statements, and
+`MRDTClient.merge_effect` gives the issuer's local effect. The structural
+fact-set carrier and the executable runtime cover the merge-free fragment;
+`NotionCoreStructuralRender.SPOT.merge_outside_scope` proves that no fact-set
+query can be correct once merges are present.
 
-| Editing request | Observed failure |
-| --- | --- |
-| Concurrent splits of `ab`, then merge to `empty | ba`; bold `ba` | Neither selected character becomes bold. |
-| Concurrent splits of `abc`, then merge to `ac | b`; bold `ac` | Also bolds `b` in the other block. |
-| Reach `empty | aX` through merges/splits; split `aX` at zero | Produces `empty | X | a`, rather than `empty | empty | aX`. |
+The demo's own merge and formatting remain refuted by honest-client traces:
 
-These editing merges are distinct from the verified Sal version merges, which
+| Editing request | Observed failure | Under the corrected merge |
+| --- | --- | --- |
+| Concurrent splits of `ab`, then merge to `empty | ba`; bold `ba` | Neither selected character becomes bold. | Remains (formatting) |
+| Concurrent splits of `abc`, then merge to `ac | b`; bold `ac` | Also bolds `b` in the other block. | Remains (formatting) |
+| Reach `empty | aX` through merges/splits; split `aX` at zero | Produces `empty | X | a`, rather than `empty | empty | aX`. | Does not occur |
+| Merge into a block that a merge has removed (N-004) | The whole document is hidden. | Does not occur |
+| Delayed merge whose move is skipped as a cycle (N-005) | `x` is hidden. | Does not occur |
+
+The two text-loss traces are one defect in the demo: removal is separate from
+the move. These editing merges are distinct from the verified Sal version merges, which
 union immutable transaction sets. The fabricated long-run clock counterexample,
 raw orphan deliveries, duplicate-session allocators, and inactive-title controls
 remain boundary evidence; they do not increase the confirmed demo-bug count.
@@ -77,13 +90,15 @@ JavaScript object/Map, JSON, string/atom, or exception extraction proof for the
 pinned demo. Wire-name printing corresponds to positive safe-integer counters;
 UTF-16 session comparison and string-iterator atom positions are explicit.
 Supported local deletion uses a nonempty in-range interval, rather than every
-oversized/clamped JavaScript input. Formatting, merge-block editing, unrestricted
-movement, removal, and production-service correspondence are outside the result.
+oversized/clamped JavaScript input. Formatting, the demo's three-operation
+merge, unrestricted movement, block removal independent of a merge, and
+production-service correspondence are outside the result.
 
 The research contribution to assess for the paper is the issuance-derived core
 refinement: whole-run knowledge and actual interval routing justify an independent
 editing history, then one common archive connects that history to Sal's ordinary
-and recursive same-witness criterion. The three extension failures delimit that
+and recursive same-witness criterion. The demo's merge failures locate the
+obligation its merge does not meet, and the formatting failures delimit the
 positive result. The protocol-scoped catalogue entry is recorded in
 [notion-catalogue.md](notion-catalogue.md), separately from the eighteen
 unrestricted production registry contracts. This handoff does not itself edit
@@ -118,9 +133,9 @@ assuming an independently correct renderer or a pre-existing archive coupling.
 Two research questions sharpen the paper claim. Which semantic identities are
 necessary for ordinary positional preparation to survive concurrency? Which
 issuance invariants suffice to make a transaction-set carrier refine that
-independent semantics? The current result answers both for split/insert/delete;
-the three editor-extension failures show why carrier convergence alone cannot
-answer them for the full demo.
+independent semantics? The current result answers both for
+split/insert/delete/merge; the demo's merge and formatting failures show why
+carrier convergence alone cannot answer them for the full demo.
 
 Include the crossing-delete `a | d` argument, the ID-dependent boundary
 insertion pair, an inherited zero-gap local effect, the end-to-end protocol

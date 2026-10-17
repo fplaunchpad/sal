@@ -53,28 +53,27 @@ theorem splice_partitioned (state next : State) (inst : Nat)
   · intro key existsKey
     by_cases selected : key = inst
     · subst key
-      obtain ⟨cells, physicalEq, owners, permutation⟩ := prior.partitions inst existsInstance
+      obtain ⟨cells, physicalEq, permutation⟩ := prior.partitions inst existsInstance
       have representation : NotionCorePartition.Represents
           ⟨physical state inst, cells.map Cell.entry⟩ cells :=
-        ⟨physicalEq, rfl, unique, owners⟩
+        ⟨physicalEq, rfl, unique⟩
       obtain ⟨cell, ⟨member, active⟩, _⟩ :=
         NotionCorePartition.physical_unique_owner origin representation present
       obtain ⟨before, after, shape⟩ := List.append_of_mem member
       subst cells
       let inserted := NotionCorePartition.insertCell cell origin fresh
-      refine ⟨before ++ inserted :: after, ?_, ?_, ?_⟩
+      refine ⟨before ++ inserted :: after, ?_, ?_⟩
       · rw [changed, physicalEq]
         exact NotionCorePartition.insert_physical before after cell origin fresh
           (by simpa [physicalEq] using unique) active
-      · simpa [inserted, NotionCorePartition.insertCell, List.map_append] using owners
       · have endpoints : cellRefs (before ++ inserted :: after) = cellRefs (before ++ cell :: after) := by
           apply cellRefs_congr
           simp [inserted, NotionCorePartition.insertCell, NotionCoreSource.insertSlice, Cell.entry]
         rw [endpoints, forestFrame]
         exact permutation
-    · obtain ⟨cells, physicalEq, owners, permutation⟩ :=
+    · obtain ⟨cells, physicalEq, permutation⟩ :=
         prior.partitions key ((instanceFrame key).mp existsKey)
-      exact ⟨cells, (unchanged key selected).trans physicalEq, owners, by simpa [forestFrame] using permutation⟩
+      exact ⟨cells, (unchanged key selected).trans physicalEq, by simpa [forestFrame] using permutation⟩
 
 /-- Tombstoning keeps interval boundaries and all physical identities. Empty
 inactive title cells are mapped along with active cells. -/
@@ -91,21 +90,20 @@ theorem erase_partitioned (state next : State) (inst : Nat) (targets : List Addr
     apply (instanceFrame owned.2.start.1).mpr
     exact prior.refsExist owned (forestFrame ▸ member)
   · intro key existsKey
-    obtain ⟨cells, physicalEq, owners, permutation⟩ :=
+    obtain ⟨cells, physicalEq, permutation⟩ :=
       prior.partitions key ((instanceFrame key).mp existsKey)
     by_cases selected : key = inst
     · subst key
-      refine ⟨cells.map (NotionCorePartition.eraseCell targets), ?_, ?_, ?_⟩
+      refine ⟨cells.map (NotionCorePartition.eraseCell targets), ?_, ?_⟩
       · rw [changed, physicalEq]
         simp only [flatten, List.map_flatMap, List.flatMap_map]
         congr 1
-      · simpa [List.map_map, NotionCorePartition.eraseCell, Function.comp_def] using owners
       · have endpoints : cellRefs (cells.map (NotionCorePartition.eraseCell targets)) = cellRefs cells := by
           apply cellRefs_congr
           simp [List.map_map, NotionCorePartition.eraseCell, NotionCoreSource.eraseSlice, Cell.entry, Function.comp_def]
         rw [endpoints, forestFrame]
         exact permutation
-    · exact ⟨cells, (unchanged key selected).trans physicalEq, owners, by simpa [forestFrame] using permutation⟩
+    · exact ⟨cells, (unchanged key selected).trans physicalEq, by simpa [forestFrame] using permutation⟩
 
 /-- Updating an existing instance changes its value, not the set of allocated
 instance names. This frame is proved from actual list-map lookup storage. -/
@@ -146,6 +144,28 @@ theorem erase_operation_partitioned (state : State)
   · simpa using frames.2.2 (blockName inst)
   · intro key distinct
     simpa [distinct] using frames.2.2 key
+
+/-- One erase per instance group executes and preserves every represented
+interval when every group names an existing instance. -/
+theorem erase_operations_partitioned (state : State) (block : NotionCorePayload.BlockKey)
+    (groups : List (NotionCorePayload.BlockKey × List NotionRunAllocation.Id))
+    (prior : Partitioned state)
+    (existsInstance : ∀ group ∈ groups, ∃ entry ∈ state.instances, entry.1 = blockName group.1) :
+    ∃ next, applyOperations state (groups.map fun group => .erase block group.1 group.2) = some next ∧
+      Partitioned next := by
+  induction groups generalizing state with
+  | nil => exact ⟨state, rfl, prior⟩
+  | cons group rest ih =>
+    obtain ⟨middle, first, middlePart⟩ := erase_operation_partitioned state block group.1 group.2 prior
+      (existsInstance group (by simp))
+    have kept : ∀ other ∈ rest, ∃ entry ∈ middle.instances, entry.1 = blockName other.1 := by
+      intro other member
+      simp only [applyOperation, Option.some.injEq] at first
+      subst middle
+      exact (putInstance_exists_iff state _ _ _ (existsInstance group (by simp))).mpr
+        (existsInstance other (List.mem_cons_of_mem _ member))
+    obtain ⟨next, later, nextPart⟩ := ih middle middlePart kept
+    exact ⟨next, by simp [applyOperations, first, later], nextPart⟩
 
 private theorem insert_result (state next : State) (block inst : NotionCorePayload.BlockKey)
     (first : NotionRunAllocation.Id) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
@@ -218,8 +238,9 @@ theorem canonical_insert_partitioned_version
   simp [payload, NotionCoreCreatorNetwork.requiredBlocks]
 
 /-- The complete canonical erase transaction preserves the partition, with
-target-instance existence derived from a replayed creator. Empty target lists
-are covered too; no item-reference witness is used to infer creation. -/
+the existence of every group's instance derived from a replayed creator.
+Empty target lists are covered too; no item-reference witness is used to
+infer creation. -/
 theorem canonical_erase_partitioned_version
     (network : NotionCorePayloadNetwork.State) (reachable : NotionCoreCreatorNetwork.Reach network)
     (version : List NotionRunAllocation.Run)
@@ -227,14 +248,17 @@ theorem canonical_erase_partitioned_version
     (tx : NotionCorePayload.Transaction)
     (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
-    (block inst : NotionCorePayload.BlockKey) (targets : List NotionRunAllocation.Id)
-    (payload : tx.payload = .erase block inst targets) :
+    (block : NotionCorePayload.BlockKey)
+    (groups : List (NotionCorePayload.BlockKey × List NotionRunAllocation.Id))
+    (payload : tx.payload = .erase block groups) :
     ∃ next, applyTransaction state tx = some next ∧ Partitioned next := by
-  have existsInstance := NotionCoreMachineCreatorPresence.canonical_required_instance_version
-    network reachable version closed pre suffix tx position state accepted inst
-    (by simp [payload, NotionCoreCreatorNetwork.requiredBlocks])
-  obtain ⟨next, executed, represented⟩ := erase_operation_partitioned state block inst targets prior existsInstance
-  exact ⟨next, by simp [applyTransaction, NotionCorePayload.operations, payload, applyOperations, executed], represented⟩
+  have existsInstance : ∀ group ∈ groups, ∃ entry ∈ state.instances, entry.1 = blockName group.1 :=
+    fun group member => NotionCoreMachineCreatorPresence.canonical_required_instance_version
+      network reachable version closed pre suffix tx position state accepted group.1
+      (by simp only [payload, NotionCoreCreatorNetwork.requiredBlocks]
+          exact List.mem_cons_of_mem _ (List.mem_map.mpr ⟨group, member, rfl⟩))
+  obtain ⟨next, executed, represented⟩ := erase_operations_partitioned state block groups prior existsInstance
+  exact ⟨next, by simpa [applyTransaction, NotionCorePayload.operations, payload] using executed, represented⟩
 
 theorem canonical_insert_partitioned_of_instance
     (network : NotionCorePayloadNetwork.State) (reachable : NotionCorePayloadNetwork.Reach network)
@@ -269,12 +293,13 @@ theorem canonical_erase_partitioned
     (tx : NotionCorePayload.Transaction)
     (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state) (prior : Partitioned state)
-    (block inst : NotionCorePayload.BlockKey) (targets : List NotionRunAllocation.Id)
-    (payload : tx.payload = .erase block inst targets) :
+    (block : NotionCorePayload.BlockKey)
+    (groups : List (NotionCorePayload.BlockKey × List NotionRunAllocation.Id))
+    (payload : tx.payload = .erase block groups) :
     ∃ next, applyTransaction state tx = some next ∧ Partitioned next :=
   canonical_erase_partitioned_version network reachable (network.allocation.peers peer).received
     (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable (NotionCoreCreatorNetwork.payload_reachable reachable)) peer)
-    pre suffix tx position state accepted prior block inst targets payload
+    pre suffix tx position state accepted prior block groups payload
 
 #print axioms canonical_insert_partitioned_version
 #print axioms canonical_erase_partitioned_version

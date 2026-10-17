@@ -1,4 +1,4 @@
-import Sal.MRDTs.Instances.NotionCoreSpec
+import Sal.MRDTs.Instances.NotionCoreSpecMerge
 
 /-! Structural semantic issuance and invariant preservation for the independent
 core. Guards describe names, anchors and shape; none assumes a visible effect.
@@ -46,10 +46,10 @@ theorem delete_preserves (doc : Document) (targets : List Address) (h : WellForm
   refine ⟨?_, ?_, ?_⟩
   · simpa only [List.map_map, Function.comp_def] using h.1
   · simpa only [List.flatMap_map, List.map_map, Function.comp_def, erase_address] using h.2.1
-  · intro block member
+  · intro block member live
     obtain ⟨old, oldmem, equal⟩ := List.mem_map.mp member
     subst block
-    exact anchored_erase old targets (h.2.2 old oldmem)
+    exact anchored_erase old targets (h.2.2 old oldmem live)
 
 theorem anchored_insert (block : Block) (origin : Address) (fresh : List Slot)
     (h : Anchored block) : Anchored {block with slots := insertSlots origin fresh block.slots} := by
@@ -85,12 +85,12 @@ theorem insert_preserves (pre post : Document) (source : Block) (origin : Addres
         List.map_append, List.count_append]
       omega
     exact permutation.nodup_iff.mpr (nodup_fresh_append _ _ h names)
-  · intro block member
+  · intro block member live
     rcases List.mem_append.mp member with member | member
-    · exact h.2.2 block (List.mem_append_left _ member)
+    · exact h.2.2 block (List.mem_append_left _ member) live
     · rcases List.mem_cons.mp member with rfl | member
-      · exact anchored_insert source origin fresh (h.2.2 source (by simp))
-      · exact h.2.2 block (by simp [member])
+      · exact anchored_insert source origin fresh (h.2.2 source (by simp) live)
+      · exact h.2.2 block (by simp [member]) live
 
 private theorem nodup_insert_middle {α : Type} (pre post : List α) (fresh : α)
     (unique : (pre ++ post).Nodup) (absent : fresh ∉ pre ++ post) :
@@ -101,7 +101,7 @@ theorem create_preserves (pre post : Document) (bid inst : Nat)
     (h : WellFormed (pre ++ post))
     (freshBlock : bid ∉ (pre ++ post).map Block.id)
     (freshRoot : (root inst).address ∉ addresses (pre ++ post)) :
-    WellFormed (pre ++ ⟨bid, [root inst]⟩ :: post) := by
+    WellFormed (pre ++ ⟨bid, inst, [root inst], true⟩ :: post) := by
   refine ⟨?_, ?_, ?_⟩
   · simpa only [List.map_append, List.map_cons] using
       nodup_insert_middle (pre.map Block.id) (post.map Block.id) bid
@@ -112,12 +112,12 @@ theorem create_preserves (pre post : Document) (bid inst : Nat)
       nodup_insert_middle (addresses pre) (addresses post) (root inst).address
         (by simpa only [addresses, List.flatMap_append] using h.2.1)
         (by simpa only [addresses, List.flatMap_append] using freshRoot)
-  · intro block member
+  · intro block member live
     rcases List.mem_append.mp member with member | member
-    · exact h.2.2 block (List.mem_append_left _ member)
+    · exact h.2.2 block (List.mem_append_left _ member) live
     · rcases List.mem_cons.mp member with rfl | member
       · exact ⟨root inst, [], rfl, rfl⟩
-      · exact h.2.2 block (List.mem_append_right _ member)
+      · exact h.2.2 block (List.mem_append_right _ member) live
 
 def replaceSlots (doc : Document) (bid : Nat) (slots : List Slot) : Document :=
   doc.map fun block => if block.id = bid then {block with slots := slots} else block
@@ -198,12 +198,12 @@ theorem trim_preserves_and_fresh (pre post : Document) (source : Block)
   have reducedWF : WellFormed reduced := by
     refine ⟨?_, names.1, ?_⟩
     · simpa only [reduced, List.map_append, List.map_cons] using h.1
-    · intro block member
+    · intro block member live
       rcases List.mem_append.mp member with member | member
-      · exact h.2.2 block (List.mem_append_left _ member)
+      · exact h.2.2 block (List.mem_append_left _ member) live
       · rcases List.mem_cons.mp member with rfl | member
-        · exact anchored_cut source origin (h.2.2 source (by simp))
-        · exact h.2.2 block (by simp [member])
+        · exact anchored_cut source origin (h.2.2 source (by simp) live)
+        · exact h.2.2 block (by simp [member]) live
   refine ⟨reducedWF, ?_, ?_⟩
   · exact List.nodup_cons.mpr ⟨fun member => freshAll (List.mem_append_right _ member), names.2.1⟩
   · apply List.disjoint_left.mpr
@@ -280,6 +280,8 @@ inductive Admissible : Document → Command → Prop where
       (hiddenMarker : marker.visible = false)
       (sameInstance : marker.address.1 = origin.1) :
       Admissible doc (.split origin marker target.id)
+  | merge (doc : Document) (source target : Nat) :
+      Admissible doc (.merge source target)
 
 private theorem split_map (doc : Document) (source : Block) (origin : Address)
     (marker : Slot) (target : Nat) (distinct : source.id ≠ target) :
@@ -338,6 +340,7 @@ theorem step_preserves {doc next : Document} {command : Command}
       have equal := Option.some.inj executed
       subst next
       exact split_preserves doc source target origin marker inst h sourceMember targetMember distinct emptyTarget freshMarker
+  | merge doc source target => exact NotionCoreSpecMerge.merge_preserves h executed
 
 /-- Structural admission never gets stuck on an invariant document. This is
 separate from preservation so a vacuous failed transition cannot discharge it. -/
@@ -356,6 +359,8 @@ theorem admissible_progress {doc : Document} {command : Command}
   | split doc source target origin marker inst owner targetMember distinct emptyTarget freshMarker hiddenMarker sameInstance =>
       have targetPresent : target.id ∈ doc.map Block.id := List.mem_map.mpr ⟨target, targetMember, rfl⟩
       simp [step, owner, distinct, targetPresent, hiddenMarker]
+  | merge doc source target =>
+      exact Option.ne_none_iff_exists'.mp (NotionCoreSpecMerge.merge_total doc source target)
 
 /-- Reachability uses actual successful command execution and the structural
 issuance checks above. It does not assume `WellFormed` as a transition guard. -/
@@ -369,15 +374,186 @@ theorem reachable_wellFormed {doc : Document} (reachable : Reach doc) : WellForm
   | init => exact ⟨by simp, by simp, by simp⟩
   | step _ guard executed ih => exact step_preserves ih guard executed
 
+private theorem same_block_id {doc : Document} (unique : (doc.map Block.id).Nodup)
+    {a b : Block} (ha : a ∈ doc) (hb : b ∈ doc) (eq : a.id = b.id) : a = b := by
+  induction doc with
+  | nil => simp at ha
+  | cons head tail ih =>
+    simp only [List.map_cons, List.nodup_cons] at unique
+    simp only [List.mem_cons] at ha hb
+    rcases ha with rfl | ha <;> rcases hb with rfl | hb
+    · rfl
+    · exact False.elim (unique.1 (List.mem_map.mpr ⟨b, hb, eq.symm⟩))
+    · exact False.elim (unique.1 (List.mem_map.mpr ⟨a, ha, eq⟩))
+    · exact ih unique.2 ha hb
+
+private theorem take_succ_head (head : Slot) (tail : List Slot) (k : Nat) :
+    ∃ rest, (head :: tail).take (k + 1) = head :: rest := ⟨tail.take k, rfl⟩
+
+/-- Cutting or inserting after any address keeps the first slot first. -/
+theorem cutAfter_head (head : Slot) (tail : List Slot) (origin : Address) :
+    ∃ rest, (cutAfter (head :: tail) origin).1 = head :: rest :=
+  take_succ_head head tail _
+
+theorem insertSlots_head (head : Slot) (tail fresh : List Slot) (origin : Address) :
+    ∃ rest, insertSlots origin fresh (head :: tail) = head :: rest := by
+  obtain ⟨rest, eq⟩ := cutAfter_head head tail origin
+  refine ⟨rest ++ fresh ++ (cutAfter (head :: tail) origin).2, ?_⟩
+  simp only [insertSlots]
+  rw [eq]
+  rfl
+
+private theorem rooted_cons {block : Block} {doc : Document}
+    (head : (block.alive = true → ∃ tail, block.slots = root block.inst :: tail) ∧
+      (block.alive = false → block.slots = []))
+    (rest : Rooted doc) : Rooted (block :: doc) := by
+  intro b member
+  rcases List.mem_cons.mp member with rfl | member
+  · exact head
+  · exact rest b member
+
+private theorem rooted_append {a b : Document} (left : Rooted a) (right : Rooted b) :
+    Rooted (a ++ b) := by
+  intro block member
+  rcases List.mem_append.mp member with member | member
+  · exact left block member
+  · exact right block member
+
+private theorem rooted_sub {a b : Document} (rooted : Rooted a) (sub : ∀ block ∈ b, block ∈ a) :
+    Rooted b := fun block member => rooted block (sub block member)
+
+private theorem fresh_rooted (bid inst : Nat) :
+    Rooted [(⟨bid, inst, [root inst], true⟩ : Block)] := by
+  intro b member
+  simp only [List.mem_singleton] at member
+  subst member
+  exact ⟨fun _ => ⟨[], rfl⟩, fun dead => by simp at dead⟩
+
+/-- Rewriting an alive rooted block's slots to a list headed by its old first
+slot keeps it rooted. -/
+private theorem rooted_rehead {block : Block} {slots : List Slot}
+    (rooted : Rooted [block]) (live : block.alive = true)
+    (headed : ∀ head tail, block.slots = head :: tail → ∃ rest, slots = head :: rest) :
+    Rooted [{block with slots := slots}] := by
+  intro b member
+  simp only [List.mem_singleton] at member
+  subst member
+  obtain ⟨tail, eq⟩ := (rooted block (by simp)).1 live
+  obtain ⟨rest, eq'⟩ := headed _ _ eq
+  exact ⟨fun _ => ⟨rest, eq'⟩, fun dead => by simp [live] at dead⟩
+
+private theorem alive_of_owns {block : Block} {origin : Address} (rooted : Rooted [block])
+    (present : origin ∈ block.slots.map Slot.address) : block.alive = true := by
+  cases live : block.alive
+  · have empty := (rooted block (by simp)).2 live
+    simp [empty] at present
+  · rfl
+
+private theorem eraseSlot_root (targets : List Address) (inst : Nat) :
+    eraseSlot targets (root inst) = root inst := by
+  simp [eraseSlot, root]
+
+/-- Every admitted step preserves `Rooted`. Split relies on its empty-target
+guard: the target's only slot is its own root. -/
+theorem step_preserves_rooted {doc next : Document} {command : Command}
+    (h : WellFormed doc) (rooted : Rooted doc) (guard : Admissible doc command)
+    (executed : step doc command = some next) : Rooted next := by
+  cases guard with
+  | create_front doc bid inst freshBlock freshRoot =>
+      simp only [step, freshBlock, ↓reduceIte] at executed
+      have equal := Option.some.inj executed
+      subst next
+      exact rooted_append (fresh_rooted bid inst) rooted
+  | create_after pre post source bid inst freshBlock freshRoot =>
+      rw [step_create_focus pre post source bid inst h.1 freshBlock] at executed
+      have equal := Option.some.inj executed
+      subst next
+      refine rooted_append (rooted_sub rooted (fun b hb => by simp [hb])) ?_
+      refine rooted_cons (rooted source (by simp)) ?_
+      exact rooted_append (fresh_rooted bid inst) (rooted_sub rooted (fun b hb => by simp [hb]))
+  | insert pre post source origin fresh present names =>
+      have outside := (address_focus pre post source origin h.2.1 present).2
+      rw [step_insert_focus pre post source origin fresh present outside] at executed
+      have equal := Option.some.inj executed
+      subst next
+      have single : Rooted [source] := rooted_sub rooted (fun b hb => by simp_all)
+      refine rooted_append (rooted_sub rooted (fun b hb => by simp [hb])) ?_
+      refine rooted_append (rooted_rehead single (alive_of_owns single present) ?_)
+        (rooted_sub rooted (fun b hb => by simp [hb]))
+      intro head tail eq
+      rw [eq]
+      exact insertSlots_head head tail fresh origin
+  | delete doc targets =>
+      simp only [step] at executed
+      have equal := Option.some.inj executed
+      subst next
+      intro block member
+      obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
+      obtain ⟨live, dead⟩ := rooted old oldMember
+      refine ⟨fun alive => ?_, fun gone => ?_⟩
+      · obtain ⟨tail, eq⟩ := live alive
+        exact ⟨tail.map (eraseSlot targets), by simp [eq, eraseSlot_root]⟩
+      · simp [dead gone]
+  | split doc source target origin marker inst owner targetMember distinct emptyTarget freshMarker hiddenMarker sameInstance =>
+      have sourceMember : source ∈ doc := List.mem_of_find?_eq_some owner
+      have targetPresent : target.id ∈ doc.map Block.id := List.mem_map.mpr ⟨target, targetMember, rfl⟩
+      have valid : ¬ (source.id = target.id ∨ target.id ∉ doc.map Block.id ∨ marker.visible = true) := by
+        simp [distinct, targetPresent, hiddenMarker]
+      simp only [step, owner, valid, ↓reduceIte] at executed
+      have equal := Option.some.inj executed
+      subst next
+      have present : origin ∈ source.slots.map Slot.address := by
+        have found := List.find?_some owner
+        simpa [NotionCoreSpec.owns] using found
+      have sourceSingle : Rooted [source] := rooted_sub rooted (fun b hb => by simp_all)
+      have sourceLive := alive_of_owns sourceSingle present
+      have targetLive : target.alive = true := by
+        cases live : target.alive
+        · have empty := (rooted target targetMember).2 live
+          rw [emptyTarget] at empty
+          simp at empty
+        · rfl
+      have targetRoot : root inst = root target.inst := by
+        obtain ⟨tail, eq⟩ := (rooted target targetMember).1 targetLive
+        rw [emptyTarget] at eq
+        exact (List.cons.inj eq).1
+      intro block member
+      obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
+      by_cases isSource : old.id = source.id
+      · have same := same_block_id h.1 oldMember sourceMember isSource
+        subst old
+        simp only [↓reduceIte]
+        refine ⟨fun _ => ?_, fun dead => by simp [sourceLive] at dead⟩
+        obtain ⟨tail, eq⟩ := (rooted source sourceMember).1 sourceLive
+        rw [eq]
+        exact cutAfter_head _ tail origin
+      · by_cases isTarget : old.id = target.id
+        · have same := same_block_id h.1 oldMember targetMember isTarget
+          subst old
+          simp only [isSource, ↓reduceIte]
+          refine ⟨fun _ => ⟨marker :: (cutAfter source.slots origin).2, ?_⟩,
+            fun dead => by simp [targetLive] at dead⟩
+          simp [emptyTarget, targetRoot]
+        · simp only [isSource, isTarget, ↓reduceIte]
+          exact rooted old oldMember
+  | merge doc source target =>
+      exact NotionCoreSpecMerge.merge_preserves_rooted h.1 rooted executed
+
+theorem reachable_rooted {doc : Document} (reachable : Reach doc) : Rooted doc := by
+  induction reachable with
+  | init => intro block member; simp at member
+  | step prior guard executed ih =>
+      exact step_preserves_rooted (reachable_wellFormed prior) ih guard executed
+
 private def slotA : Slot := character 0 (0, 1) 0
 private def slotB : Slot := character 0 (0, 2) 1
-private def oldBlock : Block := ⟨10, [root 0, slotA, slotB]⟩
-private def deletedBlock : Block := ⟨10, [root 0, {slotA with visible := false}, slotB]⟩
-private def targetBlock : Block := ⟨11, [root 1]⟩
+private def oldBlock : Block := ⟨10, 0, [root 0, slotA, slotB], true⟩
+private def deletedBlock : Block := ⟨10, 0, [root 0, {slotA with visible := false}, slotB], true⟩
+private def targetBlock : Block := ⟨11, 1, [root 1], true⟩
 private def marker : Slot := boundary 0 (1, 10)
 private def afterSplit : Document :=
-  [⟨10, [root 0, {slotA with visible := false}]⟩,
-   ⟨11, [root 1, marker, slotB]⟩]
+  [⟨10, 0, [root 0, {slotA with visible := false}], true⟩,
+   ⟨11, 1, [root 1, marker, slotB], true⟩]
 
 /-- PASS+FAIL: a nontrivial admitted execution deletes a, then splits after
 its hidden identity. The split moves b, not the visible prefix, into the new
@@ -385,10 +561,10 @@ block. This also rules out a live-origin-only reading of admission. -/
 theorem hidden_origin_control :
     Reach afterSplit ∧ view afterSplit = [(10, []), (11, [1])] ∧
     view afterSplit ≠ [(10, [1]), (11, [])] := by
-  have one : Reach [⟨10, [root 0]⟩] :=
+  have one : Reach [⟨10, 0, [root 0], true⟩] :=
     .step .init (.create_front [] 10 0 (by decide) (by decide)) (by decide)
   have two : Reach [oldBlock] :=
-    .step one (.insert [] [] ⟨10, [root 0]⟩ (root 0).address [slotA, slotB]
+    .step one (.insert [] [] ⟨10, 0, [root 0], true⟩ (root 0).address [slotA, slotB]
       (by decide) (by decide)) (by decide)
   have three : Reach [deletedBlock] :=
     .step two (.delete [oldBlock] [slotA.address]) (by decide)
@@ -402,11 +578,13 @@ theorem hidden_origin_control :
 /-- Fresh character names are accepted; reusing the existing root name is
 rejected by structural freshness even though its value is invisible. -/
 theorem freshness_control :
-    FreshRun [⟨10, [root 0]⟩] [slotA, slotB] ∧
-    ¬ FreshRun [⟨10, [root 0]⟩] [root 0] := by decide
+    FreshRun [⟨10, 0, [root 0], true⟩] [slotA, slotB] ∧
+    ¬ FreshRun [⟨10, 0, [root 0], true⟩] [root 0] := by decide
 
 #print axioms admissible_progress
 #print axioms step_preserves
 #print axioms reachable_wellFormed
+#print axioms step_preserves_rooted
+#print axioms reachable_rooted
 
 end Sal.MRDTs.Instances.NotionCoreInvariant

@@ -21,11 +21,12 @@ def commands (tx : Transaction) : List NotionCoreSourceDocument.Command :=
   | .create after =>
       [.create (blockName (.issued tx.id)) (blockName (.issued tx.id)) (after.map blockName)]
   | .insert _ inst origin atoms => [.insert (originAddress (blockName inst) origin) (text tx (blockName inst) atoms)]
-  | .erase _ inst targets => [.delete (targets.map (address (blockName inst)))]
+  | .erase _ groups => groups.map fun group => .delete (group.2.map (address (blockName group.1)))
   | .split block inst origin =>
       [.create (blockName (.issued tx.id)) (blockName (.issued tx.id)) (some (blockName block)),
        .split (originAddress (blockName inst) origin) (address (blockName inst) tx.id)
          (blockName (.issued tx.id))]
+  | .merge source target => [.merge (blockName source) (blockName target)]
 
 /-- A split group retains creation and splitting in source order, rather than
 flattening them into separate externally observable transactions. -/
@@ -35,9 +36,17 @@ theorem split_group (id : NotionRunAllocation.Id) (block inst : NotionCorePayloa
     commands ⟨id,.split block inst origin⟩ ≠ [] := by
   simp [commands]
 
-/-- Erasure names the selected text instance, which can differ from its block. -/
-theorem erase_instance (id : NotionRunAllocation.Id) (block inst : NotionCorePayload.BlockKey)
-    (targets : List NotionRunAllocation.Id) :
-    commands ⟨id,.erase block inst targets⟩ = [.delete (targets.map (address (blockName inst)))] := rfl
+/-- Erasure gives one delete per instance group, each naming its text
+instance, which can differ from the block. -/
+theorem erase_instance (id : NotionRunAllocation.Id) (block : NotionCorePayload.BlockKey)
+    (groups : List (NotionCorePayload.BlockKey × List NotionRunAllocation.Id)) :
+    commands ⟨id,.erase block groups⟩ =
+      groups.map fun group => .delete (group.2.map (address (blockName group.1))) := rfl
+
+/-- A merge is one source command naming both blocks, not a removal. -/
+theorem merge_command (id : NotionRunAllocation.Id) (source target : NotionCorePayload.BlockKey) :
+    commands ⟨id,.merge source target⟩ = [.merge (blockName source) (blockName target)] ∧
+    (commands ⟨id,.merge source target⟩).map NotionCoreSourceDocument.Command.semantic =
+      [.merge (blockName source) (blockName target)] := ⟨rfl, rfl⟩
 
 end Sal.MRDTs.Instances.NotionCoreMachineCommands

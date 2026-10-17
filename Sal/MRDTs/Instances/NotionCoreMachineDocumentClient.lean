@@ -2,8 +2,9 @@ import Sal.MRDTs.Instances.NotionCoreMachineDocumentErase
 import Sal.MRDTs.Instances.NotionCoreMachineDeleteTotal
 
 /-! Actual positional deletion selects the independent specification's visible
-identities. The source range codec permutes those identities; erasure depends
-only on membership. Local effects use independent source preparation lemmas. -/
+identities, grouped by text instance. The source range codec permutes those
+identities within each group; erasure depends only on membership. Local
+effects use independent source preparation lemmas. -/
 namespace Sal.MRDTs.Instances.NotionCoreMachineDocumentClient
 open NotionCoreMachine
 open NotionCoreMachineDocument
@@ -14,42 +15,12 @@ open NotionCoreSource (Atom Slice Block)
 open NotionCorePayload (BlockKey Payload Transaction)
 open NotionCorePreparation (nodes characters deleteTargets)
 
-/-- Checked client node extraction equals the existing source block's nodes,
-including the empty attached title; this is a projection equality, not replay. -/
+/-- Checked client chain extraction equals the materialized source block's
+slices; this is a projection equality, not replay. -/
 theorem materialized_nodes (state : State) (stored : NotionCoreSliceForest.Block) (source : Block)
-    (normal : NotionCoreSliceForest.Normal stored.id stored.title)
-    (empty : NotionCoreSliceForest.attached stored.title = true →
-      physical state stored.id = NotionCoreSliceForest.emptyPhysical stored.id)
-    (titleExists : NotionCoreSliceForest.attached stored.title = true →
-      state.instances.any (fun entry => entry.1 == stored.id) = true)
     (accepted : materializeBlock state stored = some source) :
-    materialize state stored.title = some (nodes source) := by
-  cases stored with
-  | mk bid tree =>
-    change NotionCoreSliceForest.Normal bid tree at normal
-    cases normal with
-    | own stop =>
-      cases extracted : sliceAtoms state ⟨(bid,.start),stop⟩ with
-      | none => simp [materializeBlock,NotionCoreSliceForest.active,NotionCoreSliceForest.Tree.children,
-          NotionCoreSliceForest.Tree.slice,extracted] at accepted
-      | some atoms =>
-        have sourceEq : source = ⟨bid,.own,⟨(bid,.start),atoms⟩⟩ := by
-          simpa [materializeBlock,NotionCoreSliceForest.active,NotionCoreSliceForest.attached,
-            NotionCoreSliceForest.Tree.children,NotionCoreSliceForest.Tree.slice,extracted] using accepted.symm
-        simp [materialize,NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,
-          extracted,sourceEq,nodes]
-    | attached ref =>
-      have root := NotionCoreMachineSlices.empty_title_atoms state bid (titleExists rfl) (empty rfl)
-      simp only [NotionCoreSliceForest.titleRef] at root
-      cases extracted : sliceAtoms state ref with
-      | none => simp [materializeBlock,NotionCoreSliceForest.active,NotionCoreSliceForest.Tree.children,
-          NotionCoreSliceForest.Tree.slice,extracted] at accepted
-      | some atoms =>
-        have sourceEq : source = ⟨bid,.attached bid,⟨ref.start,atoms⟩⟩ := by
-          simpa [materializeBlock,NotionCoreSliceForest.active,NotionCoreSliceForest.attached,
-            NotionCoreSliceForest.Tree.children,NotionCoreSliceForest.Tree.slice,extracted] using accepted.symm
-        simp [materialize,NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,
-          root,extracted,sourceEq,nodes,NotionCoreSliceForest.titleRef]
+    materialize state stored.title = some (nodes source) :=
+  (materialized_slices state stored source accepted).1
 
 private theorem decoder_physical_roundtrip (txs : List Transaction) (state : State)
     (accepted : replay {} txs = some state) (address : Address)
@@ -126,78 +97,83 @@ private theorem mapM_member {α β : Type} (f : α → Option β) (xs : List α)
         · obtain ⟨x,present,found⟩ := ih tail later inside
           exact ⟨x,List.mem_cons_of_mem _ present,found⟩
 
-/-- A displayed materialized source block determines the actual checked
+/-- A displayed alive materialized source block determines the actual checked
 client slices of that same requested block. -/
 theorem document_block_slices (state : State)
-    (part : NotionCoreMachinePartition.Partitioned state) (shape : NotionCoreMachineShape.ShapeInvariant state)
     (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
-    (source : Block) (member : source ∈ document) (block : BlockKey) (name : source.id = blockName block) :
+    (source : Block) (member : source ∈ document) (alive : source.alive = true)
+    (block : BlockKey) (name : source.id = blockName block) :
     blockSlices state block = some (nodes source) := by
   obtain ⟨bid,displayed,decoded⟩ := mapM_member _ state.display document materialized source member
   have named : source.id = bid := materialized_named_id state bid source decoded
+  have same : bid = blockName block := named.symm.trans name
   cases found : state.forest.find? (fun old => old.id == bid) with
-  | none => simp [found] at decoded
+  | none =>
+    rw [materializeEntry_tombstone state bid found] at decoded
+    cases decoded
+    simp [Block.alive] at alive
   | some stored =>
-    have storedMember := List.mem_of_find?_eq_some found
-    have sourceAccepted : materializeBlock state stored = some source := by simpa [found] using decoded
-    have rootName : stored.title.slice.start.1 = stored.id := by
-      have normal := shape.1 stored storedMember
-      rcases stored with ⟨id,title⟩
-      change NotionCoreSliceForest.Normal id title at normal
-      cases normal <;> rfl
-    have titleMember : (stored.id,stored.title.slice) ∈ NotionCoreForestRefs.ownedRefs state.forest := by
-      apply List.mem_flatMap.mpr
-      refine ⟨stored,storedMember,List.mem_map.mpr ⟨stored.title.slice,?_,rfl⟩⟩
-      cases stored.title; simp [NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.Tree.slice]
-    have titleExists : state.instances.any (fun entry => entry.1 == stored.id) = true := by
-      simpa [rootName] using part.refsExist _ titleMember
-    have titleEmpty : NotionCoreSliceForest.attached stored.title = true →
-        physical state stored.id = NotionCoreSliceForest.emptyPhysical stored.id := by
-      intro attached
-      exact shape.2.2 _ (List.mem_map.mpr ⟨stored,storedMember,rfl⟩) attached
-    have slices := materialized_nodes state stored source (shape.1 stored storedMember) titleEmpty
-      (fun _ => titleExists) sourceAccepted
-    have same : bid = blockName block := named.symm.trans name
+    rw [materializeEntry_stored state bid stored found] at decoded
+    have slices := materialized_nodes state stored source decoded
     simpa [blockSlices,← same,found] using slices
 
-private theorem selection_data (state : State) (block : BlockKey) (start stop : Nat) (payload : Payload)
-    (prepared : selectErase state block start stop = some payload) :
-    ∃ addresses inst ids, deleteAddresses state block start stop = some addresses ∧
-      decodeTargets inst addresses = some ids ∧ payload = .erase block inst (NotionCoreRanges.sorted ids) := by
-  cases selected : deleteAddresses state block start stop with
-  | none => simp [selectErase,selected] at prepared
-  | some addresses =>
-    cases head : addresses.head? with
-    | none => simp [selectErase,selected,head] at prepared
-    | some first =>
-      cases decoded : decodeAddress first with
-      | none => simp [selectErase,selected,head,decoded] at prepared
-      | some pair =>
-        rcases pair with ⟨inst,origin⟩
-        cases origin with
-        | start => simp [selectErase,selected,head,decoded] at prepared
-        | item id =>
-          cases ids : decodeTargets inst addresses with
-          | none => simp [selectErase,prepareErase,selected,head,decoded,ids] at prepared
-          | some raw =>
-            have equal : payload = .erase block inst (NotionCoreRanges.sorted raw) := by
-              simpa [selectErase,prepareErase,selected,head,decoded,ids,NotionCoreRanges.expand_compress] using prepared.symm
-            exact ⟨addresses,inst,raw,rfl,ids,equal⟩
+/-- A displayed tombstone names a block with no stored chain. -/
+theorem document_block_tombstone (state : State)
+    (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
+    (source : Block) (member : source ∈ document) (dead : source.alive = false)
+    (block : BlockKey) (name : source.id = blockName block) :
+    blockSlices state block = none := by
+  obtain ⟨bid,displayed,decoded⟩ := mapM_member _ state.display document materialized source member
+  have named : source.id = bid := materialized_named_id state bid source decoded
+  have same : bid = blockName block := named.symm.trans name
+  cases found : state.forest.find? (fun old => old.id == bid) with
+  | none => simp [blockSlices,← same,found]
+  | some stored =>
+    rw [materializeEntry_stored state bid stored found] at decoded
+    have live := materialized_alive state stored source decoded
+    rw [live] at dead
+    contradiction
+
+/-- Each prepared group's targets, as physical addresses, permute the run of
+selected addresses it was decoded from. -/
+private theorem groups_targets (txs : List Transaction) (state : State)
+    (accepted : replay {} txs = some state) (runs : List (Nat × List Address))
+    (present : ∀ run ∈ runs, ∀ address ∈ run.2, address ∈ (physical state address.1).map Atom.address)
+    (groups : List (BlockKey × List NotionRunAllocation.Id))
+    (grouped : runs.mapM prepareGroup = some groups) :
+    (groups.flatMap fun group => group.2.map (NotionCorePhysicalReplay.address (blockName group.1))).Perm
+      (runs.flatMap Prod.snd) := by
+  induction runs generalizing groups with
+  | nil => simp at grouped; subst groups; simp
+  | cons run rest ih =>
+    simp only [List.mapM_cons] at grouped
+    obtain ⟨group,first,later⟩ := Option.bind_eq_some_iff.mp grouped
+    obtain ⟨tail,following,same⟩ := Option.bind_eq_some_iff.mp later
+    have equal := Option.some.inj same
+    subst groups
+    obtain ⟨_,ids,decoded,sortedEq⟩ := group_data run group.1 group.2 first
+    have raw := decodeTargets_roundtrip txs state accepted group.1 run.2 ids
+      (present run (by simp)) decoded
+    have single : (group.2.map (NotionCorePhysicalReplay.address (blockName group.1))).Perm run.2 := by
+      rw [sortedEq, ← raw]
+      exact (NotionCoreRanges.sorted_perm ids).map _
+    simp only [List.flatMap_cons]
+    exact single.append (ih (fun other member => present other (List.mem_cons_of_mem _ member)) tail following)
 
 /-- Source compression/sorting preserves precisely the visible identity
-selection, up to permutation. Neither the target list nor its order is assumed. -/
+selection, up to permutation, across all instance groups. Neither the target
+list nor its order is assumed. -/
 theorem selectErase_targets (txs : List Transaction) (state : State)
     (accepted : replay {} txs = some state)
-    (part : NotionCoreMachinePartition.Partitioned state) (shape : NotionCoreMachineShape.ShapeInvariant state)
     (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
-    (source : Block) (member : source ∈ document) (block : BlockKey) (name : source.id = blockName block)
+    (source : Block) (member : source ∈ document) (alive : source.alive = true)
+    (block : BlockKey) (name : source.id = blockName block)
     (start stop : Nat) (payload : Payload) (prepared : selectErase state block start stop = some payload) :
-    ∃ inst ids, payload = .erase block inst ids ∧
-      (ids.map (NotionCorePhysicalReplay.address (blockName inst))).Perm (deleteTargets source start stop) := by
-  obtain ⟨addresses,inst,ids,selected,decoded,equal⟩ := selection_data state block start stop payload prepared
-  have raw := decodeTargets_roundtrip txs state accepted inst addresses ids
-    (fun address member => delete_physical_member state block start stop addresses selected address member) decoded
-  have slices := document_block_slices state part shape document materialized source member block name
+    ∃ groups, payload = .erase block groups ∧
+      (groups.flatMap fun group => group.2.map (NotionCorePhysicalReplay.address (blockName group.1))).Perm
+        (deleteTargets source start stop) := by
+  obtain ⟨addresses,groups,selected,grouped,equal⟩ := selection_groups state block start stop payload prepared
+  have slices := document_block_slices state document materialized source member alive block name
   have addressesEq : addresses = deleteTargets source start stop := by
     unfold deleteAddresses at selected
     split at selected
@@ -206,9 +182,13 @@ theorem selectErase_targets (txs : List Transaction) (state : State)
       split at selected
       · contradiction
       · simpa only [Option.some.injEq,deleteTargets] using selected.symm
-  refine ⟨inst,NotionCoreRanges.sorted ids,equal,?_⟩
-  have permutation := (NotionCoreRanges.sorted_perm ids).map (NotionCorePhysicalReplay.address (blockName inst))
-  simpa only [raw,addressesEq] using permutation
+  refine ⟨groups,equal,?_⟩
+  have permutation := groups_targets txs state accepted (runs addresses)
+    (fun run runMember address inside => delete_physical_member state block start stop addresses selected
+      address (by rw [← runs_flatten addresses]; exact List.mem_flatMap.mpr ⟨run,runMember,inside⟩))
+    groups grouped
+  rw [runs_flatten, addressesEq] at permutation
+  exact permutation
 
 private theorem eraseAtom_perm (a b : List Address) (permutation : a.Perm b) (atom : Atom) :
     NotionCoreSource.eraseAtom a atom = NotionCoreSource.eraseAtom b atom := by
@@ -229,22 +209,26 @@ theorem delete_step_perm (document : NotionCoreSourceDocument.Document)
   apply List.map_congr_left
   intro block member
   unfold NotionCoreSourceDocument.eraseBlock NotionCoreSource.eraseSlice
-  congr 2
+  congr 1
+  apply List.map_congr_left
+  intro slice _
+  congr 1
   apply List.map_congr_left
   exact fun atom _ => eraseAtom_perm a b permutation atom
 
 /-- Successful actual positional preparation selects exactly the natural
-range-delete command modulo source codec sorting. The actual operation then
-has the independent local effect on this block, leaving all other views intact. -/
+range-delete command modulo source codec sorting and instance grouping. The
+actual operations then have the independent local effect on this block,
+leaving all other views intact. -/
 theorem prepared_erase_effect (txs : List Transaction) (state result : State)
     (accepted : replay {} txs = some state)
-    (part : NotionCoreMachinePartition.Partitioned state) (shape : NotionCoreMachineShape.ShapeInvariant state)
     (pre post : NotionCoreSourceDocument.Document) (source : Block)
     (materialized : materializeDocument state = some (pre ++ source :: post))
-    (block inst : BlockKey) (name : source.id = blockName block)
-    (start stop : Nat) (ids : List NotionRunAllocation.Id)
-    (prepared : selectErase state block start stop = some (.erase block inst ids))
-    (operation : applyOperation state (.erase block inst ids) = some result)
+    (alive : source.alive = true)
+    (block : BlockKey) (name : source.id = blockName block)
+    (start stop : Nat) (groups : List (BlockKey × List NotionRunAllocation.Id))
+    (prepared : selectErase state block start stop = some (.erase block groups))
+    (operations : applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result)
     (unique : (NotionCoreInvariant.addresses (NotionCoreSourceDocument.project (pre ++ source :: post))).Nodup)
     (ordered : start ≤ stop) :
     ∃ after, materializeDocument result = some after ∧
@@ -253,16 +237,21 @@ theorem prepared_erase_effect (txs : List Transaction) (state result : State)
         [(source.id,(NotionCoreSpec.text source.project.slots).take start ++
           (NotionCoreSpec.text source.project.slots).drop stop)] ++
         NotionCoreSpec.view (NotionCoreSourceDocument.project post) := by
-  obtain ⟨actual,targets,equal,permutation⟩ := selectErase_targets txs state accepted part shape _ materialized source
-    (by simp) block name start stop _ prepared
-  have same : inst = actual ∧ ids = targets := by simpa using equal
-  obtain ⟨rfl,rfl⟩ := same
-  obtain ⟨after,extracted,sourceStep⟩ := NotionCoreMachineDocumentErase.erase_source_step
-    state result block inst ids _ operation materialized
-  obtain ⟨expected,step,effect⟩ := NotionCorePreparation.source_delete_effect pre post source start stop unique ordered
+  obtain ⟨actual,equal,permutation⟩ := selectErase_targets txs state accepted _ materialized source
+    (by simp) alive block name start stop _ prepared
+  have same : groups = actual := by simpa using equal
+  subst same
+  have extracted := NotionCoreMachineDocumentErase.materializeDocument_erase_groups state result block groups
+    _ operations materialized
+  obtain ⟨expected,step,effect⟩ := NotionCorePreparation.source_delete_effect pre post source start stop
+    unique alive ordered
+  have sourceStep : NotionCoreSourceDocument.step (pre ++ source :: post)
+      (.delete (groups.flatMap fun group =>
+        group.2.map (NotionCorePhysicalReplay.address (blockName group.1)))) =
+      some ((pre ++ source :: post).map (NotionCoreSourceDocument.eraseBlock (groups.flatMap fun group =>
+        group.2.map (NotionCorePhysicalReplay.address (blockName group.1))))) := rfl
   rw [delete_step_perm _ _ _ permutation,step] at sourceStep
-  have afterEq : expected = after := Option.some.inj sourceStep
-  exact ⟨after,extracted,afterEq ▸ effect⟩
+  exact ⟨_,extracted,(Option.some.inj sourceStep) ▸ effect⟩
 
 #print axioms materialized_nodes
 #print axioms document_block_slices
@@ -274,7 +263,7 @@ independent local visible effect. Preparation and operation acceptance are
 conclusions, not premises; global retained-address uniqueness is structural. -/
 theorem erase_request_effect (txs : List Transaction) (state : State)
     (accepted : replay {} txs = some state)
-    (part : NotionCoreMachinePartition.Partitioned state) (shape : NotionCoreMachineShape.ShapeInvariant state)
+    (part : NotionCoreMachinePartition.Partitioned state)
     (physicalUnique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
     (pre post : NotionCoreSourceDocument.Document) (source : Block)
     (materialized : materializeDocument state = some (pre ++ source :: post))
@@ -282,30 +271,32 @@ theorem erase_request_effect (txs : List Transaction) (state : State)
     (start stop : Nat) (nonempty : start < stop)
     (bound : stop ≤ NotionCoreMachineDeleteTotal.visibleLength state block)
     (unique : (NotionCoreInvariant.addresses (NotionCoreSourceDocument.project (pre ++ source :: post))).Nodup) :
-    ∃ inst ids result after,
-      selectErase state block start stop = some (.erase block inst ids) ∧
-      applyOperation state (.erase block inst ids) = some result ∧
+    ∃ groups result after,
+      selectErase state block start stop = some (.erase block groups) ∧
+      applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result ∧
       materializeDocument result = some after ∧
       NotionCoreSpec.view (NotionCoreSourceDocument.project after) =
         NotionCoreSpec.view (NotionCoreSourceDocument.project pre) ++
         [(source.id,(NotionCoreSpec.text source.project.slots).take start ++
           (NotionCoreSpec.text source.project.slots).drop stop)] ++
         NotionCoreSpec.view (NotionCoreSourceDocument.project post) := by
-  have clientSlices := document_block_slices state part shape _ materialized source (by simp) block name
+  have alive : source.alive = true := by
+    cases live : source.alive
+    · have none := document_block_tombstone state _ materialized source (by simp) live block name
+      simp [NotionCoreMachineDeleteTotal.visibleLength,none] at bound
+      omega
+    · rfl
+  have clientSlices := document_block_slices state _ materialized source (by simp) alive block name
   have stored : ∃ found ∈ state.forest, found.id = blockName block := by
     cases found : state.forest.find? (fun old => old.id == blockName block) with
     | none => simp [blockSlices,found] at clientSlices
     | some entry => exact ⟨entry,List.mem_of_find?_eq_some found,by simpa using List.find?_some found⟩
-  obtain ⟨inst,raw,prepared,_⟩ := NotionCoreMachineDeleteTotal.selectErase_total txs state accepted part shape
+  obtain ⟨groups,prepared,_,_⟩ := NotionCoreMachineDeleteTotal.selectErase_total txs state accepted part
     physicalUnique block stored start stop nonempty bound
-  let ids := NotionCoreRanges.sorted raw
-  let result := putInstance state (blockName inst)
-    ⟨NotionCoreParentErase.erase ids (getInstance state (blockName inst)).rows,
-      (getInstance state (blockName inst)).pending ++ ids⟩
-  have operation : applyOperation state (.erase block inst ids) = some result := rfl
-  obtain ⟨after,extracted,effect⟩ := prepared_erase_effect txs state result accepted part shape pre post source
-    materialized block inst name start stop ids prepared operation unique (by omega)
-  exact ⟨inst,ids,result,after,prepared,operation,extracted,effect⟩
+  obtain ⟨result,operations⟩ := NotionCoreMachineDocumentErase.erase_groups_total state block groups
+  obtain ⟨after,extracted,effect⟩ := prepared_erase_effect txs state result accepted pre post source
+    materialized alive block name start stop groups prepared operations unique (by omega)
+  exact ⟨groups,result,after,prepared,operations,extracted,effect⟩
 
 #print axioms erase_request_effect
 
@@ -314,8 +305,9 @@ private def cut : Transaction := ⟨⟨3,[66]⟩,.split .initial .initial (.item
 private def eraseView (state : State) : Option (List (Nat × List Nat)) := do
   let payload ← selectErase state (.issued cut.id) 0 1
   match payload with
-  | .erase block inst ids =>
-    (applyOperation state (.erase block inst ids) >>= materializeDocument).map
+  | .erase block groups =>
+    (applyOperations state (groups.map fun group => .erase block group.1 group.2) >>=
+      materializeDocument).map
       (fun document => NotionCoreSpec.view (NotionCoreSourceDocument.project document))
   | _ => none
 /-- Selecting b in the inherited leaf empties that displayed block and leaves
@@ -329,13 +321,10 @@ theorem inherited_range_effect_control :
       some [(0,[97]),(blockName (.issued cut.id),[98])] := by decide +kernel
 end SPOT
 
-/-- Existing source nodes retain exactly the independent projected slots,
-including the otherwise invisible empty title and active start anchors. -/
+/-- Source nodes retain exactly the independent projected slots, including
+the otherwise invisible dead title and slice start anchors. -/
 theorem nodes_project_slots (source : Block) :
-    (nodes source).flatMap Slice.slots = source.project.slots := by
-  cases source with
-  | mk id shape slice =>
-    cases shape <;> simp [nodes,Block.project,Slice.slots,Slice.anchor,NotionCoreSpec.root]
+    (nodes source).flatMap Slice.slots = source.project.slots := rfl
 
 #print axioms nodes_project_slots
 end Sal.MRDTs.Instances.NotionCoreMachineDocumentClient

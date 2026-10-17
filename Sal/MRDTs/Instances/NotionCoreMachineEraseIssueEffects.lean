@@ -36,40 +36,32 @@ theorem honest_issue_erase_effect (network : NotionCorePayloadNetwork.State)
         [(source.id,(NotionCoreSpec.text source.project.slots).take start ++
           (NotionCoreSpec.text source.project.slots).drop stop)] ++
         NotionCoreSpec.view (NotionCoreSourceDocument.project post)) := by
-  obtain ⟨inst,ids,result,after,selected,operation,afterMat,rendered,_,_⟩ :=
+  obtain ⟨groups,result,after,selected,operations,afterMat,rendered,_,_⟩ :=
     NotionCoreMachineClientEffects.honest_erase_effect network reachable peer state reconstructed
       pre post source materialized block name start stop nonempty bound
-  obtain ⟨checked,current,part,shape,_⟩ := NotionCoreMachineHonestReplay.honest_reconstruct network reachable peer
-  have same : checked = state := Option.some.inj (current.symm.trans reconstructed)
-  subst checked
-  have slices := NotionCoreMachineDocumentClient.document_block_slices state part shape _ materialized source
-    (by simp) block name
-  have stored : ∃ found ∈ state.forest, found.id = blockName block := by
-    cases found : state.forest.find? (fun old => old.id == blockName block) with
-    | none => simp [NotionCoreMachineClient.blockSlices,found] at slices
-    | some entry => exact ⟨entry,List.mem_of_find?_eq_some found,by simpa using List.find?_some found⟩
+  have stored := NotionCoreMachineDelete.selectErase_stored state block start stop _ selected
   obtain ⟨next,issued,nextReach⟩ := NotionCoreMachineClientTotal.honest_issue_erase network reachable peer
     block start stop (by simpa [reconstructed] using stored) nonempty (by simpa [reconstructed] using bound)
   have skip : (NotionCoreMachineNetwork.Request.erase block start stop).earlyNoop = false := by
     simp [NotionCoreMachineNetwork.Request.earlyNoop,show start ≠ stop by omega]
-  cases reserved : NotionCorePayload.prepare (NotionCorePayloadNetwork.forget network) peer (.erase block inst ids) with
+  cases reserved : NotionCorePayload.prepare (NotionCorePayloadNetwork.forget network) peer (.erase block groups) with
   | none => simp [NotionCoreMachineNetwork.issue,skip,reconstructed,NotionCoreMachineNetwork.prepareRequest,
       selected,reserved] at issued
   | some tx =>
-    have nextEq : next = NotionCorePayloadNetwork.emit network peer (.erase block inst ids) tx := by
+    have nextEq : next = NotionCorePayloadNetwork.emit network peer (.erase block groups) tx := by
       simpa [NotionCoreMachineNetwork.issue,skip,reconstructed,NotionCoreMachineNetwork.prepareRequest,
         selected,reserved] using issued.symm
     have networkReach := NotionCoreCreatorNetwork.payload_reachable
       (NotionCoreMachineNetwork.creator_reachable reachable)
     have emittedReach : NotionCorePayloadNetwork.Reach
-        (NotionCorePayloadNetwork.emit network peer (.erase block inst ids) tx) := by
+        (NotionCorePayloadNetwork.emit network peer (.erase block groups) tx) := by
       rw [← nextEq]
       exact NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable nextReach)
     have append := NotionCoreMachineInsertEffects.emitted_transactions_append network networkReach peer
-      (.erase block inst ids) tx reserved emittedReach
+      (.erase block groups) tx reserved emittedReach
     have txPayload := NotionCorePayloadNetwork.prepared_payload reserved
     have txOperation : applyTransaction state tx = some result := by
-      simp [applyTransaction,NotionCorePayload.operations,txPayload,applyOperations,operation]
+      simpa [applyTransaction,NotionCorePayload.operations,txPayload] using operations
     have afterReplay : NotionCoreReconstruction.reconstruct next peer = some result := by
       unfold NotionCoreReconstruction.reconstruct
       rw [nextEq,append,replay_append]
@@ -80,9 +72,9 @@ theorem honest_issue_erase_effect (network : NotionCorePayloadNetwork.State)
 
 namespace SPOT
 private def seed := NotionCorePayloadNetwork.seeded [97,98]
-private def original : Block := ⟨0,.own,⟨(0,.start),[
+private def original : Block := ⟨0,0,[⟨(0,.start),[
   ⟨NotionCorePhysicalReplay.address 0 ⟨1,[65]⟩,.text 97 false⟩,
-  ⟨NotionCorePhysicalReplay.address 0 ⟨2,[65]⟩,.text 98 false⟩]⟩⟩
+  ⟨NotionCorePhysicalReplay.address 0 ⟨2,[65]⟩,.text 98 false⟩]⟩]⟩
 /-- A real issued deletion reconstructs b in the retained block, rejecting
 both the no-op and deletion of the other range. The concrete old input is
 kernel checked; the actual after-network is constructed by the proved effect. -/
@@ -101,7 +93,8 @@ theorem issued_range_control :
     (by decide +kernel)
   refine ⟨next,issued,?_,?_,?_⟩
   all_goals simp [reconstructed,rendered,original,NotionCoreSourceDocument.project,
-    NotionCoreSpec.view,NotionCoreSource.Block.project,NotionCoreSource.Slice.slots,
+    NotionCoreSpec.view,NotionCoreSource.Block.project,NotionCoreSource.Block.slots,
+    NotionCoreSource.Block.alive,NotionCoreSource.Slice.slots,
     NotionCoreSource.Slice.anchor,NotionCoreSource.Atom.slot,NotionCoreSpec.text]
 end SPOT
 

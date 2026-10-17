@@ -81,7 +81,8 @@ theorem inactive_title_control :
 private def rawMachine : State := after.getD {}
 
 /-- Shape alone survives this fabricated insertion. -/
-theorem normal_shape_survives : NotionCoreSliceForest.NormalForest rawMachine.forest := by
+theorem normal_shape_survives : ∀ block ∈ rawMachine.forest,
+    NotionCoreSliceForest.Normal block.id block.title ∧ NotionCoreSliceForest.Chain block.title := by
   have shape : rawMachine.forest =
       [⟨0,.node ⟨(0,.start),some (NotionCorePhysicalReplay.address 0 marker)⟩ .nil⟩,
        ⟨blockName (.issued marker),.node (NotionCoreSliceForest.titleRef (blockName (.issued marker)))
@@ -89,23 +90,22 @@ theorem normal_shape_survives : NotionCoreSliceForest.NormalForest rawMachine.fo
   intro block member
   rw [shape] at member
   rcases List.mem_cons.mp member with rfl | member
-  · exact .own _
+  · exact ⟨.own _,.leaf _⟩
   · have same := List.mem_singleton.mp member
     subst block
-    exact .attached _
+    exact ⟨.attached _,.link _ _ (.leaf _)⟩
 
-/-- The old tree still has its inherited leaf, but its inactive own instance
-is no longer empty. Creator admission cannot establish this stronger invariant. -/
+/-- The old tree still has its inherited leaf, but its dead own title
+instance is no longer empty. Creator admission cannot establish this stronger
+invariant. -/
 theorem empty_inactive_failure :
-    ¬ NotionCoreSliceForest.EmptyInactive (physical rawMachine)
-      (NotionCoreSliceForest.profile rawMachine.forest) := by
-  let current : NotionCoreSliceForest.Profile :=
-    (blockName (.issued marker), NotionCorePhysicalReplay.address 0 marker, true)
-  have member : current ∈ NotionCoreSliceForest.profile rawMachine.forest := by decide +kernel
+    ¬ NotionCoreSliceForest.EmptyInactive (physical rawMachine) rawMachine.forest := by
+  have member : (NotionCoreSliceForest.titleRef (blockName (.issued marker)), false) ∈
+      NotionCoreSliceForest.forestNodes rawMachine.forest := by decide +kernel
   have different : physical rawMachine (blockName (.issued marker)) ≠
       NotionCoreSliceForest.emptyPhysical (blockName (.issued marker)) := by decide +kernel
   intro empty
-  exact different (empty current member rfl)
+  exact different (empty _ member).2.1
 
 #print axioms normal_shape_survives
 #print axioms empty_inactive_failure

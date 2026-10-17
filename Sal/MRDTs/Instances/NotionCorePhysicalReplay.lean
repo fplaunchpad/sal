@@ -230,7 +230,6 @@ theorem tree_split_partition (inst : Nat) (origin : NotionCoreOriginTree.Origin)
     (ready : NotionCoreOriginTree.Ready origin (markerTree marker) old)
     (present : Present origin old)
     (freshMarker : marker ∉ (NotionCoreOriginTree.preorder old).map NotionCoreOriginTree.Item.id)
-    (freshBlock : freshOwner ∉ state.endpoints.map NotionCorePartition.Entry.owner)
     (accepted : NotionCoreOriginTree.insert origin (markerTree marker) old = some next) :
     ∃ before cell after rawNext,
       cells = before ++ cell :: after ∧
@@ -252,7 +251,7 @@ theorem tree_split_partition (inst : Nat) (origin : NotionCoreOriginTree.Origin)
     exact fresh_address inst marker _ freshMarker
   obtain ⟨before, cell, after, rawNext, shape, located, executed, representedNext⟩ :=
     NotionCorePartition.split_refines (originAddress inst origin) (address inst marker)
-      freshOwner represented rawPresent rawFresh freshBlock
+      freshOwner represented rawPresent rawFresh
   have rawPhysical : rawNext.physical = NotionCorePartition.spliceAfterBy Atom.address
       (originAddress inst origin) [NotionCorePartition.boundary (address inst marker)]
         state.physical := by

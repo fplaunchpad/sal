@@ -41,6 +41,14 @@ def encodeOrigin : Origin → Json
   | .start => .str "start"
   | .item id => Json.mkObj [("item",encodeId id)]
 
+/-- One instance group of an erase: its text instance and target IDs. -/
+def decodeGroup (value : Json) : Except String (BlockKey × List Id) := do
+  return (← decodeBlock (← field value "instance"),
+    ← (← (← field value "targets").getArr?).toList.mapM decodeId)
+
+def encodeGroup (group : BlockKey × List Id) : List (String × Json) :=
+  [("instance",encodeBlock group.1),("targets",.arr (group.2.map encodeId).toArray)]
+
 def decodePayload (value : Json) : Except String Payload := do
   match ← (← field value "kind").getStr? with
   | "bootstrap" => return .bootstrap (← decodeNats (← field value "atoms"))
@@ -52,11 +60,15 @@ def decodePayload (value : Json) : Except String Payload := do
   | "insert" => return (.insert (← decodeBlock (← field value "block"))
       (← decodeBlock (← field value "instance")) (← decodeOrigin (← field value "origin"))
       (← decodeNats (← field value "atoms")))
-  | "erase" => return (.erase (← decodeBlock (← field value "block"))
-      (← decodeBlock (← field value "instance"))
-      (← (← (← field value "targets").getArr?).toList.mapM decodeId))
+  | "erase" =>
+    let block ← decodeBlock (← field value "block")
+    match value.getObjVal? "groups" with
+    | .ok groups => return .erase block (← (← groups.getArr?).toList.mapM decodeGroup)
+    | .error _ => return .erase block [← decodeGroup value]
   | "split" => return (.split (← decodeBlock (← field value "block"))
       (← decodeBlock (← field value "instance")) (← decodeOrigin (← field value "origin")))
+  | "merge" => return (.merge (← decodeBlock (← field value "source"))
+      (← decodeBlock (← field value "target")))
   | other => throw s!"unsupported core payload: {other}"
 
 def encodePayload (payload : Payload) : Json := Json.mkObj (match payload with
@@ -64,10 +76,13 @@ def encodePayload (payload : Payload) : Json := Json.mkObj (match payload with
   | .create after => [("kind",.str "create"),("after",after.map encodeBlock |>.getD .null)]
   | .insert block inst origin atoms => [("kind",.str "insert"),("block",encodeBlock block),
       ("instance",encodeBlock inst),("origin",encodeOrigin origin),("atoms",encodeNats atoms)]
-  | .erase block inst ids => [("kind",.str "erase"),("block",encodeBlock block),
-      ("instance",encodeBlock inst),("targets",.arr (ids.map encodeId).toArray)]
+  | .erase block [group] => [("kind",.str "erase"),("block",encodeBlock block)] ++ encodeGroup group
+  | .erase block groups => [("kind",.str "erase"),("block",encodeBlock block),
+      ("groups",.arr (groups.map fun group => Json.mkObj (encodeGroup group)).toArray)]
   | .split block inst origin => [("kind",.str "split"),("block",encodeBlock block),
-      ("instance",encodeBlock inst),("origin",encodeOrigin origin)])
+      ("instance",encodeBlock inst),("origin",encodeOrigin origin)]
+  | .merge source target => [("kind",.str "merge"),("source",encodeBlock source),
+      ("target",encodeBlock target)])
 
 def decodeTransaction (value : Json) : Except String Transaction := do
   return ⟨← decodeId (← field value "id"), ← decodePayload (← field value "payload")⟩
@@ -85,6 +100,14 @@ theorem typed_roundtrip :
     (decodeTransaction (encodeTransaction sample)).toOption ≠ some (NotionCorePayload.bootstrap []) := by
   decide +kernel
 
+private def mergeSample : Transaction := ⟨⟨9,[66]⟩, .merge (.issued ⟨3,[66]⟩) .initial⟩
+/-- A merge round-trips with its source and target in place, not swapped. -/
+theorem merge_roundtrip :
+    (decodeTransaction (encodeTransaction mergeSample)).toOption = some mergeSample ∧
+    (decodeTransaction (encodeTransaction mergeSample)).toOption ≠
+      some ⟨⟨9,[66]⟩, .merge .initial (.issued ⟨3,[66]⟩)⟩ := by
+  decide +kernel
+
 private def errorMessage {α : Type} : Except String α → Option String
   | .error message => some message
   | .ok _ => none
@@ -96,5 +119,6 @@ theorem reject_unknown :
 end SPOT
 
 #print axioms SPOT.typed_roundtrip
+#print axioms SPOT.merge_roundtrip
 #print axioms SPOT.reject_unknown
 end Sal.MRDTs.Instances.NotionCoreRuntimeWire

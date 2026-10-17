@@ -15,7 +15,7 @@ open NotionCoreMachinePrefix (transactionRows)
 
 def transactionTargets (tx : Transaction) (inst : BlockKey) : List Id :=
   match tx.payload with
-  | .erase _ key ids => if key = inst then ids else []
+  | .erase _ groups => groups.flatMap fun group => if group.1 = inst then group.2 else []
   | _ => []
 
 def targets (txs : List Transaction) (inst : BlockKey) : List Id :=
@@ -96,7 +96,8 @@ theorem transactionRows_erase (ids : List Id) (tx : Transaction) (inst : BlockKe
           Operation.births, same, erase, eraseRow, eraseItem]
     | create afterBlock => simp [transactionRows, NotionCorePayload.births,
         NotionCorePayload.operations, Operation.births, erase]
-    | erase block key targets => simp [transactionRows, NotionCorePayload.births,
+    | erase block groups => simp [transactionRows, erase]
+    | merge source target => simp [transactionRows, NotionCorePayload.births,
         NotionCorePayload.operations, Operation.births, erase]
 
 theorem transactionRows_pending (ids : List Id) (tx : Transaction) (inst : BlockKey) :
@@ -134,7 +135,7 @@ theorem rows_flatMap (txs : List Transaction) (inst : BlockKey) :
 private def a : Id := ⟨1,[65]⟩
 private def marker : Id := ⟨2,[66]⟩
 private def fixture : List Transaction :=
-  [⟨⟨1,[69]⟩,.erase .initial .initial [a,marker]⟩,
+  [⟨⟨1,[69]⟩,.erase .initial [(.initial,[a,marker])]⟩,
    NotionCorePayload.bootstrap [97], ⟨marker,.split .initial .initial (.item a)⟩]
 
 /-- PASS+FAIL: pending deletion tombstones a later text birth, while a marker

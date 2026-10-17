@@ -140,24 +140,6 @@ theorem sliceAtoms_erase (state result : State) (block inst : BlockKey)
   rw [commute,extracted]
   rfl
 
-/-- A materialized block's active atoms undergo exactly the source erasure;
-its owner, retained start, and own/attached root shape remain unchanged. -/
-theorem materializeBlock_erase (state result : State) (block inst : BlockKey)
-    (targets : List NotionRunAllocation.Id) (stored : NotionCoreSliceForest.Block)
-    (source : NotionCoreSource.Block)
-    (accepted : applyOperation state (.erase block inst targets) = some result)
-    (before : materializeBlock state stored = some source) :
-    materializeBlock result stored = some (NotionCoreSourceDocument.eraseBlock
-      (targets.map (NotionCorePhysicalReplay.address (blockName inst))) source) := by
-  cases extracted : sliceAtoms state (NotionCoreSliceForest.active stored.title) with
-  | none => simp [materializeBlock,extracted] at before
-  | some atoms =>
-    have sourceEq : source = ⟨stored.id,if NotionCoreSliceForest.attached stored.title then .attached stored.id else .own,
-        ⟨(NotionCoreSliceForest.active stored.title).start,atoms⟩⟩ := by
-      simpa [materializeBlock,extracted] using before.symm
-    have after := sliceAtoms_erase state result block inst targets _ atoms accepted extracted
-    simp [materializeBlock,after,sourceEq,NotionCoreSourceDocument.eraseBlock,NotionCoreSource.eraseSlice]
-
 private theorem mapM_transform {α β : Type} (xs : List α) (f g : α → Option β) (h : β → β)
     (transform : ∀ x value, f x = some value → g x = some (h value))
     (ys : List β) (before : xs.mapM f = some ys) : xs.mapM g = some (ys.map h) := by
@@ -176,6 +158,34 @@ private theorem mapM_transform {α β : Type} (xs : List α) (f g : α → Optio
         have following := ih tail later
         simp [List.mapM_cons,next,following]
 
+/-- Every slice of a materialized chain undergoes exactly the source erasure;
+the block's name, instance and slice starts remain unchanged. -/
+theorem materializeBlock_erase (state result : State) (block inst : BlockKey)
+    (targets : List NotionRunAllocation.Id) (stored : NotionCoreSliceForest.Block)
+    (source : NotionCoreSource.Block)
+    (accepted : applyOperation state (.erase block inst targets) = some result)
+    (before : materializeBlock state stored = some source) :
+    materializeBlock result stored = some (NotionCoreSourceDocument.eraseBlock
+      (targets.map (NotionCorePhysicalReplay.address (blockName inst))) source) := by
+  obtain ⟨extracted,name,instEq⟩ := materialized_slices state stored source before
+  have after : NotionCoreMachineClient.materialize result stored.title = some
+      (source.slices.map (NotionCoreSource.eraseSlice
+        (targets.map (NotionCorePhysicalReplay.address (blockName inst))))) := by
+    unfold NotionCoreMachineClient.materialize at extracted ⊢
+    apply mapM_transform _ _ _ _ ?_ _ extracted
+    intro ref slice selected
+    cases atoms : sliceAtoms state ref with
+    | none => simp [atoms] at selected
+    | some found =>
+      have sliceEq : slice = ⟨ref.start,found⟩ := by simpa [atoms] using selected.symm
+      subst slice
+      simp [sliceAtoms_erase state result block inst targets ref found accepted atoms,
+        NotionCoreSource.eraseSlice]
+  cases source
+  simp only at name instEq
+  subst name instEq
+  simp [materializeBlock,after,NotionCoreSourceDocument.eraseBlock]
+
 /-- Successful old materialization itself yields successful new
 materialization with every active block erased by the same fixed addresses.
 Neither a new materialization equation nor a chosen output doc is assumed. -/
@@ -190,13 +200,59 @@ theorem materializeDocument_erase (state result : State) (block inst : BlockKey)
   rw [frames.2.1]
   apply mapM_transform state.display _ _ _ ?_ document before
   intro bid source extracted
-  rw [frames.1]
   cases found : state.forest.find? (fun old => old.id == bid) with
-  | none => simp [found] at extracted
+  | none =>
+    rw [materializeEntry_tombstone state bid found] at extracted
+    cases extracted
+    rw [materializeEntry_tombstone result bid (by rw [frames.1]; exact found)]
+    rfl
   | some stored =>
-    have old : materializeBlock state stored = some source := by simpa [found] using extracted
-    have changed := materializeBlock_erase state result block inst targets stored source accepted old
-    simpa [found] using changed
+    rw [materializeEntry_stored state bid stored found] at extracted
+    rw [materializeEntry_stored result bid stored (by rw [frames.1]; exact found)]
+    exact materializeBlock_erase state result block inst targets stored source accepted extracted
+
+/-- One erase operation per instance group erases every materialized block by
+the concatenated addresses of all groups. -/
+theorem materializeDocument_erase_groups (state result : State) (block : BlockKey)
+    (groups : List (BlockKey × List NotionRunAllocation.Id))
+    (document : NotionCoreSourceDocument.Document)
+    (accepted : applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result)
+    (before : materializeDocument state = some document) :
+    materializeDocument result = some (document.map (NotionCoreSourceDocument.eraseBlock
+      (groups.flatMap fun group => group.2.map (NotionCorePhysicalReplay.address (blockName group.1))))) := by
+  induction groups generalizing state document with
+  | nil =>
+    simp only [List.map_nil, applyOperations, Option.some.injEq] at accepted
+    subst result
+    rw [before]
+    congr 1
+    conv_lhs => rw [← List.map_id document]
+    apply List.map_congr_left
+    intro source _
+    simp [NotionCoreSourceDocument.eraseBlock,
+      show NotionCoreSource.eraseSlice [] = id from funext NotionCoreSource.eraseSlice_nil]
+  | cons group rest ih =>
+    cases first : applyOperation state (.erase block group.1 group.2) with
+    | none => simp [applyOperations, first] at accepted
+    | some middle =>
+      have later : applyOperations middle (rest.map fun group => .erase block group.1 group.2) =
+          some result := by simpa [applyOperations, first] using accepted
+      have middleDocument := materializeDocument_erase state middle block group.1 group.2 document
+        first before
+      rw [ih middle _ later middleDocument]
+      simp [List.map_map, Function.comp_def, NotionCoreSourceDocument.eraseBlock_eraseBlock]
+
+/-- Every list of erase operations executes. -/
+theorem erase_groups_total (state : State) (block : BlockKey)
+    (groups : List (BlockKey × List NotionRunAllocation.Id)) :
+    ∃ result, applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result := by
+  induction groups generalizing state with
+  | nil => exact ⟨state, rfl⟩
+  | cons group rest ih =>
+    obtain ⟨result, later⟩ := ih (putInstance state (blockName group.1)
+      ⟨NotionCoreParentErase.erase group.2 (getInstance state (blockName group.1)).rows,
+        (getInstance state (blockName group.1)).pending ++ group.2⟩)
+    exact ⟨result, by simp [applyOperations, applyOperation, later]⟩
 
 /-- Actual erase operation simulates the existing independent source delete
 transition, with the after-document constructed from derived materialization. -/
@@ -221,43 +277,62 @@ theorem erase_spec_step (state result : State) (block inst : BlockKey)
   rw [materializeDocument_erase state result block inst targets document accepted before]
   exact NotionCoreSourceDocument.project_delete document _
 
-/-- Honest canonical deletion executes an atomic source history update.
-The old projection is the only materialization premise; target decoding and
-all source-history guards are derived. -/
+/-- One erase operation per instance group simulates one source delete per
+group, each step guarded by the unchanged unique display names. -/
+theorem erase_groups_execution (state : State) (block : BlockKey)
+    (groups : List (BlockKey × List NotionRunAllocation.Id))
+    (document : NotionCoreSourceDocument.Document)
+    (materialized : materializeDocument state = some document)
+    (names : (document.map NotionCoreSource.Block.id).Nodup) :
+    ∃ result after,
+      applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result ∧
+      materializeDocument result = some after ∧
+      NotionCoreSourceDocument.Execution document (groups.map fun group =>
+        .delete (group.2.map (NotionCorePhysicalReplay.address (blockName group.1)))) after := by
+  induction groups generalizing state document with
+  | nil => exact ⟨state,document,rfl,materialized,.nil document⟩
+  | cons group rest ih =>
+    let middle := putInstance state (blockName group.1)
+      ⟨NotionCoreParentErase.erase group.2 (getInstance state (blockName group.1)).rows,
+        (getInstance state (blockName group.1)).pending ++ group.2⟩
+    have operation : applyOperation state (.erase block group.1 group.2) = some middle := rfl
+    have middleDocument := materializeDocument_erase state middle block group.1 group.2 document
+      operation materialized
+    have middleNames : ((document.map (NotionCoreSourceDocument.eraseBlock
+        (group.2.map (NotionCorePhysicalReplay.address (blockName group.1))))).map
+          NotionCoreSource.Block.id).Nodup := by
+      simpa [List.map_map,Function.comp_def,NotionCoreSourceDocument.eraseBlock] using names
+    obtain ⟨result,after,later,projected,run⟩ := ih middle _ middleDocument middleNames
+    exact ⟨result,after,by simp [applyOperations,operation,later],projected,
+      .cons ⟨names,True.intro⟩ rfl run⟩
+
+/-- Canonical deletion executes an atomic source history update: one delete
+per instance group. Every erase operation succeeds, so the old projection is
+the only premise used; the source-history guards are derived from replay. -/
 theorem canonical_erase_execution_version (network : NotionCorePayloadNetwork.State)
-    (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
-    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (_reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (_closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
     (pre suffix : List Transaction) (tx : Transaction)
-    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (_position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (replayed : replay {} pre = some state)
     (document : NotionCoreSourceDocument.Document)
     (materialized : materializeDocument state = some document)
-    (block inst : BlockKey) (targets : List NotionRunAllocation.Id)
-    (payload : tx.payload = .erase block inst targets) :
+    (block : BlockKey) (groups : List (BlockKey × List NotionRunAllocation.Id))
+    (payload : tx.payload = .erase block groups) :
     ∃ result after, applyTransaction state tx = some result ∧
       materializeDocument result = some after ∧
-      NotionCoreSourceDocument.Execution document
-        [.delete (targets.map (NotionCorePhysicalReplay.address (blockName inst)))] after := by
-  obtain ⟨checked,checkedReplay,part,_,_⟩ :=
-    NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closed pre (tx :: suffix) position
-  have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
-  subst checked
-  have creators := NotionCoreMachineNetwork.creator_reachable reachable
-  have stored := NotionCoreMachineCreatorPresence.canonical_required_instance_version network creators
-    version closed pre suffix tx position state replayed inst
-    (by simp [payload,NotionCoreCreatorNetwork.requiredBlocks])
-  obtain ⟨result,operation,_⟩ := NotionCoreMachinePartitionUpdates.erase_operation_partitioned
-    state block inst targets part stored
-  have transaction : applyTransaction state tx = some result := by
-    simp [applyTransaction,NotionCorePayload.operations,payload,applyOperations,operation]
-  obtain ⟨after,projected,stepped⟩ := erase_source_step state result block inst targets document operation materialized
+      NotionCoreSourceDocument.Execution document (groups.map fun group =>
+        .delete (group.2.map (NotionCorePhysicalReplay.address (blockName group.1)))) after := by
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
-    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) replayed
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names,
+      NotionCoreDisplayOrder.shown]) replayed
   have names : (document.map NotionCoreSource.Block.id).Nodup := by
     rw [materialized_ids state document materialized]
-    exact aligned.2.nodup_iff.mpr aligned.1
-  exact ⟨result,after,transaction,projected,
-    .cons ⟨names,True.intro⟩ stepped (.nil after)⟩
+    exact aligned.2.1
+  obtain ⟨result,after,operations,projected,run⟩ :=
+    erase_groups_execution state block groups document materialized names
+  exact ⟨result,after,by simpa [applyTransaction,NotionCorePayload.operations,payload] using operations,
+    projected,run⟩
 
 theorem canonical_erase_execution (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
@@ -266,24 +341,26 @@ theorem canonical_erase_execution (network : NotionCorePayloadNetwork.State)
     (state : State) (replayed : replay {} pre = some state)
     (document : NotionCoreSourceDocument.Document)
     (materialized : materializeDocument state = some document)
-    (block inst : BlockKey) (targets : List NotionRunAllocation.Id)
-    (payload : tx.payload = .erase block inst targets) :
+    (block : BlockKey) (groups : List (BlockKey × List NotionRunAllocation.Id))
+    (payload : tx.payload = .erase block groups) :
     ∃ result after, applyTransaction state tx = some result ∧
       materializeDocument result = some after ∧
-      NotionCoreSourceDocument.Execution document
-        [.delete (targets.map (NotionCorePhysicalReplay.address (blockName inst)))] after :=
+      NotionCoreSourceDocument.Execution document (groups.map fun group =>
+        .delete (group.2.map (NotionCorePhysicalReplay.address (blockName group.1)))) after :=
   canonical_erase_execution_version network reachable (network.allocation.peers peer).received
     (NotionCoreIssuance.peers_closed (NotionCorePayloadNetwork.forget_reachable
       (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))) peer)
-    pre suffix tx position state replayed document materialized block inst targets payload
+    pre suffix tx position state replayed document materialized block groups payload
 
 #print axioms canonical_erase_execution_version
+#print axioms erase_groups_execution
 #print axioms canonical_erase_execution
 
 #print axioms sliceAtoms_erase
 #print axioms materializeDocument_erase
 #print axioms erase_source_step
 #print axioms erase_spec_step
+#print axioms materializeDocument_erase_groups
 
 namespace SPOT
 private def a : NotionRunAllocation.Id := ⟨1,[65]⟩
@@ -305,11 +382,13 @@ theorem hidden_parent_control :
 
 theorem marker_retained_control :
     ((applyOperation fixture (.erase .initial .initial [a,marker]) >>= materializeDocument).map
-      (fun doc => doc.flatMap (fun block => block.active.atoms.map Atom.address))) =
+      (fun doc => doc.flatMap (fun block => block.slices.flatMap fun slice =>
+        slice.atoms.map Atom.address))) =
         some [NotionCorePhysicalReplay.address 0 a,NotionCorePhysicalReplay.address 0 b,
           NotionCorePhysicalReplay.address 0 marker] ∧
     ((applyOperation fixture (.erase .initial .initial [a,marker]) >>= materializeDocument).map
-      (fun doc => doc.flatMap (fun block => block.active.atoms.map Atom.address))) ≠
+      (fun doc => doc.flatMap (fun block => block.slices.flatMap fun slice =>
+        slice.atoms.map Atom.address))) ≠
         some [NotionCorePhysicalReplay.address 0 b] := by decide +kernel
 end SPOT
 end Sal.MRDTs.Instances.NotionCoreMachineDocumentErase

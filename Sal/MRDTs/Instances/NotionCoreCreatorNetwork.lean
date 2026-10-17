@@ -17,7 +17,9 @@ def createdBlocks (tx : Transaction) : List BlockKey := match tx.payload with
 def requiredBlocks : Payload → List BlockKey
   | .bootstrap _ => []
   | .create afterBlock => afterBlock.toList
-  | .insert block inst _ _ | .erase block inst _ | .split block inst _ => [block, inst]
+  | .insert block inst _ _ | .split block inst _ => [block, inst]
+  | .erase block groups => block :: groups.map Prod.fst
+  | .merge source target => [source, target]
 
 def KnownCreator (state : State) (session : Session) (block : BlockKey) : Prop :=
   ∃ provider ∈ state.entries,

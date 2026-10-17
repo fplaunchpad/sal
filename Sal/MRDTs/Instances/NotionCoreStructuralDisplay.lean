@@ -21,29 +21,20 @@ def displayTransactions (display : List Nat) (txs : List Transaction) : List Nat
   txs.foldl (fun display tx => displayOperations display (NotionCorePayload.operations tx)) display
 
 theorem operation_display (state result : State) (op : Operation)
-    (aligned : Aligned state) (accepted : applyOperation state op = some result) :
+    (accepted : applyOperation state op = some result) :
     result.display = displayOperation state.display op := by
   cases op with
   | create block afterBlock =>
-      by_cases existsBlock : state.forest.any (fun b => b.id == blockName block) = true
-      · have present : blockName block ∈ state.display := by
-          apply aligned.2.mem_iff.mpr
-          simpa [NotionCoreDisplayOrder.names,List.any_eq_true] using existsBlock
-        simpa [applyOperation,existsBlock,displayOperation,present] using congrArg (Option.map (·.display)) accepted.symm
-      · have absent : blockName block ∉ state.display := by
-          intro member
-          have stored := aligned.2.mem_iff.mp member
-          have yes : state.forest.any (fun b => b.id == blockName block) = true := by
-            simpa [NotionCoreDisplayOrder.names,List.any_eq_true] using stored
-          exact existsBlock yes
-        have filtered : state.display.filter (· != blockName block) = state.display := by
+      by_cases shown : blockName block ∈ state.display
+      · simpa [applyOperation,displayOperation,shown] using congrArg (Option.map (·.display)) accepted.symm
+      · have filtered : state.display.filter (· != blockName block) = state.display := by
           apply List.filter_eq_self.mpr
           intro bid member
           simp only [bne_iff_ne]
-          exact fun equal => absent (equal ▸ member)
-        simp only [applyOperation,existsBlock,Bool.false_eq_true,if_false] at accepted
+          exact fun equal => shown (equal ▸ member)
+        simp only [applyOperation,shown,↓reduceIte] at accepted
         have mapped := congrArg (Option.map (·.display)) accepted
-        simpa [displayOperation,absent,filtered,putInstance] using mapped.symm
+        simpa [displayOperation,shown,filtered,putInstance] using mapped.symm
   | insert block inst first origin atoms =>
       simp only [applyOperation] at accepted
       cases selected : integrateRows (getInstance state (blockName inst)).rows
@@ -91,9 +82,13 @@ theorem operation_display (state result : State) (op : Operation)
             simp [detached] at accepted
             subst result
             rfl
+  | merge source target =>
+      simp only [applyOperation,Option.some.injEq] at accepted
+      subst result
+      rfl
 
 theorem operations_display (state result : State) (ops : List Operation)
-    (aligned : Aligned state) (accepted : applyOperations state ops = some result) :
+    (accepted : applyOperations state ops = some result) :
     result.display = displayOperations state.display ops := by
   induction ops generalizing state with
   | nil => simpa [applyOperations,displayOperations] using congrArg (Option.map (·.display)) accepted.symm
@@ -103,12 +98,12 @@ theorem operations_display (state result : State) (ops : List Operation)
       | some middle =>
           have tail : applyOperations middle rest = some result := by
             simpa [applyOperations,first] using accepted
-          rw [ih middle (NotionCoreMachineDisplay.operation_aligned state middle op aligned first) tail]
-          rw [operation_display state middle op aligned first]
+          rw [ih middle tail]
+          rw [operation_display state middle op first]
           rfl
 
 theorem replay_display (state result : State) (txs : List Transaction)
-    (aligned : Aligned state) (accepted : replay state txs = some result) :
+    (accepted : replay state txs = some result) :
     result.display = displayTransactions state.display txs := by
   induction txs generalizing state with
   | nil => simpa [replay,displayTransactions] using congrArg (Option.map (·.display)) accepted.symm
@@ -117,8 +112,8 @@ theorem replay_display (state result : State) (txs : List Transaction)
       | none => simp [replay,first] at accepted
       | some middle =>
           have tail : replay middle rest = some result := by simpa [replay,first] using accepted
-          rw [ih middle (NotionCoreMachineDisplay.operations_aligned state middle _ aligned first) tail]
-          rw [operations_display state middle _ aligned first]
+          rw [ih middle tail]
+          rw [operations_display state middle _ first]
           rfl
 
 abbrev Link := BlockKey × Option BlockKey
@@ -134,11 +129,22 @@ def displayLink (display : List Nat) (link : Link) : List Nat :=
 def displayLinks (display : List Nat) (links : List Link) : List Nat :=
   links.foldl displayLink display
 
+private theorem erase_groups_display (display : List Nat) (block : BlockKey)
+    (groups : List (BlockKey × List NotionRunAllocation.Id)) :
+    displayOperations display (groups.map fun group => .erase block group.1 group.2) = display := by
+  induction groups generalizing display with
+  | nil => rfl
+  | cons group rest ih => exact ih display
+
 theorem transaction_display_links (display : List Nat) (tx : Transaction) :
     displayOperations display (NotionCorePayload.operations tx) =
       displayLinks display (creation tx).toList := by
   cases tx with
-  | mk id payload => cases payload <;>
+  | mk id payload =>
+    cases payload with
+    | erase block groups =>
+      simp [NotionCorePayload.operations,erase_groups_display,creation,displayLinks]
+    | _ =>
       simp [NotionCorePayload.operations,displayOperations,displayOperation,
         creation,displayLinks,displayLink]
 
@@ -275,7 +281,7 @@ theorem displayFacts_replay (txs : List Transaction) (state : State)
     displayFacts (ofTransactions txs) = state.display := by
   rw [displayFacts,orderedLinks_transactions txs ordered]
   rw [← transactions_display_links]
-  exact (replay_display {} state txs ⟨by simp [NotionCoreDisplayOrder.names],List.Perm.refl []⟩ accepted).symm
+  exact (replay_display {} state txs accepted).symm
 
 /-- Honest archive ordering discharges all extra creator-key hypotheses,
 including a lower-key independent create that precedes bootstrap. -/

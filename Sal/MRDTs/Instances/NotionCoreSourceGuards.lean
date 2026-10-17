@@ -1,45 +1,38 @@
 import Sal.MRDTs.Instances.NotionCoreInvariant
 import Sal.MRDTs.Instances.NotionCoreSourceDocument
 
-/-! Derive source-origin safety from semantic address uniqueness and accepted
-source ownership. The inactive empty title root cannot alias an active origin.
-No manual observation or transition equality is a premise. JavaScript extraction
-and source-allocation establishment of freshness remain separate obligations.
+/-! Derive the source projection guards from semantic address uniqueness.
+Every slice address of a block, dead title roots included, is owned by that
+block, so ownership agrees with the specification without a separate origin
+condition. No manual observation or transition equality is a premise.
+JavaScript extraction and source-allocation establishment of freshness remain
+separate obligations.
 -/
 namespace Sal.MRDTs.Instances.NotionCoreSourceGuards
 open NotionCoreSpec (Address Slot)
-open NotionCoreSource (Atom Block)
-open NotionCoreSourceDocument (Document project owner OriginSafe)
+open NotionCoreSource (Atom Slice Block)
+open NotionCoreSourceDocument (Document project owner)
 open NotionCoreInvariant (addresses)
 
-private theorem active_project_member (block : Block) (origin : Address)
-    (member : origin ∈ block.active.traversal) :
+theorem project_member (block : Block) (origin : Address)
+    (member : origin ∈ block.traversal) :
     origin ∈ block.project.slots.map Slot.address := by
-  cases shape : block.shape <;>
-    simp [Block.project, shape, NotionCoreSourceDocument.active_addresses, member]
+  simpa [Block.project] using member
 
-private theorem attached_root_not_active (block : Block) (inst : Nat)
-    (unique : (block.project.slots.map Slot.address).Nodup)
-    (attached : block.shape = .attached inst) :
-    (NotionCoreSpec.root inst).address ∉ block.active.traversal := by
-  have shape : ((NotionCoreSpec.root inst).address :: block.active.traversal).Nodup := by
-    simpa only [Block.project, attached, List.map_cons,
-      NotionCoreSourceDocument.active_addresses] using unique
-  exact (List.nodup_cons.mp shape).1
-
-/-- Global retained-address uniqueness gives a unique active block owner,
-including when the origin is a tombstone or an interval anchor. -/
-theorem active_owner_unique {doc : Document} {left right : Block} {origin : Address}
+/-- Global retained-address uniqueness gives a unique owning block,
+including when the origin is a tombstone, a dead title root or an interval
+anchor. -/
+theorem owner_unique {doc : Document} {left right : Block} {origin : Address}
     (unique : (addresses (project doc)).Nodup)
     (leftMember : left ∈ doc) (rightMember : right ∈ doc)
-    (leftActive : origin ∈ left.active.traversal)
-    (rightActive : origin ∈ right.active.traversal) : left = right := by
+    (leftHeld : origin ∈ left.traversal)
+    (rightHeld : origin ∈ right.traversal) : left = right := by
   obtain ⟨pre, post, shape⟩ := List.append_of_mem leftMember
   subst doc
   have focused := NotionCoreSpec.address_focus (project pre) (project post)
     left.project origin
     (by simpa only [addresses, project, List.map_append, List.map_cons] using unique)
-    (active_project_member left origin leftActive)
+    (project_member left origin leftHeld)
   by_contra different
   have outside : right ∈ pre ++ post := by
     rcases List.mem_append.mp rightMember with member | member
@@ -49,69 +42,32 @@ theorem active_owner_unique {doc : Document} {left right : Block} {origin : Addr
       · exact List.mem_append_right _ member
   have projectedOutside : right.project ∈ project pre ++ project post := by
     simpa only [project, ← List.map_append] using List.mem_map.mpr ⟨right,outside,rfl⟩
-  exact focused.2 right.project projectedOutside (active_project_member right origin rightActive)
+  exact focused.2 right.project projectedOutside (project_member right origin rightHeld)
 
-/-- An active origin cannot be the otherwise unused title root of any attached
-block. The proof handles its own block separately from all other blocks;
-global address uniqueness excludes both collisions. -/
-theorem originSafe_of_active {doc : Document} {source : Block} {origin : Address}
-    (unique : (addresses (project doc)).Nodup)
-    (sourceMember : source ∈ doc) (active : origin ∈ source.active.traversal) :
-    OriginSafe doc origin := by
-  obtain ⟨pre, post, shape⟩ := List.append_of_mem sourceMember
-  subst doc
-  have present := active_project_member source origin active
-  have structural := NotionCoreSpec.address_focus (project pre) (project post)
-    source.project origin
-    (by simpa only [addresses, project, List.map_append, List.map_cons] using unique) present
-  intro block member inst attached collision
-  by_cases same : block = source
-  · subst block
-    have absent := attached_root_not_active source inst structural.1 attached
-    exact absent (collision ▸ active)
-  · have outside : block ∈ pre ++ post := by
-      rcases List.mem_append.mp member with member | member
-      · exact List.mem_append_left _ member
-      · rcases List.mem_cons.mp member with same' | member
-        · exact False.elim (same same')
-        · exact List.mem_append_right _ member
-    have projectedOutside : block.project ∈ project pre ++ project post := by
-      simpa only [project, ← List.map_append] using
-        List.mem_map.mpr ⟨block, outside, rfl⟩
-    have rootPresent : (NotionCoreSpec.root inst).address ∈ block.project.slots.map Slot.address := by
-      simp [Block.project, attached]
-    exact structural.2 block.project projectedOutside (collision ▸ rootPresent)
+/-- Global address uniqueness gives address uniqueness within each block. -/
+theorem block_unique {doc : Document} (unique : (addresses (project doc)).Nodup)
+    {block : Block} (member : block ∈ doc) : block.traversal.Nodup := by
+  obtain ⟨pre, post, rfl⟩ := List.append_of_mem member
+  have whole : (((project pre).flatMap fun b => b.slots.map Slot.address) ++
+      (block.traversal ++
+        (project post).flatMap fun b => b.slots.map Slot.address)).Nodup := by
+    simpa [addresses, project, List.flatMap_append] using unique
+  have middle := (List.nodup_append.mp (List.nodup_append.mp whole).2.1).1
+  simpa using middle
 
-/-- `owner = some` supplies the active membership needed by the safety proof;
-it does not require a live character, so tombstones and boundary anchors work. -/
-theorem originSafe_of_owner {doc : Document} {source : Block} {origin : Address}
-    (unique : (addresses (project doc)).Nodup)
-    (owned : owner doc origin = some source) : OriginSafe doc origin := by
-  apply originSafe_of_active unique (List.mem_of_find?_eq_some owned)
-  simpa only [NotionCoreSourceDocument.owns, decide_eq_true_eq] using List.find?_some owned
-
-/-- Projection guards require unique block names and retained addresses;
-accepted source ownership supplies the origin premise. -/
+/-- Projection guards require unique block names and retained addresses. -/
 theorem accepted_guard_of_unique {doc next : Document} (command : NotionCoreSourceDocument.Command)
     (names : (doc.map Block.id).Nodup)
     (unique : (addresses (project doc)).Nodup)
-    (accepted : NotionCoreSourceDocument.step doc command = some next) :
+    (_accepted : NotionCoreSourceDocument.step doc command = some next) :
     NotionCoreSourceDocument.Guard doc command := by
   refine ⟨names, ?_⟩
   cases command with
-  | create id inst after => trivial
-  | delete targets => trivial
-  | insert origin fresh =>
-      cases owned : owner doc origin with
-      | none => simp [NotionCoreSourceDocument.step, owned] at accepted
-      | some source => exact originSafe_of_owner unique owned
-  | split origin marker target =>
-      cases owned : owner doc origin with
-      | none => simp [NotionCoreSourceDocument.step, owned] at accepted
-      | some source => exact originSafe_of_owner unique owned
+  | insert origin fresh => exact fun block member => block_unique unique member
+  | _ => trivial
 
-/-- Accepted insert/split commands derive their source address guard from the
-projected invariant. Creation/deletion require no address-origin guard. -/
+/-- Accepted commands derive their source guards from the projected
+invariant. -/
 theorem accepted_guard {doc next : Document} (command : NotionCoreSourceDocument.Command)
     (wf : NotionCoreSpec.WellFormed (project doc))
     (accepted : NotionCoreSourceDocument.step doc command = some next) :
@@ -120,8 +76,7 @@ theorem accepted_guard {doc next : Document} (command : NotionCoreSourceDocument
     (by simpa only [NotionCoreSourceDocument.project_ids] using wf.1) wf.2.1 accepted
 
 /-- The materialized source's step projection needs no manually supplied
-`OriginSafe` premise on invariant inputs. Acceptance derives origin membership
-and global address uniqueness proves the required separation. -/
+guard on invariant inputs. -/
 theorem step_sound {doc next : Document} (command : NotionCoreSourceDocument.Command)
     (wf : NotionCoreSpec.WellFormed (project doc))
     (accepted : NotionCoreSourceDocument.step doc command = some next) :
@@ -158,39 +113,33 @@ theorem reachable_step_sound {doc next : Document} (command : NotionCoreSourceDo
 
 private def hiddenAtom : Atom := ⟨(0, .event (0, 1)), .text 97 true⟩
 private def liveAtom : Atom := ⟨(0, .event (0, 2)), .text 98 false⟩
-private def attachedBlock : Block :=
-  ⟨10, .attached 99, ⟨(0, .event (1, 10)), [hiddenAtom, liveAtom]⟩⟩
+private def splitBlock : Block :=
+  ⟨10, 99, [⟨(99, .start), []⟩, ⟨(0, .event (1, 10)), [hiddenAtom, liveAtom]⟩]⟩
 
-private theorem attached_unique : (addresses (project [attachedBlock])).Nodup := by decide
-
-/-- PASS+FAIL: hidden character ownership derives source safety, whereas the
-inactive own-title root is not a valid active origin and violates that guard. -/
-theorem hidden_origin_safety_control :
-    OriginSafe [attachedBlock] hiddenAtom.address ∧
-    ¬ OriginSafe [attachedBlock] (NotionCoreSpec.root 99).address := by
-  refine ⟨originSafe_of_owner (source := attachedBlock) attached_unique (by decide), ?_⟩
-  intro safe
-  exact safe attachedBlock (by simp) 99 rfl rfl
-
-/-- The derived condition is sensitive to active ownership, not visibility or
-mere membership among projected slots. -/
+/-- PASS+FAIL: a hidden character and the dead title root are both owned by
+their block; an address held by no slice has no owner. -/
 theorem owner_control :
-    owner [attachedBlock] hiddenAtom.address = some attachedBlock ∧
-    owner [attachedBlock] (NotionCoreSpec.root 99).address = none ∧
-    owner [attachedBlock] hiddenAtom.address ≠ none := by decide
+    owner [splitBlock] hiddenAtom.address = some splitBlock ∧
+    owner [splitBlock] (NotionCoreSpec.root 99).address = some splitBlock ∧
+    owner [splitBlock] (0, .event (5, 5)) = none ∧
+    owner [splitBlock] hiddenAtom.address ≠ none := by decide
 
 /-- A source insertion after the hidden character is effective and places X
-before b. Attempting the inactive own-root origin is rejected. Expectations
-are hand-derived from ordinary after-origin editing. -/
+before b; an insertion at the dead title root also lands before b, in the
+dead title, and an absent origin is rejected. Expectations are hand-derived
+from ordinary after-origin editing. -/
 theorem hidden_insert_control :
-    ((NotionCoreSourceDocument.step [attachedBlock]
+    ((NotionCoreSourceDocument.step [splitBlock]
       (.insert hiddenAtom.address [⟨(0, .event (2, 10)), .text 88 false⟩])).map
         (fun doc => NotionCoreSpec.view (project doc))) = some [(10, [88, 98])] ∧
-    ((NotionCoreSourceDocument.step [attachedBlock]
+    ((NotionCoreSourceDocument.step [splitBlock]
       (.insert hiddenAtom.address [⟨(0, .event (2, 10)), .text 88 false⟩])).map
         (fun doc => NotionCoreSpec.view (project doc))) ≠ some [(10, [98, 88])] ∧
-    NotionCoreSourceDocument.step [attachedBlock]
-      (.insert (NotionCoreSpec.root 99).address [⟨(0, .event (2, 10)), .text 88 false⟩]) = none := by decide
+    ((NotionCoreSourceDocument.step [splitBlock]
+      (.insert (NotionCoreSpec.root 99).address [⟨(99, .event (2, 10)), .text 88 false⟩])).map
+        (fun doc => NotionCoreSpec.view (project doc))) = some [(10, [88, 98])] ∧
+    NotionCoreSourceDocument.step [splitBlock]
+      (.insert (0, .event (5, 5)) [⟨(0, .event (2, 10)), .text 88 false⟩]) = none := by decide
 
 /-- The source reach relation has a concrete allocated-root execution; its
 projection is an ordinary block and is distinct from the empty document. -/
@@ -204,6 +153,6 @@ theorem reachable_create_control :
   exact ⟨run, by decide, by decide⟩
 
 #print axioms reachable_invariants
-#print axioms originSafe_of_active
+#print axioms owner_unique
 #print axioms step_sound
 end Sal.MRDTs.Instances.NotionCoreSourceGuards

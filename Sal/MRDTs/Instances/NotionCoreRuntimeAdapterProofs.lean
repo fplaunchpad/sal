@@ -204,18 +204,20 @@ theorem represents (state : State) (valid : Valid state) :
   recordStartsUnique := recordStarts_unique state
 
 /-- The native hash-map query has the verified structural MRDT's exact answer
-for honest closed-version images. Its premises constrain storage/protocol, not
-an observation or a chosen final document. -/
+for merge-free honest closed-version images. Its premises constrain
+storage/protocol, not an observation or a chosen final document. It covers the
+merge-free fragment, the scope of the structural renderer. -/
 theorem observeState_correct (state : State) (valid : Valid state)
     (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network) (version : List NotionRunAllocation.Run)
     (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (free : NotionCoreRuntimeQuery.VersionFree network version)
     (image : abstract state = NotionCoreStructuralFacts.ofTransactions
       (NotionCoreReconstruction.transactionsFor network version)) :
     observeState state = NotionCoreStructuralRender.observe (abstract state) := by
   unfold observeState
   rw [image]
-  apply NotionCoreRuntimeQuery.observe_correct _ network reachable version closed
+  apply NotionCoreRuntimeQuery.observe_correct _ network reachable version closed free
   exact image ▸ represents state valid
 
 #print axioms represents

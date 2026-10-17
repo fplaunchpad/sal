@@ -36,14 +36,14 @@ theorem cellRefs_member (cells : List Cell) (owned : Nat × Ref) :
     | nil => simp [cellRefs]
     | cons head rest ih => exact List.mem_cons_of_mem _ ih
 
-/-- The reference permutation names actual owner/start/stop triples. Owner
-uniqueness is per instance: an attached block also has an empty title in its
-own different instance. It must not be required globally across all cells. -/
+/-- The reference permutation names actual owner/start/stop triples. Owners
+need not be distinct: after a split and a merge back, one block owns two cells
+of one instance. -/
 structure Partitioned (state : State) : Prop where
   refsExist : ∀ owned ∈ ownedRefs state.forest,
     ∃ entry ∈ state.instances, entry.1 = owned.2.start.1
   partitions : ∀ inst, (∃ entry ∈ state.instances, entry.1 = inst) →
-    ∃ cells, physical state inst = flatten cells ∧ (cells.map Cell.owner).Nodup ∧
+    ∃ cells, physical state inst = flatten cells ∧
       ((ownedRefs state.forest).filter (fun owned => owned.2.start.1 == inst)).Perm (cellRefs cells)
 
 theorem initial_partitioned : Partitioned {} := by
@@ -56,7 +56,7 @@ theorem ref_factor (state : State) (partitioned : Partitioned state)
     ∃ before cell after,
       physical state owned.2.start.1 = flatten (before ++ cell :: after) ∧
       owned = (cell.owner, ⟨cell.slice.start, after.head?.map (fun next => next.slice.start)⟩) := by
-  obtain ⟨cells, physicalEq, _, permutation⟩ := partitioned.partitions owned.2.start.1
+  obtain ⟨cells, physicalEq, permutation⟩ := partitioned.partitions owned.2.start.1
     (partitioned.refsExist owned member)
   have matched := permutation.mem_iff.mp (List.mem_filter.mpr ⟨member, by simp⟩)
   obtain ⟨before, cell, after, shape, equal⟩ := (cellRefs_member cells owned).mp matched
@@ -117,11 +117,11 @@ theorem containing_ref (state : State) (partitioned : Partitioned state)
     (newBoundary : ∀ owned ∈ ownedRefs state.forest, owned.2.start ≠ marker) :
     ∃ owned ∈ ownedRefs state.forest,
       NotionCoreSliceForest.contains (physical state) owned.2 marker = true := by
-  obtain ⟨cells, physicalEq, owners, permutation⟩ :=
+  obtain ⟨cells, physicalEq, permutation⟩ :=
     partitioned.partitions marker.1 existsInstance
   have representation : NotionCorePartition.Represents
       ⟨physical state marker.1, cells.map Cell.entry⟩ cells :=
-    ⟨physicalEq, rfl, unique marker.1, owners⟩
+    ⟨physicalEq, rfl, unique marker.1⟩
   obtain ⟨cell, ⟨member, active⟩, _⟩ :=
     NotionCorePartition.physical_unique_owner marker representation present
   obtain ⟨before, after, shape⟩ := List.append_of_mem member
@@ -177,6 +177,147 @@ theorem splitForest_partition_progress (state : State) (partitioned : Partitione
     (partition_bounds state partitioned unique) unique
     (containing_tree_ref state partitioned unique marker existsInstance present newBoundary)
 
+/-! Owner-free coverage. `Partitioned` depends on the forest only through its
+multiset of interval references: owners are recovered from the forest itself. -/
+
+/-- The forest's interval references, owners forgotten, are a permutation of
+each instance's represented cells. -/
+structure Covers (state : State) (refs : List Ref) : Prop where
+  refsExist : ∀ ref ∈ refs, ∃ entry ∈ state.instances, entry.1 = ref.start.1
+  partitions : ∀ inst, (∃ entry ∈ state.instances, entry.1 = inst) →
+    ∃ cells, physical state inst = flatten cells ∧
+      (refs.filter (fun ref => ref.start.1 == inst)).Perm ((cellRefs cells).map Prod.snd)
+
+theorem covers_perm {state : State} {refs other : List Ref} (covers : Covers state refs)
+    (same : other.Perm refs) : Covers state other := by
+  constructor
+  · exact fun ref member => covers.refsExist ref (same.mem_iff.mp member)
+  · intro inst existsInstance
+    obtain ⟨cells, physicalEq, permutation⟩ := covers.partitions inst existsInstance
+    exact ⟨cells, physicalEq, (same.filter _).trans permutation⟩
+
+theorem covers_of_partitioned {state : State} (partitioned : Partitioned state) :
+    Covers state (NotionCoreSliceForest.forestRefs state.forest) := by
+  rw [← NotionCoreForestRefs.ownedRefs_refs]
+  constructor
+  · intro ref member
+    obtain ⟨owned, ownedMember, rfl⟩ := List.mem_map.mp member
+    exact partitioned.refsExist owned ownedMember
+  · intro inst existsInstance
+    obtain ⟨cells, physicalEq, permutation⟩ := partitioned.partitions inst existsInstance
+    refine ⟨cells, physicalEq, ?_⟩
+    rw [List.filter_map]
+    exact permutation.map Prod.snd
+
+private theorem cellRefs_snd_starts (cells : List Cell) :
+    ((cellRefs cells).map Prod.snd).map Ref.start = cells.map (fun cell => cell.slice.start) := by
+  induction cells with
+  | nil => rfl
+  | cons cell rest ih => simp [cellRefs, ih]
+
+private theorem cell_starts_unique (cells : List Cell)
+    (unique : ((flatten cells).map Atom.address).Nodup) :
+    (cells.map (fun cell => cell.slice.start)).Nodup := by
+  induction cells with
+  | nil => simp
+  | cons cell rest ih =>
+    simp only [flatten, List.flatMap_cons, Cell.physical, List.cons_append, List.map_cons,
+      List.map_append, List.nodup_cons, List.nodup_append] at unique
+    refine List.nodup_cons.mpr ⟨?_, ih (by simpa [flatten] using unique.2.2.1)⟩
+    intro member
+    obtain ⟨other, otherMember, same⟩ := List.mem_map.mp member
+    apply unique.1
+    refine List.mem_append_right _ (List.mem_map.mpr ⟨NotionCorePartition.boundary other.slice.start,
+      List.mem_flatMap.mpr ⟨other, otherMember, by simp [Cell.physical]⟩, ?_⟩)
+    simpa [NotionCorePartition.boundary] using same
+
+/-- Within one instance, covered references have distinct starts. -/
+theorem covers_starts_unique {state : State} {refs : List Ref} (covers : Covers state refs)
+    (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup) (inst : Nat)
+    (existsInstance : ∃ entry ∈ state.instances, entry.1 = inst) :
+    ((refs.filter (fun ref => ref.start.1 == inst)).map Ref.start).Nodup := by
+  obtain ⟨cells, physicalEq, permutation⟩ := covers.partitions inst existsInstance
+  rw [(permutation.map Ref.start).nodup_iff, cellRefs_snd_starts]
+  exact cell_starts_unique cells (physicalEq ▸ unique inst)
+
+private def ownerOf (owned : List (Nat × Ref)) (start : Address) : Nat :=
+  ((owned.find? fun entry => entry.2.start == start).map Prod.fst).getD 0
+
+private theorem ownerOf_member {owned : List (Nat × Ref)} {entry : Nat × Ref} (member : entry ∈ owned)
+    (consistent : ∀ other ∈ owned, other.2.start = entry.2.start → other = entry) :
+    ownerOf owned entry.2.start = entry.1 := by
+  obtain ⟨found, foundEq⟩ : ∃ found, owned.find? (fun other => other.2.start == entry.2.start) = some found :=
+    Option.isSome_iff_exists.mp (List.find?_isSome.mpr ⟨entry, member, by simp⟩)
+  have same := consistent found (List.mem_of_find?_eq_some foundEq) (by simpa using List.find?_some foundEq)
+  simp [ownerOf, foundEq, same]
+
+private theorem cellRefs_reown (cells : List Cell) (owner : Address → Nat) :
+    cellRefs (cells.map fun cell => ⟨owner cell.slice.start, cell.slice⟩) =
+      (cellRefs cells).map fun entry => (owner entry.2.start, entry.2) := by
+  induction cells with
+  | nil => rfl
+  | cons cell rest ih =>
+    simp only [List.map_cons, cellRefs, ih]
+    cases rest <;> rfl
+
+private theorem flatten_reown (cells : List Cell) (owner : Address → Nat) :
+    flatten (cells.map fun cell => ⟨owner cell.slice.start, cell.slice⟩) = flatten cells := by
+  simp only [flatten, List.flatMap_map]
+  rfl
+
+/-- Coverage of a forest's references gives the full owned partition: each
+cell takes the owner of the unique reference starting at its start. -/
+theorem partitioned_of_covers (state : State) (forest : NotionCoreSliceForest.Forest)
+    (covers : Covers state (NotionCoreSliceForest.forestRefs forest))
+    (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup) :
+    Partitioned {state with forest := forest} := by
+  rw [← NotionCoreForestRefs.ownedRefs_refs] at covers
+  constructor
+  · intro owned member
+    exact covers.refsExist owned.2 (List.mem_map.mpr ⟨owned, member, rfl⟩)
+  · intro inst existsInstance
+    obtain ⟨cells, physicalEq, permutation⟩ := covers.partitions inst existsInstance
+    let owned := ownedRefs forest
+    let own := ownerOf owned
+    refine ⟨cells.map fun cell => ⟨own cell.slice.start, cell.slice⟩,
+      by rw [flatten_reown]; exact physicalEq, ?_⟩
+    rw [cellRefs_reown]
+    have starts := covers_starts_unique covers unique inst existsInstance
+    rw [List.filter_map, List.map_map] at starts
+    have consistent : ∀ entry ∈ owned.filter (fun owned => owned.2.start.1 == inst),
+        own entry.2.start = entry.1 := by
+      intro entry member
+      apply ownerOf_member (List.mem_filter.mp member).1
+      intro other otherMember sameStart
+      have otherFiltered : other ∈ owned.filter (fun owned => owned.2.start.1 == inst) :=
+        List.mem_filter.mpr ⟨otherMember, by
+          have := (List.mem_filter.mp member).2
+          simpa [sameStart] using this⟩
+      exact List.inj_on_of_nodup_map starts otherFiltered member sameStart
+    have fixed : (owned.filter fun owned => owned.2.start.1 == inst) =
+        ((owned.filter fun owned => owned.2.start.1 == inst).map Prod.snd).map
+          fun ref => (own ref.start, ref) := by
+      rw [List.map_map]
+      conv_lhs => rw [← List.map_id (owned.filter _)]
+      apply List.map_congr_left
+      intro entry member
+      simp [consistent entry member]
+    change (owned.filter _).Perm _
+    rw [fixed]
+    have mapped := permutation.map (fun ref => (own ref.start, ref))
+    rw [List.filter_map] at mapped
+    simpa [List.map_map, Function.comp_def] using mapped
+
+/-- Merge moves interval references between blocks without changing them, so
+the partition survives with owners recomputed from the merged forest. -/
+theorem merge_partitioned (state : State) (source target : Nat) (partitioned : Partitioned state)
+    (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
+    (blocks : (state.forest.map NotionCoreSliceForest.Block.id).Nodup) :
+    Partitioned {state with forest := NotionCoreSliceForest.mergeForest state.forest source target} := by
+  apply partitioned_of_covers _ _ _ unique
+  exact covers_perm (covers_of_partitioned partitioned)
+    (NotionCoreSliceForest.mergeForest_refs state.forest source target blocks)
+
 /-- The stop is the next physical start, including an empty cell's start.
 Dropping that stop silently changes the interval represented by the first ref. -/
 theorem next_boundary_control :
@@ -189,4 +330,6 @@ theorem next_boundary_control :
 #print axioms partition_bounds
 #print axioms containing_tree_ref
 #print axioms splitForest_partition_progress
+#print axioms partitioned_of_covers
+#print axioms merge_partitioned
 end Sal.MRDTs.Instances.NotionCoreMachinePartition

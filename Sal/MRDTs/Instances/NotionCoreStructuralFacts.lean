@@ -3,7 +3,9 @@ import Sal.MRDTs.Instances.FinsetStore
 
 /-! Immutable structural facts for the typed core. This carrier contains no
 transaction archive or query cache. Render correspondence is a separate
-obligation: union laws alone do not establish document correctness. -/
+obligation: union laws alone do not establish document correctness. A merge
+contributes no fact: its effect depends on replay order, so this carrier
+covers the merge-free fragment. -/
 namespace Sal.MRDTs.Instances.NotionCoreStructuralFacts
 open NotionCorePayload (BlockKey Transaction)
 open NotionCoreParentMap (Row)
@@ -22,9 +24,10 @@ def extra (tx : Transaction) : List Fact := match tx.payload with
   | .bootstrap _ => [.created .initial none]
   | .create afterBlock => [.created (.issued tx.id) afterBlock]
   | .insert _ _ _ _ => []
-  | .erase _ inst ids => ids.map (Fact.erased inst)
+  | .erase _ groups => groups.flatMap fun group => group.2.map (Fact.erased group.1)
   | .split block inst _ =>
       [.created (.issued tx.id) (some block), .cut inst tx.id (.issued tx.id)]
+  | .merge _ _ => []
 
 def decodeList (tx : Transaction) : List Fact :=
   (NotionCorePayload.births tx (fun _ _ => false)).map
@@ -107,10 +110,6 @@ theorem birth_correspondence (txs : List Transaction) (inst : BlockKey) (row : R
   cases tx with
   | mk key payload =>
     cases payload <;> simp [decodeList, extra, NotionCoreTableView.transactionTargets]
-    rename_i block instanceKey ids
-    by_cases equal : instanceKey = inst
-    · subst instanceKey; simp
-    · simp [equal, Ne.symm equal]
 
 /-- Deletion identities are an independent monotone component; their receipt
 order is absent from the representation. -/

@@ -165,6 +165,8 @@ private theorem operation_stored (state result : State) (op : Operation)
           (NotionCorePhysicalReplay.address (blockName inst) marker) state.forest with
         | none => simp [detached] at accepted
         | some pair => simp [detached] at accepted; subst result; exact Or.inl member
+  | merge source target =>
+      simp only [applyOperation, Option.some.injEq] at accepted; subst result; exact Or.inl member
 
 private theorem operations_stored (state result : State) (ops : List Operation)
     (accepted : applyOperations state ops = some result) (key : Nat) (id : Id)
@@ -282,7 +284,7 @@ private def a : Id := ⟨1,[65]⟩
 private def b : Id := ⟨2,[65]⟩
 private def marker : Id := ⟨4,[66]⟩
 private def seed : Transaction := NotionCorePayload.bootstrap [97,98]
-private def deletion : Transaction := ⟨⟨3,[66]⟩,.erase .initial .initial [b]⟩
+private def deletion : Transaction := ⟨⟨3,[66]⟩,.erase .initial [(.initial,[b])]⟩
 private def cut : Transaction := ⟨marker,.split .initial .initial (.item b)⟩
 
 /-- PASS+FAIL: an actual hidden-origin split retains both text births and its

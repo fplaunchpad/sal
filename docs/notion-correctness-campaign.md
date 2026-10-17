@@ -171,7 +171,19 @@ controls that change one ingredient: two for N-004 and three for N-005. The
 traces are in [results](../experiments/notion-correctness/results/)
 (`network-loss-diagnosis.json`, `offline-conservation-minimised.json`,
 `offline-conservation-regression.json`, `offline-structural-17102.json`). Both
-failures need the editor's merge-block request, which lies outside the verified
-typed core. Their Lean counterparts are in `NotionMergeLossCounterexample` (see
+failures need the demo's merge-block request, whose block removal is separate
+from its move. Their Lean counterparts are in `NotionMergeLossCounterexample` (see
 [the bug catalogue](notion-bugs.md)). The search is finite and does not exclude
 further bugs.
+
+## Block merge design gate
+
+The [merge design experiment](../experiments/notion-merge-design/README.md)
+reruns these harnesses on a patched copy of the demo whose merge moves the
+source's whole slice tree under the holder of the target and derives removal
+from that move. All 161,630 archives agree with the absorb specification, with
+no split failure and no text loss; N-001, N-004 and N-005 do not occur, while
+the bold failures N-002 and N-003 persist. Restoring independent removal brings
+text loss back. The [design note](notion-merge-block-design.md) gives the
+specification, and [the correspondence overview](notion-core-correspondence.md#block-merge)
+lists the Lean results.

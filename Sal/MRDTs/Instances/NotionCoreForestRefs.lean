@@ -15,53 +15,11 @@ open NotionCoreSource (Atom)
 
 def ownedRefs (forest : Forest) : List (Nat × Ref) :=
   forest.flatMap fun block => (preorderTree block.title).map (block.id, ·)
-def leftRef (ref : Ref) (marker : Address) : Ref := {ref with stop := some marker}
-def rightRef (ref : Ref) (marker : Address) : Ref := ⟨marker,ref.stop⟩
+export NotionCoreSliceForest (leftRef rightRef splitTree_refs splitChildren_refs
+  preorderChildren_append preorder_appendRoot detachTree_refs detachChildren_refs)
 
-mutual
-theorem splitTree_refs (physical : Nat → List Atom) (marker : Address)
-    (tree next : Tree) (accepted : splitTree physical marker tree = some next) :
-    ∃ before ref after, preorderTree tree = before ++ ref :: after ∧
-      contains physical ref marker = true ∧
-      preorderTree next = before ++ leftRef ref marker :: rightRef ref marker :: after := by
-  cases tree with
-  | node ref children =>
-    by_cases selected : contains physical ref marker = true
-    · simp only [splitTree, selected, if_true, Option.some.injEq] at accepted
-      subst next
-      exact ⟨[],ref,preorderChildren children,rfl,selected,by
-        simp [splitNode,preorderTree,preorderChildren,leftRef,rightRef]⟩
-    · have rejected : contains physical ref marker = false := Bool.eq_false_iff.mpr selected
-      simp only [splitTree, rejected, Bool.false_eq_true, if_false] at accepted
-      obtain ⟨changed, step, same⟩ := Option.map_eq_some_iff.mp accepted
-      subst next
-      obtain ⟨before,chosen,after,old,found,new⟩ := splitChildren_refs physical marker children changed step
-      exact ⟨ref::before,chosen,after,by simp [preorderTree,old],found,by simp [preorderTree,new]⟩
-theorem splitChildren_refs (physical : Nat → List Atom) (marker : Address)
-    (children next : Children) (accepted : splitChildren physical marker children = some next) :
-    ∃ before ref after, preorderChildren children = before ++ ref :: after ∧
-      contains physical ref marker = true ∧
-      preorderChildren next = before ++ leftRef ref marker :: rightRef ref marker :: after := by
-  cases children with
-  | nil => simp [splitChildren] at accepted
-  | cons tree rest =>
-    cases selected : splitTree physical marker tree with
-    | some changed =>
-      simp only [splitChildren,selected,Option.some.injEq] at accepted
-      subst next
-      obtain ⟨before,ref,after,old,found,new⟩ := splitTree_refs physical marker tree changed selected
-      exact ⟨before,ref,after ++ preorderChildren rest,by
-        simp [preorderChildren,old,List.append_assoc],found,by
-        simp [preorderChildren,new,List.append_assoc]⟩
-    | none =>
-      simp only [splitChildren,selected] at accepted
-      obtain ⟨changed,step,same⟩ := Option.map_eq_some_iff.mp accepted
-      subst next
-      obtain ⟨before,ref,after,old,found,new⟩ := splitChildren_refs physical marker rest changed step
-      exact ⟨preorderTree tree ++ before,ref,after,by
-        simp [preorderChildren,old,List.append_assoc],found,by
-        simp [preorderChildren,new,List.append_assoc]⟩
-end
+theorem ownedRefs_refs (forest : Forest) : (ownedRefs forest).map Prod.snd = forestRefs forest := by
+  simp [ownedRefs, forestRefs, List.map_flatMap, List.map_map, Function.comp_def]
 
 theorem splitForest_refs (physical : Nat → List Atom) (marker : Address)
     (forest next : Forest) (accepted : splitForest physical marker forest = some next) :
@@ -93,76 +51,12 @@ theorem splitForest_refs (physical : Nat → List Atom) (marker : Address)
         rw [new]
         simp [List.append_assoc]⟩
 
-theorem preorderChildren_append (a b : Children) :
-    preorderChildren (a.append b) = preorderChildren a ++ preorderChildren b := by
-  cases a with
-  | nil => rfl
-  | cons tree rest =>
-    simp [Children.append,preorderChildren,preorderChildren_append rest b,List.append_assoc]
-
-theorem preorder_appendRoot (tree child : Tree) :
-    preorderTree (appendRoot tree child) = preorderTree tree ++ preorderTree child := by
-  cases tree
-  simp [appendRoot,Tree.slice,Tree.children,preorderTree,preorderChildren,
-    preorderChildren_append]
-
 theorem ownedRefs_append (a b : Forest) : ownedRefs (a ++ b) = ownedRefs a ++ ownedRefs b := by
   simp [ownedRefs]
 
 theorem ownedRefs_create (forest : Forest) (fresh : Nat) :
     ownedRefs (forest ++ [⟨fresh,freshTitle fresh⟩]) = ownedRefs forest ++ [(fresh,titleRef fresh)] := by
   simp [ownedRefs,freshTitle,preorderTree,preorderChildren]
-
-mutual
-theorem detachTree_refs (marker : Address) (tree next child : Tree)
-    (accepted : detachTree marker tree = some (next,child)) :
-    ∃ before after, preorderTree tree = before ++ preorderTree child ++ after ∧
-      preorderTree next = before ++ after ∧ child.slice.start = marker := by
-  cases tree with
-  | node ref children =>
-    simp only [detachTree] at accepted
-    obtain ⟨result,step,same⟩ := Option.map_eq_some_iff.mp accepted
-    have pair := Prod.mk.inj same
-    obtain ⟨before,after,old,new,start⟩ := detachChildren_refs marker children result.1 result.2
-      (by exact step)
-    have nextEq := pair.1
-    have childEq := pair.2
-    subst next; subst child
-    exact ⟨ref::before,after,by simp [preorderTree,old,List.append_assoc],
-      by simp [preorderTree,new],start⟩
-theorem detachChildren_refs (marker : Address) (children next : Children) (child : Tree)
-    (accepted : detachChildren marker children = some (next,child)) :
-    ∃ before after, preorderChildren children = before ++ preorderTree child ++ after ∧
-      preorderChildren next = before ++ after ∧ child.slice.start = marker := by
-  cases children with
-  | nil => simp [detachChildren] at accepted
-  | cons tree rest =>
-    by_cases selected : tree.slice.start = marker
-    · simp only [detachChildren,selected,if_true,Option.some.injEq] at accepted
-      obtain ⟨rfl,rfl⟩ := Prod.mk.inj accepted
-      exact ⟨[],preorderChildren rest,by simp [preorderChildren],rfl,selected⟩
-    · simp only [detachChildren,selected,if_false] at accepted
-      cases found : detachTree marker tree with
-      | some result =>
-        simp only [found,Option.some.injEq] at accepted
-        obtain ⟨nextEq,childEq⟩ := Prod.mk.inj accepted
-        subst next; subst child
-        obtain ⟨before,after,old,new,start⟩ := detachTree_refs marker tree result.1 result.2
-          (by exact found)
-        exact ⟨before,after ++ preorderChildren rest,by
-          simp [preorderChildren,old,List.append_assoc],by
-          simp [preorderChildren,new,List.append_assoc],start⟩
-      | none =>
-        simp only [found] at accepted
-        obtain ⟨result,step,same⟩ := Option.map_eq_some_iff.mp accepted
-        obtain ⟨nextEq,childEq⟩ := Prod.mk.inj same
-        subst next; subst child
-        obtain ⟨before,after,old,new,start⟩ := detachChildren_refs marker rest result.1 result.2
-          (by exact step)
-        exact ⟨preorderTree tree ++ before,after,by
-          simp [preorderChildren,old,List.append_assoc],by
-          simp [preorderChildren,new,List.append_assoc],start⟩
-end
 
 theorem detachForest_refs (marker : Address) (forest next : Forest) (child : Tree)
     (accepted : detachForest marker forest = some (next,child)) :

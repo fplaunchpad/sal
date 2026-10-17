@@ -10,7 +10,7 @@ namespace Sal.MRDTs.Instances.NotionCoreMachineRootReplay
 open NotionCoreMachine
 open NotionCoreMachineShape
 open NotionCorePayload (BlockKey Transaction)
-open NotionCoreSliceForest (active profile EmptyInactive)
+open NotionCoreSliceForest (forestNodes)
 
 private theorem insert_result (state result : State) (block inst : BlockKey)
     (id : NotionRunAllocation.Id) (origin : NotionCoreOriginTree.Origin) (atoms : List Nat)
@@ -40,8 +40,8 @@ theorem insert_shape_active (state result : State) (block inst : BlockKey)
   intro name
   simp only [ActiveInstance,put_forest]
 
-/-- Erasure changes only text tombstones, so empty inactive START titles stay
-empty even without an active-instance assumption on the deletion payload. -/
+/-- Erasure changes only text tombstones, so empty dead START titles stay
+empty even without a live-instance assumption on the deletion payload. -/
 theorem erase_shape_active (state result : State) (block inst : BlockKey)
     (targets : List NotionRunAllocation.Id) (prior : ShapeInvariant state)
     (accepted : applyOperation state (.erase block inst targets) = some result) :
@@ -51,12 +51,14 @@ theorem erase_shape_active (state result : State) (block inst : BlockKey)
   · refine ⟨?_,?_,?_⟩
     · simpa only [ShapeInvariant,shapeView,frames.1] using prior.1
     · simpa only [ShapeInvariant,shapeView,frames.1] using prior.2.1
-    · intro current member inactive
-      have oldMember : current ∈ profile state.forest := by simpa only [shapeView,frames.1] using member
-      have empty := prior.2.2 current oldMember inactive
-      change physical result current.1 = _
-      change physical state current.1 = _ at empty
-      rw [frames.2.2 current.1]
+    · intro dead member
+      have oldMember : (dead,false) ∈ forestNodes state.forest := by
+        simpa only [shapeView,frames.1] using member
+      obtain ⟨form,empty,lives⟩ := prior.2.2 dead oldMember
+      refine ⟨form,?_,fun live liveMember => lives live (by simpa only [shapeView,frames.1] using liveMember)⟩
+      change physical result dead.start.1 = _
+      change physical state dead.start.1 = _ at empty
+      rw [frames.2.2 dead.start.1]
       split
       · rw [empty]
         simp [NotionCoreSliceForest.emptyPhysical,NotionCoreSource.eraseAtom,NotionCorePartition.boundary]
@@ -67,13 +69,14 @@ theorem erase_shape_active (state result : State) (block inst : BlockKey)
 /-- Fresh ordinary creation adds exactly its own active instance. -/
 theorem create_active_exact (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)
-    (freshBlock : ∀ old ∈ state.forest, old.id ≠ blockName block)
+    (freshBlock : FreshBlock state (blockName block))
     (accepted : applyOperation state (.create block afterBlock) = some result) :
     ∀ name, ActiveInstance result name ↔ ActiveInstance state name ∨ name = blockName block := by
   have shape := NotionCoreMachineCanonicalCreate.fresh_create_shape state result block afterBlock
     freshInstance freshBlock accepted
   intro name
-  simp only [ActiveInstance,shape.2.1,List.mem_append,List.mem_singleton]
+  simp only [ActiveInstance,shape.2.1,NotionCoreSliceForest.forestNodes_append,
+    NotionCoreSliceForest.forestNodes_fresh,List.mem_append,List.mem_singleton,Prod.mk.injEq,and_true]
   constructor
   · rintro ⟨found,member,equal⟩
     rcases member with old | rfl
@@ -82,6 +85,26 @@ theorem create_active_exact (state result : State) (block : BlockKey) (afterBloc
   · rintro (⟨found,member,equal⟩ | rfl)
     · exact ⟨found,Or.inl member,equal⟩
     · exact ⟨_,Or.inr rfl,rfl⟩
+
+/-- One erase per instance group keeps the shape and every live instance. -/
+theorem erase_groups_shape_active (state result : State) (block : BlockKey)
+    (groups : List (BlockKey × List NotionRunAllocation.Id)) (prior : ShapeInvariant state)
+    (accepted : applyOperations state (groups.map fun group => .erase block group.1 group.2) = some result) :
+    ShapeInvariant result ∧ ∀ name, ActiveInstance result name ↔ ActiveInstance state name := by
+  induction groups generalizing state with
+  | nil =>
+    simp only [List.map_nil, applyOperations, Option.some.injEq] at accepted
+    subst result
+    exact ⟨prior, fun _ => Iff.rfl⟩
+  | cons group rest ih =>
+    cases first : applyOperation state (.erase block group.1 group.2) with
+    | none => simp [applyOperations, first] at accepted
+    | some middle =>
+      have later : applyOperations middle (rest.map fun group => .erase block group.1 group.2) =
+          some result := by simpa [applyOperations, first] using accepted
+      obtain ⟨middleShape, middleActive⟩ := erase_shape_active state middle block group.1 group.2 prior first
+      obtain ⟨resultShape, resultActive⟩ := ih middle middleShape later
+      exact ⟨resultShape, fun name => (resultActive name).trans (middleActive name)⟩
 
 #print axioms erase_shape_active
 #print axioms insert_shape_active
@@ -181,7 +204,8 @@ theorem canonical_ordinary_step (network : NotionCorePayloadNetwork.State)
   | create afterBlock =>
     obtain ⟨next,step,nextPart,_,_⟩ := NotionCoreMachineCanonicalCreate.canonical_create_phase
       network reachable peer pre suffix tx position state accepted part afterBlock
-    have nextShape := canonical_create_shape network reachable peer pre suffix tx position state next accepted shape afterBlock step
+    have nextShape := canonical_create_shape network reachable peer pre suffix tx position state next accepted shape
+      part afterBlock step
     obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh
       network reachable peer pre suffix tx position state accepted
     have active := create_active_exact state next (.issued tx.id) afterBlock freshInstance freshBlock step
@@ -202,12 +226,13 @@ theorem canonical_ordinary_step (network : NotionCorePayloadNetwork.State)
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
-  | erase block inst targets =>
+  | erase block groups =>
     obtain ⟨next,step,nextPart⟩ := NotionCoreMachinePartitionUpdates.canonical_erase_partitioned
-      network reachable peer pre suffix tx position state accepted part block inst targets payload
-    have operation : applyOperation state (.erase block inst targets) = some next := by
-      simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations] using step
-    obtain ⟨nextShape,active⟩ := erase_shape_active state next block inst targets shape operation
+      network reachable peer pre suffix tx position state accepted part block groups payload
+    have operations : applyOperations state (groups.map fun group => .erase block group.1 group.2) =
+        some next := by
+      simpa [applyTransaction,NotionCorePayload.operations,payload] using step
+    obtain ⟨nextShape,active⟩ := erase_groups_shape_active state next block groups shape operations
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
@@ -219,17 +244,28 @@ theorem canonical_ordinary_step (network : NotionCorePayloadNetwork.State)
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
+  | merge source target =>
+    obtain ⟨next,step,nextPart,nextShape,active⟩ := NotionCoreMachineCanonicalSplit.canonical_merge_preserves_active
+      network reachable peer pre suffix tx position state accepted part shape source target payload
+    refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
+    intro name
+    simpa [rootCreatedBlocks,payload] using active name
 
 namespace SPOT
 private def cut : Transaction := ⟨⟨2,[66]⟩,.split .initial .initial .start⟩
-/-- Split retains the original instance in both active slices; the fresh
-split destination's own empty title is not an active instance. -/
+private def back : Transaction := ⟨⟨3,[66]⟩,.merge (.issued cut.id) .initial⟩
+private def liveInstances (state : State) : List Nat :=
+  (forestNodes state.forest).filterMap fun node => if node.2 then some node.1.start.1 else none
+/-- Split retains the original instance in both live slices; the fresh
+split destination's own empty title is not a live instance. Merging it back
+keeps both live slices and the dead title inside the absorbing block. -/
 theorem split_active_control :
-    (replay {} [NotionCorePayload.bootstrap [],cut]).map
-      (fun state => state.forest.map (fun block => (active block.title).start.1)) = some [0,0] ∧
-    (replay {} [NotionCorePayload.bootstrap [],cut]).map
-      (fun state => state.forest.map (fun block => (active block.title).start.1)) ≠
-        some [0,blockName (.issued cut.id)] := by decide +kernel
+    (replay {} [NotionCorePayload.bootstrap [],cut]).map liveInstances = some [0,0] ∧
+    (replay {} [NotionCorePayload.bootstrap [],cut]).map liveInstances ≠
+        some [0,blockName (.issued cut.id)] ∧
+    (replay {} [NotionCorePayload.bootstrap [],cut,back]).map liveInstances = some [0,0] ∧
+    (replay {} [NotionCorePayload.bootstrap [],cut,back]).map (fun state => state.forest.length) =
+        some 1 := by decide +kernel
 end SPOT
 
 #print axioms canonical_ordinary_step
@@ -238,7 +274,8 @@ private theorem root_frame_active (state result : State) (bid : Nat)
     (forest : result.forest = state.forest ++ [⟨bid,NotionCoreSliceForest.freshTitle bid⟩]) :
     ∀ name, ActiveInstance result name ↔ ActiveInstance state name ∨ name = bid := by
   intro name
-  simp only [ActiveInstance,forest,List.mem_append,List.mem_singleton]
+  simp only [ActiveInstance,forest,NotionCoreSliceForest.forestNodes_append,
+    NotionCoreSliceForest.forestNodes_fresh,List.mem_append,List.mem_singleton,Prod.mk.injEq,and_true]
   constructor
   · rintro ⟨found,member,equal⟩
     rcases member with old | rfl
@@ -263,10 +300,7 @@ private theorem canonical_bootstrap_step (network : NotionCorePayloadNetwork.Sta
     network reachable peer pre suffix tx position atoms payload state accepted
   obtain ⟨next,step,nextPart,forest,other⟩ := NotionCoreMachineBootstrap.fresh_bootstrap_preserves
     state atoms part freshInstance freshBlock
-  have fresh : 0 ∉ state.forest.map NotionCoreSliceForest.Block.id := by
-    intro member
-    obtain ⟨old,present,equal⟩ := List.mem_map.mp member
-    exact freshBlock old present equal
+  have fresh := fresh_name_of_instance state part 0 freshInstance
   refine ⟨next,by simpa only [same] using step,nextPart,
     fresh_root_frame_shape state next 0 shape fresh forest other,
     extend_roots pre tx state next rootActive ?_⟩
@@ -314,7 +348,7 @@ theorem canonical_ordinary_step_version (network : NotionCorePayloadNetwork.Stat
     obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh_version
       network reachable version closed pre suffix tx position state accepted
     have nextShape := fresh_create_shape_preserves state next (.issued tx.id) afterBlock
-      shape freshInstance freshBlock step
+      shape part freshInstance freshBlock step
     have active := create_active_exact state next (.issued tx.id) afterBlock freshInstance freshBlock step
     refine ⟨next,by simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations] using step,
       nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
@@ -333,12 +367,13 @@ theorem canonical_ordinary_step_version (network : NotionCorePayloadNetwork.Stat
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
-  | erase block inst targets =>
+  | erase block groups =>
     obtain ⟨next,step,nextPart⟩ := NotionCoreMachinePartitionUpdates.canonical_erase_partitioned_version
-      network reachable version closed pre suffix tx position state accepted part block inst targets payload
-    have operation : applyOperation state (.erase block inst targets) = some next := by
-      simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations] using step
-    obtain ⟨nextShape,active⟩ := erase_shape_active state next block inst targets shape operation
+      network reachable version closed pre suffix tx position state accepted part block groups payload
+    have operations : applyOperations state (groups.map fun group => .erase block group.1 group.2) =
+        some next := by
+      simpa [applyTransaction,NotionCorePayload.operations,payload] using step
+    obtain ⟨nextShape,active⟩ := erase_groups_shape_active state next block groups shape operations
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
@@ -347,6 +382,12 @@ theorem canonical_ordinary_step_version (network : NotionCorePayloadNetwork.Stat
       (by simp [NotionCoreRootCreators.selectedInstances,payload])
     obtain ⟨next,step,nextPart,nextShape,active⟩ := NotionCoreMachineCanonicalSplit.canonical_split_preserves_active_version
       network reachable version closed pre suffix tx position state accepted part shape block inst origin payload selected
+    refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
+    intro name
+    simpa [rootCreatedBlocks,payload] using active name
+  | merge source target =>
+    obtain ⟨next,step,nextPart,nextShape,active⟩ := NotionCoreMachineCanonicalSplit.canonical_merge_preserves_active_version
+      network reachable version closed pre suffix tx position state accepted part shape source target payload
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
@@ -367,10 +408,7 @@ private theorem canonical_bootstrap_step_version (network : NotionCorePayloadNet
     network reachable version closed pre suffix tx position atoms payload state accepted
   obtain ⟨next,step,nextPart,forest,other⟩ := NotionCoreMachineBootstrap.fresh_bootstrap_preserves
     state atoms part freshInstance freshBlock
-  have fresh : 0 ∉ state.forest.map NotionCoreSliceForest.Block.id := by
-    intro member
-    obtain ⟨old,present,equal⟩ := List.mem_map.mp member
-    exact freshBlock old present equal
+  have fresh := fresh_name_of_instance state part 0 freshInstance
   refine ⟨next,by simpa only [same] using step,nextPart,
     fresh_root_frame_shape state next 0 shape fresh forest other,
     extend_roots pre tx state next rootActive ?_⟩
@@ -385,7 +423,7 @@ theorem canonical_prefix_reconstruct_version (network : NotionCorePayloadNetwork
     ∃ state, replay {} pre = some state ∧ Partitioned state ∧ ShapeInvariant state ∧ RootActive pre state := by
   induction pre using List.reverseRecOn generalizing suffix with
   | nil =>
-    exact ⟨{},rfl,NotionCoreMachinePartition.initial_partitioned,initial_shape,by simp [RootActive,ActiveInstance]⟩
+    exact ⟨{},rfl,NotionCoreMachinePartition.initial_partitioned,initial_shape,by simp [RootActive,ActiveInstance,forestNodes]⟩
   | append_singleton pre tx ih =>
     have located : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix := by
       simpa only [List.append_assoc,List.singleton_append] using position
@@ -402,10 +440,13 @@ theorem canonical_prefix_reconstruct_version (network : NotionCorePayloadNetwork
       | insert block inst origin atoms =>
         exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro other; simp [payload])
-      | erase block inst targets =>
+      | erase block groups =>
         exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro atoms; simp [payload])
       | split block inst origin =>
+        exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
+          state accepted part shape rootActive (by intro atoms; simp [payload])
+      | merge source target =>
         exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro atoms; simp [payload])
     obtain ⟨next,step,nextPart,nextShape,nextRoots⟩ := nextStep

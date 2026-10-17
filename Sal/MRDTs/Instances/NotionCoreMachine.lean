@@ -111,7 +111,7 @@ def integrateRows : Table → List Row → Option Table
 def applyOperation (state : State) : Operation → Option State
   | .create block afterBlock =>
     let bid := blockName block
-    if state.forest.any (fun b => b.id == bid) then some state else
+    if bid ∈ state.display then some state else
     let withInst := if state.instances.any (fun p => p.1 == bid) then state
       else putInstance state bid {}
     let forest := if withInst.forest.any (fun b => b.id == bid) then withInst.forest
@@ -142,6 +142,13 @@ def applyOperation (state : State) : Operation → Option State
       let (forest,child) ← NotionCoreSliceForest.detachForest
         (NotionCorePhysicalReplay.address (blockName inst) marker) state.forest
       pure {state with forest := NotionCoreSliceForest.appendToBlock bid child forest}
+  | .merge source target =>
+    some {state with forest := NotionCoreSliceForest.mergeForest state.forest (blockName source) (blockName target)}
+
+/-- A block name that names no forest block and no display entry, tombstones
+included: the names for which create is not a no-op. -/
+def FreshBlock (state : State) (bid : Nat) : Prop :=
+  (∀ old ∈ state.forest, old.id ≠ bid) ∧ bid ∉ state.display
 
 def applyOperations : State → List Operation → Option State
   | state, [] => some state
@@ -174,8 +181,12 @@ def blockText (state : State) (bid : Nat) : Option (List Nat) := do
   let block ← state.forest.find? (fun b => b.id == bid)
   let atoms ← treeAtoms state block.title
   pure (atoms.flatMap atomText)
+/-- A merged-away block keeps its display position as a tombstone; only
+display entries whose block is still in the forest are rendered. -/
+def visible (state : State) : List Nat :=
+  state.display.filter fun bid => state.forest.any fun b => b.id == bid
 def render (state : State) : Option (List (Nat × List Nat)) :=
-  state.display.mapM fun bid => do pure (bid, ← blockText state bid)
+  (visible state).mapM fun bid => do pure (bid, ← blockText state bid)
 
 private def a : Id := ⟨1,[65]⟩
 private def b : Id := ⟨4,[66]⟩
@@ -190,9 +201,9 @@ theorem bootstrap_control :
 
 /-- Tombstone origins remain physically searchable for subsequent insertion. -/
 theorem hidden_origin_control :
-    (replay {} [seed, ⟨⟨3,[65]⟩,.erase .initial .initial [a]⟩,
+    (replay {} [seed, ⟨⟨3,[65]⟩,.erase .initial [(.initial,[a])]⟩,
       ⟨b,.insert .initial .initial (.item a) [88]⟩] >>= render) = some [(0,[88,98])] ∧
-    (replay {} [seed, ⟨⟨3,[65]⟩,.erase .initial .initial [a]⟩,
+    (replay {} [seed, ⟨⟨3,[65]⟩,.erase .initial [(.initial,[a])]⟩,
       ⟨b,.insert .initial .initial (.item a) [88]⟩] >>= render) ≠ some [(0,[98,88])] := by
   decide +kernel
 
@@ -236,6 +247,46 @@ theorem existing_create_control :
       applyOperation state (.create .initial none)).map (·.display) ≠
         some [0,blockName (.issued b)] := by decide +kernel
 
+private def d : Id := ⟨5,[66]⟩
+
+/-- PASS+FAIL: merging the split destination back into its source renders the
+whole text in the source and hides the merged block, which stays in the
+display order as a tombstone. -/
+theorem merge_back_control :
+    (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
+      ⟨d,.merge (.issued b) .initial⟩] >>= render) = some [(0,[97,98])] ∧
+    (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
+      ⟨d,.merge (.issued b) .initial⟩]).map (·.display) = some [0,blockName (.issued b)] ∧
+    (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
+      ⟨d,.merge (.issued b) .initial⟩] >>= render) ≠ some [(0,[97])] ∧
+    (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
+      ⟨d,.merge (.issued b) .initial⟩] >>= render) ≠
+      some [(0,[97]),(blockName (.issued b),[98])] := by
+  decide +kernel
+
+/-- A create after a merged-away block lands at its tombstone, not at the front. -/
+theorem create_after_tombstone_control :
+    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial⟩,
+      ⟨d,.create (some (.issued b))⟩]).map (·.display) =
+      some [blockName (.issued b),blockName (.issued d),0] ∧
+    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial⟩,
+      ⟨d,.create (some (.issued b))⟩]).map (·.display) ≠
+      some [blockName (.issued d),blockName (.issued b),0] := by
+  decide +kernel
+
+/-- A create naming a merged-away block is a no-op: the tombstone keeps its
+display position and the block is not revived in the forest. -/
+theorem tombstone_create_control :
+    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial⟩] >>= fun state =>
+      applyOperation state (.create (.issued b) none)).map (fun s => (s.display,s.forest.map (·.id))) =
+        some ([blockName (.issued b),0],[0]) ∧
+    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial⟩] >>= fun state =>
+      applyOperation state (.create (.issued b) none)).map (fun s => (s.display,s.forest.map (·.id))) ≠
+        some ([blockName (.issued b),0],[0,blockName (.issued b)]) := by
+  decide +kernel
+
+#print axioms merge_back_control
+#print axioms tombstone_create_control
 #print axioms duplicate_tombstone_control
 #print axioms existing_create_control
 #print axioms traversal_correct

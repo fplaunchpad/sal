@@ -2,7 +2,7 @@
 
 ## Current authoritative scope
 
-The typed create/insert/delete/split core now has an execution-derived Sal RA
+The typed create/insert/delete/split/merge core has an execution-derived Sal RA
 result. `NotionCoreProtocol.versions_witness` constructs the same event witness
 for carrier replay, required order, specification visibility, and the independent
 history's query answer for **every registered version**. `specification_ra`
@@ -13,8 +13,9 @@ answer is a caller-supplied premise.
 
 This result covers ordinary Sal version merges and canonical recursive virtual
 merge bases. Those merges union immutable transactions; they are different from
-the demo's merge-block editing request, which is outside the verified fragment.
-The concrete carrier and actual checked document renderer are
+the block-merge editing request. The request set includes block merge in the
+corrected form of [the merge design note](notion-merge-block-design.md), not the
+demo's three-operation merge. The concrete carrier and actual checked document renderer are
 `NotionCoreMRDT.D`. Its query returns an `Option` answer, so an execution error is
 not silently replaced by an empty document. The independent history delegates
 to the existing retained-slot `CoreSpec`, with one atomic update group per
@@ -37,10 +38,10 @@ source evidence is in [notion-source-model.md](notion-source-model.md).
 
 | Boundary | Checked artifact and result |
 | --- | --- |
-| Honest archive to replay | `MachineHonestReplay.honest_prefix_reconstruct_version` derives success, physical partitions, normal root/leaf shape, empty inactive titles, and exact active instances for every closed archive version and prefix. |
-| Physical machine to independent document | `MachineDocument*` derives display-ordered materialization and actual create/insert/erase/atomic-split transitions; `MachineHistory.honest_history_version` transports the same sorted transaction sequence to independent history admission. |
+| Honest archive to replay | `MachineHonestReplay.honest_prefix_reconstruct_version` derives success, physical partitions, chain-shaped slice trees, empty inactive titles, and exact active instances for every closed archive version and prefix. |
+| Physical machine to independent document | `MachineDocument*` derives display-ordered materialization and actual create/insert/erase/atomic-split/merge transitions; `MachineDocumentMerge.canonical_merge_execution_version` covers merge. `MachineHistory.honest_history_version` transports the same sorted transaction sequence to independent history admission. |
 | Source version to actual MRDT query | `MRDTArchive` relates the finite carrier to actual canonical replay and rendering. `MRDTClient.issued_update` relates actual issuance to `D.update` and its query. |
-| Positional client effects | `MRDTClient.insert_effect`, `split_effect`, and `erase_effect` derive the ordinary visible effect on the issuer's next concrete MRDT query. Bounds use visible string-iterator atoms; deletion uses a nonempty in-range interval. |
+| Positional client effects | `MRDTClient.insert_effect`, `split_effect`, `erase_effect`, and `merge_effect` derive the ordinary visible effect on the issuer's next concrete MRDT query. Insertion and split name an alive source block (`source.alive = true`); merge appends a displayed block's text to the previous displayed block and removes it from the display. Bounds use visible string-iterator atoms; deletion uses a nonempty in-range interval. |
 | Five VCs to registered carrier | `NotionCoreMRDT.fiveVCs` and `represented_versions` reuse the finite-store VC induction with the real document query. Storage correctness alone is not presented as document correctness. |
 | Archive to the same Sal event witness | `ArchiveEvents` derives event/source-key uniqueness, source-order visibility, exact enumeration, and closed-version eligibility. `ArchiveCertificate` derives registered carrier equality through the VC representation. |
 | Actual Sal/source execution coupling | `MachineExecution`, `MachineGenesis`, and `IssuanceGuard` preserve the common archive, mint past, current heads, and allocator clocks through factory creation and guarded operations. `Protocol.Reach.paired` derives the coupling used by the final witness. |
@@ -63,6 +64,72 @@ not yet prove that every arbitrary timed source trace can be rearranged into a
 Sal protocol trace, nor that a post-factory Sal fork is the same action as creating
 a new empty source replica. The former copies its source's current snapshot.
 
+## Block merge
+
+The merge request follows [the design note](notion-merge-block-design.md). Its
+research question is whether a block merge over the same slice-tree and RGA
+state has a sequential meaning; the answer is yes once removal of the source
+block is the move itself rather than a separate operation.
+
+**Specification.** `NotionCoreSpec.Block` carries `id`, `inst`, `slots` and
+`alive`, and `Command.merge source target` is a new command. In `step`, the
+holder of the target is the block whose slots contain the target's root slot.
+If the source is alive and the holder differs from the source, the holder's
+slots become `holder.slots ++ source.slots` and the source stays in place as a
+tombstone with no slots and `alive = false`; otherwise the document is
+unchanged. This is the absorb rule: a merge into a block that was itself
+merged away lands in the alive block that absorbed it. `Rooted` states that
+every alive block is headed by its own root slot and every tombstone is empty.
+`NotionCoreSpecMerge` proves the cases (`merge_alive_target`,
+`merge_absorbed_target`, `merge_cycle_noop`), conservation of visible text
+(`merge_text_conserved`), preservation of well-formedness and rootedness
+(`merge_preserves`, `merge_preserves_rooted`), and placement of a create after
+a tombstone (`create_after_tombstone`), with hand-derived PASS+FAIL controls.
+`NotionCoreInvariant.Admissible.merge` admits every merge, and
+`reachable_rooted` derives `Rooted` for every reachable document.
+
+**Machine.** `NotionCoreSliceForest.Chain` replaces the earlier root-plus-leaf
+shape: every slice tree is a chain, and `ChainForest` requires each block title
+to be a chain rooted at the block's own start. Liveness is derived per chain
+node: a node is dead when the next node of its chain does not open an
+instance. `mergeForest` moves the source's whole chain under the last node of
+the target's holder (`holderOf`, `appendLast`) and drops the source from the
+forest; `merge_preserves` keeps the forest invariant. `NotionCorePayload` adds `Payload.merge` and `Operation.merge`; an
+erase payload groups its targets per text instance, since a merged block's text
+can span several instances. The display order keeps merged blocks as
+tombstones and filters them out of the shown order. The partition is recovered
+from the forest's interval references (`NotionCoreMachinePartition.Covers`),
+so `merge_partitioned` needs no owner bookkeeping.
+`NotionCoreMachineDocumentMerge.canonical_merge_execution_version` connects an
+honest merge transaction to one independent merge command, and
+`NotionCoreMachineMergeEffects` supplies the issuer's local effect behind
+`NotionCoreMRDTClient.merge_effect`. `NotionCoreLedger.entry` records
+`mergeEffect` beside the other three local effects. Search-label uniqueness
+(`MachineSearchLabels.honest_mapping_guard`) holds with merge in the request set.
+
+**Scope of the fact-set carriers.** `NotionCoreMergeFree.MergeFree` states that
+no archived transaction is a merge. The structural carrier's
+`NotionCoreStructuralMRDT.versions_witness`, `specification_ra`,
+`operational_reach` and `registered_query`, together with
+`NotionCoreStructuralCuts.honest_records` and
+`NotionCoreStructuralRender.honest_observe`, take this premise. The restriction
+is forced: `NotionCoreStructuralRender.SPOT.merge_outside_scope` shows that a
+split followed by a merge back adds no fact while replay moves text back, so no
+query on the fact set agrees with replay on both archives. The executable
+runtime refines the structural query and therefore covers the merge-free
+fragment. The reference carrier `NotionCoreMRDT` covers the full request set.
+
+**Demo bugs.** Under the design, N-001, N-004 and N-005 do not occur: the
+executable gate in
+[experiments/notion-merge-design](../experiments/notion-merge-design/README.md)
+found no split failure and no text loss across 161,630 archives, and the Lean
+results above prove the corresponding properties for every honest execution.
+The two text-loss bugs, N-004 and N-005, are one defect: removal separate from
+the move. Whether a merge into a merged-away target is skipped or absorbed is a
+choice of meaning; both readings agreed with their own specification on every
+archive checked, and absorb was chosen. The formatting bugs N-002 and N-003
+remain.
+
 ## External correspondence limits
 
 The final RA theorem is for the defined typed core and explicit protocol. The
@@ -82,13 +149,14 @@ progress covers existing blocks and valid natural-number positions/ranges;
 early empty requests emit no transaction. Arbitrary isolated transaction receipt
 with missing dependencies is outside the whole-version MRDT protocol.
 
-No document theorem for the demo's merge-block, unrestricted movement, removal,
-or formatting extensions follows from the core result. Three honest-client
-editing failures remain reproducible: reversed-range formatting can affect
-neither selected character; formatting `ac` can also affect `b` in another block;
-and a merge-derived `aX` split at zero yields `X | a` instead of `empty | aX`.
-See [the exact counterexamples](notion-research.md#small-counterexamples).
-These are three demo bugs, not counterexamples to the restricted typed core.
+No document theorem for the demo's own three-operation merge, unrestricted
+movement, independent block removal, or formatting follows from the core
+result. The five recorded demo failures remain reproducible on the pinned demo:
+reversed-range formatting can affect neither selected character; formatting
+`ac` can also affect `b` in another block; a merge-derived `aX` split at zero
+yields `X | a` instead of `empty | aX`; and two merge histories hide stored
+text. See [the bug catalogue](notion-bugs.md). These are demo bugs, not
+counterexamples to the typed core; the core's merge removes the last three.
 
 ## Current validation
 

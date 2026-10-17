@@ -11,7 +11,7 @@ open NotionCoreMachinePartition (Partitioned)
 open NotionCoreMachineMarkerProgress
 open NotionCoreMachineShape
 open NotionCorePayload (BlockKey Transaction)
-open NotionCoreSliceForest (FreshMarker)
+open NotionCoreSliceForest (FreshMarker forestNodes)
 
 /-- The complete create/marker/move transaction executes and restores the
 partition and strong shape. No next acceptance, desired output forest,
@@ -41,9 +41,10 @@ theorem canonical_split_preserves_active_version (network : NotionCorePayloadNet
   have freshTarget : target ∉ state.forest.map NotionCoreSliceForest.Block.id := by
     intro member
     obtain ⟨old,member,equal⟩ := List.mem_map.mp member
-    exact freshBlock old member equal
+    exact freshBlock.1 old member equal
+  have freshName := fresh_name_of_instance state partitioned target freshInstance
   have createShape := fresh_create_shape_preserves state created (.issued tx.id) (some block)
-    shapeInvariant freshInstance freshBlock createStep
+    shapeInvariant partitioned freshInstance freshBlock createStep
   have createActive := fresh_create_active state created (.issued tx.id) (some block)
     freshInstance freshBlock createStep (blockName inst) activeInstance
   have rawShape : ShapeInvariant raw := raw_marker_shape_preserves created inst rows createShape createActive
@@ -53,11 +54,13 @@ theorem canonical_split_preserves_active_version (network : NotionCorePayloadNet
     have oldMember : old ∈ raw.forest := by rw [rawForest]; exact List.mem_append_left _ member
     exact stage.fresh (old.id,ref)
       (List.mem_flatMap.mpr ⟨old,oldMember,List.mem_map.mpr ⟨ref,inTree,rfl⟩⟩) equal
-  have inactive : ∀ old ∈ state.forest, NotionCoreSliceForest.attached old.title = true →
-      NotionCoreSliceForest.contains (physical raw) (NotionCoreSliceForest.titleRef old.id) marker = false := by
-    intro old member attached
-    apply inactive_title_rejects raw rawShape old _ attached marker
-    rw [rawForest]
+  have markerEvent : marker.2 ≠ .start := by
+    simp [marker,NotionCorePhysicalReplay.address,NotionCorePhysicalReplay.localId]
+  have deadRejects : ∀ dead, (dead,false) ∈ forestNodes state.forest →
+      NotionCoreSliceForest.contains (physical raw) dead marker = false := by
+    intro dead member
+    apply dead_title_rejects raw rawShape dead _ marker
+    rw [rawForest,NotionCoreSliceForest.forestNodes_append]
     exact List.mem_append_left _ member
   have existsInstance : ∃ entry ∈ raw.instances, entry.1 = marker.1 := by
     by_cases present : created.instances.any (fun entry => entry.1 == blockName inst) = true
@@ -65,20 +68,19 @@ theorem canonical_split_preserves_active_version (network : NotionCorePayloadNet
       exact (NotionCoreMachinePartitionUpdates.putInstance_exists_iff created
         (blockName inst) (blockName inst) _ old).mpr old
     · simp [raw,putInstance,present,marker,NotionCorePhysicalReplay.address]
-  have distinct : marker.1 ≠ target := marker_instance_ne_empty raw (blockName inst) target tx.id
-    stage.present emptyTarget
   obtain ⟨forest,atomic,finalPart⟩ := NotionCoreMachinePartitionSplit.atomicSplit_partitioned
-    raw state.forest marker target rawForest stage.partitioned stage.unique shapeInvariant.1
-      freshMarker freshTarget inactive emptyTarget distinct existsInstance stage.present stage.fresh
+    raw state.forest marker target rawForest stage.partitioned stage.unique
+      (fun found member => (shapeInvariant.1 found member).1)
+      freshMarker freshTarget emptyTarget existsInstance stage.present stage.fresh
   refine ⟨{raw with forest := forest},
     split_transaction_of_atomic state created tx block inst origin rows forest payload createStep
       integrated stage rawForest atomic,finalPart,?_⟩
   constructor
   · exact atomic_split_shape_preserves state raw target marker forest shapeInvariant rawForest rawShape
-      emptyTarget freshMarker freshTarget atomic
+      emptyTarget freshMarker markerEvent freshName atomic
   · intro key
     exact atomic_split_active (physical raw) marker target state.forest forest shapeInvariant.1
-      freshMarker freshTarget inactive emptyTarget atomic key
+      freshMarker freshTarget emptyTarget markerEvent deadRejects atomic key
 
 theorem canonical_split_preserves_active (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
@@ -133,6 +135,53 @@ theorem canonical_split_preserves (network : NotionCorePayloadNetwork.State)
     (NotionCoreIssuance.peers_closed issued peer) pre suffix tx position state accepted partitioned shapeInvariant
     block inst origin payload activeInstance
 
+/-- A merge transaction always executes: it moves a whole chain, so the
+partition (with owners recomputed), the strong shape, and the live instances
+are all unchanged. -/
+theorem merge_preserves_active (state : State) (tx : Transaction) (source target : BlockKey)
+    (payload : tx.payload = .merge source target)
+    (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
+    (unique : ∀ inst, ((physical state inst).map NotionCoreSource.Atom.address).Nodup) :
+    ∃ result, applyTransaction state tx = some result ∧
+      Partitioned result ∧ ShapeInvariant result ∧
+      ∀ key, ActiveInstance result key ↔ ActiveInstance state key := by
+  refine ⟨{state with forest := (NotionCoreSliceForest.mergeForest state.forest
+    (blockName source) (blockName target))},?_,?_,merge_shape state source target shapeInvariant,
+    merge_active state source target shapeInvariant⟩
+  · simp [applyTransaction,NotionCorePayload.operations,payload,applyOperations,applyOperation]
+  · exact NotionCoreMachinePartition.merge_partitioned state _ _ partitioned unique shapeInvariant.2.1
+
+theorem canonical_merge_preserves_active_version (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (version : List NotionRunAllocation.Run)
+    (closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
+    (source target : BlockKey) (payload : tx.payload = .merge source target) :
+    ∃ result, applyTransaction state tx = some result ∧
+      Partitioned result ∧ ShapeInvariant result ∧
+      ∀ key, ActiveInstance result key ↔ ActiveInstance state key :=
+  merge_preserves_active state tx source target payload partitioned shapeInvariant
+    (canonical_physical_unique_all_version network (NotionCoreCreatorNetwork.payload_reachable reachable)
+      version closed pre (tx :: suffix) position state accepted)
+
+theorem canonical_merge_preserves_active (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
+    (pre suffix : List Transaction) (tx : Transaction)
+    (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
+    (state : State) (accepted : replay {} pre = some state)
+    (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
+    (source target : BlockKey) (payload : tx.payload = .merge source target) :
+    ∃ result, applyTransaction state tx = some result ∧
+      Partitioned result ∧ ShapeInvariant result ∧
+      ∀ key, ActiveInstance result key ↔ ActiveInstance state key :=
+  merge_preserves_active state tx source target payload partitioned shapeInvariant
+    (canonical_physical_unique_all network (NotionCoreCreatorNetwork.payload_reachable reachable)
+      peer pre (tx :: suffix) position state accepted)
+
+#print axioms merge_preserves_active
+#print axioms canonical_merge_preserves_active_version
 #print axioms canonical_split_preserves_active_version
 #print axioms canonical_split_preserves_version
 #print axioms canonical_split_preserves_active

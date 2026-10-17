@@ -1,0 +1,5700 @@
+{
+ "variant": "design-order-splice",
+ "jobs": {
+  "gate": {
+   "argv": [
+    "gate.mjs"
+   ],
+   "exit": 0,
+   "seconds": 0.2,
+   "output": {
+    "cases": [
+     {
+      "name": "N-002 bold selection misses selected characters",
+      "contract": "positional bold",
+      "before": [
+       "",
+       "ba"
+      ],
+      "demoPrecondition": [
+       "",
+       "ba"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "",
+       "ba"
+      ],
+      "actual": [
+       "",
+       "ba"
+      ],
+      "contractHolds": false
+     },
+     {
+      "name": "N-002 control",
+      "contract": "positional bold",
+      "before": [
+       "b",
+       "a"
+      ],
+      "demoPrecondition": [
+       "b",
+       "a"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "b",
+       "a"
+      ],
+      "actual": [
+       "b",
+       "a"
+      ],
+      "contractHolds": true
+     },
+     {
+      "name": "N-003 bold selection changes an unselected character",
+      "contract": "positional bold",
+      "before": [
+       "ac",
+       "b"
+      ],
+      "demoPrecondition": [
+       "ac",
+       "b"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "ac",
+       "b"
+      ],
+      "actual": [
+       "ac",
+       "b"
+      ],
+      "contractHolds": false
+     },
+     {
+      "name": "N-001 split at zero",
+      "contract": "positional split",
+      "before": [
+       "",
+       "aX"
+      ],
+      "demoPrecondition": [
+       "",
+       "aX"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "",
+       "",
+       "aX"
+      ],
+      "actual": [
+       "",
+       "",
+       "aX"
+      ],
+      "contractHolds": true
+     },
+     {
+      "name": "N-001 six-request variant",
+      "contract": "positional split",
+      "before": [
+       "",
+       "ab"
+      ],
+      "demoPrecondition": [
+       "",
+       "ab"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "",
+       "",
+       "ab"
+      ],
+      "actual": [
+       "",
+       "",
+       "ab"
+      ],
+      "contractHolds": true
+     },
+     {
+      "name": "N-004 merge into a removed block hides the document",
+      "contract": "conservation: visible multiset abc",
+      "before": [
+       "bc",
+       "a"
+      ],
+      "demoPrecondition": [
+       "",
+       "abc"
+      ],
+      "preconditionReached": false,
+      "expected": "abc",
+      "actual": [
+       "abc"
+      ],
+      "visible": "abc",
+      "converged": true,
+      "contractHolds": true,
+      "controls": {
+       "noFirstMerge": {
+        "actual": [
+         "abc"
+        ],
+        "holds": true
+       },
+       "lastMergeDeliveredEarly": {
+        "actual": [
+         "abc"
+        ],
+        "holds": true
+       }
+      }
+     },
+     {
+      "name": "N-005 delayed merge hides a character",
+      "contract": "conservation: visible multiset x",
+      "before": [
+       "",
+       "",
+       "x"
+      ],
+      "demoPrecondition": [
+       "",
+       "",
+       "x"
+      ],
+      "preconditionReached": true,
+      "expected": "x",
+      "actual": [
+       "x"
+      ],
+      "visible": "x",
+      "converged": true,
+      "contractHolds": true,
+      "controls": {
+       "notDelivered": {
+        "actual": [
+         "",
+         "x"
+        ],
+        "holds": true
+       },
+       "noLocalMerge": {
+        "actual": [
+         "",
+         "x"
+        ],
+        "holds": true
+       },
+       "deliveredEarly": {
+        "actual": [
+         "x"
+        ],
+        "holds": true
+       }
+      }
+     },
+     {
+      "name": "N-005 persistent-client form",
+      "contract": "conservation: visible multiset x",
+      "before": [
+       "",
+       "",
+       "",
+       "x"
+      ],
+      "demoPrecondition": [
+       "",
+       "",
+       "",
+       "x"
+      ],
+      "preconditionReached": true,
+      "expected": "x",
+      "actual": [
+       "x",
+       ""
+      ],
+      "visible": "x",
+      "converged": true,
+      "contractHolds": true
+     }
+    ],
+    "sensitivity": [
+     {
+      "history": "merge ab|cd",
+      "display": [
+       [
+        "seed-block-1",
+        "abcd"
+       ]
+      ],
+      "spec": "agree",
+      "mutants": {
+       "MergeNoOp": "placement",
+       "MergeSourceFirst": "placement",
+       "skipMeaning": "agree"
+      }
+     },
+     {
+      "history": "merge b into a || merge c into b",
+      "display": [
+       [
+        "seed-block-1",
+        "abc"
+       ]
+      ],
+      "spec": "agree",
+      "mutants": {
+       "MergeNoOp": "placement",
+       "MergeSourceFirst": "placement",
+       "skipMeaning": "placement"
+      }
+     }
+    ]
+   },
+   "ra": {
+    "archives": 50,
+    "documentCalls": 397,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 49,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 1
+     },
+     "skip": {
+      "agree": 45,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 5
+     },
+     "removed": {
+      "agree": 47,
+      "stuck": 3,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {
+      "placement": {
+       "size": 9,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "a"
+         ],
+         [
+          "A-block-8",
+          "bc"
+         ]
+        ],
+        "display": [
+         [
+          "A-block-8",
+          "bc"
+         ],
+         [
+          "seed-block-1",
+          "a"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "a"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 3
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-3",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-3"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 4
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-3",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 4
+            },
+            "originId": "start",
+            "content": "b"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-5",
+            "afterBlockId": "seed-block-3",
+            "titleTextInstanceId": "seed-block-5"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 6
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-5",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 6
+            },
+            "originId": "start",
+            "content": "c"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "B",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-3",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "A",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-5",
+            "targetBlockId": "seed-block-3"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "A",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "A-block-8"
+           },
+           "path": [],
+           "args": {
+            "blockId": "A-block-8",
+            "afterBlockId": "seed-block-3",
+            "titleTextInstanceId": "A-block-8"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-3",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "A",
+             "counter": 8
+            },
+            "originId": "start"
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-3",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "A",
+             "counter": 8
+            },
+            "targetBlockId": "A-block-8"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "orderInversions": 1,
+    "orderInversionExample": {
+     "pair": [
+      "A-block-8#ce811dd1e4a2a6db",
+      "seed-block-1#de0e564d58942302"
+     ],
+     "display": [
+      [
+       "A-block-8",
+       "bc"
+      ],
+      [
+       "seed-block-1",
+       "a"
+      ]
+     ]
+    },
+    "shape": {
+     "archives": 50,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossing": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossingExample": null,
+     "disagreements": []
+    }
+   }
+  },
+  "litmus": {
+   "argv": [
+    "litmus.mjs"
+   ],
+   "exit": 0,
+   "seconds": 2.8,
+   "output": {
+    "summary": {
+     "runs": 2332,
+     "localChecks": 6736,
+     "localFailures": 0,
+     "finalChecks": 52,
+     "finalFailures": 8,
+     "finalSkipFailures": 10,
+     "divergent": 0,
+     "exceptions": 0
+    },
+    "results": [
+     {
+      "id": "a",
+      "name": "split S at 0 || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "ab",
+         "cd"
+        ],
+        "expected": [
+         "ab",
+         "cd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "ab",
+         "cd"
+        ],
+        "expected": [
+         "ab",
+         "cd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "cd",
+         "ab"
+        ],
+        "expected": [
+         "ab",
+         "cd"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "avoidsDegenerate": false,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "cd",
+         "ab"
+        ],
+        "expected": [
+         "ab",
+         "cd"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "avoidsDegenerate": false,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 200,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 62,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 49
+       },
+       "skip": {
+        "agree": 62,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 49
+       },
+       "removed": {
+        "agree": 60,
+        "stuck": 51,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "a",
+      "name": "split S at 1 || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abc",
+         "d"
+        ],
+        "expected": [
+         "abc",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abc",
+         "d"
+        ],
+        "expected": [
+         "abc",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "d",
+         "abc"
+        ],
+        "expected": [
+         "abc",
+         "d"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "avoidsDegenerate": false,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "d",
+         "abc"
+        ],
+        "expected": [
+         "abc",
+         "d"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "avoidsDegenerate": false,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 216,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 59,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 53
+       },
+       "skip": {
+        "agree": 59,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 53
+       },
+       "removed": {
+        "agree": 57,
+        "stuck": 55,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "a",
+      "name": "split S at 2 || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcd",
+         ""
+        ],
+        "expected": [
+         "abcd",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcd",
+         ""
+        ],
+        "expected": [
+         "abcd",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "",
+         "abcd"
+        ],
+        "expected": [
+         "abcd",
+         ""
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "avoidsDegenerate": false,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "",
+         "abcd"
+        ],
+        "expected": [
+         "abcd",
+         ""
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "avoidsDegenerate": false,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 264,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 71,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 65
+       },
+       "skip": {
+        "agree": 71,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 65
+       },
+       "removed": {
+        "agree": 69,
+        "stuck": 67,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "b",
+      "name": "merge S into T || merge T into U",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abc"
+        ],
+        "expected": [
+         "abc"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abc"
+        ],
+        "expected": [
+         "abc"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abc"
+        ],
+        "expected": [
+         "abc"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abc"
+        ],
+        "expected": [
+         "abc"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 160,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 91,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 50,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 41
+       },
+       "removed": {
+        "agree": 91,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "c",
+      "name": "merge S into T || forged merge T into S",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "ab"
+        ],
+        "expected": [
+         "ab"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "ab"
+        ],
+        "expected": [
+         "ab"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "ba"
+        ],
+        "expected": [
+         "ba"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "ba"
+        ],
+        "expected": [
+         "ba"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 96,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 52,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 52,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 52,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "d",
+      "name": "insert X at 0 of S || merge S into T, seed [\"ab\",\"cd\"]",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abXcd"
+        ],
+        "expected": [
+         "abXcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abXcd"
+        ],
+        "expected": [
+         "abXcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abXcd"
+        ],
+        "expected": [
+         "abXcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abXcd"
+        ],
+        "expected": [
+         "abXcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 336,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 172,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 172,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 172,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "d",
+      "name": "insert X at 0 of S || merge S into T, seed [\"ab\",\"\"]",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abX"
+        ],
+        "expected": [
+         "abX"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abX"
+        ],
+        "expected": [
+         "abX"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abX"
+        ],
+        "expected": [
+         "abX"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abX"
+        ],
+        "expected": [
+         "abX"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 160,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 86,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 86,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 86,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 0",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "",
+         "ad"
+        ],
+        "expected": [
+         "",
+         "ad"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "",
+         "ad"
+        ],
+        "expected": [
+         "",
+         "ad"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "",
+         "ad"
+        ],
+        "expected": [
+         "",
+         "ad"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "",
+         "ad"
+        ],
+        "expected": [
+         "",
+         "ad"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 120,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 67,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 67,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 67,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 1",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 104,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 2",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 104,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 3",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 104,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 4",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "ad",
+         ""
+        ],
+        "expected": [
+         "ad",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "ad",
+         ""
+        ],
+        "expected": [
+         "ad",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "ad",
+         ""
+        ],
+        "expected": [
+         "ad",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "ad",
+         ""
+        ],
+        "expected": [
+         "ad",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 120,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 64,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 64,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 64,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "f",
+      "name": "create after S || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcd",
+         "Z"
+        ],
+        "expected": [
+         "abcd",
+         "Z"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcd",
+         "Z"
+        ],
+        "expected": [
+         "abcd",
+         "Z"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "Z",
+         "abcd"
+        ],
+        "expected": [
+         "abcd",
+         "Z"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "avoidsDegenerate": false,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "Z",
+         "abcd"
+        ],
+        "expected": [
+         "abcd",
+         "Z"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "avoidsDegenerate": false,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 296,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 79,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 73
+       },
+       "skip": {
+        "agree": 79,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 73
+       },
+       "removed": {
+        "agree": 77,
+        "stuck": 75,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     }
+    ]
+   },
+   "ra": {
+    "archives": 1211,
+    "documentCalls": 111436,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 971,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 240
+     },
+     "skip": {
+      "agree": 930,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 281
+     },
+     "removed": {
+      "agree": 963,
+      "stuck": 248,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {
+      "placement": {
+       "size": 6,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "ab"
+         ],
+         [
+          "B-block-7",
+          "cd"
+         ]
+        ],
+        "display": [
+         [
+          "B-block-7",
+          "cd"
+         ],
+         [
+          "seed-block-1",
+          "ab"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "ab"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 4
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-4",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-4"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 5
+            },
+            "originId": "start",
+            "content": "cd"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "B",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "B-block-7"
+           },
+           "path": [],
+           "args": {
+            "blockId": "B-block-7",
+            "afterBlockId": "seed-block-4",
+            "titleTextInstanceId": "B-block-7"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "B",
+             "counter": 7
+            },
+            "originId": "start"
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "B",
+             "counter": 7
+            },
+            "targetBlockId": "B-block-7"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "A",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-4",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "orderInversions": 240,
+    "orderInversionExample": {
+     "pair": [
+      "B-block-7#196a265350936766",
+      "seed-block-1#de0e564d58942302"
+     ],
+     "display": [
+      [
+       "B-block-7",
+       "cd"
+      ],
+      [
+       "seed-block-1",
+       "ab"
+      ]
+     ]
+    },
+    "shape": {
+     "archives": 1211,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 416,
+      "agree": 416
+     },
+     "crossing": {
+      "checked": 804,
+      "agree": 804
+     },
+     "crossingExample": {
+      "before": [
+       "abc",
+       "d"
+      ],
+      "request": {
+       "block": 0,
+       "start": 0,
+       "end": 3
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-4"
+      ],
+      "after": [
+       "",
+       "d"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "sequential-17004": {
+   "argv": [
+    "campaign.mjs",
+    "sequential",
+    "17004",
+    "60"
+   ],
+   "exit": 0,
+   "seconds": 22.7,
+   "output": {
+    "mode": "sequential",
+    "seed": 17004,
+    "trials": 60,
+    "counts": {
+     "states": 600,
+     "probes": 12367,
+     "passes": {
+      "insert": 3173,
+      "split": 3173,
+      "delete": 2456,
+      "bold": 2456,
+      "merge": 1109
+     },
+     "failures": {},
+     "invalidSetups": 0,
+     "skippedLarge": 0,
+     "deliveryChecks": 600
+    },
+    "findings": [],
+    "failureStateCount": 0
+   },
+   "ra": {
+    "archives": 13578,
+    "documentCalls": 193142,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 13578,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 13578,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "removed": {
+      "agree": 13578,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 13578,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 2537,
+      "agree": 2537
+     },
+     "crossing": {
+      "checked": 165,
+      "agree": 165
+     },
+     "crossingExample": {
+      "before": [
+       "aXbc",
+       "d"
+      ],
+      "request": {
+       "block": 0,
+       "start": 0,
+       "end": 4
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-4"
+      ],
+      "after": [
+       "",
+       "d"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "network-27002": {
+   "argv": [
+    "network-search.mjs",
+    "27002",
+    "100",
+    "80"
+   ],
+   "exit": 0,
+   "seconds": 80.9,
+   "output": {
+    "mode": "network-search",
+    "seed": 27002,
+    "trials": 100,
+    "steps": 80,
+    "counts": {
+     "edits": 5292,
+     "deliveries": 12386,
+     "deliveredTransactions": 12386,
+     "causalChecks": 12386,
+     "duplicateChecks": 12386,
+     "continuedDifferentViewEdits": 5192,
+     "partiallyDeliveredEdits": 3615,
+     "synchronizedTrials": 100,
+     "passes": {
+      "bold": 873,
+      "delete": 912,
+      "insert": 1246,
+      "split": 1241,
+      "merge": 1016
+     },
+     "failures": {
+      "bold:outside": 3,
+      "bold:missed": 1
+     },
+     "classifications": {
+      "known:format-interval": 4
+     },
+     "generationExceptions": 0
+    },
+    "findings": [],
+    "scope": "Measured local effect against independent positional list semantics; insertion ignores only new-character formatting inheritance, preserving existing marks; persistent sessions, causal whole-request delivery, eventual equal-archive display; source-based known-root classification is diagnostic, no production correspondence or proof.",
+    "traceCount": 100
+   },
+   "ra": {
+    "archives": 16942,
+    "documentCalls": 253458,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 12033,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 4909
+     },
+     "skip": {
+      "agree": 10814,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 6128
+     },
+     "removed": {
+      "agree": 10802,
+      "stuck": 6140,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {
+      "placement": {
+       "size": 9,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "abXcd"
+         ],
+         [
+          "t21s1-block-8",
+          "y"
+         ]
+        ],
+        "display": [
+         [
+          "t21s1-block-8",
+          "y"
+         ],
+         [
+          "seed-block-1",
+          "abXcd"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "ab"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 4
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-4",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-4"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 5
+            },
+            "originId": "start",
+            "content": "cd"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t21s1",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t21s1",
+             "counter": 7
+            },
+            "originId": "start",
+            "content": "X"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t21s1",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t21s1-block-8"
+           },
+           "path": [],
+           "args": {
+            "blockId": "t21s1-block-8",
+            "afterBlockId": "seed-block-4",
+            "titleTextInstanceId": "t21s1-block-8"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t21s1",
+             "counter": 8
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 6
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "t21s1",
+             "counter": 8
+            },
+            "targetBlockId": "t21s1-block-8"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t21s1",
+          "counter": 9
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-4",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t21s0",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t21s0",
+             "counter": 7
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 6
+            },
+            "content": "y"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t21s3",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-4",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "orderInversions": 17729,
+    "orderInversionExample": {
+     "pair": [
+      "seed-block-1#de0e564d58942302",
+      "t0s0-block-13#91c7f9560b87d39d"
+     ],
+     "display": [
+      [
+       "t0s0-block-13",
+       ""
+      ],
+      [
+       "seed-block-1",
+       ""
+      ],
+      [
+       "t0s0-block-12",
+       ""
+      ],
+      [
+       "t0s0-block-8",
+       ""
+      ],
+      [
+       "t0s0-block-7",
+       ""
+      ]
+     ]
+    },
+    "shape": {
+     "archives": 16942,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 869,
+      "agree": 869
+     },
+     "crossing": {
+      "checked": 43,
+      "agree": 43
+     },
+     "crossingExample": {
+      "before": [
+       "yab"
+      ],
+      "request": {
+       "block": 0,
+       "start": 1,
+       "end": 3
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-3"
+      ],
+      "after": [
+       "y"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "offline-17102": {
+   "argv": [
+    "offline-search.mjs",
+    "17102",
+    "12",
+    "110",
+    "structural"
+   ],
+   "exit": 0,
+   "seconds": 110.9,
+   "output": {
+    "mode": "structural",
+    "seed": 17102,
+    "trials": 12,
+    "steps": 110,
+    "counts": {
+     "trials": 12,
+     "locals": 913,
+     "receives": 1826,
+     "probes": 0,
+     "equalSetChecks": 48,
+     "localFailures": 0,
+     "conservationFailures": 0,
+     "exceptions": 0
+    },
+    "findings": [],
+    "scope": "persistent distinct sessions; complete known archive recorded as causal dependencies; only whole transactions received; local immediate list semantics; equal-set display convergence; structural mode conserves character multiset across local edits and receives",
+    "findingCount": 0
+   },
+   "ra": {
+    "archives": 2651,
+    "documentCalls": 72670,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 1065,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 1586
+     },
+     "skip": {
+      "agree": 942,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 1709
+     },
+     "removed": {
+      "agree": 832,
+      "stuck": 1819,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {
+      "placement": {
+       "size": 6,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "abc"
+         ],
+         [
+          "p2c1-block-7",
+          "d"
+         ]
+        ],
+        "display": [
+         [
+          "p2c1-block-7",
+          "d"
+         ],
+         [
+          "seed-block-1",
+          "abc"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "ab"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 4
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-4",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-4"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 5
+            },
+            "originId": "start",
+            "content": "cd"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "p2c1",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "p2c1-block-7"
+           },
+           "path": [],
+           "args": {
+            "blockId": "p2c1-block-7",
+            "afterBlockId": "seed-block-4",
+            "titleTextInstanceId": "p2c1-block-7"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "p2c1",
+             "counter": 7
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 5
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "p2c1",
+             "counter": 7
+            },
+            "targetBlockId": "p2c1-block-7"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "p2c0",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-4",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "orderInversions": 12101,
+    "orderInversionExample": {
+     "pair": [
+      "p0c0-block-13#8e9f7a375013b893",
+      "seed-block-1#de0e564d58942302"
+     ],
+     "display": [
+      [
+       "p0c0-block-13",
+       "cd"
+      ],
+      [
+       "seed-block-1",
+       ""
+      ],
+      [
+       "p0c0-block-14",
+       "a"
+      ],
+      [
+       "p0c1-block-8",
+       ""
+      ],
+      [
+       "p0c0-block-20",
+       "b"
+      ],
+      [
+       "p0c0-block-17",
+       ""
+      ]
+     ]
+    },
+    "shape": {
+     "archives": 2651,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 1,
+      "agree": 1
+     },
+     "crossing": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossingExample": null,
+     "disagreements": []
+    }
+   }
+  },
+  "campaign-17005": {
+   "argv": [
+    "campaign.mjs",
+    "search",
+    "17005",
+    "100"
+   ],
+   "exit": 0,
+   "seconds": 140.5,
+   "output": {
+    "mode": "search",
+    "seed": 17005,
+    "trials": 100,
+    "counts": {
+     "states": 1120,
+     "probes": 31609,
+     "passes": {
+      "insert": 7445,
+      "split": 7445,
+      "merge": 2689,
+      "delete": 7015,
+      "bold": 6886
+     },
+     "failures": {
+      "bold:missed": 99,
+      "bold:outside": 30
+     },
+     "invalidSetups": 0,
+     "skippedLarge": 30,
+     "deliveryChecks": 1120
+    },
+    "findings": [
+     {
+      "trace": {
+       "text": "ab",
+       "rounds": [
+        {
+         "branches": [
+          {
+           "session": "A",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 0
+            }
+           ]
+          },
+          {
+           "session": "B",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 1
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "branches": [
+          {
+           "session": "C",
+           "requests": [
+            {
+             "kind": "merge",
+             "block": 2
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "probe": {
+       "kind": "bold",
+       "block": 1,
+       "start": 0,
+       "end": 2
+      },
+      "result": {
+       "valid": true,
+       "signature": "bold:missed",
+       "before": [
+        {
+         "id": "seed-block-1",
+         "chars": []
+        },
+        {
+         "id": "B-block-4",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        }
+       ],
+       "request": {
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": true
+         },
+         {
+          "text": "a",
+          "bold": true
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       ],
+       "generated": {
+        "id": {
+         "sessionId": "probe",
+         "counter": 6
+        },
+        "operations": [
+         {
+          "command": "addAnnotation",
+          "pointer": {
+           "table": "block",
+           "id": "B-block-4"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+           "textInstanceId": "seed-block-1",
+           "searchLabel": "t",
+           "id": {
+            "sessionId": "probe",
+            "counter": 6
+           },
+           "start": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "anchor": "before"
+           },
+           "end": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "anchor": "before"
+           },
+           "annotation": [
+            "b"
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "shrink": {
+       "attempts": 11,
+       "rejected": 3,
+       "criterion": "fixed point: delete one setup request/seed block/seed character or reduce one block/position; preserve symptom; no global minimality claim"
+      }
+     },
+     {
+      "trace": {
+       "text": "abc",
+       "rounds": [
+        {
+         "branches": [
+          {
+           "session": "A",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 1
+            }
+           ]
+          },
+          {
+           "session": "B",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "branches": [
+          {
+           "session": "C",
+           "requests": [
+            {
+             "kind": "merge",
+             "block": 1
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "probe": {
+       "kind": "bold",
+       "block": 0,
+       "start": 0,
+       "end": 2
+      },
+      "result": {
+       "valid": true,
+       "signature": "bold:outside",
+       "before": [
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": false
+          },
+          {
+           "text": "c",
+           "bold": false
+          }
+         ]
+        },
+        {
+         "id": "A-block-5",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          }
+         ]
+        }
+       ],
+       "request": {
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": false
+         }
+        ]
+       ],
+       "actual": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": true
+         }
+        ]
+       ],
+       "generated": {
+        "id": {
+         "sessionId": "probe",
+         "counter": 7
+        },
+        "operations": [
+         {
+          "command": "addAnnotation",
+          "pointer": {
+           "table": "block",
+           "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+           "textInstanceId": "seed-block-1",
+           "searchLabel": "L",
+           "id": {
+            "sessionId": "probe",
+            "counter": 7
+           },
+           "start": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "anchor": "before"
+           },
+           "end": {
+            "id": "end",
+            "anchor": "before"
+           },
+           "annotation": [
+            "b"
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "shrink": {
+       "attempts": 12,
+       "rejected": 1,
+       "criterion": "fixed point: delete one setup request/seed block/seed character or reduce one block/position; preserve symptom; no global minimality claim"
+      }
+     }
+    ],
+    "failureStateCount": 38
+   },
+   "ra": {
+    "archives": 35466,
+    "documentCalls": 562594,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 30128,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 5338
+     },
+     "skip": {
+      "agree": 27881,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 7585
+     },
+     "removed": {
+      "agree": 26143,
+      "stuck": 9323,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {
+      "placement": {
+       "size": 8,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "ab"
+         ],
+         [
+          "t34r0b1-block-7",
+          "cdX"
+         ]
+        ],
+        "display": [
+         [
+          "t34r0b1-block-7",
+          "cdX"
+         ],
+         [
+          "seed-block-1",
+          "ab"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "ab"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 4
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-4",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-4"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 5
+            },
+            "originId": "start",
+            "content": "cd"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t34r0b0",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-4",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t34r0b0",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t34r0b0",
+             "counter": 8
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 6
+            },
+            "content": "X"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t34r0b1",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t34r0b1-block-7"
+           },
+           "path": [],
+           "args": {
+            "blockId": "t34r0b1-block-7",
+            "afterBlockId": "seed-block-4",
+            "titleTextInstanceId": "t34r0b1-block-7"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t34r0b1",
+             "counter": 7
+            },
+            "originId": "start"
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "t34r0b1",
+             "counter": 7
+            },
+            "targetBlockId": "t34r0b1-block-7"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t34r0b1",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-4",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "orderInversions": 2946,
+    "orderInversionExample": {
+     "pair": [
+      "seed-block-1#de0e564d58942302",
+      "t0r6b2-block-17#84d53faa22f79d53"
+     ],
+     "display": [
+      [
+       "t0r6b2-block-17",
+       "X"
+      ],
+      [
+       "seed-block-1",
+       "XX"
+      ]
+     ]
+    },
+    "shape": {
+     "archives": 35466,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 7329,
+      "agree": 7329
+     },
+     "crossing": {
+      "checked": 514,
+      "agree": 514
+     },
+     "crossingExample": {
+      "before": [
+       "Xab",
+       "",
+       "",
+       "c"
+      ],
+      "request": {
+       "block": 0,
+       "start": 0,
+       "end": 3
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-3"
+      ],
+      "after": [
+       "",
+       "",
+       "",
+       "c"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "structural-17003": {
+   "argv": [
+    "structural.mjs"
+   ],
+   "exit": 0,
+   "seconds": 173.0,
+   "output": {
+    "mode": "structural",
+    "seed": 17003,
+    "counts": {
+     "states": 1000,
+     "checks": 10454
+    },
+    "findings": [],
+    "findingCount": 0
+   },
+   "ra": {
+    "archives": 14462,
+    "documentCalls": 263340,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 7913,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 6549
+     },
+     "skip": {
+      "agree": 2827,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 11635
+     },
+     "removed": {
+      "agree": 3915,
+      "stuck": 10547,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {
+      "placement": {
+       "size": 12,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "a"
+         ],
+         [
+          "s7r0b0-block-8",
+          "b"
+         ],
+         [
+          "s7r0b2-block-7",
+          "c"
+         ],
+         [
+          "s7r0b1-block-7",
+          ""
+         ]
+        ],
+        "display": [
+         [
+          "s7r0b1-block-7",
+          ""
+         ],
+         [
+          "seed-block-1",
+          "a"
+         ],
+         [
+          "s7r0b0-block-8",
+          "b"
+         ],
+         [
+          "s7r0b2-block-7",
+          "c"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "a"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 3
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-3",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-3"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 4
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-3",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 4
+            },
+            "originId": "start",
+            "content": "b"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-5",
+            "afterBlockId": "seed-block-3",
+            "titleTextInstanceId": "seed-block-5"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 6
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-5",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 6
+            },
+            "originId": "start",
+            "content": "c"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "s7r0b0",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-5",
+            "targetBlockId": "seed-block-3"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "s7r0b0",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "s7r0b0-block-8"
+           },
+           "path": [],
+           "args": {
+            "blockId": "s7r0b0-block-8",
+            "afterBlockId": "seed-block-3",
+            "titleTextInstanceId": "s7r0b0-block-8"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-3",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "s7r0b0",
+             "counter": 8
+            },
+            "originId": "start"
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-3",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "s7r0b0",
+             "counter": 8
+            },
+            "targetBlockId": "s7r0b0-block-8"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "s7r0b1",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "s7r0b1-block-7"
+           },
+           "path": [],
+           "args": {
+            "blockId": "s7r0b1-block-7",
+            "afterBlockId": "seed-block-5",
+            "titleTextInstanceId": "s7r0b1-block-7"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-5",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "s7r0b1",
+             "counter": 7
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 6
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-5",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "s7r0b1",
+             "counter": 7
+            },
+            "targetBlockId": "s7r0b1-block-7"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "s7r0b1",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-5",
+            "targetBlockId": "seed-block-3"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "s7r0b2",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "s7r0b2-block-7"
+           },
+           "path": [],
+           "args": {
+            "blockId": "s7r0b2-block-7",
+            "afterBlockId": "seed-block-3",
+            "titleTextInstanceId": "s7r0b2-block-7"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-3",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "s7r0b2",
+             "counter": 7
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 4
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-3",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "s7r0b2",
+             "counter": 7
+            },
+            "targetBlockId": "s7r0b2-block-7"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "s7r0b2",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-3",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "orderInversions": 3087,
+    "orderInversionExample": {
+     "pair": [
+      "s0r6b2-block-18#375746e5a2c434ef",
+      "seed-block-1#de0e564d58942302"
+     ],
+     "display": [
+      [
+       "s0r6b2-block-18",
+       "c"
+      ],
+      [
+       "seed-block-1",
+       "ab"
+      ],
+      [
+       "s0r6b1-block-19",
+       ""
+      ],
+      [
+       "s0r6b0-block-18",
+       "d"
+      ]
+     ]
+    },
+    "shape": {
+     "archives": 14462,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossing": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossingExample": null,
+     "disagreements": []
+    }
+   }
+  },
+  "campaign-17002": {
+   "argv": [
+    "campaign.mjs",
+    "search",
+    "17002",
+    "250"
+   ],
+   "exit": 0,
+   "seconds": 326.3,
+   "output": {
+    "mode": "search",
+    "seed": 17002,
+    "trials": 250,
+    "counts": {
+     "states": 2583,
+     "probes": 69653,
+     "passes": {
+      "insert": 17156,
+      "split": 17156,
+      "merge": 6875,
+      "delete": 14233,
+      "bold": 14024
+     },
+     "failures": {
+      "bold:missed": 187,
+      "bold:outside": 22
+     },
+     "invalidSetups": 0,
+     "skippedLarge": 67,
+     "deliveryChecks": 2583
+    },
+    "findings": [
+     {
+      "trace": {
+       "text": "ab",
+       "rounds": [
+        {
+         "branches": [
+          {
+           "session": "A",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 0
+            }
+           ]
+          },
+          {
+           "session": "B",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 1
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "branches": [
+          {
+           "session": "C",
+           "requests": [
+            {
+             "kind": "merge",
+             "block": 2
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "probe": {
+       "kind": "bold",
+       "block": 1,
+       "start": 0,
+       "end": 2
+      },
+      "result": {
+       "valid": true,
+       "signature": "bold:missed",
+       "before": [
+        {
+         "id": "seed-block-1",
+         "chars": []
+        },
+        {
+         "id": "B-block-4",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        }
+       ],
+       "request": {
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": true
+         },
+         {
+          "text": "a",
+          "bold": true
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       ],
+       "generated": {
+        "id": {
+         "sessionId": "probe",
+         "counter": 6
+        },
+        "operations": [
+         {
+          "command": "addAnnotation",
+          "pointer": {
+           "table": "block",
+           "id": "B-block-4"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+           "textInstanceId": "seed-block-1",
+           "searchLabel": "t",
+           "id": {
+            "sessionId": "probe",
+            "counter": 6
+           },
+           "start": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "anchor": "before"
+           },
+           "end": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "anchor": "before"
+           },
+           "annotation": [
+            "b"
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "shrink": {
+       "attempts": 11,
+       "rejected": 3,
+       "criterion": "fixed point: delete one setup request/seed block/seed character or reduce one block/position; preserve symptom; no global minimality claim"
+      }
+     },
+     {
+      "trace": {
+       "text": "abc",
+       "rounds": [
+        {
+         "branches": [
+          {
+           "session": "A",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 1
+            }
+           ]
+          },
+          {
+           "session": "B",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "branches": [
+          {
+           "session": "C",
+           "requests": [
+            {
+             "kind": "merge",
+             "block": 1
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "probe": {
+       "kind": "bold",
+       "block": 0,
+       "start": 0,
+       "end": 2
+      },
+      "result": {
+       "valid": true,
+       "signature": "bold:outside",
+       "before": [
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": false
+          },
+          {
+           "text": "c",
+           "bold": false
+          }
+         ]
+        },
+        {
+         "id": "A-block-5",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          }
+         ]
+        }
+       ],
+       "request": {
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": false
+         }
+        ]
+       ],
+       "actual": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": true
+         }
+        ]
+       ],
+       "generated": {
+        "id": {
+         "sessionId": "probe",
+         "counter": 7
+        },
+        "operations": [
+         {
+          "command": "addAnnotation",
+          "pointer": {
+           "table": "block",
+           "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+           "textInstanceId": "seed-block-1",
+           "searchLabel": "L",
+           "id": {
+            "sessionId": "probe",
+            "counter": 7
+           },
+           "start": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "anchor": "before"
+           },
+           "end": {
+            "id": "end",
+            "anchor": "before"
+           },
+           "annotation": [
+            "b"
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "shrink": {
+       "attempts": 12,
+       "rejected": 1,
+       "criterion": "fixed point: delete one setup request/seed block/seed character or reduce one block/position; preserve symptom; no global minimality claim"
+      }
+     }
+    ],
+    "failureStateCount": 66
+   },
+   "ra": {
+    "archives": 79005,
+    "documentCalls": 1320696,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 68628,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 10377
+     },
+     "skip": {
+      "agree": 62691,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 16314
+     },
+     "removed": {
+      "agree": 62506,
+      "stuck": 16499,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {
+      "placement": {
+       "size": 8,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "abX"
+         ],
+         [
+          "t79r0b1-block-7",
+          ""
+         ]
+        ],
+        "display": [
+         [
+          "t79r0b1-block-7",
+          ""
+         ],
+         [
+          "seed-block-1",
+          "abX"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "ab"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 4
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-4",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-4"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 5
+            },
+            "originId": "start",
+            "content": "cd"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t79r0b0",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "seed-block-4",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t79r0b0",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "deleteText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "idRanges": [
+             [
+              {
+               "sessionId": "seed",
+               "counter": 5
+              },
+              2
+             ]
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t79r0b1",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t79r0b1-block-7"
+           },
+           "path": [],
+           "args": {
+            "blockId": "t79r0b1-block-7",
+            "afterBlockId": "seed-block-4",
+            "titleTextInstanceId": "t79r0b1-block-7"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t79r0b1",
+             "counter": 7
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 6
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "t79r0b1",
+             "counter": 7
+            },
+            "targetBlockId": "t79r0b1-block-7"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t79r0b1",
+          "counter": 8
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t79r0b1",
+             "counter": 8
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "content": "X"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "orderInversions": 4502,
+    "orderInversionExample": {
+     "pair": [
+      "t4r5b2-block-18#5704a61d66db9460",
+      "t4r7b2-block-21#dbf699c6f80f3016"
+     ],
+     "display": [
+      [
+       "t4r7b2-block-21",
+       ""
+      ],
+      [
+       "t4r5b2-block-18",
+       "X"
+      ],
+      [
+       "t4r7b0-block-21",
+       ""
+      ]
+     ]
+    },
+    "shape": {
+     "archives": 79005,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 14968,
+      "agree": 14968
+     },
+     "crossing": {
+      "checked": 1345,
+      "agree": 1345
+     },
+     "crossingExample": {
+      "before": [
+       "bXd"
+      ],
+      "request": {
+       "block": 0,
+       "start": 0,
+       "end": 2
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-4"
+      ],
+      "after": [
+       "d"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "network-27002-shrink": {
+   "argv": [
+    "ra-shrink.mjs",
+    "network-27002-output.json",
+    "absorb"
+   ],
+   "exit": 0,
+   "seconds": 55.3,
+   "output": {
+    "mode": "absorb",
+    "findings": [
+     {
+      "trial": 0,
+      "category": "placement",
+      "trace": {
+       "text": [
+        "abc"
+       ],
+       "sessions": [
+        "t0s0",
+        "t0s1",
+        "t0s2",
+        "t0s3"
+       ],
+       "events": [
+        {
+         "kind": "edit",
+         "id": "e6",
+         "session": "t0s2",
+         "request": {
+          "kind": "split",
+          "block": 0,
+          "index": 2
+         },
+         "dependencies": [
+          "seed:1",
+          "seed:2",
+          "t0s2:5"
+         ],
+         "ids": [
+          "t0s2:6"
+         ]
+        },
+        {
+         "kind": "deliver",
+         "to": "t0s3",
+         "edit": "e6"
+        },
+        {
+         "kind": "edit",
+         "id": "e13",
+         "session": "t0s2",
+         "request": {
+          "kind": "merge",
+          "block": 1
+         },
+         "dependencies": [
+          "seed:1",
+          "seed:2",
+          "t0s0:5",
+          "t0s1:5",
+          "t0s1:6",
+          "t0s2:5",
+          "t0s2:6",
+          "t0s2:7",
+          "t0s3:5"
+         ],
+         "ids": [
+          "t0s2:8"
+         ]
+        },
+        {
+         "kind": "edit",
+         "id": "e18",
+         "session": "t0s3",
+         "request": {
+          "kind": "split",
+          "block": 1,
+          "index": 0
+         },
+         "dependencies": [
+          "seed:1",
+          "seed:2",
+          "t0s0:5",
+          "t0s0:6",
+          "t0s1:5",
+          "t0s2:5",
+          "t0s2:6",
+          "t0s2:7",
+          "t0s3:5",
+          "t0s3:6",
+          "t0s3:7",
+          "t0s3:8"
+         ],
+         "ids": [
+          "t0s3:9"
+         ]
+        },
+        {
+         "kind": "deliver",
+         "to": "t0s3",
+         "edit": "e13"
+        }
+       ]
+      },
+      "disagreement": {
+       "category": "placement",
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "ab"
+         ],
+         [
+          "t0s3-block-6",
+          "c"
+         ]
+        ],
+        "display": [
+         [
+          "t0s3-block-6",
+          "c"
+         ],
+         [
+          "seed-block-1",
+          "ab"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "abc"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t0s2",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t0s2-block-5"
+           },
+           "path": [],
+           "args": {
+            "blockId": "t0s2-block-5",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "t0s2-block-5"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t0s2",
+             "counter": 5
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 3
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "t0s2",
+             "counter": 5
+            },
+            "targetBlockId": "t0s2-block-5"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t0s3",
+          "counter": 6
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t0s3-block-6"
+           },
+           "path": [],
+           "args": {
+            "blockId": "t0s3-block-6",
+            "afterBlockId": "t0s2-block-5",
+            "titleTextInstanceId": "t0s3-block-6"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "t0s2-block-5"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "l",
+            "id": {
+             "sessionId": "t0s3",
+             "counter": 6
+            },
+            "originId": {
+             "sessionId": "t0s2",
+             "counter": 5
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t0s2-block-5"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "l",
+            "textSliceStartItemId": {
+             "sessionId": "t0s3",
+             "counter": 6
+            },
+            "targetBlockId": "t0s3-block-6"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t0s2",
+          "counter": 6
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t0s2-block-5"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "t0s2-block-5",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    "shrink": {
+     "attempts": 389,
+     "rejected": 143,
+     "criterion": "shortest failing prefix, then fixed point under removing one edit plus its deliveries or one delivery; requests reissued; no global minimality claim"
+    }
+   },
+   "ra": {
+    "archives": 23401,
+    "documentCalls": 308993,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 18311,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 5090
+     },
+     "skip": {
+      "agree": 17092,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 6309
+     },
+     "removed": {
+      "agree": 17080,
+      "stuck": 6321,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {
+      "placement": {
+       "size": 5,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "ab"
+         ],
+         [
+          "t0s3-block-6",
+          "c"
+         ]
+        ],
+        "display": [
+         [
+          "t0s3-block-6",
+          "c"
+         ],
+         [
+          "seed-block-1",
+          "ab"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "abc"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t0s2",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t0s2-block-5"
+           },
+           "path": [],
+           "args": {
+            "blockId": "t0s2-block-5",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "t0s2-block-5"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "t0s2",
+             "counter": 5
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 3
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "t0s2",
+             "counter": 5
+            },
+            "targetBlockId": "t0s2-block-5"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t0s3",
+          "counter": 6
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t0s3-block-6"
+           },
+           "path": [],
+           "args": {
+            "blockId": "t0s3-block-6",
+            "afterBlockId": "t0s2-block-5",
+            "titleTextInstanceId": "t0s3-block-6"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "t0s2-block-5"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "l",
+            "id": {
+             "sessionId": "t0s3",
+             "counter": 6
+            },
+            "originId": {
+             "sessionId": "t0s2",
+             "counter": 5
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t0s2-block-5"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "l",
+            "textSliceStartItemId": {
+             "sessionId": "t0s3",
+             "counter": 6
+            },
+            "targetBlockId": "t0s3-block-6"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "t0s2",
+          "counter": 6
+         },
+         "operations": [
+          {
+           "command": "mergeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "t0s2-block-5"
+           },
+           "path": [],
+           "args": {
+            "sourceBlockId": "t0s2-block-5",
+            "targetBlockId": "seed-block-1"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "orderInversions": 17952,
+    "orderInversionExample": {
+     "pair": [
+      "seed-block-1#de0e564d58942302",
+      "t0s0-block-13#91c7f9560b87d39d"
+     ],
+     "display": [
+      [
+       "t0s0-block-13",
+       ""
+      ],
+      [
+       "seed-block-1",
+       ""
+      ],
+      [
+       "t0s0-block-12",
+       ""
+      ],
+      [
+       "t0s0-block-8",
+       ""
+      ],
+      [
+       "t0s0-block-7",
+       ""
+      ]
+     ]
+    },
+    "shape": {
+     "archives": 23401,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 1515,
+      "agree": 1515
+     },
+     "crossing": {
+      "checked": 43,
+      "agree": 43
+     },
+     "crossingExample": {
+      "before": [
+       "yab"
+      ],
+      "request": {
+       "block": 0,
+       "start": 1,
+       "end": 3
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-3"
+      ],
+      "after": [
+       "y"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  }
+ }
+}

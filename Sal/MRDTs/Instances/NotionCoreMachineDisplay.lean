@@ -1,8 +1,9 @@
 import Sal.MRDTs.Instances.NotionCoreMachineHonestReplay
 
-/-! Actual display enumeration is a permutation of the unique stored block IDs.
-This concerns the interpreter's display list, not Map enumeration order or a
-claim that concurrent split display order equals physical interval order. -/
+/-! The actual display enumeration, with merged-away tombstones filtered out,
+is a permutation of the unique stored block IDs. This concerns the
+interpreter's display list, not Map enumeration order or a claim that
+concurrent split display order equals physical interval order. -/
 namespace Sal.MRDTs.Instances.NotionCoreMachineDisplay
 open NotionCoreMachine
 open NotionCorePayload (Operation Transaction)
@@ -19,35 +20,54 @@ abbrev Aligned (state : State) : Prop :=
 private theorem frame (state result : State) (aligned : Aligned state)
     (forest : names result.forest = names state.forest)
     (display : result.display = state.display) : Aligned result := by
-  change (names result.forest).Nodup ∧ result.display.Perm (names result.forest)
-  rw [forest,display]
-  exact aligned
+  have filtered : NotionCoreDisplayOrder.names result.forest =
+      (NotionCoreDisplayOrder.names state.forest).filter (fun _ => true) := by
+    simpa [NotionCoreDisplayOrder.names,names] using forest
+  have kept := NotionCoreDisplayOrder.filter_aligned ⟨state.forest,state.display⟩ result.forest
+    (fun _ => true) aligned filtered
+  simpa [Aligned,display] using kept
+
+/-- The visible order is the display order with tombstones filtered out. -/
+theorem visible_shown (state : State) :
+    visible state = NotionCoreDisplayOrder.shown ⟨state.forest,state.display⟩ := rfl
+
+private theorem merge_names (forest : NotionCoreSliceForest.Forest) (source target : Nat) :
+    NotionCoreDisplayOrder.names (NotionCoreSliceForest.mergeForest forest source target) =
+      (NotionCoreDisplayOrder.names forest).filter (fun bid => bid != source) ∨
+    NotionCoreDisplayOrder.names (NotionCoreSliceForest.mergeForest forest source target) =
+      (NotionCoreDisplayOrder.names forest).filter (fun _ => true) := by
+  rcases NotionCoreSliceForest.mergeForest_cases forest source target with same | ⟨moved,holder,-,-,-,-,-,merged⟩
+  · right; simp [same]
+  · left
+    rw [merged]
+    simp only [NotionCoreDisplayOrder.names,List.map_map,List.filter_map]
+    have ids : (NotionCoreSliceForest.Block.id ∘ fun block => if block.id = holder.id then
+        {block with title := NotionCoreSliceForest.appendLast block.title moved.title} else block) =
+        NotionCoreSliceForest.Block.id := by
+      funext block; simp only [Function.comp_apply]; split <;> rfl
+    rw [ids]
+    rfl
 
 theorem operation_aligned (state result : State) (op : Operation)
     (aligned : Aligned state) (accepted : applyOperation state op = some result) :
     Aligned result := by
   cases op with
   | create block afterBlock =>
-    by_cases existsBlock : state.forest.any (fun b => b.id == blockName block) = true
-    · have same : state = result := by simpa [applyOperation,existsBlock] using accepted
+    by_cases shown : blockName block ∈ state.display
+    · have same : state = result := by simpa [applyOperation,shown] using accepted
       subst result
       exact aligned
-    · have absent : blockName block ∉ NotionCoreDisplayOrder.names state.forest := by
-        simpa [NotionCoreDisplayOrder.names,List.any_eq_true] using existsBlock
-      have absentDisplay : blockName block ∉ state.display := fun member =>
-        absent (aligned.2.mem_iff.mp member)
-      have filtered : state.display.filter (· != blockName block) = state.display := by
-        apply List.filter_eq_self.mpr
-        intro bid member
-        simp only [bne_iff_ne]
-        exact fun equal => absentDisplay (equal ▸ member)
+    · have absent : blockName block ∉ NotionCoreDisplayOrder.names state.forest := fun named =>
+        shown ((NotionCoreDisplayOrder.shown_member _ _).mp (aligned.2.2.mem_iff.mpr named)).1
+      have existsBlock : ¬ state.forest.any (fun b => b.id == blockName block) = true := by
+        simpa [NotionCoreDisplayOrder.names,List.any_eq_true] using absent
       have fresh := NotionCoreDisplayOrder.create_aligned
         ⟨state.forest,state.display⟩ (blockName block) (afterBlock.map blockName) aligned absent
-      simp only [applyOperation,existsBlock,Bool.false_eq_true,if_false] at accepted
+      simp only [applyOperation,shown,↓reduceIte] at accepted
       simp only [apply_ite,putInstance_forest,ite_self] at accepted
       simp only [existsBlock,Bool.false_eq_true,if_false,Option.some.injEq] at accepted
       subst result
-      simpa [Aligned,NotionCoreDisplayOrder.create,filtered] using fresh
+      simpa [Aligned,NotionCoreDisplayOrder.create] using fresh
   | insert block inst first origin atoms =>
     simp only [applyOperation] at accepted
     cases selected : integrateRows (getInstance state (blockName inst)).rows
@@ -99,6 +119,12 @@ theorem operation_aligned (state result : State) (op : Operation)
         subst result
         have same := detachForest_names _ _ pair.1 pair.2 detached
         exact frame state _ aligned (by simpa using same) rfl
+  | merge source target =>
+    simp only [applyOperation, Option.some.injEq] at accepted
+    subst result
+    rcases merge_names state.forest (blockName source) (blockName target) with filtered | filtered
+    · exact NotionCoreDisplayOrder.filter_aligned ⟨state.forest,state.display⟩ _ _ aligned filtered
+    · exact NotionCoreDisplayOrder.filter_aligned ⟨state.forest,state.display⟩ _ _ aligned filtered
 
 
 theorem operations_aligned (state result : State) (ops : List Operation)
@@ -129,14 +155,15 @@ theorem replay_aligned (state result : State) (txs : List Transaction)
       apply ih middle (operations_aligned state middle _ aligned first)
       simpa [replay,first] using accepted
 
-/-- Accepted reconstruction displays every stored block exactly once. This does
-not identify the display permutation with physical interval order. -/
+/-- Accepted reconstruction shows every stored block exactly once and keeps
+merged-away blocks only as tombstones. This does not identify the display
+permutation with physical interval order. -/
 theorem reconstructed_aligned (network : NotionCorePayloadNetwork.State)
     (peer : NotionRunAllocation.Session) (state : State)
     (accepted : NotionCoreReconstruction.reconstruct network peer = some state) :
     Aligned state := by
   apply replay_aligned {} state (NotionCoreReconstruction.transactions network peer)
-  · exact ⟨by simp [NotionCoreDisplayOrder.names],List.Perm.refl []⟩
+  · exact ⟨by simp [NotionCoreDisplayOrder.names],by simp,by simp [NotionCoreDisplayOrder.shown,NotionCoreDisplayOrder.names]⟩
   · exact accepted
 
 #print axioms reconstructed_aligned

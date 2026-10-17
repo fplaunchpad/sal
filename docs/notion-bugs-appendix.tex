@@ -146,6 +146,9 @@ sequential history of splits and merges preserves the document's characters.
 These checks do not formalise
 the complete JavaScript execution or prove its correspondence to Lean.
 The results concern the public demo; we have not established that Notion's
-production system has these bugs. The setups use merge-block and formatting
-requests outside the verified create/insert/erase/split fragment, so they
-do not contradict its correctness result.
+production system has these bugs. The setups use the demo's own merge-block
+and formatting requests. The demo's merge is not the verified one: the
+verified core replaces it by a merge that moves the whole slice tree and
+removes a block only by moving it, under which the split failure and both
+text-loss failures do not arise. Formatting remains outside the verified
+fragment. None of the five traces contradicts the correctness result.

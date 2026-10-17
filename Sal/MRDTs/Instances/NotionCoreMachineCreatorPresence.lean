@@ -10,8 +10,10 @@ open NotionCorePayload (BlockKey Operation Transaction reservation)
 
 def StoredInstance (state : State) (key : Nat) : Prop :=
   ∃ entry ∈ state.instances, entry.1 = key
+/-- Every forest block and every display entry, tombstones included, has a
+stored text instance. -/
 def Supported (state : State) : Prop :=
-  ∀ key ∈ names state.forest, StoredInstance state key
+  ∀ key ∈ names state.forest ++ state.display, StoredInstance state key
 
 private theorem put_mono (state : State) (inst key : Nat) (value : Instance)
     (stored : StoredInstance state key) : StoredInstance (putInstance state inst value) key := by
@@ -43,9 +45,7 @@ private theorem operation_presence (state result : State) (op : Operation)
       intro key member
       have same : key = blockName block := by simpa [operationCreates] using member
       subst key
-      obtain ⟨old,present,equal⟩ := List.any_eq_true.mp found
-      apply supported
-      exact List.mem_map.mpr ⟨old,present,by simpa using equal⟩
+      exact supported _ (List.mem_append_right _ found)
     · simp only [Option.some.injEq] at accepted; subst result
       change (∀ key, StoredInstance state key → StoredInstance
         (if state.instances.any (fun entry => entry.1 == blockName block) then state
@@ -99,14 +99,83 @@ private theorem operation_presence (state result : State) (op : Operation)
       | some pair =>
         simp [selected] at accepted; subst result
         exact ⟨fun _ h => h,by simp [operationCreates]⟩
+  | merge source target =>
+    simp only [applyOperation,Option.some.injEq] at accepted; subst result
+    exact ⟨fun _ h => h,by simp [operationCreates]⟩
+
+/-- Display entries after an operation were displayed before or are created by it. -/
+theorem operation_display_names (state result : State) (op : Operation)
+    (accepted : applyOperation state op = some result) :
+    ∀ bid ∈ result.display, bid ∈ state.display ++ operationCreates op := by
+  cases op with
+  | create block afterBlock =>
+    simp only [applyOperation] at accepted
+    split at accepted
+    · simp only [Option.some.injEq] at accepted
+      subst result
+      intro bid member
+      exact List.mem_append_left _ member
+    · simp only [Option.some.injEq] at accepted
+      subst result
+      intro bid member
+      have inserted := (NotionCoreDisplayOrder.insert_perm _ _ _).mem_iff.mp member
+      rcases List.mem_cons.mp inserted with fresh | old
+      · simp [operationCreates, fresh]
+      · exact List.mem_append_left _ (List.mem_of_mem_filter old)
+  | insert block inst first origin atoms =>
+    simp only [applyOperation] at accepted
+    cases selected : integrateRows (getInstance state (blockName inst)).rows
+      (NotionCoreParentMap.runRows origin (NotionCorePayload.textItems first atoms
+        (fun id => decide (id ∈ (getInstance state (blockName inst)).pending)))) with
+    | none => simp [selected] at accepted
+    | some rows =>
+      simp [selected] at accepted; subst result
+      intro bid member
+      exact List.mem_append_left _ (by simpa using member)
+  | erase block inst targets =>
+    simp only [applyOperation,Option.some.injEq] at accepted; subst result
+    intro bid member
+    exact List.mem_append_left _ (by simpa using member)
+  | marker block inst id origin =>
+    simp only [applyOperation] at accepted
+    cases integrated : integrate (getInstance state (blockName inst)).rows ⟨⟨id,.split⟩,origin⟩ with
+    | none => simp [integrated] at accepted
+    | some rows =>
+      simp only [integrated] at accepted
+      dsimp only [Bind.bind,Option.bind] at accepted
+      split at accepted
+      · contradiction
+      · dsimp only at accepted
+        split at accepted
+        · simp at accepted; subst result
+          intro bid member
+          exact List.mem_append_left _ (by simpa using member)
+        · contradiction
+  | moveInto block inst marker target =>
+    simp only [applyOperation] at accepted
+    split at accepted
+    · contradiction
+    · cases selected : NotionCoreSliceForest.detachForest
+        (NotionCorePhysicalReplay.address (blockName inst) marker) state.forest with
+      | none => simp [selected] at accepted
+      | some pair =>
+        simp [selected] at accepted; subst result
+        exact fun bid member => List.mem_append_left _ member
+  | merge source target =>
+    simp only [applyOperation,Option.some.injEq] at accepted; subst result
+    exact fun bid member => List.mem_append_left _ member
 
 private theorem operation_supported (state result : State) (op : Operation)
     (supported : Supported state) (accepted : applyOperation state op = some result) : Supported result := by
   have presence := operation_presence state result op supported accepted
   intro key member
-  rcases List.mem_append.mp (NotionCoreMachineCreators.operation_names state result op accepted key member) with old | fresh
-  · exact presence.1 key (supported key old)
-  · exact presence.2 key fresh
+  rcases List.mem_append.mp member with stored | shown
+  · rcases List.mem_append.mp (NotionCoreMachineCreators.operation_names state result op accepted key stored) with old | fresh
+    · exact presence.1 key (supported key (List.mem_append_left _ old))
+    · exact presence.2 key fresh
+  · rcases List.mem_append.mp (operation_display_names state result op accepted key shown) with old | fresh
+    · exact presence.1 key (supported key (List.mem_append_right _ old))
+    · exact presence.2 key fresh
 
 private theorem operations_presence (state result : State) (ops : List Operation)
     (supported : Supported state) (accepted : applyOperations state ops = some result) :

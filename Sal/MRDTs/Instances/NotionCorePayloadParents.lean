@@ -16,7 +16,7 @@ open NotionCorePayloadNetwork (Entry)
 
 def payloadOrigin : Payload → Origin
   | .insert _ _ origin _ | .split _ _ origin => origin
-  | .bootstrap _ | .create _ | .erase _ _ _ => .start
+  | .bootstrap _ | .create _ | .erase _ _ | .merge _ _ => .start
 
 def parentAt (first : Id) (origin : Origin) (offset : Nat) : Origin :=
   if offset = 0 then origin else .item (offsetId first (offset - 1))
@@ -75,7 +75,8 @@ theorem birth_parent (tx : Transaction) (deleted : BlockKey → Id → Bool)
       subst birth
       exact ⟨0, by simp [Payload.itemCount], by simp [offsetId], by simp [parentAt, payloadOrigin]⟩
     | create afterBlock => simp [births, operations, Operation.births] at member
-    | erase block inst targets => simp [births, operations, Operation.births] at member
+    | erase block groups => simp at member
+    | merge source target => simp [births, operations, Operation.births] at member
 
 theorem external_reference (payload : Payload) (id : Id) (origin : payloadOrigin payload = .item id) :
     id ∈ payload.references := by

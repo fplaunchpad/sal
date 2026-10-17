@@ -1,13 +1,14 @@
 import Sal.MRDTs.Instances.NotionCoreMachineBootstrap
 import Sal.MRDTs.Instances.NotionCoreMachineCanonicalCreate
 
-/-! Strong core shape for the actual combined state. Creator admission alone
-cannot establish the active-instance premise of physical update preservation;
+/-! Strong core shape for the actual combined state: chain titles and empty,
+unshared dead titles. Creator admission alone cannot establish the
+live-instance premise of physical update preservation;
 MachineInactiveTitleBoundary gives a raw admitted countermodel. The adapter
 below changes representation only, not the document interpreter. -/
 namespace Sal.MRDTs.Instances.NotionCoreMachineShape
 open NotionCoreMachine
-open NotionCoreSliceForest (NormalForest ProfileValid EmptyInactive profile active attached)
+open NotionCoreSliceForest (ChainForest EmptyInactive FreshName forestNodes forestRefs)
 open NotionCorePayload (BlockKey)
 open NotionCoreSpec (Address)
 
@@ -18,19 +19,24 @@ private theorem view_ext (a b : NotionCoreSliceForest.State)
 /-- Projection to the existing source-tree invariant's physical view. -/
 def shapeView (state : State) : NotionCoreSliceForest.State := ⟨state.forest,physical state⟩
 def ShapeInvariant (state : State) : Prop := NotionCoreSliceForest.Invariant (shapeView state)
+/-- Some live node of the forest lies in the instance. -/
 def ActiveInstance (state : State) (inst : Nat) : Prop :=
-  ∃ block ∈ state.forest, (active block.title).start.1 = inst
+  ∃ live, (live,true) ∈ forestNodes state.forest ∧ live.start.1 = inst
 
 theorem initial_shape : ShapeInvariant {} := by
   simp [ShapeInvariant,shapeView,NotionCoreSliceForest.Invariant,
-    NormalForest,ProfileValid,EmptyInactive,profile]
+    ChainForest,EmptyInactive,forestNodes]
 
 theorem seeded_shape (atoms : List Nat) : ShapeInvariant (NotionCoreMachineBootstrap.seeded atoms) := by
-  simp [ShapeInvariant,shapeView,NotionCoreSliceForest.Invariant,
-    NotionCoreMachineBootstrap.seeded,NormalForest,ProfileValid,EmptyInactive,profile,
-    NotionCoreSliceForest.freshTitle,NotionCoreSliceForest.titleRef,active,attached,
-    NotionCoreSliceForest.Tree.children,NotionCoreSliceForest.Tree.slice,
-    NotionCoreSliceForest.Normal.own]
+  refine ⟨?_,by simp [shapeView,NotionCoreMachineBootstrap.seeded],?_⟩
+  · intro block member
+    simp only [shapeView,NotionCoreMachineBootstrap.seeded,List.mem_singleton] at member
+    subst block
+    exact ⟨.leaf _,rfl⟩
+  · intro dead member
+    simp [shapeView,NotionCoreMachineBootstrap.seeded,forestNodes,NotionCoreSliceForest.freshTitle,
+      NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,
+      NotionCoreSliceForest.nodes,NotionCoreSliceForest.tagBefore] at member
 
 /-- Actual bootstrap execution establishes stronger shape for empty and
 nonempty initial text alike. -/
@@ -38,17 +44,30 @@ theorem bootstrap_shape (atoms : List Nat) :
     ∃ state, applyTransaction {} (NotionCorePayload.bootstrap atoms) = some state ∧ ShapeInvariant state :=
   ⟨NotionCoreMachineBootstrap.seeded atoms,NotionCoreMachineBootstrap.bootstrap_executes atoms,seeded_shape atoms⟩
 
+/-- Every forest node lies in an allocated instance, so a name with no
+allocated instance is fresh for the forest. -/
+theorem fresh_name_of_instance (state : State) (partitioned : NotionCoreMachinePartition.Partitioned state)
+    (name : Nat) (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ name) :
+    FreshName state.forest name := by
+  intro ref member same
+  rw [← NotionCoreForestRefs.ownedRefs_refs] at member
+  obtain ⟨owned,ownedMember,rfl⟩ := List.mem_map.mp member
+  obtain ⟨entry,present,instanceEq⟩ := partitioned.refsExist owned ownedMember
+  exact freshInstance entry present (instanceEq.trans same)
+
 /-- A fresh standalone root may contain arbitrary physical text. Other
-instances retain their old contents, so old inactive titles stay empty. This
+instances retain their old contents, so old dead titles stay empty. This
 also covers bootstrap following independent earlier creations. -/
 theorem fresh_root_frame_shape (state result : State) (bid : Nat)
-    (prior : ShapeInvariant state) (fresh : bid ∉ state.forest.map NotionCoreSliceForest.Block.id)
+    (prior : ShapeInvariant state) (fresh : FreshName state.forest bid)
     (forest : result.forest = state.forest ++ [⟨bid,NotionCoreSliceForest.freshTitle bid⟩])
     (other : ∀ key, key ≠ bid → physical result key = physical state key) : ShapeInvariant result := by
   let created := NotionCoreSliceForest.create (shapeView state) bid
   have createInvariant := NotionCoreSliceForest.create_preserves (shapeView state) bid prior fresh
-  have activeNew : ∃ block ∈ created.blocks, (active block.title).start.1 = bid := by
-    exact ⟨⟨bid,NotionCoreSliceForest.freshTitle bid⟩,by simp [created,NotionCoreSliceForest.create],rfl⟩
+  have activeNew : ∃ live, (live,true) ∈ forestNodes created.blocks ∧ live.start.1 = bid := by
+    refine ⟨NotionCoreSliceForest.titleRef bid,?_,rfl⟩
+    simp [created,NotionCoreSliceForest.create,NotionCoreSliceForest.forestNodes_append,
+      NotionCoreSliceForest.forestNodes_fresh]
   have updated := NotionCoreSliceForest.updateInstance_preserves created bid (physical result bid)
     createInvariant activeNew
   have view : shapeView result = NotionCoreSliceForest.updateInstance created bid (physical result bid) := by
@@ -69,7 +88,7 @@ theorem fresh_root_frame_shape (state result : State) (bid : Nat)
 /-- Literal fresh create supplies exactly the old source-tree create view. -/
 theorem fresh_create_view (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)
-    (freshBlock : ∀ old ∈ state.forest, old.id ≠ blockName block)
+    (freshBlock : FreshBlock state (blockName block))
     (accepted : applyOperation state (.create block afterBlock) = some result) :
     shapeView result = NotionCoreSliceForest.create (shapeView state) (blockName block) := by
   have shape := NotionCoreMachineCanonicalCreate.fresh_create_shape state result block afterBlock
@@ -86,102 +105,80 @@ theorem fresh_create_view (state result : State) (block : BlockKey) (afterBlock 
         using physicalEq.2 inst selected
 
 theorem fresh_create_shape_preserves (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
-    (prior : ShapeInvariant state)
+    (prior : ShapeInvariant state) (partitioned : NotionCoreMachinePartition.Partitioned state)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)
-    (freshBlock : ∀ old ∈ state.forest, old.id ≠ blockName block)
+    (freshBlock : FreshBlock state (blockName block))
     (accepted : applyOperation state (.create block afterBlock) = some result) : ShapeInvariant result := by
   unfold ShapeInvariant
   rw [fresh_create_view state result block afterBlock freshInstance freshBlock accepted]
-  apply NotionCoreSliceForest.create_preserves _ _ prior
-  intro member
-  obtain ⟨old,present,equal⟩ := List.mem_map.mp member
-  exact freshBlock old present equal
+  exact NotionCoreSliceForest.create_preserves _ _ prior
+    (fresh_name_of_instance state partitioned _ freshInstance)
 
 theorem canonical_create_shape (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (peer : NotionRunAllocation.Session)
     (pre suffix : List NotionCorePayload.Transaction) (tx : NotionCorePayload.Transaction)
     (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
     (state result : State) (acceptedPrefix : replay {} pre = some state)
-    (prior : ShapeInvariant state) (afterBlock : Option BlockKey)
+    (prior : ShapeInvariant state) (partitioned : NotionCoreMachinePartition.Partitioned state)
+    (afterBlock : Option BlockKey)
     (created : applyOperation state (.create (.issued tx.id) afterBlock) = some result) : ShapeInvariant result := by
   obtain ⟨freshInstance,freshBlock⟩ := NotionCoreMachineCanonicalCreate.canonical_destination_fresh
     network reachable peer pre suffix tx position state acceptedPrefix
-  exact fresh_create_shape_preserves state result (.issued tx.id) afterBlock prior freshInstance freshBlock created
+  exact fresh_create_shape_preserves state result (.issued tx.id) afterBlock prior partitioned
+    freshInstance freshBlock created
 
 theorem fresh_create_active (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)
-    (freshBlock : ∀ old ∈ state.forest, old.id ≠ blockName block)
+    (freshBlock : FreshBlock state (blockName block))
     (accepted : applyOperation state (.create block afterBlock) = some result)
     (inst : Nat) (owned : ActiveInstance state inst) : ActiveInstance result inst := by
-  obtain ⟨owner,present,equal⟩ := owned
+  obtain ⟨live,member,equal⟩ := owned
   have shape := NotionCoreMachineCanonicalCreate.fresh_create_shape state result block afterBlock
     freshInstance freshBlock accepted
-  refine ⟨owner,?_,equal⟩
-  rw [shape.2.1]
-  exact List.mem_append_left _ present
+  refine ⟨live,?_,equal⟩
+  rw [shape.2.1,NotionCoreSliceForest.forestNodes_append]
+  exact List.mem_append_left _ member
 
-/-- Actual structural atomic split retains every old active instance and adds
-no new one: the destination inherits the selected source's instance. This is
-an accepted-tree-phase theorem, not replay progress or issuer-selection proof. -/
+/-- Actual structural atomic split retains every old live instance and adds
+no new one: both halves of the cut node keep its instance, and the
+destination's own title root is dead. This is an accepted-tree-phase theorem,
+not replay progress or issuer-selection proof. -/
 theorem atomic_split_active (physical : Nat → List NotionCoreSource.Atom)
     (marker : Address) (target : Nat) (forest result : NotionCoreSliceForest.Forest)
-    (normal : NormalForest forest) (fresh : NotionCoreSliceForest.FreshMarker forest marker)
+    (chains : ChainForest forest) (fresh : NotionCoreSliceForest.FreshMarker forest marker)
     (freshTarget : target ∉ forest.map NotionCoreSliceForest.Block.id)
-    (inactiveEmpty : ∀ block ∈ forest, attached block.title = true →
-      NotionCoreSliceForest.contains physical (NotionCoreSliceForest.titleRef block.id) marker = false)
     (empty : physical target = NotionCoreSliceForest.emptyPhysical target)
+    (markerEvent : marker.2 ≠ .start)
+    (deadRejects : ∀ dead, (dead,false) ∈ forestNodes forest →
+      NotionCoreSliceForest.contains physical dead marker = false)
     (accepted : NotionCoreSliceForest.atomicSplit physical marker target forest = some result)
     (inst : Nat) :
-    (∃ block ∈ result, (active block.title).start.1 = inst) ↔
-      ∃ block ∈ forest, (active block.title).start.1 = inst := by
-  obtain ⟨remaining,source,member,_,sameProfile,selected,shape⟩ :=
-    NotionCoreSliceForest.atomicSplit_result physical marker target forest result normal fresh freshTarget
-      inactiveEmpty empty accepted
-  have sameInstance : (active source.title).start.1 = marker.1 := by
-    have both : decide ((active source.title).start.1 = marker.1) = true ∧ _ :=
-      Bool.and_eq_true_iff.mp selected
-    have first := both.1
-    simpa only [decide_eq_true_eq] using first
-  have markerOld : ∃ block ∈ forest, (active block.title).start.1 = marker.1 :=
-    ⟨source,member,sameInstance⟩
-  have preserve : ∀ key,
-      (∃ block ∈ remaining, (active block.title).start.1 = key) ↔
-        ∃ block ∈ forest, (active block.title).start.1 = key := by
-    intro key
-    have mapped := congrArg (fun ps => ps.map (fun p => p.2.1.1)) sameProfile
-    have instances : remaining.map (fun b => (active b.title).start.1) =
-        forest.map (fun b => (active b.title).start.1) := by
-      simpa only [profile,List.map_map,Function.comp_def] using mapped
-    have membership := congrArg (fun values => key ∈ values) instances
-    simpa only [List.mem_map] using Iff.of_eq membership
-  rw [shape]
+    (∃ live, (live,true) ∈ forestNodes result ∧ live.start.1 = inst) ↔
+      ∃ live, (live,true) ∈ forestNodes forest ∧ live.start.1 = inst := by
+  obtain ⟨ref,refLive,inside,classify,retained,leftMember,_,_,_,_⟩ :=
+    NotionCoreSliceForest.atomicSplit_nodes physical marker target forest result chains fresh freshTarget
+      empty markerEvent deadRejects accepted
+  have sameInstance : ref.start.1 = marker.1 :=
+    (Bool.and_eq_true_iff.mp inside).1 |> of_decide_eq_true
   constructor
-  · rintro ⟨block,present,equal⟩
-    rcases List.mem_append.mp present with old | newest
-    · exact (preserve inst).mp ⟨block,old,equal⟩
-    · have blockEq := List.mem_singleton.mp newest
-      subst block
-      have markerEq : marker.1 = inst := equal
-      exact markerEq ▸ markerOld
-  · intro old
-    obtain ⟨block,present,equal⟩ := (preserve inst).mpr old
-    exact ⟨block,List.mem_append_left _ present,equal⟩
+  · rintro ⟨live,member,rfl⟩
+    rcases classify _ member with old | equal | equal | equal
+    · exact ⟨live,old,rfl⟩
+    · exact ⟨ref,refLive,by simp [(Prod.mk.inj equal).1,NotionCoreSliceForest.leftRef]⟩
+    · simp at equal
+    · exact ⟨ref,refLive,by
+        rw [(Prod.mk.inj equal).1]; exact sameInstance⟩
+  · rintro ⟨live,member,rfl⟩
+    rcases retained _ member with kept | equal
+    · exact ⟨live,kept,rfl⟩
+    · obtain ⟨rfl,-⟩ := Prod.mk.inj equal
+      exact ⟨_,leftMember,rfl⟩
 
-theorem active_instance_names (state : State) (prior : ShapeInvariant state)
-    (inst : Nat) (owned : ActiveInstance state inst) : inst ∈ state.forest.map NotionCoreSliceForest.Block.id := by
-  obtain ⟨block,member,equal⟩ := owned
-  have selected : (block.id,(active block.title).start,attached block.title) ∈ profile state.forest :=
-    List.mem_map.mpr ⟨block,member,rfl⟩
-  have present := (prior.2.1.2 _ selected).1
-  rw [equal] at present
-  simpa only [profile,List.map_map,Function.comp_def] using present
-
-/-- Combined with atomic_split_active, a fresh split destination's own name
-cannot become an active text instance after the complete structural split. -/
-theorem fresh_name_not_active (state : State) (prior : ShapeInvariant state) (fresh : Nat)
-    (absent : fresh ∉ state.forest.map NotionCoreSliceForest.Block.id) : ¬ ActiveInstance state fresh := by
-  intro owned
-  exact absent (active_instance_names state prior fresh owned)
+/-- A fresh split destination's own name cannot be a live instance. -/
+theorem fresh_name_not_active (state : State) (fresh : Nat)
+    (absent : FreshName state.forest fresh) : ¬ ActiveInstance state fresh := by
+  rintro ⟨live,member,equal⟩
+  exact absent live (NotionCoreSliceForest.node_ref member) equal
 
 /-- Actual row/pending update leaves the forest and all other physical
 instances unchanged. The selected contents need not be supplied as an output
@@ -201,7 +198,7 @@ theorem put_shape_view (state : State) (inst : Nat) (value : Instance) :
         physical,NotionCoreMachineTables.getInstance_put,selected]
 
 /-- This is the exact remaining source-selection guard: update an instance
-owned by an active interval, rather than an unused attached block title. -/
+owned by a live node, rather than an unused dead title. -/
 theorem put_active_preserves (state : State) (inst : Nat) (value : Instance)
     (prior : ShapeInvariant state) (activeInstance : ActiveInstance state inst) :
     ShapeInvariant (putInstance state inst value) := by
@@ -209,25 +206,22 @@ theorem put_active_preserves (state : State) (inst : Nat) (value : Instance)
   rw [put_shape_view]
   exact NotionCoreSliceForest.updateInstance_preserves _ inst _ prior activeInstance
 
-/-- Before tree splitting, raw marker integration is an active-instance put.
-The theorem does not assert NormalForest for the transient tree-split phase. -/
+/-- Before tree splitting, raw marker integration is a live-instance put.
+The theorem does not assert the chain shape for the transient tree-split phase. -/
 theorem raw_marker_shape_preserves (state : State) (inst : BlockKey)
     (rows : NotionCoreParentMap.Table) (prior : ShapeInvariant state)
     (activeInstance : ActiveInstance state (blockName inst)) :
     ShapeInvariant (putInstance state (blockName inst) {getInstance state (blockName inst) with rows := rows}) :=
   put_active_preserves state (blockName inst) _ prior activeInstance
 
-theorem inactive_title_rejects (state : State) (prior : ShapeInvariant state)
-    (block : NotionCoreSliceForest.Block) (member : block ∈ state.forest)
-    (inactive : attached block.title = true) (marker : Address) :
-    NotionCoreSliceForest.contains (physical state) (NotionCoreSliceForest.titleRef block.id) marker = false := by
-  have selected : (block.id,(active block.title).start,attached block.title) ∈ profile state.forest :=
-    List.mem_map.mpr ⟨block,member,rfl⟩
-  have empty : physical state block.id = NotionCoreSliceForest.emptyPhysical block.id :=
-    prior.2.2 _ selected inactive
-  exact NotionCoreSliceForest.empty_title_rejects (physical state) block.id marker empty
+theorem dead_title_rejects (state : State) (prior : ShapeInvariant state)
+    (dead : NotionCoreSliceForest.Ref) (member : (dead,false) ∈ forestNodes state.forest) (marker : Address) :
+    NotionCoreSliceForest.contains (physical state) dead marker = false := by
+  obtain ⟨form,empty,_⟩ := prior.2.2 dead member
+  rw [form]
+  exact NotionCoreSliceForest.empty_title_rejects (physical state) _ marker empty
 
-/-- Compose raw active-instance marker integration with the actual structural
+/-- Compose raw live-instance marker integration with the actual structural
 atomic tree split. The fresh title already exists in raw storage; recreating
 it in the source-tree adapter is a physical no-op because it is still empty. -/
 theorem atomic_split_shape_preserves (old raw : State) (target : Nat) (marker : Address)
@@ -236,18 +230,22 @@ theorem atomic_split_shape_preserves (old raw : State) (target : Nat) (marker : 
     (rawInvariant : ShapeInvariant raw)
     (empty : physical raw target = NotionCoreSliceForest.emptyPhysical target)
     (fresh : NotionCoreSliceForest.FreshMarker old.forest marker)
-    (freshTarget : target ∉ old.forest.map NotionCoreSliceForest.Block.id)
+    (markerEvent : marker.2 ≠ .start)
+    (freshTarget : FreshName old.forest target)
     (accepted : NotionCoreSliceForest.atomicSplit (physical raw) marker target old.forest = some forest) :
     ShapeInvariant {raw with forest := forest} := by
   let base : NotionCoreSliceForest.State := ⟨old.forest,physical raw⟩
-  have rawProfile : profile raw.forest = profile old.forest ++ [(target,(target,.start),false)] := by
-    rw [rawForest]
-    simp [profile,NotionCoreSliceForest.freshTitle,NotionCoreSliceForest.titleRef,
-      active,attached,NotionCoreSliceForest.Tree.children,NotionCoreSliceForest.Tree.slice]
   have baseInvariant : NotionCoreSliceForest.Invariant base := by
     refine ⟨oldInvariant.1,oldInvariant.2.1,?_⟩
-    intro current member inactive
-    exact rawInvariant.2.2 current (rawProfile ▸ List.mem_append_left _ member) inactive
+    intro dead member
+    have rawMember : (dead,false) ∈ forestNodes raw.forest := by
+      rw [rawForest,NotionCoreSliceForest.forestNodes_append]
+      exact List.mem_append_left _ member
+    obtain ⟨form,physicalEq,lives⟩ := rawInvariant.2.2 dead rawMember
+    refine ⟨form,physicalEq,fun live liveMember => lives live ?_⟩
+    change (live,true) ∈ forestNodes raw.forest
+    rw [rawForest,NotionCoreSliceForest.forestNodes_append]
+    exact List.mem_append_left _ liveMember
   have createdPhysical : (NotionCoreSliceForest.create base target).physical = physical raw := by
     funext inst
     by_cases selected : inst = target
@@ -258,7 +256,24 @@ theorem atomic_split_shape_preserves (old raw : State) (target : Nat) (marker : 
     simp only [NotionCoreSliceForest.split,createdPhysical]
     exact congrArg (fun result => result.map (fun blocks => (⟨blocks,physical raw⟩ : NotionCoreSliceForest.State))) accepted
   exact NotionCoreSliceForest.split_preserves base ⟨forest,physical raw⟩ marker target
-    baseInvariant fresh freshTarget executed
+    baseInvariant fresh markerEvent freshTarget executed
+
+/-- Merge moves whole chains: shape and the live instances are unchanged. -/
+theorem merge_shape (state : State) (source target : BlockKey) (prior : ShapeInvariant state) :
+    ShapeInvariant {state with forest := (NotionCoreSliceForest.mergeForest state.forest
+      (blockName source) (blockName target))} :=
+  NotionCoreSliceForest.merge_preserves (shapeView state) _ _ prior
+
+theorem merge_active (state : State) (source target : BlockKey) (prior : ShapeInvariant state)
+    (inst : Nat) :
+    ActiveInstance {state with forest := (NotionCoreSliceForest.mergeForest state.forest
+      (blockName source) (blockName target))} inst ↔ ActiveInstance state inst := by
+  simp only [ActiveInstance]
+  constructor
+  · rintro ⟨live,member,equal⟩
+    exact ⟨live,(NotionCoreSliceForest.mergeForest_nodes _ _ _ prior.1 prior.2.1 _).mp member,equal⟩
+  · rintro ⟨live,member,equal⟩
+    exact ⟨live,(NotionCoreSliceForest.mergeForest_nodes _ _ _ prior.1 prior.2.1 _).mpr member,equal⟩
 
 #print axioms atomic_split_shape_preserves
 /-- An empty inactive title cannot intercept any marker, including START;
@@ -275,5 +290,7 @@ theorem empty_title_control :
 #print axioms fresh_name_not_active
 #print axioms fresh_create_shape_preserves
 #print axioms put_active_preserves
-#print axioms inactive_title_rejects
+#print axioms dead_title_rejects
+#print axioms merge_shape
+#print axioms merge_active
 end Sal.MRDTs.Instances.NotionCoreMachineShape

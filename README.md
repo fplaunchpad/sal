@@ -23,7 +23,7 @@ executions with inconsistently supplied arguments.
 The [paper artifact exporter](artifact/README.md) produces a standalone Lean
 source bundle with neutral project/module names, numbered paper-to-source
 references, an annotated Lean reading guide, reproducible implementation-table
-counts, and three public Notion demo bug reproductions. Its clean source build
+counts, and five public Notion demo bug reproductions. Its clean source build
 checks 242 selected roots; no development checkout is needed to use the bundle.
 
 The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
@@ -46,7 +46,10 @@ The integrated `paper1` implementation maintains immutable origin, deletion,
 creation-link and cut-owner facts for the typed Notion core.
 [`NotionCoreStructuralMRDT`](Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean)
 checks full query correspondence, the five VCs, actual execution transport and
-the independent RA specification under the original honest protocol. Queries
+the independent RA specification under the original honest protocol, on
+merge-free networks (`NotionCoreMergeFree.MergeFree`);
+`NotionCoreStructuralRender.SPOT.merge_outside_scope` proves that no fact-set
+query can evaluate a block merge. Queries
 traverse structural rows and cuts and fold creation links; they do not replay
 transactions. The transaction-set reference supplies the preserved client
 protocol and independent specification; the new implementation inherits its
@@ -68,12 +71,14 @@ an honest closed version into the empty engine and returns the reference answer.
 oracle run passed 10,008 query comparisons. Native query is slower on the
 measured mixed workload, so the earlier JavaScript speedups must not be
 attributed to this executable. The compiler and tested JSON codec remain
-explicit trusted boundaries.
+explicit trusted boundaries. The executable runtime covers the merge-free
+fragment.
 
 ### Notion core — checked protocol entry
 
 The [Notion core catalogue entry](docs/notion-catalogue.md) covers a typed
-adaptation of the published demo's create/insert/delete/split fragment.
+adaptation of the published demo's create/insert/delete/split requests and a
+corrected block merge ([design note](docs/notion-merge-block-design.md)).
 The source protocol and structural/native refinement ledgers register the
 checked theorem chain in the build, separately from the 18 uniform
 `PackagedMRDT` entries. Its explicit factory initialization, injective session
@@ -84,16 +89,23 @@ ordinary and canonical recursive merge bases. One witness supplies event
 coverage, required order, specification visibility and query admission to an
 independent retained-slot document specification. The specification contains
 no transaction log, replay sorting, search labels or physical slice tree.
-Local insert/split/delete theorems establish the requested immediate effect
-through the actual typed MRDT update and query.
+Local insert/split/delete/merge theorems establish the requested immediate
+effect through the actual typed MRDT update and query.
+[`NotionCoreSpecMerge`](Sal/MRDTs/Instances/NotionCoreSpecMerge.lean) proves
+that a merge conserves visible text, with merged blocks kept as tombstones;
+[`NotionCoreMachineDocumentMerge`](Sal/MRDTs/Instances/NotionCoreMachineDocumentMerge.lean)
+and [`NotionCoreMachineMergeEffects`](Sal/MRDTs/Instances/NotionCoreMachineMergeEffects.lean)
+connect the machine's merge to the specification and to the issuer's effect.
 
 The five VCs reuse the automated finite-store proof machinery. Document
 refinement, issuance invariants and the sequential-history bridge use explicit
 Lean proofs with routine tactic automation. This result is not included in the
 19-case `mrdt_verify` automation measurements below.
 
-The [five recorded demo bugs](docs/notion-bugs.md) obstruct the broader
-merge-block/formatting contract; Sal version merges are distinct from the
+Of the [five recorded demo bugs](docs/notion-bugs.md), N-001, N-004 and N-005
+do not occur under the corrected merge, and the formatting bugs N-002 and N-003
+remain outside the core. The demo's two text-loss bugs are one defect: block
+removal separate from the move. Sal version merges are distinct from the
 editor's merge-block request. Pinned executable traces support the source
 comparison. JavaScript number/string/JSON extraction and production Notion
 correspondence are not proved. See the [research conclusion](docs/notion-research.md)
@@ -103,7 +115,10 @@ The [follow-up correctness campaign](docs/notion-correctness-campaign.md)
 tests ordinary local edits after concurrent restructuring, preserves generated
 failures, and gives a smaller split-bug reproduction with a passing control.
 Its [runner](experiments/notion-correctness/README.md) uses the same pinned
-public-demo sources and an independent list specification.
+public-demo sources and an independent list specification. The
+[merge design gate](experiments/notion-merge-design/README.md) reruns those
+harnesses on a patched demo with the corrected merge: 161,630 archives agree
+with the absorb specification, with no split failure and no text loss.
 
 The [natural-specification audit](docs/natural-sequential-specifications.md)
 separates client requests from generated replication messages. Simple sets and

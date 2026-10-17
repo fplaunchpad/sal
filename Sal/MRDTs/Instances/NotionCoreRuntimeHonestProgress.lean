@@ -22,19 +22,21 @@ private theorem facts_subset {localTxs allowed : List Transaction}
   obtain ⟨tx,present,decoded⟩ := member
   exact ⟨tx,included tx present,decoded⟩
 
-/-- A whole transaction from the common honest archive is accepted by the
-actual wrapper, including late and duplicate receipt. No free compatibility
-or successful receipt premise is required. -/
+/-- A whole merge-free transaction from the common honest archive is accepted
+by the actual wrapper, including late and duplicate receipt. No free
+compatibility or successful receipt premise is required. Merge transactions
+are refused on receipt. -/
 theorem receive_total (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCorePayloadNetwork.Reach network)
     (state : State) (valid : Refines state)
     (included : ∀ tx ∈ state.metadata.archive, tx ∈ network.entries.map (·.tx))
-    (tx : Transaction) (published : tx ∈ network.entries.map (·.tx)) :
+    (tx : Transaction) (published : tx ∈ network.entries.map (·.tx))
+    (notMerge : NotionCoreMergeFree.NotMerge tx) :
     ∃ next, receive state tx = .ok next ∧ Refines next := by
   apply NotionCoreRuntimeEngine.receive_total (network.entries.map (·.tx))
-    (identity_consistent network reachable) state valid included tx published
+    (identity_consistent network reachable) state valid included tx published notMerge
   apply NotionCoreRuntimeCompatibility.honest_subset_compatible network reachable
-  rw [valid.2.2]
+  rw [valid.2.2.1]
   intro fact member
   rcases Finset.mem_union.mp member with old | fresh
   · exact facts_subset included old
@@ -54,24 +56,26 @@ theorem merge_total (network : NotionCorePayloadNetwork.State)
   apply NotionCoreRuntimeEngine.merge_total (network.entries.map (·.tx))
     (identity_consistent network reachable) left right lv rv li ri
   apply NotionCoreRuntimeCompatibility.honest_subset_compatible network reachable
-  rw [lv.2.2,rv.2.2]
+  rw [lv.2.2.1,rv.2.2.1]
   exact Finset.union_subset (facts_subset li) (facts_subset ri)
 
 /-- The exact batch path used by the native driver accepts any enumeration
-of complete transactions from the common honest archive. Order need not be
-source-key order; receipt integrates immutable facts without transaction replay. -/
+of complete merge-free transactions from the common honest archive. Order need
+not be source-key order; receipt integrates immutable facts without transaction
+replay. -/
 theorem receiveMany_total (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCorePayloadNetwork.Reach network)
     (state : State) (valid : Refines state)
     (included : ∀ tx ∈ state.metadata.archive, tx ∈ network.entries.map (·.tx))
-    (txs : List Transaction) (published : ∀ tx ∈ txs, tx ∈ network.entries.map (·.tx)) :
+    (txs : List Transaction) (published : ∀ tx ∈ txs, tx ∈ network.entries.map (·.tx))
+    (free : ∀ tx ∈ txs, NotionCoreMergeFree.NotMerge tx) :
     ∃ next, NotionCoreRuntimeEngine.receiveMany state txs = .ok next ∧ Refines next ∧
       next.metadata.archive.toFinset = state.metadata.archive.toFinset ∪ txs.toFinset := by
   induction txs generalizing state with
   | nil => exact ⟨state,rfl,valid,by simp⟩
   | cons tx rest ih =>
       obtain ⟨middle,first,mv⟩ := receive_total network reachable state valid included tx
-        (published tx (by simp))
+        (published tx (by simp)) (free tx (by simp))
       have includedMiddle : ∀ item ∈ middle.metadata.archive, item ∈ network.entries.map (·.tx) := by
         intro item member
         have archive := NotionCoreRuntimeEngine.receive_archive tx first
@@ -83,7 +87,7 @@ theorem receiveMany_total (network : NotionCorePayloadNetwork.State)
         · exact published item (by simp)
         · exact included item old
       obtain ⟨next,tail,nv,_⟩ := ih middle mv includedMiddle
-        (fun item member => published item (by simp [member]))
+        (fun item member => published item (by simp [member])) (fun item member => free item (by simp [member]))
       have accepted : NotionCoreRuntimeEngine.receiveMany state (tx :: rest) = .ok next := by
         simpa [NotionCoreRuntimeEngine.receiveMany,List.foldlM_cons,first,bind,Except.bind] using tail
       exact ⟨next,accepted,nv,(NotionCoreRuntimeEngine.receiveMany_refines valid _ accepted).2⟩
@@ -94,11 +98,12 @@ theorem receive_honest (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network)
     (state : State) (valid : Refines state)
     (included : ∀ tx ∈ state.metadata.archive, tx ∈ network.entries.map (·.tx))
-    (tx : Transaction) (published : tx ∈ network.entries.map (·.tx)) :
+    (tx : Transaction) (published : tx ∈ network.entries.map (·.tx))
+    (notMerge : NotionCoreMergeFree.NotMerge tx) :
     ∃ next, receive state tx = .ok next ∧ Refines next :=
   receive_total network
     (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
-    state valid included tx published
+    state valid included tx published notMerge
 
 theorem merge_honest (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network)
@@ -114,12 +119,13 @@ theorem receiveMany_honest (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network)
     (state : State) (valid : Refines state)
     (included : ∀ tx ∈ state.metadata.archive, tx ∈ network.entries.map (·.tx))
-    (txs : List Transaction) (published : ∀ tx ∈ txs, tx ∈ network.entries.map (·.tx)) :
+    (txs : List Transaction) (published : ∀ tx ∈ txs, tx ∈ network.entries.map (·.tx))
+    (free : ∀ tx ∈ txs, NotionCoreMergeFree.NotMerge tx) :
     ∃ next, NotionCoreRuntimeEngine.receiveMany state txs = .ok next ∧ Refines next ∧
       next.metadata.archive.toFinset = state.metadata.archive.toFinset ∪ txs.toFinset :=
   receiveMany_total network
     (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
-    state valid included txs published
+    state valid included txs published free
 
 #print axioms receiveMany_honest
 #print axioms identity_consistent

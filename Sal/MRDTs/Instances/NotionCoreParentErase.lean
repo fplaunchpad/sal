@@ -25,6 +25,16 @@ def eraseForest (targets : List Id) : Forest → Forest
 end
 @[simp] theorem eraseItem_id (targets : List Id) (item : Item) :
     (eraseItem targets item).id = item.id := rfl
+
+/-- Two successive erasures are one erasure of both target lists. -/
+theorem erase_erase (a b : List Id) (rows : Table) : erase b (erase a rows) = erase (a ++ b) rows := by
+  simp only [erase, List.map_map]
+  apply List.map_congr_left
+  intro row _
+  cases row with
+  | mk item origin =>
+    cases item with
+    | mk id kind => cases kind <;> simp [eraseRow, eraseItem, Bool.or_assoc]
 mutual
 theorem eraseTree_preorder (targets : List Id) (tree : Tree) :
     NotionCoreOriginTree.preorderTree (eraseTree targets tree) =

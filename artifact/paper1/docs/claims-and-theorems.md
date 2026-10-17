@@ -88,7 +88,7 @@ This transport applies to consistent arguments attached at original issuance.
 
 ## Notion: theory and external reproduction
 
-The checked fragment is the typed create/insert/erase/split document core with
+The checked fragment is the typed create/insert/erase/split/merge document core with
 explicit bootstrap, fresh identities, injective sessions and its original
 initialisation/receipt/request protocol. It is not the complete public demo or
 the production Notion editor.
@@ -100,8 +100,14 @@ derives its document query without replaying all transactions:
 [NotionCoreStructuralMRDT.lean](../Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean)
 contains `Instances.NotionCoreStructuralMRDT.fiveVCs`, `renderer`,
 `versions_witness`, `specification_ra`, `operational_reach`, and `registered_query`.
-Their scope retains `NotionCoreProtocol.Reach` and injective sessions; query
-agreement transfers the independent history theorem to the structural carrier.
+Their scope retains `NotionCoreProtocol.Reach` and injective sessions, and the
+network must be merge-free (`NotionCoreMergeFree.MergeFree`); query agreement
+transfers the independent history theorem to the structural carrier. The
+restriction is forced: `NotionCoreStructuralRender.SPOT.merge_outside_scope`
+shows that no query on the fact set agrees with replay once a block merge is
+present. The reference carrier's `NotionCoreProtocol.versions_witness` and
+`specification_ra` cover block merge, and `NotionCoreMRDTClient.merge_effect`
+gives the issuer's local merge effect.
 
 The combined correctness results are in
 [Metatheory/NotionCoreLedger.lean](../Sal/MRDTs/Metatheory/NotionCoreLedger.lean),
@@ -113,8 +119,8 @@ also proves refinement of typed executable receipt and merge operations,
 retaining the archive and allocation metadata required by the model.
 
 The external JavaScript executions are separate evidence. The proofs do not
-cover formatting, the editor's merge-block request, JSON conversion, or the
-external compiler/runtime. Merge-block is distinct from merging replicated
+cover formatting, the demo's own merge-block request (whose block removal is
+separate from its move), JSON conversion, or the external compiler/runtime. Merge-block is distinct from merging replicated
 versions. See [the reproduction guide](notion-reproduction.md).
 
 ## Measurements and trust

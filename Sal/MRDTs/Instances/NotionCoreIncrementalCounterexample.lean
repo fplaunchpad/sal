@@ -60,8 +60,7 @@ boundary scan followed by existing endpoint extraction. The input contains no
 stops and no stored assignment of text atoms to owners. -/
 theorem reconstructCells_correct (cells : List Cell) (records : List Entry)
     (recordsEq : records.Perm (cells.map Cell.entry))
-    (unique : ((flatten cells).map Atom.address).Nodup)
-    (owners : (cells.map Cell.owner).Nodup) :
+    (unique : ((flatten cells).map Atom.address).Nodup) :
     reconstructCells (flatten cells) records = cells := by
   have atStart : ∀ cell ∈ cells, boundaryAt records cell.slice.start = some cell.entry := by
     intro cell member
@@ -92,29 +91,37 @@ theorem reconstructCells_correct (cells : List Cell) (records : List Entry)
     exact (List.nodup_cons.mp component).1 (List.mem_map.mpr ⟨atom, inside, same.symm⟩)
   unfold reconstructCells
   rw [scan_factor cells records atStart absent]
-  exact NotionCorePartition.extraction_correct (state := ⟨flatten cells, cells.map Cell.entry⟩) ⟨rfl, rfl, unique, owners⟩
+  exact NotionCorePartition.extraction_correct (state := ⟨flatten cells, cells.map Cell.entry⟩) ⟨rfl, rfl, unique⟩
 
-/-- The actual split rewrite only inserts an immutable marker/target record:
-changing an old stop leaves its owner/start record unchanged. Fresh title roots
-are already included in the input forest, and remain represented. -/
+/-- The actual split rewrite inserts the marker's record behind the fresh
+destination's title record; changing an old stop leaves its start unchanged.
+Records of the moved suffix keep their starts and change owner to the
+destination. Fresh title roots are already included in the input forest. -/
 theorem atomicSplit_cutRecords (physical : Nat → List Atom) (marker : Address) (target : Nat)
     (forest : NotionCoreSliceForest.Forest)
-    (normal : NotionCoreSliceForest.NormalForest forest)
+    (chains : ∀ block ∈ forest, NotionCoreSliceForest.Chain block.title)
     (fresh : NotionCoreSliceForest.FreshMarker forest marker)
     (freshTarget : target ∉ forest.map NotionCoreSliceForest.Block.id)
-    (inactive : ∀ block ∈ forest, NotionCoreSliceForest.attached block.title = true →
-      NotionCoreSliceForest.contains physical (NotionCoreSliceForest.titleRef block.id) marker = false)
     (empty : physical target = NotionCoreSliceForest.emptyPhysical target)
     (witness : ∃ block ∈ forest, ∃ ref ∈ NotionCoreSliceForest.preorderTree block.title,
       NotionCoreSliceForest.contains physical ref marker = true) :
-    ∃ result, NotionCoreSliceForest.atomicSplit physical marker target forest = some result ∧
-      cutRecords result = cutRecords (forest ++ [⟨target,NotionCoreSliceForest.freshTitle target⟩]) ++
-        [⟨target,marker⟩] := by
-  obtain ⟨result,before,owner,ref,after,executed,old,_,new⟩ :=
-    NotionCoreMachinePartitionSplit.atomicSplit_refs physical marker target forest normal fresh freshTarget inactive empty witness
-  refine ⟨result,executed,?_⟩
-  simp [cutRecords, old, new, cutRecord, NotionCoreForestRefs.leftRef,
-    NotionCoreForestRefs.rightRef, List.map_append]
+    ∃ (result : NotionCoreSliceForest.Forest) (before : List Entry) (owner : Nat) (pre : List Ref)
+      (ref : Ref) (post : List Ref) (after : List Entry),
+      NotionCoreSliceForest.atomicSplit physical marker target forest = some result ∧
+      cutRecords (forest ++ [⟨target,NotionCoreSliceForest.freshTitle target⟩]) =
+        before ++ (pre ++ ref :: post).map (fun ref : Ref => (⟨owner,ref.start⟩ : Entry)) ++ after ++
+          [⟨target,(target,.start)⟩] ∧
+      cutRecords result = before ++ (pre ++ [ref]).map (fun ref : Ref => (⟨owner,ref.start⟩ : Entry)) ++ after ++
+        ⟨target,(target,.start)⟩ :: ⟨target,marker⟩ :: post.map (fun ref : Ref => (⟨target,ref.start⟩ : Entry)) := by
+  obtain ⟨result,executed⟩ := NotionCoreMachinePartitionSplit.atomicSplit_progress physical marker target
+    forest chains fresh empty witness
+  obtain ⟨before,owner,pre,ref,post,after,old,_,new⟩ :=
+    NotionCoreMachinePartitionSplit.atomicSplit_refs physical marker target forest result chains fresh
+      freshTarget empty executed
+  refine ⟨result,before.map cutRecord,owner,pre,ref,post,after.map cutRecord,executed,?_,?_⟩
+  · simp [cutRecords, old, cutRecord, NotionCoreSliceForest.titleRef, List.map_append, Function.comp_def]
+  · simp [cutRecords, new, cutRecord, NotionCoreSliceForest.titleRef, NotionCoreSliceForest.leftRef,
+      NotionCoreSliceForest.rightRef, List.map_append, Function.comp_def]
 
 private theorem cellRefs_records (cells : List Cell) :
     (NotionCoreMachinePartition.cellRefs cells).map cutRecord = cells.map Cell.entry := by
@@ -133,13 +140,12 @@ theorem partitioned_reconstruct (state : NotionCoreMachine.State)
       reconstructCells (physical state inst)
         (((NotionCoreForestRefs.ownedRefs state.forest).filter
           (fun owned => owned.2.start.1 == inst)).map cutRecord) = cells := by
-  obtain ⟨cells,physicalEq,owners,records⟩ := partitioned.partitions inst existsInstance
+  obtain ⟨cells,physicalEq,records⟩ := partitioned.partitions inst existsInstance
   refine ⟨cells,physicalEq,?_⟩
   rw [physicalEq]
   apply reconstructCells_correct cells _
   · simpa [cellRefs_records] using records.map cutRecord
   · simpa [physicalEq] using unique inst
-  · exact owners
 
 private def seed : NotionCorePayload.Transaction := NotionCorePayload.bootstrap [97,98]
 private def low : NotionCorePayload.Transaction :=

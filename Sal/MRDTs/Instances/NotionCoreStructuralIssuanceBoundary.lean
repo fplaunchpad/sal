@@ -13,7 +13,7 @@ open NotionCoreMachineNetwork (Reach issue)
 def seed : State := NotionCorePayloadNetwork.seeded [97,98]
 def delayed : State := NotionCorePayloadNetwork.gap seed [65] 6
 def eraseAt (counter : Nat) : Transaction :=
-  ⟨⟨counter,[65]⟩,.erase .initial .initial [⟨1,[65]⟩]⟩
+  ⟨⟨counter,[65]⟩,.erase .initial [(.initial,[⟨1,[65]⟩])]⟩
 private def document := NotionCoreMachineBootstrap.seeded [97,98]
 def low : State := NotionCorePayloadNetwork.emit seed [65] (eraseAt 3).payload (eraseAt 3)
 def high : State := NotionCorePayloadNetwork.emit delayed [65] (eraseAt 9).payload (eraseAt 9)

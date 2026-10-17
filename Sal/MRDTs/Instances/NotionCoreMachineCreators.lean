@@ -58,6 +58,8 @@ theorem detachForest_names (marker : NotionCoreSpec.Address) (forest result : Fo
 
 @[simp] theorem putInstance_forest (state : State) (inst : Nat) (value : Instance) :
     (putInstance state inst value).forest = state.forest := by unfold putInstance; split <;> rfl
+@[simp] theorem putInstance_display (state : State) (inst : Nat) (value : Instance) :
+    (putInstance state inst value).display = state.display := by unfold putInstance; split <;> rfl
 
 def operationCreates : Operation → List Nat
   | .create block _ => [blockName block]
@@ -132,6 +134,11 @@ theorem operation_names (state result : State) (op : Operation)
         subst result
         have same := detachForest_names _ _ pair.1 pair.2 detached
         simp [operationCreates, same]
+  | merge source target =>
+    simp only [applyOperation, Option.some.injEq] at accepted
+    subst result
+    intro bid member
+    exact List.mem_append_left _ ((NotionCoreSliceForest.mergeForest_ids _ _ _).subset member)
 
 theorem operations_names (state result : State) (ops : List Operation)
     (accepted : applyOperations state ops = some result) :
@@ -164,7 +171,7 @@ private theorem decoded_creates (tx : Transaction) :
     (NotionCorePayload.operations tx).flatMap operationCreates = transactionCreates tx := by
   cases tx with
   | mk id payload => cases payload <;> simp [NotionCorePayload.operations, operationCreates,
-      transactionCreates, NotionCoreCreatorNetwork.createdBlocks]
+      transactionCreates, NotionCoreCreatorNetwork.createdBlocks, List.flatMap_map]
 
 theorem transaction_names (state result : State) (tx : Transaction)
     (accepted : applyTransaction state tx = some result) :
@@ -238,7 +245,7 @@ private theorem putInstance_keys (state : State) (inst : Nat) (value : Instance)
 def operationInstances : Operation → List Nat
   | .create block _ => [blockName block]
   | .insert _ inst _ _ _ | .erase _ inst _ | .marker _ inst _ _ => [blockName inst]
-  | .moveInto _ _ _ _ => []
+  | .moveInto _ _ _ _ | .merge _ _ => []
 
 private theorem operation_instance_keys (state result : State) (op : Operation)
     (accepted : applyOperation state op = some result) :
@@ -298,6 +305,10 @@ private theorem operation_instance_keys (state result : State) (op : Operation)
         simp [detached] at accepted
         subst result
         simp [instanceKeys, operationInstances]
+  | merge source target =>
+    simp only [applyOperation, Option.some.injEq] at accepted
+    subst result
+    simp [instanceKeys, operationInstances]
 
 private theorem operations_instance_keys (state result : State) (ops : List Operation)
     (accepted : applyOperations state ops = some result) :
@@ -323,8 +334,10 @@ private theorem decoded_instances (tx : Transaction) :
     ∀ key ∈ (NotionCorePayload.operations tx).flatMap operationInstances,
       key ∈ (usedBlocks tx).map blockName := by
   cases tx with
-  | mk id payload => cases payload <;> simp [NotionCorePayload.operations, operationInstances,
+  | mk id payload =>
+    cases payload <;> simp [NotionCorePayload.operations, operationInstances,
       usedBlocks, NotionCoreCreatorNetwork.createdBlocks, NotionCoreCreatorNetwork.requiredBlocks]
+    exact fun key inst ids member equal => Or.inr ⟨inst, ⟨ids, member⟩, equal.symm⟩
 
 private theorem transaction_instance_keys (state result : State) (tx : Transaction)
     (accepted : applyTransaction state tx = some result) :

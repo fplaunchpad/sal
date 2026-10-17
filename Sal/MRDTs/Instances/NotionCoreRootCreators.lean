@@ -290,7 +290,7 @@ theorem canonical_no_initial_use (network : State)
 theorem root_kind_control :
     rootCreatedBlocks ⟨⟨3,[65]⟩,.create (some .initial)⟩ = [.issued ⟨3,[65]⟩] ∧
     rootCreatedBlocks ⟨⟨3,[65]⟩,.split .initial .initial .start⟩ ≠ [.issued ⟨3,[65]⟩] ∧
-    selectedInstances (.erase .initial .initial [⟨1,[65]⟩]) = [] := by decide +kernel
+    selectedInstances (.erase .initial [(.initial,[⟨1,[65]⟩])]) = [] := by decide +kernel
 
 /-- PASS+FAIL: an archive entry alone does not put its root into an empty
 version; a complete bootstrap reservation does, independently of a live peer. -/

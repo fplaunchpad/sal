@@ -69,18 +69,17 @@ theorem canonical_bootstrap_source_execution_version (network : NotionCorePayloa
       NotionCoreSourceDocument.Execution document (NotionCoreMachineCommands.commands tx) after := by
   have creators := NotionCoreMachineNetwork.creator_reachable reachable
   have networkReach := NotionCoreCreatorNetwork.payload_reachable creators
-  obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
+  obtain ⟨checked,checkedReplay,part,_,_⟩ :=
     NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closed pre (tx :: suffix) position
   have stateEq : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
   obtain ⟨freshInstance,freshBlock⟩ := NotionCoreBootstrapProvenance.canonical_bootstrap_fresh_version
     network creators version closed pre suffix tx position atoms payload state accepted
   obtain ⟨created,createStep,createdPart⟩ := NotionCoreMachinePartitionCreate.create_partitioned
-    state .initial none part freshInstance freshBlock
-  have createdShape := NotionCoreMachineShape.fresh_create_shape_preserves state created .initial none
-    shape freshInstance freshBlock createStep
+    state .initial none part freshInstance freshBlock.1
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
-    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names]) accepted
+    (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names,
+      NotionCoreDisplayOrder.shown]) accepted
   obtain ⟨createdDoc,createdMat,createSource⟩ := NotionCoreMachineDocumentCreate.fresh_create_document
     state created .initial none freshInstance freshBlock createStep aligned document old (by simp)
   have createdPhysical := NotionCoreMachineCanonicalCreate.fresh_create_physical state created .initial none
@@ -130,14 +129,10 @@ theorem canonical_bootstrap_source_execution_version (network : NotionCorePayloa
     simp [NotionCoreSliceForest.emptyPhysical,NotionCorePartition.boundary]
   have createdAligned := NotionCoreMachineDisplay.operation_aligned state created (.create .initial none)
     aligned createStep
-  have active : NotionCoreMachineShape.ActiveInstance created 0 := by
-    refine ⟨⟨0,NotionCoreSliceForest.freshTitle 0⟩,?_,rfl⟩
-    rw [createdLayout.2.1]
-    simp [blockName]
   have available := NotionCoreMachineDocumentInsert.materialized_origin_available created createdPart
-    createdShape createdAligned createdUnique createdDoc createdMat 0 active (0,.start) present
+    createdAligned createdUnique createdDoc createdMat 0 stored (0,.start) present
   obtain ⟨after,afterMat,insertSource⟩ := NotionCoreMachineDocumentInsert.insert_source_step created next
-    createdPart createdShape.1 createdDoc createdMat 0 (0,.start)
+    createdPart createdDoc createdMat 0 (0,.start)
     ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map (NotionCorePhysicalReplay.atom 0)) rfl
     createdUnique nextUnique (by
       intro key oldExists
@@ -151,10 +146,10 @@ theorem canonical_bootstrap_source_execution_version (network : NotionCorePayloa
         simp [physical,NotionCoreMachineTables.getInstance_put,distinct])
     (by rw [nextEq]; unfold putInstance; split <;> rfl)
     (by rw [nextEq]; unfold putInstance; split <;> rfl) available
-  have createGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part oldUnique shape
+  have createGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part oldUnique
     aligned document createdDoc old (.create 0 0 none) createSource
   have insertGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard created createdPart createdUnique
-    createdShape createdAligned createdDoc after createdMat
+    createdAligned createdDoc after createdMat
     (.insert (0,.start) ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map
       (NotionCorePhysicalReplay.atom 0))) insertSource
   refine ⟨next,after,transaction,afterMat,?_⟩

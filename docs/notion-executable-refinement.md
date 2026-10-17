@@ -98,8 +98,12 @@ and equality between abstract core facts and the retained archive fact image.
 The 3,203-job component build passed with only standard Lean axioms.
 `RuntimeHonestProgress.receive_honest`, `merge_honest`, and
 `receiveMany_honest` additionally derive acceptance from the original honest
-network and archive provenance. No conflict-compatibility or successful-result
-premise is required.
+network and archive provenance, for input without block merges. No
+conflict-compatibility or successful-result premise is required. The engine
+refuses a merge transaction on receipt (`RuntimeEngine.admissible`,
+`RuntimeEngineProofs.receive_merge`): block merges are outside the executable's
+scope, and `RuntimeRefinement.received_merge_free` shows every archive it holds
+is merge-free.
 
 `RuntimeMain` exposes a persistent JSON-lines process and reports native elapsed
 nanoseconds around execution. It decodes typed requests before timing and
@@ -143,7 +147,8 @@ reservation widths to update allocator observations.
 `NotionCoreProtocol.Reach` execution with injective sessions, a registered
 version, and a concrete engine satisfying `Refines` whose archive represents
 that version, the executable query equals `NotionCoreMRDT.D.query` of the
-registered archive. `closed_version_reference` also relates it directly to
+registered archive, with no merge-freedom premise on the network, since the
+engine admits no merge. `closed_version_reference` also relates it directly to
 reference machine reconstruction and rendering. These are conditional
 representation theorems, not an assertion that arbitrary JSON requests are
 honest. The structural MRDT's existing specification/RA theorems apply to the
@@ -152,7 +157,8 @@ the original protocol's archive provenance.
 
 The constructive headline `RuntimeEndToEnd.load_closed_version` removes
 caller-supplied representation and acceptance assumptions: given an honest
-closed version and any list with its transaction set (arbitrary order and
+closed version without block merges (`RuntimeQuery.VersionFree`) and any list
+with its transaction set (arbitrary order and
 repetition), receipt into the actual empty engine succeeds, preserves all
 invariants, retains exactly that transaction set, and returns the reference
 reconstruction/rendering answer. Its build reports only `propext`,

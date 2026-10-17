@@ -14,8 +14,14 @@ private theorem target_reference (tx : Transaction) (inst : BlockKey) (id : Id)
     id ∈ tx.payload.references := by
   cases tx with
   | mk first payload =>
-    cases payload <;> simp [NotionCoreTableView.transactionTargets] at target
-    simpa [NotionCorePayload.Payload.references] using target.2
+    cases payload with
+    | erase block groups =>
+      simp only [NotionCoreTableView.transactionTargets, List.mem_flatMap] at target
+      obtain ⟨group, member, inside⟩ := target
+      split at inside
+      · exact List.mem_flatMap.mpr ⟨group, member, inside⟩
+      · simp at inside
+    | _ => simp [NotionCoreTableView.transactionTargets] at target
 
 /-- All actual old pending targets have counters below the next transaction,
 including targets of earlier deletions from other sessions. -/

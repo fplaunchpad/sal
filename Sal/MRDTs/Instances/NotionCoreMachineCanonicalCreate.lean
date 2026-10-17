@@ -50,7 +50,7 @@ theorem canonical_destination_fresh_version (network : NotionCorePayloadNetwork.
     (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state) :
     (∀ entry ∈ state.instances, entry.1 ≠ blockName (.issued tx.id)) ∧
-      (∀ block ∈ state.forest, block.id ≠ blockName (.issued tx.id)) := by
+      FreshBlock state (blockName (.issued tx.id)) := by
   have payloadReach := NotionCoreCreatorNetwork.payload_reachable reachable
   have ordered := position ▸ NotionCoreReconstruction.transactionsFor_ordered network payloadReach version
   have earlier (previous : Transaction) (present : previous ∈ pre) :
@@ -71,11 +71,14 @@ theorem canonical_destination_fresh_version (network : NotionCorePayloadNetwork.
     have contradiction := earlier earlierTx earlierMember
     rw [firstEq] at contradiction
     exact NotionCoreSourceInvariant.before_irrefl tx.id contradiction
-  refine ⟨freshInstances,?_⟩
-  intro block member sameName
   have supported := (NotionCoreMachineCreatorPresence.replay_created_instances pre state accepted).1
-  obtain ⟨entry,present,same⟩ := supported block.id (List.mem_map.mpr ⟨block,member,rfl⟩)
-  exact freshInstances entry present (same.trans sameName)
+  refine ⟨freshInstances,?_,?_⟩
+  · intro block member sameName
+    obtain ⟨entry,present,same⟩ := supported block.id (List.mem_append_left _ (List.mem_map.mpr ⟨block,member,rfl⟩))
+    exact freshInstances entry present (same.trans sameName)
+  · intro shown
+    obtain ⟨entry,present,same⟩ := supported _ (List.mem_append_right _ shown)
+    exact freshInstances entry present same
 
 theorem canonical_destination_fresh (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreCreatorNetwork.Reach network) (peer : Session)
@@ -83,7 +86,7 @@ theorem canonical_destination_fresh (network : NotionCorePayloadNetwork.State)
     (position : transactions network peer = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state) :
     (∀ entry ∈ state.instances, entry.1 ≠ blockName (.issued tx.id)) ∧
-      (∀ block ∈ state.forest, block.id ≠ blockName (.issued tx.id)) := by
+      FreshBlock state (blockName (.issued tx.id)) := by
   have issued := NotionCorePayloadNetwork.forget_reachable
     (NotionCoreCreatorNetwork.payload_reachable reachable)
   exact canonical_destination_fresh_version network reachable (network.allocation.peers peer).received
@@ -102,7 +105,7 @@ theorem canonical_create_partitioned_version (network : NotionCorePayloadNetwork
       NotionCoreMachinePartition.Partitioned result := by
   obtain ⟨freshInstance,freshBlock⟩ := canonical_destination_fresh_version network reachable version closed pre suffix tx position state accepted
   exact NotionCoreMachinePartitionCreate.create_partitioned state (.issued tx.id) afterBlock
-    partitioned freshInstance freshBlock
+    partitioned freshInstance freshBlock.1
 
 /-- Actual create phase for either a next create request or split destination.
 No assumed block/instance absence or next-step acceptance enters this theorem. -/
@@ -122,7 +125,7 @@ theorem canonical_create_partitioned (network : NotionCorePayloadNetwork.State)
 /-- Literal state shape of a genuinely fresh source create phase. -/
 theorem fresh_create_shape (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)
-    (freshBlock : ∀ old ∈ state.forest, old.id ≠ blockName block)
+    (freshBlock : FreshBlock state (blockName block))
     (accepted : applyOperation state (.create block afterBlock) = some result) :
     result.instances = state.instances ++ [(blockName block,({} : Instance))] ∧
       result.forest = state.forest ++ [⟨blockName block,NotionCoreSliceForest.freshTitle (blockName block)⟩] ∧
@@ -137,10 +140,10 @@ theorem fresh_create_shape (state result : State) (block : BlockKey) (afterBlock
     apply Bool.eq_false_iff.mpr
     intro found
     obtain ⟨old,member,equal⟩ := List.any_eq_true.mp found
-    exact freshBlock old member (by simpa using equal)
+    exact freshBlock.1 old member (by simpa using equal)
   have noPutBlock : (putInstance state (blockName block) {}).forest = state.forest := by
     simp [putInstance,noInstance]
-  simp only [applyOperation,noBlock,Bool.false_eq_true,if_false,noInstance,
+  simp only [applyOperation,freshBlock.2,noBlock,Bool.false_eq_true,if_false,noInstance,
     noPutBlock,Option.some.injEq] at accepted
   subst result
   simp [putInstance,noInstance]
@@ -149,7 +152,7 @@ theorem fresh_create_shape (state result : State) (block : BlockKey) (afterBlock
 and installs an empty START-only instance for the destination. -/
 theorem fresh_create_physical (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)
-    (freshBlock : ∀ old ∈ state.forest, old.id ≠ blockName block)
+    (freshBlock : FreshBlock state (blockName block))
     (accepted : applyOperation state (.create block afterBlock) = some result) :
     physical result (blockName block) = NotionCoreSliceForest.emptyPhysical (blockName block) ∧
       ∀ inst, inst ≠ blockName block → physical result inst = physical state inst := by
@@ -158,12 +161,7 @@ theorem fresh_create_physical (state result : State) (block : BlockKey) (afterBl
     intro found
     obtain ⟨entry,member,equal⟩ := List.any_eq_true.mp found
     exact freshInstance entry member (by simpa using equal)
-  have absentBlock : state.forest.any (fun old => old.id == blockName block) = false := by
-    apply Bool.eq_false_iff.mpr
-    intro found
-    obtain ⟨old,member,equal⟩ := List.any_eq_true.mp found
-    exact freshBlock old member (by simpa using equal)
-  simp only [applyOperation,absentBlock,Bool.false_eq_true,if_false,
+  simp only [applyOperation,freshBlock.2,Bool.false_eq_true,if_false,
     absentInstance,Option.some.injEq] at accepted
   subst result
   have get (inst : Nat) : getInstance (putInstance state (blockName block) {}) inst =
@@ -181,7 +179,7 @@ theorem fresh_create_physical (state result : State) (block : BlockKey) (afterBl
 and pending list is unchanged, not merely its visible text. -/
 theorem fresh_create_storage (state result : State) (block : BlockKey) (afterBlock : Option BlockKey)
     (freshInstance : ∀ entry ∈ state.instances, entry.1 ≠ blockName block)
-    (freshBlock : ∀ old ∈ state.forest, old.id ≠ blockName block)
+    (freshBlock : FreshBlock state (blockName block))
     (accepted : applyOperation state (.create block afterBlock) = some result) :
     ∀ inst, getInstance result inst = if inst = blockName block then {} else getInstance state inst := by
   have noInstance : state.instances.any (fun entry => entry.1 == blockName block) = false := by
@@ -189,12 +187,7 @@ theorem fresh_create_storage (state result : State) (block : BlockKey) (afterBlo
     intro found
     obtain ⟨entry,member,equal⟩ := List.any_eq_true.mp found
     exact freshInstance entry member (by simpa using equal)
-  have noBlock : state.forest.any (fun old => old.id == blockName block) = false := by
-    apply Bool.eq_false_iff.mpr
-    intro found
-    obtain ⟨old,member,equal⟩ := List.any_eq_true.mp found
-    exact freshBlock old member (by simpa using equal)
-  simp only [applyOperation,noBlock,Bool.false_eq_true,if_false,noInstance,Option.some.injEq] at accepted
+  simp only [applyOperation,freshBlock.2,Bool.false_eq_true,if_false,noInstance,Option.some.injEq] at accepted
   subst result
   intro inst
   change getInstance (putInstance state (blockName block) {}) inst = _

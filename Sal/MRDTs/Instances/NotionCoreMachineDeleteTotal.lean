@@ -2,10 +2,11 @@ import Sal.MRDTs.Instances.NotionCoreMachineDelete
 import Sal.MRDTs.Instances.NotionCoreMachineClientShape
 import Sal.MRDTs.Instances.NotionCoreMachineHonestReplay
 
-/-! Total supported nonempty erase preparation in the no-merge normal shape.
-Visible positions count source iterator atoms. This concerns actual internal
-selection/codec validation; source wire parsing and JavaScript extraction are
-separate boundaries. -/
+/-! Total supported nonempty erase preparation on chains. Visible positions
+count source iterator atoms across every slice of a block's chain, which may
+lie in several text instances after merges; the selection is grouped by
+instance. This concerns actual internal selection/codec validation; source
+wire parsing and JavaScript extraction are separate boundaries. -/
 namespace Sal.MRDTs.Instances.NotionCoreMachineDeleteTotal
 open NotionCoreMachine
 open NotionCoreMachineClient
@@ -15,7 +16,6 @@ open NotionCoreMachinePartition (Partitioned)
 open NotionCorePayload (BlockKey Payload Transaction)
 open NotionCoreSource (Atom Slice)
 open NotionCoreSpec (Address)
-open NotionCoreSliceForest (Normal active)
 open NotionCorePreparation (characters visibleAtom)
 
 private theorem mapM_success {α β : Type} (f : α → Option β) (xs : List α)
@@ -40,43 +40,40 @@ theorem materialize_total (state : State) (part : Partitioned state)
   obtain ⟨atoms,extracted⟩ := NotionCoreMachinePartition.ref_extracts state part unique (found.id,ref) owned
   exact ⟨⟨ref.start,atoms⟩,by simp [extracted]⟩
 
-/-- The unused title contributes no visible atom. All visible atoms belong
-to the one active slice, including after arbitrary splits and tombstones. -/
-theorem normal_visible_instance (state : State) (bid : Nat) (tree : NotionCoreSliceForest.Tree)
-    (normal : Normal bid tree)
-    (empty : NotionCoreSliceForest.attached tree = true →
-      physical state bid = NotionCoreSliceForest.emptyPhysical bid)
-    (slices : List Slice) (materialized : materialize state tree = some slices) :
-    ∀ atom ∈ slices.flatMap characters, atom.address.1 = (active tree).start.1 := by
-  cases normal with
-  | own stop =>
-    cases extracted : sliceAtoms state ⟨(bid,.start),stop⟩ with
-    | none => simp [materialize,NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,extracted] at materialized
-    | some atoms =>
-      have equal : slices = [⟨(bid,.start),atoms⟩] := by
-        simpa [materialize,NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,extracted] using materialized.symm
-      subst slices
-      intro atom member
-      have inside : atom ∈ atoms := (List.mem_filter.mp (by simpa [characters] using member)).1
-      exact (slice_storage state _ atoms extracted).2 atom inside
-  | attached ref =>
-    cases root : sliceAtoms state (NotionCoreSliceForest.titleRef bid) with
-    | none => simp [materialize,NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,root] at materialized
-    | some roots =>
-      have existsTitle : state.instances.any (fun entry => entry.1 == bid) = true := by
-        simpa [NotionCoreSliceForest.titleRef] using (slice_storage state _ roots root).1
-      have rootEmpty := NotionCoreMachineSlices.empty_title_atoms state bid existsTitle (empty rfl)
-      have rootsEq : roots = [] := Option.some.inj (root.symm.trans rootEmpty)
-      subst roots
-      cases leaf : sliceAtoms state ref with
-      | none => simp [materialize,NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,root,leaf] at materialized
-      | some atoms =>
-        have equal : slices = [⟨(bid,.start),[]⟩,⟨ref.start,atoms⟩] := by
-          simpa [materialize,NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,root,leaf] using materialized.symm
-        subst slices
-        intro atom member
-        have inside : atom ∈ atoms := (List.mem_filter.mp (by simpa [characters] using member)).1
-        exact (slice_storage state ref atoms leaf).2 atom inside
+/-- Every visible atom of a stored chain lies in the instance of a live node
+of the forest: dead title roots have physically empty instances. -/
+theorem visible_live_instance (state : State) (shape : ShapeInvariant state)
+    (found : NotionCoreSliceForest.Block) (member : found ∈ state.forest)
+    (slices : List Slice) (materialized : materialize state found.title = some slices) :
+    ∀ atom ∈ slices.flatMap characters, ∃ live,
+      (live,true) ∈ NotionCoreSliceForest.forestNodes state.forest ∧ live.start.1 = atom.address.1 := by
+  intro atom visible
+  obtain ⟨slice,inside,character⟩ := List.mem_flatMap.mp visible
+  have atomMember := (List.mem_filter.mp character).1
+  obtain ⟨ref,inTree,extracted⟩ := mapM_source _ _ _ materialized slice inside
+  cases selected : sliceAtoms state ref with
+  | none => simp [selected] at extracted
+  | some atoms =>
+    have sliceEq : slice = ⟨ref.start,atoms⟩ := by simpa [selected] using extracted.symm
+    subst slice
+    have sameInst := (slice_storage state ref atoms selected).2 atom atomMember
+    have refMember : ref ∈ NotionCoreSliceForest.forestRefs state.forest :=
+      List.mem_flatMap.mpr ⟨found,member,inTree⟩
+    rw [← NotionCoreSliceForest.forestNodes_fst] at refMember
+    obtain ⟨⟨node,live⟩,nodeMember,nodeEq⟩ := List.mem_map.mp refMember
+    simp only at nodeEq
+    subst node
+    cases live with
+    | true => exact ⟨ref,nodeMember,sameInst.symm⟩
+    | false =>
+      obtain ⟨titleEq,empty,_⟩ := shape.2.2 ref nodeMember
+      have existsInstance := (slice_storage state ref atoms selected).1
+      have emptyAtoms := NotionCoreMachineSlices.empty_title_atoms state ref.start.1
+        (by simpa using existsInstance) empty
+      rw [← titleEq] at emptyAtoms
+      have : atoms = [] := Option.some.inj (selected.symm.trans emptyAtoms)
+      subst atoms
+      simp at atomMember
 
 private theorem visible_not_start (state : State) (atom : Atom)
     (present : atom ∈ physical state atom.address.1) (visible : visibleAtom atom = true) :
@@ -149,16 +146,16 @@ private theorem target_mapM (inst : BlockKey) (addresses : List Address)
     have laterMap : rest.mapM (decodeTarget inst) = some ids := later
     simp [decodeTargets,one,laterMap]
 
-/-- A valid nonempty visible range prepares one source-codec sorted erase.
-Normal shape supplies the single-instance validator, and replay provenance
-supplies each internal item decoder. No selection success is assumed. -/
+/-- A valid nonempty visible range prepares one source-codec sorted group per
+run of one text instance. Replay provenance supplies each internal item
+decoder; no selection success and no single-instance shape is assumed. -/
 theorem selectErase_total (txs : List Transaction) (state : State)
-    (accepted : replay {} txs = some state) (part : Partitioned state) (shape : ShapeInvariant state)
+    (accepted : replay {} txs = some state) (part : Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
     (block : BlockKey) (stored : ∃ found ∈ state.forest, found.id = blockName block)
     (start stop : Nat) (nonempty : start < stop) (bounded : stop ≤ visibleLength state block) :
-    ∃ inst ids, selectErase state block start stop = some (.erase block inst (NotionCoreRanges.sorted ids)) ∧
-      ids ≠ [] := by
+    ∃ groups, selectErase state block start stop = some (.erase block groups) ∧
+      groups ≠ [] ∧ ∀ group ∈ groups, group.2 ≠ [] := by
   cases found : state.forest.find? (fun entry => entry.id == blockName block) with
   | none =>
     obtain ⟨entry,member,equal⟩ := stored
@@ -178,78 +175,108 @@ theorem selectErase_total (txs : List Transaction) (state : State)
       rw [empty] at length
       simp only [List.length_nil] at length
       omega
-    obtain ⟨first,rest,selectedEq⟩ := List.exists_cons_of_ne_nil positive
-    have firstMember : first ∈ slices.flatMap characters :=
-      List.mem_of_mem_drop (List.mem_of_mem_take (selectedEq ▸ List.mem_cons_self))
-    obtain ⟨inst,id,decodedFirst⟩ := materialized_visible_decode txs state accepted entry.title slices materialized first firstMember
-    have titleEmpty : NotionCoreSliceForest.attached entry.title = true →
-        physical state entry.id = NotionCoreSliceForest.emptyPhysical entry.id := by
-      intro attached
-      exact shape.2.2 _ (List.mem_map.mpr ⟨entry,member,rfl⟩) attached
-    have instanceSame := normal_visible_instance state entry.id entry.title (shape.1 entry member) titleEmpty slices materialized
-    have blockDecoded := decode_block first.address inst (.item id) decodedFirst
-    have every : ∀ address ∈ selected.map Atom.address, ∃ item, decodeAddress address = some (inst,.item item) := by
-      intro address present
-      obtain ⟨atom,inSelection,rfl⟩ := List.mem_map.mp present
-      have visible : atom ∈ slices.flatMap characters := List.mem_of_mem_drop (List.mem_of_mem_take inSelection)
-      obtain ⟨actual,item,decoded⟩ := materialized_visible_decode txs state accepted entry.title slices materialized atom visible
-      have sameInst : atom.address.1 = first.address.1 := (instanceSame atom visible).trans (instanceSame first firstMember).symm
-      have actualBlock := decode_block atom.address actual (.item item) decoded
-      rw [sameInst,blockDecoded] at actualBlock
-      have actualEq : actual = inst := (Option.some.inj actualBlock).symm
-      exact ⟨item,actualEq ▸ decoded⟩
-    obtain ⟨ids,decoded,lengthIds⟩ := target_mapM inst (selected.map Atom.address) every
-    have idsNonempty : ids ≠ [] := by
-      intro empty
-      rw [empty,List.length_nil,List.length_map,length] at lengthIds
-      omega
     have selectedNonempty : (selected.map Atom.address).isEmpty = false := by
+      obtain ⟨first,rest,selectedEq⟩ := List.exists_cons_of_ne_nil positive
       simp [selectedEq]
     have addresses : deleteAddresses state block start stop = some (selected.map Atom.address) := by
       simp only [deleteAddresses,show start ≠ stop by omega,if_false,blockSlicesEq,Bind.bind,Option.bind]
       change (if (selected.map Atom.address).isEmpty then none else some (selected.map Atom.address)) = _
       rw [selectedNonempty]
       rfl
-    refine ⟨inst,ids,?_,idsNonempty⟩
-    have prepared : prepareErase state block inst start stop =
-        some (.erase block inst (NotionCoreRanges.sorted ids)) := by
-      simp [prepareErase,addresses,decoded,NotionCoreRanges.expand_compress]
-    simp [selectErase,addresses,selectedEq,decodedFirst,prepared]
+    have decodes : ∀ address ∈ selected.map Atom.address, ∃ inst id,
+        decodeAddress address = some (inst,.item id) := by
+      intro address present
+      obtain ⟨atom,inSelection,rfl⟩ := List.mem_map.mp present
+      exact materialized_visible_decode txs state accepted entry.title slices materialized atom
+        (List.mem_of_mem_drop (List.mem_of_mem_take inSelection))
+    have groupsSome : ∀ run ∈ runs (selected.map Atom.address), ∃ group,
+        prepareGroup run = some group ∧ group.2 ≠ [] := by
+      intro run runMember
+      obtain ⟨first,rest,runEq⟩ := List.exists_cons_of_ne_nil (runs_nonempty _ run runMember)
+      have inRun : ∀ address ∈ run.2, address ∈ selected.map Atom.address := by
+        intro address inside
+        rw [← runs_flatten (selected.map Atom.address)]
+        exact List.mem_flatMap.mpr ⟨run,runMember,inside⟩
+      obtain ⟨inst,firstId,firstDecoded⟩ := decodes first (inRun first (by simp [runEq]))
+      have firstKey : first.1 = run.1 := runs_key _ run runMember first (by simp [runEq])
+      have runBlock : decodeBlock run.1 = some inst := by
+        rw [← firstKey]; exact decode_block first inst (.item firstId) firstDecoded
+      have every : ∀ address ∈ run.2, ∃ item, decodeAddress address = some (inst,.item item) := by
+        intro address inside
+        obtain ⟨actual,item,decoded⟩ := decodes address (inRun address inside)
+        have actualBlock := decode_block address actual (.item item) decoded
+        rw [runs_key _ run runMember address inside,runBlock] at actualBlock
+        have actualEq : actual = inst := (Option.some.inj actualBlock).symm
+        exact ⟨item,actualEq ▸ decoded⟩
+      obtain ⟨ids,decoded,lengthIds⟩ := target_mapM inst run.2 every
+      refine ⟨(inst,NotionCoreRanges.sorted ids),?_,?_⟩
+      · simp [prepareGroup,runBlock,decoded,NotionCoreRanges.expand_compress]
+      · intro empty
+        have lengths := (NotionCoreRanges.sorted_perm ids).length_eq
+        simp only at empty
+        rw [empty,List.length_nil,lengthIds,runEq] at lengths
+        simp at lengths
+    obtain ⟨groups,grouped⟩ := mapM_success prepareGroup (runs (selected.map Atom.address))
+      (fun run member => by
+        obtain ⟨group,prepared,_⟩ := groupsSome run member
+        exact ⟨group,prepared⟩)
+    refine ⟨groups,?_,?_,?_⟩
+    · simp [selectErase,addresses,grouped]
+    · intro empty
+      subst groups
+      have runsEmpty : runs (selected.map Atom.address) = [] := by
+        cases h : runs (selected.map Atom.address) with
+        | nil => rfl
+        | cons run rest =>
+          rw [h,List.mapM_cons] at grouped
+          cases hp : prepareGroup run <;> cases hr : List.mapM prepareGroup rest <;>
+            simp [hp, hr] at grouped
+      have flat := runs_flatten (selected.map Atom.address)
+      rw [runsEmpty] at flat
+      simp only [List.flatMap_nil] at flat
+      have : selected = [] := by simpa using flat.symm
+      exact positive this
+    · intro group member
+      obtain ⟨run,runMember,prepared⟩ := mapM_source _ _ _ grouped group member
+      obtain ⟨other,otherPrepared,nonemptyGroup⟩ := groupsSome run runMember
+      rw [prepared] at otherPrepared
+      cases otherPrepared
+      exact nonemptyGroup
 
 #print axioms materialize_total
-#print axioms normal_visible_instance
+#print axioms visible_live_instance
 #print axioms selectErase_total
 
-/-- Honest reconstruction supplies shape, coverage, and physical uniqueness.
-The remaining request premises are precisely an existing block and a valid
+/-- Honest reconstruction supplies coverage and physical uniqueness. The
+remaining request premises are precisely an existing block and a valid
 nonempty range of its displayed iterator atoms. -/
 theorem honest_selectErase_total (network : NotionCorePayloadNetwork.State)
     (reachable : NotionCoreMachineNetwork.Reach network) (peer : NotionRunAllocation.Session)
     (state : State) (reconstructed : NotionCoreReconstruction.reconstruct network peer = some state)
     (block : BlockKey) (stored : ∃ found ∈ state.forest, found.id = blockName block)
     (start stop : Nat) (nonempty : start < stop) (bounded : stop ≤ visibleLength state block) :
-    ∃ inst ids, selectErase state block start stop = some (.erase block inst (NotionCoreRanges.sorted ids)) ∧
-      ids ≠ [] := by
-  obtain ⟨checked,accepted,part,shape,_⟩ := NotionCoreMachineHonestReplay.honest_reconstruct network reachable peer
+    ∃ groups, selectErase state block start stop = some (.erase block groups) ∧
+      groups ≠ [] ∧ ∀ group ∈ groups, group.2 ≠ [] := by
+  obtain ⟨checked,accepted,part,_,_⟩ := NotionCoreMachineHonestReplay.honest_reconstruct network reachable peer
   have equal : checked = state := Option.some.inj (accepted.symm.trans reconstructed)
   subst checked
   have actual : replay {} (NotionCoreReconstruction.transactions network peer) = some state := reconstructed
   have unique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all network
     (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable))
     peer (NotionCoreReconstruction.transactions network peer) [] (by simp) state actual
-  exact selectErase_total _ state actual part shape unique block stored start stop nonempty bounded
+  exact selectErase_total _ state actual part unique block stored start stop nonempty bounded
 
 namespace SPOT
 private def first : NotionRunAllocation.Id := ⟨1,[65]⟩
 private def second : NotionRunAllocation.Id := ⟨2,[65]⟩
 private def cut : Transaction := ⟨⟨3,[66]⟩,.split .initial .initial (.item first)⟩
 /-- The inherited leaf displays b and deletes its original-instance ID. The
-new block's unused title is not the text instance, and empty ranges emit none. -/
+new block's empty dead title is not the text instance, and empty ranges emit none. -/
 theorem inherited_delete_control :
     (replay {} [NotionCorePayload.bootstrap [97,98],cut] >>= fun state =>
-      selectErase state (.issued cut.id) 0 1) = some (.erase (.issued cut.id) .initial [second]) ∧
+      selectErase state (.issued cut.id) 0 1) = some (.erase (.issued cut.id) [(.initial,[second])]) ∧
     (replay {} [NotionCorePayload.bootstrap [97,98],cut] >>= fun state =>
-      selectErase state (.issued cut.id) 0 1) ≠ some (.erase (.issued cut.id) (.issued cut.id) [second]) ∧
+      selectErase state (.issued cut.id) 0 1) ≠ some (.erase (.issued cut.id) [(.issued cut.id,[second])]) ∧
     (replay {} [NotionCorePayload.bootstrap [97,98],cut] >>= fun state =>
       selectErase state (.issued cut.id) 0 0) = none := by decide +kernel
 end SPOT
@@ -266,13 +293,14 @@ theorem honest_erase_request_total (network : NotionCorePayloadNetwork.State)
       found.id = blockName block)
     (nonempty : start < stop)
     (bounded : stop ≤ visibleLength ((NotionCoreReconstruction.reconstruct network peer).getD {}) block) :
-    ∃ state inst ids, NotionCoreReconstruction.reconstruct network peer = some state ∧
-      selectErase state block start stop = some (.erase block inst (NotionCoreRanges.sorted ids)) ∧ ids ≠ [] := by
+    ∃ state groups, NotionCoreReconstruction.reconstruct network peer = some state ∧
+      selectErase state block start stop = some (.erase block groups) ∧
+      groups ≠ [] ∧ ∀ group ∈ groups, group.2 ≠ [] := by
   obtain ⟨state,accepted,_,_,_⟩ := NotionCoreMachineHonestReplay.honest_reconstruct network reachable peer
   rw [accepted] at stored bounded
-  obtain ⟨inst,ids,prepared,nonemptyIds⟩ := honest_selectErase_total network reachable peer state accepted
-    block stored start stop nonempty bounded
-  exact ⟨state,inst,ids,accepted,prepared,nonemptyIds⟩
+  obtain ⟨groups,prepared,nonemptyGroups,nonemptyTargets⟩ := honest_selectErase_total network reachable peer
+    state accepted block stored start stop nonempty bounded
+  exact ⟨state,groups,accepted,prepared,nonemptyGroups,nonemptyTargets⟩
 
 #print axioms honest_erase_request_total
 end Sal.MRDTs.Instances.NotionCoreMachineDeleteTotal

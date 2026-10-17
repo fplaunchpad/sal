@@ -130,9 +130,13 @@ The Lean results have a separate, narrower role:
 | `NotionMergeLossCounterexample.character_loss_unexplained` | No sequential history of ordinary splits and merges from `x` produces that display |
 | `NotionMergeLossCounterexample.acyclic_target_control` | Moving the same subtree under the live first block keeps `x` visible |
 
-N-004 and N-005 need the editor's merge-block request, which is outside the
-verified typed core. Their model keeps a merge's move and block removal, not
-its preceding split step.
+N-004 and N-005 need the demo's merge-block request, whose block removal is
+separate from its move. Their model keeps a merge's move and block removal, not
+its preceding split step. The verified typed core's block merge makes removal
+the move itself; under it N-001, N-004 and N-005 do not occur
+(`NotionCoreSpecMerge.merge_text_conserved`, `NotionCoreMRDTClient.split_effect`
+and `merge_effect`, and `NotionCoreProtocol.specification_ra`). N-002 and N-003
+concern formatting, which the core does not cover.
 
 The formatting model has one text instance, no hidden characters, and no
 prior annotations. These theorems do not mechanize the complete JavaScript

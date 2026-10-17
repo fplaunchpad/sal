@@ -1,0 +1,3023 @@
+{
+ "variant": "design",
+ "jobs": {
+  "gate": {
+   "argv": [
+    "gate.mjs"
+   ],
+   "exit": 0,
+   "seconds": 0.1,
+   "output": {
+    "cases": [
+     {
+      "name": "N-002 bold selection misses selected characters",
+      "contract": "positional bold",
+      "before": [
+       "",
+       "ba"
+      ],
+      "demoPrecondition": [
+       "",
+       "ba"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "",
+       "ba"
+      ],
+      "actual": [
+       "",
+       "ba"
+      ],
+      "contractHolds": false
+     },
+     {
+      "name": "N-002 control",
+      "contract": "positional bold",
+      "before": [
+       "b",
+       "a"
+      ],
+      "demoPrecondition": [
+       "b",
+       "a"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "b",
+       "a"
+      ],
+      "actual": [
+       "b",
+       "a"
+      ],
+      "contractHolds": true
+     },
+     {
+      "name": "N-003 bold selection changes an unselected character",
+      "contract": "positional bold",
+      "before": [
+       "ac",
+       "b"
+      ],
+      "demoPrecondition": [
+       "ac",
+       "b"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "ac",
+       "b"
+      ],
+      "actual": [
+       "ac",
+       "b"
+      ],
+      "contractHolds": false
+     },
+     {
+      "name": "N-001 split at zero",
+      "contract": "positional split",
+      "before": [
+       "",
+       "aX"
+      ],
+      "demoPrecondition": [
+       "",
+       "aX"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "",
+       "",
+       "aX"
+      ],
+      "actual": [
+       "",
+       "",
+       "aX"
+      ],
+      "contractHolds": true
+     },
+     {
+      "name": "N-001 six-request variant",
+      "contract": "positional split",
+      "before": [
+       "",
+       "ab"
+      ],
+      "demoPrecondition": [
+       "",
+       "ab"
+      ],
+      "preconditionReached": true,
+      "expected": [
+       "",
+       "",
+       "ab"
+      ],
+      "actual": [
+       "",
+       "",
+       "ab"
+      ],
+      "contractHolds": true
+     },
+     {
+      "name": "N-004 merge into a removed block hides the document",
+      "contract": "conservation: visible multiset abc",
+      "before": [
+       "a",
+       "bc"
+      ],
+      "demoPrecondition": [
+       "",
+       "abc"
+      ],
+      "preconditionReached": false,
+      "expected": "abc",
+      "actual": [
+       "abc"
+      ],
+      "visible": "abc",
+      "converged": true,
+      "contractHolds": true,
+      "controls": {
+       "noFirstMerge": {
+        "actual": [
+         "abc"
+        ],
+        "holds": true
+       },
+       "lastMergeDeliveredEarly": {
+        "actual": [
+         "abc"
+        ],
+        "holds": true
+       }
+      }
+     },
+     {
+      "name": "N-005 delayed merge hides a character",
+      "contract": "conservation: visible multiset x",
+      "before": [
+       "",
+       "",
+       "x"
+      ],
+      "demoPrecondition": [
+       "",
+       "",
+       "x"
+      ],
+      "preconditionReached": true,
+      "expected": "x",
+      "actual": [
+       "x"
+      ],
+      "visible": "x",
+      "converged": true,
+      "contractHolds": true,
+      "controls": {
+       "notDelivered": {
+        "actual": [
+         "",
+         "x"
+        ],
+        "holds": true
+       },
+       "noLocalMerge": {
+        "actual": [
+         "",
+         "x"
+        ],
+        "holds": true
+       },
+       "deliveredEarly": {
+        "actual": [
+         "x"
+        ],
+        "holds": true
+       }
+      }
+     },
+     {
+      "name": "N-005 persistent-client form",
+      "contract": "conservation: visible multiset x",
+      "before": [
+       "",
+       "",
+       "",
+       "x"
+      ],
+      "demoPrecondition": [
+       "",
+       "",
+       "",
+       "x"
+      ],
+      "preconditionReached": true,
+      "expected": "x",
+      "actual": [
+       "x",
+       ""
+      ],
+      "visible": "x",
+      "converged": true,
+      "contractHolds": true
+     }
+    ],
+    "sensitivity": [
+     {
+      "history": "merge ab|cd",
+      "display": [
+       [
+        "seed-block-1",
+        "abcd"
+       ]
+      ],
+      "spec": "agree",
+      "mutants": {
+       "MergeNoOp": "placement",
+       "MergeSourceFirst": "placement",
+       "skipMeaning": "agree"
+      }
+     },
+     {
+      "history": "merge b into a || merge c into b",
+      "display": [
+       [
+        "seed-block-1",
+        "abc"
+       ]
+      ],
+      "spec": "agree",
+      "mutants": {
+       "MergeNoOp": "placement",
+       "MergeSourceFirst": "placement",
+       "skipMeaning": "placement"
+      }
+     }
+    ]
+   },
+   "ra": {
+    "archives": 50,
+    "documentCalls": 397,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 50,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 47,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 3
+     },
+     "removed": {
+      "agree": 47,
+      "stuck": 3,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 50,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossing": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossingExample": null,
+     "disagreements": []
+    }
+   }
+  },
+  "litmus": {
+   "argv": [
+    "litmus.mjs"
+   ],
+   "exit": 0,
+   "seconds": 2.1,
+   "output": {
+    "summary": {
+     "runs": 2332,
+     "localChecks": 6736,
+     "localFailures": 0,
+     "finalChecks": 52,
+     "finalFailures": 0,
+     "finalSkipFailures": 2,
+     "divergent": 0,
+     "exceptions": 0
+    },
+    "results": [
+     {
+      "id": "a",
+      "name": "split S at 0 || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "ab",
+         "cd"
+        ],
+        "expected": [
+         "ab",
+         "cd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "ab",
+         "cd"
+        ],
+        "expected": [
+         "ab",
+         "cd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "ab",
+         "cd"
+        ],
+        "expected": [
+         "ab",
+         "cd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "ab",
+         "cd"
+        ],
+        "expected": [
+         "ab",
+         "cd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 200,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 111,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 111,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 60,
+        "stuck": 51,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "a",
+      "name": "split S at 1 || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abc",
+         "d"
+        ],
+        "expected": [
+         "abc",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abc",
+         "d"
+        ],
+        "expected": [
+         "abc",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abc",
+         "d"
+        ],
+        "expected": [
+         "abc",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abc",
+         "d"
+        ],
+        "expected": [
+         "abc",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 216,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 57,
+        "stuck": 55,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "a",
+      "name": "split S at 2 || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcd",
+         ""
+        ],
+        "expected": [
+         "abcd",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcd",
+         ""
+        ],
+        "expected": [
+         "abcd",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcd",
+         ""
+        ],
+        "expected": [
+         "abcd",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcd",
+         ""
+        ],
+        "expected": [
+         "abcd",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 264,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 136,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 136,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 69,
+        "stuck": 67,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "b",
+      "name": "merge S into T || merge T into U",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abc"
+        ],
+        "expected": [
+         "abc"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abc"
+        ],
+        "expected": [
+         "abc"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abc"
+        ],
+        "expected": [
+         "abc"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abc"
+        ],
+        "expected": [
+         "abc"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 160,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 91,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 50,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 41
+       },
+       "removed": {
+        "agree": 91,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "c",
+      "name": "merge S into T || forged merge T into S",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "ab"
+        ],
+        "expected": [
+         "ab"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "ab"
+        ],
+        "expected": [
+         "ab"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "ba"
+        ],
+        "expected": [
+         "ba"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "ba"
+        ],
+        "expected": [
+         "ba"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 96,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 52,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 52,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 52,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "d",
+      "name": "insert X at 0 of S || merge S into T, seed [\"ab\",\"cd\"]",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abXcd"
+        ],
+        "expected": [
+         "abXcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abXcd"
+        ],
+        "expected": [
+         "abXcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abXcd"
+        ],
+        "expected": [
+         "abXcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abXcd"
+        ],
+        "expected": [
+         "abXcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 336,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 172,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 172,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 172,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "d",
+      "name": "insert X at 0 of S || merge S into T, seed [\"ab\",\"\"]",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abX"
+        ],
+        "expected": [
+         "abX"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abX"
+        ],
+        "expected": [
+         "abX"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abX"
+        ],
+        "expected": [
+         "abX"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abX"
+        ],
+        "expected": [
+         "abX"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 160,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 86,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 86,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 86,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 0",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "",
+         "ad"
+        ],
+        "expected": [
+         "",
+         "ad"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "",
+         "ad"
+        ],
+        "expected": [
+         "",
+         "ad"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "",
+         "ad"
+        ],
+        "expected": [
+         "",
+         "ad"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "",
+         "ad"
+        ],
+        "expected": [
+         "",
+         "ad"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 120,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 67,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 67,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 67,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 1",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 104,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 2",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 104,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 3",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "d"
+        ],
+        "expected": [
+         "a",
+         "d"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 104,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "e",
+      "name": "after merge: delete [1,3) across the boundary || split at 4",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "ad",
+         ""
+        ],
+        "expected": [
+         "ad",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "ad",
+         ""
+        ],
+        "expected": [
+         "ad",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "ad",
+         ""
+        ],
+        "expected": [
+         "ad",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "ad",
+         ""
+        ],
+        "expected": [
+         "ad",
+         ""
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 120,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 64,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 64,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 64,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "f",
+      "name": "create after S || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcd",
+         "Z"
+        ],
+        "expected": [
+         "abcd",
+         "Z"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcd",
+         "Z"
+        ],
+        "expected": [
+         "abcd",
+         "Z"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcd",
+         "Z"
+        ],
+        "expected": [
+         "abcd",
+         "Z"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcd",
+         "Z"
+        ],
+        "expected": [
+         "abcd",
+         "Z"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 296,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 152,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 152,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 77,
+        "stuck": 75,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     }
+    ]
+   },
+   "ra": {
+    "archives": 1211,
+    "documentCalls": 111436,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 1211,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 1170,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 41
+     },
+     "removed": {
+      "agree": 963,
+      "stuck": 248,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 1211,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 416,
+      "agree": 416
+     },
+     "crossing": {
+      "checked": 804,
+      "agree": 804
+     },
+     "crossingExample": {
+      "before": [
+       "abc",
+       "d"
+      ],
+      "request": {
+       "block": 0,
+       "start": 0,
+       "end": 3
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-4"
+      ],
+      "after": [
+       "",
+       "d"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "sequential-17004": {
+   "argv": [
+    "campaign.mjs",
+    "sequential",
+    "17004",
+    "60"
+   ],
+   "exit": 0,
+   "seconds": 20.5,
+   "output": {
+    "mode": "sequential",
+    "seed": 17004,
+    "trials": 60,
+    "counts": {
+     "states": 600,
+     "probes": 12367,
+     "passes": {
+      "insert": 3173,
+      "split": 3173,
+      "delete": 2456,
+      "bold": 2456,
+      "merge": 1109
+     },
+     "failures": {},
+     "invalidSetups": 0,
+     "skippedLarge": 0,
+     "deliveryChecks": 600
+    },
+    "findings": [],
+    "failureStateCount": 0
+   },
+   "ra": {
+    "archives": 13578,
+    "documentCalls": 193142,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 13578,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 13578,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "removed": {
+      "agree": 13578,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 13578,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 2537,
+      "agree": 2537
+     },
+     "crossing": {
+      "checked": 165,
+      "agree": 165
+     },
+     "crossingExample": {
+      "before": [
+       "aXbc",
+       "d"
+      ],
+      "request": {
+       "block": 0,
+       "start": 0,
+       "end": 4
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-4"
+      ],
+      "after": [
+       "",
+       "d"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "network-27002": {
+   "argv": [
+    "network-search.mjs",
+    "27002",
+    "100",
+    "80"
+   ],
+   "exit": 0,
+   "seconds": 77.6,
+   "output": {
+    "mode": "network-search",
+    "seed": 27002,
+    "trials": 100,
+    "steps": 80,
+    "counts": {
+     "edits": 5281,
+     "deliveries": 12342,
+     "deliveredTransactions": 12342,
+     "causalChecks": 12342,
+     "duplicateChecks": 12342,
+     "continuedDifferentViewEdits": 5180,
+     "partiallyDeliveredEdits": 3571,
+     "synchronizedTrials": 100,
+     "passes": {
+      "bold": 889,
+      "delete": 892,
+      "insert": 1240,
+      "split": 1262,
+      "merge": 997
+     },
+     "failures": {
+      "bold:outside": 1
+     },
+     "classifications": {
+      "known:format-interval": 1
+     },
+     "generationExceptions": 0
+    },
+    "findings": [],
+    "scope": "Measured local effect against independent positional list semantics; insertion ignores only new-character formatting inheritance, preserving existing marks; persistent sessions, causal whole-request delivery, eventual equal-archive display; source-based known-root classification is diagnostic, no production correspondence or proof.",
+    "traceCount": 100
+   },
+   "ra": {
+    "archives": 16927,
+    "documentCalls": 252408,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 16927,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 14364,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 2563
+     },
+     "removed": {
+      "agree": 11302,
+      "stuck": 5625,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 16927,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 842,
+      "agree": 842
+     },
+     "crossing": {
+      "checked": 50,
+      "agree": 50
+     },
+     "crossingExample": {
+      "before": [
+       "yab"
+      ],
+      "request": {
+       "block": 0,
+       "start": 1,
+       "end": 3
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-3"
+      ],
+      "after": [
+       "y"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "offline-17102": {
+   "argv": [
+    "offline-search.mjs",
+    "17102",
+    "12",
+    "110",
+    "structural"
+   ],
+   "exit": 0,
+   "seconds": 116.8,
+   "output": {
+    "mode": "structural",
+    "seed": 17102,
+    "trials": 12,
+    "steps": 110,
+    "counts": {
+     "trials": 12,
+     "locals": 913,
+     "receives": 1826,
+     "probes": 0,
+     "equalSetChecks": 48,
+     "localFailures": 0,
+     "conservationFailures": 0,
+     "exceptions": 0
+    },
+    "findings": [],
+    "scope": "persistent distinct sessions; complete known archive recorded as causal dependencies; only whole transactions received; local immediate list semantics; equal-set display convergence; structural mode conserves character multiset across local edits and receives",
+    "findingCount": 0
+   },
+   "ra": {
+    "archives": 2651,
+    "documentCalls": 72276,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 2651,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 1591,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 1060
+     },
+     "removed": {
+      "agree": 832,
+      "stuck": 1819,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 2651,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 1,
+      "agree": 1
+     },
+     "crossing": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossingExample": null,
+     "disagreements": []
+    }
+   }
+  },
+  "campaign-17005": {
+   "argv": [
+    "campaign.mjs",
+    "search",
+    "17005",
+    "100"
+   ],
+   "exit": 0,
+   "seconds": 157.1,
+   "output": {
+    "mode": "search",
+    "seed": 17005,
+    "trials": 100,
+    "counts": {
+     "states": 1120,
+     "probes": 30548,
+     "passes": {
+      "insert": 7307,
+      "split": 7307,
+      "merge": 2694,
+      "delete": 6620,
+      "bold": 6512
+     },
+     "failures": {
+      "bold:missed": 76,
+      "bold:outside": 32
+     },
+     "invalidSetups": 0,
+     "skippedLarge": 30,
+     "deliveryChecks": 1120
+    },
+    "findings": [
+     {
+      "trace": {
+       "text": "ab",
+       "rounds": [
+        {
+         "branches": [
+          {
+           "session": "A",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 0
+            }
+           ]
+          },
+          {
+           "session": "B",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 1
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "branches": [
+          {
+           "session": "C",
+           "requests": [
+            {
+             "kind": "merge",
+             "block": 2
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "probe": {
+       "kind": "bold",
+       "block": 1,
+       "start": 0,
+       "end": 2
+      },
+      "result": {
+       "valid": true,
+       "signature": "bold:missed",
+       "before": [
+        {
+         "id": "seed-block-1",
+         "chars": []
+        },
+        {
+         "id": "B-block-4",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        }
+       ],
+       "request": {
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": true
+         },
+         {
+          "text": "a",
+          "bold": true
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       ],
+       "generated": {
+        "id": {
+         "sessionId": "probe",
+         "counter": 6
+        },
+        "operations": [
+         {
+          "command": "addAnnotation",
+          "pointer": {
+           "table": "block",
+           "id": "B-block-4"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+           "textInstanceId": "seed-block-1",
+           "searchLabel": "t",
+           "id": {
+            "sessionId": "probe",
+            "counter": 6
+           },
+           "start": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "anchor": "before"
+           },
+           "end": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "anchor": "before"
+           },
+           "annotation": [
+            "b"
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "shrink": {
+       "attempts": 11,
+       "rejected": 3,
+       "criterion": "fixed point: delete one setup request/seed block/seed character or reduce one block/position; preserve symptom; no global minimality claim"
+      }
+     },
+     {
+      "trace": {
+       "text": "abc",
+       "rounds": [
+        {
+         "branches": [
+          {
+           "session": "A",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 1
+            }
+           ]
+          },
+          {
+           "session": "B",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "branches": [
+          {
+           "session": "C",
+           "requests": [
+            {
+             "kind": "merge",
+             "block": 1
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "probe": {
+       "kind": "bold",
+       "block": 0,
+       "start": 0,
+       "end": 2
+      },
+      "result": {
+       "valid": true,
+       "signature": "bold:outside",
+       "before": [
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": false
+          },
+          {
+           "text": "c",
+           "bold": false
+          }
+         ]
+        },
+        {
+         "id": "A-block-5",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          }
+         ]
+        }
+       ],
+       "request": {
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": false
+         }
+        ]
+       ],
+       "actual": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": true
+         }
+        ]
+       ],
+       "generated": {
+        "id": {
+         "sessionId": "probe",
+         "counter": 7
+        },
+        "operations": [
+         {
+          "command": "addAnnotation",
+          "pointer": {
+           "table": "block",
+           "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+           "textInstanceId": "seed-block-1",
+           "searchLabel": "L",
+           "id": {
+            "sessionId": "probe",
+            "counter": 7
+           },
+           "start": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "anchor": "before"
+           },
+           "end": {
+            "id": "end",
+            "anchor": "before"
+           },
+           "annotation": [
+            "b"
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "shrink": {
+       "attempts": 12,
+       "rejected": 1,
+       "criterion": "fixed point: delete one setup request/seed block/seed character or reduce one block/position; preserve symptom; no global minimality claim"
+      }
+     }
+    ],
+    "failureStateCount": 31
+   },
+   "ra": {
+    "archives": 34419,
+    "documentCalls": 545226,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 34419,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 31821,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 2598
+     },
+     "removed": {
+      "agree": 26143,
+      "stuck": 8276,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 34419,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 7014,
+      "agree": 7014
+     },
+     "crossing": {
+      "checked": 452,
+      "agree": 452
+     },
+     "crossingExample": {
+      "before": [
+       "Xab",
+       "",
+       "",
+       "c"
+      ],
+      "request": {
+       "block": 0,
+       "start": 0,
+       "end": 3
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-3"
+      ],
+      "after": [
+       "",
+       "",
+       "",
+       "c"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  },
+  "structural-17003": {
+   "argv": [
+    "structural.mjs"
+   ],
+   "exit": 0,
+   "seconds": 217.3,
+   "output": {
+    "mode": "structural",
+    "seed": 17003,
+    "counts": {
+     "states": 1000,
+     "checks": 10310
+    },
+    "findings": [],
+    "findingCount": 0
+   },
+   "ra": {
+    "archives": 14318,
+    "documentCalls": 254581,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 14318,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 4535,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 9783
+     },
+     "removed": {
+      "agree": 3992,
+      "stuck": 10326,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 14318,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossing": {
+      "checked": 0,
+      "agree": 0
+     },
+     "crossingExample": null,
+     "disagreements": []
+    }
+   }
+  },
+  "campaign-17002": {
+   "argv": [
+    "campaign.mjs",
+    "search",
+    "17002",
+    "250"
+   ],
+   "exit": 0,
+   "seconds": 425.6,
+   "output": {
+    "mode": "search",
+    "seed": 17002,
+    "trials": 250,
+    "counts": {
+     "states": 2581,
+     "probes": 69123,
+     "passes": {
+      "insert": 17065,
+      "split": 17065,
+      "merge": 6807,
+      "delete": 14093,
+      "bold": 13939
+     },
+     "failures": {
+      "bold:missed": 132,
+      "bold:outside": 22
+     },
+     "invalidSetups": 0,
+     "skippedLarge": 69,
+     "deliveryChecks": 2581
+    },
+    "findings": [
+     {
+      "trace": {
+       "text": "ab",
+       "rounds": [
+        {
+         "branches": [
+          {
+           "session": "A",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 0
+            }
+           ]
+          },
+          {
+           "session": "B",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 1
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "branches": [
+          {
+           "session": "C",
+           "requests": [
+            {
+             "kind": "merge",
+             "block": 2
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "probe": {
+       "kind": "bold",
+       "block": 1,
+       "start": 0,
+       "end": 2
+      },
+      "result": {
+       "valid": true,
+       "signature": "bold:missed",
+       "before": [
+        {
+         "id": "seed-block-1",
+         "chars": []
+        },
+        {
+         "id": "B-block-4",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        }
+       ],
+       "request": {
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": true
+         },
+         {
+          "text": "a",
+          "bold": true
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       ],
+       "generated": {
+        "id": {
+         "sessionId": "probe",
+         "counter": 6
+        },
+        "operations": [
+         {
+          "command": "addAnnotation",
+          "pointer": {
+           "table": "block",
+           "id": "B-block-4"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+           "textInstanceId": "seed-block-1",
+           "searchLabel": "t",
+           "id": {
+            "sessionId": "probe",
+            "counter": 6
+           },
+           "start": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "anchor": "before"
+           },
+           "end": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 3
+            },
+            "anchor": "before"
+           },
+           "annotation": [
+            "b"
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "shrink": {
+       "attempts": 11,
+       "rejected": 3,
+       "criterion": "fixed point: delete one setup request/seed block/seed character or reduce one block/position; preserve symptom; no global minimality claim"
+      }
+     },
+     {
+      "trace": {
+       "text": "abc",
+       "rounds": [
+        {
+         "branches": [
+          {
+           "session": "A",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 1
+            }
+           ]
+          },
+          {
+           "session": "B",
+           "requests": [
+            {
+             "kind": "split",
+             "block": 0,
+             "index": 2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "branches": [
+          {
+           "session": "C",
+           "requests": [
+            {
+             "kind": "merge",
+             "block": 1
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "probe": {
+       "kind": "bold",
+       "block": 0,
+       "start": 0,
+       "end": 2
+      },
+      "result": {
+       "valid": true,
+       "signature": "bold:outside",
+       "before": [
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": false
+          },
+          {
+           "text": "c",
+           "bold": false
+          }
+         ]
+        },
+        {
+         "id": "A-block-5",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          }
+         ]
+        }
+       ],
+       "request": {
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": false
+         }
+        ]
+       ],
+       "actual": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": true
+         }
+        ]
+       ],
+       "generated": {
+        "id": {
+         "sessionId": "probe",
+         "counter": 7
+        },
+        "operations": [
+         {
+          "command": "addAnnotation",
+          "pointer": {
+           "table": "block",
+           "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+           "textInstanceId": "seed-block-1",
+           "searchLabel": "L",
+           "id": {
+            "sessionId": "probe",
+            "counter": 7
+           },
+           "start": {
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "anchor": "before"
+           },
+           "end": {
+            "id": "end",
+            "anchor": "before"
+           },
+           "annotation": [
+            "b"
+           ]
+          }
+         }
+        ]
+       }
+      },
+      "shrink": {
+       "attempts": 12,
+       "rejected": 1,
+       "criterion": "fixed point: delete one setup request/seed block/seed character or reduce one block/position; preserve symptom; no global minimality claim"
+      }
+     }
+    ],
+    "failureStateCount": 54
+   },
+   "ra": {
+    "archives": 78476,
+    "documentCalls": 1305683,
+    "replayExceptions": 0,
+    "replayExceptionMessages": {},
+    "modes": {
+     "absorb": {
+      "agree": 78476,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 0
+     },
+     "skip": {
+      "agree": 71347,
+      "stuck": 0,
+      "conservation": 0,
+      "placement": 7129
+     },
+     "removed": {
+      "agree": 62506,
+      "stuck": 15970,
+      "conservation": 0,
+      "placement": 0
+     }
+    },
+    "failures": {
+     "absorb": {}
+    },
+    "orderInversions": 0,
+    "orderInversionExample": null,
+    "shape": {
+     "archives": 78476,
+     "branching": 0,
+     "maxChildren": 1
+    },
+    "deletes": {
+     "single": {
+      "checked": 14878,
+      "agree": 14878
+     },
+     "crossing": {
+      "checked": 1318,
+      "agree": 1318
+     },
+     "crossingExample": {
+      "before": [
+       "bXd"
+      ],
+      "request": {
+       "block": 0,
+       "start": 0,
+       "end": 2
+      },
+      "instances": [
+       "seed-block-1",
+       "seed-block-4"
+      ],
+      "after": [
+       "d"
+      ]
+     },
+     "disagreements": []
+    }
+   }
+  }
+ }
+}

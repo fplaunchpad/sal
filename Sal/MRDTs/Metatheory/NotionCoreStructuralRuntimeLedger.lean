@@ -6,7 +6,13 @@ import Sal.MRDTs.Instances.NotionCoreRuntimeMain
 /-! Checked structural and native refinements of the same honest typed-core
 protocol. The original independent history language, factory and positional
 client remain authoritative. This is a distinguished research certificate,
-not a new VerifiedMRDT package or a whole-program JavaScript correspondence. -/
+not a new VerifiedMRDT package or a whole-program JavaScript correspondence.
+Structural query correspondence covers merge-free networks: an order-free fact
+query cannot evaluate a block merge, whose effect depends on which blocks are
+alive when it replays. Merge-block is certified by the reference carrier in the
+source entry. The native runtime refuses merge transactions on receipt, so every
+archive it holds is merge-free and its registered-version query needs no
+merge-freedom premise on the protocol network. -/
 namespace Sal.MRDTs.Research.NotionCoreStructuralRuntimeLedger
 open Sal.MRDTs Sal.MRDTs.Foundation Sal.MRDTs.Paper1 Sal.MRDTs.Paper1.ConcreteMRDT
 open Instances
@@ -21,15 +27,18 @@ structure CheckedEntry where
   renderer : NotionCoreStructuralHistory.ClosedQueryAgreement NotionCoreStructuralMRDT.query
   versions : ∀ {sessions initialLift C network lift},
     Function.Injective sessions → NotionCoreProtocol.Reach sessions initialLift C network lift →
+    NotionCoreMergeFree.MergeFree network →
     VersionsWitness (commutingPolicy Transaction) NotionCoreMRDT.spec
       (NotionCoreStructuralExecution.mapConfig NotionCoreStructuralMRDT.query C)
   heads : ∀ {sessions initialLift C network lift},
     Function.Injective sessions → NotionCoreProtocol.Reach sessions initialLift C network lift →
+    NotionCoreMergeFree.MergeFree network →
     EventSpecificationRALinearizable NotionCoreStructuralMRDT.D (commutingPolicy Transaction)
       NotionCoreMRDT.spec
       (NotionCoreStructuralExecution.mapConfig NotionCoreStructuralMRDT.query C)
   execution : ∀ {sessions initialLift C network lift},
     Function.Injective sessions → NotionCoreProtocol.Reach sessions initialLift C network lift →
+    NotionCoreMergeFree.MergeFree network →
     (labeledTSV NotionCoreStructuralMRDT.D
       (canonicalVirtualMergeBase NotionCoreStructuralMRDT.D)).ReachableFrom
       (initConfig NotionCoreStructuralMRDT.D)
@@ -38,6 +47,8 @@ structure CheckedEntry where
   receipt : ∀ {state next : NotionCoreRuntimeEngine.State},
     NotionCoreRuntimeEngine.Refines state → ∀ tx : Transaction,
     NotionCoreRuntimeEngine.receive state tx = .ok next → NotionCoreRuntimeEngine.Refines next
+  admission : ∀ {state : NotionCoreRuntimeEngine.State},
+    NotionCoreRuntimeEngine.Refines state → NotionCoreRuntimeEngine.ArchiveMergeFree state
   merge : ∀ {left right next : NotionCoreRuntimeEngine.State},
     NotionCoreRuntimeEngine.Refines left → NotionCoreRuntimeEngine.Refines right →
     NotionCoreRuntimeEngine.merge left right = .ok next → NotionCoreRuntimeEngine.Refines next
@@ -56,6 +67,7 @@ structure CheckedEntry where
   loadClosedVersion : ∀ (network : NotionCorePayloadNetwork.State),
     NotionCoreMachineNetwork.Reach network → ∀ version : List NotionRunAllocation.Run,
     NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget network).records version →
+    NotionCoreRuntimeQuery.VersionFree network version →
     ∀ txs : List Transaction,
     txs.toFinset = (NotionCoreReconstruction.transactionsFor network version).toFinset →
     ∃ state, NotionCoreRuntimeEngine.receiveMany NotionCoreRuntimeEngine.empty txs = .ok state ∧
@@ -73,6 +85,7 @@ noncomputable def entry : CheckedEntry where
   execution := NotionCoreStructuralMRDT.operational_reach
   empty := NotionCoreRuntimeEngine.empty_refines
   receipt := NotionCoreRuntimeEngine.receive_refines
+  admission := NotionCoreRuntimeEngine.received_merge_free
   merge := NotionCoreRuntimeEngine.merge_refines
   honestMerge := NotionCoreRuntimeHonestProgress.merge_honest
   registeredQuery := NotionCoreRuntimeTheorem.registered_query

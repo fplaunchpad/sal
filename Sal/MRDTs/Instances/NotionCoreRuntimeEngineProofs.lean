@@ -35,11 +35,25 @@ theorem receiveMetadata_archive (state next : NotionCoreRuntimeMetadata.State)
       simp [member]
     · simp [receiveMetadata,found,equal] at accepted
 
+/-- Accepted receipt passed admission: the transaction carries no merge. -/
+theorem receive_admitted {state next : State} {tx : Transaction}
+    (accepted : receive state tx = .ok next) :
+    admissible tx = true ∧ receiveAdmitted state tx = .ok next := by
+  cases admitted : admissible tx with
+  | false => simp [receive,admitted] at accepted
+  | true => exact ⟨rfl,by simpa [receive,admitted] using accepted⟩
+
+/-- Receipt refuses every merge transaction. -/
+theorem receive_merge (state : State) (tx : Transaction) (source target : NotionCorePayload.BlockKey)
+    (payload : tx.payload = .merge source target) : ∃ message, receive state tx = .error message :=
+  ⟨"merge transactions are outside the executable scope",by simp [receive,admissible,payload]⟩
+
 theorem receive_metadata_valid (state next : State)
     (valid : NotionCoreRuntimeMetadata.Valid state.metadata) (tx : Transaction)
     (accepted : receive state tx = .ok next) :
     NotionCoreRuntimeMetadata.Valid next.metadata := by
-  unfold receive at accepted
+  replace accepted := (receive_admitted accepted).2
+  unfold receiveAdmitted at accepted
   split at accepted
   · split at accepted
     · cases accepted; exact valid
@@ -99,4 +113,6 @@ theorem merge_metadata (left right next : State)
 #print axioms receiveMetadata_valid
 #print axioms receiveMetadata_archive
 #print axioms receive_metadata_valid
+#print axioms receive_admitted
+#print axioms receive_merge
 end Sal.MRDTs.Instances.NotionCoreRuntimeEngine

@@ -107,7 +107,11 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreProtocol \
   Sal.MRDTs.Instances.NotionCoreMRDTClient \
   Sal.MRDTs.Instances.NotionCoreMachinePreallocation \
-  Sal.MRDTs.Instances.NotionCoreSliceForest
+  Sal.MRDTs.Instances.NotionCoreSliceForest \
+  Sal.MRDTs.Instances.NotionCoreSpecMerge \
+  Sal.MRDTs.Instances.NotionCoreMachineDocumentMerge \
+  Sal.MRDTs.Instances.NotionCoreMachineMergeEffects \
+  Sal.MRDTs.Instances.NotionCoreMergeFree
 
 check_dir=$(mktemp -d "${TMPDIR:-/tmp}/sal-notion-check.XXXXXX")
 printf 'Notion check logs: %s\n' "$check_dir"
