@@ -34,13 +34,13 @@ sh scripts/check.sh
 and local Lean imports. It also rejects unexpected files outside the documented
 build/output directories (`.lake/`, `results/`, `vendor/notion/`, and Python
 bytecode caches). `check.sh` builds `Sal.Artifact.Guide` and audits the
-242 selected declarations and all their transitive axiom dependencies. Only
+252 selected declarations and all their transitive axiom dependencies. Only
 `propext`, `Classical.choice`, and `Quot.sound` are permitted; a `sorry` in any
 of these dependency chains fails the audit.
 
 This audit does not cover every declaration compiled by the build. In
 particular, other concrete examples use `native_decide`; compiling them is
-separate from auditing the 242 selected declarations. Expect `PAPER_CHECKED`
+separate from auditing the 252 selected declarations. Expect `PAPER_CHECKED`
 records and a successful build. Repeated builds may reuse checked outputs.
 
 For an annotated reading path, open
@@ -112,7 +112,7 @@ paper *Certified mergeable replicated data types*.
 ## Recorded validation
 
 [validation.json](validation.json) records the checked environment and results:
-a clean build of all supplied Lean sources with 242 root audits, an exact match
+a clean build of all supplied Lean sources with 252 root audits, an exact match
 of all 24 table rows and 444 measured source hashes, the generic theorem counts,
 and a fresh download followed by offline reproduction of the five demo bugs.
 The clean build reused the pinned third-party Lake package cache; it did not

@@ -136,10 +136,11 @@ no overfull boxes. The Lean ports and their audits belong to code commit
 
 The Notion row now includes the structural MRDT, compiled indexed algorithm,
 original independent history proof and both refinement layers. Its current
-columns are 729 definition / 112 specification / 73 VC-support / 18,082
-bridge-and-execution lines. This includes concrete certificate wrappers formerly
+columns are 766 definition / 133 specification / 73 VC-support / 20,630
+bridge-and-execution lines, after the block-merge extension of the typed core
+(measured at `2d227ed`, 448 pinned files). This includes concrete certificate wrappers formerly
 misclassified as shared. See the measurement README for exact role movements;
-the smaller VC column is not a proof reduction. The earlier structural-Notion refresh preserved the other datatype rows. The current 223-root measurement additionally includes the full priority-query/client interface and sided Peritext consolidation, with this Notion row unchanged.
+the smaller VC column is not a proof reduction. The earlier structural-Notion refresh preserved the other datatype rows. The earlier 223-root measurement additionally included the full priority-query/client interface and sided Peritext consolidation. The block-merge refresh changed only the Notion row; the export now audits 252 roots.
 
 The structural target has actual operational reach and RA theorems. The compiled
 runtime has receipt/merge representation preservation, honest-domain progress,

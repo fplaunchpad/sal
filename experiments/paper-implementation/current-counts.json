@@ -1,7 +1,7 @@
 {
   "method": "Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles prioritize implementation definitions, independent specification definitions, VC proof/input-support closures, then remaining bridge/execution closures. The 19 automation-selected cases use actual CommonVerification.verify application/evidence closures; other cases use their named raw five-VC, policy-expansion or direct-assembly dependency closures, with root packaging included. Shared libraries are excluded. Counts are dependency-footprint LOC, not handwritten proof-body sizes or person-hours; cross-row overlap is not subtracted. The direct structural Notion carrier assembly is explicitly listed in direct_vc_dependency_roots.",
-  "git_head": "2854becdf6910772e85ebcae36bb144e2304e0d6",
-  "deduplicated_concrete_total": 47361,
+  "git_head": "2d227ed92330a2ef44b2dcc1af06f8473f44a0b4",
+  "deduplicated_concrete_total": 49967,
   "deduplicated_shared_dependency_total": 8477,
   "source_sha256": {
     "Sal/MRDTs/Instances/AddStore.lean": "fd22679f86c3405fee06461d91545be5bfb3e5402143fe043a9135d11d5fa07c",
@@ -26,19 +26,19 @@
     "Sal/MRDTs/Instances/MVRContract.lean": "e1a1cf7eb22ea634d67031480bff87b361fb07b77ba24d2f05ebe6cc173f9627",
     "Sal/MRDTs/Instances/NotionCoreMRDT.lean": "ef3b399ee91a2fc36c4c6542e9ddd32b6590fe8a82a31c367e2c010b8aecc223",
     "Sal/MRDTs/Paper1/Automation/GenericQueryLift.lean": "c34547797315045d40edbd3ba2dd5880f7c7e4a31e63b5b361e41a4d87617dd1",
-    "Sal/MRDTs/Instances/NotionCoreHistory.lean": "3e73adbae9a56d3c5303cf2d2c53d3a90c05c598cceb738723ff1b83d762ac33",
-    "Sal/MRDTs/Instances/NotionCoreMachine.lean": "5f373d28f238406c205577a67887fbb91d7df5be9adf84d3246c73eb0738b437",
-    "Sal/MRDTs/Instances/NotionCoreSliceForest.lean": "1915dadb94daae762fce9bc9585c3c74e6ba91bad8b35f7c3a72fd9edb363670",
-    "Sal/MRDTs/Instances/NotionCoreSpec.lean": "bbf1fd0bb47d7525c8dee63105f3de5b775744a83bca951c30765835321fffeb",
+    "Sal/MRDTs/Instances/NotionCoreHistory.lean": "20c83353f98b5bb975becca25a0cfbe1701557329482e7eb2804eb2cb1560b08",
+    "Sal/MRDTs/Instances/NotionCoreMachine.lean": "b982e5ec8ba43222c795bd5077d63f2ab0abadfe35e36419533a9bcffe2d2722",
+    "Sal/MRDTs/Instances/NotionCoreSliceForest.lean": "b04ab126b9cdd15b559d10b6f0d41fd2689fe3458168b515bc03d8c21be1d7bc",
+    "Sal/MRDTs/Instances/NotionCoreSpec.lean": "9e167478dcc97acb5976dfd027be23ae981521364ff8ba558106382cd1b45585",
     "Sal/MRDTs/Instances/NotionRunAllocation.lean": "d24b4f3ba814751597075835fa7396366fd31455937bea3c543984f28cb7ecef",
     "Sal/MRDTs/Instances/NotionCoreParentMap.lean": "efdce97e31a31b67027944b473676830cad9aca0a5f8c0eabe6c69d1fe9892cc",
     "Sal/MRDTs/Instances/NotionCoreOriginTree.lean": "2a087119a5bf8adf5277684a3381c37eeef634bc2ceef0c85e6b8a11b5aa6536",
-    "Sal/MRDTs/Instances/NotionCorePayload.lean": "8a41813a4f9eed173ddcbad152c961097f7a5894be9d8b0565202aefa85aa835",
-    "Sal/MRDTs/Instances/NotionCoreParentErase.lean": "d677b20d44c3c7587f1f3ca37d615ecb0e3d16679516ccfa28f75bc011a2b5ae",
-    "Sal/MRDTs/Instances/NotionCoreDisplayOrder.lean": "432b832643b294654a9497ada8e940e877fb5240bddc9f0c444b099c85c20a82",
-    "Sal/MRDTs/Instances/NotionCorePhysicalReplay.lean": "f275c99cc511d8a3c50ddd7bc23d9982b6e73271a38c1a26140eaf04bf2abc1a",
-    "Sal/MRDTs/Instances/NotionCoreSource.lean": "132a05825d7ebb5cb63ef0197717dc9b1750a43531392ea83ae22269dec8866d",
-    "Sal/MRDTs/Instances/NotionCorePartition.lean": "0401d8d44c7f90e2c8a8f434251a4bbfa2590bb1f6f081061b106c3efbb08ccc",
+    "Sal/MRDTs/Instances/NotionCorePayload.lean": "c1aab280691cf36e99a9976a649b1451b6928c6b147bb7450dd3569a4685bc98",
+    "Sal/MRDTs/Instances/NotionCoreParentErase.lean": "d117bb924fcf853834405e3ede8f437345037b222b05a101f1e78b4417232908",
+    "Sal/MRDTs/Instances/NotionCoreDisplayOrder.lean": "10ad28d91f76416faf5d1c4725f3dbc4f42ed520fe6f5a912aeb75dd383413da",
+    "Sal/MRDTs/Instances/NotionCorePhysicalReplay.lean": "f7500b91219fdcb467831359f5887b9e056d47878d8b7ef733d215b815f99f38",
+    "Sal/MRDTs/Instances/NotionCoreSource.lean": "7eb1036aa02ec53b04bd321d0b985fe9aedb76d1b658ae573b3e6b23a9f381e4",
+    "Sal/MRDTs/Instances/NotionCorePartition.lean": "2e3fa06f109ff7f71629583f976694533767f9ae459737036e009930470bc7d9",
     "Sal/MRDTs/Instances/NotionCoreSourceInvariant.lean": "ea362428199bc949313bef48c55dbb06a849aee35ff4374b5ba4602094958e45",
     "Sal/MRDTs/Instances/NotionCoreReconstruction.lean": "bf31f99467fb6c8c6945061f35319f034250db29d23e250221ab8a921ce38c23",
     "Sal/MRDTs/Paper1/ConcreteJoin.lean": "b08b4970e881dc0b74f1b3a83d64ab5443c9a5c57479c6125d67a08ea0d702ab",
@@ -97,79 +97,81 @@
     "Sal/MRDTs/Metatheory/VirtualAdequacy.lean": "2bccc53234c0a3e7c0e92bdf8f6337ff748a3490be595b404edf03eb5e71fe8f",
     "Sal/MRDTs/Metatheory/Adequacy.lean": "fa407617bd829949d37b9885f41cd10717a49760e65c256b1f64ce5e2ef14bdb",
     "Sal/MRDTs/Metatheory/StoreInvariant.lean": "298823c5958546bb341650d12e001119cbfe08f8c50769932b342c851c30c134",
-    "Sal/MRDTs/Instances/NotionCoreMachineCommands.lean": "ee3529e8992e6f0f62c3121c573e9b776fdb2ad1a10e1ecbb4bd8b78fc3caa82",
-    "Sal/MRDTs/Instances/NotionCoreSourceDocument.lean": "5934700457b4ab3944b7c633f44df6ebb47224cd743db17d28fe717fbb5170b4",
+    "Sal/MRDTs/Instances/NotionCoreMachineCommands.lean": "f4d69a40002aa3b270eb96d210cab6e523d7653226eb2cec284e397bfba40ee3",
+    "Sal/MRDTs/Instances/NotionCoreSourceDocument.lean": "a36527a50cdb272192eef31c895ed144249a68ecb4e732ffca585b6fa3f783e0",
     "Sal/MRDTs/Instances/NotionCoreRuntimeAdapter.lean": "f6c38484a0f0900896da25bdab24fbe1daa45c29884a8083e049809f38fa299c",
     "Sal/MRDTs/Instances/NotionCoreRuntimeState.lean": "e40761a25685a825b57c07e11ddc637a3ec8e48f1e755b256ca3393382697f08",
     "Sal/MRDTs/Instances/NotionCoreRuntimeTypes.lean": "997b122a00274b1ed5c6a83da0a7e1be3f21a1f5f74ba37aff9ee057420731e4",
-    "Sal/MRDTs/Instances/NotionCoreStructuralDisplay.lean": "e3f2313239fa58b59cb8b8e255089eea38456395bbc183565a2bc98874372780",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeQuery.lean": "b90b1d258c57ea6c4a0753e21d72592b6408de0045caba2aa5c5c0037f3c4c81",
-    "Sal/MRDTs/Instances/NotionCoreStructuralRender.lean": "22390ec873e51b74e02228d8d228ce5af1f35d949a31abe305ac286870c7b7ea",
-    "Sal/MRDTs/Instances/NotionCoreMachineClient.lean": "58ce65728070eb03f6e94794ffb3919c2ebc7a6aa1eef42aa93bb36f0d8eab6b",
-    "Sal/MRDTs/Instances/NotionCoreIncrementalCounterexample.lean": "dcce30c3132ca47ae138ecd5c54532f706724478e3386913070627023b1290e4",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeEndToEnd.lean": "328f5ada49623bb10f6c84051b42dcb4561f6d7946f8afb950ad1fb8432313f5",
-    "Sal/MRDTs/Instances/NotionCorePayloadNetwork.lean": "04f572a3514af281b230700cd666ba0de991e631938c3f687650e985d445ea14",
+    "Sal/MRDTs/Instances/NotionCoreStructuralDisplay.lean": "57de1219771ae9a17b917e3888c83592889ded80369c7df9db1a43b95b2569e2",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeQuery.lean": "11d3f4998ebbc6fc72b273ec9d8f9ae7fb315519df57a78e6d511e079bee93e5",
+    "Sal/MRDTs/Instances/NotionCoreStructuralRender.lean": "bcdadc3ff9335f2bdc2812ae21db6393cb784c0b7ea0efb2c64c99d68d1cec8a",
+    "Sal/MRDTs/Instances/NotionCoreMachineClient.lean": "900a8a66d2eaf32835add5732a89b27d6838b01370b821387bce4175a01e7b39",
+    "Sal/MRDTs/Instances/NotionCoreIncrementalCounterexample.lean": "12dffadd05193ea651eb8eb5fce0198edb7a4fd2be31e661e059d7cc5d23d4ba",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeEndToEnd.lean": "61d9009e0e64d3ef88ba72913d4bf6a4c51e0dd3dc90fdc726d0d4a6b10ceb4b",
+    "Sal/MRDTs/Instances/NotionCorePayloadNetwork.lean": "9bf2626bc6c73e3b456220ca2c28b57b709530f7eb279736e73c7ad97da99a34",
     "Sal/MRDTs/Instances/NotionCoreIssuance.lean": "ddeeda10d76f2c5e432d5633fd2592570d60ecabbfa77e9f5458c664b8f15d7d",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeHonestProgress.lean": "2da2d237ce7e60f1c0671c3593668e133c47dc7708e70e9b33fcc34d98b6f3d4",
-    "Sal/MRDTs/Instances/NotionCoreMachineNetwork.lean": "ebc210d0fd056d5d2eb7c57aa710c6c2cd5d3a838ed874dc7eff62bd30982ed2",
-    "Sal/MRDTs/Instances/NotionCoreCreatorNetwork.lean": "c7597ebce70c16e7f8a92427506bf1f971807d9eb03836dce146872e97f21238",
-    "Sal/MRDTs/Instances/NotionCorePreparation.lean": "9355ffa1b8a4c0540dbd1cee8264ed9723c7cb634d76bf7656326e4a4dcfafcb",
-    "Sal/MRDTs/Instances/NotionCoreMachineDelete.lean": "16a2fb78ada42a0b30210ecbd727043227643b2eda1009a4857b81b508029322",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeHonestProgress.lean": "2c03d4cbe79d827efb084b2623162f1c7e5e58cbbb654c7ceb5a4956cb944369",
+    "Sal/MRDTs/Instances/NotionCoreMachineNetwork.lean": "7f3912b116be405048c63f9c88688483d3130e5e072a438c052f108dcab01b93",
+    "Sal/MRDTs/Instances/NotionCoreCreatorNetwork.lean": "363184b17a4181587801cd60ffbcd029a10d30e3e5b90fba1830e45f7f15c48e",
+    "Sal/MRDTs/Instances/NotionCorePreparation.lean": "a74495e37387674ee400b14e13b94628b8f660ca3e107f9ace98de96b9698c42",
+    "Sal/MRDTs/Instances/NotionCoreMachineDelete.lean": "1f3eeb922280252429033da2e5ac8b5757bfb168623207f784d68885fef790c9",
     "Sal/MRDTs/Instances/NotionCoreRanges.lean": "c4adde89f9ff4fe48e6aca29dad29d7f50867e6bfd446c04945bbfce5c249c82",
-    "Sal/MRDTs/Instances/NotionCoreMachineBirths.lean": "01f1a34624b1c8a8034d178703711cf11d332d9fd06426b6852c7bf8fff3bb08",
-    "Sal/MRDTs/Instances/NotionCoreMachineCreators.lean": "b8577266e802d3518bec589928b4709675085930e823bc4ba4e47e44d4651640",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeRefinement.lean": "1e774ad99255f90842a13704cdff0313d9ab29dcf9c0c575c6d3a3c34393f5bd",
-    "Sal/MRDTs/Instances/NotionCoreStructuralFacts.lean": "a37ab839764805919f5668fdef21458515a1367a4440c993a774f1e255378230",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeEngine.lean": "896c6bf9bdb9daa679bfda4d0a861ddb63f110da02b944b39f124c3976f7008d",
+    "Sal/MRDTs/Instances/NotionCoreMachineBirths.lean": "7a793ddb0cfe0bf8fc8734bfd2bff2dfbd61f290d5bb45ec6e2f17d303ae1096",
+    "Sal/MRDTs/Instances/NotionCoreMachineCreators.lean": "8352c555212ab5c86abcc51e45eb333f53235e37ef47a2841da754bf1276fade",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeRefinement.lean": "5f24495f022dbb461efcb7c5b5561ee13f4e584472a0f65c2982a3e9e6ebe635",
+    "Sal/MRDTs/Instances/NotionCoreStructuralFacts.lean": "f637d2abadf39cc514dd9865fdf44297464d03543be58ec86cfc4e4ef19e0e37",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeEngine.lean": "0d829ba718dbbce853c407624ae9b0dd808ec583189acebcb941c290804f7f1c",
     "Sal/MRDTs/Instances/NotionCoreRuntimeMetadata.lean": "60b09645c90698715841463f11a09d413f55aa63c8e38a7783b3c90f32d398fe",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeProgress.lean": "53bd6c9c8015ccced9fc23896d23151633ebdd30d3ce5199646ea1026b7441a4",
+    "Sal/MRDTs/Instances/NotionCoreMergeFree.lean": "7dca46aa98afc6684bdbf94a9e0bd22cd0357de962a2158901f7930ad00e20b0",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeEngineProofs.lean": "531596d6c0cd082b3e5a83259cb78fc163fe02cf11ae09e1c5c7a096bf1d1e27",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeProgress.lean": "8dc25c58d2f82d197ad9b8186aa4187c76ecf4f86d42a64f5f8860f7592ffe87",
     "Sal/MRDTs/Instances/NotionCoreRuntimeStateProofs.lean": "6abbe435c0e6d5b28c16ae896686b15a3361f6173ea2f72008cf3aabaada6f22",
     "Sal/MRDTs/Instances/NotionCoreRuntimeCompatibility.lean": "18097b83d95b9a765a599699e4f441253e364d22a8013a7df43d5bb6e112824d",
-    "Sal/MRDTs/Instances/NotionCoreReplayGraph.lean": "1a68dcbb1056ed784ee8748254f47a51978cd342855c3d0312cb7451a282b2c1",
+    "Sal/MRDTs/Instances/NotionCoreReplayGraph.lean": "bce895b31e3c6d29a87f94ffe43fdf55dc3e1586133f50424cabf9f9a35c6133",
     "Sal/MRDTs/Instances/NotionCoreArchiveOrder.lean": "f45ac0c4a9ebd64d9cf2a438b3399a7d28579564b97ca1df3ecf1c7f07bbef0b",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeTheorem.lean": "3549afa8b3e99b30c48c9b20d1a8ed8a7425d3f7efc1f23452c0dd30c66c1d77",
-    "Sal/MRDTs/Instances/NotionCoreStructuralCuts.lean": "4bebcbeb1776a4cee73bbfac1025d7b1923a3ceefd93f336c264c7d905695e1c",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeTheorem.lean": "e9280999ada65d8e8e62ca6d1e8c966ce0c366bcc93bee035102a1f0729108a7",
+    "Sal/MRDTs/Instances/NotionCoreStructuralCuts.lean": "100327e5904b3988f5d36ec0110585e656f9c49e665c8839eb2228ed6ea54f87",
     "Sal/MRDTs/Instances/NotionCoreStructuralRows.lean": "ba604ee1e25c8306ec246d433be087d8c289f924da679ae8f315b92141c975b8",
     "Sal/MRDTs/Instances/NotionCoreStructuralTransport.lean": "7c87d0ba36fc95c098b8107f4f4068a688f48849907870528d0c3ac1c52b11e6",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeAdapterProofs.lean": "c59b1a4c393831a1193a90852fc1d338d3a23079dc3f006a08c776bde47f75fa",
-    "Sal/MRDTs/Instances/NotionCoreMachineDisplay.lean": "755ef2e04873ff1e85174994b5fa2a66995a7bddc25366554429fba47dc79fb7",
-    "Sal/MRDTs/Instances/NotionCoreForestRefs.lean": "2d07f196e7faeaf23052cf48ac23905c8dbec8c4e16eba90691495962dd14787",
-    "Sal/MRDTs/Instances/NotionCoreMachineShape.lean": "0d6355cb075a6f3863a800a55c2b75bf18b6676bd7a363234981163e441c491e",
-    "Sal/MRDTs/Instances/NotionCoreMachinePartition.lean": "a98aa3123e6d6233303c439e44a9c19d9dfe67343e9beb06fa8aee6e6607e81e",
-    "Sal/MRDTs/Instances/NotionCoreMachineHonestReplay.lean": "ae8b4f09d9354f865d87bcb1b7d2a79f2a4d281b87936d8671f1c20b354d0f98",
-    "Sal/MRDTs/Instances/NotionCoreMachineRootReplay.lean": "4db8e8944e12cd394b0e00af473b5304d90c161ed188cfeb9b7deb63897a4377",
-    "Sal/MRDTs/Instances/NotionCoreRootCreators.lean": "83229027edd6adc012390cefdaaaab98b5cbbabe752e14fc24fb8690bd7c96b4",
-    "Sal/MRDTs/Instances/NotionCoreMachineCanonicalCreate.lean": "3323c222b64ff4ba88ea43b32fed6636e1ee27ab6c1995365c8cf71bef1ce6cd",
-    "Sal/MRDTs/Instances/NotionCoreMachineTables.lean": "bc6873dd60d1145a610f0c41ede7f86b0305ec150ab11b0d10a70ba258c147fb",
-    "Sal/MRDTs/Instances/NotionCoreMachineCanonicalSplit.lean": "cc706e77573d770219d8e6b1aa1c2dd9940e885069733bb722bf95d340a466db",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeAdapterProofs.lean": "06234224463b130ae9a0f9d8bb88c047eb262979bd4b6378ca99ef19f52b152a",
+    "Sal/MRDTs/Instances/NotionCoreForestRefs.lean": "29334435f87511e8dc2a5d0c9072d01f983ccf78df04aee220e64184ebf4ef07",
+    "Sal/MRDTs/Instances/NotionCoreMachineShape.lean": "a2cec1544e226601b496554f4df1cc1730e8074686e48dd417c24c3673955866",
+    "Sal/MRDTs/Instances/NotionCoreMachinePartition.lean": "fc3bd48fe0210ac7cc009c25ec1c60de12b4c7d583ff73d3f4649df19c9f3020",
+    "Sal/MRDTs/Instances/NotionCoreMachineRootReplay.lean": "2d088a07f68b4d615753eee1d91e250b87afd74d62c35261053cb3adb8c54051",
+    "Sal/MRDTs/Instances/NotionCoreRootCreators.lean": "3812481ed6d7fbbcf2a75bfd1cf82dc0aa2beb27274d2d2c110e95ccd25371eb",
+    "Sal/MRDTs/Instances/NotionCoreMachineHonestReplay.lean": "6fab75d5084a04e33dd7f828d287d7a837a500e8f2331d1d7def9379833a32ef",
+    "Sal/MRDTs/Instances/NotionCoreMachineCanonicalCreate.lean": "5914e30b6efd1c7b3d4eea414a3101ab5077b837c806d62ceec4a6bf4092101c",
+    "Sal/MRDTs/Instances/NotionCoreMachineTables.lean": "0ed1502882311a86e10b5f208ae6adaf9a3bda3da84ffc7970597673bbe220ec",
+    "Sal/MRDTs/Instances/NotionCoreMachineCanonicalSplit.lean": "0c28d1c9d4ecdbeea9f137bd7c3c55470abbe29663ac8179be7b8f4af2247aea",
     "Sal/MRDTs/Instances/NotionCoreMachineMarkerProgress.lean": "d9cacd12ce2c606698b994b771f19bf7894913c2bc40d053ee573214c7a1a12b",
     "Sal/MRDTs/Instances/NotionCoreMachineSlices.lean": "cc7d72c93b8840ad53e7e41a66777fcc3cdb75ac151a751db7e25686fef0fdfe",
     "Sal/MRDTs/Instances/NotionCoreMachineRouting.lean": "3cbee6afa8cfd6567d08dd16a5dcea269c9ef4e3564383220549df34dbc1a5d3",
-    "Sal/MRDTs/Instances/NotionCoreMachinePartitionUpdates.lean": "f568562b2a4c7d5a8dcd87e2024e6a3041b2a2f8c81b5167191998a2743f8b11",
-    "Sal/MRDTs/Instances/NotionCoreMachinePartitionSplit.lean": "51442f52ce8d00b832d191860c2433635f6c532a7e7ccb47acfd8955b5056151",
+    "Sal/MRDTs/Instances/NotionCoreMachinePartitionUpdates.lean": "635b036be3c8c6dc80fc8652b112486add2dd50ed6ad7de9345804be37a10bf5",
+    "Sal/MRDTs/Instances/NotionCoreMachinePartitionSplit.lean": "03c309daa29f2625ca2780deea3531dd2fadcc256b5936d39219ae96859585d2",
     "Sal/MRDTs/Instances/NotionCoreParentCoupling.lean": "f86e546b8e8f63103a5caa08865c1dc63c93cfdac9d8adfb2f5d8e23f33fe60e",
     "Sal/MRDTs/Instances/NotionCoreMachineVersionTables.lean": "293a6f6a54d55a0bd33324850bc09a6c213013a662be72702d7f383101aa64c3",
     "Sal/MRDTs/Instances/NotionCoreMachineTableGraph.lean": "33e2d0a0ebc93bebae8dd43ef241ead7f3840f4b768a14fdc9164d5e20371e4c",
-    "Sal/MRDTs/Instances/NotionCorePayloadParents.lean": "4e7e34b937b7045b237e610202029aeacfc4296551585bbff8cc7d31c5ed66f3",
+    "Sal/MRDTs/Instances/NotionCorePayloadParents.lean": "c27208ec711ba61394bd1f113ad27584d9f1ce4ff3023e7fd3214fe1601cfec8",
     "Sal/MRDTs/Instances/NotionCoreMachinePrefix.lean": "673c0ad96e00abf710467e3791c169f0bd75d3b76e1a4e95630d198ef2a030f3",
-    "Sal/MRDTs/Instances/NotionCoreTableView.lean": "09e8fba6a5490f9e86bdcb691058e58890d8ca6aa3559645c3970fe05a489fa6",
+    "Sal/MRDTs/Instances/NotionCoreTableView.lean": "402bee37388a467734a79d29dd268a2ee9c38956b7e38399b50cda154e4d2332",
     "Sal/MRDTs/Instances/NotionCoreMachineRows.lean": "06998a4e8a8f41f5c9ae64f2a039c64a4c1a672a3ef1d516f82c5f549af39c00",
     "Sal/MRDTs/Instances/NotionCoreMachineSplice.lean": "433a951b670d792226f384148acd601b4a02629f950c3643dab0740f365005c5",
     "Sal/MRDTs/Instances/NotionCoreMachineCanonicalForest.lean": "63f7dc24eb1b949111ca603b84d4c61c4acef46a104b6a956f3d51af6eea6ecc",
     "Sal/MRDTs/Instances/NotionCoreExtractionEdges.lean": "1a7215048af391efd56161c68c6c296bec6e8bb265822b81e6205cc8dbe415d3",
-    "Sal/MRDTs/Instances/NotionCoreMachineCreatorPresence.lean": "ec0f8da95985872735c8fef0014b9bfb9c33530d67e0947d8daee3ba9731a9fc",
-    "Sal/MRDTs/Instances/NotionCoreMachinePartitionCreate.lean": "7e813042e1085a9968a46d264c1d91cefa269febc0c4196668346bac3820ad4d",
+    "Sal/MRDTs/Instances/NotionCoreMachineCreatorPresence.lean": "be24a65c7bdf2b54e921eb30114b9dcb3067e5fa5c7d1babef476bf2f7eab5aa",
+    "Sal/MRDTs/Instances/NotionCoreMachinePartitionCreate.lean": "83db958ee641de615d783d9e465ea3ca02b12182930d618ad79307b8de942f29",
     "Sal/MRDTs/Instances/NotionCoreMachineErase.lean": "ab2d9de4edd256d98b32ce310754ff48b4344433301f8741c34570f3691e92ab",
-    "Sal/MRDTs/Instances/NotionCoreBootstrapProvenance.lean": "10bcbc39744ed4b3f08a569f96272ec8e7c491c7fb680b6ccc6363bdedaa56eb",
-    "Sal/MRDTs/Instances/NotionCoreMachineBootstrap.lean": "35f7f7cf8f36254638fba9c98354a2094fc9bed4563c3e1c1911f2e4942ec024",
-    "Sal/MRDTs/Instances/NotionCoreMachineClientShape.lean": "bb4a571bce458570d51781ee8498e3d739233a7b6b604d2d69f89d6d0db5e719",
-    "Sal/MRDTs/Instances/NotionCoreMachineDocumentInvariant.lean": "07f99d1410c6038413cdf4be1bfe54300613420ed9906e21222dc7ac2dd52589",
-    "Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean": "4294b6113807a8b17a66c19575d24dd74086f116f23f701b3852eeeed952470c",
+    "Sal/MRDTs/Instances/NotionCoreBootstrapProvenance.lean": "e141f2b5af02064e1e07f5d08c230c143e124f3b2c4f67506802ef94a0b197e7",
+    "Sal/MRDTs/Instances/NotionCoreMachineBootstrap.lean": "5bc1be110dc34dcf3ef961354ea89c1bdb1badc639497a5570cefe15e16b428b",
+    "Sal/MRDTs/Instances/NotionCoreMachineClientShape.lean": "d9c29d51fb39a772feb93bc794dc1d7664548b9f8b4e24165fc78e24f320409d",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocumentInvariant.lean": "e5f2c01cad89cd015d59d9c2fdd09e418dec0715051dd6c665261c1ed542dcf1",
+    "Sal/MRDTs/Instances/NotionCoreMachineBlockPresence.lean": "996254568f51610b08d2270b64bb9f004de18972a78bbc86e7d8c79a3d9adf7f",
+    "Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean": "9c908c420ed458ccfc3aa7e0cebdc296746cb33804e836316bc4b560ca5171bb",
     "Sal/MRDTs/Instances/NotionCoreStructuralVC.lean": "47f2d6f6eba0ca842e3962e454492837edbced62b1434fc1f7365590bf914383",
+    "Sal/MRDTs/Instances/NotionCoreMachineDisplay.lean": "3f698294dd0083667860575f0ad46d65e7943f810647eb810bfc1ea3cd10a63e",
     "Sal/MRDTs/Instances/NotionCoreStructuralActiveText.lean": "12485fca8a60badca11627db671cdec0379911000c73ee16869008774314f9ed",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeEngineProofs.lean": "a8f29fabc8abc6c185f6eda08e7f28e0c27dc5b30c67bb5f1f00c157c6d3e114",
     "Sal/MRDTs/Instances/NotionCoreRuntimeMain.lean": "df83967277a1120b3b4e4617826e737e2cd4384a53be0a4dfd8eb0aaa9319132",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeWire.lean": "914eb6d6788cd97715b68bb8cbc5410bab3a175515a2383efd52fb765a4f84bf",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeWire.lean": "8e8d3fe310b33a8e806613d2014041ce42dc91841954ca71b86f7b8f6db2cff2",
     "Sal/MRDTs/Instances/NotionCoreProtocol.lean": "c222617515e1778d5fa3de5ecebbde8e5caad384ceb567a26cf472520c80d3bb",
     "Sal/MRDTs/Instances/NotionCoreArchiveEvents.lean": "2cf4f5277d5aa95cfc7888b6d043baafad55824e9b9ff8de04c486eff09fc59d",
     "Sal/MRDTs/Instances/NotionCoreMachineExecution.lean": "c2200ce2dfc20ad496e040d6685ef5557ea72f4ee379bb3f1cbced4986a416ad",
@@ -183,22 +185,22 @@
     "Sal/MRDTs/Instances/NotionCoreMachineMint.lean": "2309cbca68b69316948bfd90cf4eb5203469e5e51d6533e5a5f4c8cfa912e149",
     "Sal/MRDTs/Instances/NotionCoreMRDTArchive.lean": "7d69850b6d558b7c72dd1c4f6e82a5f06c87334cbeb45fa311359d557092a26c",
     "Sal/MRDTs/Instances/NotionCoreArchiveCertificate.lean": "c7b57b955a9a8c24490585d79e992a4d7ebcf80afdb20447a0ffbc8245e58cef",
-    "Sal/MRDTs/Instances/NotionCoreStructuralHistory.lean": "e882520db82c5705e5b2ecc09999ec380cc401c9c08ef5de8b881b754d2b4ff9",
+    "Sal/MRDTs/Instances/NotionCoreStructuralHistory.lean": "c62452be998963823fe817647e50132a896a196b6a43ab59a416252459646fac",
     "Sal/MRDTs/Instances/NotionCoreStructuralExecution.lean": "a0ff809499bf86f1303e100194a7872972cdaf8fa851118f57d35aa8b79938ef",
     "Sal/MRDTs/Paper1/HistoryInputs.lean": "99fdb606abe466106c2577841f9ad95c26e3fd2cf3b740db619fa54a53011f08",
-    "Sal/MRDTs/Instances/NotionCoreMachineHistory.lean": "d2437b406447851c230e5022283b890e9bcc89a10b53768613f4d8bce2d9d541",
-    "Sal/MRDTs/Instances/NotionCoreMachineDocument.lean": "f9dec0ba1d6b3c4ed8bb68cb8a2152cd6b404104362f7a484b7d02d2061ccaf7",
-    "Sal/MRDTs/Instances/NotionCoreSourceHistory.lean": "706243a3e839dd42e75a227cfe4ece4d568306ee7158ee46c49c21972ea3bc9c",
-    "Sal/MRDTs/Instances/NotionCoreMachineDocumentBootstrap.lean": "c4b95b0d4d250f3e129c67fd8bb6d4ba2fb75fdba891383a094220f99f2b3fe7",
-    "Sal/MRDTs/Instances/NotionCoreMachineDocumentInsert.lean": "7c73cfc097779f86541b7e7aabce2a0c1d98399dd1f3da3c61cdd0ec373f35ee",
-    "Sal/MRDTs/Instances/NotionCoreMachineDocumentCreate.lean": "f9c13502568d20c5d2c6f25b5768ec533f91e283255c7de053de0a7641f949a9",
-    "Sal/MRDTs/Instances/NotionCoreInvariant.lean": "881f1823080087c308998ca2c2e3c133fd44a638d8c4eff9889893256b77e1cf",
-    "Sal/MRDTs/Instances/NotionCoreMachineDocumentClient.lean": "0f68f9c9c19865838bbd69143255a4692b22fee3e7e17d2b5fa4e2456a86addf",
-    "Sal/MRDTs/Instances/NotionCoreSourceGuards.lean": "8d3c6b773bd69ac71c9c621056a9937a35b47873890d18e9f5022d5772694dcb",
-    "Sal/MRDTs/Instances/NotionCoreMachineDocumentSplit.lean": "38cc00872ca78e2258be12e614e5ce97e33864e7f6b233374bf9001a0d093872",
-    "Sal/MRDTs/Instances/NotionCoreMachineBlockPresence.lean": "0580890c7656811c899beb77a54a318bce8d80e945be97a27d4d1699a2c114af",
-    "Sal/MRDTs/Instances/NotionCoreMachineFreshText.lean": "878ccfa81fb22ae3f846bb0762f01f6fe85fa3127e03ce9fbbff77a1447e7a83",
-    "Sal/MRDTs/Instances/NotionCoreMachineDocumentErase.lean": "8115abb507704c15db154456fd6a2b8e08c4e011d9755a14a10157498ca483cd",
+    "Sal/MRDTs/Instances/NotionCoreMachineHistory.lean": "0dc3a7ae72a7e5e8097a685aacdb385c897e04a90ac4125760daa355ce2a98bf",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocument.lean": "36086ec6a76736f0f34d34978847009c1b9f77da84f1c83bcc80af6dc596bc02",
+    "Sal/MRDTs/Instances/NotionCoreSourceHistory.lean": "93c3c62810b19decd88c8e56a733c92ee6547d8461a43aac778560f8d077588d",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocumentBootstrap.lean": "963f78b55a79c1ddc01b5d32594b83784aa7d9f0aaed791ed881ac82a85adcd9",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocumentInsert.lean": "b6ea2e2cfd2950740b65d9f2cf4a351a2663aefba2bb5ca6e6c0a98293a81b48",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocumentCreate.lean": "dc918586463247acebdbc81eb798b88ecec1e4b999f766e63aecc808d3a0c00f",
+    "Sal/MRDTs/Instances/NotionCoreInvariant.lean": "533ec187705483c36cd012e9b4dc262da80ab39e1b16ed0d0d35152927b32572",
+    "Sal/MRDTs/Instances/NotionCoreSourceGuards.lean": "85547630faed890470bfe71ccf9cbc6aca8520fb733b6b5eb5f300552c113188",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocumentSplit.lean": "d8f27952b735a65b664385c029c696be624f4d466787c04e2738a75044a4cb4c",
+    "Sal/MRDTs/Instances/NotionCoreMachineDeleteTotal.lean": "ddd26d442b3da91c9e9eb99b69931dc47016ec585ed841b99ea4fb9955ace583",
+    "Sal/MRDTs/Instances/NotionCoreMachineFreshText.lean": "338419ca2448c54b9ee9e4681d545528f1c334386a7bc2c81653dbece92a49bf",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocumentErase.lean": "d96f268bfc898cb534db2d8d2e0c263492eac5c6081471c50f65f7a804910616",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocumentMerge.lean": "de50bde0a9954c0dc9959f5f1e1e4b574db83946e89f89bfa2cfc90f931c37dc",
     "Sal/MRDTs/Instances/OptionalRegister.lean": "ba11e7460d445190260a1bcde9a83af461244a1fedaf45487b8cf3279a1c62ac",
     "Sal/MRDTs/Instances/Peritext.lean": "650a0527c972a6f68083cc509625ccc9f60016e559dcb10c1dcab96cd81df84e",
     "Sal/MRDTs/Instances/PriorityQueueSameRecord.lean": "d5210a0e3d0ccca1eed38dbc90b186b948ee08c82543a18a32f67e1144ea8fa6",
@@ -438,16 +440,18 @@
     "Sal/MRDTs/Paper1/SetWinsMapCertificate.lean": "e948f9b0370ea10c7b0eb1f7c23be4c986287c887884e64bd61d696735abcd72",
     "Sal/MRDTs/Paper1/SetWinsMapEvent.lean": "447def89cdbcf8b0f286062ccf98e635bcb3f620477b53a697a6b21330e6767e",
     "Sal/MRDTs/Paper1/SetWinsMapVC.lean": "07c890b6185011e89ef517cb3e05ff1a8c94f901ef18836779765ae4f78eb58a",
-    "Sal/MRDTs/Metatheory/NotionCoreLedger.lean": "906f35cabd93e7dbd77c22f6c582ce04d0825812778e22bfb350487b3c1a9d19",
+    "Sal/MRDTs/Metatheory/NotionCoreLedger.lean": "b06944d8786c75cc3813eedcf6c0f86dfc3ba3696ff0f64100a3694724c14687",
+    "Sal/MRDTs/Instances/NotionCoreMRDTClient.lean": "eacaa3ec0489e57c23eee7864b81c1031f4b456590f8ec0a6ed70518ea743391",
+    "Sal/MRDTs/Instances/NotionCoreMachineInsertEffects.lean": "e8fdab6d62fc64cbb61ed6fdd818dc00ef9ee34ecbd0e012c68fffabff8c46cd",
+    "Sal/MRDTs/Instances/NotionCoreMachineMergeEffects.lean": "91ec9410e0d6317fc477f60601672c4fc78d059b205e2318b2da62bc4f274bea",
     "Sal/MRDTs/Instances/NotionCoreMachineGenesisControl.lean": "ae793f7abb41ee5adef4d1570d6c1b9b293d51a3b4bf4219068eb67e86a28419",
-    "Sal/MRDTs/Instances/NotionCoreMRDTClient.lean": "2a71d1775c10bce01a0484aec3497f4c6a9cf03cd0d6281d77c71aa1b34e5dd5",
-    "Sal/MRDTs/Instances/NotionCoreMachineDeleteTotal.lean": "d21959bfca7957ce431c8c41c47b6771ef1671bb1099f0e6b8a5547b53adfccf",
-    "Sal/MRDTs/Instances/NotionCoreMachineInsertEffects.lean": "244b6b6526bfd1239f093b88d2b4e89142e0e3fef5e29a443d4d1d2baa5e49d5",
-    "Sal/MRDTs/Instances/NotionCoreMachineEraseIssueEffects.lean": "ac3d72404440e9b71cc050f7a025639551be512f482bbdb9f14783903ccea695",
-    "Sal/MRDTs/Instances/NotionCoreMachineClientEffects.lean": "9a7ecaff1564cbbf0689376965e3ddb20e444e6804aecc9d573fe24e6d6565bb",
-    "Sal/MRDTs/Instances/NotionCoreMachineClientTotal.lean": "476a907547191e9e9e8f6bc76a4165c38f85ae9aec8ee88b520209e65b8c2418",
-    "Sal/MRDTs/Instances/NotionCoreMachineSplitEffects.lean": "584c589a0675a79cb87e46d8c61eae7542a8fd0e264e576673998ae1f7620941",
-    "Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean": "f231905026a617d17edf9652c496d6d90036f7b884b3464344becee2ac3a20e0"
+    "Sal/MRDTs/Instances/NotionCoreMachineEraseIssueEffects.lean": "f5f38074bb466579433749d2fb5a52d6233328b01b0adc98de885a313dd1ed14",
+    "Sal/MRDTs/Instances/NotionCoreMachineClientEffects.lean": "d7919dfc372b322a893e5f77cff831b05c2f525ef01b810aeee76e2483fa0b67",
+    "Sal/MRDTs/Instances/NotionCoreMachineDocumentClient.lean": "d972fbbd82a485715498ca43f786fd682f174f4e355ff64acb3fbd2197ccf421",
+    "Sal/MRDTs/Instances/NotionCoreMachineClientTotal.lean": "d72932e6e5a736889473c3c8dbad0cd7ce6968771f9927368941de0e1e2e1732",
+    "Sal/MRDTs/Instances/NotionCoreMachineSplitEffects.lean": "527af9ba34e66fdf47b52f084bdaac1283715a8723a1850f5cf7ca2898dcca9f",
+    "Sal/MRDTs/Instances/NotionCoreSpecMerge.lean": "7fb28ecf4ba67dac0bd21d39b073edde13a68103ca45b29c94a6086a6ba8b535",
+    "Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean": "41f0b922fff61bfcc9d81c7a8f2369c8ed3f657c2261e78bdfc86efd0e23147c"
   },
   "direct_vc_dependency_roots": [
     "Sal.MRDTs.Instances.NotionCoreStructuralMRDT.fiveVCs"
@@ -13745,10 +13749,10 @@
         ]
       },
       "loc": {
-        "implementation": 729,
-        "specification": 112,
+        "implementation": 766,
+        "specification": 133,
         "vc": 73,
-        "bridge": 18082
+        "bridge": 20630
       },
       "source_ranges": {
         "implementation": {
@@ -13760,12 +13764,12 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreDisplayOrder.lean": [
             [
-              13,
-              16
+              16,
+              19
             ],
             [
-              18,
-              20
+              21,
+              23
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreHistory.lean": [
@@ -13837,19 +13841,23 @@
             ],
             [
               111,
-              144
+              146
             ],
             [
-              146,
-              148
+              153,
+              155
             ],
             [
-              150,
-              154
+              157,
+              161
             ],
             [
-              158,
-              178
+              165,
+              183
+            ],
+            [
+              186,
+              189
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineClient.lean": [
@@ -13942,8 +13950,8 @@
               55
             ],
             [
-              194,
-              195
+              196,
+              197
             ]
           ],
           "Sal/MRDTs/Instances/NotionCorePayload.lean": [
@@ -13952,52 +13960,52 @@
               18
             ],
             [
-              22,
-              28
+              25,
+              32
             ],
             [
-              30,
-              33
+              34,
+              37
             ],
             [
-              35,
-              41
+              39,
+              46
             ],
             [
-              48,
-              56
-            ],
-            [
-              58,
-              61
-            ],
-            [
-              63,
+              54,
               63
             ],
             [
-              76,
-              76
+              65,
+              68
             ],
             [
-              81,
-              82
+              70,
+              70
             ],
             [
-              86,
-              88
+              83,
+              83
             ],
             [
-              90,
-              90
+              88,
+              89
             ],
             [
-              92,
-              96
+              93,
+              95
             ],
             [
-              98,
-              99
+              97,
+              97
+            ],
+            [
+              99,
+              103
+            ],
+            [
+              105,
+              106
             ]
           ],
           "Sal/MRDTs/Instances/NotionCorePhysicalReplay.lean": [
@@ -14036,36 +14044,44 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeEngine.lean": [
             [
-              10,
-              12
+              11,
+              13
             ],
             [
-              14,
-              14
+              15,
+              15
             ],
             [
-              16,
-              17
+              17,
+              18
             ],
             [
-              19,
-              23
+              20,
+              24
             ],
             [
-              25,
-              31
+              28,
+              30
             ],
             [
-              33,
-              34
+              45,
+              51
             ],
             [
-              36,
-              39
+              55,
+              57
             ],
             [
-              41,
-              42
+              59,
+              60
+            ],
+            [
+              62,
+              65
+            ],
+            [
+              67,
+              68
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeMain.lean": [
@@ -14204,116 +14220,136 @@
               42
             ],
             [
-              44,
-              60
+              45,
+              47
             ],
             [
-              62,
-              70
+              49,
+              50
             ],
             [
-              72,
-              73
+              52,
+              72
             ],
             [
-              75,
-              76
+              74,
+              85
+            ],
+            [
+              87,
+              88
+            ],
+            [
+              90,
+              91
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreSliceForest.lean": [
             [
-              13,
-              16
+              14,
+              17
             ],
             [
-              19,
-              25
-            ],
-            [
-              28,
-              29
-            ],
-            [
-              31,
-              33
-            ],
-            [
-              36,
-              37
-            ],
-            [
-              45,
-              48
-            ],
-            [
-              52,
-              53
-            ],
-            [
-              56,
-              58
-            ],
-            [
-              77,
-              78
-            ],
-            [
-              81,
-              83
-            ],
-            [
-              86,
-              89
-            ],
-            [
-              98,
-              101
-            ],
-            [
-              106,
-              106
-            ],
-            [
-              108,
-              113
-            ],
-            [
-              115,
-              120
-            ],
-            [
-              122,
-              123
-            ]
-          ],
-          "Sal/MRDTs/Instances/NotionCoreSource.lean": [
-            [
-              12,
-              15
-            ],
-            [
-              17,
-              20
+              20,
+              26
             ],
             [
               29,
-              32
+              30
+            ],
+            [
+              32,
+              34
             ],
             [
               37,
               38
             ],
             [
-              275,
-              277
+              46,
+              49
             ],
             [
-              279,
-              281
+              53,
+              54
             ],
             [
-              283,
-              284
+              57,
+              59
+            ],
+            [
+              78,
+              79
+            ],
+            [
+              82,
+              84
+            ],
+            [
+              87,
+              90
+            ],
+            [
+              99,
+              102
+            ],
+            [
+              107,
+              107
+            ],
+            [
+              109,
+              114
+            ],
+            [
+              116,
+              121
+            ],
+            [
+              123,
+              124
+            ],
+            [
+              377,
+              378
+            ],
+            [
+              1059,
+              1060
+            ],
+            [
+              1065,
+              1071
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreSource.lean": [
+            [
+              14,
+              17
+            ],
+            [
+              19,
+              22
+            ],
+            [
+              31,
+              34
+            ],
+            [
+              39,
+              40
+            ],
+            [
+              648,
+              650
+            ],
+            [
+              652,
+              654
+            ],
+            [
+              656,
+              657
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreSourceInvariant.lean": [
@@ -14346,12 +14382,12 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralCuts.lean": [
             [
-              203,
-              206
+              342,
+              345
             ],
             [
-              208,
-              209
+              347,
+              348
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralDisplay.lean": [
@@ -14360,78 +14396,78 @@
               15
             ],
             [
-              124,
-              124
+              119,
+              119
             ],
             [
-              132,
-              135
+              127,
+              130
             ],
             [
-              156,
-              159
+              162,
+              165
             ],
             [
-              161,
-              163
-            ],
-            [
-              165,
-              166
-            ],
-            [
-              168,
+              167,
               169
             ],
             [
-              173,
-              174
+              171,
+              172
+            ],
+            [
+              174,
+              175
+            ],
+            [
+              179,
+              180
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralFacts.lean": [
             [
-              12,
-              17
-            ],
-            [
-              19,
+              14,
               19
             ],
             [
               21,
-              27
+              21
             ],
             [
-              29,
-              31
+              23,
+              30
             ],
             [
-              33,
-              33
+              32,
+              34
+            ],
+            [
+              36,
+              36
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean": [
             [
-              14,
-              16
+              16,
+              18
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralRender.lean": [
             [
-              16,
-              17
+              19,
+              20
             ],
             [
-              66,
-              70
+              71,
+              75
             ],
             [
-              72,
-              76
+              77,
+              81
             ],
             [
-              235,
-              237
+              238,
+              240
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralRows.lean": [
@@ -14521,7 +14557,7 @@
             ],
             [
               18,
-              28
+              29
             ]
           ],
           "Sal/MRDTs/Instances/NotionCorePhysicalReplay.lean": [
@@ -14532,18 +14568,18 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreSource.lean": [
             [
-              22,
-              25
+              24,
+              27
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreSourceDocument.lean": [
             [
-              43,
+              42,
               48
             ],
             [
               50,
-              54
+              55
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreSpec.lean": [
@@ -14552,56 +14588,60 @@
               20
             ],
             [
-              22,
-              25
-            ],
-            [
-              27,
-              27
-            ],
-            [
-              29,
-              29
+              26,
+              31
             ],
             [
               33,
-              34
+              33
             ],
             [
-              36,
-              37
+              35,
+              35
             ],
             [
-              115,
-              117
+              39,
+              40
             ],
             [
-              140,
-              142
+              44,
+              45
             ],
             [
-              188,
-              189
+              134,
+              136
             ],
             [
-              192,
-              193
+              159,
+              161
             ],
             [
-              195,
-              196
+              207,
+              208
             ],
             [
-              288,
-              293
+              211,
+              212
             ],
             [
-              298,
-              325
+              214,
+              215
             ],
             [
-              327,
-              329
+              307,
+              313
+            ],
+            [
+              315,
+              316
+            ],
+            [
+              331,
+              371
+            ],
+            [
+              373,
+              375
             ]
           ]
         },
@@ -14620,8 +14660,8 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean": [
             [
-              23,
-              25
+              26,
+              28
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralVC.lean": [
@@ -14819,7 +14859,7 @@
             ],
             [
               34,
-              54
+              57
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreCarrierExecution.lean": [
@@ -14847,57 +14887,77 @@
             ],
             [
               17,
-              20
+              22
             ],
             [
-              22,
-              25
+              24,
+              27
             ],
             [
-              27,
-              39
+              29,
+              41
             ],
             [
-              41,
-              48
+              43,
+              50
             ],
             [
-              50,
-              66
+              52,
+              68
             ],
             [
-              70,
-              88
+              72,
+              90
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreDisplayOrder.lean": [
             [
-              11,
-              11
+              14,
+              14
             ],
             [
-              23,
-              28
+              26,
+              31
             ],
             [
-              40,
-              65
+              33,
+              35
             ],
             [
-              67,
-              69
+              52,
+              77
             ],
             [
-              71,
-              72
+              79,
+              81
             ],
             [
-              74,
-              75
+              84,
+              85
             ],
             [
-              77,
-              88
+              89,
+              90
+            ],
+            [
+              92,
+              94
+            ],
+            [
+              96,
+              97
+            ],
+            [
+              99,
+              101
+            ],
+            [
+              103,
+              136
+            ],
+            [
+              140,
+              157
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreExtractionEdges.lean": [
@@ -14929,11 +14989,15 @@
           "Sal/MRDTs/Instances/NotionCoreForestRefs.lean": [
             [
               16,
-              19
+              17
             ],
             [
-              112,
-              114
+              21,
+              22
+            ],
+            [
+              57,
+              59
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreHistory.lean": [
@@ -14957,11 +15021,7 @@
             ],
             [
               61,
-              95
-            ],
-            [
-              100,
-              117
+              94
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreInvariant.lean": [
@@ -15039,15 +15099,15 @@
             ],
             [
               259,
-              282
+              284
             ],
             [
-              284,
-              298
+              286,
+              300
             ],
             [
-              302,
-              340
+              304,
+              343
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreIssuance.lean": [
@@ -15272,36 +15332,40 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreMRDTClient.lean": [
             [
-              16,
-              17
+              17,
+              18
             ],
             [
-              19,
-              23
+              20,
+              24
             ],
             [
-              25,
-              37
+              26,
+              38
             ],
             [
-              39,
-              44
+              40,
+              45
             ],
             [
-              48,
-              76
+              49,
+              77
             ],
             [
-              81,
-              99
+              82,
+              101
             ],
             [
-              101,
-              118
+              103,
+              121
             ],
             [
-              120,
-              140
+              123,
+              143
+            ],
+            [
+              148,
+              167
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachine.lean": [
@@ -15316,6 +15380,10 @@
             [
               74,
               82
+            ],
+            [
+              150,
+              151
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineBirths.lean": [
@@ -15349,57 +15417,69 @@
             ],
             [
               101,
-              167
+              169
             ],
             [
-              169,
-              184
+              171,
+              186
             ],
             [
-              186,
-              187
+              188,
+              189
             ],
             [
-              189,
-              193
+              191,
+              195
             ],
             [
-              195,
-              198
+              197,
+              200
             ],
             [
-              200,
-              214
+              202,
+              216
             ],
             [
-              218,
-              231
+              220,
+              233
             ],
             [
-              235,
-              249
+              237,
+              251
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineBlockPresence.lean": [
             [
-              11,
-              83
+              15,
+              81
             ],
             [
-              86,
-              101
+              85,
+              157
             ],
             [
-              103,
-              111
+              160,
+              160
             ],
             [
-              113,
-              130
+              162,
+              167
             ],
             [
-              132,
-              162
+              169,
+              195
+            ],
+            [
+              197,
+              206
+            ],
+            [
+              209,
+              228
+            ],
+            [
+              230,
+              260
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineBootstrap.lean": [
@@ -15431,31 +15511,31 @@
             ],
             [
               46,
-              78
+              81
             ],
             [
-              80,
-              90
+              83,
+              93
             ],
             [
-              94,
-              105
+              97,
+              108
             ],
             [
-              123,
-              146
+              126,
+              149
             ],
             [
-              150,
-              178
+              153,
+              176
             ],
             [
-              182,
-              201
+              180,
+              194
             ],
             [
-              204,
-              221
+              197,
+              214
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineCanonicalForest.lean": [
@@ -15499,7 +15579,15 @@
           "Sal/MRDTs/Instances/NotionCoreMachineCanonicalSplit.lean": [
             [
               19,
-              81
+              83
+            ],
+            [
+              141,
+              152
+            ],
+            [
+              154,
+              167
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineClient.lean": [
@@ -15545,131 +15633,143 @@
             ],
             [
               77,
-              81
+              83
             ],
             [
-              112,
-              125
+              87,
+              91
             ],
             [
-              129,
-              144
+              122,
+              135
             ],
             [
-              146,
-              163
+              139,
+              154
             ],
             [
-              165,
-              171
+              156,
+              173
             ],
             [
-              173,
-              188
+              175,
+              181
             ],
             [
-              191,
-              203
+              183,
+              198
             ],
             [
-              205,
-              222
+              201,
+              213
             ],
             [
-              224,
-              234
+              215,
+              232
             ],
             [
-              236,
-              246
+              234,
+              244
             ],
             [
-              248,
-              268
+              246,
+              256
             ],
             [
-              273,
-              292
+              258,
+              278
             ],
             [
-              296,
-              316
+              283,
+              302
             ],
             [
-              318,
-              324
+              306,
+              326
             ],
             [
-              329,
-              359
+              328,
+              334
             ],
             [
-              361,
-              371
+              339,
+              369
             ],
             [
-              377,
-              403
+              371,
+              381
             ],
             [
-              405,
-              426
+              387,
+              413
             ],
             [
-              428,
-              452
+              415,
+              436
             ],
             [
-              455,
-              478
+              438,
+              462
             ],
             [
-              481,
-              507
+              465,
+              488
             ],
             [
-              509,
-              528
+              491,
+              517
+            ],
+            [
+              519,
+              538
+            ],
+            [
+              541,
+              582
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineClientEffects.lean": [
             [
               15,
-              30
+              32
             ],
             [
-              36,
-              72
+              39,
+              77
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineClientShape.lean": [
             [
-              15,
-              24
+              70,
+              86
             ],
             [
-              26,
-              28
+              88,
+              101
             ],
             [
-              32,
-              67
+              103,
+              123
             ],
             [
-              71,
-              88
+              127,
+              146
             ],
             [
-              92,
-              107
+              150,
+              205
             ],
             [
-              111,
-              129
+              209,
+              224
             ],
             [
-              132,
-              155
+              228,
+              245
+            ],
+            [
+              248,
+              270
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineClientTotal.lean": [
@@ -15707,45 +15807,53 @@
             ],
             [
               144,
-              164
+              166
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineCreatorPresence.lean": [
             [
               11,
-              14
+              12
             ],
             [
-              16,
-              30
+              15,
+              16
             ],
             [
-              32,
-              101
+              18,
+              32
             ],
             [
-              103,
-              109
+              34,
+              104
             ],
             [
-              111,
-              128
+              107,
+              166
             ],
             [
-              130,
-              141
+              168,
+              178
             ],
             [
-              143,
-              161
+              180,
+              197
             ],
             [
-              163,
-              168
+              199,
+              210
             ],
             [
-              172,
-              201
+              212,
+              230
+            ],
+            [
+              232,
+              237
+            ],
+            [
+              241,
+              270
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineCreators.lean": [
@@ -15767,149 +15875,173 @@
             ],
             [
               59,
-              60
+              62
             ],
             [
-              62,
-              64
+              64,
+              66
             ],
             [
-              66,
-              134
+              68,
+              141
             ],
             [
-              136,
-              158
+              143,
+              165
             ],
             [
-              160,
-              161
+              167,
+              168
             ],
             [
-              163,
-              167
+              170,
+              174
             ],
             [
-              169,
-              172
+              176,
+              179
             ],
             [
-              174,
-              196
+              181,
+              203
             ],
             [
-              200,
-              207
+              207,
+              214
             ],
             [
-              211,
-              219
+              218,
+              226
             ],
             [
-              222,
-              222
+              229,
+              229
             ],
             [
-              224,
-              236
+              231,
+              243
             ],
             [
-              238,
-              241
+              245,
+              248
             ],
             [
-              243,
-              300
+              250,
+              311
             ],
             [
-              302,
-              317
+              313,
+              328
             ],
             [
-              319,
-              320
+              330,
+              331
             ],
             [
-              322,
-              327
+              333,
+              340
             ],
             [
-              329,
-              335
+              342,
+              348
             ],
             [
-              337,
-              352
-            ],
-            [
-              354,
-              361
+              350,
+              365
             ],
             [
               367,
-              392
+              374
+            ],
+            [
+              380,
+              405
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDelete.lean": [
             [
-              17,
-              20
+              18,
+              21
             ],
             [
-              22,
-              23
+              23,
+              24
             ],
             [
-              25,
-              28
+              27,
+              34
             ],
             [
-              30,
-              54
+              36,
+              47
             ],
             [
-              56,
-              73
+              49,
+              71
             ],
             [
-              76,
-              90
+              73,
+              91
             ],
             [
-              92,
-              104
+              95,
+              98
             ],
             [
-              106,
-              123
+              102,
+              105
             ],
             [
-              127,
-              133
+              107,
+              124
             ],
             [
-              135,
-              154
+              126,
+              139
             ],
             [
-              158,
-              163
+              141,
+              165
             ],
             [
-              165,
-              175
+              167,
+              184
             ],
             [
-              177,
-              189
+              187,
+              201
             ],
             [
-              191,
-              200
+              203,
+              214
             ],
             [
-              202,
-              229
+              217,
+              221
+            ],
+            [
+              223,
+              245
+            ],
+            [
+              248,
+              253
+            ],
+            [
+              257,
+              261
+            ],
+            [
+              263,
+              271
+            ],
+            [
+              273,
+              285
+            ],
+            [
+              287,
+              321
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDeleteTotal.lean": [
@@ -15922,120 +16054,144 @@
               41
             ],
             [
-              45,
-              79
+              78,
+              86
             ],
             [
-              81,
-              89
+              88,
+              97
             ],
             [
-              91,
-              100
+              99,
+              110
             ],
             [
-              102,
-              113
+              114,
+              131
             ],
             [
-              117,
+              133,
               134
             ],
             [
               136,
-              137
+              147
             ],
             [
-              139,
-              150
+              152,
+              244
             ],
             [
-              155,
-              217
+              253,
+              267
             ],
             [
-              226,
-              240
-            ],
-            [
-              262,
-              275
+              289,
+              303
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDisplay.lean": [
             [
-              11,
-              12
+              12,
+              13
             ],
             [
-              14,
-              17
+              20,
+              28
             ],
             [
-              19,
-              24
+              34,
+              49
             ],
             [
-              26,
-              101
+              51,
+              127
             ],
             [
-              104,
-              116
+              130,
+              142
             ],
             [
-              118,
-              130
+              144,
+              156
             ],
             [
-              134,
-              140
+              161,
+              167
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDocument.lean": [
             [
-              14,
-              17
+              16,
+              18
             ],
             [
-              19,
-              22
+              22,
+              25
             ],
             [
-              24,
-              32
+              27,
+              28
             ],
             [
-              34,
-              42
+              30,
+              39
             ],
             [
-              44,
-              48
+              41,
+              44
             ],
             [
-              50,
-              68
+              46,
+              49
             ],
             [
-              72,
-              80
+              51,
+              59
             ],
             [
-              82,
-              113
+              61,
+              63
             ],
             [
-              117,
-              156
+              65,
+              71
             ],
             [
-              215,
-              223
+              73,
+              90
             ],
             [
-              225,
-              250
+              93,
+              98
+            ],
+            [
+              102,
+              108
+            ],
+            [
+              111,
+              118
+            ],
+            [
+              120,
+              144
+            ],
+            [
+              149,
+              182
+            ],
+            [
+              184,
+              191
+            ],
+            [
+              219,
+              221
+            ],
+            [
+              223,
+              241
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDocumentBootstrap.lean": [
@@ -16049,102 +16205,94 @@
             ],
             [
               58,
-              163
+              158
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDocumentClient.lean": [
             [
-              19,
-              52
+              20,
+              23
+            ],
+            [
+              25,
+              45
+            ],
+            [
+              47,
+              51
             ],
             [
               54,
-              74
+              79
             ],
             [
-              76,
-              80
+              81,
+              98
             ],
             [
-              83,
-              108
+              102,
+              118
             ],
             [
-              110,
-              127
+              121,
+              135
             ],
             [
-              131,
+              139,
               161
             ],
             [
-              163,
-              185
+              166,
+              191
             ],
             [
-              189,
-              211
+              193,
+              200
             ],
             [
-              213,
-              220
+              203,
+              217
             ],
             [
               223,
-              234
+              254
             ],
             [
-              239,
-              265
-            ],
-            [
-              275,
-              308
-            ],
-            [
-              334,
-              338
+              264,
+              299
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDocumentCreate.lean": [
             [
-              17,
-              33
+              16,
+              32
             ],
             [
-              36,
+              34,
               47
             ],
             [
               50,
-              65
+              70
             ],
             [
-              67,
-              69
+              73,
+              88
             ],
             [
-              71,
-              78
+              90,
+              108
             ],
             [
-              80,
-              92
+              110,
+              124
             ],
             [
-              94,
-              106
+              126,
+              149
             ],
             [
-              108,
-              120
-            ],
-            [
-              122,
-              145
-            ],
-            [
-              150,
+              154,
               198
             ],
             [
@@ -16153,7 +16301,7 @@
             ],
             [
               234,
-              262
+              263
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDocumentErase.lean": [
@@ -16186,120 +16334,240 @@
               141
             ],
             [
-              145,
+              143,
               159
             ],
             [
-              161,
-              177
+              163,
+              187
             ],
             [
-              182,
-              199
+              192,
+              212
             ],
             [
-              203,
-              210
+              216,
+              243
             ],
             [
-              227,
-              260
+              246,
+              255
+            ],
+            [
+              282,
+              307
+            ],
+            [
+              312,
+              335
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDocumentInsert.lean": [
             [
-              64,
-              65
+              41,
+              42
             ],
             [
-              67,
-              70
+              44,
+              47
             ],
             [
-              74,
-              104
+              49,
+              51
             ],
             [
-              108,
-              125
+              56,
+              90
             ],
             [
-              129,
-              169
+              94,
+              111
             ],
             [
-              173,
-              230
+              115,
+              155
             ],
             [
-              232,
-              248
+              159,
+              205
             ],
             [
-              252,
-              294
+              207,
+              223
             ],
             [
-              299,
-              323
+              227,
+              283
             ],
             [
-              325,
-              339
+              287,
+              317
             ],
             [
-              343,
-              365
+              322,
+              345
             ],
             [
-              368,
-              380
+              363,
+              375
             ],
             [
-              382,
-              399
+              377,
+              394
             ],
             [
-              403,
-              455
+              398,
+              440
             ],
             [
-              458,
-              464
+              443,
+              449
             ],
             [
-              469,
-              546
+              454,
+              527
             ],
             [
-              550,
-              579
+              531,
+              561
             ],
             [
-              606,
-              625
+              588,
+              607
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineDocumentInvariant.lean": [
             [
+              18,
+              19
+            ],
+            [
+              21,
+              25
+            ],
+            [
+              27,
+              30
+            ],
+            [
+              32,
+              51
+            ],
+            [
+              55,
+              70
+            ],
+            [
+              72,
+              82
+            ],
+            [
+              84,
+              104
+            ],
+            [
+              106,
+              124
+            ],
+            [
+              128,
+              142
+            ],
+            [
+              144,
+              165
+            ],
+            [
+              167,
+              168
+            ],
+            [
+              172,
+              179
+            ],
+            [
+              181,
+              182
+            ],
+            [
+              184,
+              194
+            ],
+            [
+              196,
+              216
+            ],
+            [
+              218,
+              230
+            ],
+            [
+              234,
+              252
+            ],
+            [
+              254,
+              261
+            ],
+            [
+              265,
+              277
+            ],
+            [
+              281,
+              303
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreMachineDocumentMerge.lean": [
+            [
               17,
-              18
+              22
             ],
             [
-              20,
-              24
+              24,
+              41
             ],
             [
-              26,
-              29
+              43,
+              60
             ],
             [
-              31,
-              50
+              62,
+              77
             ],
             [
-              54,
-              69
+              81,
+              125
+            ],
+            [
+              129,
+              156
+            ],
+            [
+              160,
+              191
+            ],
+            [
+              193,
+              203
+            ],
+            [
+              216,
+              376
+            ],
+            [
+              381,
+              421
+            ],
+            [
+              423,
+              439
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreMachineDocumentSplit.lean": [
+            [
+              24,
+              67
             ],
             [
               71,
@@ -16307,133 +16575,75 @@
             ],
             [
               83,
-              103
+              99
             ],
             [
-              105,
-              123
+              101,
+              118
             ],
             [
-              127,
-              141
+              123,
+              170
             ],
             [
-              143,
-              164
+              172,
+              191
             ],
             [
-              166,
-              167
+              193,
+              200
             ],
             [
-              171,
-              195
+              202,
+              214
             ],
             [
-              197,
-              198
+              216,
+              234
             ],
             [
-              200,
-              210
+              236,
+              249
             ],
             [
-              212,
-              235
+              251,
+              261
             ],
             [
-              239,
-              257
+              265,
+              286
             ],
             [
-              259,
-              266
+              291,
+              306
             ],
             [
-              270,
-              282
+              310,
+              322
             ],
             [
-              286,
-              307
-            ]
-          ],
-          "Sal/MRDTs/Instances/NotionCoreMachineDocumentSplit.lean": [
-            [
-              21,
-              64
+              326,
+              432
             ],
             [
-              66,
-              70
+              437,
+              466
             ],
             [
-              74,
-              92
+              471,
+              662
             ],
             [
-              96,
-              113
+              667,
+              841
             ],
             [
-              117,
-              127
+              871,
+              885
             ],
             [
-              132,
-              178
-            ],
-            [
-              180,
-              196
-            ],
-            [
-              201,
-              224
-            ],
-            [
-              229,
-              274
-            ],
-            [
-              276,
-              295
-            ],
-            [
-              300,
-              311
-            ],
-            [
-              315,
-              330
-            ],
-            [
-              332,
-              339
-            ],
-            [
-              341,
-              351
-            ],
-            [
-              353,
-              365
-            ],
-            [
-              370,
-              509
-            ],
-            [
-              514,
-              714
-            ],
-            [
-              744,
-              758
-            ],
-            [
-              761,
-              775
+              888,
+              902
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineErase.lean": [
@@ -16473,7 +16683,7 @@
             ],
             [
               23,
-              79
+              71
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineExecution.lean": [
@@ -16541,19 +16751,19 @@
           "Sal/MRDTs/Instances/NotionCoreMachineFreshText.lean": [
             [
               12,
-              18
+              24
             ],
             [
-              22,
-              47
+              28,
+              53
             ],
             [
-              49,
-              59
+              55,
+              65
             ],
             [
-              63,
-              74
+              69,
+              80
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineGenesis.lean": [
@@ -16619,19 +16829,19 @@
             ],
             [
               55,
-              80
+              83
             ],
             [
-              84,
-              94
+              87,
+              97
             ],
             [
-              99,
-              119
+              102,
+              118
             ],
             [
-              124,
-              133
+              123,
+              132
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineHonestReplay.lean": [
@@ -16641,31 +16851,31 @@
             ],
             [
               33,
-              92
+              105
             ],
             [
-              97,
-              122
-            ],
-            [
-              126,
+              110,
               135
             ],
             [
               139,
-              149
+              148
             ],
             [
-              153,
-              160
+              152,
+              162
             ],
             [
-              165,
-              175
+              166,
+              173
             ],
             [
-              179,
-              184
+              178,
+              188
+            ],
+            [
+              192,
+              197
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineInsertEffects.lean": [
@@ -16674,40 +16884,40 @@
               49
             ],
             [
-              53,
-              81
+              54,
+              87
             ],
             [
-              83,
-              89
+              89,
+              95
             ],
             [
-              92,
-              97
+              98,
+              103
             ],
             [
-              99,
-              105
+              105,
+              111
             ],
             [
-              111,
-              174
+              117,
+              173
             ],
             [
-              182,
-              248
+              181,
+              247
             ],
             [
-              250,
-              264
+              249,
+              263
             ],
             [
-              269,
-              315
+              268,
+              314
             ],
             [
-              320,
-              344
+              319,
+              341
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineMarkerProgress.lean": [
@@ -16754,10 +16964,40 @@
             [
               415,
               422
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreMachineMergeEffects.lean": [
+            [
+              17,
+              42
             ],
             [
-              426,
-              440
+              44,
+              57
+            ],
+            [
+              62,
+              112
+            ],
+            [
+              118,
+              186
+            ],
+            [
+              190,
+              196
+            ],
+            [
+              200,
+              272
+            ],
+            [
+              277,
+              319
+            ],
+            [
+              324,
+              346
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineMint.lean": [
@@ -16785,43 +17025,43 @@
           "Sal/MRDTs/Instances/NotionCoreMachineNetwork.lean": [
             [
               13,
-              18
+              19
             ],
             [
-              22,
-              25
+              23,
+              26
             ],
             [
-              27,
-              31
+              28,
+              33
             ],
             [
-              36,
-              41
+              38,
+              43
             ],
             [
-              47,
-              77
+              49,
+              93
             ],
             [
-              79,
-              99
+              95,
+              118
             ],
             [
-              103,
-              122
+              122,
+              141
             ],
             [
-              126,
-              134
+              145,
+              153
             ],
             [
-              138,
-              145
+              157,
+              164
             ],
             [
-              147,
-              150
+              166,
+              169
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachinePartition.lean": [
@@ -16872,74 +17112,102 @@
             [
               168,
               178
+            ],
+            [
+              185,
+              189
+            ],
+            [
+              191,
+              197
+            ],
+            [
+              199,
+              210
+            ],
+            [
+              212,
+              216
+            ],
+            [
+              218,
+              232
+            ],
+            [
+              235,
+              241
+            ],
+            [
+              243,
+              244
+            ],
+            [
+              246,
+              252
+            ],
+            [
+              254,
+              261
+            ],
+            [
+              263,
+              266
+            ],
+            [
+              270,
+              309
+            ],
+            [
+              313,
+              319
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachinePartitionCreate.lean": [
             [
               15,
-              46
+              50
             ],
             [
-              48,
-              90
+              52,
+              94
             ],
             [
-              94,
-              104
+              98,
+              108
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachinePartitionSplit.lean": [
             [
               16,
-              48
+              34
             ],
             [
-              50,
-              62
+              36,
+              49
             ],
             [
-              66,
-              88
+              53,
+              95
             ],
             [
-              93,
-              120
+              99,
+              112
             ],
             [
-              122,
-              126
+              114,
+              122
             ],
             [
-              128,
-              145
+              126,
+              176
             ],
             [
-              147,
-              165
+              180,
+              193
             ],
             [
-              167,
-              180
-            ],
-            [
-              184,
-              226
-            ],
-            [
-              230,
-              254
-            ],
-            [
-              258,
-              276
-            ],
-            [
-              280,
-              340
-            ],
-            [
-              345,
-              378
+              219,
+              273
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachinePartitionUpdates.lean": [
@@ -16957,35 +17225,39 @@
             ],
             [
               37,
-              77
+              76
             ],
             [
-              81,
-              108
+              80,
+              106
             ],
             [
-              112,
-              125
+              110,
+              123
             ],
             [
-              131,
-              148
+              129,
+              146
             ],
             [
               150,
-              159
+              168
             ],
             [
-              164,
-              198
+              170,
+              179
             ],
             [
-              203,
+              184,
               218
             ],
             [
               223,
-              237
+              238
+            ],
+            [
+              244,
+              261
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachinePrefix.lean": [
@@ -17029,63 +17301,67 @@
             ],
             [
               45,
-              65
+              67
             ],
             [
-              68,
-              84
+              70,
+              87
             ],
             [
               90,
-              97
+              107
             ],
             [
-              100,
-              113
+              113,
+              120
             ],
             [
-              128,
-              130
+              123,
+              136
             ],
             [
-              132,
-              147
+              151,
+              153
             ],
             [
-              160,
-              166
+              155,
+              170
             ],
             [
-              237,
-              249
+              183,
+              189
             ],
             [
-              277,
-              285
+              273,
+              286
             ],
             [
-              287,
-              297
+              311,
+              319
             ],
             [
-              299,
-              352
+              321,
+              331
             ],
             [
-              354,
-              378
+              333,
+              393
             ],
             [
-              380,
-              413
+              395,
+              416
             ],
             [
-              430,
-              438
+              418,
+              454
             ],
             [
-              441,
-              447
+              471,
+              479
+            ],
+            [
+              482,
+              488
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineRouting.lean": [
@@ -17178,56 +17454,72 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineShape.lean": [
             [
-              14,
-              16
+              15,
+              17
             ],
             [
-              19,
-              22
+              20,
+              21
             ],
             [
-              24,
-              26
+              23,
+              24
             ],
             [
-              44,
-              65
+              26,
+              28
             ],
             [
-              70,
-              86
+              49,
+              56
             ],
             [
-              88,
-              98
+              61,
+              84
             ],
             [
-              111,
-              121
+              89,
+              105
             ],
             [
-              126,
-              168
+              107,
+              115
             ],
             [
-              189,
-              201
+              130,
+              140
             ],
             [
-              205,
-              210
+              146,
+              175
             ],
             [
-              214,
-              218
+              186,
+              198
             ],
             [
-              220,
-              228
+              202,
+              207
             ],
             [
-              233,
-              261
+              211,
+              215
+            ],
+            [
+              217,
+              222
+            ],
+            [
+              227,
+              259
+            ],
+            [
+              262,
+              265
+            ],
+            [
+              267,
+              276
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineSlices.lean": [
@@ -17306,36 +17598,36 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineSplitEffects.lean": [
             [
-              18,
-              39
+              19,
+              40
             ],
             [
-              41,
-              56
+              42,
+              57
             ],
             [
-              58,
-              68
+              59,
+              69
             ],
             [
-              70,
-              76
+              71,
+              77
             ],
             [
-              81,
-              158
+              82,
+              147
             ],
             [
-              162,
-              172
+              151,
+              161
             ],
             [
-              176,
-              219
+              165,
+              208
             ],
             [
-              223,
-              248
+              212,
+              234
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineTableGraph.lean": [
@@ -17394,68 +17686,72 @@
               163
             ],
             [
-              165,
-              187
+              167,
+              197
             ],
             [
-              190,
-              191
+              199,
+              221
             ],
             [
-              193,
-              195
+              224,
+              225
             ],
             [
-              197,
-              206
+              227,
+              229
             ],
             [
-              208,
-              219
+              231,
+              240
             ],
             [
-              221,
-              232
+              242,
+              253
             ],
             [
-              234,
-              239
+              255,
+              266
             ],
             [
-              241,
-              250
+              268,
+              273
             ],
             [
-              253,
-              262
+              275,
+              284
             ],
             [
-              264,
-              270
+              287,
+              296
             ],
             [
-              274,
-              370
+              298,
+              304
             ],
             [
-              373,
-              381
+              308,
+              406
             ],
             [
-              383,
-              392
+              409,
+              416
             ],
             [
-              394,
-              399
+              418,
+              427
             ],
             [
-              404,
-              421
+              429,
+              434
             ],
             [
-              423,
-              429
+              439,
+              456
+            ],
+            [
+              458,
+              464
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreMachineVersionTables.lean": [
@@ -17494,6 +17790,28 @@
             [
               195,
               220
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreMergeFree.lean": [
+            [
+              13,
+              13
+            ],
+            [
+              16,
+              16
+            ],
+            [
+              18,
+              19
+            ],
+            [
+              33,
+              36
+            ],
+            [
+              39,
+              46
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreOriginTree.lean": [
@@ -17686,8 +18004,12 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreParentErase.lean": [
             [
-              59,
-              61
+              30,
+              37
+            ],
+            [
+              69,
+              71
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreParentMap.lean": [
@@ -17862,158 +18184,162 @@
               34
             ],
             [
-              59,
-              61
+              61,
+              63
             ],
             [
-              63,
-              67
+              65,
+              69
             ],
             [
-              69,
-              71
+              71,
+              73
             ],
             [
-              73,
-              85
+              75,
+              87
             ],
             [
-              89,
-              122
+              91,
+              124
             ],
             [
-              124,
-              137
+              126,
+              139
             ],
             [
-              139,
-              153
+              141,
+              155
             ],
             [
-              155,
-              168
+              157,
+              170
             ],
             [
-              172,
-              176
+              174,
+              178
             ],
             [
-              178,
-              179
+              180,
+              181
             ],
             [
-              181,
-              192
+              183,
+              194
             ],
             [
-              197,
-              217
+              199,
+              219
             ],
             [
-              221,
-              229
+              223,
+              231
             ],
             [
-              242,
-              245
+              244,
+              247
             ],
             [
-              247,
-              267
+              249,
+              269
             ],
             [
-              283,
-              284
+              285,
+              286
             ],
             [
-              286,
-              293
+              288,
+              295
             ],
             [
-              374,
-              387
+              369,
+              382
+            ],
+            [
+              402,
+              403
             ],
             [
               410,
-              411
+              422
             ],
             [
-              418,
-              430
+              424,
+              440
             ],
             [
-              432,
-              448
+              496,
+              497
             ],
             [
-              505,
-              506
+              499,
+              501
             ],
             [
-              508,
-              510
-            ],
-            [
-              575,
-              575
+              565,
+              565
             ]
           ],
           "Sal/MRDTs/Instances/NotionCorePayload.lean": [
             [
-              65,
-              67
-            ],
-            [
-              71,
+              72,
               74
             ],
             [
               78,
-              79
+              81
             ],
             [
-              101,
-              101
+              85,
+              86
             ],
             [
-              103,
-              107
+              108,
+              108
             ],
             [
-              109,
-              111
+              110,
+              114
             ],
             [
-              115,
-              122
+              116,
+              118
             ],
             [
-              126,
-              138
+              121,
+              126
             ],
             [
-              159,
-              162
+              130,
+              139
             ],
             [
-              164,
-              164
+              143,
+              155
             ],
             [
-              168,
-              174
-            ],
-            [
-              176,
-              177
-            ],
-            [
-              182,
+              187,
               190
             ],
             [
-              194,
+              192,
+              192
+            ],
+            [
+              196,
+              202
+            ],
+            [
+              204,
               205
+            ],
+            [
+              210,
+              218
+            ],
+            [
+              222,
+              233
             ]
           ],
           "Sal/MRDTs/Instances/NotionCorePayloadNetwork.lean": [
@@ -18027,103 +18353,103 @@
             ],
             [
               23,
-              25
+              26
             ],
             [
-              27,
-              28
+              28,
+              29
             ],
             [
-              30,
-              39
+              31,
+              40
             ],
             [
-              43,
-              51
+              44,
+              54
             ],
             [
-              53,
-              58
+              56,
+              61
             ],
             [
-              60,
-              63
+              63,
+              66
             ],
             [
-              65,
-              65
+              68,
+              68
             ],
             [
-              67,
-              69
-            ],
-            [
-              71,
+              70,
               72
             ],
             [
               74,
-              74
+              75
             ],
             [
-              76,
-              78
+              77,
+              77
             ],
             [
-              80,
-              82
+              79,
+              81
             ],
             [
-              84,
+              83,
               85
             ],
             [
               87,
-              89
+              88
             ],
             [
-              91,
-              94
+              90,
+              92
             ],
             [
-              96,
-              101
+              94,
+              97
             ],
             [
-              103,
-              109
+              99,
+              104
             ],
             [
-              111,
-              122
+              106,
+              112
             ],
             [
-              124,
-              134
+              114,
+              125
             ],
             [
-              136,
-              148
+              127,
+              137
             ],
             [
-              150,
-              156
+              139,
+              151
             ],
             [
-              161,
-              185
+              153,
+              159
             ],
             [
-              187,
-              193
+              164,
+              188
             ],
             [
-              197,
-              213
+              190,
+              196
             ],
             [
-              217,
-              233
+              200,
+              216
+            ],
+            [
+              220,
+              236
             ]
           ],
           "Sal/MRDTs/Instances/NotionCorePayloadParents.lean": [
@@ -18145,35 +18471,35 @@
             ],
             [
               55,
-              78
+              79
             ],
             [
-              80,
-              82
+              81,
+              83
             ],
             [
-              87,
-              114
+              88,
+              115
             ],
             [
-              131,
-              134
+              132,
+              135
             ],
             [
-              136,
-              151
+              137,
+              152
             ],
             [
-              153,
-              163
+              154,
+              164
             ],
             [
-              179,
-              189
+              180,
+              190
             ],
             [
-              194,
-              219
+              195,
+              220
             ]
           ],
           "Sal/MRDTs/Instances/NotionCorePhysicalReplay.lean": [
@@ -18233,99 +18559,103 @@
             ],
             [
               21,
-              23
+              21
             ],
             [
-              25,
-              29
+              23,
+              27
             ],
             [
-              31,
-              37
+              29,
+              35
             ],
             [
-              39,
-              40
+              37,
+              38
             ],
             [
-              42,
-              44
+              40,
+              42
             ],
             [
               46,
-              47
-            ],
-            [
-              49,
-              51
-            ],
-            [
-              55,
-              80
+              71
             ],
             [
               82,
-              88
+              91
             ],
             [
-              92,
-              117
+              93,
+              95
             ],
             [
-              120,
-              129
+              98,
+              125
             ],
             [
-              132,
-              133
+              127,
+              138
             ],
             [
-              135,
-              143
+              140,
+              142
             ],
             [
-              145,
-              153
+              146,
+              161
             ],
             [
-              155,
-              158
+              171,
+              182
             ],
             [
-              163,
-              169
+              185,
+              186
             ],
             [
-              173,
-              191
+              188,
+              196
             ],
             [
-              245,
-              248
+              198,
+              206
             ],
             [
-              253,
-              286
+              208,
+              210
             ],
             [
-              292,
-              322
+              215,
+              221
             ],
             [
-              324,
-              344
+              226,
+              244
             ],
             [
-              349,
-              382
+              294,
+              300
             ],
             [
-              384,
-              403
+              305,
+              339
             ],
             [
-              409,
-              480
+              343,
+              374
+            ],
+            [
+              376,
+              396
+            ],
+            [
+              401,
+              433
+            ],
+            [
+              460,
+              527
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreProtocol.lean": [
@@ -18489,7 +18819,7 @@
             ],
             [
               108,
-              168
+              169
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRootCreators.lean": [
@@ -18620,8 +18950,8 @@
               204
             ],
             [
-              209,
-              219
+              210,
+              221
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeCompatibility.lean": [
@@ -18648,8 +18978,18 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeEndToEnd.lean": [
             [
-              12,
-              38
+              18,
+              52
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreRuntimeEngine.lean": [
+            [
+              32,
+              35
+            ],
+            [
+              37,
+              42
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeEngineProofs.lean": [
@@ -18662,16 +19002,20 @@
               36
             ],
             [
-              54,
-              57
+              39,
+              44
             ],
             [
-              59,
-              80
+              68,
+              71
             ],
             [
-              82,
-              96
+              73,
+              94
+            ],
+            [
+              96,
+              110
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeHonestProgress.lean": [
@@ -18684,28 +19028,28 @@
               23
             ],
             [
-              28,
-              43
+              29,
+              45
             ],
             [
-              48,
-              58
+              50,
+              60
             ],
             [
-              63,
-              89
+              66,
+              93
             ],
             [
-              93,
-              101
+              97,
+              106
             ],
             [
-              103,
-              111
+              108,
+              116
             ],
             [
-              113,
-              122
+              118,
+              128
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeMetadata.lean": [
@@ -18728,24 +19072,24 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeProgress.lean": [
             [
-              8,
-              9
+              9,
+              10
             ],
             [
-              11,
-              23
+              12,
+              24
             ],
             [
-              25,
-              46
+              26,
+              47
             ],
             [
-              48,
-              68
+              49,
+              70
             ],
             [
-              70,
-              82
+              72,
+              84
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeQuery.lean": [
@@ -18802,24 +19146,48 @@
               224
             ],
             [
-              229,
-              243
+              231,
+              241
             ],
             [
-              245,
-              254
+              243,
+              252
             ],
             [
-              258,
-              290
+              256,
+              288
             ],
             [
-              292,
-              299
+              290,
+              297
             ],
             [
-              304,
-              343
+              302,
+              303
+            ],
+            [
+              312,
+              321
+            ],
+            [
+              323,
+              330
+            ],
+            [
+              334,
+              361
+            ],
+            [
+              365,
+              382
+            ],
+            [
+              387,
+              415
+            ],
+            [
+              422,
+              463
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeRefinement.lean": [
@@ -18829,31 +19197,39 @@
             ],
             [
               24,
-              28
+              25
             ],
             [
-              30,
-              32
+              29,
+              34
             ],
             [
-              34,
-              36
+              37,
+              38
             ],
             [
-              38,
-              56
+              40,
+              44
             ],
             [
-              58,
+              46,
+              48
+            ],
+            [
+              50,
               74
             ],
             [
               76,
-              93
+              99
             ],
             [
-              97,
-              114
+              101,
+              119
+            ],
+            [
+              123,
+              140
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeState.lean": [
@@ -18994,16 +19370,16 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeTheorem.lean": [
             [
-              14,
-              31
+              17,
+              37
             ],
             [
-              35,
-              48
+              43,
+              58
             ],
             [
-              53,
-              75
+              65,
+              86
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreRuntimeTypes.lean": [
@@ -19014,262 +19390,446 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreSliceForest.lean": [
             [
-              38,
-              40
+              39,
+              41
             ],
             [
-              59,
-              65
+              60,
+              66
             ],
             [
-              70,
-              75
+              91,
+              96
             ],
             [
-              90,
-              95
+              128,
+              132
             ],
             [
-              127,
-              131
+              134,
+              135
             ],
             [
-              135,
-              137
+              137,
+              139
             ],
             [
-              139,
-              141
+              142,
+              159
             ],
             [
-              143,
-              145
+              200,
+              215
             ],
             [
-              166,
-              169
+              256,
+              258
             ],
             [
-              171,
-              171
+              260,
+              262
             ],
             [
-              173,
-              177
+              275,
+              284
             ],
             [
-              179,
-              181
+              287,
+              292
             ],
             [
-              183,
-              191
+              294,
+              298
             ],
             [
-              196,
-              224
+              300,
+              308
             ],
             [
-              226,
-              226
+              310,
+              329
             ],
             [
-              228,
-              229
+              333,
+              352
             ],
             [
-              231,
-              232
+              356,
+              373
             ],
             [
-              234,
-              237
+              379,
+              382
             ],
             [
-              239,
-              249
+              389,
+              393
             ],
             [
-              254,
-              304
+              406,
+              407
             ],
             [
-              306,
-              306
+              409,
+              415
             ],
             [
-              308,
-              313
+              430,
+              432
             ],
             [
-              315,
-              323
+              434,
+              436
             ],
             [
-              325,
-              333
+              438,
+              440
             ],
             [
-              348,
-              361
+              466,
+              466
             ],
             [
-              363,
-              365
+              530,
+              530
             ],
             [
-              370,
-              386
+              533,
+              536
             ],
             [
-              388,
-              388
+              539,
+              539
             ],
             [
-              390,
-              394
+              541,
+              547
             ],
             [
-              396,
-              397
+              549,
+              551
             ],
             [
-              399,
-              401
+              553,
+              562
             ],
             [
-              403,
-              405
+              565,
+              567
             ],
             [
-              407,
-              408
+              569,
+              569
             ],
             [
-              410,
-              411
+              571,
+              576
             ],
             [
-              413,
-              414
+              578,
+              578
             ],
             [
-              416,
-              417
+              580,
+              581
             ],
             [
-              419,
-              451
+              583,
+              584
             ],
             [
-              453,
-              476
+              586,
+              589
             ],
             [
-              481,
-              495
+              591,
+              593
             ],
             [
-              499,
-              520
+              596,
+              597
             ],
             [
-              522,
-              554
+              600,
+              600
             ],
             [
-              558,
-              560
+              602,
+              606
             ],
             [
-              562,
+              610,
+              613
+            ],
+            [
+              615,
               616
+            ],
+            [
+              618,
+              621
+            ],
+            [
+              635,
+              643
+            ],
+            [
+              646,
+              666
+            ],
+            [
+              670,
+              723
+            ],
+            [
+              725,
+              745
+            ],
+            [
+              747,
+              755
+            ],
+            [
+              757,
+              765
+            ],
+            [
+              767,
+              780
+            ],
+            [
+              782,
+              784
+            ],
+            [
+              789,
+              805
+            ],
+            [
+              810,
+              834
+            ],
+            [
+              836,
+              838
+            ],
+            [
+              840,
+              842
+            ],
+            [
+              844,
+              845
+            ],
+            [
+              847,
+              848
+            ],
+            [
+              850,
+              851
+            ],
+            [
+              853,
+              854
+            ],
+            [
+              856,
+              857
+            ],
+            [
+              859,
+              860
+            ],
+            [
+              862,
+              888
+            ],
+            [
+              893,
+              902
+            ],
+            [
+              906,
+              908
+            ],
+            [
+              910,
+              920
+            ],
+            [
+              925,
+              995
+            ],
+            [
+              997,
+              1053
+            ],
+            [
+              1073,
+              1090
+            ],
+            [
+              1092,
+              1103
+            ],
+            [
+              1105,
+              1116
+            ],
+            [
+              1119,
+              1144
+            ],
+            [
+              1146,
+              1154
+            ],
+            [
+              1156,
+              1169
+            ],
+            [
+              1173,
+              1213
+            ],
+            [
+              1215,
+              1224
+            ],
+            [
+              1258,
+              1277
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreSource.lean": [
             [
-              34,
-              35
+              36,
+              37
             ],
             [
-              45,
-              48
+              51,
+              53
             ],
             [
-              50,
-              54
+              75,
+              79
             ],
             [
-              56,
-              59
+              83,
+              89
             ],
             [
-              73,
-              75
+              100,
+              101
             ],
             [
-              77,
-              80
+              103,
+              107
+            ],
+            [
+              109,
+              115
             ],
             [
               117,
-              121
+              120
+            ],
+            [
+              122,
+              123
             ],
             [
               125,
-              131
+              133
             ],
             [
-              133,
-              138
+              135,
+              143
             ],
             [
-              142,
-              161
+              145,
+              153
             ],
             [
-              164,
-              166
+              159,
+              160
             ],
             [
-              198,
-              199
+              162,
+              164
             ],
             [
-              201,
-              205
+              167,
+              179
             ],
             [
-              207,
-              213
+              182,
+              191
             ],
             [
-              215,
-              218
+              197,
+              201
             ],
             [
-              220,
-              221
+              204,
+              204
             ],
             [
-              223,
-              231
+              206,
+              206
             ],
             [
-              233,
-              241
+              208,
+              208
             ],
             [
-              286,
-              293
+              210,
+              211
             ],
             [
-              295,
-              302
+              213,
+              215
+            ],
+            [
+              236,
+              243
+            ],
+            [
+              247,
+              272
+            ],
+            [
+              276,
+              288
+            ],
+            [
+              290,
+              297
+            ],
+            [
+              301,
+              304
             ],
             [
               306,
-              310
+              342
+            ],
+            [
+              344,
+              347
+            ],
+            [
+              659,
+              666
+            ],
+            [
+              668,
+              675
+            ],
+            [
+              679,
+              683
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreSourceDocument.lean": [
@@ -19282,151 +19842,7 @@
               13
             ],
             [
-              15,
-              16
-            ],
-            [
-              18,
-              19
-            ],
-            [
-              23,
-              25
-            ],
-            [
-              27,
-              28
-            ],
-            [
-              30,
-              31
-            ],
-            [
-              33,
-              34
-            ],
-            [
-              37,
-              38
-            ],
-            [
-              40,
-              41
-            ],
-            [
-              56,
-              81
-            ],
-            [
-              83,
-              84
-            ],
-            [
-              86,
-              89
-            ],
-            [
-              93,
-              94
-            ],
-            [
-              99,
-              107
-            ],
-            [
-              109,
-              118
-            ],
-            [
-              120,
-              122
-            ],
-            [
-              124,
-              140
-            ],
-            [
-              142,
-              149
-            ],
-            [
-              151,
-              168
-            ],
-            [
-              170,
-              189
-            ],
-            [
-              191,
-              196
-            ],
-            [
-              198,
-              209
-            ],
-            [
-              211,
-              218
-            ],
-            [
-              220,
-              274
-            ],
-            [
-              279,
-              299
-            ],
-            [
-              304,
-              307
-            ],
-            [
-              309,
-              313
-            ],
-            [
-              318,
-              327
-            ]
-          ],
-          "Sal/MRDTs/Instances/NotionCoreSourceGuards.lean": [
-            [
-              15,
-              19
-            ],
-            [
-              21,
-              28
-            ],
-            [
-              32,
-              52
-            ],
-            [
-              57,
-              83
-            ],
-            [
-              87,
-              91
-            ],
-            [
-              95,
-              111
-            ],
-            [
-              115,
-              120
-            ],
-            [
-              125,
-              130
-            ]
-          ],
-          "Sal/MRDTs/Instances/NotionCoreSourceHistory.lean": [
-            [
-              15,
+              16,
               17
             ],
             [
@@ -19435,31 +19851,187 @@
             ],
             [
               22,
-              27
+              23
             ],
             [
-              29,
-              36
+              25,
+              26
             ],
             [
-              38,
-              47
+              28,
+              29
             ],
             [
-              49,
-              49
+              31,
+              32
             ],
             [
-              51,
-              53
+              36,
+              37
             ],
             [
-              55,
-              60
+              39,
+              40
             ],
             [
-              64,
-              78
+              63,
+              102
+            ],
+            [
+              104,
+              105
+            ],
+            [
+              107,
+              109
+            ],
+            [
+              119,
+              120
+            ],
+            [
+              125,
+              127
+            ],
+            [
+              129,
+              136
+            ],
+            [
+              138,
+              145
+            ],
+            [
+              147,
+              149
+            ],
+            [
+              152,
+              156
+            ],
+            [
+              158,
+              161
+            ],
+            [
+              163,
+              169
+            ],
+            [
+              171,
+              176
+            ],
+            [
+              179,
+              191
+            ],
+            [
+              193,
+              210
+            ],
+            [
+              212,
+              232
+            ],
+            [
+              234,
+              239
+            ],
+            [
+              241,
+              252
+            ],
+            [
+              260,
+              318
+            ],
+            [
+              320,
+              368
+            ],
+            [
+              374,
+              395
+            ],
+            [
+              400,
+              403
+            ],
+            [
+              405,
+              409
+            ],
+            [
+              414,
+              423
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreSourceGuards.lean": [
+            [
+              17,
+              20
+            ],
+            [
+              25,
+              45
+            ],
+            [
+              48,
+              56
+            ],
+            [
+              59,
+              67
+            ],
+            [
+              71,
+              76
+            ],
+            [
+              80,
+              85
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreSourceHistory.lean": [
+            [
+              15,
+              17
+            ],
+            [
+              21,
+              23
+            ],
+            [
+              25,
+              30
+            ],
+            [
+              32,
+              39
+            ],
+            [
+              41,
+              44
+            ],
+            [
+              46,
+              57
+            ],
+            [
+              59,
+              59
+            ],
+            [
+              61,
+              63
+            ],
+            [
+              65,
+              70
+            ],
+            [
+              74,
+              88
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreSourceInvariant.lean": [
@@ -19514,128 +20086,190 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreSpec.lean": [
             [
-              30,
-              30
+              36,
+              36
             ],
             [
-              39,
-              44
-            ],
-            [
-              48,
+              47,
               52
             ],
             [
-              62,
-              71
+              56,
+              60
             ],
             [
-              73,
+              70,
+              79
+            ],
+            [
+              81,
+              90
+            ],
+            [
+              94,
+              95
+            ],
+            [
+              101,
+              104
+            ],
+            [
+              188,
+              190
+            ],
+            [
+              192,
+              205
+            ],
+            [
+              217,
+              218
+            ],
+            [
+              220,
+              230
+            ],
+            [
+              232,
+              244
+            ],
+            [
+              247,
+              248
+            ],
+            [
+              250,
+              280
+            ],
+            [
+              282,
+              284
+            ],
+            [
+              288,
+              305
+            ],
+            [
+              378,
+              379
+            ],
+            [
+              381,
+              398
+            ],
+            [
+              400,
+              407
+            ],
+            [
+              409,
+              414
+            ],
+            [
+              416,
+              432
+            ],
+            [
+              458,
+              463
+            ],
+            [
+              467,
+              498
+            ],
+            [
+              500,
+              503
+            ],
+            [
+              505,
+              522
+            ],
+            [
+              528,
+              570
+            ],
+            [
+              580,
+              590
+            ],
+            [
+              592,
+              599
+            ],
+            [
+              601,
+              616
+            ],
+            [
+              618,
+              621
+            ],
+            [
+              627,
+              659
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreSpecMerge.lean": [
+            [
+              15,
+              18
+            ],
+            [
+              26,
+              27
+            ],
+            [
+              33,
+              35
+            ],
+            [
+              48,
+              51
+            ],
+            [
+              79,
               82
             ],
             [
-              86,
-              87
+              105,
+              133
             ],
             [
-              89,
-              92
+              211,
+              227
             ],
             [
-              169,
-              171
+              229,
+              238
             ],
             [
-              173,
-              186
+              242,
+              283
             ],
             [
-              198,
-              199
+              288,
+              308
             ],
             [
-              201,
-              211
+              329,
+              347
             ],
             [
-              213,
-              225
-            ],
-            [
-              228,
-              229
-            ],
-            [
-              231,
-              261
-            ],
-            [
-              263,
-              265
-            ],
-            [
-              269,
-              286
-            ],
-            [
-              332,
-              333
-            ],
-            [
-              335,
-              352
-            ],
-            [
-              354,
-              361
-            ],
-            [
-              363,
+              349,
               368
             ],
             [
-              370,
-              386
+              382,
+              389
             ],
             [
-              411,
-              416
+              393,
+              398
             ],
             [
-              420,
-              450
-            ],
-            [
-              452,
-              455
-            ],
-            [
-              457,
-              474
-            ],
-            [
-              480,
-              521
-            ],
-            [
-              531,
-              541
-            ],
-            [
-              543,
-              550
-            ],
-            [
-              552,
-              567
-            ],
-            [
-              569,
-              572
-            ],
-            [
-              577,
-              609
+              403,
+              433
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralActiveText.lean": [
@@ -19650,52 +20284,84 @@
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralCuts.lean": [
             [
-              17,
-              90
+              23,
+              24
             ],
             [
-              93,
-              99
+              26,
+              26
             ],
             [
-              101,
-              103
+              28,
+              28
             ],
             [
-              105,
-              106
+              30,
+              37
             ],
             [
-              110,
-              169
+              41,
+              60
             ],
             [
-              171,
-              175
+              64,
+              107
             ],
             [
-              180,
-              198
+              111,
+              142
             ],
             [
-              211,
-              218
+              144,
+              204
+            ],
+            [
+              207,
+              213
+            ],
+            [
+              215,
+              217
+            ],
+            [
+              219,
+              220
             ],
             [
               222,
-              237
+              236
             ],
             [
-              239,
-              246
+              242,
+              301
             ],
             [
-              251,
-              257
+              303,
+              307
             ],
             [
-              262,
-              278
+              314,
+              337
+            ],
+            [
+              350,
+              361
+            ],
+            [
+              365,
+              380
+            ],
+            [
+              382,
+              389
+            ],
+            [
+              394,
+              400
+            ],
+            [
+              407,
+              424
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralDisplay.lean": [
@@ -19709,63 +20375,67 @@
             ],
             [
               23,
-              93
+              88
             ],
             [
-              95,
-              108
+              90,
+              103
             ],
             [
-              110,
-              122
+              105,
+              117
             ],
             [
-              126,
-              130
+              121,
+              125
             ],
             [
-              137,
-              143
+              132,
+              137
             ],
             [
-              145,
-              153
+              139,
+              149
             ],
             [
-              176,
-              181
+              151,
+              159
             ],
             [
-              183,
-              193
+              182,
+              187
             ],
             [
-              195,
+              189,
               199
             ],
             [
               201,
-              210
+              205
             ],
             [
-              212,
-              245
+              207,
+              216
             ],
             [
-              247,
-              255
+              218,
+              251
             ],
             [
-              257,
-              266
+              253,
+              261
             ],
             [
-              271,
-              278
+              263,
+              272
             ],
             [
-              282,
-              296
+              277,
+              284
+            ],
+            [
+              288,
+              302
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralExecution.lean": [
@@ -19836,150 +20506,166 @@
             [
               179,
               195
-            ],
-            [
-              199,
-              216
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralFacts.lean": [
             [
-              39,
-              40
-            ],
-            [
-              44,
-              46
-            ],
-            [
-              48,
-              50
-            ],
-            [
-              85,
-              88
-            ],
-            [
-              90,
-              93
-            ],
-            [
-              97,
-              102
-            ],
-            [
-              104,
-              113
-            ],
-            [
-              117,
-              121
-            ]
-          ],
-          "Sal/MRDTs/Instances/NotionCoreStructuralHistory.lean": [
-            [
-              12,
-              14
-            ],
-            [
-              18,
-              36
-            ],
-            [
-              39,
-              45
+              42,
+              43
             ],
             [
               47,
-              58
-            ],
-            [
-              62,
-              68
-            ],
-            [
-              70,
-              94
-            ],
-            [
-              98,
-              104
-            ],
-            [
-              106,
-              114
-            ]
-          ],
-          "Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean": [
-            [
-              20,
-              21
-            ],
-            [
-              29,
-              33
-            ],
-            [
-              35,
-              40
-            ],
-            [
-              44,
               49
             ],
             [
               51,
-              57
+              53
+            ],
+            [
+              88,
+              91
+            ],
+            [
+              93,
+              96
+            ],
+            [
+              100,
+              105
+            ],
+            [
+              107,
+              112
+            ],
+            [
+              116,
+              120
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreStructuralHistory.lean": [
+            [
+              15,
+              17
+            ],
+            [
+              21,
+              39
+            ],
+            [
+              42,
+              48
+            ],
+            [
+              50,
+              61
+            ],
+            [
+              66,
+              72
+            ],
+            [
+              75,
+              100
+            ],
+            [
+              105,
+              112
+            ],
+            [
+              117,
+              140
+            ]
+          ],
+          "Sal/MRDTs/Instances/NotionCoreStructuralMRDT.lean": [
+            [
+              23,
+              24
+            ],
+            [
+              33,
+              38
+            ],
+            [
+              42,
+              48
+            ],
+            [
+              53,
+              59
+            ],
+            [
+              63,
+              71
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralRender.lean": [
             [
-              23,
-              27
+              26,
+              30
             ],
             [
-              80,
-              115
-            ],
-            [
-              118,
+              85,
               119
             ],
             [
-              121,
-              138
+              122,
+              123
             ],
             [
-              140,
-              153
+              125,
+              142
             ],
             [
-              155,
-              161
+              144,
+              157
             ],
             [
-              163,
-              188
+              159,
+              165
             ],
             [
-              193,
-              205
+              167,
+              192
             ],
             [
-              209,
-              230
+              199,
+              207
             ],
             [
-              239,
-              246
+              212,
+              233
             ],
             [
-              250,
-              283
+              242,
+              249
             ],
             [
-              288,
-              310
+              253,
+              254
+            ],
+            [
+              256,
+              278
+            ],
+            [
+              280,
+              294
+            ],
+            [
+              296,
+              316
+            ],
+            [
+              318,
+              322
+            ],
+            [
+              328,
+              361
+            ],
+            [
+              368,
+              396
             ]
           ],
           "Sal/MRDTs/Instances/NotionCoreStructuralRows.lean": [
@@ -20117,27 +20803,27 @@
             ],
             [
               72,
-              100
+              101
             ],
             [
-              102,
-              105
+              103,
+              106
             ],
             [
-              107,
-              108
+              108,
+              109
             ],
             [
-              110,
-              111
+              111,
+              112
             ],
             [
-              113,
-              121
+              114,
+              122
             ],
             [
-              125,
-              132
+              126,
+              133
             ]
           ],
           "Sal/MRDTs/Instances/NotionRunAllocation.lean": [
@@ -20230,42 +20916,46 @@
           ],
           "Sal/MRDTs/Metatheory/NotionCoreLedger.lean": [
             [
-              22,
-              26
+              25,
+              29
             ],
             [
-              28,
-              32
+              31,
+              35
             ],
             [
-              34,
-              49
+              37,
+              52
             ],
             [
-              51,
-              65
+              54,
+              68
             ],
             [
-              67,
-              82
+              70,
+              85
             ],
             [
-              86,
-              98
+              90,
+              105
             ],
             [
-              100,
-              108
+              109,
+              122
+            ],
+            [
+              124,
+              133
             ]
           ],
           "Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean": [
             [
-              15,
-              65
+              21,
+              77
             ],
             [
-              67,
-              79
+              79,
+              92
             ]
           ],
           "Sal/MRDTs/Paper1/SimpleConcretePorts.lean": [
