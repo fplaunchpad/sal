@@ -1,6 +1,6 @@
 {
   "method": "Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles prioritize implementation definitions, independent specification definitions, VC proof/input-support closures, then remaining bridge/execution closures. The 19 automation-selected cases use actual CommonVerification.verify application/evidence closures; other cases use their named raw five-VC, policy-expansion or direct-assembly dependency closures, with root packaging included. Shared libraries are excluded. Counts are dependency-footprint LOC, not handwritten proof-body sizes or person-hours; cross-row overlap is not subtracted. The direct structural Notion carrier assembly is explicitly listed in direct_vc_dependency_roots.",
-  "git_head": "2d227ed92330a2ef44b2dcc1af06f8473f44a0b4",
+  "git_head": "d7661b52127e5a74c970ec6cf00aaf1a69b3c1dc",
   "deduplicated_concrete_total": 49967,
   "deduplicated_shared_dependency_total": 8477,
   "source_sha256": {
@@ -107,7 +107,7 @@
     "Sal/MRDTs/Instances/NotionCoreStructuralRender.lean": "bcdadc3ff9335f2bdc2812ae21db6393cb784c0b7ea0efb2c64c99d68d1cec8a",
     "Sal/MRDTs/Instances/NotionCoreMachineClient.lean": "900a8a66d2eaf32835add5732a89b27d6838b01370b821387bce4175a01e7b39",
     "Sal/MRDTs/Instances/NotionCoreIncrementalCounterexample.lean": "12dffadd05193ea651eb8eb5fce0198edb7a4fd2be31e661e059d7cc5d23d4ba",
-    "Sal/MRDTs/Instances/NotionCoreRuntimeEndToEnd.lean": "61d9009e0e64d3ef88ba72913d4bf6a4c51e0dd3dc90fdc726d0d4a6b10ceb4b",
+    "Sal/MRDTs/Instances/NotionCoreRuntimeEndToEnd.lean": "e2799274b4b43945be25f995db4cdcfbae0b4d02c056fd9ed8aeb7e639bc816d",
     "Sal/MRDTs/Instances/NotionCorePayloadNetwork.lean": "9bf2626bc6c73e3b456220ca2c28b57b709530f7eb279736e73c7ad97da99a34",
     "Sal/MRDTs/Instances/NotionCoreIssuance.lean": "ddeeda10d76f2c5e432d5633fd2592570d60ecabbfa77e9f5458c664b8f15d7d",
     "Sal/MRDTs/Instances/NotionCoreRuntimeHonestProgress.lean": "2c03d4cbe79d827efb084b2623162f1c7e5e58cbbb654c7ceb5a4956cb944369",
@@ -122,7 +122,7 @@
     "Sal/MRDTs/Instances/NotionCoreStructuralFacts.lean": "f637d2abadf39cc514dd9865fdf44297464d03543be58ec86cfc4e4ef19e0e37",
     "Sal/MRDTs/Instances/NotionCoreRuntimeEngine.lean": "0d829ba718dbbce853c407624ae9b0dd808ec583189acebcb941c290804f7f1c",
     "Sal/MRDTs/Instances/NotionCoreRuntimeMetadata.lean": "60b09645c90698715841463f11a09d413f55aa63c8e38a7783b3c90f32d398fe",
-    "Sal/MRDTs/Instances/NotionCoreMergeFree.lean": "7dca46aa98afc6684bdbf94a9e0bd22cd0357de962a2158901f7930ad00e20b0",
+    "Sal/MRDTs/Instances/NotionCoreMergeFree.lean": "b4e127b6b81aa90f2f93f25af7b28e1375469c77c9b10077ba032e80ba22ec18",
     "Sal/MRDTs/Instances/NotionCoreRuntimeEngineProofs.lean": "531596d6c0cd082b3e5a83259cb78fc163fe02cf11ae09e1c5c7a096bf1d1e27",
     "Sal/MRDTs/Instances/NotionCoreRuntimeProgress.lean": "8dc25c58d2f82d197ad9b8186aa4187c76ecf4f86d42a64f5f8860f7592ffe87",
     "Sal/MRDTs/Instances/NotionCoreRuntimeStateProofs.lean": "6abbe435c0e6d5b28c16ae896686b15a3361f6173ea2f72008cf3aabaada6f22",
@@ -451,7 +451,7 @@
     "Sal/MRDTs/Instances/NotionCoreMachineClientTotal.lean": "d72932e6e5a736889473c3c8dbad0cd7ce6968771f9927368941de0e1e2e1732",
     "Sal/MRDTs/Instances/NotionCoreMachineSplitEffects.lean": "527af9ba34e66fdf47b52f084bdaac1283715a8723a1850f5cf7ca2898dcca9f",
     "Sal/MRDTs/Instances/NotionCoreSpecMerge.lean": "7fb28ecf4ba67dac0bd21d39b073edde13a68103ca45b29c94a6086a6ba8b535",
-    "Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean": "41f0b922fff61bfcc9d81c7a8f2369c8ed3f657c2261e78bdfc86efd0e23147c"
+    "Sal/MRDTs/Metatheory/NotionCoreStructuralRuntimeLedger.lean": "280e2da5ea2330738c2c1fcb56fac33df9de921941daf90df036efa009a42751"
   },
   "direct_vc_dependency_roots": [
     "Sal.MRDTs.Instances.NotionCoreStructuralMRDT.fiveVCs"

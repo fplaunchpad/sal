@@ -77,7 +77,7 @@ document specification and original honest protocol. The reference carrier's
 theorems cover create, insert, erase, split and a corrected block merge whose
 removal of the source is the move itself. The structural and executable
 carriers cover merge-free networks (`I.NotionCoreMergeFree.MergeFree`), since
-an order-free fact query cannot evaluate a block merge
+the facts they retain record no merge
 (`I.NotionCoreStructuralRender.SPOT.merge_outside_scope`). They are included in one
 measurement row without promoting that row to the uniform production registry.
 The [claim map](claims-and-theorems.md#notion-theory-and-external-reproduction)

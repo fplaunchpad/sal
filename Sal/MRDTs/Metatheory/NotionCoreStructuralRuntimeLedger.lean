@@ -7,9 +7,9 @@ import Sal.MRDTs.Instances.NotionCoreRuntimeMain
 protocol. The original independent history language, factory and positional
 client remain authoritative. This is a distinguished research certificate,
 not a new VerifiedMRDT package or a whole-program JavaScript correspondence.
-Structural query correspondence covers merge-free networks: an order-free fact
-query cannot evaluate a block merge, whose effect depends on which blocks are
-alive when it replays. Merge-block is certified by the reference carrier in the
+Structural query correspondence covers merge-free networks: the retained facts
+record no merge, whose effect depends on which blocks are alive when it
+replays. Merge-block is certified by the reference carrier in the
 source entry. The native runtime refuses merge transactions on receipt, so every
 archive it holds is merge-free and its registered-version query needs no
 merge-freedom premise on the protocol network. -/

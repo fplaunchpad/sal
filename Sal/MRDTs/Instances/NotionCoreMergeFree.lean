@@ -2,9 +2,9 @@ import Sal.MRDTs.Instances.NotionCoreReconstruction
 
 /-! The merge-free fragment of the payload network: no archived transaction
 carries a merge payload. The fact-set structural carrier and the executable
-runtime query are proved on this fragment. An order-free fact query cannot
-evaluate a merge, since a merge's effect depends on which blocks are alive when
-it replays. -/
+runtime query are proved on this fragment. The retained facts record no merge,
+and a merge's effect depends on which blocks are alive when it replays, so the
+fact query is correct only here. -/
 namespace Sal.MRDTs.Instances.NotionCoreMergeFree
 open NotionCorePayload (Transaction)
 open NotionCorePayloadNetwork (State)

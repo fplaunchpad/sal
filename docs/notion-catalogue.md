@@ -28,7 +28,7 @@ recover allocation history.
 | Constructive initialization and arbitrary-order receipt | `NotionCoreRuntimeEndToEnd.load_closed_version` |
 | Original local positional effects | `NotionCoreMRDTClient.insert_effect`, `split_effect`, `erase_effect`, `merge_effect` |
 | Reference RA with block merge | `NotionCoreProtocol.versions_witness`, `specification_ra` |
-| The fact-set query cannot evaluate merge | `NotionCoreStructuralRender.SPOT.merge_outside_scope` |
+| The current retained facts omit merge information | `NotionCoreStructuralRender.SPOT.merge_outside_scope` |
 
 The request set is create, insert, erase, split and block merge. The reference
 carrier `NotionCoreMRDT.D` and its protocol theorems cover all five requests.

@@ -54,9 +54,8 @@ determined at replay time, not by an end item chosen at issue time.
 An earlier version of this design skipped any merge whose target was not
 alive. The executable gate showed both rules conserve text and both agree
 with their sequential specification on every archive seen; the liveness
-check is a choice of meaning, not an obligation. Absorbing is the demo's own
-targeting rule, and it gives the expected result when two adjacent merges
-are concurrent: `a · b · c` with `b` merged into `a` and `c` into `b` shows
+check is a choice of meaning, not an obligation. Absorbing gives the
+expected result when two adjacent merges are concurrent: `a · b · c` with `b` merged into `a` and `c` into `b` shows
 `abc` whichever merge replays first, where skipping leaves `ab · c` in one
 order.
 
@@ -87,6 +86,17 @@ version of the same no-op, with removal separate, is N-005.
 The twenty-tick clock reservation is dropped; it only served the split at
 the root's start.
 
+**Targeting differs from the demo's.** The demo's merge records the end item
+of the target's last text slice at issue time and attaches under whichever
+node ends there at replay time; this design attaches under the last node of
+the tree holding the target block's root. The two differ when a concurrent
+split has moved that slice: from `ab · cd`, merging the second block into
+the first while the first is split after `a` gives `a · bcd` in the demo and
+`acd · b` here (recorded in
+[the gate](../experiments/notion-merge-design/results/review-target-placement.json)).
+Neither loses text. The demo's slice-following rule combined with derived
+removal is a further candidate design that has not been gated or verified.
+
 **Every tree is a chain.** The core's split gives the right node all of the
 old children and makes it the only child of the left node; the split's move
 takes the suffix chain into the new block; merge attaches a chain under the
@@ -106,9 +116,10 @@ several text instances. One erase request emits one erase operation per
 instance in a single transaction, as the demo's `deleteText` does.
 
 **Scope.** The extension targets the replay-based reference carrier
-`NotionCoreMRDT`. The fact-set structural carrier and the runtime query
-cannot evaluate a merge without replay order, since a merge's effect depends
-on which blocks are alive when it replays; they keep the no-merge fragment.
+`NotionCoreMRDT`. The fact-set structural carrier and the runtime query keep
+the no-merge fragment: the facts they retain record no merge, and a merge's
+effect depends on which blocks are alive when it replays. A fact carrier
+that recorded merges and folded them in id order is not ruled out.
 The partition invariant's per-instance uniqueness of owners is dropped: a
 block split and merged back owns two cells of one instance, and no proof
 consumes that conjunct.
@@ -179,8 +190,8 @@ specification is revised before any Lean is written.
 
 ## Results
 
-**Executable gate.** On 161,630 distinct archives from the existing search
-seeds and the six litmus families, the design's display equals the
+**Executable gate.** In 161,630 archive comparisons across the existing
+search harnesses and the six litmus families, deduplicated within each run, the design's display equals the
 specification fold in every archive, no character is lost or duplicated,
 every locally issued merge has its positional meaning, every slice tree is a
 chain, and block order never differs between archives. The demo's split
@@ -218,6 +229,8 @@ effects. Every theorem depends only on `propext`, `Classical.choice` and
 `Quot.sound`.
 
 **Scope.** `NotionCoreMergeFree.MergeFree` names archives without a merge.
+The result below is about the current fact projection, which records no
+merge; it does not show that every non-replaying implementation must fail.
 The fact-set structural carrier is verified on that fragment; the executable
 runtime refuses a merge transaction on receipt, so every archive it holds is
 merge-free (`NotionCoreRuntimeRefinement.received_merge_free`), and `NotionCoreStructuralRender.SPOT.merge_outside_scope`

@@ -183,7 +183,7 @@ by the source is a no-op that removes nothing
 proves that a merge preserves the visible text up to permutation, and
 `NotionCoreProtocol.specification_ra` gives every honest history with merges a
 sequential explanation. The [executable gate](../experiments/notion-merge-design/README.md)
-found no text loss across 161,630 archives and passes the N-005 regression.
+found no text loss in 161,630 archive comparisons (deduplicated within each harness) and passes the N-005 regression.
 The N-004 request history also keeps `abc` visible, though under the corrected
 merge it no longer reaches the demo's precondition; the gate's litmus history
 (b) is the targeted equivalent. A variant that restores independent removal

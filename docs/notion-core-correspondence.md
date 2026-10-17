@@ -122,7 +122,7 @@ fragment. The reference carrier `NotionCoreMRDT` covers the full request set.
 **Demo bugs.** Under the design, N-001, N-004 and N-005 do not occur: the
 executable gate in
 [experiments/notion-merge-design](../experiments/notion-merge-design/README.md)
-found no split failure and no text loss across 161,630 archives, and the Lean
+found no split failure and no text loss in 161,630 archive comparisons (deduplicated within each harness), and the Lean
 results above prove the corresponding properties for every honest execution.
 The two text-loss bugs, N-004 and N-005, are one defect: removal separate from
 the move. Whether a merge into a merged-away target is skipped or absorbed is a

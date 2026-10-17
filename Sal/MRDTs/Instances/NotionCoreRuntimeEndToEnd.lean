@@ -6,7 +6,7 @@ receive an honest closed version in arbitrary order with arbitrary duplicates,
 and obtain the reference answer. No invariant or acceptance premise is supplied
 by the caller. The endpoint covers merge-free closed versions: merge
 transactions are refused on receipt, and the structural renderer the query
-refines cannot evaluate a block merge. Merges elsewhere in the network do not
+refines works from facts that record no merge. Merges elsewhere in the network do not
 enter the version. -/
 namespace Sal.MRDTs.Instances.NotionCoreRuntimeEndToEnd
 open NotionCorePayload (Transaction)

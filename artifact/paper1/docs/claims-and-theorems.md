@@ -103,9 +103,10 @@ contains `Instances.NotionCoreStructuralMRDT.fiveVCs`, `renderer`,
 Their scope retains `NotionCoreProtocol.Reach` and injective sessions, and the
 network must be merge-free (`NotionCoreMergeFree.MergeFree`); query agreement
 transfers the independent history theorem to the structural carrier. The
-restriction is forced: `NotionCoreStructuralRender.SPOT.merge_outside_scope`
-shows that no query on the fact set agrees with replay once a block merge is
-present. The reference carrier's `NotionCoreProtocol.versions_witness` and
+restriction is forced for the current projection:
+`NotionCoreStructuralRender.SPOT.merge_outside_scope` shows that the retained
+facts omit merge information, so no query on them agrees with replay once a
+block merge is present. The reference carrier's `NotionCoreProtocol.versions_witness` and
 `specification_ra` cover block merge, and `NotionCoreMRDTClient.merge_effect`
 gives the issuer's local merge effect.
 

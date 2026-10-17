@@ -117,8 +117,8 @@ failures, and gives a smaller split-bug reproduction with a passing control.
 Its [runner](experiments/notion-correctness/README.md) uses the same pinned
 public-demo sources and an independent list specification. The
 [merge design gate](experiments/notion-merge-design/README.md) reruns those
-harnesses on a patched demo with the corrected merge: 161,630 archives agree
-with the absorb specification, with no split failure and no text loss.
+harnesses on a patched demo with the corrected merge: 161,630 archive comparisons,
+deduplicated within each harness, agree with the absorb specification, with no split failure and no text loss.
 
 The [natural-specification audit](docs/natural-sequential-specifications.md)
 separates client requests from generated replication messages. Simple sets and
