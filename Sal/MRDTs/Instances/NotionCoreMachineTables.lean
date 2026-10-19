@@ -396,8 +396,8 @@ private theorem transaction_storage (state result : State) (pre : List Transacti
       · have different : blockName query ≠ blockName key := by
           intro equal; exact same (blockName_injective equal).symm
         simp [different, same, NotionCoreTableView.transactionTargets]
-    | merge source target =>
-      have step : applyOperation state (.merge source target) = some result := by
+    | merge source inst stop =>
+      have step : applyOperation state (.merge source inst stop) = some result := by
         simpa [applyTransaction, NotionCorePayload.operations, applyOperations] using accepted
       simp only [applyOperation, Option.some.injEq] at step
       subst result

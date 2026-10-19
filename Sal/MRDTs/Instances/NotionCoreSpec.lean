@@ -6,10 +6,20 @@ transactions, clocks, replay keys, slice trees, search labels, or source calls.
 -/
 namespace Sal.MRDTs.Instances.NotionCoreSpec
 
+/-- A position of a text instance. `start` heads the instance and `event id`
+names a character or a split marker. `close marker` is the end of the slice
+that ends at split marker `marker`, and `finish` is the end of the instance. -/
 inductive LocalId where
   | start
   | event (id : Nat × Nat)
+  | close (marker : Nat × Nat)
+  | finish
   deriving DecidableEq, Repr
+
+/-- The end positions: close slots and the instance finish. -/
+def LocalId.isEnd : LocalId → Bool
+  | .close _ | .finish => true
+  | _ => false
 
 abbrev Address := Nat × LocalId
 
@@ -35,6 +45,31 @@ abbrev Document := List Block
 def root (inst : Nat) : Slot := ⟨(inst, .start), 0, false⟩
 def boundary (inst : Nat) (id : Nat × Nat) : Slot := ⟨(inst, .event id), 0, false⟩
 def character (inst : Nat) (id : Nat × Nat) (value : Nat) : Slot := ⟨(inst, .event id), value, true⟩
+
+/-- The invisible end of the slice of instance `inst` that ends at split
+marker `marker`. -/
+def closeSlot (inst : Nat) (marker : Nat × Nat) : Slot := ⟨(inst, .close marker), 0, false⟩
+
+/-- The invisible end of instance `inst`. -/
+def finishSlot (inst : Nat) : Slot := ⟨(inst, .finish), 0, false⟩
+
+/-- The end of a slice of instance `inst` with the given stop marker: the
+instance finish when there is none. -/
+def closeOf (inst : Nat) : Option (Nat × Nat) → Slot
+  | none => finishSlot inst
+  | some marker => closeSlot inst marker
+
+@[simp] theorem closeOf_visible (inst : Nat) (stop : Option (Nat × Nat)) :
+    (closeOf inst stop).visible = false := by cases stop <;> rfl
+
+@[simp] theorem closeOf_value (inst : Nat) (stop : Option (Nat × Nat)) :
+    (closeOf inst stop).value = 0 := by cases stop <;> rfl
+
+@[simp] theorem closeOf_isEnd (inst : Nat) (stop : Option (Nat × Nat)) :
+    (closeOf inst stop).address.2.isEnd = true := by cases stop <;> rfl
+
+@[simp] theorem closeOf_inst (inst : Nat) (stop : Option (Nat × Nat)) :
+    (closeOf inst stop).address.1 = inst := by cases stop <;> rfl
 
 def text (slots : List Slot) : List Nat :=
   (slots.filter Slot.visible).map Slot.value
@@ -308,31 +343,35 @@ inductive Command where
   | create (id inst : Nat) (after : Option Nat)
   | insert (origin : Address) (fresh : List Slot)
   | delete (targets : List Address)
-  | split (origin : Address) (marker : Slot) (target : Nat)
-  | merge (source target : Nat)
+  | split (origin : Address) (marker : Nat × Nat) (target : Nat)
+  | merge (source : Nat) (anchor : Address)
   deriving DecidableEq, Repr
 
 def findBlock (doc : Document) (bid : Nat) : Option Block :=
   doc.find? (fun block => decide (block.id = bid))
 
-/-- Independent command execution. A split appends its hidden marker and
-suffix to an already created fresh target block; creation separately places
-that block after the request's original block, alive or a tombstone.
+/-- Independent command execution. A created block holds its root and the
+finish of its instance. A split at `origin` with marker `marker` keeps the
+prefix through the origin in the owner, closed by the hidden close slot of
+`marker`, and appends the hidden marker followed by the suffix to an already
+created fresh target block; creation separately places that block after the
+request's original block, alive or a tombstone. The marker and close slot
+belong to the origin's instance.
 
-A merge looks up the target's holder: the block whose slots contain the
-target's root slot. Root slots move with merges and tombstones hold no slots,
-so on rooted documents the holder is the target itself when it is alive, and
-otherwise the alive block that absorbed it. If the source is alive and the
-holder exists and is not the source, the holder's slots become its old slots
-followed by the source's, including the source's hidden root, and the source
-becomes a tombstone in place: no slots, `alive = false`. Any other merge,
-including one whose holder is the source itself, leaves the document
-unchanged. The target's liveness is not checked. -/
+A merge looks up the holder of its anchor: the block whose slots contain the
+anchor. Close and finish slots move with merges and tombstones hold no slots,
+so on rooted well-formed documents the holder of an end anchor is the alive
+block currently holding the end of the anchored slice. If the source is alive
+and the holder exists and is not the source, the holder's slots become its
+old slots followed by the source's, including the source's hidden root, and
+the source becomes a tombstone in place: no slots, `alive = false`. Any other
+merge, including one whose holder is the source itself or whose anchor has no
+holder, leaves the document unchanged. -/
 def step (doc : Document) (command : Command) : Option Document :=
   match command with
   | .create id inst after =>
       if id ∈ doc.map Block.id then none
-      else let fresh : Block := ⟨id, inst, [root inst], true⟩
+      else let fresh : Block := ⟨id, inst, [root inst, finishSlot inst], true⟩
         match after with
         | none => some (fresh :: doc)
         | some previous =>
@@ -350,24 +389,22 @@ def step (doc : Document) (command : Command) : Option Document :=
       match owner doc origin with
       | none => none
       | some source =>
-          if source.id = target ∨ target ∉ doc.map Block.id ∨ marker.visible = true then none
+          if source.id = target ∨ target ∉ doc.map Block.id then none
           else let (pre, post) := cutAfter source.slots origin
             some (doc.map fun block =>
-              if block.id = source.id then {block with slots := pre}
-              else if block.id = target then {block with slots := block.slots ++ marker :: post}
+              if block.id = source.id then {block with slots := pre ++ [closeSlot origin.1 marker]}
+              else if block.id = target then
+                {block with slots := block.slots ++ boundary origin.1 marker :: post}
               else block)
-  | .merge source target =>
-      match findBlock doc source, findBlock doc target with
-      | some src, some tgt =>
-          match owner doc (root tgt.inst).address with
-          | some holder =>
-              if src.alive = true ∧ holder.id ≠ source then
-                some (doc.map fun block =>
-                  if block.id = holder.id then {block with slots := block.slots ++ src.slots}
-                  else if block.id = source then {block with slots := [], alive := false}
-                  else block)
-              else some doc
-          | none => some doc
+  | .merge source anchor =>
+      match findBlock doc source, owner doc anchor with
+      | some src, some holder =>
+          if src.alive = true ∧ holder.id ≠ source then
+            some (doc.map fun block =>
+              if block.id = holder.id then {block with slots := block.slots ++ src.slots}
+              else if block.id = source then {block with slots := [], alive := false}
+              else block)
+          else some doc
       | _, _ => some doc
 
 def execute (doc : Document) : List Command → Option Document
@@ -526,12 +563,12 @@ gap and a newly created, empty successor block. Other blocks are unchanged.
 The premises are address/block uniqueness, anchor position, empty target, and
 that both blocks are alive; none assumes the split's visible result. -/
 theorem local_split_document (pre post : Document) (source target : Block)
-    (origin : Address) (index : Nat) (marker : Slot)
+    (origin : Address) (index : Nat) (marker : Nat × Nat)
     (addresses : ((pre ++ source :: target :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup)
     (blocks : ((pre ++ source :: target :: post).map Block.id).Nodup)
     (prepared : PreparedGap source.slots origin index)
-    (emptyTarget : text target.slots = []) (hidden : marker.visible = false)
+    (emptyTarget : text target.slots = [])
     (sourceLive : source.alive = true) (targetLive : target.alive = true) :
     ∃ result, step (pre ++ source :: target :: post)
         (.split origin marker target.id) = some result ∧
@@ -545,17 +582,18 @@ theorem local_split_document (pre post : Document) (source target : Block)
   have targetPresent : target.id ∈ (pre ++ source :: target :: post).map Block.id := by
     simp
   have valid : ¬ (source.id = target.id ∨
-      target.id ∉ (pre ++ source :: target :: post).map Block.id ∨ marker.visible = true) := by
-    simp [ids.1, hidden]
+      target.id ∉ (pre ++ source :: target :: post).map Block.id) := by
+    simp [ids.1]
   let cut := cutAfter source.slots origin
-  let result := pre ++ {source with slots := cut.1} ::
-    {target with slots := target.slots ++ marker :: cut.2} :: post
+  let result := pre ++ {source with slots := cut.1 ++ [closeSlot origin.1 marker]} ::
+    {target with slots := target.slots ++ boundary origin.1 marker :: cut.2} :: post
   refine ⟨result, ?_, ?_⟩
   · simp only [step, own, valid, ↓reduceIte]
     congr 1
     have unchanged : ∀ b ∈ pre ++ post,
-        (if b.id = source.id then {b with slots := cut.1}
-         else if b.id = target.id then {b with slots := b.slots ++ marker :: cut.2}
+        (if b.id = source.id then {b with slots := cut.1 ++ [closeSlot origin.1 marker]}
+         else if b.id = target.id then
+           {b with slots := b.slots ++ boundary origin.1 marker :: cut.2}
          else b) = b := by
       intro b hb
       simp [(ids.2 b hb).1, (ids.2 b hb).2]
@@ -565,7 +603,8 @@ theorem local_split_document (pre post : Document) (source target : Block)
     simp [result, cut, ids.1.symm]
   · have visible := preparedGap_visible source.slots origin index structural.1 prepared
     simp only [result, view, List.filter_append, List.filter_cons, sourceLive, targetLive,
-      List.map_append, List.map_cons, text_append, text_cons, emptyTarget, hidden, Bool.false_eq_true, ↓reduceIte, List.nil_append]
+      List.map_append, List.map_cons, text_append, text_cons, emptyTarget, boundary, closeSlot,
+      Bool.false_eq_true, ↓reduceIte, List.nil_append, text_nil, List.append_nil]
     rw [visible.1, visible.2]
     simp [List.append_assoc]
 
@@ -602,13 +641,14 @@ theorem step_create_focus (pre post : Document) (source : Block) (bid inst : Nat
     (blocks : ((pre ++ source :: post).map Block.id).Nodup)
     (fresh : bid ∉ (pre ++ source :: post).map Block.id) :
     step (pre ++ source :: post) (.create bid inst (some source.id)) =
-      some (pre ++ source :: ⟨bid, inst, [root inst], true⟩ :: post) := by
+      some (pre ++ source :: ⟨bid, inst, [root inst, finishSlot inst], true⟩ :: post) := by
   have present : source.id ∈ (pre ++ source :: post).map Block.id := by simp
   simp only [step, fresh, ↓reduceIte, present]
   congr 1
   simp only [List.flatMap_append, List.flatMap_cons, ↓reduceIte]
   have unchanged : ∀ b ∈ pre ++ post,
-      (if b.id = source.id then [b, ⟨bid, inst, [root inst], true⟩] else [b]) = [b] := by
+      (if b.id = source.id then [b, ⟨bid, inst, [root inst, finishSlot inst], true⟩] else [b]) =
+        [b] := by
     intro b hb
     simp [block_id_focus pre post source blocks b hb]
   rw [flatMap_singletons _ pre (fun b hb => unchanged b (List.mem_append_left _ hb)),
@@ -625,7 +665,7 @@ an identity-addressed split from an alive block. Fresh block/root names and
 uniqueness establish the preconditions of the command theorem, rather than
 assuming its result. -/
 theorem local_split_client (pre post : Document) (source : Block)
-    (origin : Address) (index bid inst : Nat) (marker : Slot)
+    (origin : Address) (index bid inst : Nat) (marker : Nat × Nat)
     (addresses : ((pre ++ source :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup)
     (blocks : ((pre ++ source :: post).map Block.id).Nodup)
@@ -633,28 +673,41 @@ theorem local_split_client (pre post : Document) (source : Block)
     (freshBlock : bid ∉ (pre ++ source :: post).map Block.id)
     (freshRoot : (root inst).address ∉ (pre ++ source :: post).flatMap
       (fun b => b.slots.map Slot.address))
-    (hidden : marker.visible = false) (live : source.alive = true) :
+    (freshFinish : (finishSlot inst).address ∉ (pre ++ source :: post).flatMap
+      (fun b => b.slots.map Slot.address))
+    (live : source.alive = true) :
     ∃ result, execute (pre ++ source :: post)
         [.create bid inst (some source.id), .split origin marker bid] = some result ∧
       view result = view pre ++ [(source.id, (text source.slots).take index),
         (bid, (text source.slots).drop index)] ++ view post := by
   have created := step_create_focus pre post source bid inst blocks freshBlock
-  have addresses' : ((pre ++ source :: ⟨bid, inst, [root inst], true⟩ :: post).flatMap
+  have addresses' : ((pre ++ source :: ⟨bid, inst, [root inst, finishSlot inst], true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)).Nodup := by
+    have finished := nodup_insert_middle
+      (pre.flatMap (fun b => b.slots.map Slot.address) ++ source.slots.map Slot.address)
+      (post.flatMap (fun b => b.slots.map Slot.address)) (finishSlot inst).address
+      (by simpa only [List.flatMap_append, List.flatMap_cons, List.append_assoc] using addresses)
+      (by simpa only [List.flatMap_append, List.flatMap_cons, List.append_assoc] using freshFinish)
     have inserted := nodup_insert_middle
       (pre.flatMap (fun b => b.slots.map Slot.address) ++ source.slots.map Slot.address)
-      (post.flatMap (fun b => b.slots.map Slot.address)) (root inst).address
-      (by simpa only [List.flatMap_append, List.flatMap_cons, List.append_assoc] using addresses)
-      (by simpa only [List.flatMap_append, List.flatMap_cons, List.append_assoc] using freshRoot)
+      ((finishSlot inst).address :: post.flatMap (fun b => b.slots.map Slot.address)) (root inst).address
+      finished (by
+        simp only [List.mem_append, List.mem_cons, not_or]
+        have outside : (root inst).address ∉ (pre ++ source :: post).flatMap
+            (fun b => b.slots.map Slot.address) := freshRoot
+        simp only [List.flatMap_append, List.flatMap_cons, List.mem_append, not_or] at outside
+        exact ⟨⟨outside.1, outside.2.1⟩, by simp [root, finishSlot], outside.2.2⟩)
     simpa only [List.flatMap_append, List.flatMap_cons, List.map_cons, List.map_nil,
-      List.singleton_append, List.append_assoc] using inserted
-  have blocks' : ((pre ++ source :: ⟨bid, inst, [root inst], true⟩ :: post).map Block.id).Nodup := by
+      List.singleton_append, List.append_assoc, List.cons_append] using inserted
+  have blocks' : ((pre ++ source :: ⟨bid, inst, [root inst, finishSlot inst], true⟩ :: post).map
+      Block.id).Nodup := by
     have inserted := nodup_insert_middle (pre.map Block.id ++ [source.id]) (post.map Block.id) bid
       (by simpa only [List.map_append, List.map_cons, List.append_assoc, List.singleton_append] using blocks)
       (by simpa only [List.map_append, List.map_cons, List.append_assoc, List.singleton_append] using freshBlock)
     simpa only [List.map_append, List.map_cons, List.append_assoc, List.singleton_append] using inserted
   obtain ⟨result, executed, visible⟩ := local_split_document pre post source
-    ⟨bid, inst, [root inst], true⟩ origin index marker addresses' blocks' prepared (by simp [root]) hidden live rfl
+    ⟨bid, inst, [root inst, finishSlot inst], true⟩ origin index marker addresses' blocks' prepared
+    (by simp [root, finishSlot]) live rfl
   refine ⟨result, ?_, visible⟩
   simp only [execute, created, Option.bind_some, executed]
 
@@ -713,7 +766,7 @@ def prepareSplit (doc : Document) (bid index freshBlock freshInstance : Nat)
   if index ≤ (text block.slots).length then
     let origin ← prepareGap block.slots index
     pure [.create freshBlock freshInstance (some bid),
-      .split origin (boundary origin.1 markerId) freshBlock]
+      .split origin markerId freshBlock]
   else none
 
 theorem findBlock_focus (pre post : Document) (source : Block)
@@ -747,8 +800,7 @@ theorem prepareSplit_success (pre post : Document) {blockInst : Nat} (bid index 
     (bound : index ≤ (text (head :: tail)).length) :
     prepareSplit (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) bid index freshBlock freshInstance markerId =
       some [.create freshBlock freshInstance (some bid),
-        .split (preparedAnchor head tail index)
-          (boundary (preparedAnchor head tail index).1 markerId) freshBlock] := by
+        .split (preparedAnchor head tail index) markerId freshBlock] := by
   simp [prepareSplit, findBlock_focus pre post ⟨bid, blockInst, head :: tail, true⟩ blocks, prepareGap_succeeds]
   simpa only [text_cons] using bound
 /-- Executable positional preparation followed by command execution inserts
@@ -798,6 +850,9 @@ theorem prepared_split_effect (pre post : Document) {blockInst : Nat} (bid index
     (hidden : head.visible = false) (bound : index ≤ (text (head :: tail)).length)
     (freshBlockName : freshBlock ∉ (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).map Block.id)
     (freshRootName : (root freshInstance).address ∉ (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
+      (fun b => b.slots.map Slot.address))
+    (freshFinishName : (finishSlot freshInstance).address ∉
+      (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post).flatMap
       (fun b => b.slots.map Slot.address)) :
     ∃ commands result,
       prepareSplit (pre ++ ⟨bid, blockInst, head :: tail, true⟩ :: post) bid index freshBlock freshInstance markerId = some commands ∧
@@ -806,9 +861,8 @@ theorem prepared_split_effect (pre post : Document) {blockInst : Nat} (bid index
         (freshBlock, (text (head :: tail)).drop index)] ++ view post := by
   have prepared := preparedAnchor_structural head tail index hidden bound
   obtain ⟨result, executed, visible⟩ := local_split_client pre post ⟨bid, blockInst, head :: tail, true⟩
-    (preparedAnchor head tail index) index freshBlock freshInstance
-    (boundary (preparedAnchor head tail index).1 markerId)
-    addresses blocks prepared freshBlockName freshRootName rfl rfl
+    (preparedAnchor head tail index) index freshBlock freshInstance markerId
+    addresses blocks prepared freshBlockName freshRootName freshFinishName rfl
   exact ⟨_, result, prepareSplit_success pre post bid index freshBlock freshInstance head tail markerId blocks bound,
     executed, visible⟩
 
@@ -818,7 +872,7 @@ private def abcd : Document :=
     character 0 (0, 3) 2, character 0 (0, 4) 3], true⟩]
 
 private def splitAtTwo : List Command :=
-  [.create 11 11 (some 10), .split (0, .event (0, 2)) (boundary 0 (1, 10)) 11]
+  [.create 11 11 (some 10), .split (0, .event (0, 2)) (1, 10) 11]
 
 /-- Splitting between b,c produces ab | cd; the split is effective. -/
 theorem split_control :
@@ -838,14 +892,14 @@ the second new block after the original request block. The result is a|cd|b,
 not a|b|cd. This distinguishes block identity from current anchor ownership. -/
 theorem concurrent_split_witness_control :
     (execute abcd [.create 11 11 (some 10),
-      .split (0, .event (0, 1)) (boundary 0 (1, 10)) 11,
+      .split (0, .event (0, 1)) (1, 10) 11,
       .create 12 12 (some 10),
-      .split (0, .event (0, 2)) (boundary 0 (2, 10)) 12]).map view =
+      .split (0, .event (0, 2)) (2, 10) 12]).map view =
       some [(10, [0]), (12, [2, 3]), (11, [1])] ∧
     (execute abcd [.create 11 11 (some 10),
-      .split (0, .event (0, 1)) (boundary 0 (1, 10)) 11,
+      .split (0, .event (0, 1)) (1, 10) 11,
       .create 12 12 (some 10),
-      .split (0, .event (0, 2)) (boundary 0 (2, 10)) 12]).map view ≠
+      .split (0, .event (0, 2)) (2, 10) 12]).map view ≠
       some [(10, [0]), (11, [1]), (12, [2, 3])] := by decide
 
 /-- Boundary insertion follows its selected sequential witness order. -/

@@ -55,7 +55,7 @@ namespace SPOT
 private def seed : Transaction := NotionCorePayload.bootstrap [97,98]
 private def low : Transaction := ⟨⟨3,[66]⟩,.split .initial .initial (.item ⟨1,[65]⟩)⟩
 private def high : Transaction := ⟨⟨3,[67]⟩,.split .initial .initial (.item ⟨1,[65]⟩)⟩
-private def mergeBack : Transaction := ⟨⟨4,[66]⟩,.merge (.issued low.id) .initial⟩
+private def mergeBack : Transaction := ⟨⟨4,[66]⟩,.merge (.issued low.id) .initial (some low.id)⟩
 private def concurrentNetwork : NotionCorePayloadNetwork.State :=
   NotionCorePayloadNetwork.exchange
     (NotionCorePayloadNetwork.exchange (NotionCorePayloadNetwork.seeded [97,98]) [66] [65]) [67] [65]
@@ -65,7 +65,8 @@ private def withBoth : NotionCorePayloadNetwork.State :=
   NotionCorePayloadNetwork.emit withLow [67] high.payload high
 private def version : List NotionRunAllocation.Run := (withBoth.allocation.peers [66]).received
 
-/-- Splitting `ab` after `a` and merging the new block back: the archive with
+/-- Splitting `ab` after `a` and merging the new block back, anchored at the
+split marker that stops the first block's last slice: the archive with
 the merge is refused on receipt from every state, while the merge is still a
 well-formed payload that only admission rejects. The same archive without the
 merge is accepted from the empty engine, and its query is the hand-derived split
@@ -80,7 +81,7 @@ theorem merge_refused :
       NotionCoreRuntimeAdapter.observeState state.core ≠ some [(0,[97])] := by
   refine ⟨by decide,by decide,?_,?_⟩
   · intro state next accepted
-    exact receiveMany_merge_free _ accepted mergeBack (by simp) (.issued low.id) .initial rfl
+    exact receiveMany_merge_free _ accepted mergeBack (by simp) (.issued low.id) .initial (some low.id) rfl
   have reach : NotionCoreMachineNetwork.Reach withBoth :=
     NotionCoreIncrementalCounterexample.honestly_issuable_splits.2.2
   have closed : NotionCoreIssuance.Closed (NotionCorePayloadNetwork.forget withBoth).records version :=
@@ -96,7 +97,7 @@ theorem merge_refused :
       NotionRunAllocation.Before,low,seed,NotionCorePayload.bootstrap]
   have free : NotionCoreRuntimeQuery.VersionFree withBoth version := by
     rw [NotionCoreRuntimeQuery.VersionFree,ordered]
-    intro tx member source target payload
+    intro tx member source inst stop payload
     simp only [List.mem_cons,List.not_mem_nil,or_false] at member
     rcases member with rfl | rfl <;> simp [seed,low,NotionCorePayload.bootstrap] at payload
   obtain ⟨state,accepted,_,_,observed⟩ :=

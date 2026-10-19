@@ -14,7 +14,7 @@ open NotionCorePayload (Operation Transaction BlockKey reservation)
 is removed only by merge. -/
 theorem operation_kept (state result : State) (op : Operation)
     (accepted : applyOperation state op = some result)
-    (notMerge : ∀ source target, op ≠ .merge source target) :
+    (notMerge : ∀ source inst stop, op ≠ .merge source inst stop) :
     ∀ bid, bid ∈ names state.forest → bid ∈ names result.forest := by
   cases op with
   | create block after =>
@@ -78,7 +78,7 @@ theorem operation_kept (state result : State) (op : Operation)
         subst result
         have same := detachForest_names _ _ pair.1 pair.2 detached
         simp [same]
-  | merge source target => exact False.elim (notMerge source target rfl)
+  | merge source inst stop => exact False.elim (notMerge source inst stop rfl)
 
 /-- Blocks persist in the display order: a merged source stays there as a
 tombstone. Only a fresh create adds a name. -/
@@ -151,7 +151,7 @@ theorem operation_display (state result : State) (op : Operation)
         simp [detached] at accepted
         subst result
         simp [operationCreates]
-  | merge source target =>
+  | merge source inst stop =>
     simp only [applyOperation, Option.some.injEq] at accepted
     subst result
     simp [operationCreates]

@@ -18,7 +18,7 @@ abbrev Address := BlockKey × Id
 def locatedReferences : Payload → List Address
   | .insert _ inst origin _ | .split _ inst origin => (originReference origin).map (inst, ·)
   | .erase _ groups => groups.flatMap fun group => group.2.map (group.1, ·)
-  | .bootstrap _ | .create _ | .merge _ _ => []
+  | .bootstrap _ | .create _ | .merge _ _ _ => []
 
 theorem located_references_ids (payload : Payload) :
     (locatedReferences payload).map Prod.snd = payload.references := by

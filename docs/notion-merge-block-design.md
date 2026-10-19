@@ -42,14 +42,18 @@ order. One change of representation and one new operation.
 **Liveness is derived.** A block is alive iff its root node has no parent.
 There is no separate alive flag and no remove operation.
 
-**Merge.** `merge source target` moves the source block's whole tree, root
-included, to become the last child of the last preorder node of the tree
-that holds the target's root. If the target is alive that is the target's
-own tree; if the target has itself been merged away, it is the tree of the
-block that absorbed it, however many merges ago. The merge is a no-op when
-the source is not alive, or when the tree holding the target is the source's
-own tree, which is the only way a cycle could arise. The attachment point is
-determined at replay time, not by an end item chosen at issue time.
+**Merge.** The request records what the demo records: the anchor, which is
+the instance and end item of the target block's last slice at issue time.
+`merge source anchor` moves the source block's whole tree, root included, to
+become the last child of the last preorder node of the tree that holds the
+slice ending at the anchor. If that slice is still in the target, that is the
+target's own tree; if a concurrent split has carried it into a fresh block,
+or the target has itself been merged away, it is the tree that holds it at
+replay time, however many splits and merges later. The merge is a no-op when
+the source is not alive, or when the tree holding the anchored slice is the
+source's own tree, which is the only way a cycle could arise. The anchor
+chooses the tree; the attachment point within it is determined at replay
+time.
 
 An earlier version of this design skipped any merge whose target was not
 alive. The executable gate showed both rules conserve text and both agree
@@ -86,30 +90,29 @@ version of the same no-op, with removal separate, is N-005.
 The twenty-tick clock reservation is dropped; it only served the split at
 the root's start.
 
-**Targeting differs from the demo's.** The demo's merge records the end item
-of the target's last text slice at issue time and attaches under whichever
-node ends there at replay time; this design attaches under the last node of
-the tree holding the target block's root. The two differ when a concurrent
-split has moved that slice: from `ab · cd`, merging the second block into
-the first while the first is split after `a` gives `a · bcd` in the demo and
-`acd · b` here (recorded in
+**Targeting and placement are separate choices.** The demo attaches the
+moved tree directly under the node that ends at the anchor. An earlier form
+of this design ignored the anchor and attached under the last node of the
+tree holding the target block's root. The three rules differ when a
+concurrent split has moved the target's last slice: from `ab · cd`, merging
+the second block into the first while the first is split after `a` gives
+`a · bcd` under the demo's targeting and `acd · b` under root-following
+(recorded in
 [the gate](../experiments/notion-merge-design/results/review-target-placement.json)).
 Neither loses text, and `a · bcd` is the result both sequential orders of
 the two client requests give.
 
-The gate separates targeting from placement. Slice-following, the demo's
-rule with derived removal, gives `a · bcd` and loses no text, but two merges
-issued concurrently into one target record the same anchor, and the anchored
-node then has two children. Trees stop being chains, a split no longer moves
-the whole displayed suffix, and the N-001 failure returns; the unmodified
-demo fails the same split checks. So the demo has two independent defects:
-removal separate from the move loses text, and anchoring on a slice end item
-lets trees branch. Anchor-absorb uses the anchor only to find the holder
-tree and attaches at that tree's last node, as this design does. On the
-gate's archives it agrees with its flat slot specification everywhere, keeps
-every tree a chain, conserves text and gives `a · bcd` in both orders. It is
-this design with the holder found from the recorded anchor instead of from
-the target block's root, and it has not been verified in Lean.
+The gate separates the two choices. Slice-following, the demo's rule with
+derived removal, gives `a · bcd` and loses no text, but two merges issued
+concurrently into one target record the same anchor, and the anchored node
+then has two children. Trees stop being chains, a split no longer moves the
+whole displayed suffix, and the N-001 failure returns; the unmodified demo
+fails the same split checks. So the demo has two independent defects:
+removal separate from the move loses text, and attaching under the anchored
+node lets trees branch. This design uses the anchor only to find the holder
+tree and attaches at that tree's last node. On the gate's archives it agrees
+with its flat slot specification everywhere, keeps every tree a chain,
+conserves text and gives `a · bcd` in both orders.
 
 **Every tree is a chain.** The core's split gives the right node all of the
 old children and makes it the only child of the left node; the split's move
@@ -140,17 +143,25 @@ consumes that conjunct.
 
 ## Sequential specification
 
-`NotionCoreSpec.Command` gains `merge (source target : Nat)`, and blocks gain
-an `alive` flag and record their text instance. The holder of the target is
-the block whose slots contain the target's root slot; since root slots move
-with a merge and tombstones hold no slots, the holder is the live block that
-absorbed the target, or the target itself when it is alive. If the source is
-alive and the holder exists and is not the source, the holder's slots become
+Positions are retained slots. Besides the root slot and the characters, a
+block's slots hold two invisible kinds that mark where slices end: the close
+of the slice that ends at a split marker, and the finish of an instance. A
+created block is `[root, finish]`; a split at origin `o` with marker `m`
+leaves `close m` at the end of the prefix block and puts `m :: suffix` in the
+fresh block. The anchor of a merge is the address of such a slot.
+
+`NotionCoreSpec.Command` gains `merge (source : Nat) (anchor : Address)`, and
+blocks gain an `alive` flag and record their text instance. The holder is the
+block whose slots contain the anchor; since close slots move with splits and
+merges and tombstones hold no slots, the holder is the live block that holds
+the end of the anchored slice at replay time. If the source is alive and the
+holder exists and is not the source, the holder's slots become
 `holder.slots ++ source.slots`, and the source keeps its place in the list
 with no slots and `alive = false`. Otherwise the document is unchanged. The
 view lists alive blocks only. A create after a block, alive or not, places
 the fresh block after it. The source's root slot is invisible and keeps its
-address, so slot addresses remain unique.
+address, so slot addresses remain unique. The issuer's anchor is the last
+slot of the target block it sees, which is always a close or finish slot.
 
 The local positional meaning, for the issuer's next query after its own
 merge: the target shows its old text followed by the source's old text, and
@@ -202,36 +213,71 @@ in [the experiment](../experiments/notion-merge-design/README.md).
 Step 1 gates the rest. A failure there is a result about the design, and the
 specification is revised before any Lean is written.
 
+**Anchored merge.** The gate's anchor-absorb variant replaces the target
+block by the demo's anchor: the instance and end item of the target's last
+slice at issue time. Moving the Lean development to it:
+
+6. `NotionCoreSpec`: slots gain two invisible kinds, the close of the slice
+   ending at a marker and the finish of an instance. A created block is
+   `[root, finish]`; a split leaves the marker's close at the end of the
+   prefix. `Command.merge source anchor` takes the anchor's close address,
+   and the holder is the block owning it. This is the gated `sliceFollow`
+   specification.
+7. The materialised slice ends with its close slot. The forest's holder
+   lookup finds the node whose instance and stop match the anchor, and
+   the machine's merge payload carries the anchor; issuance reads it from
+   the target's last node.
+8. The theorems keep their statements with the anchor in the request; the
+   issuer's merge effect is unchanged because the issuer's anchor is owned
+   by the target it sees.
+
+Steps 6 to 8 are checked against the gate's litmus values: the review case
+must give `a · bcd` in both orders as a specification-level control.
+
 ## Results
 
-**Executable gate.** In 161,630 archive comparisons across the existing
-search harnesses and the six litmus families, deduplicated within each run, the design's display equals the
-specification fold in every archive, no character is lost or duplicated,
-every locally issued merge has its positional meaning, every slice tree is a
-chain, and block order never differs between archives. The demo's split
-failure (N-001) also does not occur: with chains a split always moves the
-whole displayed suffix. The two formatting failures remain. Counts, the
-variants and the shrunk witnesses are in
-[the experiment](../experiments/notion-merge-design/README.md).
+**Executable gate.** In 162,373 archive comparisons across the existing
+search harnesses and the litmus families, deduplicated within each run, the
+design's display equals the specification fold in every archive, no
+character is lost or duplicated, every locally issued merge has its
+positional meaning, every slice tree is a chain, block order never differs
+between archives, and the review case gives `a · bcd` in both replay orders.
+The demo's split failure (N-001) also does not occur: with chains a split
+always moves the whole displayed suffix. The two formatting failures remain.
+Counts, the variants (the demo's targeting, root-following and the
+controls) and the shrunk witnesses are in
+[the experiment](../experiments/notion-merge-design/README.md), where this
+design is the variant `anchor-absorb`.
 
-**Sequential specification.** `NotionCoreSpec.Block` carries its instance
-and an `alive` flag; `Command.merge` implements the absorb rule; `Rooted`
-states that alive blocks are root-headed and tombstones empty.
-`NotionCoreSpecMerge` proves the rule's cases (`merge_alive_target`,
-`merge_absorbed_target`, `merge_cycle_noop`), conservation of the visible
-text as a permutation (`merge_text_conserved`), address uniqueness, and
+**Sequential specification.** `NotionCoreSpec.LocalId` has the close and
+finish positions; `Block` carries its instance and an `alive` flag;
+`Command.merge source anchor` implements the rule; `Rooted` states that
+alive blocks are root-headed and tombstones empty. `NotionCoreSpecMerge`
+proves the rule's cases (`merge_anchor_owner`, `merge_absorbed_owner`,
+`merge_cycle_noop`, `merge_no_owner_noop`), conservation of the visible text
+as a permutation (`merge_text_conserved`), address uniqueness, and
 preservation of `WellFormed` and `Rooted`; `create_after_tombstone` fixes
-the placement rule. `NotionCoreInvariant.Admissible.merge` admits merges and
-`reachable_rooted` shows every reachable document is rooted.
+the placement rule, and `split_then_merge_control` pins the review case at
+the specification level: the finish anchor gives `a · bcd`, the close of the
+split marker gives `acd · b`. `NotionCoreInvariant.Admissible.merge` admits
+merges and `reachable_rooted` shows every reachable document is rooted.
 
-**Machine.** `NotionCoreSliceForest.Chain` replaces the root-plus-one-leaf
-shape; liveness is per node; `appendLast`, `holderOf` and `mergeForest`
-implement the merge, with `merge_preserves` for the forest invariant. The
-display keeps tombstones, `Payload.erase` carries one group of targets per
-instance, and the partition invariant `Covers` is owner-free. The source
-normal form is a list of slices per block, and
-`NotionCoreMachineDocumentMerge.canonical_merge_execution_version` connects
-the machine's merge to the specification's.
+**Machine.** A slice node is identified by its instance and stop item
+(`NotionCoreSliceForest.Anchor`), and the forest invariant keeps these
+anchors unique and every stop the start of some node. `appendLast`,
+`holderOf` (by anchor) and `mergeForest` implement the merge, with
+`merge_preserves` for the invariant; `Chain` replaces the root-plus-one-leaf
+shape and liveness is per node. `Payload.merge` carries the source, the
+anchor's instance and its optional stop, and `prepareMerge` reads the anchor
+from the last node of the previous visible block. A materialised slice ends
+with its close slot, so the materialised document is the specification's.
+The display keeps tombstones, `Payload.erase` carries one group of targets
+per instance, and the partition invariant `Covers` is owner-free.
+`NotionCoreMachineDocumentMerge.holder_owner` shows the holder found by
+anchor materialises to the owner of the anchor's close slot, and
+`canonical_merge_execution_version` connects the machine's merge to the
+specification's; `SPOT.concurrent_split_merge_control` is the review case on
+the machine.
 
 **Theorems.** `NotionCoreProtocol.specification_ra` and `versions_witness`
 keep their statements over the request set create, insert, erase, split and

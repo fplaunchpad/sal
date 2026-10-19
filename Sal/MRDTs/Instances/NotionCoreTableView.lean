@@ -97,7 +97,7 @@ theorem transactionRows_erase (ids : List Id) (tx : Transaction) (inst : BlockKe
     | create afterBlock => simp [transactionRows, NotionCorePayload.births,
         NotionCorePayload.operations, Operation.births, erase]
     | erase block groups => simp [transactionRows, erase]
-    | merge source target => simp [transactionRows, NotionCorePayload.births,
+    | merge source inst stop => simp [transactionRows, NotionCorePayload.births,
         NotionCorePayload.operations, Operation.births, erase]
 
 theorem transactionRows_pending (ids : List Id) (tx : Transaction) (inst : BlockKey) :

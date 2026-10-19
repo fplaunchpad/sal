@@ -138,16 +138,16 @@ theorem canonical_split_preserves (network : NotionCorePayloadNetwork.State)
 /-- A merge transaction always executes: it moves a whole chain, so the
 partition (with owners recomputed), the strong shape, and the live instances
 are all unchanged. -/
-theorem merge_preserves_active (state : State) (tx : Transaction) (source target : BlockKey)
-    (payload : tx.payload = .merge source target)
+theorem merge_preserves_active (state : State) (tx : Transaction) (source inst : BlockKey)
+    (stop : Option NotionRunAllocation.Id) (payload : tx.payload = .merge source inst stop)
     (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
     (unique : ∀ inst, ((physical state inst).map NotionCoreSource.Atom.address).Nodup) :
     ∃ result, applyTransaction state tx = some result ∧
       Partitioned result ∧ ShapeInvariant result ∧
       ∀ key, ActiveInstance result key ↔ ActiveInstance state key := by
   refine ⟨{state with forest := (NotionCoreSliceForest.mergeForest state.forest
-    (blockName source) (blockName target))},?_,?_,merge_shape state source target shapeInvariant,
-    merge_active state source target shapeInvariant⟩
+    (blockName source) (mergeAnchor inst stop))},?_,?_,merge_shape state source inst stop shapeInvariant,
+    merge_active state source inst stop shapeInvariant⟩
   · simp [applyTransaction,NotionCorePayload.operations,payload,applyOperations,applyOperation]
   · exact NotionCoreMachinePartition.merge_partitioned state _ _ partitioned unique shapeInvariant.2.1
 
@@ -158,11 +158,12 @@ theorem canonical_merge_preserves_active_version (network : NotionCorePayloadNet
     (position : NotionCoreReconstruction.transactionsFor network version = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state)
     (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
-    (source target : BlockKey) (payload : tx.payload = .merge source target) :
+    (source inst : BlockKey) (stop : Option NotionRunAllocation.Id)
+    (payload : tx.payload = .merge source inst stop) :
     ∃ result, applyTransaction state tx = some result ∧
       Partitioned result ∧ ShapeInvariant result ∧
       ∀ key, ActiveInstance result key ↔ ActiveInstance state key :=
-  merge_preserves_active state tx source target payload partitioned shapeInvariant
+  merge_preserves_active state tx source inst stop payload partitioned shapeInvariant
     (canonical_physical_unique_all_version network (NotionCoreCreatorNetwork.payload_reachable reachable)
       version closed pre (tx :: suffix) position state accepted)
 
@@ -172,11 +173,12 @@ theorem canonical_merge_preserves_active (network : NotionCorePayloadNetwork.Sta
     (position : NotionCoreReconstruction.transactions network peer = pre ++ tx :: suffix)
     (state : State) (accepted : replay {} pre = some state)
     (partitioned : Partitioned state) (shapeInvariant : ShapeInvariant state)
-    (source target : BlockKey) (payload : tx.payload = .merge source target) :
+    (source inst : BlockKey) (stop : Option NotionRunAllocation.Id)
+    (payload : tx.payload = .merge source inst stop) :
     ∃ result, applyTransaction state tx = some result ∧
       Partitioned result ∧ ShapeInvariant result ∧
       ∀ key, ActiveInstance result key ↔ ActiveInstance state key :=
-  merge_preserves_active state tx source target payload partitioned shapeInvariant
+  merge_preserves_active state tx source inst stop payload partitioned shapeInvariant
     (canonical_physical_unique_all network (NotionCoreCreatorNetwork.payload_reachable reachable)
       peer pre (tx :: suffix) position state accepted)
 

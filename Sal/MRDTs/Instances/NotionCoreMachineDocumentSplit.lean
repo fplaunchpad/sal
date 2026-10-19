@@ -25,7 +25,7 @@ theorem split_slice_extraction (state raw : State) (before after : List Cell) (c
     (origin marker : Address)
     (oldPhysical : physical state cell.slice.start.1 = flatten (before ++ cell :: after))
     (oldUnique : ((physical state cell.slice.start.1).map Atom.address).Nodup)
-    (present : origin ∈ cell.slice.traversal)
+    (present : origin ∈ cell.physical.map Atom.address)
     (sameInstance : marker.1 = cell.slice.start.1)
     (changed : physical raw cell.slice.start.1 = NotionCorePartition.spliceAfterBy Atom.address
       origin [boundary marker] (physical state cell.slice.start.1))
@@ -135,7 +135,7 @@ theorem selected_marker_origin (state raw : State)
       origin [boundary marker] (physical state marker.1))
     (literal : boundary marker ∈ physical raw marker.1)
     (contained : NotionCoreSliceForest.contains (physical raw) owned.2 marker = true) :
-    ∃ slice : Slice, slice.start = owned.2.start ∧
+    ∃ slice : Slice, slice.start = owned.2.start ∧ slice.stop = owned.2.stop ∧
       sliceAtoms state owned.2 = some slice.atoms ∧ origin ∈ slice.traversal := by
   have same : owned.2.start.1 = marker.1 := by
     have conditions : owned.2.start.1 = marker.1 ∧
@@ -157,10 +157,10 @@ theorem selected_marker_origin (state raw : State)
     · simpa only [ref] using rawExists
     · simpa [← same,ref] using factor
     · simpa only [ref] using rawUnique owned.2.start.1
-  obtain ⟨slice,startEq,oldExtract,updated⟩ :=
+  obtain ⟨slice,startEq,stopEq,oldExtract,updated⟩ :=
     NotionCoreMachineDocumentInsert.ownedRef_splice state raw oldPart owned oldMember origin
       [boundary marker] (oldUnique _) (same ▸ present) (same ▸ changed) rawExists (rawUnique _)
-  refine ⟨slice,startEq,oldExtract,?_⟩
+  refine ⟨slice,startEq,stopEq,oldExtract,?_⟩
   by_contra absent
   simp only [if_neg absent] at updated
   have equal : slice.atoms = cell.slice.atoms := Option.some.inj (updated.symm.trans rawExtract)
@@ -276,7 +276,7 @@ private theorem untouched_ref (state raw : State)
     (changed : physical raw inst = NotionCorePartition.spliceAfterBy Atom.address
       origin [boundary marker] (physical state inst))
     (frames : ∀ key, key ≠ inst → physical raw key = physical state key)
-    (absent : origin ∉ (⟨ref.start,atoms⟩ : Slice).traversal) :
+    (absent : origin ∉ (⟨ref.start,atoms,ref.stop⟩ : Slice).traversal) :
     sliceAtoms raw ref = some atoms := by
   have owned : (block.id,ref) ∈ NotionCoreForestRefs.ownedRefs state.forest :=
     List.mem_flatMap.mpr ⟨block,member,List.mem_map.mpr ⟨ref,inTree,rfl⟩⟩
@@ -331,8 +331,9 @@ theorem materialize_source_cut (state raw : State)
     (titleTree : NotionCoreSliceForest.preorderTree title = pre ++ [leftRef ref marker])
     (lead tail : List Cell) (cell : Cell)
     (refCell : ref = ⟨cell.slice.start,tail.head?.map (fun next => next.slice.start)⟩)
+    (cellStop : cell.slice.stop = tail.head?.map (fun next => next.slice.start))
     (oldPhysical : physical state cell.slice.start.1 = flatten (lead ++ cell :: tail))
-    (present : origin ∈ cell.slice.traversal)
+    (physicalHeld : origin ∈ cell.physical.map Atom.address)
     (sameInstance : marker.1 = cell.slice.start.1) (originInst : origin.1 = cell.slice.start.1)
     (unique : ∀ key, ((physical state key).map Atom.address).Nodup)
     (rawUnique : ∀ key, ((physical raw key).map Atom.address).Nodup)
@@ -349,7 +350,8 @@ theorem materialize_source_cut (state raw : State)
         (∀ slice ∈ preS ++ postS, origin ∉ slice.traversal) ∧
         sliceAtoms raw (rightRef ref marker) =
           some (cell.slice.atoms.drop (cell.slice.traversal.idxOf origin)) ∧
-        post.mapM (fun ref => do pure (⟨ref.start,← sliceAtoms raw ref⟩ : Slice)) = some postS := by
+        post.mapM (fun ref => do pure (⟨ref.start,← sliceAtoms raw ref,ref.stop⟩ : Slice)) = some postS := by
+  have present : origin ∈ cell.slice.traversal := NotionCorePartition.traversal_of_physical physicalHeld
   obtain ⟨extracted,name,instEq⟩ := materialized_slices state block source old
   unfold NotionCoreMachineClient.materialize at extracted
   rw [tree] at extracted
@@ -365,7 +367,7 @@ theorem materialize_source_cut (state raw : State)
   have refEq : refS = cell.slice := by
     rw [refCell, cellRead] at refRead
     simp at refRead
-    rw [← refRead]
+    rw [← refRead, ← cellStop]
   subst refS
   have whole : (preS.flatMap Slice.traversal ++ (cell.slice.traversal ++ postS.flatMap Slice.traversal)).Nodup := by
     simpa [NotionCoreSource.Block.traversal, slicesEq, List.flatMap_append] using blockUnique
@@ -377,23 +379,20 @@ theorem materialize_source_cut (state raw : State)
     apartAfter origin present origin (List.mem_flatMap.mpr ⟨slice,member,held⟩) rfl
   have physicalPresent : origin ∈ (physical state cell.slice.start.1).map Atom.address := by
     rw [oldPhysical]
-    apply List.mem_map.mpr
-    rcases List.mem_cons.mp present with equal | inside
-    · exact ⟨boundary cell.slice.start,List.mem_flatMap.mpr ⟨cell,by simp,by simp [Cell.physical]⟩,equal.symm⟩
-    · obtain ⟨atom,atomMember,equal⟩ := List.mem_map.mp inside
-      exact ⟨atom,List.mem_flatMap.mpr ⟨cell,by simp,by simp [Cell.physical,atomMember]⟩,equal⟩
+    obtain ⟨atom,atomMember,equal⟩ := List.mem_map.mp physicalHeld
+    exact List.mem_map.mpr ⟨atom,List.mem_flatMap.mpr ⟨cell,by simp,atomMember⟩,equal⟩
   have keep (refs : List Ref) (slices : List Slice) (inside : ∀ r ∈ refs, r ∈ NotionCoreSliceForest.preorderTree block.title)
-      (read : refs.mapM (fun ref => do pure (⟨ref.start,← sliceAtoms state ref⟩ : Slice)) = some slices)
+      (read : refs.mapM (fun ref => do pure (⟨ref.start,← sliceAtoms state ref,ref.stop⟩ : Slice)) = some slices)
       (outside : ∀ slice ∈ slices, origin ∉ slice.traversal) :
-      refs.mapM (fun ref => do pure (⟨ref.start,← sliceAtoms raw ref⟩ : Slice)) = some slices := by
+      refs.mapM (fun ref => do pure (⟨ref.start,← sliceAtoms raw ref,ref.stop⟩ : Slice)) = some slices := by
     apply mapM_keep refs _ _ slices read
     intro r rMember slice sliceRead
     cases atoms : sliceAtoms state r with
     | none => simp [atoms] at sliceRead
     | some found =>
-      have sliceEq : slice = ⟨r.start,found⟩ := by simpa [atoms] using sliceRead.symm
+      have sliceEq : slice = ⟨r.start,found,r.stop⟩ := by simpa [atoms] using sliceRead.symm
       subst slice
-      have sliceMember : (⟨r.start,found⟩ : Slice) ∈ slices :=
+      have sliceMember : (⟨r.start,found,r.stop⟩ : Slice) ∈ slices :=
         mapM_output_member _ refs slices read r rMember _ sliceRead
       have rawRead := untouched_ref state raw part block member r (inside r rMember) found atoms
         cell.slice.start.1 origin marker originInst unique rawUnique rawExists physicalPresent changed frames
@@ -403,7 +402,7 @@ theorem materialize_source_cut (state raw : State)
   have postRaw := keep post postS (fun r member => by rw [tree]; simp [member]) postRead absentPost
   have newExists := rawExists cell.slice.start.1 existsCell
   have halves := split_slice_extraction state raw lead tail cell origin marker oldPhysical (unique _)
-    present sameInstance changed newExists (rawUnique _)
+    physicalHeld sameInstance changed newExists (rawUnique _)
   simp only at halves
   have leftRead : sliceAtoms raw (leftRef ref marker) =
       some (cell.slice.atoms.take (cell.slice.traversal.idxOf origin)) := by
@@ -475,7 +474,8 @@ theorem split_document_from_context (state raw next : State)
     (old : materializeDocument state = some document)
     (docUnique : (NotionCoreInvariant.addresses (NotionCoreSourceDocument.project document)).Nodup)
     (before after : NotionCoreSliceForest.Forest) (selected : NotionCoreSliceForest.Block)
-    (target : Nat) (origin marker : Address)
+    (target : Nat) (origin marker : Address) (key : Nat × Nat)
+    (markerEq : marker = (origin.1, .event key))
     (forest : state.forest = (before ++ selected :: after) ++ [⟨target,NotionCoreSliceForest.freshTitle target⟩])
     (targetFresh : target ∉ (before ++ selected :: after).map NotionCoreSliceForest.Block.id)
     (pre post : List Ref) (ref : Ref) (title moved : NotionCoreSliceForest.Tree)
@@ -484,8 +484,9 @@ theorem split_document_from_context (state raw next : State)
     (movedTree : NotionCoreSliceForest.preorderTree moved = rightRef ref marker :: post)
     (lead tail : List Cell) (cell : Cell)
     (refCell : ref = ⟨cell.slice.start,tail.head?.map (fun next => next.slice.start)⟩)
+    (cellStop : cell.slice.stop = tail.head?.map (fun next => next.slice.start))
     (oldPhysical : physical state cell.slice.start.1 = flatten (lead ++ cell :: tail))
-    (originPresent : origin ∈ cell.slice.traversal)
+    (originHeld : origin ∈ cell.physical.map Atom.address)
     (sameMarker : marker.1 = cell.slice.start.1)
     (originInst : origin.1 = cell.slice.start.1)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
@@ -503,7 +504,13 @@ theorem split_document_from_context (state raw next : State)
     (targetEmpty : physical state target = NotionCoreSliceForest.emptyPhysical target)
     (targetDistinct : target ≠ cell.slice.start.1) :
     ∃ result, materializeDocument next = some result ∧
-      NotionCoreSourceDocument.step document (.split origin marker target) = some result := by
+      NotionCoreSourceDocument.step document (.split origin key target) = some result := by
+  have originPresent : origin ∈ cell.slice.traversal := NotionCorePartition.traversal_of_physical originHeld
+  have physicalOrigin : origin ∈ (physical state cell.slice.start.1).map Atom.address := by
+    rw [oldPhysical]
+    obtain ⟨atom,atomMember,equal⟩ := List.mem_map.mp originHeld
+    exact List.mem_map.mpr ⟨atom,List.mem_flatMap.mpr ⟨cell,by simp,atomMember⟩,equal⟩
+  have position := NotionCoreMachineDocumentInvariant.physical_positions state _ origin physicalOrigin
   let destination : NotionCoreSliceForest.Block := ⟨target,NotionCoreSliceForest.freshTitle target⟩
   let rightTree : NotionCoreSliceForest.Block :=
     ⟨target,.node (NotionCoreSliceForest.titleRef target) (.cons moved .nil)⟩
@@ -514,8 +521,9 @@ theorem split_document_from_context (state raw next : State)
   have sourceMember := materialized_member state aligned document old selected selectedMember source sourceMat
   have sourceUnique := NotionCoreSourceGuards.block_unique docUnique sourceMember
   obtain ⟨sourceCut,preS,postS,slicesEq,absent,rightRead,postRaw⟩ := materialize_source_cut state raw part
-    selected selectedMember pre post ref title origin marker tree titleTree lead tail cell refCell oldPhysical
-    originPresent sameMarker originInst unique rawUnique rawExists changed frames source sourceMat sourceUnique
+    selected selectedMember pre post ref title origin marker tree titleTree lead tail cell refCell cellStop
+    oldPhysical originHeld sameMarker originInst unique rawUnique rawExists changed frames source sourceMat
+    sourceUnique
   have sourceHeld : origin ∈ source.traversal := by
     simp [NotionCoreSource.Block.traversal, slicesEq, originPresent]
   have sourceOwner := owner_of_materialized_slice document docUnique source sourceMember origin sourceHeld
@@ -544,6 +552,14 @@ theorem split_document_from_context (state raw next : State)
     have oldUnique : (state.forest.map NotionCoreSliceForest.Block.id).Nodup := aligned.1
     rw [forest,List.map_append] at oldUnique
     exact (List.nodup_append.mp oldUnique).1
+  have agrees : NotionCoreSource.InstanceAgrees origin source.slices := by
+    intro slice member held
+    rw [slicesEq] at member
+    rcases List.mem_append.mp member with inPre | inRest
+    · exact absurd held (absent slice (List.mem_append_left _ inPre))
+    · rcases List.mem_cons.mp inRest with rfl | inPost
+      · exact originInst.symm
+      · exact absurd held (absent slice (List.mem_append_right _ inPost))
   let cut := NotionCoreSource.splitSlices origin marker source.slices
   let changeTree := fun block : NotionCoreSliceForest.Block =>
     if block.id = selected.id then {block with title := title}
@@ -607,14 +623,14 @@ theorem split_document_from_context (state raw next : State)
           NotionCoreMachineSlices.empty_title_atoms raw target (rawExists target targetExists)
             (by rw [frames target targetDistinct]; exact targetEmpty)
         have movedRead : NotionCoreMachineClient.materialize raw rightTree.title = some
-            (⟨(target,.start),[]⟩ :: (NotionCoreSource.splitSlice cell.slice
+            (⟨(target,.start),[],none⟩ :: (NotionCoreSource.splitSlice cell.slice
               (cell.slice.traversal.idxOf origin) marker).2 :: postS) := by
           unfold NotionCoreMachineClient.materialize
           simp only [rightTree, NotionCoreSliceForest.preorderTree, NotionCoreSliceForest.preorderChildren,
             List.append_nil]
           rw [movedTree]
           simp only [List.mapM_cons, rawTitle, rightRead, postRaw]
-          simp [NotionCoreSliceForest.titleRef, NotionCoreSource.splitSlice, rightRef, refCell]
+          simp [NotionCoreSliceForest.titleRef, NotionCoreSource.splitSlice, rightRef, refCell, cellStop]
         have cutEq := NotionCoreSource.splitSlices_focus origin marker preS cell.slice postS
           (fun slice member => absent slice (List.mem_append_left _ member)) originPresent
         have notSource : target ≠ source.id := by rw [sourceId]; exact Ne.symm sourceTarget
@@ -629,14 +645,7 @@ theorem split_document_from_context (state raw next : State)
             exact absurd (valueId.symm.trans ((congrArg Block.id same).symm.trans sourceId)) isSource
         have updated := NotionCoreMachineDocumentInsert.materializeBlock_insert state raw part block value member mat
           cell.slice.start.1 origin [boundary marker] originInst unique rawUnique rawExists
-          (by
-            rw [oldPhysical]
-            apply List.mem_map.mpr
-            rcases List.mem_cons.mp originPresent with equal | inside
-            · exact ⟨boundary cell.slice.start,List.mem_flatMap.mpr ⟨cell,by simp,by simp [Cell.physical]⟩,equal.symm⟩
-            · obtain ⟨atom,member,equal⟩ := List.mem_map.mp inside
-              exact ⟨atom,List.mem_flatMap.mpr ⟨cell,by simp,by simp [Cell.physical,member]⟩,equal⟩)
-          changed frames
+          physicalOrigin changed frames
         rw [notOwned] at updated
         have notSource : value.id ≠ source.id := by rw [valueId,sourceId]; exact isSource
         have notTarget : value.id ≠ target := by rw [valueId]; exact isTarget
@@ -658,7 +667,8 @@ theorem split_document_from_context (state raw next : State)
     materializeDocument_title_map state next changeTree treeIds treeMap nextDisplay changeSource tombstones
       localExtract document old,?_⟩
   have sourceIdTarget : source.id ≠ target := by rw [sourceId]; exact sourceTarget
-  simp [NotionCoreSourceDocument.step,sourceOwner,destFound,sourceIdTarget,
+  subst markerEq
+  simp [NotionCoreSourceDocument.step,position,sourceOwner,destFound,sourceIdTarget,agrees,
     NotionCoreSourceDocument.EmptyRoot,NotionCoreSourceDocument.freshBlock,changeSource,cut]
 
 /-- Honest canonical split refines the existing two-command source-document
@@ -680,7 +690,7 @@ theorem canonical_split_source_step_with_execution_version (network : NotionCore
         (blockName (.issued tx.id)) (some (blockName block))) = some intermediate ∧
       NotionCoreSourceDocument.step intermediate (.split
         (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
-        (NotionCorePhysicalReplay.address (blockName inst) tx.id)
+        (NotionCorePhysicalReplay.markerKey tx.id)
         (blockName (.issued tx.id))) = some result ∧
       NotionCoreSourceDocument.Execution document (NotionCoreMachineCommands.commands tx) result := by
   have creators := NotionCoreMachineNetwork.creator_reachable reachable
@@ -784,11 +794,11 @@ theorem canonical_split_source_step_with_execution_version (network : NotionCore
     List.mem_flatMap.mpr ⟨chosen,chosenCreated,List.mem_map.mpr ⟨ref,refInTree,rfl⟩⟩
   have rawOwned : (chosen.id,ref) ∈ NotionCoreForestRefs.ownedRefs raw.forest :=
     List.mem_flatMap.mpr ⟨chosen,chosenRaw,List.mem_map.mpr ⟨ref,refInTree,rfl⟩⟩
-  obtain ⟨slice,startEq,oldSlice,ownsOrigin⟩ := selected_marker_origin created raw createPart stage.partitioned
+  obtain ⟨slice,startEq,stopEq,oldSlice,ownsOrigin⟩ := selected_marker_origin created raw createPart stage.partitioned
     (chosen.id,ref) oldOwned rawOwned address marker createdUnique stage.unique
     originPresent markerFresh changed stage.present chosenContains
-  obtain ⟨lead,cell,tail,factor,refEq⟩ := NotionCoreMachinePartition.ref_factor created createPart
-    (chosen.id,ref) oldOwned
+  obtain ⟨lead,cell,tail,factor,refEq,cellStop⟩ := NotionCoreMachinePartition.ref_factor_chained created
+    createPart (chosen.id,ref) oldOwned
   have refCell : ref = ⟨cell.slice.start,tail.head?.map (fun next => next.slice.start)⟩ := congrArg Prod.snd refEq
   change physical created ref.start.1 = _ at factor
   rw [refCell] at factor
@@ -798,8 +808,10 @@ theorem canonical_split_source_step_with_execution_version (network : NotionCore
   have sliceEq : slice = cell.slice := by
     have atomsEq := Option.some.inj (oldSlice.symm.trans (by simpa only [refCell] using extractCell))
     have start := startEq.trans (congrArg NotionCoreSliceForest.Ref.start refCell)
-    change Slice.mk slice.start slice.atoms = Slice.mk cell.slice.start cell.slice.atoms
-    exact congrArg₂ Slice.mk start atomsEq
+    have stop := (stopEq.trans (congrArg NotionCoreSliceForest.Ref.stop refCell)).trans cellStop.symm
+    change Slice.mk slice.start slice.atoms slice.stop =
+      Slice.mk cell.slice.start cell.slice.atoms cell.slice.stop
+    rw [start, atomsEq, stop]
   subst slice
   have sameInst : cell.slice.start.1 = blockName inst := by
     have condition : ref.start.1 = marker.1 := by
@@ -812,13 +824,21 @@ theorem canonical_split_source_step_with_execution_version (network : NotionCore
   let next : State := {raw with forest := forest}
   have transaction := NotionCoreMachineMarkerProgress.split_transaction_of_atomic state created tx block inst origin
     rows forest payload createStep integrated stage rawForest atomic
+  have createdShape := NotionCoreMachineShape.fresh_create_shape_preserves state created (.issued tx.id)
+    (some block) shape part freshInstance freshBlock createStep
   have docUnique := NotionCoreMachineDocumentInvariant.projected_addresses_unique created createPart createdUnique
-    createAligned intermediate createdDoc
+    createdShape.2.2.2.2 createAligned intermediate createdDoc
+  have originHeld : address ∈ cell.physical.map Atom.address :=
+    (NotionCorePartition.slice_traversal_iff
+      (NotionCoreMachineDocumentInvariant.physical_positions created _ address originPresent)).mp ownsOrigin
+  have addressInst : address.1 = blockName inst := by cases origin <;> rfl
   obtain ⟨result,materialized,splitStep⟩ := split_document_from_context created raw next createPart
     createAligned intermediate createdDoc docUnique before after chosen target address marker
+    (NotionCorePhysicalReplay.markerKey tx.id) (by rw [addressInst]; rfl)
     (by rw [createShape.2.1,context]) (by simpa [context] using freshTarget)
     refsBefore refsAfter ref title moved tree titleTree movedTree
-    lead tail cell refCell factor ownsOrigin (by simpa [marker,NotionCorePhysicalReplay.address] using sameInst.symm)
+    lead tail cell refCell cellStop factor originHeld
+    (by simpa [marker,NotionCorePhysicalReplay.address] using sameInst.symm)
     (by cases origin <;> simpa [address,NotionCorePhysicalReplay.originAddress] using sameInst.symm)
     createdUnique stage.unique (by
       intro key oldExists
@@ -831,10 +851,10 @@ theorem canonical_split_source_step_with_execution_version (network : NotionCore
     (by rw [sameInst]; exact Ne.symm instDistinct)
   have oldUnique := NotionCoreMachineMarkerProgress.canonical_physical_unique_all_version network payloadReach version closed pre
     (tx :: suffix) position state accepted
-  have createGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part oldUnique aligned
-    document intermediate old _ createDocStep
+  have createGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part oldUnique
+    shape.2.2.2.2 aligned document intermediate old _ createDocStep
   have splitGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard created createPart createdUnique
-    createAligned intermediate result createdDoc _ splitStep
+    createdShape.2.2.2.2 createAligned intermediate result createdDoc _ splitStep
   have execution := NotionCoreSourceDocument.Execution.cons createGuard createDocStep
     (NotionCoreSourceDocument.Execution.cons splitGuard splitStep (NotionCoreSourceDocument.Execution.nil result))
   exact ⟨next,intermediate,result,transaction,materialized,createDocStep,splitStep,
@@ -858,7 +878,7 @@ theorem canonical_split_source_step_with_execution (network : NotionCorePayloadN
         (blockName (.issued tx.id)) (some (blockName block))) = some intermediate ∧
       NotionCoreSourceDocument.step intermediate (.split
         (NotionCorePhysicalReplay.originAddress (blockName inst) origin)
-        (NotionCorePhysicalReplay.address (blockName inst) tx.id)
+        (NotionCorePhysicalReplay.markerKey tx.id)
         (blockName (.issued tx.id))) = some result ∧
       NotionCoreSourceDocument.Execution document (NotionCoreMachineCommands.commands tx) result := by
   have issued := NotionCorePayloadNetwork.forget_reachable

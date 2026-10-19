@@ -39,7 +39,8 @@ def locate (block : Block) (index : Nat) : Option Address :=
 
 theorem characters_projection (slice : Slice) :
     slice.slots.filter Slot.visible = (characters slice).map Atom.slot := by
-  simp [Slice.slots, Slice.anchor, characters, List.filter_map, Function.comp_def, visible_projection]
+  simp [Slice.slots, Slice.anchor, Slice.close, characters, List.filter_map, Function.comp_def,
+    visible_projection]
 
 /-- A selected visible character has a retained coordinate whose visible
 prefix count is precisely its visible index plus one. -/
@@ -167,6 +168,55 @@ theorem locate_member (block : Block) (index : Nat) (origin : Address)
   rw [← NotionCoreSource.Block.slots_addresses]
   exact List.mem_map.mpr ⟨_, List.getElem_mem bound, selected⟩
 
+theorem zeroOrigin_mem (slices : List Slice) (origin : Address)
+    (selected : zeroOrigin slices = some origin) : ∃ slice ∈ slices, slice.start = origin := by
+  induction slices with
+  | nil => simp [zeroOrigin] at selected
+  | cons slice rest ih =>
+    cases rest with
+    | nil =>
+      simp only [zeroOrigin, Option.some.injEq] at selected
+      exact ⟨slice, by simp, selected⟩
+    | cons next tail =>
+      simp only [zeroOrigin] at selected
+      split at selected
+      · obtain ⟨found, member, start⟩ := ih selected
+        exact ⟨found, List.mem_cons_of_mem _ member, start⟩
+      · exact ⟨slice, by simp, Option.some.inj selected⟩
+
+/-- The two clauses of the source normal form that selection relies on:
+every atom lies in its slice's instance, and slice starts and atoms are
+positions rather than end slots. -/
+def Placed (block : Block) : Prop :=
+  (∀ slice ∈ block.slices, ∀ atom ∈ slice.atoms, atom.address.1 = slice.start.1) ∧
+  (∀ slice ∈ block.slices, slice.start.2.isEnd = false ∧
+    ∀ atom ∈ slice.atoms, atom.address.2.isEnd = false)
+
+theorem normal_placed (block : Block) (normal : block.Normal) : Placed block :=
+  ⟨normal.1, normal.2.2.2.2⟩
+
+/-- On a placed block a located origin is a position, never a close slot. -/
+theorem locate_position (block : Block) (index : Nat) (origin : Address)
+    (placed : Placed block) (located : locate block index = some origin) :
+    origin.2.isEnd = false := by
+  have positions := placed.2
+  simp only [locate] at located
+  split at located
+  · cases index with
+    | zero =>
+      obtain ⟨slice, member, rfl⟩ := zeroOrigin_mem (nodes block) origin located
+      exact (positions slice member).1
+    | succ n =>
+      obtain ⟨atom, found, rfl⟩ := Option.map_eq_some_iff.mp located
+      obtain ⟨slice, member, selected⟩ := List.mem_flatMap.mp (List.mem_of_getElem? found)
+      exact (positions slice member).2 atom (List.mem_filter.mp selected).1
+  · simp at located
+
+/-- On a placed block every slice holding an address starts in its instance. -/
+theorem placed_agrees (block : Block) (origin : Address) (placed : Placed block) :
+    NotionCoreSource.InstanceAgrees origin block.slices := fun slice member held =>
+  (NotionCoreSource.traversal_instance slice origin (placed.1 slice member) held).symm
+
 /-- Every legal source insertion index of an alive block returns an address. -/
 theorem locate_progress (block : Block) (index : Nat) (alive : block.alive = true)
     (bound : index ≤ ((nodes block).flatMap characters).length) :
@@ -259,7 +309,7 @@ theorem source_insert_effect (pre post : NotionCoreSourceDocument.Document)
     (block : Block) (index : Nat) (entries : List ((Nat × Nat) × Nat))
     (unique : (NotionCoreInvariant.addresses
       (NotionCoreSourceDocument.project (pre ++ block :: post))).Nodup)
-    (alive : block.alive = true)
+    (alive : block.alive = true) (placed : Placed block)
     (bound : index ≤ ((nodes block).flatMap characters).length) :
     ∃ origin result, locate block index = some origin ∧
       NotionCoreSourceDocument.step (pre ++ block :: post)
@@ -281,6 +331,7 @@ theorem source_insert_effect (pre post : NotionCoreSourceDocument.Document)
   have projected := NotionCoreSourceDocument.project_insert
     (pre ++ block :: post) origin (textRun origin.1 entries)
     (fun other member => NotionCoreSourceGuards.block_unique unique member)
+    (locate_position block index origin placed located)
   rw [show NotionCoreSourceDocument.project (pre ++ block :: post) =
       NotionCoreSourceDocument.project pre ++ block.project ::
         NotionCoreSourceDocument.project post by simp [NotionCoreSourceDocument.project],
@@ -296,7 +347,7 @@ theorem project_anchored (block : Block) (alive : block.alive = true) :
   cases slices : block.slices with
   | nil => simp [Block.alive, slices] at alive
   | cons first rest =>
-    exact ⟨first.anchor, first.atoms.map Atom.slot ++ rest.flatMap Slice.slots,
+    exact ⟨first.anchor, first.atoms.map Atom.slot ++ [first.close] ++ rest.flatMap Slice.slots,
       by simp [Block.project, Block.slots, slices, Slice.slots], rfl⟩
 
 /-- The actual visible identity selection, before ID-range compression, gives
@@ -349,11 +400,12 @@ theorem source_split_message_effect (pre post : NotionCoreSourceDocument.Documen
     (bound : index ≤ ((nodes block).flatMap characters).length)
     (freshBlock : bid ∉ (pre ++ block :: post).map Block.id)
     (freshRoot : (NotionCoreSpec.root inst).address ∉ NotionCoreInvariant.addresses
+      (NotionCoreSourceDocument.project (pre ++ block :: post)))
+    (freshFinish : (NotionCoreSpec.finishSlot inst).address ∉ NotionCoreInvariant.addresses
       (NotionCoreSourceDocument.project (pre ++ block :: post))) :
     ∃ origin result, locate block index = some origin ∧
       NotionCoreSpec.execute (NotionCoreSourceDocument.project (pre ++ block :: post))
-        [.create bid inst (some block.id),
-          .split origin (NotionCoreSpec.boundary origin.1 markerId) bid] = some result ∧
+        [.create bid inst (some block.id), .split origin markerId bid] = some result ∧
       NotionCoreSpec.view result =
         NotionCoreSpec.view (NotionCoreSourceDocument.project pre) ++
         [(block.id, (NotionCoreSpec.text block.project.slots).take index),
@@ -365,12 +417,13 @@ theorem source_split_message_effect (pre post : NotionCoreSourceDocument.Documen
         NotionCoreSourceDocument.project post := by simp [NotionCoreSourceDocument.project]
   obtain ⟨result, accepted, answer⟩ := NotionCoreSpec.local_split_client
     (NotionCoreSourceDocument.project pre) (NotionCoreSourceDocument.project post)
-    block.project origin index bid inst (NotionCoreSpec.boundary origin.1 markerId)
+    block.project origin index bid inst markerId
     (by simpa only [NotionCoreInvariant.addresses, input] using unique)
     (by simpa [NotionCoreSourceDocument.project] using blocks)
     (locate_prepared block index origin located)
     (by simpa [NotionCoreSourceDocument.project] using freshBlock)
-    (by simpa only [NotionCoreInvariant.addresses, input] using freshRoot) rfl alive
+    (by simpa only [NotionCoreInvariant.addresses, input] using freshRoot)
+    (by simpa only [NotionCoreInvariant.addresses, input] using freshFinish) alive
   exact ⟨origin, result, located, by simpa only [input] using accepted, answer⟩
 
 theorem create_empty_target {doc created : NotionCoreSourceDocument.Document}
@@ -396,14 +449,19 @@ theorem create_empty_target {doc created : NotionCoreSourceDocument.Document}
       · simp [NotionCoreSourceDocument.step, duplicate, present] at accepted
 
 /-- An independently legal split lifts to the physical interval transition
-when its named destination is an empty source root. This domain lemma inspects
-the physical transition; it does not assume that transition succeeds. -/
+when its named destination is an empty source root, its origin is a position,
+and the slices of the origin's owner holding it start in its instance. This
+domain lemma inspects the physical transition; it does not assume that
+transition succeeds. -/
 theorem split_progress {doc : NotionCoreSourceDocument.Document}
-    (origin marker : Address) (bid : Nat)
+    (origin : Address) (marker : Nat × Nat) (bid : Nat)
     (unique : (doc.map Block.id).Nodup)
     (empty : ∃ target ∈ doc, target.id = bid ∧ NotionCoreSourceDocument.EmptyRoot target)
+    (position : origin.2.isEnd = false)
+    (agrees : ∀ source, NotionCoreSourceDocument.owner doc origin = some source →
+      NotionCoreSource.InstanceAgrees origin source.slices)
     (semantic : ∃ next, NotionCoreSpec.step (NotionCoreSourceDocument.project doc)
-      (.split origin ⟨marker, 0, false⟩ bid) = some next) :
+      (.split origin marker bid) = some next) :
     ∃ next, NotionCoreSourceDocument.step doc (.split origin marker bid) = some next := by
   obtain ⟨target, member, same, emptyRoot⟩ := empty
   have targetFound : doc.find? (fun block => block.id == bid) = some target := by
@@ -430,7 +488,8 @@ theorem split_progress {doc : NotionCoreSourceDocument.Document}
     have different : source.id ≠ bid := by
       intro collision
       simp [NotionCoreSpec.step, found, collision] at accepted
-    simp [NotionCoreSourceDocument.step, owned, targetFound, different, emptyRoot]
+    simp [NotionCoreSourceDocument.step, position, owned, targetFound, different, emptyRoot,
+      agrees source owned]
 
 theorem create_retains_block {doc created : NotionCoreSourceDocument.Document}
     (bid inst : Nat) (after : Option Nat) (block : Block)
@@ -462,15 +521,17 @@ theorem source_split_effect (pre post : NotionCoreSourceDocument.Document)
     (unique : (NotionCoreInvariant.addresses
       (NotionCoreSourceDocument.project (pre ++ block :: post))).Nodup)
     (blocks : ((pre ++ block :: post).map Block.id).Nodup)
-    (alive : block.alive = true)
+    (alive : block.alive = true) (placed : Placed block)
     (bound : index ≤ ((nodes block).flatMap characters).length)
     (freshBlock : bid ∉ (pre ++ block :: post).map Block.id)
     (freshRoot : (NotionCoreSpec.root inst).address ∉ NotionCoreInvariant.addresses
+      (NotionCoreSourceDocument.project (pre ++ block :: post)))
+    (freshFinish : (NotionCoreSpec.finishSlot inst).address ∉ NotionCoreInvariant.addresses
       (NotionCoreSourceDocument.project (pre ++ block :: post))) :
     ∃ origin created result, locate block index = some origin ∧
       NotionCoreSourceDocument.step (pre ++ block :: post)
         (.create bid inst (some block.id)) = some created ∧
-      NotionCoreSourceDocument.step created (.split origin (origin.1, .event markerId) bid) = some result ∧
+      NotionCoreSourceDocument.step created (.split origin markerId bid) = some result ∧
       NotionCoreSpec.view (NotionCoreSourceDocument.project result) =
         NotionCoreSpec.view (NotionCoreSourceDocument.project pre) ++
         [(block.id, (NotionCoreSpec.text block.project.slots).take index),
@@ -478,10 +539,11 @@ theorem source_split_effect (pre post : NotionCoreSourceDocument.Document)
         NotionCoreSpec.view (NotionCoreSourceDocument.project post) := by
   obtain ⟨origin, semanticResult, located, semanticRun, answer⟩ :=
     source_split_message_effect pre post block index bid inst markerId unique blocks alive bound
-      freshBlock freshRoot
+      freshBlock freshRoot freshFinish
   let before := NotionCoreSourceDocument.project (pre ++ block :: post)
   let middle := NotionCoreSourceDocument.project pre ++ block.project ::
-    ⟨bid, inst, [NotionCoreSpec.root inst], true⟩ :: NotionCoreSourceDocument.project post
+    ⟨bid, inst, [NotionCoreSpec.root inst, NotionCoreSpec.finishSlot inst], true⟩ ::
+      NotionCoreSourceDocument.project post
   have input : before = NotionCoreSourceDocument.project pre ++ block.project ::
       NotionCoreSourceDocument.project post := by simp [before, NotionCoreSourceDocument.project]
   have names : (before.map NotionCoreSpec.Block.id).Nodup := by
@@ -504,32 +566,41 @@ theorem source_split_effect (pre post : NotionCoreSourceDocument.Document)
   have middleWellFormed : NotionCoreSpec.WellFormed middle := by
     apply NotionCoreInvariant.step_preserves oldWellFormed _ semanticCreate
     rw [input]
-    exact .create_after _ _ _ bid inst (input ▸ fresh) (input ▸ freshRoot)
+    exact .create_after _ _ _ bid inst (input ▸ fresh) (input ▸ freshRoot) (input ▸ freshFinish)
   have createdWellFormed : NotionCoreSpec.WellFormed (NotionCoreSourceDocument.project created) :=
     createdProjection ▸ middleWellFormed
   have semanticSplit : NotionCoreSpec.step middle
-      (.split origin (NotionCoreSpec.boundary origin.1 markerId) bid) = some semanticResult := by
+      (.split origin markerId bid) = some semanticResult := by
     have semanticCreate' : NotionCoreSpec.step
         (NotionCoreSourceDocument.project (pre ++ block :: post))
         (.create bid inst (some block.id)) = some middle := semanticCreate
     simpa [NotionCoreSpec.execute, semanticCreate'] using semanticRun
-  obtain ⟨result, splitStep⟩ := split_progress origin (origin.1, .event markerId) bid
+  have agrees : ∀ source, NotionCoreSourceDocument.owner created origin = some source →
+      NotionCoreSource.InstanceAgrees origin source.slices := by
+    intro source owned
+    obtain ⟨sourceMember, held⟩ := NotionCoreSourceDocument.owner_some owned
+    have same := NotionCoreSourceGuards.owner_unique createdWellFormed.2.1 sourceMember
+      (create_retains_block bid inst (some block.id) block (by simp) createdStep) held
+      (locate_member block index origin located)
+    rw [same]
+    exact placed_agrees block origin placed
+  obtain ⟨result, splitStep⟩ := split_progress origin markerId bid
     (by simpa only [NotionCoreSourceDocument.project_ids] using createdWellFormed.1)
     (create_empty_target bid inst (some block.id) createdStep)
-    ⟨semanticResult, by simpa only [createdProjection, NotionCoreSpec.boundary] using semanticSplit⟩
+    (locate_position block index origin placed located) agrees
+    ⟨semanticResult, by simpa only [createdProjection] using semanticSplit⟩
   have projectedStep := NotionCoreSourceGuards.step_sound
-    (.split origin (origin.1, .event markerId) bid) createdWellFormed splitStep
+    (.split origin markerId bid) createdWellFormed splitStep
   change NotionCoreSpec.step (NotionCoreSourceDocument.project created)
-    (.split origin (NotionCoreSpec.boundary origin.1 markerId) bid) =
-      some (NotionCoreSourceDocument.project result) at projectedStep
+    (.split origin markerId bid) = some (NotionCoreSourceDocument.project result) at projectedStep
   rw [createdProjection, semanticSplit] at projectedStep
   exact ⟨origin, created, result, located, createdStep, splitStep,
     (congrArg NotionCoreSpec.view (Option.some.inj projectedStep)).symm.trans answer⟩
 
 private def destinationExample : Block :=
-  ⟨10, 10, [⟨(10, .start), []⟩, ⟨(0, .event (1, 10)),
+  ⟨10, 10, [⟨(10, .start), [], none⟩, ⟨(0, .event (1, 10)),
     [⟨(0, .event (0, 1)), .text 97 true⟩,
-     ⟨(0, .event (0, 2)), .text 98 false⟩]⟩]⟩
+     ⟨(0, .event (0, 2)), .text 98 false⟩], none⟩]⟩
 
 /-- Source zero preparation skips the empty dead title and uses the split
 marker that follows it, including when all text is hidden. It does not use
@@ -537,8 +608,8 @@ the independent helper's choice of the block's head slot. -/
 theorem zero_origin_control :
     locate destinationExample 0 = some (0, .event (1, 10)) ∧
     locate destinationExample 0 ≠ NotionCoreSpec.prepareGap destinationExample.project.slots 0 ∧
-    locate {destinationExample with slices := [⟨(10, .start), []⟩, ⟨(0, .event (1, 10)),
-      [⟨(0, .event (0, 1)), .text 97 true⟩]⟩]} 0 = some (0, .event (1, 10)) := by decide
+    locate {destinationExample with slices := [⟨(10, .start), [], none⟩, ⟨(0, .event (1, 10)),
+      [⟨(0, .event (0, 1)), .text 97 true⟩], none⟩]} 0 = some (0, .event (1, 10)) := by decide
 
 /-- The positive index selects the visible predecessor through tombstones;
 the same source branch rejects an oversized insertion index. -/
@@ -557,30 +628,32 @@ theorem physical_split_control :
     let result := do
       let origin ← locate destinationExample 0
       let created ← NotionCoreSourceDocument.step [destinationExample] (.create 11 11 (some 10))
-      NotionCoreSourceDocument.step created (.split origin (0, .event (1, 11)) 11)
+      NotionCoreSourceDocument.step created (.split origin (1, 11) 11)
     result.map (fun doc => NotionCoreSpec.view (NotionCoreSourceDocument.project doc)) =
       some [(10, []), (11, [98])] ∧
     result.map (fun doc => NotionCoreSpec.view (NotionCoreSourceDocument.project doc)) ≠
       some [(10, [98]), (11, [])] := by decide
 
 private def mergedExample : Block :=
-  ⟨10, 10, [⟨(10, .start), [⟨(10, .event (0, 1)), .text 97 false⟩]⟩,
-    ⟨(20, .start), [⟨(20, .event (0, 2)), .text 98 false⟩]⟩]⟩
+  ⟨10, 10, [⟨(10, .start), [⟨(10, .event (0, 1)), .text 97 false⟩], none⟩,
+    ⟨(20, .start), [⟨(20, .event (0, 2)), .text 98 false⟩], none⟩]⟩
 
 /-- In a merged chain, positions count visible characters across slices:
-index 1 selects a, and a split there keeps a and moves the absorbed root with
-b into the fresh block, rather than leaving an empty absorbed slice behind. -/
+index 1 selects a, and a split there keeps a, stopped at the marker, and moves
+the marker's empty slice, ending at the finish of instance 10, and the
+absorbed root with b into the fresh block, rather than leaving an empty
+absorbed slice behind. -/
 theorem merged_chain_control :
     locate mergedExample 1 = some (10, .event (0, 1)) ∧
     locate mergedExample 2 = some (20, .event (0, 2)) ∧
     (do
       let origin ← locate mergedExample 1
       let created ← NotionCoreSourceDocument.step [mergedExample] (.create 11 11 (some 10))
-      NotionCoreSourceDocument.step created (.split origin (10, .event (1, 11)) 11)).map
+      NotionCoreSourceDocument.step created (.split origin (1, 11) 11)).map
         (fun (doc : NotionCoreSourceDocument.Document) => doc.map NotionCoreSource.Block.slices) =
-      some [[⟨(10, .start), [⟨(10, .event (0, 1)), .text 97 false⟩]⟩],
-        [⟨(11, .start), []⟩, ⟨(10, .event (1, 11)), []⟩,
-          ⟨(20, .start), [⟨(20, .event (0, 2)), .text 98 false⟩]⟩]] ∧
+      some [[⟨(10, .start), [⟨(10, .event (0, 1)), .text 97 false⟩], some (10, .event (1, 11))⟩],
+        [⟨(11, .start), [], none⟩, ⟨(10, .event (1, 11)), [], none⟩,
+          ⟨(20, .start), [⟨(20, .event (0, 2)), .text 98 false⟩], none⟩]] ∧
     locate mergedExample 1 ≠ some (20, .start) := by decide
 
 #print axioms locate_prepared

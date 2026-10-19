@@ -108,6 +108,12 @@ def integrateRows : Table → List Row → Option Table
   | rows, [] => some rows
   | rows, row::rest => do integrateRows (← integrate rows row) rest
 
+/-- The forest anchor a merge request names: the instance of the target
+block's last slice at issue time and that slice's stop marker, as an address of
+the instance. -/
+def mergeAnchor (inst : BlockKey) (stop : Option Id) : NotionCoreSliceForest.Anchor :=
+  ⟨blockName inst, stop.map (NotionCorePhysicalReplay.address (blockName inst))⟩
+
 def applyOperation (state : State) : Operation → Option State
   | .create block afterBlock =>
     let bid := blockName block
@@ -142,8 +148,9 @@ def applyOperation (state : State) : Operation → Option State
       let (forest,child) ← NotionCoreSliceForest.detachForest
         (NotionCorePhysicalReplay.address (blockName inst) marker) state.forest
       pure {state with forest := NotionCoreSliceForest.appendToBlock bid child forest}
-  | .merge source target =>
-    some {state with forest := NotionCoreSliceForest.mergeForest state.forest (blockName source) (blockName target)}
+  | .merge source inst stop =>
+    let forest := NotionCoreSliceForest.mergeForest state.forest (blockName source) (mergeAnchor inst stop)
+    some {state with forest := forest}
 
 /-- A block name that names no forest block and no display entry, tombstones
 included: the names for which create is not a no-op. -/
@@ -249,27 +256,34 @@ theorem existing_create_control :
 
 private def d : Id := ⟨5,[66]⟩
 
-/-- PASS+FAIL: merging the split destination back into its source renders the
-whole text in the source and hides the merged block, which stays in the
-display order as a tombstone. -/
+/-- PASS+FAIL: merging the split destination back, anchored at the split
+marker that stops block 0's last slice, renders the whole text in the source
+and hides the merged block, which stays in the display order as a tombstone.
+Anchoring at the end of instance 0 instead finds the moved slice in the source
+block itself, so that merge changes nothing. -/
 theorem merge_back_control :
     (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
-      ⟨d,.merge (.issued b) .initial⟩] >>= render) = some [(0,[97,98])] ∧
+      ⟨d,.merge (.issued b) .initial (some b)⟩] >>= render) = some [(0,[97,98])] ∧
     (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
-      ⟨d,.merge (.issued b) .initial⟩]).map (·.display) = some [0,blockName (.issued b)] ∧
+      ⟨d,.merge (.issued b) .initial (some b)⟩]).map (·.display) = some [0,blockName (.issued b)] ∧
     (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
-      ⟨d,.merge (.issued b) .initial⟩] >>= render) ≠ some [(0,[97])] ∧
+      ⟨d,.merge (.issued b) .initial (some b)⟩] >>= render) ≠ some [(0,[97])] ∧
     (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
-      ⟨d,.merge (.issued b) .initial⟩] >>= render) ≠
-      some [(0,[97]),(blockName (.issued b),[98])] := by
+      ⟨d,.merge (.issued b) .initial (some b)⟩] >>= render) ≠
+      some [(0,[97]),(blockName (.issued b),[98])] ∧
+    (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
+      ⟨d,.merge (.issued b) .initial none⟩] >>= render) =
+      some [(0,[97]),(blockName (.issued b),[98])] ∧
+    (replay {} [seed, ⟨b,.split .initial .initial (.item a)⟩,
+      ⟨d,.merge (.issued b) .initial none⟩] >>= render) ≠ some [(0,[97,98])] := by
   decide +kernel
 
 /-- A create after a merged-away block lands at its tombstone, not at the front. -/
 theorem create_after_tombstone_control :
-    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial⟩,
+    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial none⟩,
       ⟨d,.create (some (.issued b))⟩]).map (·.display) =
       some [blockName (.issued b),blockName (.issued d),0] ∧
-    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial⟩,
+    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial none⟩,
       ⟨d,.create (some (.issued b))⟩]).map (·.display) ≠
       some [blockName (.issued d),blockName (.issued b),0] := by
   decide +kernel
@@ -277,10 +291,10 @@ theorem create_after_tombstone_control :
 /-- A create naming a merged-away block is a no-op: the tombstone keeps its
 display position and the block is not revived in the forest. -/
 theorem tombstone_create_control :
-    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial⟩] >>= fun state =>
+    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial none⟩] >>= fun state =>
       applyOperation state (.create (.issued b) none)).map (fun s => (s.display,s.forest.map (·.id))) =
         some ([blockName (.issued b),0],[0]) ∧
-    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial⟩] >>= fun state =>
+    (replay {} [seed, ⟨b,.create none⟩, ⟨c,.merge (.issued b) .initial none⟩] >>= fun state =>
       applyOperation state (.create (.issued b) none)).map (fun s => (s.display,s.forest.map (·.id))) ≠
         some ([blockName (.issued b),0],[0,blockName (.issued b)]) := by
   decide +kernel

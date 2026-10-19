@@ -134,7 +134,7 @@ theorem operation_names (state result : State) (op : Operation)
         subst result
         have same := detachForest_names _ _ pair.1 pair.2 detached
         simp [operationCreates, same]
-  | merge source target =>
+  | merge source inst stop =>
     simp only [applyOperation, Option.some.injEq] at accepted
     subst result
     intro bid member
@@ -245,7 +245,7 @@ private theorem putInstance_keys (state : State) (inst : Nat) (value : Instance)
 def operationInstances : Operation → List Nat
   | .create block _ => [blockName block]
   | .insert _ inst _ _ _ | .erase _ inst _ | .marker _ inst _ _ => [blockName inst]
-  | .moveInto _ _ _ _ | .merge _ _ => []
+  | .moveInto _ _ _ _ | .merge _ _ _ => []
 
 private theorem operation_instance_keys (state result : State) (op : Operation)
     (accepted : applyOperation state op = some result) :
@@ -305,7 +305,7 @@ private theorem operation_instance_keys (state result : State) (op : Operation)
         simp [detached] at accepted
         subst result
         simp [instanceKeys, operationInstances]
-  | merge source target =>
+  | merge source inst stop =>
     simp only [applyOperation, Option.some.injEq] at accepted
     subst result
     simp [instanceKeys, operationInstances]

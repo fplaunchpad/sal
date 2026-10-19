@@ -100,23 +100,30 @@ private theorem nodup_insert_middle {α : Type} (pre post : List α) (fresh : α
 theorem create_preserves (pre post : Document) (bid inst : Nat)
     (h : WellFormed (pre ++ post))
     (freshBlock : bid ∉ (pre ++ post).map Block.id)
-    (freshRoot : (root inst).address ∉ addresses (pre ++ post)) :
-    WellFormed (pre ++ ⟨bid, inst, [root inst], true⟩ :: post) := by
+    (freshRoot : (root inst).address ∉ addresses (pre ++ post))
+    (freshFinish : (finishSlot inst).address ∉ addresses (pre ++ post)) :
+    WellFormed (pre ++ ⟨bid, inst, [root inst, finishSlot inst], true⟩ :: post) := by
   refine ⟨?_, ?_, ?_⟩
   · simpa only [List.map_append, List.map_cons] using
       nodup_insert_middle (pre.map Block.id) (post.map Block.id) bid
         (by simpa only [List.map_append] using h.1)
         (by simpa only [List.map_append] using freshBlock)
-  · simpa only [addresses, List.flatMap_append, List.flatMap_cons,
-      List.map_cons, List.map_nil, List.singleton_append] using
-      nodup_insert_middle (addresses pre) (addresses post) (root inst).address
-        (by simpa only [addresses, List.flatMap_append] using h.2.1)
-        (by simpa only [addresses, List.flatMap_append] using freshRoot)
+  · have finished := nodup_insert_middle (addresses pre) (addresses post) (finishSlot inst).address
+      (by simpa only [addresses, List.flatMap_append] using h.2.1)
+      (by simpa only [addresses, List.flatMap_append] using freshFinish)
+    have outside : (root inst).address ∉ addresses pre ++ addresses post := by
+      simpa only [addresses, List.flatMap_append] using freshRoot
+    have inserted := nodup_insert_middle (addresses pre)
+      ((finishSlot inst).address :: addresses post) (root inst).address finished (by
+        simp only [List.mem_append, List.mem_cons, not_or] at outside ⊢
+        exact ⟨outside.1, by simp [root, finishSlot], outside.2⟩)
+    simpa only [addresses, List.flatMap_append, List.flatMap_cons,
+      List.map_cons, List.map_nil, List.cons_append, List.nil_append] using inserted
   · intro block member live
     rcases List.mem_append.mp member with member | member
     · exact h.2.2 block (List.mem_append_left _ member) live
     · rcases List.mem_cons.mp member with rfl | member
-      · exact ⟨root inst, [], rfl, rfl⟩
+      · exact ⟨root inst, [finishSlot inst], rfl, rfl⟩
       · exact h.2.2 block (List.mem_append_right _ member) live
 
 def replaceSlots (doc : Document) (bid : Nat) (slots : List Slot) : Document :=
@@ -169,32 +176,64 @@ theorem anchored_cut (source : Block) (origin : Address) (h : Anchored source) :
   refine ⟨head, tail.take (((head :: tail).map Slot.address).idxOf origin), ?_, hidden⟩
   simp [cutAfter, eq]
 
-/-- Removing a split suffix preserves the old structural invariant. The removed
-identities and a fresh marker are then a fresh run relative to the remainder.
-This is the key ownership fact; no visible editing law is a premise. -/
+/-- Appending a fresh run to a block preserves the structural invariant. -/
+theorem append_preserves (pre post : Document) (target : Block) (fresh : List Slot)
+    (h : WellFormed (pre ++ target :: post)) (names : FreshRun (pre ++ target :: post) fresh) :
+    WellFormed (pre ++ {target with slots := target.slots ++ fresh} :: post) := by
+  refine ⟨?_, ?_, ?_⟩
+  · simpa only [List.map_append, List.map_cons] using h.1
+  · have permutation :
+        (addresses (pre ++ {target with slots := target.slots ++ fresh} :: post)).Perm
+        (addresses (pre ++ target :: post) ++ fresh.map Slot.address) := by
+      apply List.perm_iff_count.mpr
+      intro x
+      simp only [addresses, List.flatMap_append, List.flatMap_cons, List.map_append,
+        List.count_append]
+      omega
+    exact permutation.nodup_iff.mpr (nodup_fresh_append _ _ h names)
+  · intro block member live
+    rcases List.mem_append.mp member with member | member
+    · exact h.2.2 block (List.mem_append_left _ member) live
+    · rcases List.mem_cons.mp member with rfl | member
+      · obtain ⟨head, tail, eq, hidden⟩ := h.2.2 target (by simp) live
+        exact ⟨head, tail ++ fresh, by simp [eq], hidden⟩
+      · exact h.2.2 block (by simp [member]) live
+
+/-- Removing a split suffix and closing the remainder with a fresh close slot
+preserves the structural invariant. The removed identities and a fresh marker
+are then a fresh run relative to the remainder. This is the key ownership
+fact; no visible editing law is a premise. -/
 theorem trim_preserves_and_fresh (pre post : Document) (source : Block)
-    (origin : Address) (marker : Slot) (h : WellFormed (pre ++ source :: post))
-    (freshMarker : marker.address ∉ addresses (pre ++ source :: post)) :
+    (origin : Address) (marker close : Slot) (h : WellFormed (pre ++ source :: post))
+    (freshMarker : marker.address ∉ addresses (pre ++ source :: post))
+    (freshClose : close.address ∉ addresses (pre ++ source :: post))
+    (distinct : marker.address ≠ close.address) :
     let cut := cutAfter source.slots origin
-    let reduced := pre ++ {source with slots := cut.1} :: post
+    let reduced := pre ++ {source with slots := cut.1 ++ [close]} :: post
     WellFormed reduced ∧ FreshRun reduced (marker :: cut.2) := by
   let cut := cutAfter source.slots origin
-  let reduced := pre ++ {source with slots := cut.1} :: post
+  let reduced := pre ++ {source with slots := cut.1 ++ [close]} :: post
   have partition : cut.1.map Slot.address ++ cut.2.map Slot.address = source.slots.map Slot.address := by
     dsimp [cut, cutAfter]
     rw [← List.map_append, List.take_append_drop]
-  have permutation : (addresses (pre ++ source :: post)).Perm
+  have permutation : (addresses (pre ++ source :: post) ++ [close.address]).Perm
       (addresses reduced ++ cut.2.map Slot.address) := by
     apply List.perm_iff_count.mpr
     intro x
     have counts := congrArg (List.count x) partition
     simp only [List.count_append] at counts
-    simp only [addresses, reduced, List.flatMap_append, List.flatMap_cons, List.count_append]
+    simp only [addresses, reduced, List.flatMap_append, List.flatMap_cons, List.map_append,
+      List.map_cons, List.map_nil, List.count_append]
     omega
-  have names := List.nodup_append'.mp (permutation.nodup_iff.mp h.2.1)
+  have closed : (addresses (pre ++ source :: post) ++ [close.address]).Nodup :=
+    List.nodup_append'.mpr ⟨h.2.1, List.nodup_singleton _,
+      List.disjoint_singleton.mpr freshClose⟩
+  have names := List.nodup_append'.mp (permutation.nodup_iff.mp closed)
   have freshAll : marker.address ∉ addresses reduced ++ cut.2.map Slot.address := by
     intro collision
-    exact freshMarker (permutation.mem_iff.mpr collision)
+    rcases List.mem_append.mp (permutation.mem_iff.mpr collision) with old | new
+    · exact freshMarker old
+    · exact distinct (List.mem_singleton.mp new)
   have reducedWF : WellFormed reduced := by
     refine ⟨?_, names.1, ?_⟩
     · simpa only [reduced, List.map_append, List.map_cons] using h.1
@@ -202,7 +241,10 @@ theorem trim_preserves_and_fresh (pre post : Document) (source : Block)
       rcases List.mem_append.mp member with member | member
       · exact h.2.2 block (List.mem_append_left _ member) live
       · rcases List.mem_cons.mp member with rfl | member
-        · exact anchored_cut source origin (h.2.2 source (by simp) live)
+        · obtain ⟨head, tail, eq, hidden⟩ := anchored_cut source origin (h.2.2 source (by simp) live)
+          refine ⟨head, tail ++ [close], ?_, hidden⟩
+          simp only at eq
+          simp [cut, eq]
         · exact h.2.2 block (by simp [member]) live
   refine ⟨reducedWF, ?_, ?_⟩
   · exact List.nodup_cons.mpr ⟨fun member => freshAll (List.mem_append_right _ member), names.2.1⟩
@@ -213,21 +255,25 @@ theorem trim_preserves_and_fresh (pre post : Document) (source : Block)
     · exact List.disjoint_left.mp names.2.2 member selected
 
 /-- Structural split preservation, allowing arbitrary source/target block
-positions and hidden origin anchors. The target is an allocated empty title
-root. The marker is fresh, and the moved suffix becomes newly owned there. -/
+positions and hidden origin anchors. The marker and the close slot are fresh;
+the close slot ends the kept prefix, and the moved suffix becomes newly owned
+by the target after the marker. -/
 theorem split_preserves (doc : Document) (source target : Block) (origin : Address)
-    (marker : Slot) (inst : Nat) (h : WellFormed doc)
+    (marker close : Slot) (h : WellFormed doc)
     (sourceMember : source ∈ doc) (targetMember : target ∈ doc)
-    (distinct : source.id ≠ target.id) (emptyTarget : target.slots = [root inst])
-    (freshMarker : marker.address ∉ addresses doc) :
+    (distinct : source.id ≠ target.id)
+    (freshMarker : marker.address ∉ addresses doc)
+    (freshClose : close.address ∉ addresses doc)
+    (separate : marker.address ≠ close.address) :
     WellFormed (appendSlots
-      (replaceSlots doc source.id (cutAfter source.slots origin).1)
+      (replaceSlots doc source.id ((cutAfter source.slots origin).1 ++ [close]))
       target.id (marker :: (cutAfter source.slots origin).2)) := by
   obtain ⟨pre, post, shape⟩ := List.append_of_mem sourceMember
   subst doc
   let cut := cutAfter source.slots origin
-  let reduced := pre ++ {source with slots := cut.1} :: post
-  have preserved := trim_preserves_and_fresh pre post source origin marker h freshMarker
+  let reduced := pre ++ {source with slots := cut.1 ++ [close]} :: post
+  have preserved := trim_preserves_and_fresh pre post source origin marker close h freshMarker
+    freshClose separate
   have reducedWF : WellFormed reduced := preserved.1
   have fresh : FreshRun reduced (marker :: cut.2) := preserved.2
   have targetOutside : target ∈ pre ++ post := by
@@ -242,11 +288,8 @@ theorem split_preserves (doc : Document) (source target : Block) (origin : Addre
     · exact List.mem_append_right _ (List.mem_cons_of_mem _ member)
   obtain ⟨left, right, reducedShape⟩ := List.append_of_mem targetReduced
   have fresh' : FreshRun (left ++ target :: right) (marker :: cut.2) := by simpa only [reducedShape] using fresh
-  have result := insert_preserves left right target (root inst).address (marker :: cut.2)
+  have result := append_preserves left right target (marker :: cut.2)
     (by simpa only [reducedShape] using reducedWF) fresh'
-  have insertion : insertSlots (root inst).address (marker :: cut.2) target.slots =
-      target.slots ++ marker :: cut.2 := by simp [emptyTarget, insertSlots, cutAfter]
-  rw [insertion] at result
   rw [replace_focus pre post source _ h.1]
   change WellFormed (appendSlots reduced target.id (marker :: cut.2))
   rw [reducedShape, append_focus left right target _ (by simpa only [reducedShape] using reducedWF.1)]
@@ -259,11 +302,13 @@ membership in an invariant document; neither carries an output state. -/
 inductive Admissible : Document → Command → Prop where
   | create_front (doc : Document) (bid inst : Nat)
       (freshBlock : bid ∉ doc.map Block.id)
-      (freshRoot : (root inst).address ∉ addresses doc) :
+      (freshRoot : (root inst).address ∉ addresses doc)
+      (freshFinish : (finishSlot inst).address ∉ addresses doc) :
       Admissible doc (.create bid inst none)
   | create_after (pre post : Document) (source : Block) (bid inst : Nat)
       (freshBlock : bid ∉ (pre ++ source :: post).map Block.id)
-      (freshRoot : (root inst).address ∉ addresses (pre ++ source :: post)) :
+      (freshRoot : (root inst).address ∉ addresses (pre ++ source :: post))
+      (freshFinish : (finishSlot inst).address ∉ addresses (pre ++ source :: post)) :
       Admissible (pre ++ source :: post) (.create bid inst (some source.id))
   | insert (pre post : Document) (source : Block) (origin : Address) (fresh : List Slot)
       (present : origin ∈ source.slots.map Slot.address)
@@ -271,26 +316,26 @@ inductive Admissible : Document → Command → Prop where
       Admissible (pre ++ source :: post) (.insert origin fresh)
   | delete (doc : Document) (targets : List Address) :
       Admissible doc (.delete targets)
-  | split (doc : Document) (source target : Block) (origin : Address) (marker : Slot) (inst : Nat)
+  | split (doc : Document) (source target : Block) (origin : Address) (marker : Nat × Nat)
+      (inst : Nat)
       (owner : NotionCoreSpec.owner doc origin = some source)
       (targetMember : target ∈ doc)
       (distinct : source.id ≠ target.id)
-      (emptyTarget : target.slots = [root inst])
-      (freshMarker : marker.address ∉ addresses doc)
-      (hiddenMarker : marker.visible = false)
-      (sameInstance : marker.address.1 = origin.1) :
+      (emptyTarget : target.slots = [root inst, finishSlot inst])
+      (freshMarker : (boundary origin.1 marker).address ∉ addresses doc)
+      (freshClose : (closeSlot origin.1 marker).address ∉ addresses doc) :
       Admissible doc (.split origin marker target.id)
-  | merge (doc : Document) (source target : Nat) :
-      Admissible doc (.merge source target)
+  | merge (doc : Document) (source : Nat) (anchor : Address) :
+      Admissible doc (.merge source anchor)
 
 private theorem split_map (doc : Document) (source : Block) (origin : Address)
-    (marker : Slot) (target : Nat) (distinct : source.id ≠ target) :
+    (marker close : Slot) (target : Nat) (distinct : source.id ≠ target) :
     (doc.map fun block =>
-      if block.id = source.id then {block with slots := (cutAfter source.slots origin).1}
+      if block.id = source.id then {block with slots := (cutAfter source.slots origin).1 ++ [close]}
       else if block.id = target then
         {block with slots := block.slots ++ marker :: (cutAfter source.slots origin).2}
       else block) =
-    appendSlots (replaceSlots doc source.id (cutAfter source.slots origin).1)
+    appendSlots (replaceSlots doc source.id ((cutAfter source.slots origin).1 ++ [close]))
       target (marker :: (cutAfter source.slots origin).2) := by
   simp only [appendSlots, replaceSlots, List.map_map]
   apply List.map_congr_left
@@ -305,12 +350,12 @@ theorem step_preserves {doc next : Document} {command : Command}
     (h : WellFormed doc) (guard : Admissible doc command)
     (executed : step doc command = some next) : WellFormed next := by
   cases guard with
-  | create_front doc bid inst freshBlock freshRoot =>
+  | create_front doc bid inst freshBlock freshRoot freshFinish =>
       simp only [step, freshBlock, ↓reduceIte] at executed
       have equal := Option.some.inj executed
       subst next
-      exact create_preserves [] doc bid inst h freshBlock freshRoot
-  | create_after pre post source bid inst freshBlock freshRoot =>
+      exact create_preserves [] doc bid inst h freshBlock freshRoot freshFinish
+  | create_after pre post source bid inst freshBlock freshRoot freshFinish =>
       rw [step_create_focus pre post source bid inst h.1 freshBlock] at executed
       have equal := Option.some.inj executed
       subst next
@@ -319,6 +364,7 @@ theorem step_preserves {doc next : Document} {command : Command}
         (by simpa only [List.append_assoc, List.singleton_append] using h)
         (by simpa only [List.append_assoc, List.singleton_append] using freshBlock)
         (by simpa only [List.append_assoc, List.singleton_append] using freshRoot)
+        (by simpa only [List.append_assoc, List.singleton_append] using freshFinish)
   | insert pre post source origin fresh present names =>
       have outside := (address_focus pre post source origin h.2.1 present).2
       rw [step_insert_focus pre post source origin fresh present outside] at executed
@@ -330,17 +376,19 @@ theorem step_preserves {doc next : Document} {command : Command}
       have equal := Option.some.inj executed
       subst next
       exact delete_preserves doc targets h
-  | split doc source target origin marker inst owner targetMember distinct emptyTarget freshMarker hiddenMarker sameInstance =>
+  | split doc source target origin marker inst owner targetMember distinct emptyTarget freshMarker freshClose =>
       have sourceMember : source ∈ doc := List.mem_of_find?_eq_some owner
       have targetPresent : target.id ∈ doc.map Block.id := List.mem_map.mpr ⟨target, targetMember, rfl⟩
-      have valid : ¬ (source.id = target.id ∨ target.id ∉ doc.map Block.id ∨ marker.visible = true) := by
-        simp [distinct, targetPresent, hiddenMarker]
+      have valid : ¬ (source.id = target.id ∨ target.id ∉ doc.map Block.id) := by
+        simp [distinct, targetPresent]
       simp only [step, owner, valid, ↓reduceIte] at executed
-      rw [split_map doc source origin marker target.id distinct] at executed
+      rw [split_map doc source origin (boundary origin.1 marker) (closeSlot origin.1 marker)
+        target.id distinct] at executed
       have equal := Option.some.inj executed
       subst next
-      exact split_preserves doc source target origin marker inst h sourceMember targetMember distinct emptyTarget freshMarker
-  | merge doc source target => exact NotionCoreSpecMerge.merge_preserves h executed
+      exact split_preserves doc source target origin _ _ h sourceMember targetMember distinct
+        freshMarker freshClose (by simp [boundary, closeSlot])
+  | merge doc source anchor => exact NotionCoreSpecMerge.merge_preserves h executed
 
 /-- Structural admission never gets stuck on an invariant document. This is
 separate from preservation so a vacuous failed transition cannot discharge it. -/
@@ -348,19 +396,19 @@ theorem admissible_progress {doc : Document} {command : Command}
     (h : WellFormed doc) (guard : Admissible doc command) :
     ∃ next, step doc command = some next := by
   cases guard with
-  | create_front doc bid inst freshBlock freshRoot =>
+  | create_front doc bid inst freshBlock freshRoot freshFinish =>
       simp [step, freshBlock]
-  | create_after pre post source bid inst freshBlock freshRoot =>
+  | create_after pre post source bid inst freshBlock freshRoot freshFinish =>
       exact ⟨_, step_create_focus pre post source bid inst h.1 freshBlock⟩
   | insert pre post source origin fresh present names =>
       exact ⟨_, step_insert_focus pre post source origin fresh present
         (address_focus pre post source origin h.2.1 present).2⟩
   | delete doc targets => exact ⟨_, rfl⟩
-  | split doc source target origin marker inst owner targetMember distinct emptyTarget freshMarker hiddenMarker sameInstance =>
+  | split doc source target origin marker inst owner targetMember distinct emptyTarget freshMarker freshClose =>
       have targetPresent : target.id ∈ doc.map Block.id := List.mem_map.mpr ⟨target, targetMember, rfl⟩
-      simp [step, owner, distinct, targetPresent, hiddenMarker]
-  | merge doc source target =>
-      exact Option.ne_none_iff_exists'.mp (NotionCoreSpecMerge.merge_total doc source target)
+      simp [step, owner, distinct, targetPresent]
+  | merge doc source anchor =>
+      exact Option.ne_none_iff_exists'.mp (NotionCoreSpecMerge.merge_total doc source anchor)
 
 /-- Reachability uses actual successful command execution and the structural
 issuance checks above. It does not assume `WellFormed` as a transition guard. -/
@@ -423,11 +471,11 @@ private theorem rooted_sub {a b : Document} (rooted : Rooted a) (sub : ∀ block
     Rooted b := fun block member => rooted block (sub block member)
 
 private theorem fresh_rooted (bid inst : Nat) :
-    Rooted [(⟨bid, inst, [root inst], true⟩ : Block)] := by
+    Rooted [(⟨bid, inst, [root inst, finishSlot inst], true⟩ : Block)] := by
   intro b member
   simp only [List.mem_singleton] at member
   subst member
-  exact ⟨fun _ => ⟨[], rfl⟩, fun dead => by simp at dead⟩
+  exact ⟨fun _ => ⟨[finishSlot inst], rfl⟩, fun dead => by simp at dead⟩
 
 /-- Rewriting an alive rooted block's slots to a list headed by its old first
 slot keeps it rooted. -/
@@ -459,12 +507,12 @@ theorem step_preserves_rooted {doc next : Document} {command : Command}
     (h : WellFormed doc) (rooted : Rooted doc) (guard : Admissible doc command)
     (executed : step doc command = some next) : Rooted next := by
   cases guard with
-  | create_front doc bid inst freshBlock freshRoot =>
+  | create_front doc bid inst freshBlock freshRoot freshFinish =>
       simp only [step, freshBlock, ↓reduceIte] at executed
       have equal := Option.some.inj executed
       subst next
       exact rooted_append (fresh_rooted bid inst) rooted
-  | create_after pre post source bid inst freshBlock freshRoot =>
+  | create_after pre post source bid inst freshBlock freshRoot freshFinish =>
       rw [step_create_focus pre post source bid inst h.1 freshBlock] at executed
       have equal := Option.some.inj executed
       subst next
@@ -494,11 +542,11 @@ theorem step_preserves_rooted {doc next : Document} {command : Command}
       · obtain ⟨tail, eq⟩ := live alive
         exact ⟨tail.map (eraseSlot targets), by simp [eq, eraseSlot_root]⟩
       · simp [dead gone]
-  | split doc source target origin marker inst owner targetMember distinct emptyTarget freshMarker hiddenMarker sameInstance =>
+  | split doc source target origin marker inst owner targetMember distinct emptyTarget freshMarker freshClose =>
       have sourceMember : source ∈ doc := List.mem_of_find?_eq_some owner
       have targetPresent : target.id ∈ doc.map Block.id := List.mem_map.mpr ⟨target, targetMember, rfl⟩
-      have valid : ¬ (source.id = target.id ∨ target.id ∉ doc.map Block.id ∨ marker.visible = true) := by
-        simp [distinct, targetPresent, hiddenMarker]
+      have valid : ¬ (source.id = target.id ∨ target.id ∉ doc.map Block.id) := by
+        simp [distinct, targetPresent]
       simp only [step, owner, valid, ↓reduceIte] at executed
       have equal := Option.some.inj executed
       subst next
@@ -526,17 +574,19 @@ theorem step_preserves_rooted {doc next : Document} {command : Command}
         refine ⟨fun _ => ?_, fun dead => by simp [sourceLive] at dead⟩
         obtain ⟨tail, eq⟩ := (rooted source sourceMember).1 sourceLive
         rw [eq]
-        exact cutAfter_head _ tail origin
+        obtain ⟨rest, cut⟩ := cutAfter_head (root source.inst) tail origin
+        exact ⟨rest ++ [closeSlot origin.1 marker], by rw [cut]; rfl⟩
       · by_cases isTarget : old.id = target.id
         · have same := same_block_id h.1 oldMember targetMember isTarget
           subst old
           simp only [isSource, ↓reduceIte]
-          refine ⟨fun _ => ⟨marker :: (cutAfter source.slots origin).2, ?_⟩,
+          refine ⟨fun _ => ⟨finishSlot inst :: boundary origin.1 marker ::
+              (cutAfter source.slots origin).2, ?_⟩,
             fun dead => by simp [targetLive] at dead⟩
           simp [emptyTarget, targetRoot]
         · simp only [isSource, isTarget, ↓reduceIte]
           exact rooted old oldMember
-  | merge doc source target =>
+  | merge doc source anchor =>
       exact NotionCoreSpecMerge.merge_preserves_rooted h.1 rooted executed
 
 theorem reachable_rooted {doc : Document} (reachable : Reach doc) : Rooted doc := by
@@ -547,13 +597,13 @@ theorem reachable_rooted {doc : Document} (reachable : Reach doc) : Rooted doc :
 
 private def slotA : Slot := character 0 (0, 1) 0
 private def slotB : Slot := character 0 (0, 2) 1
-private def oldBlock : Block := ⟨10, 0, [root 0, slotA, slotB], true⟩
-private def deletedBlock : Block := ⟨10, 0, [root 0, {slotA with visible := false}, slotB], true⟩
-private def targetBlock : Block := ⟨11, 1, [root 1], true⟩
-private def marker : Slot := boundary 0 (1, 10)
+private def oldBlock : Block := ⟨10, 0, [root 0, slotA, slotB, finishSlot 0], true⟩
+private def deletedBlock : Block :=
+  ⟨10, 0, [root 0, {slotA with visible := false}, slotB, finishSlot 0], true⟩
+private def targetBlock : Block := ⟨11, 1, [root 1, finishSlot 1], true⟩
 private def afterSplit : Document :=
-  [⟨10, 0, [root 0, {slotA with visible := false}], true⟩,
-   ⟨11, 1, [root 1, marker, slotB], true⟩]
+  [⟨10, 0, [root 0, {slotA with visible := false}, closeSlot 0 (1, 10)], true⟩,
+   ⟨11, 1, [root 1, finishSlot 1, boundary 0 (1, 10), slotB, finishSlot 0], true⟩]
 
 /-- PASS+FAIL: a nontrivial admitted execution deletes a, then splits after
 its hidden identity. The split moves b, not the visible prefix, into the new
@@ -561,18 +611,19 @@ block. This also rules out a live-origin-only reading of admission. -/
 theorem hidden_origin_control :
     Reach afterSplit ∧ view afterSplit = [(10, []), (11, [1])] ∧
     view afterSplit ≠ [(10, [1]), (11, [])] := by
-  have one : Reach [⟨10, 0, [root 0], true⟩] :=
-    .step .init (.create_front [] 10 0 (by decide) (by decide)) (by decide)
+  have one : Reach [⟨10, 0, [root 0, finishSlot 0], true⟩] :=
+    .step .init (.create_front [] 10 0 (by decide) (by decide) (by decide)) (by decide)
   have two : Reach [oldBlock] :=
-    .step one (.insert [] [] ⟨10, 0, [root 0], true⟩ (root 0).address [slotA, slotB]
+    .step one (.insert [] [] ⟨10, 0, [root 0, finishSlot 0], true⟩ (root 0).address [slotA, slotB]
       (by decide) (by decide)) (by decide)
   have three : Reach [deletedBlock] :=
     .step two (.delete [oldBlock] [slotA.address]) (by decide)
   have four : Reach [deletedBlock, targetBlock] :=
-    .step three (.create_after [] [] deletedBlock 11 1 (by decide) (by decide)) (by decide)
+    .step three (.create_after [] [] deletedBlock 11 1 (by decide) (by decide) (by decide))
+      (by decide)
   have five : Reach afterSplit :=
-    .step four (.split [deletedBlock, targetBlock] deletedBlock targetBlock slotA.address marker 1
-      (by decide) (by simp) (by decide) rfl (by decide) rfl rfl) (by decide)
+    .step four (.split [deletedBlock, targetBlock] deletedBlock targetBlock slotA.address (1, 10) 1
+      (by decide) (by simp) (by decide) rfl (by decide) (by decide)) (by decide)
   exact ⟨five, by decide, by decide⟩
 
 /-- Fresh character names are accepted; reusing the existing root name is

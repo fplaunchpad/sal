@@ -38,7 +38,7 @@ theorem materialize_total (state : State) (part : Partitioned state)
   have owned : (found.id,ref) ∈ NotionCoreForestRefs.ownedRefs state.forest :=
     List.mem_flatMap.mpr ⟨found,member,List.mem_map.mpr ⟨ref,inTree,rfl⟩⟩
   obtain ⟨atoms,extracted⟩ := NotionCoreMachinePartition.ref_extracts state part unique (found.id,ref) owned
-  exact ⟨⟨ref.start,atoms⟩,by simp [extracted]⟩
+  exact ⟨⟨ref.start,atoms,ref.stop⟩,by simp [extracted]⟩
 
 /-- Every visible atom of a stored chain lies in the instance of a live node
 of the forest: dead title roots have physically empty instances. -/
@@ -54,7 +54,7 @@ theorem visible_live_instance (state : State) (shape : ShapeInvariant state)
   cases selected : sliceAtoms state ref with
   | none => simp [selected] at extracted
   | some atoms =>
-    have sliceEq : slice = ⟨ref.start,atoms⟩ := by simpa [selected] using extracted.symm
+    have sliceEq : slice = ⟨ref.start,atoms,ref.stop⟩ := by simpa [selected] using extracted.symm
     subst slice
     have sameInst := (slice_storage state ref atoms selected).2 atom atomMember
     have refMember : ref ∈ NotionCoreSliceForest.forestRefs state.forest :=
@@ -66,7 +66,7 @@ theorem visible_live_instance (state : State) (shape : ShapeInvariant state)
     cases live with
     | true => exact ⟨ref,nodeMember,sameInst.symm⟩
     | false =>
-      obtain ⟨titleEq,empty,_⟩ := shape.2.2 ref nodeMember
+      obtain ⟨titleEq,empty,_⟩ := shape.2.2.1 ref nodeMember
       have existsInstance := (slice_storage state ref atoms selected).1
       have emptyAtoms := NotionCoreMachineSlices.empty_title_atoms state ref.start.1
         (by simpa using existsInstance) empty
@@ -107,6 +107,10 @@ private theorem decoded_nonstart (address : Address) (key : BlockKey) (origin : 
       cases addrId with
       | start => contradiction
       | event event =>
+        cases block : decodeBlock inst <;> simp [decodeAddress,decodeOrigin,block] at decoded
+      | close marker =>
+        cases block : decodeBlock inst <;> simp [decodeAddress,decodeOrigin,block] at decoded
+      | finish =>
         cases block : decodeBlock inst <;> simp [decodeAddress,decodeOrigin,block] at decoded
 
 /-- Actual visible atoms decode to item IDs, never virtual START, using

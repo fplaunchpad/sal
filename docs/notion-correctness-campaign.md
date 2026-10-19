@@ -180,12 +180,13 @@ further bugs.
 
 The [merge design experiment](../experiments/notion-merge-design/README.md)
 reruns these harnesses on a patched copy of the demo whose merge moves the
-source's whole slice tree under the holder of the target and derives removal
-from that move. All 161,630 archive comparisons, deduplicated within each harness, agree with the absorb specification, with
-no split failure and no text loss; N-001, N-004 and N-005 do not occur, while
-the bold failures N-002 and N-003 persist. Restoring independent removal brings
-text loss back. Keeping the demo's targeting with derived removal loses no
-text but lets trees branch, so N-001 returns; finding the holder from the
-demo's anchor and attaching at that tree's end avoids both. The [design note](notion-merge-block-design.md) gives the
+source's whole slice tree to the end of the tree holding the slice at which
+the request was anchored and derives removal from that move. All 162,373
+archive comparisons, deduplicated within each harness, agree with the
+specification, with no split failure and no text loss; N-001, N-004 and N-005
+do not occur, while the bold failures N-002 and N-003 persist. Restoring
+independent removal brings text loss back. Keeping the demo's placement,
+directly under the anchored slice, loses no text but lets trees branch, so
+N-001 returns; attaching at the holder tree's end avoids both. The [design note](notion-merge-block-design.md) gives the
 specification, and [the correspondence overview](notion-core-correspondence.md#block-merge)
 lists the Lean results.

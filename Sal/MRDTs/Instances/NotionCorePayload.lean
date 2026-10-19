@@ -21,14 +21,16 @@ inductive BlockKey where
 identities. An erase names the block whose range was selected and groups the
 deleted IDs by text instance, after expansion of the source range encoding; a
 merged block's range can span several instances. A merge names its source
-block and the target block whose holder absorbs it. -/
+block and an anchor: the instance and stop marker of the target block's last
+text slice at issue time, with no stop when that slice runs to the end of its
+instance. The block holding the slice with that anchor absorbs the source. -/
 inductive Payload where
   | bootstrap (atoms : List Nat)
   | create (afterBlock : Option BlockKey)
   | insert (block inst : BlockKey) (origin : Origin) (atoms : List Nat)
   | erase (block : BlockKey) (groups : List (BlockKey × List Id))
   | split (block inst : BlockKey) (origin : Origin)
-  | merge (source target : BlockKey)
+  | merge (source inst : BlockKey) (stop : Option Id)
   deriving DecidableEq, Repr
 
 structure Transaction where
@@ -42,7 +44,7 @@ inductive Operation where
   | erase (block inst : BlockKey) (targets : List Id)
   | marker (block inst : BlockKey) (id : Id) (origin : Origin)
   | moveInto (source inst : BlockKey) (marker : Id) (target : BlockKey)
-  | merge (source target : BlockKey)
+  | merge (source inst : BlockKey) (stop : Option Id)
   deriving DecidableEq, Repr
 
 /-- Preserve the actual atomic order. Bootstrap create and insertion share
@@ -60,12 +62,12 @@ def operations (tx : Transaction) : List Operation := match tx.payload with
   | .split block inst origin =>
       [.create (.issued tx.id) (some block), .marker block inst tx.id origin,
        .moveInto block inst tx.id (.issued tx.id)]
-  | .merge source target => [.merge source target]
+  | .merge source inst stop => [.merge source inst stop]
 
 def Payload.itemCount : Payload → Nat
   | .bootstrap atoms | .insert _ _ _ atoms => atoms.length
   | .split _ _ _ => 1
-  | .create _ | .erase _ _ | .merge _ _ => 0
+  | .create _ | .erase _ _ | .merge _ _ _ => 0
 
 def Payload.width (payload : Payload) : Nat := max 1 payload.itemCount
 
@@ -74,11 +76,13 @@ def originReference : Origin → List Id
   | .item id => [id]
 
 /-- Only external RGA references. The marker referenced by moveInto is born
-inside the same atomic transaction. Block creators have separate provenance. -/
+inside the same atomic transaction. Block creators have separate provenance.
+A merge anchor names a slice end, which the merge reads but does not attach
+to, so it is not an RGA reference. -/
 def Payload.references : Payload → List Id
   | .insert _ _ origin _ | .split _ _ origin => originReference origin
   | .erase _ groups => groups.flatMap Prod.snd
-  | .bootstrap _ | .create _ | .merge _ _ => []
+  | .bootstrap _ | .create _ | .merge _ _ _ => []
 
 def reservation (tx : Transaction) : Run := ⟨tx.id, tx.payload.width⟩
 
@@ -100,7 +104,7 @@ def Operation.births (deleted : BlockKey → Id → Bool) : Operation → List B
   | .insert _ inst first origin atoms =>
       (NotionCoreParentMap.runRows origin (textItems first atoms (deleted inst))).map (inst, ·)
   | .marker _ inst id origin => [(inst, ⟨⟨id, .split⟩, origin⟩)]
-  | .create _ _ | .erase _ _ _ | .moveInto _ _ _ _ | .merge _ _ => []
+  | .create _ _ | .erase _ _ _ | .moveInto _ _ _ _ | .merge _ _ _ => []
 
 def births (tx : Transaction) (deleted : BlockKey → Id → Bool) : List Birth :=
   (operations tx).flatMap (Operation.births deleted)
@@ -157,7 +161,7 @@ theorem born_iff_record (tx : Transaction) (past : List Run) (deleted : BlockKey
 def Operation.clockEnd : Operation → Nat
   | .insert _ _ first _ atoms => first.counter + atoms.length - 1
   | .marker _ _ id _ => id.counter
-  | .create _ _ | .erase _ _ _ | .moveInto _ _ _ _ | .merge _ _ => 0
+  | .create _ _ | .erase _ _ _ | .moveInto _ _ _ _ | .merge _ _ _ => 0
 
 /-- Literal `transactionClockMax` fold on the typed operation list, including
 the transaction ID even when the bootstrap insertion is empty. -/
@@ -187,7 +191,7 @@ Bootstrap is a separate factory and still emits its create+empty-insert pair. -/
 def Payload.emits : Payload → Bool
   | .insert _ _ _ atoms => !atoms.isEmpty
   | .erase _ groups => !(groups.flatMap Prod.snd).isEmpty
-  | .bootstrap _ | .create _ | .split _ _ _ | .merge _ _ => true
+  | .bootstrap _ | .create _ | .split _ _ _ | .merge _ _ _ => true
 
 def bootstrap (atoms : List Nat) : Transaction := ⟨⟨1, [65]⟩, .bootstrap atoms⟩
 
@@ -268,12 +272,14 @@ theorem pending_delete_control :
     births (⟨⟨1,[65]⟩, .split .initial .initial .start⟩ : Transaction) (fun _ _ => true) ≠
       [] := by decide
 
-/-- A merge is one operation with no item birth and no RGA reference; its
-transaction still reserves one clock tick. -/
+/-- A merge is one operation with no item birth and no RGA reference, even
+when its anchor names a stop marker; its transaction still reserves one clock
+tick. -/
 theorem merge_control :
-    let tx : Transaction := ⟨⟨4,[66]⟩, .merge (.issued ⟨3,[66]⟩) .initial⟩
-    operations tx = [.merge (.issued ⟨3,[66]⟩) .initial] ∧
+    let tx : Transaction := ⟨⟨4,[66]⟩, .merge (.issued ⟨3,[66]⟩) .initial (some ⟨3,[66]⟩)⟩
+    operations tx = [.merge (.issued ⟨3,[66]⟩) .initial (some ⟨3,[66]⟩)] ∧
     births tx (fun _ _ => false) = [] ∧ (record tx []).references = [] ∧
+    (record tx []).references ≠ [⟨3,[66]⟩] ∧
     clockMax tx = 4 ∧ operations tx ≠ [] := by decide
 
 #print axioms born_iff_record

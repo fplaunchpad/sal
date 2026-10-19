@@ -3,8 +3,10 @@ import Sal.MRDTs.Instances.NotionCoreSourceGuards
 import Sal.MRDTs.Instances.NotionCoreMachineDocumentClient
 
 /-! Projected semantic address uniqueness comes from the all-reference physical
-partition. Dead title anchors participate; tombstones hold no address, and
-display order only permutes the stored blocks. -/
+partition and from anchor uniqueness. Dead title anchors participate; each
+retained interval also materialises its close slot, named by the node's
+anchor; tombstones hold no address, and display order only permutes the
+stored blocks. -/
 namespace Sal.MRDTs.Instances.NotionCoreMachineDocumentInvariant
 open NotionCoreMachine
 open NotionCoreMachinePartition
@@ -12,7 +14,7 @@ open NotionCoreForestRefs (ownedRefs)
 open NotionCorePartition (Cell flatten)
 open NotionCoreSource (Atom)
 open NotionCoreSpec (Address)
-open NotionCoreSliceForest (Ref)
+open NotionCoreSliceForest (Ref anchorOf)
 
 /-- Addresses of one retained interval, including its semantic anchor. -/
 def intervalAddresses (state : State) (ref : Ref) : List Address :=
@@ -50,6 +52,16 @@ private theorem cell_refs_addresses (state : State) (inst : Nat) (before after :
     simp only [cellRefs,List.flatMap_cons,selected,later,flatten,List.flatMap_cons,List.map_append]
     rfl
 
+/-- Physical addresses are positions: the instance start and its items. -/
+theorem physical_positions (state : State) (inst : Nat) :
+    ∀ address ∈ (physical state inst).map Atom.address, address.2.isEnd = false := by
+  intro address member
+  simp only [physical, NotionCorePhysicalReplay.physical, List.map_cons, List.mem_cons,
+    List.mem_map] at member
+  rcases member with rfl | ⟨atom, ⟨item, _, rfl⟩, rfl⟩
+  · rfl
+  · rfl
+
 /-- Within each instance, every owned reference reconstructs exactly one
 physical cell; its concatenated addresses permute the actual physical IDs. -/
 theorem instance_addresses (state : State) (part : Partitioned state)
@@ -80,6 +92,98 @@ private theorem interval_instance (state : State) (part : Partitioned state)
   · rfl
   · obtain ⟨atom,inAtoms,rfl⟩ := List.mem_map.mp member
     exact (NotionCoreMachineClient.slice_storage state owned.2 atoms extracted).2 atom inAtoms
+
+theorem interval_positions (state : State) (part : Partitioned state)
+    (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
+    (owned : Nat × Ref) (present : owned ∈ ownedRefs state.forest) :
+    ∀ address ∈ intervalAddresses state owned.2, address.2.isEnd = false := by
+  obtain ⟨atoms,extracted⟩ := ref_extracts state part unique owned present
+  have stored := NotionCoreMachineClient.slice_physical state owned.2 atoms extracted
+  rw [interval_extracted state owned.2 atoms extracted]
+  intro address member
+  rcases List.mem_cons.mp member with rfl | member
+  · exact physical_positions state _ _ stored.1
+  · obtain ⟨atom,inAtoms,rfl⟩ := List.mem_map.mp member
+    exact physical_positions state owned.2.start.1 _ (List.mem_map.mpr ⟨atom,stored.2 atom inAtoms,rfl⟩)
+
+/-- Every stored stop is the address of an item of the node's own instance:
+the start of the next physical cell, which is never the instance start. -/
+theorem stop_address (state : State) (part : Partitioned state)
+    (owned : Nat × Ref) (present : owned ∈ ownedRefs state.forest) :
+    ∀ stop ∈ owned.2.stop, ∃ id, stop = NotionCorePhysicalReplay.address owned.2.start.1 id := by
+  obtain ⟨before,cell,after,physicalEq,equal⟩ := ref_factor state part owned present
+  subst equal
+  intro stop stopped
+  cases after with
+  | nil => simp at stopped
+  | cons next rest =>
+    have stopEq : stop = next.slice.start := by simpa using stopped.symm
+    subst stop
+    have startMember : cell.slice.start ∈ (flatten (before ++ [cell])).map Atom.address := by
+      simp [flatten, NotionCorePartition.Cell.physical, NotionCorePartition.boundary]
+    obtain ⟨first,rest',headEq⟩ : ∃ first rest', (flatten (before ++ [cell])).map Atom.address =
+        first :: rest' := by
+      cases h : (flatten (before ++ [cell])).map Atom.address with
+      | nil => rw [h] at startMember; simp at startMember
+      | cons first rest' => exact ⟨first,rest',rfl⟩
+    have shape : (physical state cell.slice.start.1).map Atom.address =
+        (flatten (before ++ [cell])).map Atom.address ++
+          next.slice.start :: (next.slice.atoms ++ flatten rest).map Atom.address := by
+      rw [physicalEq]
+      simp [flatten, NotionCorePartition.Cell.physical, NotionCorePartition.boundary, List.append_assoc]
+    have later : next.slice.start ∈ ((physical state cell.slice.start.1).map Atom.address).tail := by
+      rw [shape, headEq]
+      simp
+    simp only [physical, NotionCorePhysicalReplay.physical, List.map_cons, List.tail_cons,
+      List.map_map, List.mem_map, Function.comp_def] at later
+    obtain ⟨item,_,itemEq⟩ := later
+    exact ⟨item.id, itemEq.symm⟩
+
+/-- Every stored stop is a split-marker event of the node's own instance. -/
+theorem stop_event (state : State) (part : Partitioned state)
+    (owned : Nat × Ref) (present : owned ∈ ownedRefs state.forest) :
+    ∀ stop ∈ owned.2.stop, stop.1 = owned.2.start.1 ∧ ∃ marker, stop.2 = .event marker := by
+  intro stop stopped
+  obtain ⟨id,rfl⟩ := stop_address state part owned present stop stopped
+  exact ⟨rfl, _, rfl⟩
+
+/-- On nodes whose stops are items of their own instance, the close address
+determines the anchor. -/
+theorem close_injective {left right : Ref}
+    (leftStop : ∀ stop ∈ left.stop, stop.1 = left.start.1 ∧ ∃ marker, stop.2 = .event marker)
+    (rightStop : ∀ stop ∈ right.stop, stop.1 = right.start.1 ∧ ∃ marker, stop.2 = .event marker)
+    (same : (anchorOf left).close = (anchorOf right).close) : anchorOf left = anchorOf right := by
+  have inst : left.start.1 = right.start.1 := by
+    simpa [NotionCoreSliceForest.Anchor.close, anchorOf] using congrArg Prod.fst same
+  cases hl : left.stop with
+  | none =>
+    cases hr : right.stop with
+    | none => simp [anchorOf, hl, hr, inst]
+    | some stop =>
+      obtain ⟨-,marker,event⟩ := rightStop stop (by simp [hr])
+      obtain ⟨stopInst,stopId⟩ := stop
+      simp only at event
+      subst event
+      simp [NotionCoreSliceForest.Anchor.close, anchorOf, hl, hr, NotionCoreSource.stopKey,
+        NotionCoreSpec.closeOf, NotionCoreSpec.finishSlot, NotionCoreSpec.closeSlot] at same
+  | some stop =>
+    obtain ⟨leftInst,marker,event⟩ := leftStop stop (by simp [hl])
+    obtain ⟨stopInst,stopId⟩ := stop
+    simp only at event leftInst
+    subst event
+    cases hr : right.stop with
+    | none =>
+      simp [NotionCoreSliceForest.Anchor.close, anchorOf, hl, hr, NotionCoreSource.stopKey,
+        NotionCoreSpec.closeOf, NotionCoreSpec.finishSlot, NotionCoreSpec.closeSlot] at same
+    | some other =>
+      obtain ⟨rightInst,otherMarker,otherEvent⟩ := rightStop other (by simp [hr])
+      obtain ⟨otherInst,otherId⟩ := other
+      simp only at otherEvent rightInst
+      subst otherEvent
+      have markers : marker = otherMarker := by
+        simpa [NotionCoreSliceForest.Anchor.close, anchorOf, hl, hr, NotionCoreSource.stopKey,
+          NotionCoreSpec.closeOf, NotionCoreSpec.closeSlot] using congrArg Prod.snd same
+      simp [anchorOf, hl, hr, inst, markers, leftInst, rightInst]
 
 private theorem filter_intervals (state : State) (part : Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup) (inst : Nat)
@@ -141,10 +245,66 @@ theorem all_addresses_unique (state : State) (part : Partitioned state)
       simpa using different
     simp [empty]
 
+/-- The addresses one retained interval materialises to: its physical
+interval followed by the close slot its anchor names. -/
+def sliceAddresses (state : State) (ref : Ref) : List Address :=
+  intervalAddresses state ref ++ [(anchorOf ref).close]
+
+private theorem flatMap_append_perm {α β : Type} (xs : List α) (f g : α → List β) :
+    (xs.flatMap fun x => f x ++ g x).Perm (xs.flatMap f ++ xs.flatMap g) := by
+  induction xs with
+  | nil => simp
+  | cons x rest ih =>
+    simp only [List.flatMap_cons, List.append_assoc]
+    refine List.Perm.append_left (f x) ((List.Perm.append_left (g x) ih).trans ?_)
+    rw [← List.append_assoc, ← List.append_assoc]
+    exact List.Perm.append_right _ List.perm_append_comm
+
+/-- No address is repeated across the complete forest's materialised slices:
+physical intervals are unique by the partition, close slots by anchor
+uniqueness, and no physical position is a close slot. -/
+theorem all_slice_addresses_unique (state : State) (part : Partitioned state)
+    (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
+    (anchors : NotionCoreSliceForest.AnchorsUnique state.forest) :
+    ((ownedRefs state.forest).flatMap (fun owned => sliceAddresses state owned.2)).Nodup := by
+  have anchorList : ((ownedRefs state.forest).map (fun owned => anchorOf owned.2)).Nodup := by
+    have whole := anchors
+    unfold NotionCoreSliceForest.AnchorsUnique at whole
+    rw [← NotionCoreForestRefs.ownedRefs_refs, List.map_map] at whole
+    exact whole
+  have closes : ((ownedRefs state.forest).map (fun owned => (anchorOf owned.2).close)).Nodup := by
+    have mapped : (ownedRefs state.forest).map (fun owned => (anchorOf owned.2).close) =
+        ((ownedRefs state.forest).map (fun owned => anchorOf owned.2)).map
+          NotionCoreSliceForest.Anchor.close := by
+      simp [List.map_map, Function.comp_def]
+    rw [mapped]
+    apply anchorList.map_on
+    intro x xMember y yMember same
+    obtain ⟨left,leftMember,rfl⟩ := List.mem_map.mp xMember
+    obtain ⟨right,rightMember,rfl⟩ := List.mem_map.mp yMember
+    exact close_injective (stop_event state part left leftMember)
+      (stop_event state part right rightMember) same
+  have permutation := flatMap_append_perm (ownedRefs state.forest)
+    (fun owned => intervalAddresses state owned.2) (fun owned => [(anchorOf owned.2).close])
+  have singletons : ((ownedRefs state.forest).flatMap fun owned => [(anchorOf owned.2).close]) =
+      (ownedRefs state.forest).map (fun owned => (anchorOf owned.2).close) := by
+    induction ownedRefs state.forest with
+    | nil => rfl
+    | cons owned rest ih => simp [List.flatMap_cons, ih]
+  rw [singletons] at permutation
+  refine permutation.nodup_iff.mpr (List.nodup_append'.mpr ⟨all_addresses_unique state part unique,
+    closes, List.disjoint_left.mpr ?_⟩)
+  intro address inside closing
+  obtain ⟨owned,ownedMember,held⟩ := List.mem_flatMap.mp inside
+  obtain ⟨other,-,rfl⟩ := List.mem_map.mp closing
+  have position := interval_positions state part unique owned ownedMember _ held
+  rw [NotionCoreSliceForest.Anchor.close, NotionCoreSpec.closeOf_isEnd] at position
+  exact Bool.noConfusion position
+
 private theorem slices_addresses (state : State) (refs : List Ref) (slices : List NotionCoreSource.Slice)
-    (accepted : refs.mapM (fun ref => do pure ⟨ref.start,← sliceAtoms state ref⟩) = some slices) :
+    (accepted : refs.mapM (fun ref => do pure ⟨ref.start,← sliceAtoms state ref,ref.stop⟩) = some slices) :
     (slices.flatMap NotionCoreSource.Slice.slots).map NotionCoreSpec.Slot.address =
-      refs.flatMap (intervalAddresses state) := by
+      refs.flatMap (sliceAddresses state) := by
   induction refs generalizing slices with
   | nil => simp at accepted; subst slices; rfl
   | cons ref rest ih =>
@@ -153,22 +313,24 @@ private theorem slices_addresses (state : State) (refs : List Ref) (slices : Lis
     | some atoms =>
       simp only [List.mapM_cons] at accepted
       obtain ⟨head,headRead,laterRead⟩ := Option.bind_eq_some_iff.mp accepted
-      have headEq : head = (⟨ref.start,atoms⟩ : NotionCoreSource.Slice) := by
+      have headEq : head = (⟨ref.start,atoms,ref.stop⟩ : NotionCoreSource.Slice) := by
         simpa [extracted] using headRead.symm
       subst head
       obtain ⟨tail,following,same⟩ := Option.bind_eq_some_iff.mp laterRead
-      have equal : (⟨ref.start,atoms⟩ : NotionCoreSource.Slice) :: tail = slices := Option.some.inj same
+      have equal : (⟨ref.start,atoms,ref.stop⟩ : NotionCoreSource.Slice) :: tail = slices :=
+        Option.some.inj same
       subst slices
       have later := ih tail following
-      rw [List.flatMap_cons,List.map_append,later,List.flatMap_cons,interval_extracted state ref atoms extracted]
-      simp [NotionCoreSource.Slice.slots,NotionCoreSource.Slice.anchor,List.map_map,
-        Function.comp_def]
+      rw [List.flatMap_cons,List.map_append,later,List.flatMap_cons,sliceAddresses,
+        interval_extracted state ref atoms extracted]
+      simp [NotionCoreSource.Slice.slots,NotionCoreSource.Slice.anchor,NotionCoreSource.Slice.close,
+        NotionCoreSliceForest.Anchor.close,anchorOf,List.map_map,Function.comp_def]
 
 def blockAddresses (state : State) (block : NotionCoreSliceForest.Block) : List Address :=
-  (NotionCoreSliceForest.preorderTree block.title).flatMap (intervalAddresses state)
+  (NotionCoreSliceForest.preorderTree block.title).flatMap (sliceAddresses state)
 
-/-- Semantic anchors and retained atoms are exactly all the actual chain's
-interval addresses, including the anchor of a dead title root. -/
+/-- Semantic anchors, retained atoms and close slots are exactly all the
+actual chain's slice addresses, including those of a dead title root. -/
 theorem materialized_block_addresses (state : State)
     (block : NotionCoreSliceForest.Block) (source : NotionCoreSource.Block)
     (accepted : NotionCoreMachineDocument.materializeBlock state block = some source) :
@@ -235,7 +397,7 @@ theorem projected_addresses_perm (state : State) (aligned : NotionCoreMachineDis
     (document : NotionCoreSourceDocument.Document)
     (accepted : NotionCoreMachineDocument.materializeDocument state = some document) :
     (NotionCoreInvariant.addresses (NotionCoreSourceDocument.project document)).Perm
-      ((ownedRefs state.forest).flatMap (fun owned => intervalAddresses state owned.2)) := by
+      ((ownedRefs state.forest).flatMap (fun owned => sliceAddresses state owned.2)) := by
   rw [projected_addresses state document accepted, flatMap_shown]
   have permutation := aligned.2.2.flatMap_right (lookupAddresses state)
   have exactForest : (state.forest.map NotionCoreSliceForest.Block.id).flatMap (lookupAddresses state) =
@@ -253,17 +415,19 @@ theorem projected_addresses_perm (state : State) (aligned : NotionCoreMachineDis
 
 theorem projected_addresses_unique (state : State) (part : Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
+    (anchors : NotionCoreSliceForest.AnchorsUnique state.forest)
     (aligned : NotionCoreMachineDisplay.Aligned state)
     (document : NotionCoreSourceDocument.Document)
     (accepted : NotionCoreMachineDocument.materializeDocument state = some document) :
     (NotionCoreInvariant.addresses (NotionCoreSourceDocument.project document)).Nodup :=
   (projected_addresses_perm state aligned document accepted).nodup_iff.mpr
-    (all_addresses_unique state part unique)
+    (all_slice_addresses_unique state part unique anchors)
 
 /-- Every accepted source step from an actual projected state has the guards
 needed by the existing same-sequence history simulation. -/
 theorem accepted_source_guard (state : State) (part : Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
+    (anchors : NotionCoreSliceForest.AnchorsUnique state.forest)
     (aligned : NotionCoreMachineDisplay.Aligned state)
     (document after : NotionCoreSourceDocument.Document)
     (materialized : NotionCoreMachineDocument.materializeDocument state = some document)
@@ -274,7 +438,7 @@ theorem accepted_source_guard (state : State) (part : Partitioned state)
     rw [NotionCoreMachineDocument.materialized_ids state document materialized]
     exact aligned.2.1
   exact NotionCoreSourceGuards.accepted_guard_of_unique command names
-    (projected_addresses_unique state part unique aligned document materialized) accepted
+    (projected_addresses_unique state part unique anchors aligned document materialized) accepted
 
 /-- At any honest canonical prefix, accepted source transitions satisfy the
 independent specification. All projection guards are derived from replay. -/
@@ -289,7 +453,7 @@ theorem honest_prefix_source_step (network : NotionCorePayloadNetwork.State)
     (accepted : NotionCoreSourceDocument.step document command = some after) :
     NotionCoreSpec.step (NotionCoreSourceDocument.project document) command.semantic =
       some (NotionCoreSourceDocument.project after) := by
-  obtain ⟨checked,checkedReplay,part,_,_⟩ :=
+  obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
     NotionCoreMachineHonestReplay.honest_prefix_reconstruct network reachable peer pre suffix position
   have equal : checked = state := Option.some.inj (checkedReplay.symm.trans replayed)
   subst checked
@@ -299,7 +463,8 @@ theorem honest_prefix_source_step (network : NotionCorePayloadNetwork.State)
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
     (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names,
       NotionCoreDisplayOrder.shown]) replayed
-  have guard := accepted_source_guard state part unique aligned document after materialized command accepted
+  have guard := accepted_source_guard state part unique shape.2.2.2.2 aligned document after materialized
+    command accepted
   exact NotionCoreSourceDocument.step_sound command guard.1 guard.2 accepted
 
 #print axioms honest_prefix_source_step
@@ -309,4 +474,6 @@ theorem honest_prefix_source_step (network : NotionCorePayloadNetwork.State)
 #print axioms projected_addresses_unique
 
 #print axioms all_addresses_unique
+
+#print axioms all_slice_addresses_unique
 end Sal.MRDTs.Instances.NotionCoreMachineDocumentInvariant

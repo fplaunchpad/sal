@@ -114,7 +114,7 @@ theorem reachable_step_sound {doc next : Document} (command : NotionCoreSourceDo
 private def hiddenAtom : Atom := ⟨(0, .event (0, 1)), .text 97 true⟩
 private def liveAtom : Atom := ⟨(0, .event (0, 2)), .text 98 false⟩
 private def splitBlock : Block :=
-  ⟨10, 99, [⟨(99, .start), []⟩, ⟨(0, .event (1, 10)), [hiddenAtom, liveAtom]⟩]⟩
+  ⟨10, 99, [⟨(99, .start), [], none⟩, ⟨(0, .event (1, 10)), [hiddenAtom, liveAtom], none⟩]⟩
 
 /-- PASS+FAIL: a hidden character and the dead title root are both owned by
 their block; an address held by no slice has no owner. -/
@@ -149,7 +149,7 @@ theorem reachable_create_control :
     NotionCoreSpec.view (project [NotionCoreSourceDocument.freshBlock 10 0]) ≠ [] := by
   have run : Reach [NotionCoreSourceDocument.freshBlock 10 0] :=
     .step (command := .create 10 0 none) .init
-      (.create_front [] 10 0 (by decide) (by decide)) (by decide)
+      (.create_front [] 10 0 (by decide) (by decide) (by decide)) (by decide)
   exact ⟨run, by decide, by decide⟩
 
 #print axioms reachable_invariants

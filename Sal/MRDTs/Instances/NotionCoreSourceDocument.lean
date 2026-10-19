@@ -23,7 +23,7 @@ def findBlock (doc : Document) (bid : Nat) : Option Block :=
   doc.find? (fun block => decide (block.id = bid))
 
 def freshBlock (id inst : Nat) : Block :=
-  ⟨id, inst, [⟨(inst, .start), []⟩]⟩
+  ⟨id, inst, [⟨(inst, .start), [], none⟩]⟩
 
 def insertBlock (block : Block) (origin : Address) (fresh : List Atom) : Block :=
   {block with slices := NotionCoreSource.insertSlices origin fresh block.slices}
@@ -31,35 +31,42 @@ def insertBlock (block : Block) (origin : Address) (fresh : List Atom) : Block :
 def eraseBlock (targets : List Address) (block : Block) : Block :=
   {block with slices := block.slices.map (NotionCoreSource.eraseSlice targets)}
 
-/-- A split destination is a newly created block holding only the empty root
-interval of its own instance. -/
+/-- A split destination is a newly created block holding only the empty,
+unstopped root interval of its own instance. -/
 def EmptyRoot (block : Block) : Prop :=
-  block.slices = [⟨(block.inst, .start), []⟩]
+  block.slices = [⟨(block.inst, .start), [], none⟩]
 
 instance (block : Block) : Decidable (EmptyRoot block) :=
-  inferInstanceAs (Decidable (block.slices = [⟨(block.inst, .start), []⟩]))
+  inferInstanceAs (Decidable (block.slices = [⟨(block.inst, .start), [], none⟩]))
 
+/-- Physical source commands. A split names the marker's event id; the marker
+address is `(origin.1, .event marker)`. A merge names its source and its
+anchor, the close or finish address of the slice it attaches after. -/
 inductive Command where
   | create (id inst : Nat) (after : Option Nat)
   | insert (origin : Address) (fresh : List Atom)
   | delete (targets : List Address)
-  | split (origin marker : Address) (target : Nat)
-  | merge (source target : Nat)
+  | split (origin : Address) (marker : Nat × Nat) (target : Nat)
+  | merge (source : Nat) (anchor : Address)
   deriving DecidableEq, Repr
 
 def Command.semantic : Command → NotionCoreSpec.Command
   | .create id inst after => .create id inst after
   | .insert origin fresh => .insert origin (fresh.map Atom.slot)
   | .delete targets => .delete targets
-  | .split origin marker target => .split origin ⟨marker, 0, false⟩ target
-  | .merge source target => .merge source target
+  | .split origin marker target => .split origin marker target
+  | .merge source anchor => .merge source anchor
 
-/-- Physical source transitions. A split cuts the owner's chain after the
-origin: the kept slices stay, and the marker slice with every later slice is
-appended to the empty destination. A merge looks up the holder of the
-target's root interval; if the source is alive and is not that holder, the
-source's chain is appended below the holder's last slice and the source
-becomes a tombstone that keeps its place. Any other merge changes nothing. -/
+/-- Physical source transitions. Insertion and splitting take place after a
+position, never after a close slot; physical atoms cannot follow a slice's
+close. A split cuts the owner's chain after the origin: the kept slices stay,
+the slice holding the origin stops at the marker, and the marker slice with
+every later slice is appended to the empty destination. The slice holding the
+origin must start in the origin's instance, where the marker and its close
+slot live. A merge looks up the holder of its anchor; if the source is alive
+and is not that holder, the source's chain is appended below the holder's last
+slice and the source becomes a tombstone that keeps its place. Any other
+merge changes nothing. -/
 def step (doc : Document) : Command → Option Document
   | .create id inst after =>
       if id ∈ doc.map Block.id then none
@@ -71,34 +78,34 @@ def step (doc : Document) : Command → Option Document
               if block.id = previous then [block, freshBlock id inst] else [block])
           else none
   | .insert origin fresh =>
-      match owner doc origin with
+      if origin.2.isEnd then none
+      else match owner doc origin with
       | none => none
       | some _ => some (doc.map fun block =>
           if owns block origin then insertBlock block origin fresh else block)
   | .delete targets => some (doc.map (eraseBlock targets))
   | .split origin marker target =>
-      match owner doc origin, doc.find? (fun block => block.id == target) with
+      if origin.2.isEnd then none
+      else match owner doc origin, doc.find? (fun block => block.id == target) with
       | some source, some destination =>
-          if source.id = target ∨ ¬ EmptyRoot destination then none
+          if source.id = target ∨ ¬ EmptyRoot destination ∨
+              ¬ NotionCoreSource.InstanceAgrees origin source.slices then none
           else
-            let cut := NotionCoreSource.splitSlices origin marker source.slices
+            let cut := NotionCoreSource.splitSlices origin (origin.1, .event marker) source.slices
             some (doc.map fun block =>
               if block.id = source.id then {block with slices := cut.1}
               else if block.id = target then {block with slices := block.slices ++ cut.2}
               else block)
       | _, _ => none
-  | .merge source target =>
-      match findBlock doc source, findBlock doc target with
-      | some src, some tgt =>
-          match owner doc (tgt.inst, .start) with
-          | some holder =>
-              if src.alive = true ∧ holder.id ≠ source then
-                some (doc.map fun block =>
-                  if block.id = holder.id then {block with slices := block.slices ++ src.slices}
-                  else if block.id = source then {block with slices := []}
-                  else block)
-              else some doc
-          | none => some doc
+  | .merge source anchor =>
+      match findBlock doc source, owner doc anchor with
+      | some src, some holder =>
+          if src.alive = true ∧ holder.id ≠ source then
+            some (doc.map fun block =>
+              if block.id = holder.id then {block with slices := block.slices ++ src.slices}
+              else if block.id = source then {block with slices := []}
+              else block)
+          else some doc
       | _, _ => some doc
 
 @[simp] theorem slot_address (atom : Atom) : atom.slot.address = atom.address :=
@@ -120,7 +127,8 @@ def step (doc : Document) : Command → Option Document
     doc.map Block.id := by simp [project, Function.comp_def]
 
 @[simp] theorem fresh_project (id inst : Nat) :
-    (freshBlock id inst).project = ⟨id, inst, [NotionCoreSpec.root inst], true⟩ := rfl
+    (freshBlock id inst).project =
+      ⟨id, inst, [NotionCoreSpec.root inst, NotionCoreSpec.finishSlot inst], true⟩ := rfl
 
 theorem owns_project (block : Block) (origin : Address) :
     NotionCoreSpec.owns block.project origin = owns block origin := by
@@ -161,11 +169,12 @@ theorem spec_block_ext {a b : NotionCoreSpec.Block} (ids : a.id = b.id)
   cases a; cases b; simp_all
 
 theorem insert_block_project (block : Block) (origin : Address) (fresh : List Atom)
-    (unique : block.traversal.Nodup) (present : origin ∈ block.traversal) :
+    (unique : block.traversal.Nodup) (present : origin ∈ block.traversal)
+    (position : origin.2.isEnd = false) :
     (insertBlock block origin fresh).project =
       {block.project with slots := NotionCoreSpec.insertSlots origin (fresh.map Atom.slot) block.project.slots} := by
   refine spec_block_ext rfl ?_ ?_ rfl
-  · exact NotionCoreSource.insertSlices_projection origin fresh block.slices unique present
+  · exact NotionCoreSource.insertSlices_projection origin fresh block.slices unique present position
   · simp [insertBlock, Block.project, Block.alive, NotionCoreSource.insertSlices]
 
 theorem erase_block_project (targets : List Address) (block : Block) :
@@ -210,10 +219,11 @@ theorem project_create (doc : Document) (id inst : Nat) (after : Option Nat) :
       · simp [step, NotionCoreSpec.step, duplicate, present]
 
 theorem project_insert (doc : Document) (origin : Address) (fresh : List Atom)
-    (unique : ∀ block ∈ doc, block.traversal.Nodup) :
+    (unique : ∀ block ∈ doc, block.traversal.Nodup) (position : origin.2.isEnd = false) :
     (step doc (.insert origin fresh)).map project =
       NotionCoreSpec.step (project doc) (.insert origin (fresh.map Atom.slot)) := by
-  simp only [step, NotionCoreSpec.step, owner_project doc origin]
+  simp only [step, NotionCoreSpec.step, owner_project doc origin, position, Bool.false_eq_true,
+    ↓reduceIte]
   cases found : owner doc origin with
   | none => rfl
   | some source =>
@@ -228,7 +238,7 @@ theorem project_insert (doc : Document) (origin : Address) (fresh : List Atom)
     split
     · rename_i held
       exact insert_block_project block origin fresh (unique block member)
-        (by simpa [owns] using held)
+        (by simpa [owns] using held) position
     · rfl
 
 theorem project_delete (doc : Document) (targets : List Address) :
@@ -252,28 +262,35 @@ theorem same_id_eq {doc : Document} (unique : (doc.map Block.id).Nodup)
     · exact ih unique.2 ha hb
 
 theorem empty_root_project (block : Block) (empty : EmptyRoot block) :
-    block.project.slots = [NotionCoreSpec.root block.inst] := by
-  have slices : block.slices = [⟨(block.inst, .start), []⟩] := empty
+    block.project.slots = [NotionCoreSpec.root block.inst, NotionCoreSpec.finishSlot block.inst] := by
+  have slices : block.slices = [⟨(block.inst, .start), [], none⟩] := empty
   simp [Block.project, Block.slots, slices, NotionCoreSource.Slice.slots,
-    NotionCoreSource.Slice.anchor, NotionCoreSpec.root]
+    NotionCoreSource.Slice.anchor, NotionCoreSource.Slice.close, NotionCoreSource.stopKey,
+    NotionCoreSpec.closeOf, NotionCoreSpec.root]
 
-theorem project_split {doc next : Document} (origin marker : Address) (target : Nat)
+theorem project_split {doc next : Document} (origin : Address) (marker : Nat × Nat) (target : Nat)
     (unique : (doc.map Block.id).Nodup)
     (accepted : step doc (.split origin marker target) = some next) :
-    NotionCoreSpec.step (project doc) (.split origin ⟨marker, 0, false⟩ target) =
-      some (project next) := by
+    NotionCoreSpec.step (project doc) (.split origin marker target) = some (project next) := by
+  by_cases position : origin.2.isEnd = true
+  · simp [step, position] at accepted
+  have open_ : origin.2.isEnd = false := by simpa using position
   cases sourceFound : owner doc origin with
-  | none => simp [step, sourceFound] at accepted
+  | none => simp [step, open_, sourceFound] at accepted
   | some source =>
     cases destinationFound : doc.find? (fun block => block.id == target) with
-    | none => simp [step, sourceFound, destinationFound] at accepted
+    | none => simp [step, open_, sourceFound, destinationFound] at accepted
     | some destination =>
-      simp only [step, sourceFound, destinationFound] at accepted
+      simp only [step, open_, Bool.false_eq_true, ↓reduceIte, sourceFound,
+        destinationFound] at accepted
       split at accepted
       · simp at accepted
       · rename_i guard
         have distinct : source.id ≠ target := (not_or.mp guard).1
-        have empty : EmptyRoot destination := Classical.not_not.mp (not_or.mp guard).2
+        have empty : EmptyRoot destination :=
+          Classical.not_not.mp (not_or.mp (not_or.mp guard).2).1
+        have agrees : NotionCoreSource.InstanceAgrees origin source.slices :=
+          Classical.not_not.mp (not_or.mp (not_or.mp guard).2).2
         obtain ⟨sourceMem, held⟩ := owner_some sourceFound
         have destinationMem : destination ∈ doc := List.mem_of_find?_eq_some destinationFound
         have destinationId : destination.id = target := by
@@ -281,7 +298,9 @@ theorem project_split {doc next : Document} (origin marker : Address) (target : 
         have targetMem : target ∈ doc.map Block.id :=
           List.mem_map.mpr ⟨destination, destinationMem, destinationId⟩
         have cut := NotionCoreSource.splitSlices_projection origin marker source.slices held
-        have kept := NotionCoreSource.splitSlices_left_ne_nil origin marker source.slices held
+          open_ agrees
+        have kept := NotionCoreSource.splitSlices_left_ne_nil origin (origin.1, .event marker)
+          source.slices held
         have specOwner := owner_project doc origin
         rw [sourceFound] at specOwner
         simp only [Option.map_some] at specOwner
@@ -302,7 +321,8 @@ theorem project_split {doc next : Document} (origin marker : Address) (target : 
           · have live := owns_alive held
             simp only [Block.alive] at live
             simp only [Block.project, Block.alive, live]
-            cases h : (NotionCoreSource.splitSlices origin marker source.slices).1 with
+            cases h : (NotionCoreSource.splitSlices origin (origin.1, .event marker)
+                source.slices).1 with
             | nil => exact absurd h kept
             | cons _ _ => rfl
         · simp only [if_neg isSource]
@@ -313,59 +333,52 @@ theorem project_split {doc next : Document} (origin marker : Address) (target : 
             refine spec_block_ext rfl ?_ ?_ rfl
             · simp only [Block.project, Block.slots, List.flatMap_append]
               rw [cut.2]
-            · have slices : destination.slices = [⟨(destination.inst, .start), []⟩] := empty
+            · have slices : destination.slices = [⟨(destination.inst, .start), [], none⟩] := empty
               simp [Block.project, Block.alive, slices]
           · simp only [if_neg isTarget]
 
-theorem project_merge {doc next : Document} (source target : Nat)
+theorem project_merge {doc next : Document} (source : Nat) (anchor : Address)
     (unique : (doc.map Block.id).Nodup)
-    (accepted : step doc (.merge source target) = some next) :
-    NotionCoreSpec.step (project doc) (.merge source target) = some (project next) := by
-  simp only [NotionCoreSpec.step, findBlock_project]
+    (accepted : step doc (.merge source anchor) = some next) :
+    NotionCoreSpec.step (project doc) (.merge source anchor) = some (project next) := by
+  simp only [NotionCoreSpec.step, findBlock_project, owner_project]
   cases foundSource : findBlock doc source with
   | none => simp [step, foundSource] at accepted; subst next; rfl
   | some src =>
-    cases foundTarget : findBlock doc target with
-    | none => simp [step, foundSource, foundTarget] at accepted; subst next; rfl
-    | some tgt =>
-      simp only [Option.map_some]
-      have specOwner := owner_project doc (tgt.inst, .start)
-      change NotionCoreSpec.owner (project doc) (NotionCoreSpec.root tgt.project.inst).address = _ at specOwner
-      rw [specOwner]
-      cases foundHolder : owner doc (tgt.inst, .start) with
-      | none => simp [step, foundSource, foundTarget, foundHolder] at accepted; subst next; rfl
-      | some holder =>
-        simp only [Option.map_some, project_alive, project_id]
-        simp only [step, foundSource, foundTarget, foundHolder] at accepted
-        split at accepted
-        · rename_i valid
-          rw [if_pos valid]
-          injection accepted with nextEq
-          subst next
-          obtain ⟨holderMem, held⟩ := owner_some foundHolder
-          simp only [project, List.map_map, Option.some.injEq]
-          apply List.map_congr_left
-          intro block member
-          simp only [Function.comp_apply, project_id]
-          by_cases isHolder : block.id = holder.id
-          · have same := same_id_eq unique member holderMem isHolder
-            subst block
-            simp only [↓reduceIte]
-            refine spec_block_ext rfl ?_ ?_ rfl
-            · simp [Block.project, Block.slots]
-            · have live := owns_alive held
-              simp only [Block.project, Block.alive] at live ⊢
-              rw [live]
-              cases h : holder.slices with
-              | nil => simp [h] at live
-              | cons _ _ => rfl
-          · simp only [if_neg isHolder]
-            split <;> rfl
-        · rename_i invalid
-          rw [if_neg invalid]
-          injection accepted with nextEq
-          subst next
-          rfl
+    cases foundHolder : owner doc anchor with
+    | none => simp [step, foundSource, foundHolder] at accepted; subst next; rfl
+    | some holder =>
+      simp only [Option.map_some, project_alive, project_id]
+      simp only [step, foundSource, foundHolder] at accepted
+      split at accepted
+      · rename_i valid
+        rw [if_pos valid]
+        injection accepted with nextEq
+        subst next
+        obtain ⟨holderMem, held⟩ := owner_some foundHolder
+        simp only [project, List.map_map, Option.some.injEq]
+        apply List.map_congr_left
+        intro block member
+        simp only [Function.comp_apply, project_id]
+        by_cases isHolder : block.id = holder.id
+        · have same := same_id_eq unique member holderMem isHolder
+          subst block
+          simp only [↓reduceIte]
+          refine spec_block_ext rfl ?_ ?_ rfl
+          · simp [Block.project, Block.slots]
+          · have live := owns_alive held
+            simp only [Block.project, Block.alive] at live ⊢
+            rw [live]
+            cases h : holder.slices with
+            | nil => simp [h] at live
+            | cons _ _ => rfl
+        · simp only [if_neg isHolder]
+          split <;> rfl
+      · rename_i invalid
+        rw [if_neg invalid]
+        injection accepted with nextEq
+        subst next
+        rfl
 
 /-- Every accepted materialized-source transition has exactly the independently
 computed semantic transition. The guards describe block identity uniqueness
@@ -385,14 +398,18 @@ theorem step_sound {doc next : Document} (command : Command)
     rfl
   | insert origin fresh =>
     simp only [Command.semantic]
-    rw [← project_insert doc origin fresh addresses, accepted]
+    have position : origin.2.isEnd = false := by
+      cases h : origin.2.isEnd
+      · rfl
+      · simp [step, h] at accepted
+    rw [← project_insert doc origin fresh addresses position, accepted]
     rfl
   | delete targets =>
     simp only [Command.semantic]
     rw [← project_delete, accepted]
     rfl
   | split origin marker target => exact project_split origin marker target unique accepted
-  | merge source target => exact project_merge source target unique accepted
+  | merge source anchor => exact project_merge source anchor unique accepted
 
 /-- Structural guards for projecting a source trace. Acceptance itself checks
 origin existence and an empty distinct split destination. Fresh character and
@@ -423,53 +440,68 @@ theorem execution_sound {doc final : Document} {commands : List Command}
     exact ih
 
 /-- Hand-derived local source trace: creating and splitting ab at its first
-character moves b into the destination. -/
+character moves b into the destination. Block 1 keeps a closed by the
+marker's close slot; the destination holds its own empty title, the marker, b
+and the finish of instance 1. -/
 theorem source_trace_control :
     let a : Atom := ⟨(1, .event (1, 1)), .text 97 false⟩
     let b : Atom := ⟨(1, .event (1, 2)), .text 98 false⟩
-    let original : Block := ⟨1, 1, [⟨(1, .start), [a, b]⟩]⟩
+    let original : Block := ⟨1, 1, [⟨(1, .start), [a, b], none⟩]⟩
     let destination := freshBlock 2 2
     let before := [original, destination]
-    let after := step before (.split a.address (1, .event (1, 3)) 2)
+    let after := step before (.split a.address (1, 3) 2)
     (after.map (fun doc => NotionCoreSpec.view (project doc))) =
       some [(1, [97]), (2, [98])] ∧
     (after.map (fun doc => NotionCoreSpec.view (project doc))) ≠
-      some [(1, [97, 98]), (2, [])] := by
+      some [(1, [97, 98]), (2, [])] ∧
+    (after.map (fun doc => (project doc).map NotionCoreSpec.Block.slots)) =
+      some [[NotionCoreSpec.root 1, a.slot, NotionCoreSpec.closeSlot 1 (1, 3)],
+        [NotionCoreSpec.root 2, NotionCoreSpec.finishSlot 2, NotionCoreSpec.boundary 1 (1, 3),
+          b.slot, NotionCoreSpec.finishSlot 1]] ∧
+    (after.map (fun doc => (project doc).map NotionCoreSpec.Block.slots)) ≠
+      some [[NotionCoreSpec.root 1, a.slot, NotionCoreSpec.finishSlot 1],
+        [NotionCoreSpec.root 2, NotionCoreSpec.finishSlot 2, NotionCoreSpec.boundary 1 (1, 3),
+          b.slot, NotionCoreSpec.finishSlot 1]] := by
   decide
 
-/-- Hand-derived merge trace: after the split above, merging block 2 back
-into block 1 shows ab in block 1 and hides block 2, and merging the tombstone
-again changes nothing. -/
+/-- Hand-derived merge trace: after the split above, merging block 2 anchored
+at the close slot ending block 1 shows ab in block 1 and hides block 2, and
+merging the tombstone again changes nothing. Anchoring at the marker itself
+finds block 2 as the holder and changes nothing. -/
 theorem source_merge_control :
     let a : Atom := ⟨(1, .event (1, 1)), .text 97 false⟩
     let b : Atom := ⟨(1, .event (1, 2)), .text 98 false⟩
-    let before : Document := [⟨1, 1, [⟨(1, .start), [a, b]⟩]⟩, freshBlock 2 2]
-    let after := (step before (.split a.address (1, .event (1, 3)) 2)).bind
-      (fun doc => step doc (.merge 2 1))
+    let before : Document := [⟨1, 1, [⟨(1, .start), [a, b], none⟩]⟩, freshBlock 2 2]
+    let split := step before (.split a.address (1, 3) 2)
+    let after := split.bind (fun doc => step doc (.merge 2 (1, .close (1, 3))))
     (after.map (fun doc => NotionCoreSpec.view (project doc))) = some [(1, [97, 98])] ∧
-    (after.bind (fun doc => step doc (.merge 2 1))) = after ∧
+    (after.bind (fun doc => step doc (.merge 2 (1, .close (1, 3))))) = after ∧
     (after.map (fun doc => NotionCoreSpec.view (project doc))) ≠
-      some [(1, [97]), (2, [98])] := by
+      some [(1, [97]), (2, [98])] ∧
+    ((split.bind (fun doc => step doc (.merge 2 (1, .event (1, 3))))).map
+      (fun doc => NotionCoreSpec.view (project doc))) = some [(1, [97]), (2, [98])] := by
   decide
 
-/-- The cycle no-op loses nothing. After block 2 is merged into block 1, a
-split of 1 just before the absorbed part moves 2's root into the fresh block
-3; a merge of 3 into the tombstone 2 then finds 3 itself holding 2's root and
-changes nothing, so b stays visible in block 3. -/
+/-- The cycle no-op loses nothing. After block 2 is merged at the end of block
+1, a split of 1 just before the absorbed part moves 2's slice into the fresh
+block 3; a merge of 3 anchored at the finish of instance 2 then finds 3 itself
+holding that finish and changes nothing, so b stays visible in block 3. -/
 theorem source_cycle_control :
     let a : Atom := ⟨(1, .event (1, 1)), .text 97 false⟩
     let b : Atom := ⟨(2, .event (1, 2)), .text 98 false⟩
-    let before : Document := [⟨1, 1, [⟨(1, .start), [a]⟩]⟩, ⟨2, 2, [⟨(2, .start), [b]⟩]⟩]
-    let split := (step before (.merge 2 1)).bind (fun doc => step doc (.create 3 3 (some 1)))
-      |>.bind (fun doc => step doc (.split a.address (1, .event (1, 3)) 3))
-    let after := split.bind (fun doc => step doc (.merge 3 2))
+    let before : Document := [⟨1, 1, [⟨(1, .start), [a], none⟩]⟩, ⟨2, 2, [⟨(2, .start), [b], none⟩]⟩]
+    let split := (step before (.merge 2 (1, .finish))).bind
+      (fun doc => step doc (.create 3 3 (some 1)))
+      |>.bind (fun doc => step doc (.split a.address (1, 3) 3))
+    let after := split.bind (fun doc => step doc (.merge 3 (2, .finish)))
     after = split ∧
     (after.map (fun doc => NotionCoreSpec.view (project doc))) = some [(1, [97]), (3, [98])] ∧
     (after.map (fun doc => NotionCoreSpec.view (project doc))) ≠ some [(1, [97])] := by
   decide
 
 theorem fresh_normal (id inst : Nat) : (freshBlock id inst).Normal := by
-  refine ⟨?_, ?_, ?_⟩ <;> simp [freshBlock, NotionCoreSource.deadSlices]
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;>
+    simp [freshBlock, NotionCoreSource.deadSlices, NotionCoreSpec.LocalId.isEnd]
 
 #print axioms step_sound
 #print axioms execution_sound

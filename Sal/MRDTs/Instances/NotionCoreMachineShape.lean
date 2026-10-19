@@ -25,10 +25,15 @@ def ActiveInstance (state : State) (inst : Nat) : Prop :=
 
 theorem initial_shape : ShapeInvariant {} := by
   simp [ShapeInvariant,shapeView,NotionCoreSliceForest.Invariant,
-    ChainForest,EmptyInactive,forestNodes]
+    ChainForest,EmptyInactive,forestNodes,NotionCoreSliceForest.StopsKeyed,
+    NotionCoreSliceForest.AnchorsUnique,forestRefs]
 
 theorem seeded_shape (atoms : List Nat) : ShapeInvariant (NotionCoreMachineBootstrap.seeded atoms) := by
-  refine ⟨?_,by simp [shapeView,NotionCoreMachineBootstrap.seeded],?_⟩
+  have refs : forestRefs (shapeView (NotionCoreMachineBootstrap.seeded atoms)).blocks =
+      [NotionCoreSliceForest.titleRef 0] := by
+    simp [shapeView,NotionCoreMachineBootstrap.seeded,forestRefs,NotionCoreSliceForest.freshTitle,
+      NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren]
+  refine ⟨?_,by simp [shapeView,NotionCoreMachineBootstrap.seeded],?_,?_,?_⟩
   · intro block member
     simp only [shapeView,NotionCoreMachineBootstrap.seeded,List.mem_singleton] at member
     subst block
@@ -37,6 +42,10 @@ theorem seeded_shape (atoms : List Nat) : ShapeInvariant (NotionCoreMachineBoots
     simp [shapeView,NotionCoreMachineBootstrap.seeded,forestNodes,NotionCoreSliceForest.freshTitle,
       NotionCoreSliceForest.preorderTree,NotionCoreSliceForest.preorderChildren,
       NotionCoreSliceForest.nodes,NotionCoreSliceForest.tagBefore] at member
+  · intro ref member stop stopped
+    rw [refs] at member
+    simp [List.mem_singleton.mp member,NotionCoreSliceForest.titleRef] at stopped
+  · simp [NotionCoreSliceForest.AnchorsUnique,refs]
 
 /-- Actual bootstrap execution establishes stronger shape for empty and
 nonempty initial text alike. -/
@@ -217,7 +226,7 @@ theorem raw_marker_shape_preserves (state : State) (inst : BlockKey)
 theorem dead_title_rejects (state : State) (prior : ShapeInvariant state)
     (dead : NotionCoreSliceForest.Ref) (member : (dead,false) ∈ forestNodes state.forest) (marker : Address) :
     NotionCoreSliceForest.contains (physical state) dead marker = false := by
-  obtain ⟨form,empty,_⟩ := prior.2.2 dead member
+  obtain ⟨form,empty,_⟩ := prior.2.2.1 dead member
   rw [form]
   exact NotionCoreSliceForest.empty_title_rejects (physical state) _ marker empty
 
@@ -236,12 +245,12 @@ theorem atomic_split_shape_preserves (old raw : State) (target : Nat) (marker : 
     ShapeInvariant {raw with forest := forest} := by
   let base : NotionCoreSliceForest.State := ⟨old.forest,physical raw⟩
   have baseInvariant : NotionCoreSliceForest.Invariant base := by
-    refine ⟨oldInvariant.1,oldInvariant.2.1,?_⟩
+    refine ⟨oldInvariant.1,oldInvariant.2.1,?_,oldInvariant.2.2.2⟩
     intro dead member
     have rawMember : (dead,false) ∈ forestNodes raw.forest := by
       rw [rawForest,NotionCoreSliceForest.forestNodes_append]
       exact List.mem_append_left _ member
-    obtain ⟨form,physicalEq,lives⟩ := rawInvariant.2.2 dead rawMember
+    obtain ⟨form,physicalEq,lives⟩ := rawInvariant.2.2.1 dead rawMember
     refine ⟨form,physicalEq,fun live liveMember => lives live ?_⟩
     change (live,true) ∈ forestNodes raw.forest
     rw [rawForest,NotionCoreSliceForest.forestNodes_append]
@@ -259,15 +268,16 @@ theorem atomic_split_shape_preserves (old raw : State) (target : Nat) (marker : 
     baseInvariant fresh markerEvent freshTarget executed
 
 /-- Merge moves whole chains: shape and the live instances are unchanged. -/
-theorem merge_shape (state : State) (source target : BlockKey) (prior : ShapeInvariant state) :
+theorem merge_shape (state : State) (source inst : BlockKey) (stop : Option NotionRunAllocation.Id)
+    (prior : ShapeInvariant state) :
     ShapeInvariant {state with forest := (NotionCoreSliceForest.mergeForest state.forest
-      (blockName source) (blockName target))} :=
+      (blockName source) (mergeAnchor inst stop))} :=
   NotionCoreSliceForest.merge_preserves (shapeView state) _ _ prior
 
-theorem merge_active (state : State) (source target : BlockKey) (prior : ShapeInvariant state)
-    (inst : Nat) :
+theorem merge_active (state : State) (source key : BlockKey) (stop : Option NotionRunAllocation.Id)
+    (prior : ShapeInvariant state) (inst : Nat) :
     ActiveInstance {state with forest := (NotionCoreSliceForest.mergeForest state.forest
-      (blockName source) (blockName target))} inst ↔ ActiveInstance state inst := by
+      (blockName source) (mergeAnchor key stop))} inst ↔ ActiveInstance state inst := by
   simp only [ActiveInstance]
   constructor
   · rintro ⟨live,member,equal⟩

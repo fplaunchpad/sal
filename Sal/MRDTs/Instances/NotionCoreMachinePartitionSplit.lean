@@ -18,7 +18,7 @@ private theorem cellRefs_cut (before after : List NotionCorePartition.Cell)
     ∃ prefixRefs,
       cellRefs (before ++ cell :: after) = prefixRefs ++
         (cell.owner,⟨cell.slice.start,after.head?.map (fun next => next.slice.start)⟩) :: cellRefs after ∧
-      cellRefs (before ++ [⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨target,⟨marker,right⟩⟩] ++ after) =
+      cellRefs (before ++ [⟨cell.owner,⟨cell.slice.start,left,some marker⟩⟩,⟨target,⟨marker,right,cell.slice.stop⟩⟩] ++ after) =
         prefixRefs ++ (cell.owner,⟨cell.slice.start,some marker⟩) ::
           (target,⟨marker,after.head?.map (fun next => next.slice.start)⟩) :: cellRefs after := by
   induction before with
@@ -26,7 +26,7 @@ private theorem cellRefs_cut (before after : List NotionCorePartition.Cell)
   | cons head rest ih =>
     obtain ⟨refs,old,new⟩ := ih
     let endpoint := (rest ++ cell :: after).head?.map (fun next => next.slice.start)
-    have same : (rest ++ ([⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨target,⟨marker,right⟩⟩] : List NotionCorePartition.Cell) ++ after).head?.map
+    have same : (rest ++ ([⟨cell.owner,⟨cell.slice.start,left,some marker⟩⟩,⟨target,⟨marker,right,cell.slice.stop⟩⟩] : List NotionCorePartition.Cell) ++ after).head?.map
         (fun next => next.slice.start) = endpoint := by cases rest <;> rfl
     refine ⟨(head.owner,⟨head.slice.start,endpoint⟩) :: refs,?_,?_⟩
     · simp only [List.cons_append,cellRefs,old]
@@ -100,7 +100,7 @@ theorem cut_cells (before after : List NotionCorePartition.Cell) (cell : NotionC
     (marker : Address) (owner : Nat) (left right : List Atom)
     (atoms : cell.slice.atoms = left ++ NotionCorePartition.boundary marker :: right) :
     let next : List NotionCorePartition.Cell := before ++
-      [⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨owner,⟨marker,right⟩⟩] ++ after
+      [⟨cell.owner,⟨cell.slice.start,left,some marker⟩⟩,⟨owner,⟨marker,right,cell.slice.stop⟩⟩] ++ after
     NotionCorePartition.flatten next = NotionCorePartition.flatten (before ++ cell :: after) ∧
       ∃ prefixRefs,
         cellRefs (before ++ cell :: after) = prefixRefs ++
@@ -151,7 +151,7 @@ theorem cut_covers (state : NotionCoreMachine.State) (before after : List Ref) (
         containing_cell_cut state _ covers unique ref marker (by simp) contained literal
       obtain ⟨physicalSame,prefixRefs,oldCells,nextCells⟩ := cut_cells cells tail cell marker cell.owner
         left right atoms
-      refine ⟨cells ++ [⟨cell.owner,⟨cell.slice.start,left⟩⟩,⟨cell.owner,⟨marker,right⟩⟩] ++ tail,
+      refine ⟨cells ++ [⟨cell.owner,⟨cell.slice.start,left,some marker⟩⟩,⟨cell.owner,⟨marker,right,cell.slice.stop⟩⟩] ++ tail,
         factor.trans physicalSame.symm,?_⟩
       have refSelected : (ref.start.1 == marker.1) = true := by simp [sameInst]
       have leftSelected : ((leftRef ref marker).start.1 == marker.1) = true := by simp [leftRef, sameInst]

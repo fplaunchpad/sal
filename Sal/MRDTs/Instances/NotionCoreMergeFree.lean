@@ -3,14 +3,14 @@ import Sal.MRDTs.Instances.NotionCoreReconstruction
 /-! The merge-free fragment of the payload network: no archived transaction
 carries a merge payload. The fact-set structural carrier and the executable
 runtime query are proved on this fragment. The retained facts record no merge,
-and a merge's effect depends on which blocks are alive when it replays, so the
-fact query is correct only here. -/
+and a merge's effect depends on which block holds its anchored slice when it
+replays, so the fact query is correct only here. -/
 namespace Sal.MRDTs.Instances.NotionCoreMergeFree
 open NotionCorePayload (Transaction)
 open NotionCorePayloadNetwork (State)
 
 /-- The transaction carries no merge payload. -/
-def NotMerge (tx : Transaction) : Prop := ∀ source target, tx.payload ≠ .merge source target
+def NotMerge (tx : Transaction) : Prop := ∀ source inst stop, tx.payload ≠ .merge source inst stop
 
 /-- No archived transaction of the network carries a merge payload. -/
 def MergeFree (network : State) : Prop := ∀ entry ∈ network.entries, NotMerge entry.tx
@@ -19,7 +19,7 @@ theorem initial : MergeFree NotionCorePayloadNetwork.initial := by
   simp [MergeFree, NotionCorePayloadNetwork.initial]
 
 theorem seeded (atoms : List Nat) : MergeFree (NotionCorePayloadNetwork.seeded atoms) := by
-  intro entry member source target
+  intro entry member source inst stop
   simp only [NotionCorePayloadNetwork.seeded, List.mem_singleton] at member
   subst entry
   simp [NotionCorePayload.bootstrap]

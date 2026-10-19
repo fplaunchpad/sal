@@ -60,8 +60,8 @@ theorem honest_erase_effect (network : NotionCorePayloadNetwork.State)
     (NotionCoreCreatorNetwork.payload_reachable (NotionCoreMachineNetwork.creator_reachable reachable)) peer
     (NotionCoreReconstruction.transactions network peer) [] (by simp) state accepted
   have aligned := NotionCoreMachineDisplay.reconstructed_aligned network peer state accepted
-  have addresses := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part physicalUnique aligned
-    _ materialized
+  have addresses := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part physicalUnique
+    shape.2.2.2.2 aligned    _ materialized
   obtain ⟨groups,result,after,prepared,operations,extracted,effect⟩ := erase_request_effect _ state accepted part
     physicalUnique pre post source materialized block name start stop nonempty bound addresses
   have existsInstance := selected_instances_exist network reachable peer state accepted block start stop
@@ -98,7 +98,7 @@ theorem actual_range_control :
 private def x : NotionRunAllocation.Id := ⟨3,[66]⟩
 private def merged : List Transaction :=
   [NotionCorePayload.bootstrap [97], ⟨x,.create (some .initial)⟩,
-    ⟨⟨4,[66]⟩,.insert (.issued x) (.issued x) .start [98,99]⟩, ⟨⟨6,[66]⟩,.merge (.issued x) .initial⟩]
+    ⟨⟨4,[66]⟩,.insert (.issued x) (.issued x) .start [98,99]⟩, ⟨⟨6,[66]⟩,.merge (.issued x) .initial none⟩]
 
 /-- After merging bc into a, erasing the range ab spanning the merged
 boundary leaves c alone, in one transaction of two instance groups. Erasing

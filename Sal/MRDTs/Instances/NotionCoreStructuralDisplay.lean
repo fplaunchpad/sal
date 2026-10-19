@@ -82,7 +82,7 @@ theorem operation_display (state result : State) (op : Operation)
             simp [detached] at accepted
             subst result
             rfl
-  | merge source target =>
+  | merge source inst stop =>
       simp only [applyOperation,Option.some.injEq] at accepted
       subst result
       rfl

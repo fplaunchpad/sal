@@ -55,7 +55,7 @@ theorem seeded_partitioned (atoms : List Nat) : Partitioned (seeded atoms) := by
     subst inst
     let cell : NotionCorePartition.Cell :=
       ⟨0,⟨(0,.start),(traversal (rows atoms).length (rows atoms) .start).map
-        (NotionCorePhysicalReplay.atom 0)⟩⟩
+        (NotionCorePhysicalReplay.atom 0),none⟩⟩
     refine ⟨[cell],?_,?_⟩
     · simp [cell,physical,seeded,getInstance,NotionCorePhysicalReplay.physical,
         NotionCorePhysicalReplay.start,NotionCorePartition.flatten,

@@ -71,41 +71,62 @@ research question is whether a block merge over the same slice-tree and RGA
 state has a sequential meaning; the answer is yes once removal of the source
 block is the move itself rather than a separate operation.
 
-**Specification.** `NotionCoreSpec.Block` carries `id`, `inst`, `slots` and
-`alive`, and `Command.merge source target` is a new command. In `step`, the
-holder of the target is the block whose slots contain the target's root slot.
-If the source is alive and the holder differs from the source, the holder's
-slots become `holder.slots ++ source.slots` and the source stays in place as a
-tombstone with no slots and `alive = false`; otherwise the document is
-unchanged. This is the absorb rule: a merge into a block that was itself
-merged away lands in the alive block that absorbed it. `Rooted` states that
-every alive block is headed by its own root slot and every tombstone is empty.
-`NotionCoreSpecMerge` proves the cases (`merge_alive_target`,
-`merge_absorbed_target`, `merge_cycle_noop`), conservation of visible text
+**Specification.** `NotionCoreSpec.LocalId` has, besides the root and the
+characters, two invisible positions: the close of the slice that ends at a
+split marker and the finish of an instance. A created block is
+`[root, finish]` and a split leaves the marker's close at the end of the
+prefix block. `NotionCoreSpec.Block` carries `id`, `inst`, `slots` and
+`alive`, and `Command.merge source anchor` takes the address of such a slot:
+the end of the target block's last slice when the request was issued. In
+`step`, the holder is the block whose slots contain the anchor. If the source
+is alive and the holder differs from the source, the holder's slots become
+`holder.slots ++ source.slots` and the source stays in place as a tombstone
+with no slots and `alive = false`; otherwise the document is unchanged. Close
+slots move with splits and merges, so the holder is whichever live block
+holds the end of the anchored slice at replay time: the target itself, the
+block a concurrent split carried that slice into, or the block that absorbed
+the target. `Rooted` states that every alive block is headed by its own root
+slot and every tombstone is empty. `NotionCoreSpecMerge` proves the cases
+(`merge_anchor_owner`, `merge_absorbed_owner`, `merge_cycle_noop`,
+`merge_no_owner_noop`), conservation of visible text
 (`merge_text_conserved`), preservation of well-formedness and rootedness
-(`merge_preserves`, `merge_preserves_rooted`), and placement of a create after
-a tombstone (`create_after_tombstone`), with hand-derived PASS+FAIL controls.
-`NotionCoreInvariant.Admissible.merge` admits every merge, and
-`reachable_rooted` derives `Rooted` for every reachable document.
+(`merge_preserves`, `merge_preserves_rooted`), placement of a create after a
+tombstone (`create_after_tombstone`), and the review case
+(`split_then_merge_control`: from `ab · cd`, a split after `a` and a merge
+anchored at the first block's finish give `a · bcd`), with hand-derived
+PASS+FAIL controls. `NotionCoreInvariant.Admissible.merge` admits every
+merge, and `reachable_rooted` derives `Rooted` for every reachable document.
 
 **Machine.** `NotionCoreSliceForest.Chain` replaces the earlier root-plus-leaf
 shape: every slice tree is a chain, and `ChainForest` requires each block title
 to be a chain rooted at the block's own start. Liveness is derived per chain
 node: a node is dead when the next node of its chain does not open an
-instance. `mergeForest` moves the source's whole chain under the last node of
-the target's holder (`holderOf`, `appendLast`) and drops the source from the
-forest; `merge_preserves` keeps the forest invariant. `NotionCorePayload` adds `Payload.merge` and `Operation.merge`; an
-erase payload groups its targets per text instance, since a merged block's text
-can span several instances. The display order keeps merged blocks as
-tombstones and filters them out of the shown order. The partition is recovered
-from the forest's interval references (`NotionCoreMachinePartition.Covers`),
-so `merge_partitioned` needs no owner bookkeeping.
-`NotionCoreMachineDocumentMerge.canonical_merge_execution_version` connects an
-honest merge transaction to one independent merge command, and
+instance. A node is identified by its `Anchor`, its instance and stop item;
+the forest invariant keeps anchors unique (`AnchorsUnique`) and every stop the
+start of some node (`StopsKeyed`), which is what makes close addresses unique
+in the materialised document. `mergeForest` moves the source's whole chain
+under the last node of the anchor's holder (`holderOf`, `appendLast`) and
+drops the source from the forest; `merge_preserves` keeps the forest
+invariant. `NotionCorePayload.merge` carries the source block, the anchor's
+instance and its optional stop item, and `NotionCoreMachineClient.prepareMerge`
+reads the anchor from the last node of the previous visible block. An erase
+payload groups its targets per text instance, since a merged block's text can
+span several instances. The display order keeps merged blocks as tombstones
+and filters them out of the shown order. The partition is recovered from the
+forest's interval references (`NotionCoreMachinePartition.Covers`), so
+`merge_partitioned` needs no owner bookkeeping. A materialised slice ends with
+its close slot (`NotionCoreSource.Slice.close`).
+`NotionCoreMachineDocumentMerge.holder_owner` shows that the holder found by
+anchor materialises to the owner of the anchor's close address, and
+`canonical_merge_execution_version` connects an honest merge transaction to
+one independent merge command; `SPOT.concurrent_split_merge_control` is the
+review case on the machine, in both replay orders.
 `NotionCoreMachineMergeEffects` supplies the issuer's local effect behind
-`NotionCoreMRDTClient.merge_effect`. `NotionCoreLedger.entry` records
-`mergeEffect` beside the other three local effects. Search-label uniqueness
-(`MachineSearchLabels.honest_mapping_guard`) holds with merge in the request set.
+`NotionCoreMRDTClient.merge_effect`: the issuer's anchor is the last node of
+the target it sees, so the holder is that target. `NotionCoreLedger.entry`
+records `mergeEffect` beside the other three local effects. Search-label
+uniqueness (`MachineSearchLabels.honest_mapping_guard`) holds with merge in
+the request set.
 
 **Scope of the fact-set carriers.** `NotionCoreMergeFree.MergeFree` states that
 no archived transaction is a merge. The structural carrier's
@@ -122,7 +143,7 @@ fragment. The reference carrier `NotionCoreMRDT` covers the full request set.
 **Demo bugs.** Under the design, N-001, N-004 and N-005 do not occur: the
 executable gate in
 [experiments/notion-merge-design](../experiments/notion-merge-design/README.md)
-found no split failure and no text loss in 161,630 archive comparisons (deduplicated within each harness), and the Lean
+found no split failure and no text loss in 162,373 archive comparisons (deduplicated within each harness), and the Lean
 results above prove the corresponding properties for every honest execution.
 The two text-loss bugs, N-004 and N-005, are one defect: removal separate from
 the move. Whether a merge into a merged-away target is skipped or absorbed is a

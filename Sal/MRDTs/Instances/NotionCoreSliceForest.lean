@@ -3,9 +3,10 @@ import Sal.MRDTs.Instances.NotionCoreSourceDocument
 
 /-! Finite source-shaped text-slice trees. Split rewrites old children under
 the new right node, then detach/append moves that complete subtree; merge moves
-a whole block's tree under the last node of another. Every tree at a
-transaction boundary is a chain, and every dead node is the empty title root of
-a split destination.
+a whole block's tree under the last node of the chain holding its anchor. Every
+tree at a transaction boundary is a chain, every dead node is the empty title
+root of a split destination, every stop is the start of a node, and no two
+nodes share an anchor.
 -/
 namespace Sal.MRDTs.Instances.NotionCoreSliceForest
 open NotionCoreSpec (Address)
@@ -15,6 +16,21 @@ structure Ref where
   start : Address
   stop : Option Address
   deriving DecidableEq, Repr
+
+/-- The pair a slice node is found by: the instance of its start and its
+stop, which is none for the slice that runs to the end of its instance. It
+names the slice's close slot in the materialised document. -/
+structure Anchor where
+  inst : Nat
+  stop : Option Address
+  deriving DecidableEq, Repr
+
+def anchorOf (ref : Ref) : Anchor := ⟨ref.start.1, ref.stop⟩
+
+/-- The address of the close slot an anchor names in the materialised
+document: the close of its stop marker, or the finish of its instance. -/
+def Anchor.close (anchor : Anchor) : Address :=
+  (NotionCoreSpec.closeOf anchor.inst (NotionCoreSource.stopKey anchor.stop)).address
 
 mutual
 inductive Tree where
@@ -837,9 +853,17 @@ structure State where
   blocks : Forest
   physical : Nat → List Atom
 
+/-- Every stop of a node is the start of a node. -/
+def StopsKeyed (forest : Forest) : Prop :=
+  ∀ ref ∈ forestRefs forest, ∀ stop ∈ ref.stop, stop ∈ (forestRefs forest).map Ref.start
+
+/-- No two nodes of the forest have the same anchor. -/
+def AnchorsUnique (forest : Forest) : Prop := ((forestRefs forest).map anchorOf).Nodup
+
 def Invariant (state : State) : Prop :=
   ChainForest state.blocks ∧ (state.blocks.map Block.id).Nodup ∧
-    EmptyInactive state.physical state.blocks
+    EmptyInactive state.physical state.blocks ∧ StopsKeyed state.blocks ∧
+    AnchorsUnique state.blocks
 
 def write (physical : Nat → List Atom) (inst : Nat) (items : List Atom) : Nat → List Atom :=
   fun other => if other = inst then items else physical other
@@ -859,11 +883,14 @@ theorem forestRefs_append (a b : Forest) : forestRefs (a ++ b) = forestRefs a ++
 theorem forestNodes_fresh (bid : Nat) : forestNodes [⟨bid, freshTitle bid⟩] = [(titleRef bid, true)] := by
   simp [forestNodes, freshTitle, preorderTree, preorderChildren, nodes, tagBefore]
 
+theorem forestRefs_fresh (bid : Nat) : forestRefs [⟨bid, freshTitle bid⟩] = [titleRef bid] := by
+  simp [forestRefs, freshTitle, preorderTree, preorderChildren]
+
 theorem create_preserves (state : State) (bid : Nat) (invariant : Invariant state)
     (fresh : FreshName state.blocks bid) : Invariant (create state bid) := by
-  obtain ⟨chains, unique, empty⟩ := invariant
+  obtain ⟨chains, unique, empty, keyed, anchors⟩ := invariant
   have absent := fresh_name_absent chains fresh
-  refine ⟨?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · intro block member
     rcases List.mem_append.mp member with member | member
     · exact chains block member
@@ -886,6 +913,20 @@ theorem create_preserves (state : State) (bid : Nat) (invariant : Invariant stat
       · exact lives live liveMember
       · exact fun equal => other (by simpa [titleRef] using equal.symm)
     · simp at contra
+  · intro ref member stop stopped
+    simp only [create, forestRefs_append, forestRefs_fresh, List.mem_append,
+      List.mem_singleton] at member ⊢
+    rcases member with member | rfl
+    · simp only [List.map_append, List.mem_append]
+      exact Or.inl (keyed ref member stop stopped)
+    · simp [titleRef] at stopped
+  · simp only [AnchorsUnique, create, forestRefs_append, forestRefs_fresh, List.map_append,
+      List.map_cons, List.map_nil]
+    refine List.nodup_append'.mpr ⟨anchors, by simp, List.disjoint_right.mpr ?_⟩
+    intro anchor member old
+    rw [List.mem_singleton.mp member] at old
+    obtain ⟨ref, refMember, same⟩ := List.mem_map.mp old
+    exact fresh ref refMember (by simpa [anchorOf, titleRef] using congrArg Anchor.inst same)
 
 /-- RGA insertion/deletion changes one live instance and does not touch the
 slice forest. The update's actual contents are abstract here; the frame theorem
@@ -894,10 +935,10 @@ theorem updateInstance_preserves (state : State) (inst : Nat) (items : List Atom
     (invariant : Invariant state)
     (owned : ∃ live, (live, true) ∈ forestNodes state.blocks ∧ live.start.1 = inst) :
     Invariant (updateInstance state inst items) := by
-  refine ⟨invariant.1, invariant.2.1, ?_⟩
+  refine ⟨invariant.1, invariant.2.1, ?_, invariant.2.2.2⟩
   obtain ⟨live, member, equal⟩ := owned
   intro dead deadMember
-  obtain ⟨form, physicalEq, lives⟩ := invariant.2.2 dead deadMember
+  obtain ⟨form, physicalEq, lives⟩ := invariant.2.2.1 dead deadMember
   have different : dead.start.1 ≠ inst := fun same => lives live member (equal.trans same.symm)
   exact ⟨form, by simpa [updateInstance, write, different] using physicalEq, lives⟩
 
@@ -994,12 +1035,101 @@ theorem atomicSplit_nodes (physical : Nat → List Atom) (marker : Address) (tar
     · exact ⟨.link _ _ movedChain, rfl⟩
   · simp [shape]
 
+/-- Split keeps every stop keyed and every anchor unique. The left half takes
+the fresh marker as its stop, an anchor absent from the forest because no node
+starts or stops at a fresh marker; the right half inherits the split node's
+anchor; the destination's title root has the anchor of a fresh instance. -/
+theorem atomicSplit_anchors (physical : Nat → List Atom) (marker : Address) (target : Nat)
+    (forest result : Forest) (chains : ChainForest forest)
+    (fresh : FreshMarker forest marker) (freshTarget : FreshName forest target)
+    (empty : physical target = emptyPhysical target)
+    (keyed : StopsKeyed forest) (anchors : AnchorsUnique forest)
+    (accepted : atomicSplit physical marker target forest = some result) :
+    StopsKeyed result ∧ AnchorsUnique result := by
+  obtain ⟨before, block, after, pre, ref, post, title, moved, shape, old, inside, -, titleEq,
+    -, movedEq, resultEq⟩ :=
+    atomicSplit_result physical marker target forest result (fun b hb => (chains b hb).1)
+      fresh (fresh_name_absent chains freshTarget) empty accepted
+  have oldRefs : forestRefs forest =
+      forestRefs before ++ (pre ++ ref :: post) ++ forestRefs after := by
+    rw [shape]
+    simp [forestRefs, old, List.append_assoc]
+  have newRefs : forestRefs result = forestRefs before ++ (pre ++ [leftRef ref marker]) ++
+      forestRefs after ++ (titleRef target :: rightRef ref marker :: post) := by
+    subst resultEq
+    simp [forestRefs, titleEq, preorderTree, preorderChildren, movedEq, List.append_assoc]
+  have sameInstance : ref.start.1 = marker.1 :=
+    (Bool.and_eq_true_iff.mp inside).1 |> of_decide_eq_true
+  have refMember : ref ∈ forestRefs forest := by rw [oldRefs]; simp
+  have markerFresh : marker ∉ (forestRefs forest).map Ref.start := by
+    intro member
+    obtain ⟨other, otherMember, start⟩ := List.mem_map.mp member
+    obtain ⟨holder, holderMember, inside⟩ := List.mem_flatMap.mp otherMember
+    exact fresh holder holderMember (List.mem_map.mpr ⟨other, inside, start⟩)
+  have startsKept : ∀ start ∈ (forestRefs forest).map Ref.start,
+      start ∈ (forestRefs result).map Ref.start := by
+    rw [oldRefs, newRefs]
+    intro start member
+    simp only [List.map_append, List.map_cons, List.map_nil, List.mem_append, List.mem_cons,
+      leftRef, List.not_mem_nil, or_false] at member ⊢
+    tauto
+  constructor
+  · intro other member stop stopped
+    have oldStop : other ∈ forestRefs forest →
+        stop ∈ (forestRefs result).map Ref.start := fun held =>
+      startsKept stop (keyed other held stop stopped)
+    rw [newRefs] at member
+    simp only [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with ((held | held | rfl) | held) | rfl | rfl | held
+    · exact oldStop (by rw [oldRefs]; simp [held])
+    · exact oldStop (by rw [oldRefs]; simp [held])
+    · simp only [leftRef, Option.mem_def, Option.some.injEq] at stopped
+      subst stop
+      rw [newRefs]
+      simp [rightRef]
+    · exact oldStop (by rw [oldRefs]; simp [held])
+    · simp [titleRef] at stopped
+    · exact startsKept stop (keyed ref refMember stop stopped)
+    · exact oldStop (by rw [oldRefs]; simp [held])
+  · have rightAnchor : anchorOf (rightRef ref marker) = anchorOf ref := by
+      simp [anchorOf, rightRef, sameInstance]
+    have permutation : ((forestRefs result).map anchorOf).Perm
+        ((forestRefs forest).map anchorOf ++ [anchorOf (leftRef ref marker), ⟨target, none⟩]) := by
+      rw [oldRefs, newRefs]
+      simp only [List.map_append, List.map_cons, List.map_nil, rightAnchor]
+      apply List.perm_iff_count.mpr
+      intro anchor
+      simp only [List.count_append, List.count_cons, List.count_nil]
+      have titleAnchor : anchorOf (titleRef target) = ⟨target, none⟩ := rfl
+      rw [titleAnchor]
+      omega
+    have leftFresh : anchorOf (leftRef ref marker) ∉ (forestRefs forest).map anchorOf := by
+      intro member
+      obtain ⟨other, otherMember, same⟩ := List.mem_map.mp member
+      have stopped : other.stop = some marker := by
+        simpa [anchorOf, leftRef] using congrArg Anchor.stop same
+      exact markerFresh (keyed other otherMember marker (by simp [stopped]))
+    have targetFresh : (⟨target, none⟩ : Anchor) ∉ (forestRefs forest).map anchorOf := by
+      intro member
+      obtain ⟨other, otherMember, same⟩ := List.mem_map.mp member
+      exact freshTarget other otherMember (by simpa [anchorOf] using congrArg Anchor.inst same)
+    have distinct : anchorOf (leftRef ref marker) ≠ ⟨target, none⟩ := by
+      intro same
+      exact freshTarget ref refMember (by simpa [anchorOf, leftRef] using congrArg Anchor.inst same)
+    refine permutation.nodup_iff.mpr (List.nodup_append'.mpr ⟨anchors, by simp [distinct], ?_⟩)
+    apply List.disjoint_right.mpr
+    intro anchor member
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with rfl | rfl
+    · exact leftFresh
+    · exact targetFresh
+
 theorem split_preserves (state result : State) (marker : Address) (target : Nat)
     (invariant : Invariant state) (fresh : FreshMarker state.blocks marker)
     (markerEvent : marker.2 ≠ .start)
     (freshTarget : FreshName state.blocks target)
     (accepted : split state marker target = some result) : Invariant result := by
-  obtain ⟨chains, unique, empty⟩ := invariant
+  obtain ⟨chains, unique, empty, keyed, anchors⟩ := invariant
   let physical := (create state target).physical
   have emptyTarget : physical target = emptyPhysical target := by simp [physical, create, write]
   have absent := fresh_name_absent chains freshTarget
@@ -1021,7 +1151,9 @@ theorem split_preserves (state result : State) (marker : Address) (target : Nat)
   have refInstance : ref.start.1 ≠ target := freshTarget ref (node_ref refLive)
   have sameInstance : ref.start.1 = marker.1 :=
     (Bool.and_eq_true_iff.mp inside).1 |> of_decide_eq_true
-  refine ⟨chainsNext, ?_, ?_⟩
+  have anchored := atomicSplit_anchors physical marker target state.blocks blocks chains fresh
+    freshTarget emptyTarget keyed anchors executed
+  refine ⟨chainsNext, ?_, ?_, anchored.1, anchored.2⟩
   · change (blocks.map Block.id).Nodup
     rw [ids]
     exact List.nodup_append'.mpr ⟨unique, by simp,
@@ -1052,35 +1184,37 @@ theorem split_preserves (state result : State) (marker : Address) (target : Nat)
       · rw [sameInstance]; exact refInstance
     · simp at equal
 
-/-! Merge. The holder of a block name is the block whose chain contains that
-name's title root; title roots move with merges, so the holder of a merged
-block is the block that absorbed it. -/
+/-! Merge. A merge names its anchor: the instance and stop of the target
+block's last slice at issue time. The holder of an anchor is the block whose
+chain contains a node with that anchor; nodes move with splits and merges, and
+a split keeps the split node's anchor on its right half, so the holder is the block
+currently holding the end of the anchored slice. -/
 
-def holderOf (forest : Forest) (target : Nat) : Option Block :=
-  forest.find? fun block => (preorderTree block.title).any fun ref => ref.start == (target, .start)
+def holderOf (forest : Forest) (anchor : Anchor) : Option Block :=
+  forest.find? fun block => (preorderTree block.title).any fun ref => anchorOf ref == anchor
 
-/-- Move the source block's whole chain under the last node of the target's
+/-- Move the source block's whole chain under the last node of the anchor's
 holder and drop the source block. A missing source or holder, or a holder that
 is the source itself, leaves the forest unchanged. -/
-def mergeForest (forest : Forest) (source target : Nat) : Forest :=
-  match forest.find? (fun block => block.id == source), holderOf forest target with
+def mergeForest (forest : Forest) (source : Nat) (anchor : Anchor) : Forest :=
+  match forest.find? (fun block => block.id == source), holderOf forest anchor with
   | some moved, some holder =>
       if holder.id = source then forest
       else (forest.filter fun block => block.id != source).map fun block =>
         if block.id = holder.id then {block with title := appendLast block.title moved.title} else block
   | _, _ => forest
 
-theorem mergeForest_cases (forest : Forest) (source target : Nat) :
-    mergeForest forest source target = forest ∨
+theorem mergeForest_cases (forest : Forest) (source : Nat) (anchor : Anchor) :
+    mergeForest forest source anchor = forest ∨
       ∃ moved holder, moved ∈ forest ∧ holder ∈ forest ∧ moved.id = source ∧ holder.id ≠ source ∧
-        holderOf forest target = some holder ∧
-        mergeForest forest source target = (forest.filter fun block => block.id != source).map fun block =>
+        holderOf forest anchor = some holder ∧
+        mergeForest forest source anchor = (forest.filter fun block => block.id != source).map fun block =>
           if block.id = holder.id then {block with title := appendLast block.title moved.title} else block := by
   unfold mergeForest
   cases foundSource : forest.find? (fun block => block.id == source) with
   | none => exact Or.inl rfl
   | some moved =>
-    cases foundHolder : holderOf forest target with
+    cases foundHolder : holderOf forest anchor with
     | none => exact Or.inl rfl
     | some holder =>
       by_cases same : holder.id = source
@@ -1116,10 +1250,10 @@ private theorem merged_nodes {forest : Forest} {moved holder : Block}
   · simp [selected]
 
 /-- Merge moves nodes between chains without changing any node's liveness. -/
-theorem mergeForest_nodes (forest : Forest) (source target : Nat)
+theorem mergeForest_nodes (forest : Forest) (source : Nat) (anchor : Anchor)
     (chains : ChainForest forest) (unique : (forest.map Block.id).Nodup) (node : Ref × Bool) :
-    node ∈ forestNodes (mergeForest forest source target) ↔ node ∈ forestNodes forest := by
-  rcases mergeForest_cases forest source target with same | ⟨moved, holder, movedMember, holderMember,
+    node ∈ forestNodes (mergeForest forest source anchor) ↔ node ∈ forestNodes forest := by
+  rcases mergeForest_cases forest source anchor with same | ⟨moved, holder, movedMember, holderMember,
     movedId, distinct, _, merged⟩
   · rw [same]
   · rw [merged]
@@ -1170,10 +1304,10 @@ private theorem flatMap_single {α β : Type} (xs : List α) (key : α → Nat) 
 
 /-- Merge moves the source's nodes into the holder: the multiset of nodes is
 unchanged. -/
-theorem mergeForest_refs (forest : Forest) (source target : Nat)
+theorem mergeForest_refs (forest : Forest) (source : Nat) (anchor : Anchor)
     (unique : (forest.map Block.id).Nodup) :
-    (forestRefs (mergeForest forest source target)).Perm (forestRefs forest) := by
-  rcases mergeForest_cases forest source target with same | ⟨moved, holder, movedMember, holderMember,
+    (forestRefs (mergeForest forest source anchor)).Perm (forestRefs forest) := by
+  rcases mergeForest_cases forest source anchor with same | ⟨moved, holder, movedMember, holderMember,
     movedId, distinct, _, merged⟩
   · rw [same]
   · rw [merged]
@@ -1212,9 +1346,9 @@ theorem mergeForest_refs (forest : Forest) (source target : Nat)
       exact (List.filter_append_perm _ forest).flatMap_right _
     simpa [forestRefs] using whole
 
-theorem mergeForest_ids (forest : Forest) (source target : Nat) :
-    List.Sublist ((mergeForest forest source target).map Block.id) (forest.map Block.id) := by
-  rcases mergeForest_cases forest source target with same | ⟨moved, holder, -, -, -, -, -, merged⟩
+theorem mergeForest_ids (forest : Forest) (source : Nat) (anchor : Anchor) :
+    List.Sublist ((mergeForest forest source anchor).map Block.id) (forest.map Block.id) := by
+  rcases mergeForest_cases forest source anchor with same | ⟨moved, holder, -, -, -, -, -, merged⟩
   · rw [same]
   · rw [merged, List.map_map]
     have ids : (Block.id ∘ fun block => if block.id = holder.id then
@@ -1224,13 +1358,13 @@ theorem mergeForest_ids (forest : Forest) (source target : Nat) :
     exact List.Sublist.map Block.id List.filter_sublist
 
 /-- The holder's chain becomes its old nodes followed by the source's. -/
-theorem mergeForest_holder (forest : Forest) (source target : Nat) (moved holder : Block)
+theorem mergeForest_holder (forest : Forest) (source : Nat) (anchor : Anchor) (moved holder : Block)
     (unique : (forest.map Block.id).Nodup) (movedMember : moved ∈ forest) (movedId : moved.id = source)
-    (found : holderOf forest target = some holder) (distinct : holder.id ≠ source) :
-    {holder with title := appendLast holder.title moved.title} ∈ mergeForest forest source target ∧
+    (found : holderOf forest anchor = some holder) (distinct : holder.id ≠ source) :
+    {holder with title := appendLast holder.title moved.title} ∈ mergeForest forest source anchor ∧
       preorderTree (appendLast holder.title moved.title) =
         preorderTree holder.title ++ preorderTree moved.title ∧
-      moved.id ∉ (mergeForest forest source target).map Block.id := by
+      moved.id ∉ (mergeForest forest source anchor).map Block.id := by
   have sourceFound : forest.find? (fun block => block.id == source) = some moved := by
     obtain ⟨left, right, shape⟩ := List.append_of_mem movedMember
     have absent := List.nodup_middle.mp (by simpa [shape] using unique)
@@ -1239,7 +1373,7 @@ theorem mergeForest_holder (forest : Forest) (source target : Nat) (moved holder
       simpa [← movedId] using fun equal => absent.1.1 (List.mem_map.mpr ⟨x, hx, equal⟩))]
     simp [movedId]
   have holderMember := List.mem_of_find?_eq_some found
-  have merged : mergeForest forest source target = (forest.filter fun block => block.id != source).map
+  have merged : mergeForest forest source anchor = (forest.filter fun block => block.id != source).map
       fun block => if block.id = holder.id then
         {block with title := appendLast block.title moved.title} else block := by
     simp [mergeForest, sourceFound, found, distinct]
@@ -1255,11 +1389,13 @@ theorem mergeForest_holder (forest : Forest) (source target : Nat) (moved holder
       split at equal <;> exact equal
     simp [sameId, movedId] at different
 
-theorem merge_preserves (state : State) (source target : Nat) (invariant : Invariant state) :
-    Invariant {state with blocks := mergeForest state.blocks source target} := by
-  obtain ⟨chains, unique, empty⟩ := invariant
-  refine ⟨?_, (mergeForest_ids state.blocks source target).nodup unique, ?_⟩
-  · rcases mergeForest_cases state.blocks source target with same | ⟨moved, holder, movedMember,
+theorem merge_preserves (state : State) (source : Nat) (anchor : Anchor) (invariant : Invariant state) :
+    Invariant {state with blocks := mergeForest state.blocks source anchor} := by
+  obtain ⟨chains, unique, empty, keyed, anchors⟩ := invariant
+  have permutation := mergeForest_refs state.blocks source anchor unique
+  refine ⟨?_, (mergeForest_ids state.blocks source anchor).nodup unique, ?_, ?_,
+    (permutation.map anchorOf).nodup_iff.mpr anchors⟩
+  · rcases mergeForest_cases state.blocks source anchor with same | ⟨moved, holder, movedMember,
       holderMember, -, -, -, merged⟩
     · simpa only [same] using chains
     · intro block member
@@ -1272,9 +1408,12 @@ theorem merge_preserves (state : State) (source target : Nat) (invariant : Invar
       · simp only [selected, ↓reduceIte]
         exact chains old oldMember
   · intro dead member
-    have nodesEq := mergeForest_nodes state.blocks source target chains unique
+    have nodesEq := mergeForest_nodes state.blocks source anchor chains unique
     obtain ⟨form, physicalEq, lives⟩ := empty dead ((nodesEq _).mp member)
     exact ⟨form, physicalEq, fun live liveMember => lives live ((nodesEq _).mp liveMember)⟩
+  · intro ref member stop stopped
+    exact (permutation.map Ref.start).mem_iff.mpr
+      (keyed ref (permutation.mem_iff.mp member) stop stopped)
 
 def initial : State := ⟨[], emptyPhysical⟩
 
@@ -1291,18 +1430,19 @@ inductive Reach : State → Prop where
   | split {state result : State} (marker : Address) (target : Nat) : Reach state →
       FreshMarker state.blocks marker → marker.2 ≠ .start → FreshName state.blocks target →
       split state marker target = some result → Reach result
-  | merge {state : State} (source target : Nat) : Reach state →
-      Reach {state with blocks := mergeForest state.blocks source target}
+  | merge {state : State} (source : Nat) (anchor : Anchor) : Reach state →
+      Reach {state with blocks := mergeForest state.blocks source anchor}
 
 theorem reachable_invariant {state : State} (reachable : Reach state) : Invariant state := by
   induction reachable with
   | init => exact ⟨by simp [initial, ChainForest], by simp [initial],
-      by simp [EmptyInactive, initial, forestNodes]⟩
+      by simp [EmptyInactive, initial, forestNodes], by simp [StopsKeyed, initial, forestRefs],
+      by simp [AnchorsUnique, initial, forestRefs]⟩
   | create bid _ fresh ih => exact create_preserves _ bid ih fresh
   | update inst items _ owned ih => exact updateInstance_preserves _ inst items ih owned
   | split marker target _ fresh event freshTarget accepted ih =>
       exact split_preserves _ _ marker target ih fresh event freshTarget accepted
-  | merge source target _ ih => exact merge_preserves _ source target ih
+  | merge source anchor _ ih => exact merge_preserves _ source anchor ih
 
 private def itemAddress (counter : Nat) : Address := (0, .event (65, counter))
 private def firstPhysical : List Atom :=
@@ -1362,23 +1502,29 @@ theorem repeated_split_control :
 private def mergedBack : Forest :=
   [⟨0, chainOf ⟨(0, .start), some (itemAddress 3)⟩ [titleRef 10, ⟨itemAddress 3, none⟩]⟩]
 
-/-- PASS+FAIL: merging the split destination back moves its whole chain,
-dead title root included, under the source's last node. The merged block is
-gone; its text is not dropped and the target is not emptied. -/
+/-- PASS+FAIL: merging the split destination back, anchored at the stop of
+block 0's last slice, moves its whole chain, dead title root included, under
+that slice. The merged block is gone; its text is not dropped and the target is
+not emptied. The anchor names a slice end, not a block: anchoring at the end
+of instance 0, which the moved slice holds, finds the source itself and
+changes nothing. -/
 theorem merge_back_control :
-    mergeForest splitBlocks 10 0 = mergedBack ∧
-    mergeForest splitBlocks 10 0 ≠ [⟨0, .node ⟨(0, .start), some (itemAddress 3)⟩ .nil⟩] ∧
-    mergeForest splitBlocks 10 0 ≠ splitBlocks := by decide
+    mergeForest splitBlocks 10 ⟨0, some (itemAddress 3)⟩ = mergedBack ∧
+    mergeForest splitBlocks 10 ⟨0, some (itemAddress 3)⟩ ≠
+      [⟨0, .node ⟨(0, .start), some (itemAddress 3)⟩ .nil⟩] ∧
+    mergeForest splitBlocks 10 ⟨0, some (itemAddress 3)⟩ ≠ splitBlocks ∧
+    mergeForest splitBlocks 10 ⟨0, none⟩ = splitBlocks ∧
+    mergeForest splitBlocks 10 ⟨0, none⟩ ≠ mergedBack := by decide
 
 /-- PASS+FAIL: a merge into a merged-away block lands in its absorber, and a
 merge whose holder is the source itself is a no-op rather than a removal. -/
 theorem merge_absorbed_control :
     let three : Forest := [⟨0, freshTitle 0⟩, ⟨1, freshTitle 1⟩, ⟨2, freshTitle 2⟩]
-    let first := mergeForest three 1 0
-    mergeForest first 2 1 = [⟨0, chainOf (titleRef 0) [titleRef 1, titleRef 2]⟩] ∧
-    mergeForest first 2 1 ≠ first ∧
-    mergeForest first 0 1 = first ∧
-    mergeForest first 0 1 ≠ [⟨2, freshTitle 2⟩] := by decide
+    let first := mergeForest three 1 ⟨0, none⟩
+    mergeForest first 2 ⟨1, none⟩ = [⟨0, chainOf (titleRef 0) [titleRef 1, titleRef 2]⟩] ∧
+    mergeForest first 2 ⟨1, none⟩ ≠ first ∧
+    mergeForest first 0 ⟨1, none⟩ = first ∧
+    mergeForest first 0 ⟨1, none⟩ ≠ [⟨2, freshTitle 2⟩] := by decide
 
 #print axioms splitForest_detach
 #print axioms atomicSplit_result

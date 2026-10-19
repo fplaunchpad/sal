@@ -54,7 +54,8 @@ theorem honest_cells (network : NotionCorePayloadNetwork.State)
     version closed _ [] (by simp) state accepted
   refine ⟨state,accepted,?_⟩
   intro inst existsInstance
-  obtain ⟨represented,physicalFactor,referencePerm⟩ := part.partitions _ existsInstance
+  obtain ⟨represented,physicalFactor,referencePerm,chained⟩ :=
+    NotionCoreIncrementalCounterexample.partitioned_chained state part _ existsInstance
   refine ⟨represented,physicalFactor,?_⟩
   have filtered := recordsEq.filter (fun entry => entry.start.1 == NotionCoreMachine.blockName inst)
   have mapped := referencePerm.map cutRecord
@@ -65,7 +66,7 @@ theorem honest_cells (network : NotionCorePayloadNetwork.State)
   unfold cells
   rw [physicalEq inst,physicalFactor]
   exact NotionCoreIncrementalCounterexample.reconstructCells_correct represented _ together
-    (by simpa [physicalFactor] using unique (NotionCoreMachine.blockName inst))
+    (by simpa [physicalFactor] using unique (NotionCoreMachine.blockName inst)) chained
 
 
 noncomputable def recordText (facts : State) (entry : Entry) : Option (List Nat) := do
@@ -93,7 +94,8 @@ theorem recordText_ref (facts : State) (state : NotionCoreMachine.State)
     recordText facts (cutRecord owned) =
       (NotionCoreMachine.sliceAtoms state owned.2).map (List.flatMap NotionCoreMachine.atomText) := by
   have existsInstance := part.refsExist owned member
-  obtain ⟨all,factor,referencePerm⟩ := part.partitions owned.2.start.1 existsInstance
+  obtain ⟨all,factor,referencePerm,chained⟩ :=
+    NotionCoreIncrementalCounterexample.partitioned_chained state part owned.2.start.1 existsInstance
   have inCells : owned ∈ NotionCoreMachinePartition.cellRefs all :=
     referencePerm.mem_iff.mp (List.mem_filter.mpr ⟨member,by simp⟩)
   obtain ⟨before,cell,after,shape,equal⟩ := (NotionCoreMachinePartition.cellRefs_member all owned).mp inCells
@@ -106,13 +108,13 @@ theorem recordText_ref (facts : State) (state : NotionCoreMachine.State)
   dsimp only [cutRecord]
   rw [physicalEq owned.2.start.1 existsInstance,factor]
   have recovered := NotionCoreIncrementalCounterexample.reconstructCells_correct
-    (before ++ cell :: after) _ cellsPerm (by simpa [factor] using unique owned.2.start.1)
+    (before ++ cell :: after) _ cellsPerm (by simpa [factor] using unique owned.2.start.1) chained
   simp only [Bind.bind,Option.bind]
   rw [recovered]
   rw [equal]
   have found := NotionCorePartition.findCell_of_member cell cell.slice.start
     (by simpa [factor] using unique owned.2.start.1) (by simp)
-    (by simp [NotionCoreSource.Slice.traversal])
+    (by simp [NotionCorePartition.Cell.physical, NotionCorePartition.boundary])
   have extracted := NotionCoreMachineSlices.sliceAtoms_cell state before after cell
     (by simpa [equal] using existsInstance) (by simpa [equal] using factor)
     (by simpa [equal] using unique owned.2.start.1)
@@ -255,7 +257,8 @@ def Stored (state : NotionCoreMachine.State) : Prop :=
 
 theorem operation_stored (state result : NotionCoreMachine.State) (op : NotionCorePayload.Operation)
     (accepted : NotionCoreMachine.applyOperation state op = some result)
-    (notMerge : ∀ source target, op ≠ .merge source target) (stored : Stored state) : Stored result := by
+    (notMerge : ∀ source inst stop, op ≠ .merge source inst stop) (stored : Stored state) :
+    Stored result := by
   intro bid member
   rcases (NotionCoreMachineBlockPresence.operation_display state result op accepted bid).mp member with old | fresh
   · exact NotionCoreMachineBlockPresence.operation_kept state result op accepted notMerge bid (stored bid old)
@@ -279,7 +282,7 @@ theorem operation_stored (state result : NotionCoreMachine.State) (op : NotionCo
 
 theorem operations_stored (state result : NotionCoreMachine.State) (ops : List NotionCorePayload.Operation)
     (accepted : NotionCoreMachine.applyOperations state ops = some result)
-    (notMerge : ∀ op ∈ ops, ∀ source target, op ≠ .merge source target) (stored : Stored state) :
+    (notMerge : ∀ op ∈ ops, ∀ source inst stop, op ≠ .merge source inst stop) (stored : Stored state) :
     Stored result := by
   induction ops generalizing state with
   | nil =>
@@ -307,13 +310,13 @@ theorem replay_stored (state result : NotionCoreMachine.State) (txs : List Notio
       apply ih middle (by simpa [NotionCoreMachine.replay,first] using accepted)
         (fun tx' member => free tx' (by simp [member]))
       apply operations_stored state middle _ first _ stored
-      intro op member source target equal
+      intro op member source inst stop equal
       subst equal
       have notMerge := free tx (by simp)
       cases tx with
       | mk id payload =>
         cases payload <;> simp [NotionCorePayload.operations] at member
-        exact notMerge _ _ rfl
+        exact notMerge _ _ _ rfl
 
 theorem visible_stored (state : NotionCoreMachine.State) (stored : Stored state) :
     NotionCoreMachine.visible state = state.display := by
@@ -446,7 +449,10 @@ theorem late_split_observe_control :
 #print axioms late_split_observe_control
 
 private def seed : NotionCorePayload.Transaction := NotionCorePayload.bootstrap [97,98]
-private def mergeBack : NotionCorePayload.Transaction := ⟨⟨4,[66]⟩,.merge (.issued low.id) .initial⟩
+private def mergeBack : NotionCorePayload.Transaction :=
+  ⟨⟨4,[66]⟩,.merge (.issued low.id) .initial (some low.id)⟩
+private def mergeAtFinish : NotionCorePayload.Transaction :=
+  ⟨⟨4,[66]⟩,.merge (.issued low.id) .initial none⟩
 
 /-- A merge contributes no structural fact. -/
 theorem merge_no_facts (txs : List NotionCorePayload.Transaction) :
@@ -455,8 +461,9 @@ theorem merge_no_facts (txs : List NotionCorePayload.Transaction) :
     NotionCoreStructuralFacts.extra,NotionCorePayload.births,NotionCorePayload.operations,
     NotionCorePayload.Operation.births]
 
-/-- The merge-free scope is forced. Splitting `ab` after `a` and merging the new
-block back adds no fact, while replay moves `b` back into the first block; so
+/-- The merge-free scope is forced. Splitting `ab` after `a` stops the first
+block's last slice at the split marker; merging the new block back, anchored at
+that marker, adds no fact, while replay moves `b` back into the first block; so
 no query on the fact set agrees with replay on both archives. -/
 theorem merge_outside_scope (query : State → Option (List (Nat × List Nat))) :
     (NotionCoreMachine.replay {} [seed,low] >>= NotionCoreMachine.render) =
@@ -478,6 +485,17 @@ theorem merge_outside_scope (query : State → Option (List (Nat × List Nat))) 
   rw [split,merged] at contra
   simp [NotionCoreMachine.blockName] at contra
 
+/-- PASS+FAIL: the anchor decides the merge. Anchored at the finish of
+instance 0, whose slice the split moved into the new block, the merge finds
+the source itself and changes nothing; it does not merge `b` back. -/
+theorem merge_wrong_anchor_control :
+    (NotionCoreMachine.replay {} [seed,low,mergeAtFinish] >>= NotionCoreMachine.render) =
+      some [(0,[97]),(NotionCoreMachine.blockName (.issued low.id),[98])] ∧
+    (NotionCoreMachine.replay {} [seed,low,mergeAtFinish] >>= NotionCoreMachine.render) ≠
+      some [(0,[97,98])] := by
+  decide +kernel
+
+#print axioms merge_wrong_anchor_control
 #print axioms merge_outside_scope
 
 end SPOT

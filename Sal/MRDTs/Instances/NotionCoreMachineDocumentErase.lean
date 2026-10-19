@@ -177,7 +177,7 @@ theorem materializeBlock_erase (state result : State) (block inst : BlockKey)
     cases atoms : sliceAtoms state ref with
     | none => simp [atoms] at selected
     | some found =>
-      have sliceEq : slice = ⟨ref.start,found⟩ := by simpa [atoms] using selected.symm
+      have sliceEq : slice = ⟨ref.start,found,ref.stop⟩ := by simpa [atoms] using selected.symm
       subst slice
       simp [sliceAtoms_erase state result block inst targets ref found accepted atoms,
         NotionCoreSource.eraseSlice]

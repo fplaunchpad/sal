@@ -74,7 +74,7 @@ namespace SPOT
 private def seed := NotionCorePayloadNetwork.seeded [97,98]
 private def original : Block := ⟨0,0,[⟨(0,.start),[
   ⟨NotionCorePhysicalReplay.address 0 ⟨1,[65]⟩,.text 97 false⟩,
-  ⟨NotionCorePhysicalReplay.address 0 ⟨2,[65]⟩,.text 98 false⟩]⟩]⟩
+  ⟨NotionCorePhysicalReplay.address 0 ⟨2,[65]⟩,.text 98 false⟩],none⟩]⟩
 /-- A real issued deletion reconstructs b in the retained block, rejecting
 both the no-op and deletion of the other range. The concrete old input is
 kernel checked; the actual after-network is constructed by the proved effect. -/
@@ -95,7 +95,7 @@ theorem issued_range_control :
   all_goals simp [reconstructed,rendered,original,NotionCoreSourceDocument.project,
     NotionCoreSpec.view,NotionCoreSource.Block.project,NotionCoreSource.Block.slots,
     NotionCoreSource.Block.alive,NotionCoreSource.Slice.slots,
-    NotionCoreSource.Slice.anchor,NotionCoreSource.Atom.slot,NotionCoreSpec.text]
+    NotionCoreSource.Slice.anchor,NotionCoreSource.Slice.close,NotionCoreSource.Atom.slot,NotionCoreSpec.text]
 end SPOT
 
 #print axioms SPOT.issued_range_control

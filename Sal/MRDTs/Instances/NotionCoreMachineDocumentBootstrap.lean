@@ -69,7 +69,7 @@ theorem canonical_bootstrap_source_execution_version (network : NotionCorePayloa
       NotionCoreSourceDocument.Execution document (NotionCoreMachineCommands.commands tx) after := by
   have creators := NotionCoreMachineNetwork.creator_reachable reachable
   have networkReach := NotionCoreCreatorNetwork.payload_reachable creators
-  obtain ⟨checked,checkedReplay,part,_,_⟩ :=
+  obtain ⟨checked,checkedReplay,part,shape,_⟩ :=
     NotionCoreMachineHonestReplay.honest_prefix_reconstruct_version network reachable version closed pre (tx :: suffix) position
   have stateEq : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
@@ -146,10 +146,12 @@ theorem canonical_bootstrap_source_execution_version (network : NotionCorePayloa
         simp [physical,NotionCoreMachineTables.getInstance_put,distinct])
     (by rw [nextEq]; unfold putInstance; split <;> rfl)
     (by rw [nextEq]; unfold putInstance; split <;> rfl) available
+  have createdShape := NotionCoreMachineShape.fresh_create_shape_preserves state created .initial none
+    shape part freshInstance freshBlock createStep
   have createGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard state part oldUnique
-    aligned document createdDoc old (.create 0 0 none) createSource
+    shape.2.2.2.2 aligned document createdDoc old (.create 0 0 none) createSource
   have insertGuard := NotionCoreMachineDocumentInvariant.accepted_source_guard created createdPart createdUnique
-    createdAligned createdDoc after createdMat
+    createdShape.2.2.2.2 createdAligned createdDoc after createdMat
     (.insert (0,.start) ((NotionCorePayload.textItems tx.id atoms (fun _ => false)).map
       (NotionCorePhysicalReplay.atom 0))) insertSource
   refine ⟨next,after,transaction,afterMat,?_⟩

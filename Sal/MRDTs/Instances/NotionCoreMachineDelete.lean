@@ -376,7 +376,7 @@ private def y : Id := ⟨4,[66]⟩
 private def z : Id := ⟨5,[66]⟩
 private def merged : List Transaction :=
   [NotionCorePayload.bootstrap [97], ⟨x,.create (some .initial)⟩,
-    ⟨y,.insert (.issued x) (.issued x) .start [98]⟩, ⟨z,.merge (.issued x) .initial⟩]
+    ⟨y,.insert (.issued x) (.issued x) .start [98]⟩, ⟨z,.merge (.issued x) .initial none⟩]
 
 /-- PASS+FAIL: after the block holding b is merged into the block holding a,
 a range crossing the merged boundary yields one group per text instance, in

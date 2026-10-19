@@ -26,19 +26,19 @@ def receiveMetadata (state : NotionCoreRuntimeMetadata.State) (tx : Transaction)
 /-- Merge transactions are outside the executable's scope: its indexed fact
 query has no replay order in which to evaluate a block merge. -/
 def admissible (tx : Transaction) : Bool := match tx.payload with
-  | .merge _ _ => false
+  | .merge _ _ _ => false
   | _ => true
 
 theorem admissible_notMerge {tx : Transaction} (admitted : admissible tx = true) :
     NotionCoreMergeFree.NotMerge tx := by
-  intro source target payload
+  intro source inst stop payload
   simp [admissible,payload] at admitted
 
 theorem admissible_of_notMerge {tx : Transaction} (notMerge : NotionCoreMergeFree.NotMerge tx) :
     admissible tx = true := by
   unfold admissible
   split
-  · next source target payload => exact absurd payload (notMerge source target)
+  · next source inst stop payload => exact absurd payload (notMerge source inst stop)
   · rfl
 
 /-- Receipt of an admissible transaction: identity check, then fact integration. -/

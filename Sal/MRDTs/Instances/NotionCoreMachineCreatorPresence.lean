@@ -99,7 +99,7 @@ private theorem operation_presence (state result : State) (op : Operation)
       | some pair =>
         simp [selected] at accepted; subst result
         exact ⟨fun _ h => h,by simp [operationCreates]⟩
-  | merge source target =>
+  | merge source inst stop =>
     simp only [applyOperation,Option.some.injEq] at accepted; subst result
     exact ⟨fun _ h => h,by simp [operationCreates]⟩
 
@@ -161,7 +161,7 @@ theorem operation_display_names (state result : State) (op : Operation)
       | some pair =>
         simp [selected] at accepted; subst result
         exact fun bid member => List.mem_append_left _ member
-  | merge source target =>
+  | merge source inst stop =>
     simp only [applyOperation,Option.some.injEq] at accepted; subst result
     exact fun bid member => List.mem_append_left _ member
 

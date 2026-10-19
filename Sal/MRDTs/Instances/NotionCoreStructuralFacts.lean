@@ -27,7 +27,7 @@ def extra (tx : Transaction) : List Fact := match tx.payload with
   | .erase _ groups => groups.flatMap fun group => group.2.map (Fact.erased group.1)
   | .split block inst _ =>
       [.created (.issued tx.id) (some block), .cut inst tx.id (.issued tx.id)]
-  | .merge _ _ => []
+  | .merge _ _ _ => []
 
 def decodeList (tx : Transaction) : List Fact :=
   (NotionCorePayload.births tx (fun _ _ => false)).map
@@ -77,7 +77,7 @@ transactions, including when its source key precedes already received keys. -/
 theorem late_integrate (before after : List Transaction) (tx : Transaction) :
     integrate (ofTransactions (before ++ after)) tx =
       ofTransactions (before ++ tx :: after) := by
-  simp [integrate, Finset.union_assoc, Finset.union_left_comm, Finset.union_comm]
+  simp [integrate, Finset.union_left_comm, Finset.union_comm]
 
 /-- The received archive is proof input only; the maintained carrier is the
 union of structural facts. Ordinary and recursive bases use the same union. -/

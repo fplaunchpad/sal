@@ -43,9 +43,10 @@ counterexample-bearing extension.
 The [merge design note](notion-merge-block-design.md) asks whether a block
 merge over the same slice-tree and RGA state has a sequential meaning. Its
 answer is a merge whose removal of the source is the move itself: the source's
-whole chain attaches under the last node of the tree holding the target's root,
-and the source stays in the display order as a tombstone. The sequential
-specification gains `Command.merge` with an absorb rule (a merge into a
+whole chain attaches under the last node of the tree holding the slice at
+which the request was anchored, the end of the target's last slice when
+issued, and the source stays in the display order as a tombstone. The
+sequential specification gains `Command.merge` with an absorb rule (a merge into a
 merged-away target lands in its absorber) and `NotionCoreSpecMerge` proves
 conservation of visible text (`merge_text_conserved`) and preservation of the
 document invariants. On the machine, every slice tree is a chain

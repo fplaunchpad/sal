@@ -15,10 +15,12 @@ open NotionCoreMachine
 open NotionCorePreparation (characters zeroOrigin)
 
 /-- Extract every actual stored slice in tree preorder, retaining tombstones
-for endpoint selection and filtering them only when selecting characters. -/
+for endpoint selection and filtering them only when selecting characters. A
+materialised slice keeps its node's stop, so its slots end with the close slot
+of that stop. -/
 def materialize (state : State) (tree : NotionCoreSliceForest.Tree) : Option (List Slice) :=
   (NotionCoreSliceForest.preorderTree tree).mapM fun ref => do
-    pure ⟨ref.start, ← sliceAtoms state ref⟩
+    pure ⟨ref.start, ← sliceAtoms state ref, ref.stop⟩
 
 def blockSlices (state : State) (block : BlockKey) : Option (List Slice) := do
   let found ← state.forest.find? (fun entry => entry.id == blockName block)
@@ -43,6 +45,18 @@ def decodeBlock : Nat → Option BlockKey
 def decodeOrigin : LocalId → Option NotionCoreOriginTree.Origin
   | .start => some .start
   | .event id => (Encodable.decode (α := List Nat) id.1).map fun session => .item ⟨id.2,session⟩
+  | .close _ | .finish => none
+
+/-- Decode the stop of a slice of instance `inst` back to the identity of its
+split marker. A slice without a stop runs to the end of its instance. A stop
+outside the instance, or one that is not an event address, does not decode. -/
+def decodeStop (inst : Nat) : Option Address → Option (Option NotionRunAllocation.Id)
+  | none => some none
+  | some (stopInst, .event key) =>
+      if stopInst = inst then
+        (Encodable.decode (α := List Nat) key.1).map fun session => some ⟨key.2, session⟩
+      else none
+  | some _ => none
 def decodeAddress (address : Address) : Option (BlockKey × NotionCoreOriginTree.Origin) := do
   pure (← decodeBlock address.1, ← decodeOrigin address.2)
 
@@ -50,6 +64,14 @@ def decodeAddress (address : Address) : Option (BlockKey × NotionCoreOriginTree
   cases block with
   | initial => rfl
   | issued id => cases id; simp [blockName, Nat.add_comm, decodeBlock]
+
+@[simp] theorem decodeStop_address (inst : Nat) (stop : Option NotionRunAllocation.Id) :
+    decodeStop inst (stop.map (NotionCorePhysicalReplay.address inst)) = some stop := by
+  cases stop with
+  | none => rfl
+  | some id =>
+    cases id
+    simp [decodeStop, NotionCorePhysicalReplay.address, NotionCorePhysicalReplay.localId]
 
 @[simp] theorem decode_originAddress (block : BlockKey) (origin : NotionCoreOriginTree.Origin) :
     decodeAddress (NotionCorePhysicalReplay.originAddress (blockName block) origin) =
@@ -73,13 +95,20 @@ def prepareCreate (state : State) (after : Option BlockKey) : Option Payload :=
       some (.create after) else none
 
 /-- The demo merges a block into the previous visible block; the first
-visible block, or an absent one, has no merge. -/
+visible block, or an absent one, has no merge. The request records the anchor
+of the previous block's last slice: its stored instance and its stop marker,
+none when that slice runs to the end of its instance. -/
 def prepareMerge (state : State) (source : BlockKey) : Option Payload := do
   let shown := visible state
   if blockName source ∈ shown then do
     let previous ← (shown.take (shown.idxOf (blockName source))).getLast?
-    let target ← decodeBlock previous
-    pure (.merge source target)
+    let target ← state.forest.find? (fun entry => entry.id == previous)
+    let last := NotionCoreSliceForest.lastNode target.title
+    if state.instances.any (fun entry => entry.1 == last.start.1) then do
+      let inst ← decodeBlock last.start.1
+      let stop ← decodeStop last.start.1 last.stop
+      pure (.merge source inst stop)
+    else none
   else none
 
 /-- Visible deletion targets before per-instance grouping and ID-range
@@ -97,10 +126,12 @@ theorem materialize_leaf (state : State) (before after : List NotionCorePartitio
     (cell : NotionCorePartition.Cell)
     (existsInstance : state.instances.any (fun entry => entry.1 == cell.slice.start.1) = true)
     (physicalEq : physical state cell.slice.start.1 = NotionCorePartition.flatten (before ++ cell :: after))
-    (unique : ((physical state cell.slice.start.1).map Atom.address).Nodup) :
+    (unique : ((physical state cell.slice.start.1).map Atom.address).Nodup)
+    (stopped : cell.slice.stop = after.head?.map (fun next => next.slice.start)) :
     materialize state (.node ⟨cell.slice.start, after.head?.map (fun next => next.slice.start)⟩ .nil) =
       some [cell.slice] := by
   have extracted := NotionCoreMachineSlices.sliceAtoms_cell state before after cell existsInstance physicalEq unique
+  rw [← stopped] at extracted ⊢
   simp [materialize, NotionCoreSliceForest.preorderTree, NotionCoreSliceForest.preorderChildren, extracted]
 
 theorem materialize_attached (state : State) (bid : Nat)
@@ -109,13 +140,15 @@ theorem materialize_attached (state : State) (bid : Nat)
     (titleEmpty : physical state bid = [NotionCorePartition.boundary (bid,.start)])
     (activeExists : state.instances.any (fun entry => entry.1 == cell.slice.start.1) = true)
     (physicalEq : physical state cell.slice.start.1 = NotionCorePartition.flatten (before ++ cell :: after))
-    (unique : ((physical state cell.slice.start.1).map Atom.address).Nodup) :
+    (unique : ((physical state cell.slice.start.1).map Atom.address).Nodup)
+    (stopped : cell.slice.stop = after.head?.map (fun next => next.slice.start)) :
     materialize state (.node (NotionCoreSliceForest.titleRef bid)
       (.cons (.node ⟨cell.slice.start, after.head?.map (fun next => next.slice.start)⟩ .nil) .nil)) =
-      some [⟨(bid,.start),[]⟩,cell.slice] := by
+      some [⟨(bid,.start),[],none⟩,cell.slice] := by
   have root := NotionCoreMachineSlices.empty_title_atoms state bid titleExists titleEmpty
   simp only [NotionCoreSliceForest.titleRef] at root
   have leaf := NotionCoreMachineSlices.sliceAtoms_cell state before after cell activeExists physicalEq unique
+  rw [← stopped] at leaf ⊢
   simp [materialize, NotionCoreSliceForest.preorderTree, NotionCoreSliceForest.preorderChildren, root, leaf,
     NotionCoreSliceForest.titleRef]
 
@@ -239,7 +272,7 @@ theorem materialized_storage (state : State) (tree : NotionCoreSliceForest.Tree)
   cases selected : sliceAtoms state ref with
   | none => simp [selected] at extracted
   | some atoms =>
-      have same : (⟨ref.start, atoms⟩ : Slice) = slice := by simpa [selected] using extracted
+      have same : (⟨ref.start, atoms, ref.stop⟩ : Slice) = slice := by simpa [selected] using extracted
       subst slice
       exact slice_storage state ref atoms selected
 
@@ -251,7 +284,7 @@ theorem materialized_physical (state : State) (tree : NotionCoreSliceForest.Tree
   cases selected : sliceAtoms state ref with
   | none => simp [selected] at extracted
   | some atoms =>
-      have same : (⟨ref.start, atoms⟩ : Slice) = slice := by simpa [selected] using extracted
+      have same : (⟨ref.start, atoms, ref.stop⟩ : Slice) = slice := by simpa [selected] using extracted
       subst slice
       exact slice_physical state ref atoms selected
 
@@ -537,8 +570,42 @@ theorem prepared_create_creators (network : NotionCorePayloadNetwork.State)
         simpa [NotionCoreCreatorNetwork.requiredBlocks, equal] using known
       · simp [prepareCreate, present] at prepared
 
-/-- Both blocks a merge names are visible, so both have received creators. -/
+/-- A prepared merge names a visible source and the decoded stored instance
+of the previous visible block's last slice. -/
+theorem prepareMerge_some (state : State) (source : BlockKey) (payload : Payload)
+    (prepared : prepareMerge state source = some payload) :
+    blockName source ∈ visible state ∧ ∃ inst stop last,
+      payload = .merge source inst stop ∧ (∃ entry ∈ state.instances, entry.1 = last) ∧
+      decodeBlock last = some inst := by
+  simp only [prepareMerge] at prepared
+  split at prepared
+  · rename_i shown
+    refine ⟨shown, ?_⟩
+    cases previous : ((visible state).take ((visible state).idxOf (blockName source))).getLast? with
+    | none => simp [previous] at prepared
+    | some name =>
+      cases found : state.forest.find? (fun entry => entry.id == name) with
+      | none => simp [previous, found] at prepared
+      | some target =>
+        simp only [previous, found, Option.bind_eq_bind, Option.bind_some] at prepared
+        split at prepared
+        · rename_i stored
+          cases decoded : decodeBlock (NotionCoreSliceForest.lastNode target.title).start.1 with
+          | none => simp [decoded] at prepared
+          | some inst =>
+            cases stopped : decodeStop (NotionCoreSliceForest.lastNode target.title).start.1
+                (NotionCoreSliceForest.lastNode target.title).stop with
+            | none => simp [decoded, stopped] at prepared
+            | some stop =>
+              simp only [decoded, stopped, Option.bind_some, Option.pure_def, Option.some.injEq] at prepared
+              exact ⟨inst, stop, _, prepared.symm, by simpa using stored, decoded⟩
+        · contradiction
+  · contradiction
+
+/-- The merged source is visible and the anchor's instance is stored, so both
+blocks a merge request names have received creators. -/
 theorem prepared_merge_creators (network : NotionCorePayloadNetwork.State)
+    (reachable : NotionCoreCreatorNetwork.Reach network)
     (session : NotionRunAllocation.Session) (txs : List NotionCorePayload.Transaction) (state : State)
     (received : ∀ tx ∈ txs, ∃ entry ∈ network.entries, entry.tx = tx ∧
       NotionCorePayload.reservation tx ∈ (network.allocation.peers session).received)
@@ -546,40 +613,26 @@ theorem prepared_merge_creators (network : NotionCorePayloadNetwork.State)
     (prepared : prepareMerge state source = some payload) :
     ∀ key ∈ NotionCoreCreatorNetwork.requiredBlocks payload,
       NotionCoreCreatorNetwork.KnownCreator network session key := by
-  have visibleCreator : ∀ name ∈ visible state, ∃ key, name = blockName key ∧
-      NotionCoreCreatorNetwork.KnownCreator network session key := by
-    intro name member
-    obtain ⟨_, present⟩ := List.mem_filter.mp member
-    obtain ⟨found, foundMember, foundId⟩ : ∃ found ∈ state.forest, found.id = name := by simpa using present
-    obtain ⟨key, encoded, known⟩ := NotionCoreMachineCreators.replay_known_creator
-      network session txs state received accepted found foundMember
-    exact ⟨key, foundId.symm.trans encoded, known⟩
-  simp only [prepareMerge] at prepared
-  split at prepared
-  · rename_i shown
-    cases last : ((visible state).take ((visible state).idxOf (blockName source))).getLast? with
-    | none => simp [last] at prepared
-    | some previous =>
-      cases decoded : decodeBlock previous with
-      | none => simp [last, decoded] at prepared
-      | some target =>
-        have same : Payload.merge source target = payload := by simpa [last, decoded] using prepared
-        subst payload
-        obtain ⟨sourceKey, sourceName, sourceKnown⟩ := visibleCreator _ shown
-        have sourceEq : source = sourceKey := blockName_injective sourceName
-        have previousMember : previous ∈ visible state :=
-          List.mem_of_mem_take (List.mem_of_getLast? last)
-        obtain ⟨targetKey, targetName, targetKnown⟩ := visibleCreator _ previousMember
-        have targetEq : target = targetKey := by
-          rw [targetName, decode_blockName] at decoded
-          exact (Option.some.inj decoded).symm
-        intro key member
-        simp only [NotionCoreCreatorNetwork.requiredBlocks, List.mem_cons, List.not_mem_nil,
-          or_false] at member
-        rcases member with rfl | rfl
-        · exact sourceEq ▸ sourceKnown
-        · exact targetEq ▸ targetKnown
-  · contradiction
+  obtain ⟨shown, inst, stop, last, rfl, ⟨entry, stored, name⟩, decoded⟩ :=
+    prepareMerge_some state source payload prepared
+  obtain ⟨_, present⟩ := List.mem_filter.mp shown
+  obtain ⟨found, foundMember, foundId⟩ : ∃ found ∈ state.forest, found.id = blockName source := by
+    simpa using present
+  obtain ⟨sourceKey, sourceName, sourceKnown⟩ := NotionCoreMachineCreators.replay_known_creator
+    network session txs state received accepted found foundMember
+  have sourceEq : source = sourceKey := blockName_injective (foundId.symm.trans sourceName)
+  obtain ⟨instKey, instName, instKnown⟩ := NotionCoreMachineCreators.replay_known_instance_creator
+    network reachable session txs state received accepted last
+      (List.mem_map.mpr ⟨entry, stored, name⟩)
+  have instEq : inst = instKey := by
+    rw [← instName, decode_blockName] at decoded
+    exact (Option.some.inj decoded).symm
+  intro key member
+  simp only [NotionCoreCreatorNetwork.requiredBlocks, List.mem_cons, List.not_mem_nil,
+    or_false] at member
+  rcases member with rfl | rfl
+  · exact sourceEq ▸ sourceKnown
+  · exact instEq ▸ instKnown
 
 /-- On any extracted nonempty chain, actual location prepares the independent
 visible gap over the chain's concatenated slots. -/
@@ -605,11 +658,12 @@ theorem own_selection_prepared (state : State) (block : BlockKey)
     (existsInstance : state.instances.any (fun entry => entry.1 == cell.slice.start.1) = true)
     (physicalEq : physical state cell.slice.start.1 = NotionCorePartition.flatten (before ++ cell :: after))
     (unique : ((physical state cell.slice.start.1).map Atom.address).Nodup)
+    (stopped : cell.slice.stop = after.head?.map (fun next => next.slice.start))
     (index : Nat) (bound : index ≤ (characters cell.slice).length) :
     ∃ origin, locateAddress state block index = some origin ∧
       NotionCoreSpec.PreparedGap cell.slice.slots origin index := by
   have found := find_block_member state.forest uniqueBlocks _ member
-  have extracted := materialize_leaf state before after cell existsInstance physicalEq unique
+  have extracted := materialize_leaf state before after cell existsInstance physicalEq unique stopped
   simpa using selection_prepared state block [cell.slice]
     (by simpa [blockSlices, found] using extracted) (by simp) index (by simpa using bound)
 
@@ -627,15 +681,17 @@ theorem attached_selection_prepared (state : State) (block : BlockKey)
     (activeExists : state.instances.any (fun entry => entry.1 == cell.slice.start.1) = true)
     (physicalEq : physical state cell.slice.start.1 = NotionCorePartition.flatten (before ++ cell :: after))
     (unique : ((physical state cell.slice.start.1).map Atom.address).Nodup)
+    (stopped : cell.slice.stop = after.head?.map (fun next => next.slice.start))
     (index : Nat) (bound : index ≤ (characters cell.slice).length) :
     ∃ origin, locateAddress state block index = some origin ∧
-      NotionCoreSpec.PreparedGap (NotionCoreSpec.root (blockName block) :: cell.slice.slots)
-        origin index := by
+      NotionCoreSpec.PreparedGap (NotionCoreSpec.root (blockName block) ::
+        NotionCoreSpec.finishSlot (blockName block) :: cell.slice.slots) origin index := by
   have found := find_block_member state.forest uniqueBlocks _ member
   have extracted := materialize_attached state (blockName block) before after cell
-    titleExists titleEmpty activeExists physicalEq unique
-  simpa [Slice.slots, Slice.anchor, NotionCoreSpec.root] using
-    selection_prepared state block [⟨(blockName block,.start),[]⟩,cell.slice]
+    titleExists titleEmpty activeExists physicalEq unique stopped
+  simpa [Slice.slots, Slice.anchor, Slice.close, NotionCoreSource.stopKey, NotionCoreSpec.closeOf,
+    NotionCoreSpec.root] using
+    selection_prepared state block [⟨(blockName block,.start),[],none⟩,cell.slice]
       (by simpa [blockSlices, found] using extracted) (by simp) index
       (by simpa [characters] using bound)
 
@@ -673,6 +729,17 @@ theorem deletion_selection_control :
     (deadState >>= fun state => deleteAddresses state (.issued b) 0 10) ≠
       some [NotionCorePhysicalReplay.address 0 ⟨2,[65]⟩] ∧
     deleteAddresses {} .initial 1 1 = none := by decide +kernel
+
+/-- PASS+FAIL: merging the split destination into its predecessor records
+the anchor of block 0's last slice, which stops at the split marker b, not
+the end of instance 0 and not the predecessor's block name alone. The first
+visible block has no merge. -/
+theorem merge_anchor_control :
+    (splitState >>= fun state => prepareMerge state (.issued b)) =
+      some (.merge (.issued b) .initial (some b)) ∧
+    (splitState >>= fun state => prepareMerge state (.issued b)) ≠
+      some (.merge (.issued b) .initial none) ∧
+    (splitState >>= fun state => prepareMerge state .initial) = none := by decide +kernel
 
 #print axioms decode_originAddress
 #print axioms prepared_merge_creators

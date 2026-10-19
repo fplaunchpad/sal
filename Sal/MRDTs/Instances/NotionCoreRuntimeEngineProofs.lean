@@ -44,8 +44,9 @@ theorem receive_admitted {state next : State} {tx : Transaction}
   | true => exact ⟨rfl,by simpa [receive,admitted] using accepted⟩
 
 /-- Receipt refuses every merge transaction. -/
-theorem receive_merge (state : State) (tx : Transaction) (source target : NotionCorePayload.BlockKey)
-    (payload : tx.payload = .merge source target) : ∃ message, receive state tx = .error message :=
+theorem receive_merge (state : State) (tx : Transaction) (source inst : NotionCorePayload.BlockKey)
+    (stop : Option NotionRunAllocation.Id)
+    (payload : tx.payload = .merge source inst stop) : ∃ message, receive state tx = .error message :=
   ⟨"merge transactions are outside the executable scope",by simp [receive,admissible,payload]⟩
 
 theorem receive_metadata_valid (state next : State)
@@ -103,7 +104,7 @@ theorem merge_metadata (left right next : State)
   | error message => simp [merge,metadataResult, bind, Except.bind] at accepted
   | ok merged =>
     cases core : NotionCoreRuntimeState.merge left.core right.core with
-    | error message => simp [merge,metadataResult,core, bind, Except.bind, pure, Except.pure] at accepted
+    | error message => simp [merge,metadataResult,core, bind, Except.bind] at accepted
     | ok combined =>
       simp [merge,metadataResult,core, bind, Except.bind, pure, Except.pure] at accepted
       subst next

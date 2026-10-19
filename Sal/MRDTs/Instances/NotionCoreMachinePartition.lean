@@ -62,6 +62,20 @@ theorem ref_factor (state : State) (partitioned : Partitioned state)
   obtain ⟨before, cell, after, shape, equal⟩ := (cellRefs_member cells owned).mp matched
   exact ⟨before, cell, after, shape ▸ physicalEq, equal⟩
 
+/-- The factoring cell of a stored reference can be taken with the
+reference's own stop, the start of the next cell. -/
+theorem ref_factor_chained (state : State) (partitioned : Partitioned state)
+    (owned : Nat × Ref) (member : owned ∈ ownedRefs state.forest) :
+    ∃ before cell after,
+      physical state owned.2.start.1 = flatten (before ++ cell :: after) ∧
+      owned = (cell.owner, ⟨cell.slice.start, after.head?.map (fun next => next.slice.start)⟩) ∧
+      cell.slice.stop = after.head?.map (fun next => next.slice.start) := by
+  obtain ⟨before, cell, after, physicalEq, equal⟩ := ref_factor state partitioned owned member
+  refine ⟨before, ⟨cell.owner, ⟨cell.slice.start, cell.slice.atoms,
+    after.head?.map (fun next => next.slice.start)⟩⟩, after, ?_, equal, rfl⟩
+  rw [physicalEq]
+  simp [flatten, Cell.physical]
+
 /-- Every actual forest slice passes checked extraction when its endpoints
 are the represented next physical boundaries. No extracted value is assumed. -/
 theorem ref_extracts (state : State) (partitioned : Partitioned state)
@@ -310,20 +324,21 @@ theorem partitioned_of_covers (state : State) (forest : NotionCoreSliceForest.Fo
 
 /-- Merge moves interval references between blocks without changing them, so
 the partition survives with owners recomputed from the merged forest. -/
-theorem merge_partitioned (state : State) (source target : Nat) (partitioned : Partitioned state)
+theorem merge_partitioned (state : State) (source : Nat) (anchor : NotionCoreSliceForest.Anchor)
+    (partitioned : Partitioned state)
     (unique : ∀ inst, ((physical state inst).map Atom.address).Nodup)
     (blocks : (state.forest.map NotionCoreSliceForest.Block.id).Nodup) :
-    Partitioned {state with forest := NotionCoreSliceForest.mergeForest state.forest source target} := by
+    Partitioned {state with forest := NotionCoreSliceForest.mergeForest state.forest source anchor} := by
   apply partitioned_of_covers _ _ _ unique
   exact covers_perm (covers_of_partitioned partitioned)
-    (NotionCoreSliceForest.mergeForest_refs state.forest source target blocks)
+    (NotionCoreSliceForest.mergeForest_refs state.forest source anchor blocks)
 
 /-- The stop is the next physical start, including an empty cell's start.
 Dropping that stop silently changes the interval represented by the first ref. -/
 theorem next_boundary_control :
-    cellRefs [⟨4, ⟨(0, .start), []⟩⟩, ⟨7, ⟨(0, .event (9, 0)), []⟩⟩] =
+    cellRefs [⟨4, ⟨(0, .start), [], some (0, .event (9, 0))⟩⟩, ⟨7, ⟨(0, .event (9, 0)), [], none⟩⟩] =
       [(4, ⟨(0, .start), some (0, .event (9, 0))⟩), (7, ⟨(0, .event (9, 0)), none⟩)] ∧
-    cellRefs [⟨4, ⟨(0, .start), []⟩⟩, ⟨7, ⟨(0, .event (9, 0)), []⟩⟩] ≠
+    cellRefs [⟨4, ⟨(0, .start), [], some (0, .event (9, 0))⟩⟩, ⟨7, ⟨(0, .event (9, 0)), [], none⟩⟩] ≠
       [(4, ⟨(0, .start), none⟩), (7, ⟨(0, .event (9, 0)), none⟩)] := by decide +kernel
 
 #print axioms ref_extracts

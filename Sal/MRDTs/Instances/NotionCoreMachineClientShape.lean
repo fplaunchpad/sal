@@ -25,7 +25,7 @@ private theorem locate_single_instance (slice : Slice) (index : Nat) (address : 
     exact (congrArg Prod.fst equal).symm.trans (stored atom member)
 
 private theorem locate_empty_title (bid : Nat) (slice : Slice) (index : Nat) :
-    locateSlices [⟨(bid,.start),[]⟩,slice] index = locateSlices [slice] index := by
+    locateSlices [⟨(bid,.start),[],none⟩,slice] index = locateSlices [slice] index := by
   cases index <;> simp [locateSlices,NotionCorePreparation.characters,NotionCorePreparation.zeroOrigin]
 
 /-- Even an all-deleted inherited leaf supplies the zero-gap origin. The
@@ -43,7 +43,7 @@ theorem normal_tree_selected_instance (state : State) (bid : Nat)
     | none => simp [materialize,NotionCoreSliceForest.preorderTree,
         NotionCoreSliceForest.preorderChildren,extracted] at selected
     | some atoms =>
-      have located : locateSlices [⟨(bid,.start),atoms⟩] index = some address := by
+      have located : locateSlices [⟨(bid,.start),atoms,stop⟩] index = some address := by
         simpa [materialize,NotionCoreSliceForest.preorderTree,
           NotionCoreSliceForest.preorderChildren,extracted] using selected
       exact locate_single_instance _ index address (slice_storage state _ atoms extracted).2 located
@@ -61,7 +61,7 @@ theorem normal_tree_selected_instance (state : State) (bid : Nat)
       | none => simp [materialize,NotionCoreSliceForest.preorderTree,
           NotionCoreSliceForest.preorderChildren,root,leaf] at selected
       | some atoms =>
-        have located : locateSlices [⟨(bid,.start),[]⟩,⟨ref.start,atoms⟩] index = some address := by
+        have located : locateSlices [⟨(bid,.start),[],none⟩,⟨ref.start,atoms,ref.stop⟩] index = some address := by
           simpa [materialize,NotionCoreSliceForest.preorderTree,
             NotionCoreSliceForest.preorderChildren,root,leaf] using selected
         rw [locate_empty_title] at located
@@ -172,7 +172,7 @@ theorem located_active_instance (state : State) (block : NotionCorePayload.Block
           cases sliced : sliceAtoms state ref with
           | none => simp [sliced] at extracted
           | some atoms =>
-            have sliceEq : (⟨ref.start, atoms⟩ : Slice) = slice := by simpa [sliced] using extracted
+            have sliceEq : (⟨ref.start, atoms, ref.stop⟩ : Slice) = slice := by simpa [sliced] using extracted
             subst slice
             refine ⟨ref, ?_, by rw [same]⟩
             rcases kind with visible | last
@@ -194,7 +194,7 @@ theorem located_active_instance (state : State) (block : NotionCorePayload.Block
           cases sliced : sliceAtoms state ref with
           | none => simp [sliced] at extracted
           | some atoms =>
-            have sliceEq : (⟨ref.start, atoms⟩ : Slice) = slice := by simpa [sliced] using extracted
+            have sliceEq : (⟨ref.start, atoms, ref.stop⟩ : Slice) = slice := by simpa [sliced] using extracted
             subst slice
             have atomMember : atom ∈ atoms := (List.mem_filter.mp visible).1
             refine ⟨ref, nonempty_live state empty entry member ref (by rw [refs]; simp) atoms sliced

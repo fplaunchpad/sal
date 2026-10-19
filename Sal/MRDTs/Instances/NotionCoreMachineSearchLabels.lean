@@ -202,11 +202,12 @@ theorem starts_iff (forest : Forest) (address : Address) :
     exact ⟨owned,ownedMember,same ▸ equal⟩
 
 /-- Merge moves slices between blocks; the set of slice starts is unchanged. -/
-theorem starts_merge (forest : Forest) (source target : Nat) (unique : (forest.map Block.id).Nodup) :
-    Starts (mergeForest forest source target) = Starts forest := by
+theorem starts_merge (forest : Forest) (source : Nat) (anchor : NotionCoreSliceForest.Anchor)
+    (unique : (forest.map Block.id).Nodup) :
+    Starts (mergeForest forest source anchor) = Starts forest := by
   ext address
   rw [starts_iff,starts_iff]
-  have perm := mergeForest_refs forest source target unique
+  have perm := mergeForest_refs forest source anchor unique
   constructor
   · rintro ⟨ref,member,equal⟩
     exact ⟨ref,perm.subset member,equal⟩
@@ -390,8 +391,8 @@ theorem canonical_labels_step (network : NotionCorePayloadNetwork.State)
     · rw [erase_groups_forest state result block groups ops]
       exact good
     · simp [Update,payload]
-  | merge source target =>
-    have op : some {state with forest := mergeForest state.forest (blockName source) (blockName target)} =
+  | merge source inst stop =>
+    have op : some {state with forest := mergeForest state.forest (blockName source) (mergeAnchor inst stop)} =
         some result := by
       simpa [applyTransaction,NotionCorePayload.operations,payload,applyOperations,applyOperation] using operation
     refine ⟨labels,?_,?_⟩

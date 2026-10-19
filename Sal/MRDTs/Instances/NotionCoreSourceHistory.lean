@@ -41,7 +41,9 @@ theorem atoms_projection (atoms : List Atom) :
 theorem slice_projection (slice : NotionCoreSource.Slice) :
     NotionCoreSpec.text slice.slots = slice.atoms.flatMap renderedAtom := by
   simp only [NotionCoreSource.Slice.slots, NotionCoreSpec.text_cons,
-    NotionCoreSource.Slice.anchor, Bool.false_eq_true, ↓reduceIte, atoms_projection]
+    NotionCoreSource.Slice.anchor, Bool.false_eq_true, ↓reduceIte, NotionCoreSpec.text_append,
+    atoms_projection, NotionCoreSource.Slice.close, NotionCoreSpec.closeOf_visible,
+    NotionCoreSpec.text_nil, List.append_nil]
 
 theorem render_projection (doc : NotionCoreSourceDocument.Document) :
     NotionCoreSpec.view (NotionCoreSourceDocument.project doc) = render doc := by
@@ -103,15 +105,16 @@ theorem source_history_control :
     machine.toSpec.admits [.update exampleCommands, .query () [(0, [97])]] ∧
     ¬ machine.toSpec.admits [.update exampleCommands, .query () [(0, [])]] := by
   have executed : NotionCoreSourceDocument.Execution [] exampleCommands
-      [⟨0, 0, [⟨(0, .start), [⟨(0, .event (0, 1)), .text 97 false⟩]⟩]⟩] := by
+      [⟨0, 0, [⟨(0, .start), [⟨(0, .event (0, 1)), .text 97 false⟩], none⟩]⟩] := by
     apply NotionCoreSourceDocument.Execution.cons (next := [NotionCoreSourceDocument.freshBlock 0 0])
     · simp [NotionCoreSourceDocument.Guard]
     · decide
     · apply NotionCoreSourceDocument.Execution.cons (next :=
-          [⟨0, 0, [⟨(0, .start), [⟨(0, .event (0, 1)), .text 97 false⟩]⟩]⟩])
+          [⟨0, 0, [⟨(0, .start), [⟨(0, .event (0, 1)), .text 97 false⟩], none⟩]⟩])
       · refine ⟨by decide, ?_⟩
         simp [NotionCoreSourceDocument.freshBlock, NotionCoreSource.Block.traversal,
-          NotionCoreSource.Slice.traversal]
+          NotionCoreSource.Slice.traversal, NotionCoreSource.Slice.close,
+          NotionCoreSource.stopKey, NotionCoreSpec.closeOf, NotionCoreSpec.finishSlot]
       · decide
       · exact .nil _
   constructor
@@ -122,7 +125,8 @@ theorem source_history_control :
       [.query () [(0, [])]]) at semantic
     obtain ⟨final, run, wrong⟩ := NotionCoreHistory.updates_query_iff _ _ |>.mp semantic
     have computed : NotionCoreHistory.run [] [exampleCommands.map NotionCoreSourceDocument.Command.semantic] =
-        some [⟨0, 0, [NotionCoreSpec.root 0, NotionCoreSpec.character 0 (0, 1) 97], true⟩] := by decide
+        some [⟨0, 0, [NotionCoreSpec.root 0, NotionCoreSpec.character 0 (0, 1) 97,
+          NotionCoreSpec.finishSlot 0], true⟩] := by decide
     rw [computed] at run
     cases run
     revert wrong

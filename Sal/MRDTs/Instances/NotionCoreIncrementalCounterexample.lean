@@ -55,12 +55,63 @@ private theorem scan_factor (cells : List Cell) (records : List Entry)
       (ih (fun c hc => starts c (by simp [hc]))
         (fun c hc => interiors c (by simp [hc])))
 
+/-- The cells with every stop set to the next cell's start, the stop that
+endpoint scanning assigns. Physical atoms, entries and interval references
+are those of the input cells. -/
+def chainCells : List Cell → List Cell
+  | [] => []
+  | cell :: rest =>
+    ⟨cell.owner, ⟨cell.slice.start, cell.slice.atoms, rest.head?.map (fun next => next.slice.start)⟩⟩ ::
+      chainCells rest
+
+private theorem chainCells_head (cells : List Cell) :
+    (chainCells cells).head?.map (fun next => next.slice.start) =
+      cells.head?.map (fun next => next.slice.start) := by
+  cases cells <;> rfl
+
+theorem chainCells_flatten (cells : List Cell) : flatten (chainCells cells) = flatten cells := by
+  induction cells with
+  | nil => rfl
+  | cons cell rest ih =>
+    simp only [chainCells, flatten, List.flatMap_cons, Cell.physical] at ih ⊢
+    rw [ih]
+
+theorem chainCells_entries (cells : List Cell) : (chainCells cells).map Cell.entry = cells.map Cell.entry := by
+  induction cells with
+  | nil => rfl
+  | cons cell rest ih => simp [chainCells, Cell.entry, ih]
+
+theorem chainCells_refs (cells : List Cell) :
+    NotionCoreMachinePartition.cellRefs (chainCells cells) = NotionCoreMachinePartition.cellRefs cells := by
+  induction cells with
+  | nil => rfl
+  | cons cell rest ih =>
+    simp only [chainCells, NotionCoreMachinePartition.cellRefs, ih, chainCells_head]
+
+theorem chainCells_chained (cells : List Cell) : NotionCorePartition.Chained (chainCells cells) := by
+  induction cells with
+  | nil => trivial
+  | cons cell rest ih => exact ⟨(chainCells_head rest).symm, ih⟩
+
+/-- Every stored instance factors into cells whose stops are the next cells'
+starts. -/
+theorem partitioned_chained (state : NotionCoreMachine.State)
+    (partitioned : NotionCoreMachinePartition.Partitioned state)
+    (inst : Nat) (existsInstance : ∃ entry ∈ state.instances, entry.1 = inst) :
+    ∃ cells, physical state inst = flatten cells ∧
+      ((NotionCoreForestRefs.ownedRefs state.forest).filter (fun owned => owned.2.start.1 == inst)).Perm
+        (NotionCoreMachinePartition.cellRefs cells) ∧ NotionCorePartition.Chained cells := by
+  obtain ⟨cells,physicalEq,records⟩ := partitioned.partitions inst existsInstance
+  exact ⟨chainCells cells, by rw [chainCells_flatten]; exact physicalEq, by rw [chainCells_refs]; exact records,
+    chainCells_chained cells⟩
+
 /-- Unordered owner/start records recover exact interval cells by one physical
 boundary scan followed by existing endpoint extraction. The input contains no
-stops and no stored assignment of text atoms to owners. -/
+stops and no stored assignment of text atoms to owners; the recovered stops are
+the next cells' starts. -/
 theorem reconstructCells_correct (cells : List Cell) (records : List Entry)
     (recordsEq : records.Perm (cells.map Cell.entry))
-    (unique : ((flatten cells).map Atom.address).Nodup) :
+    (unique : ((flatten cells).map Atom.address).Nodup) (chained : NotionCorePartition.Chained cells) :
     reconstructCells (flatten cells) records = cells := by
   have atStart : ∀ cell ∈ cells, boundaryAt records cell.slice.start = some cell.entry := by
     intro cell member
@@ -69,8 +120,8 @@ theorem reconstructCells_correct (cells : List Cell) (records : List Entry)
     · intro other inside same
       obtain ⟨otherCell, otherMember, rfl⟩ := List.mem_map.mp (recordsEq.mem_iff.mp inside)
       have equal : otherCell = cell := NotionCorePartition.unique_cell (origin := otherCell.slice.start) unique otherMember member
-        (by simp [NotionCoreSource.Slice.traversal])
-        (by simp only [Cell.entry] at same; simp [NotionCoreSource.Slice.traversal, same])
+        (by simp [Cell.physical, NotionCorePartition.boundary])
+        (by simp only [Cell.entry] at same; simp [Cell.physical, NotionCorePartition.boundary, same])
       cases equal
       rfl
   have absent : ∀ cell ∈ cells, ∀ atom ∈ cell.slice.atoms, boundaryAt records atom.address = none := by
@@ -80,8 +131,8 @@ theorem reconstructCells_correct (cells : List Cell) (records : List Entry)
     obtain ⟨other, otherMember, rfl⟩ := List.mem_map.mp (recordsEq.mem_iff.mp present)
     have same : other.slice.start = atom.address := by simpa [Cell.entry] using hit
     have equal : other = cell := NotionCorePartition.unique_cell (origin := atom.address) unique otherMember member
-      (by simp [NotionCoreSource.Slice.traversal, same])
-      (by simp only [NotionCoreSource.Slice.traversal, List.mem_cons, List.mem_map]; exact Or.inr ⟨atom, inside, rfl⟩)
+      (by simp [Cell.physical, NotionCorePartition.boundary, same])
+      (by simp only [Cell.physical, List.map_cons, List.mem_cons, List.mem_map]; exact Or.inr ⟨atom, inside, rfl⟩)
     subst other
     have component : (cell.slice.start :: cell.slice.atoms.map Atom.address).Nodup := by
       have mapped : (cells.flatMap (fun c => c.slice.start :: c.slice.atoms.map Atom.address)).Nodup := by
@@ -92,6 +143,7 @@ theorem reconstructCells_correct (cells : List Cell) (records : List Entry)
   unfold reconstructCells
   rw [scan_factor cells records atStart absent]
   exact NotionCorePartition.extraction_correct (state := ⟨flatten cells, cells.map Cell.entry⟩) ⟨rfl, rfl, unique⟩
+    chained
 
 /-- The actual split rewrite inserts the marker's record behind the fresh
 destination's title record; changing an old stop leaves its start unchanged.
@@ -140,12 +192,13 @@ theorem partitioned_reconstruct (state : NotionCoreMachine.State)
       reconstructCells (physical state inst)
         (((NotionCoreForestRefs.ownedRefs state.forest).filter
           (fun owned => owned.2.start.1 == inst)).map cutRecord) = cells := by
-  obtain ⟨cells,physicalEq,records⟩ := partitioned.partitions inst existsInstance
+  obtain ⟨cells,physicalEq,records,chained⟩ := partitioned_chained state partitioned inst existsInstance
   refine ⟨cells,physicalEq,?_⟩
   rw [physicalEq]
   apply reconstructCells_correct cells _
   · simpa [cellRefs_records] using records.map cutRecord
   · simpa [physicalEq] using unique inst
+  · exact chained
 
 private def seed : NotionCorePayload.Transaction := NotionCorePayload.bootstrap [97,98]
 private def low : NotionCorePayload.Transaction :=

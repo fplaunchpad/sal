@@ -31,12 +31,13 @@ private theorem frame (state result : State) (aligned : Aligned state)
 theorem visible_shown (state : State) :
     visible state = NotionCoreDisplayOrder.shown ⟨state.forest,state.display⟩ := rfl
 
-private theorem merge_names (forest : NotionCoreSliceForest.Forest) (source target : Nat) :
-    NotionCoreDisplayOrder.names (NotionCoreSliceForest.mergeForest forest source target) =
+private theorem merge_names (forest : NotionCoreSliceForest.Forest) (source : Nat)
+    (anchor : NotionCoreSliceForest.Anchor) :
+    NotionCoreDisplayOrder.names (NotionCoreSliceForest.mergeForest forest source anchor) =
       (NotionCoreDisplayOrder.names forest).filter (fun bid => bid != source) ∨
-    NotionCoreDisplayOrder.names (NotionCoreSliceForest.mergeForest forest source target) =
+    NotionCoreDisplayOrder.names (NotionCoreSliceForest.mergeForest forest source anchor) =
       (NotionCoreDisplayOrder.names forest).filter (fun _ => true) := by
-  rcases NotionCoreSliceForest.mergeForest_cases forest source target with same | ⟨moved,holder,-,-,-,-,-,merged⟩
+  rcases NotionCoreSliceForest.mergeForest_cases forest source anchor with same | ⟨moved,holder,-,-,-,-,-,merged⟩
   · right; simp [same]
   · left
     rw [merged]
@@ -119,10 +120,10 @@ theorem operation_aligned (state result : State) (op : Operation)
         subst result
         have same := detachForest_names _ _ pair.1 pair.2 detached
         exact frame state _ aligned (by simpa using same) rfl
-  | merge source target =>
+  | merge source inst stop =>
     simp only [applyOperation, Option.some.injEq] at accepted
     subst result
-    rcases merge_names state.forest (blockName source) (blockName target) with filtered | filtered
+    rcases merge_names state.forest (blockName source) (mergeAnchor inst stop) with filtered | filtered
     · exact NotionCoreDisplayOrder.filter_aligned ⟨state.forest,state.display⟩ _ _ aligned filtered
     · exact NotionCoreDisplayOrder.filter_aligned ⟨state.forest,state.display⟩ _ _ aligned filtered
 

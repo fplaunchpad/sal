@@ -78,9 +78,10 @@ theorem canonical_step_version (network : NotionCorePayloadNetwork.State)
   | split block inst origin =>
     exact NotionCoreMachineDocumentSplit.canonical_split_execution_version network reachable version closed pre suffix tx position
       state replayed document materialized block inst origin payload
-  | merge source target =>
+  | merge source inst stop =>
     simpa only [commands,payload] using NotionCoreMachineDocumentMerge.canonical_merge_execution_version
-      network reachable version closed pre suffix tx position state replayed document materialized source target payload
+      network reachable version closed pre suffix tx position state replayed document materialized source inst stop
+      payload
 
 /-- An arbitrary closed version of one honest archive has an atomic source
 history on exactly its canonical transaction list. Successful replay and projection are conclusions. -/

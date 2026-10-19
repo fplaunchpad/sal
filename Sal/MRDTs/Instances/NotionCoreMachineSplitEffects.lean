@@ -48,13 +48,36 @@ private theorem projected_address_instance (state : State) (part : NotionCoreMac
   have permutation := NotionCoreMachineDocumentInvariant.projected_addresses_perm state aligned document materialized
   obtain ⟨owned,present,inside⟩ := List.mem_flatMap.mp (permutation.mem_iff.mp member)
   obtain ⟨atoms,extracted⟩ := NotionCoreMachinePartition.ref_extracts state part unique owned present
-  rw [NotionCoreMachineDocumentInvariant.interval_extracted state owned.2 atoms extracted] at inside
   have same : address.1 = owned.2.start.1 := by
-    rcases List.mem_cons.mp inside with rfl | inside
-    · rfl
-    · obtain ⟨atom,atomMember,rfl⟩ := List.mem_map.mp inside
-      exact (slice_storage state owned.2 atoms extracted).2 atom atomMember
+    rcases List.mem_append.mp inside with inside | closing
+    · rw [NotionCoreMachineDocumentInvariant.interval_extracted state owned.2 atoms extracted] at inside
+      rcases List.mem_cons.mp inside with rfl | inside
+      · rfl
+      · obtain ⟨atom,atomMember,rfl⟩ := List.mem_map.mp inside
+        exact (slice_storage state owned.2 atoms extracted).2 atom atomMember
+    · rw [List.mem_singleton.mp closing]
+      simp [NotionCoreSliceForest.Anchor.close,NotionCoreSliceForest.anchorOf]
   simpa only [same] using part.refsExist owned present
+
+/-- A displayed alive block materialises from stored slices: its atoms lie in
+their slices' instances and its slice starts and atoms are physical positions. -/
+theorem materialized_placed (state : State)
+    (document : NotionCoreSourceDocument.Document) (materialized : materializeDocument state = some document)
+    (source : Block) (member : source ∈ document) (alive : source.alive = true)
+    (block : BlockKey) (name : source.id = blockName block) :
+    NotionCorePreparation.Placed source := by
+  have slices := document_block_slices state document materialized source member alive block name
+  cases found : state.forest.find? (fun entry => entry.id == blockName block) with
+  | none => simp [blockSlices, found] at slices
+  | some stored =>
+    have tree : materialize state stored.title = some source.slices := by
+      simpa [blockSlices, found, NotionCorePreparation.nodes] using slices
+    refine ⟨fun slice inside => (materialized_storage state _ _ tree slice inside).2,
+      fun slice inside => ?_⟩
+    have held := materialized_physical state _ _ tree slice inside
+    exact ⟨NotionCoreMachineDocumentInvariant.physical_positions state _ _ held.1,
+      fun atom inAtoms => NotionCoreMachineDocumentInvariant.physical_positions state _ _
+        (List.mem_map.mpr ⟨atom, held.2 atom inAtoms, rfl⟩)⟩
 
 private theorem two_steps (document final : NotionCoreSourceDocument.Document)
     (first second : NotionCoreSourceDocument.Command)
@@ -94,7 +117,7 @@ theorem canonical_prepared_split_effect (network : NotionCorePayloadNetwork.Stat
         [(source.id,(NotionCoreSpec.text source.project.slots).take index),
           (blockName (.issued tx.id),(NotionCoreSpec.text source.project.slots).drop index)] ++
         NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
-  obtain ⟨checked,checkedReplay,part,_,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
+  obtain ⟨checked,checkedReplay,part,shape,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
     network reachable peer pre (tx :: suffix) position
   have same : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
@@ -104,7 +127,8 @@ theorem canonical_prepared_split_effect (network : NotionCorePayloadNetwork.Stat
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
     (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names,
       NotionCoreDisplayOrder.shown]) accepted
-  have addresses := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part unique aligned _ materialized
+  have addresses := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part unique
+    shape.2.2.2.2 aligned _ materialized
   have ids := materialized_ids state _ materialized
   have blockUnique : ((before ++ source :: afterBlocks).map Block.id).Nodup := by
     rw [ids]
@@ -124,17 +148,23 @@ theorem canonical_prepared_split_effect (network : NotionCorePayloadNetwork.Stat
     intro member
     obtain ⟨entry,present,equal⟩ := projected_address_instance state part unique aligned _ materialized _ member
     exact freshInstance entry present equal
+  have freshFinish : (NotionCoreSpec.finishSlot (blockName (.issued tx.id))).address ∉
+      NotionCoreInvariant.addresses (NotionCoreSourceDocument.project (before ++ source :: afterBlocks)) := by
+    intro member
+    obtain ⟨entry,present,equal⟩ := projected_address_instance state part unique aligned _ materialized _ member
+    exact freshInstance entry present equal
+  have placed := materialized_placed state _ materialized source (by simp) alive block name
   let markerId := (Encodable.encode tx.id.session,tx.id.counter)
   obtain ⟨selected,created,expected,selection,createStep,splitStep,effect⟩ := NotionCorePreparation.source_split_effect
     before afterBlocks source index (blockName (.issued tx.id)) (blockName (.issued tx.id)) markerId
-    addresses blockUnique alive bound freshName freshRoot
+    addresses blockUnique alive placed bound freshName freshRoot freshFinish
   have selectedEq : selected = NotionCorePhysicalReplay.originAddress (blockName inst) origin :=
     Option.some.inj (selection.symm.trans located)
   obtain ⟨next,after,transaction,extracted,execution⟩ := NotionCoreMachineDocumentSplit.canonical_split_execution
     network reachable peer pre suffix tx position state accepted _ materialized block inst origin payload
   have explicit : NotionCoreSourceDocument.Execution (before ++ source :: afterBlocks)
       [.create (blockName (.issued tx.id)) (blockName (.issued tx.id)) (some source.id),
-       .split selected (selected.1,.event markerId) (blockName (.issued tx.id))] after := by
+       .split selected markerId (blockName (.issued tx.id))] after := by
     cases origin <;> simpa [NotionCoreMachineCommands.commands,payload,name,selectedEq,markerId,
       NotionCorePhysicalReplay.address,NotionCorePhysicalReplay.localId,
       NotionCorePhysicalReplay.originAddress] using execution

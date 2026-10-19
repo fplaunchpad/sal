@@ -23,4 +23,4 @@
 | peritext-embed-rga | 69 | 43 | 130 | 2400 | ✓ | ✓ | – |
 | sided-peritext-rich-core | 208 | 67 | 149 | 3072 | ✓ | ✓ | – |
 | aegis-sheet | 336 | 140 | 53 | 2173 | ✓ | ✓ | – |
-| notion-core | 766 | 133 | 73 | 20630 | ✓ | ✓ | – |
+| notion-core | 781 | 139 | 73 | 21343 | ✓ | ✓ | – |

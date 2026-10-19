@@ -60,7 +60,7 @@ theorem atom_slots_text (atoms : List Atom) :
 
 theorem slice_text (slice : Slice) :
     NotionCoreSpec.text slice.slots = slice.atoms.flatMap atomText := by
-  simp [Slice.slots, Slice.anchor, atom_slots_text]
+  simp [Slice.slots, Slice.anchor, Slice.close, atom_slots_text]
 
 theorem projected_text (source : Block) :
     NotionCoreSpec.text source.project.slots =
@@ -71,7 +71,8 @@ theorem projected_text (source : Block) :
   | cons slice rest ih => simp [ih, slice_text]
 
 private theorem mapM_atoms (state : State) (refs : List NotionCoreSliceForest.Ref) (slices : List Slice)
-    (accepted : refs.mapM (fun ref => do pure (⟨ref.start, ← sliceAtoms state ref⟩ : Slice)) = some slices) :
+    (accepted : refs.mapM (fun ref => do pure (⟨ref.start, ← sliceAtoms state ref, ref.stop⟩ : Slice)) =
+      some slices) :
     refs.mapM (sliceAtoms state) = some (slices.map Slice.atoms) ∧ slices.length = refs.length := by
   induction refs generalizing slices with
   | nil => simp at accepted; subst slices; simp
@@ -81,7 +82,7 @@ private theorem mapM_atoms (state : State) (refs : List NotionCoreSliceForest.Re
     cases extracted : sliceAtoms state ref with
     | none => simp [extracted] at headRead
     | some atoms =>
-      have headEq : head = ⟨ref.start, atoms⟩ := by simpa [extracted] using headRead.symm
+      have headEq : head = ⟨ref.start, atoms, ref.stop⟩ := by simpa [extracted] using headRead.symm
       subst head
       obtain ⟨tail, following, same⟩ := Option.bind_eq_some_iff.mp laterRead
       have equal := Option.some.inj same
@@ -270,7 +271,32 @@ theorem projection_control :
       (fun doc => NotionCoreSpec.view (NotionCoreSourceDocument.project doc)) ≠
         some [(0,[97,98]),(blockName (.issued ⟨3,[83]⟩),[])] := by decide +kernel
 
-private def back : NotionCorePayload.Transaction := ⟨⟨4,[83]⟩,.merge (.issued ⟨3,[83]⟩) .initial⟩
+/-- The projected slots of the split fixture end each slice with its close:
+block 0 keeps a closed by the close slot of the split marker, and the
+destination holds its own empty title closed by its finish, then the marker's
+slice with b, closed by the finish of instance 0. Closing block 0 with the
+finish of instance 0 instead is rejected. -/
+theorem projection_slots_control :
+    (fixture >>= materializeDocument).map
+      (fun doc => (NotionCoreSourceDocument.project doc).map NotionCoreSpec.Block.slots) =
+        some [[NotionCoreSpec.root 0, ⟨NotionCorePhysicalReplay.address 0 ⟨1,[65]⟩, 97, true⟩,
+            NotionCoreSpec.closeSlot 0 (NotionCorePhysicalReplay.markerKey ⟨3,[83]⟩)],
+          [NotionCoreSpec.root (blockName (.issued ⟨3,[83]⟩)),
+            NotionCoreSpec.finishSlot (blockName (.issued ⟨3,[83]⟩)),
+            ⟨NotionCorePhysicalReplay.address 0 ⟨3,[83]⟩, 0, false⟩,
+            ⟨NotionCorePhysicalReplay.address 0 ⟨2,[65]⟩, 98, true⟩, NotionCoreSpec.finishSlot 0]] ∧
+    (fixture >>= materializeDocument).map
+      (fun doc => (NotionCoreSourceDocument.project doc).map NotionCoreSpec.Block.slots) ≠
+        some [[NotionCoreSpec.root 0, ⟨NotionCorePhysicalReplay.address 0 ⟨1,[65]⟩, 97, true⟩,
+            NotionCoreSpec.finishSlot 0],
+          [NotionCoreSpec.root (blockName (.issued ⟨3,[83]⟩)),
+            NotionCoreSpec.finishSlot (blockName (.issued ⟨3,[83]⟩)),
+            ⟨NotionCorePhysicalReplay.address 0 ⟨3,[83]⟩, 0, false⟩,
+            ⟨NotionCorePhysicalReplay.address 0 ⟨2,[65]⟩, 98, true⟩, NotionCoreSpec.finishSlot 0]] := by
+  decide +kernel
+
+private def back : NotionCorePayload.Transaction :=
+  ⟨⟨4,[83]⟩,.merge (.issued ⟨3,[83]⟩) .initial (some ⟨3,[83]⟩)⟩
 private def merged := replay {} [NotionCorePayload.bootstrap [97,98],cut,back]
 
 /-- After the split destination is merged back, its display entry is a

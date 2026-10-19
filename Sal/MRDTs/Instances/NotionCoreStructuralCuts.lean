@@ -56,7 +56,7 @@ theorem flat_attached (state : NotionCoreMachine.State) (shape : ShapeInvariant 
       List.mem_flatMap.mpr ⟨_,member,by rw [nodesEq]; simp⟩
     have live : (leaf,true) ∈ forestNodes state.forest :=
       List.mem_flatMap.mpr ⟨_,member,by rw [nodesEq]; simp⟩
-    obtain ⟨_,physicalEq,lives⟩ := shape.2.2 _ dead
+    obtain ⟨_,physicalEq,lives⟩ := shape.2.2.1 _ dead
     exact ⟨physicalEq,by simpa [active,Tree.children,Tree.slice,titleRef] using lives leaf live⟩
 
 /-- A flat block split at a containing node: the node is the last one, since
@@ -298,7 +298,7 @@ theorem canonical_records_step (network : NotionCorePayloadNetwork.State)
     have same := Option.some.inj (exec.symm.trans step)
     subst expected
     exact ⟨flatNext,by simpa [transactionRecords,payload] using records⟩
-  | merge source target => exact False.elim (notMerge source target payload)
+  | merge source inst stop => exact False.elim (notMerge source inst stop payload)
 
 private theorem replay_append (state : NotionCoreMachine.State) (a b : List Transaction) :
     replay state (a ++ b) = (replay state a >>= fun next => replay next b) := by

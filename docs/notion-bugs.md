@@ -177,13 +177,13 @@ split step that precedes the move.
 of the source block is separate from the move. In the corrected merge of
 [the merge design note](notion-merge-block-design.md), removal is the move, a
 merge into a merged-away target lands in the block that absorbed it
-(`NotionCoreSpecMerge.merge_absorbed_target`), and a merge whose target is held
+(`NotionCoreSpecMerge.merge_absorbed_owner`), and a merge whose anchor is held
 by the source is a no-op that removes nothing
 (`NotionCoreSpecMerge.merge_cycle_noop`). `NotionCoreSpecMerge.merge_text_conserved`
 proves that a merge preserves the visible text up to permutation, and
 `NotionCoreProtocol.specification_ra` gives every honest history with merges a
 sequential explanation. The [executable gate](../experiments/notion-merge-design/README.md)
-found no text loss in 161,630 archive comparisons (deduplicated within each harness) and passes the N-005 regression.
+found no text loss in 162,373 archive comparisons (deduplicated within each harness) and passes the N-005 regression.
 The N-004 request history also keeps `abc` visible, though under the corrected
 merge it no longer reaches the demo's precondition; the gate's litmus history
 (b) is the targeted equivalent. A variant that restores independent removal

@@ -67,8 +67,13 @@ def decodePayload (value : Json) : Except String Payload := do
     | .error _ => return .erase block [← decodeGroup value]
   | "split" => return (.split (← decodeBlock (← field value "block"))
       (← decodeBlock (← field value "instance")) (← decodeOrigin (← field value "origin")))
-  | "merge" => return (.merge (← decodeBlock (← field value "source"))
-      (← decodeBlock (← field value "target")))
+  | "merge" =>
+    let stop ← field value "stop"
+    let stop ← match stop with
+      | .null => pure none
+      | _ => pure (some (← decodeId stop))
+    return (.merge (← decodeBlock (← field value "source"))
+      (← decodeBlock (← field value "instance")) stop)
   | other => throw s!"unsupported core payload: {other}"
 
 def encodePayload (payload : Payload) : Json := Json.mkObj (match payload with
@@ -81,8 +86,8 @@ def encodePayload (payload : Payload) : Json := Json.mkObj (match payload with
       ("groups",.arr (groups.map fun group => Json.mkObj (encodeGroup group)).toArray)]
   | .split block inst origin => [("kind",.str "split"),("block",encodeBlock block),
       ("instance",encodeBlock inst),("origin",encodeOrigin origin)]
-  | .merge source target => [("kind",.str "merge"),("source",encodeBlock source),
-      ("target",encodeBlock target)])
+  | .merge source inst stop => [("kind",.str "merge"),("source",encodeBlock source),
+      ("instance",encodeBlock inst),("stop",stop.map encodeId |>.getD .null)])
 
 def decodeTransaction (value : Json) : Except String Transaction := do
   return ⟨← decodeId (← field value "id"), ← decodePayload (← field value "payload")⟩
@@ -100,12 +105,18 @@ theorem typed_roundtrip :
     (decodeTransaction (encodeTransaction sample)).toOption ≠ some (NotionCorePayload.bootstrap []) := by
   decide +kernel
 
-private def mergeSample : Transaction := ⟨⟨9,[66]⟩, .merge (.issued ⟨3,[66]⟩) .initial⟩
-/-- A merge round-trips with its source and target in place, not swapped. -/
+private def mergeSample : Transaction := ⟨⟨9,[66]⟩, .merge (.issued ⟨3,[66]⟩) .initial (some ⟨5,[67]⟩)⟩
+private def finishMergeSample : Transaction := ⟨⟨9,[66]⟩, .merge (.issued ⟨3,[66]⟩) .initial none⟩
+/-- A merge round-trips with its source, its anchor's instance and its
+anchor's stop in place: the source and instance are not swapped, a stop is
+not dropped, and a missing stop is not invented. -/
 theorem merge_roundtrip :
     (decodeTransaction (encodeTransaction mergeSample)).toOption = some mergeSample ∧
     (decodeTransaction (encodeTransaction mergeSample)).toOption ≠
-      some ⟨⟨9,[66]⟩, .merge .initial (.issued ⟨3,[66]⟩)⟩ := by
+      some ⟨⟨9,[66]⟩, .merge .initial (.issued ⟨3,[66]⟩) (some ⟨5,[67]⟩)⟩ ∧
+    (decodeTransaction (encodeTransaction mergeSample)).toOption ≠ some finishMergeSample ∧
+    (decodeTransaction (encodeTransaction finishMergeSample)).toOption = some finishMergeSample ∧
+    (decodeTransaction (encodeTransaction finishMergeSample)).toOption ≠ some mergeSample := by
   decide +kernel
 
 private def errorMessage {α : Type} : Except String α → Option String

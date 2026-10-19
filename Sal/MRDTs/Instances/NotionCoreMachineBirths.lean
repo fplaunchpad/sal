@@ -165,7 +165,7 @@ private theorem operation_stored (state result : State) (op : Operation)
           (NotionCorePhysicalReplay.address (blockName inst) marker) state.forest with
         | none => simp [detached] at accepted
         | some pair => simp [detached] at accepted; subst result; exact Or.inl member
-  | merge source target =>
+  | merge source inst stop =>
       simp only [applyOperation, Option.some.injEq] at accepted; subst result; exact Or.inl member
 
 private theorem operations_stored (state result : State) (ops : List Operation)

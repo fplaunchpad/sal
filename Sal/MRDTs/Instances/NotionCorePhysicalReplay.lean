@@ -16,6 +16,13 @@ open NotionCoreSource (Atom)
 def localId (id : Id) : LocalId := .event (Encodable.encode id.session, id.counter)
 def address (inst : Nat) (id : Id) : Address := (inst, localId id)
 
+/-- The event key of an identity: the pair a split marker is named by in the
+source command language. -/
+def markerKey (id : Id) : Nat × Nat := (Encodable.encode id.session, id.counter)
+
+theorem address_markerKey (inst : Nat) (id : Id) : address inst id = (inst, .event (markerKey id)) :=
+  rfl
+
 theorem localId_injective : Function.Injective localId := by
   intro a b equal
   have components : (Encodable.encode a.session, a.counter) =
@@ -159,6 +166,7 @@ theorem tree_insert_partition (inst : Nat) (origin : NotionCoreOriginTree.Origin
     (state : NotionCorePartition.State) (cells : List NotionCorePartition.Cell)
     (coupled : state.physical = augmented inst old)
     (represented : NotionCorePartition.Represents state cells)
+    (chained : NotionCorePartition.Chained cells)
     (ready : NotionCoreOriginTree.Ready origin fresh old) (present : Present origin old)
     (newUnique : ((NotionCoreOriginTree.preorderTree fresh).map NotionCoreOriginTree.Item.id).Nodup)
     (apart : List.Disjoint ((NotionCoreOriginTree.preorder old).map NotionCoreOriginTree.Item.id)
@@ -188,10 +196,10 @@ theorem tree_insert_partition (inst : Nat) (origin : NotionCoreOriginTree.Origin
     exact physical_disjoint inst _ _ apart
   obtain ⟨rawNext, executed, representedNext⟩ := NotionCorePartition.insert_represents
     before after cell (originAddress inst origin)
-      ((NotionCoreOriginTree.preorderTree fresh).map (atom inst)) represented ownership.2
+      ((NotionCoreOriginTree.preorderTree fresh).map (atom inst)) represented chained ownership.2
         (fresh_addresses_unique inst _ newUnique) rawApart
   have located := NotionCorePartition.locate_of_member cell (originAddress inst origin)
-    represented ownership.1 ownership.2
+    represented chained ownership.1 ownership.2
   have rawPhysical : rawNext.physical = NotionCorePartition.spliceAfterBy Atom.address
       (originAddress inst origin) ((NotionCoreOriginTree.preorderTree fresh).map (atom inst))
         state.physical := by
@@ -202,7 +210,8 @@ theorem tree_insert_partition (inst : Nat) (origin : NotionCoreOriginTree.Origin
   rw [accepted] at treePhysical
   simp only [Option.map_some, Option.some.injEq] at treePhysical
   refine ⟨before, cell, after, rawNext, rfl, executed, representedNext, ?_,
-    NotionCorePartition.extraction_correct representedNext⟩
+    NotionCorePartition.extraction_correct representedNext
+      (NotionCorePartition.insert_chained before after cell _ _ chained)⟩
   rw [rawPhysical, coupled, treePhysical]
 
 theorem fresh_address (inst : Nat) (id : Id) (items : List NotionCoreOriginTree.Item)
@@ -227,6 +236,7 @@ theorem tree_split_partition (inst : Nat) (origin : NotionCoreOriginTree.Origin)
     (state : NotionCorePartition.State) (cells : List NotionCorePartition.Cell)
     (coupled : state.physical = augmented inst old)
     (represented : NotionCorePartition.Represents state cells)
+    (chained : NotionCorePartition.Chained cells)
     (ready : NotionCoreOriginTree.Ready origin (markerTree marker) old)
     (present : Present origin old)
     (freshMarker : marker ∉ (NotionCoreOriginTree.preorder old).map NotionCoreOriginTree.Item.id)
@@ -251,7 +261,7 @@ theorem tree_split_partition (inst : Nat) (origin : NotionCoreOriginTree.Origin)
     exact fresh_address inst marker _ freshMarker
   obtain ⟨before, cell, after, rawNext, shape, located, executed, representedNext⟩ :=
     NotionCorePartition.split_refines (originAddress inst origin) (address inst marker)
-      freshOwner represented rawPresent rawFresh
+      freshOwner represented chained rawPresent rawFresh
   have rawPhysical : rawNext.physical = NotionCorePartition.spliceAfterBy Atom.address
       (originAddress inst origin) [NotionCorePartition.boundary (address inst marker)]
         state.physical := by
@@ -266,8 +276,10 @@ theorem tree_split_partition (inst : Nat) (origin : NotionCoreOriginTree.Origin)
   change augmented inst next = NotionCorePartition.spliceAfterBy Atom.address
     (originAddress inst origin) [NotionCorePartition.boundary (address inst marker)]
       (augmented inst old) at treePhysical
-  refine ⟨before, cell, after, rawNext, shape, located, executed, representedNext, ?_,
-    NotionCorePartition.extraction_correct representedNext⟩
+  subst cells
+  refine ⟨before, cell, after, rawNext, rfl, located, executed, representedNext, ?_,
+    NotionCorePartition.extraction_correct representedNext
+      (NotionCorePartition.split_chained before after cell _ _ freshOwner chained)⟩
   rw [rawPhysical, coupled, treePhysical]
 
 /-- Match source `#splitText`'s actual order: insert the marker into the RGA,
@@ -278,6 +290,7 @@ theorem tree_marker_routes (inst : Nat) (origin : NotionCoreOriginTree.Origin)
     (state : NotionCorePartition.State) (cells : List NotionCorePartition.Cell)
     (coupled : state.physical = augmented inst old)
     (represented : NotionCorePartition.Represents state cells)
+    (chained : NotionCorePartition.Chained cells)
     (ready : NotionCoreOriginTree.Ready origin (markerTree marker) old)
     (present : Present origin old)
     (freshMarker : marker ∉ (NotionCoreOriginTree.preorder old).map NotionCoreOriginTree.Item.id)
@@ -303,7 +316,7 @@ theorem tree_marker_routes (inst : Nat) (origin : NotionCoreOriginTree.Origin)
     (originAddress inst origin) [NotionCorePartition.boundary (address inst marker)]
       (augmented inst old) at physicalEq
   have routed := NotionCorePartition.marker_routing_after_insert
-    (originAddress inst origin) (address inst marker) represented rawPresent rawFresh
+    (originAddress inst origin) (address inst marker) represented chained rawPresent rawFresh
   rw [coupled, ← physicalEq] at routed
   exact routed
 

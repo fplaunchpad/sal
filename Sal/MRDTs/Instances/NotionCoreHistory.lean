@@ -79,19 +79,20 @@ the same history cannot claim that all text remained in the original block. -/
 def splitExample : List Update :=
   [[.create 0 0 none],
    [.insert (0, .start) [character 0 (0, 1) 97, character 0 (0, 2) 98]],
-   [.create 1 1 (some 0), .split (0, .event (0, 1)) (boundary 0 (0, 3)) 1]]
+   [.create 1 1 (some 0), .split (0, .event (0, 1)) (0, 3) 1]]
 
 theorem split_history_control :
     spec.admits (labels splitExample ++ [.query () [(0, [97]), (1, [98])]]) ∧
     ¬ spec.admits (labels splitExample ++ [.query () [(0, [97, 98]), (1, [])]]) := by
   simp only [updates_query_iff]
   constructor
-  · exact ⟨[⟨0, 0, [root 0, character 0 (0, 1) 97], true⟩,
-      ⟨1, 1, [root 1, boundary 0 (0, 3), character 0 (0, 2) 98], true⟩], by decide, by decide⟩
+  · exact ⟨[⟨0, 0, [root 0, character 0 (0, 1) 97, closeSlot 0 (0, 3)], true⟩,
+      ⟨1, 1, [root 1, finishSlot 1, boundary 0 (0, 3), character 0 (0, 2) 98, finishSlot 0], true⟩], by decide, by decide⟩
   · rintro ⟨final, accepted, answer⟩
     have executed : run [] splitExample = some
-        [⟨0, 0, [root 0, character 0 (0, 1) 97], true⟩,
-         ⟨1, 1, [root 1, boundary 0 (0, 3), character 0 (0, 2) 98], true⟩] := by decide
+        [⟨0, 0, [root 0, character 0 (0, 1) 97, closeSlot 0 (0, 3)], true⟩,
+         ⟨1, 1, [root 1, finishSlot 1, boundary 0 (0, 3), character 0 (0, 2) 98, finishSlot 0],
+           true⟩] := by decide
     rw [executed] at accepted
     cases accepted
     revert answer

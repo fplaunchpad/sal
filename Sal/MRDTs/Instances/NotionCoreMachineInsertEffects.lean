@@ -130,7 +130,7 @@ theorem canonical_prepared_insert_effect (network : NotionCorePayloadNetwork.Sta
         [(source.id,(NotionCoreSpec.text source.project.slots).take index ++ atoms ++
           (NotionCoreSpec.text source.project.slots).drop index)] ++
         NotionCoreSpec.view (NotionCoreSourceDocument.project afterBlocks)) := by
-  obtain ⟨checked,checkedReplay,part,_,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
+  obtain ⟨checked,checkedReplay,part,shape,_⟩ := NotionCoreMachineHonestReplay.honest_prefix_reconstruct
     network reachable peer pre (tx :: suffix) position
   have same : checked = state := Option.some.inj (checkedReplay.symm.trans accepted)
   subst checked
@@ -140,7 +140,8 @@ theorem canonical_prepared_insert_effect (network : NotionCorePayloadNetwork.Sta
   have aligned := NotionCoreMachineDisplay.replay_aligned {} state pre
     (by simp [NotionCoreMachineDisplay.Aligned,NotionCoreDisplayOrder.Aligned,NotionCoreDisplayOrder.names,
       NotionCoreDisplayOrder.shown]) accepted
-  have unique := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part physicalUnique aligned _ materialized
+  have unique := NotionCoreMachineDocumentInvariant.projected_addresses_unique state part physicalUnique
+    shape.2.2.2.2 aligned _ materialized
   obtain ⟨_,gap,alive⟩ := prepared_insert_gap pre state accepted _ materialized source (by simp) block inst name
     index origin atoms (by simpa only [payload] using prepared)
   obtain ⟨next,after,transaction,extracted,sourceStep⟩ := NotionCoreMachineDocumentInsert.canonical_insert_source_step

@@ -19,7 +19,7 @@ def requiredBlocks : Payload → List BlockKey
   | .create afterBlock => afterBlock.toList
   | .insert block inst _ _ | .split block inst _ => [block, inst]
   | .erase block groups => block :: groups.map Prod.fst
-  | .merge source target => [source, target]
+  | .merge source inst _ => [source, inst]
 
 def KnownCreator (state : State) (session : Session) (block : BlockKey) : Prop :=
   ∃ provider ∈ state.entries,

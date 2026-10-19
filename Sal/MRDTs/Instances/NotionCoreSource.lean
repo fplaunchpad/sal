@@ -3,8 +3,10 @@ import Sal.MRDTs.Instances.NotionCoreSpec
 /-! Materialized interval normal form for the create/split/insert/delete/merge
 core. An instance is an ordered partition of physical atoms into slices. A
 block holds the slices of its chain in preorder: its own root interval first,
-then the intervals that splits and merges attached below it. A dead title,
-the root interval of a split destination, stays permanently empty. This file
+then the intervals that splits and merges attached below it. Each slice
+materialises as its start, its atoms and its close slot, which records the
+split marker the slice stops at, or the instance finish. A dead title, the
+root interval of a split destination, stays permanently empty. This file
 proves normal-form preservation and projection calculations. It does not prove
 extraction of this partition from JavaScript's RGA/endpoint tree.
 -/
@@ -27,17 +29,32 @@ def Atom.slot (atom : Atom) : Slot :=
   | .split => ⟨atom.address, 0, false⟩
 
 /-- Interval boundaries are kept separately from the atoms strictly inside.
-The start marker is retained as an address but never rendered. -/
+The start marker is retained as an address but never rendered. The stop is
+the split marker that ends the slice, or none when the slice runs to the end
+of its instance; it is materialised as the slice's invisible close slot. -/
 structure Slice where
   start : Address
   atoms : List Atom
+  stop : Option Address
   deriving DecidableEq, Repr
 
+/-- The marker key of a slice stop. A stop is a split marker address
+`(inst, .event marker)`; any other shape has no key and closes like an
+unstopped slice. -/
+def stopKey : Option Address → Option (Nat × Nat)
+  | some (_, .event marker) => some marker
+  | _ => none
+
 def Slice.anchor (slice : Slice) : Slot := ⟨slice.start, 0, false⟩
-def Slice.slots (slice : Slice) : List Slot := slice.anchor :: slice.atoms.map Atom.slot
+
+/-- The invisible end of the slice, in the instance of its start. -/
+def Slice.close (slice : Slice) : Slot := NotionCoreSpec.closeOf slice.start.1 (stopKey slice.stop)
+
+def Slice.slots (slice : Slice) : List Slot :=
+  slice.anchor :: (slice.atoms.map Atom.slot ++ [slice.close])
 
 def Slice.traversal (slice : Slice) : List Address :=
-  slice.start :: slice.atoms.map Atom.address
+  slice.start :: (slice.atoms.map Atom.address ++ [slice.close.address])
 
 /-- The partition order is instance traversal order, independent of block order.
 Each noninitial slice start denotes the physical split marker between cells. -/
@@ -45,22 +62,26 @@ def instanceTraversal (partition : List Slice) : List Address :=
   partition.flatMap Slice.traversal
 
 /-- Insert a physical marker at a traversal coordinate inside a slice and split
-that interval. The source-derived provenance lemma must justify the
-coordinate's relation to the identity-addressed origin. The coordinate counts
-retained physical atoms. -/
+that interval: the left part stops at the marker, and the right part starts at
+it and keeps the old stop. The source-derived provenance lemma must justify
+the coordinate's relation to the identity-addressed origin. The coordinate
+counts retained physical atoms. -/
 def splitSlice (slice : Slice) (position : Nat) (marker : Address) : Slice × Slice :=
-  (⟨slice.start, slice.atoms.take position⟩,
-   ⟨marker, slice.atoms.drop position⟩)
+  (⟨slice.start, slice.atoms.take position, some marker⟩,
+   ⟨marker, slice.atoms.drop position, slice.stop⟩)
 
 /-- The source's marker insertion changes the instance traversal at exactly the
-selected interval coordinate. Existing partition cells retain their order. -/
+selected interval coordinate, where the left part's close is followed by the
+marker. Existing partition cells retain their order. -/
 theorem split_partition_traversal (before after : List Slice) (slice : Slice)
     (position : Nat) (marker : Address) :
     instanceTraversal (before ++ [(splitSlice slice position marker).1,
       (splitSlice slice position marker).2] ++ after) =
     instanceTraversal before ++
       (slice.start :: ((slice.atoms.take position).map Atom.address ++
-        marker :: (slice.atoms.drop position).map Atom.address)) ++
+        (splitSlice slice position marker).1.close.address :: marker ::
+          ((slice.atoms.drop position).map Atom.address ++
+            [(splitSlice slice position marker).2.close.address]))) ++
       instanceTraversal after := by
   simp [instanceTraversal, Slice.traversal, splitSlice, List.append_assoc]
 
@@ -70,23 +91,72 @@ theorem split_partition_erases_marker (slice : Slice) (position : Nat) :
       (slice.atoms.drop position).map Atom.address = slice.atoms.map Atom.address := by
   rw [← List.map_append, List.take_append_drop]
 
-/-- Projecting the two intervals yields a retained-prefix/suffix cut. This is
+/-- Projecting the two intervals of a split at a coordinate within the atoms
+yields a retained-prefix/suffix cut: the prefix is closed by the marker's
+close slot, and the suffix keeps the old close slot after the marker. This is
 computed from physical interval splitting, rather than assumed by a relation. -/
-theorem split_slice_projection (slice : Slice) (position : Nat) (marker : Address) :
-    (splitSlice slice position marker).1.slots = slice.slots.take (position + 1) ∧
-    (splitSlice slice position marker).2.slots =
-      (⟨marker, 0, false⟩ : Slot) :: slice.slots.drop (position + 1) := by
-  simp [splitSlice, Slice.slots, Slice.anchor, List.map_take, List.map_drop]
+theorem split_slice_projection (slice : Slice) (position : Nat) (marker : Nat × Nat)
+    (bound : position ≤ slice.atoms.length) :
+    (splitSlice slice position (slice.start.1, .event marker)).1.slots =
+      slice.slots.take (position + 1) ++ [NotionCoreSpec.closeSlot slice.start.1 marker] ∧
+    (splitSlice slice position (slice.start.1, .event marker)).2.slots =
+      NotionCoreSpec.boundary slice.start.1 marker :: slice.slots.drop (position + 1) := by
+  have mapped : position ≤ (slice.atoms.map Atom.slot).length := by simpa using bound
+  simp only [splitSlice, Slice.slots, Slice.anchor, Slice.close, List.take_succ_cons,
+    List.drop_succ_cons, List.take_append_of_le_length mapped,
+    List.drop_append_of_le_length mapped, List.map_take, List.map_drop, stopKey,
+    NotionCoreSpec.closeOf, NotionCoreSpec.boundary, List.cons_append, and_self]
+
+/-- An address of a slice other than its close slot lies at a coordinate
+within the atoms. -/
+theorem position_bound (slice : Slice) (origin : Address)
+    (present : origin ∈ slice.traversal) (open_ : origin ≠ slice.close.address) :
+    slice.traversal.idxOf origin ≤ slice.atoms.length := by
+  have shape : slice.traversal =
+      (slice.start :: slice.atoms.map Atom.address) ++ [slice.close.address] := rfl
+  have inside : origin ∈ slice.start :: slice.atoms.map Atom.address := by
+    rw [shape] at present
+    rcases List.mem_append.mp present with inside | last
+    · exact inside
+    · exact absurd (List.mem_singleton.mp last) open_
+  rw [shape, List.idxOf_append_of_mem inside]
+  have within := List.idxOf_lt_length_of_mem inside
+  simp only [List.length_cons, List.length_map] at within
+  omega
+
+/-- The close slot of a slice is an end position. -/
+theorem close_isEnd (slice : Slice) : slice.close.address.2.isEnd = true :=
+  NotionCoreSpec.closeOf_isEnd _ _
+
+theorem ne_close_of_position (slice : Slice) {origin : Address}
+    (position : origin.2.isEnd = false) : origin ≠ slice.close.address := by
+  intro same
+  have closing := close_isEnd slice
+  rw [← same, position] at closing
+  exact Bool.false_ne_true closing
+
+@[simp] theorem Atom.slot_address (atom : Atom) : atom.slot.address = atom.address := by
+  cases atom with | mk address kind => cases kind <;> rfl
+
+@[simp] theorem Slice.slots_addresses (slice : Slice) :
+    slice.slots.map Slot.address = slice.traversal := by
+  simp [Slice.slots, Slice.anchor, Slice.traversal]
 
 /-- The instance-address lookup establishes which retained coordinate is cut.
 This premise is address arithmetic; it does not assert an observation equation. -/
 theorem split_slice_identity_projection (slice : Slice) (origin : Address)
-    (position : Nat) (marker : Address)
-    (located : (slice.slots.map Slot.address).idxOf origin = position) :
-    (splitSlice slice position marker).1.slots = (NotionCoreSpec.cutAfter slice.slots origin).1 ∧
-    (splitSlice slice position marker).2.slots =
-      (⟨marker, 0, false⟩ : Slot) :: (NotionCoreSpec.cutAfter slice.slots origin).2 := by
-  simpa [NotionCoreSpec.cutAfter, located] using split_slice_projection slice position marker
+    (position : Nat) (marker : Nat × Nat)
+    (located : (slice.slots.map Slot.address).idxOf origin = position)
+    (bound : position ≤ slice.atoms.length) :
+    (splitSlice slice position (slice.start.1, .event marker)).1.slots =
+      (NotionCoreSpec.cutAfter slice.slots origin).1 ++
+        [NotionCoreSpec.closeSlot slice.start.1 marker] ∧
+    (splitSlice slice position (slice.start.1, .event marker)).2.slots =
+      NotionCoreSpec.boundary slice.start.1 marker :: (NotionCoreSpec.cutAfter slice.slots origin).2 := by
+  have cut := split_slice_projection slice position marker bound
+  simp only [NotionCoreSpec.cutAfter]
+  rw [located]
+  exact cut
 
 theorem cutAfter_invisible_prefix (head : Slot) (slots : List Slot) (origin : Address)
     (distinct : head.address ≠ origin) :
@@ -100,19 +170,27 @@ retained coordinate. Tree shape and interval ownership are unchanged. -/
 def insertSlice (slice : Slice) (position : Nat) (fresh : List Atom) : Slice :=
   {slice with atoms := slice.atoms.take position ++ fresh ++ slice.atoms.drop position}
 
-theorem insert_slice_projection (slice : Slice) (position : Nat) (fresh : List Atom) :
+theorem insert_slice_projection (slice : Slice) (position : Nat) (fresh : List Atom)
+    (bound : position ≤ slice.atoms.length) :
     (insertSlice slice position fresh).slots =
       slice.slots.take (position + 1) ++ fresh.map Atom.slot ++
         slice.slots.drop (position + 1) := by
-  simp [insertSlice, Slice.slots, Slice.anchor, List.map_take, List.map_drop]
+  have mapped : position ≤ (slice.atoms.map Atom.slot).length := by simpa using bound
+  simp only [insertSlice, Slice.slots, Slice.anchor, Slice.close, List.take_succ_cons,
+    List.drop_succ_cons, List.take_append_of_le_length mapped,
+    List.drop_append_of_le_length mapped, List.map_append, List.map_take, List.map_drop,
+    List.append_assoc, List.cons_append]
 
 theorem insert_slice_identity_projection (slice : Slice) (origin : Address)
     (position : Nat) (fresh : List Atom)
-    (located : (slice.slots.map Slot.address).idxOf origin = position) :
+    (located : (slice.slots.map Slot.address).idxOf origin = position)
+    (bound : position ≤ slice.atoms.length) :
     (insertSlice slice position fresh).slots =
       NotionCoreSpec.insertSlots origin (fresh.map Atom.slot) slice.slots := by
-  simpa [NotionCoreSpec.insertSlots, NotionCoreSpec.cutAfter, located] using
-    insert_slice_projection slice position fresh
+  have cut := insert_slice_projection slice position fresh bound
+  simp only [NotionCoreSpec.insertSlots, NotionCoreSpec.cutAfter]
+  rw [located]
+  exact cut
 
 def eraseAtom (targets : List Address) (atom : Atom) : Atom :=
   {atom with kind := match atom.kind with
@@ -124,8 +202,8 @@ def eraseSlice (targets : List Address) (slice : Slice) : Slice :=
 
 @[simp] theorem eraseSlice_nil (slice : Slice) : eraseSlice [] slice = slice := by
   cases slice with
-  | mk start atoms =>
-    simp only [eraseSlice, Slice.mk.injEq, true_and]
+  | mk start atoms stop =>
+    simp only [eraseSlice, Slice.mk.injEq, true_and, and_true]
     conv_rhs => rw [← List.map_id atoms]
     apply List.map_congr_left
     intro atom _
@@ -142,26 +220,32 @@ theorem erase_atom_projection (targets : List Address) (atom : Atom) :
       cases deleted <;> cases targets.contains address <;>
         simp [eraseAtom, Atom.slot, NotionCoreSpec.eraseSlot]
 
+theorem eraseSlot_hidden (targets : List Address) (slot : Slot) (hidden : slot.visible = false) :
+    NotionCoreSpec.eraseSlot targets slot = slot := by
+  cases slot
+  simp_all [NotionCoreSpec.eraseSlot]
+
 theorem erase_slice_projection (targets : List Address) (slice : Slice) :
     (eraseSlice targets slice).slots =
       slice.slots.map (NotionCoreSpec.eraseSlot targets) := by
   have anchor : NotionCoreSpec.eraseSlot targets slice.anchor = slice.anchor := by
     simp [Slice.anchor, NotionCoreSpec.eraseSlot]
-  simp only [eraseSlice, Slice.slots, List.map_map, List.map_cons]
-  rw [anchor]
-  congr 1
-  exact List.map_congr_left fun atom _ => erase_atom_projection targets atom
+  have close : NotionCoreSpec.eraseSlot targets slice.close = slice.close :=
+    eraseSlot_hidden targets _ (NotionCoreSpec.closeOf_visible _ _)
+  have closeSame : (eraseSlice targets slice).close = slice.close := rfl
+  have atoms : (slice.atoms.map (eraseAtom targets)).map Atom.slot =
+      (slice.atoms.map Atom.slot).map (NotionCoreSpec.eraseSlot targets) := by
+    simp only [List.map_map]
+    exact List.map_congr_left fun atom _ => erase_atom_projection targets atom
+  show (eraseSlice targets slice).anchor ::
+      ((slice.atoms.map (eraseAtom targets)).map Atom.slot ++ [(eraseSlice targets slice).close]) = _
+  rw [closeSame, atoms]
+  simp only [Slice.slots, List.map_cons, List.map_append, List.map_nil, anchor, close]
+  rfl
 
 theorem erase_preserves_traversal (targets : List Address) (slice : Slice) :
     (eraseSlice targets slice).traversal = slice.traversal := by
-  simp [eraseSlice, Slice.traversal, eraseAtom]
-
-@[simp] theorem Atom.slot_address (atom : Atom) : atom.slot.address = atom.address := by
-  cases atom with | mk address kind => cases kind <;> rfl
-
-@[simp] theorem Slice.slots_addresses (slice : Slice) :
-    slice.slots.map Slot.address = slice.traversal := by
-  simp [Slice.slots, Slice.anchor, Slice.traversal]
+  simp [eraseSlice, Slice.traversal, eraseAtom, Slice.close]
 
 /-- Cutting after an address of the first part leaves the second part whole. -/
 theorem cutAfter_append_left (a b : List Slot) (origin : Address)
@@ -223,12 +307,25 @@ def deadSlices : List Slice → List Slice
       (if next.start.2 = .start then [] else [slice]) ++ deadSlices (next :: rest)
 
 /-- Chain normal form: atoms lie in their slice's instance, an alive block's
-first slice is the root interval of its own instance, and every dead title is
-an empty instance root. -/
+first slice is the root interval of its own instance, every dead title is an
+empty unstopped instance root, every stop is a split marker of its slice's
+instance, and slice starts and atoms are positions rather than end slots. -/
 def Block.Normal (block : Block) : Prop :=
   (∀ slice ∈ block.slices, ∀ atom ∈ slice.atoms, atom.address.1 = slice.start.1) ∧
   (∀ head ∈ block.slices.head?, head.start = (block.inst, .start)) ∧
-  ∀ dead ∈ deadSlices block.slices, dead.start.2 = .start ∧ dead.atoms = []
+  (∀ dead ∈ deadSlices block.slices,
+    dead.start.2 = .start ∧ dead.atoms = [] ∧ dead.stop = none) ∧
+  (∀ slice ∈ block.slices, ∀ stop ∈ slice.stop,
+    stop.1 = slice.start.1 ∧ ∃ marker, stop.2 = .event marker) ∧
+  (∀ slice ∈ block.slices, slice.start.2.isEnd = false ∧
+    ∀ atom ∈ slice.atoms, atom.address.2.isEnd = false)
+
+/-- A nonempty chain's slots end with the close slot of its last slice. -/
+theorem Block.slots_last (block : Block) (init : List Slice) (last : Slice)
+    (shape : block.slices = init ++ [last]) :
+    ∃ pre, block.slots = pre ++ [last.close] :=
+  ⟨init.flatMap Slice.slots ++ last.anchor :: last.atoms.map Atom.slot, by
+    simp [Block.slots, shape, Slice.slots, List.append_assoc]⟩
 
 /-- Cut a chain after `origin`: the slices before the one holding it stay,
 that slice is split at the origin's coordinate, and its right part and every
@@ -242,21 +339,36 @@ def splitSlices (origin marker : Address) : List Slice → List Slice × List Sl
       else
         ((slice :: (splitSlices origin marker rest).1), (splitSlices origin marker rest).2)
 
-/-- The cut chain projects to the semantic cut after the origin's address,
-with the marker's hidden slot heading the moved part. -/
-theorem splitSlices_projection (origin marker : Address) (slices : List Slice)
-    (present : origin ∈ slices.flatMap Slice.traversal) :
-    (splitSlices origin marker slices).1.flatMap Slice.slots =
-        (NotionCoreSpec.cutAfter (slices.flatMap Slice.slots) origin).1 ∧
-    (splitSlices origin marker slices).2.flatMap Slice.slots =
-        (⟨marker, 0, false⟩ : Slot) ::
+/-- The slices holding `origin` start in the origin's instance. -/
+def InstanceAgrees (origin : Address) (slices : List Slice) : Prop :=
+  ∀ slice ∈ slices, origin ∈ slice.traversal → slice.start.1 = origin.1
+
+instance (origin : Address) (slices : List Slice) : Decidable (InstanceAgrees origin slices) :=
+  inferInstanceAs (Decidable (∀ slice ∈ slices, origin ∈ slice.traversal → slice.start.1 = origin.1))
+
+/-- The cut chain projects to the semantic cut after the origin's address:
+the kept part is closed by the marker's close slot, and the marker's hidden
+slot heads the moved part. The origin is a position, not a close slot, and the
+slice holding it starts in the origin's instance. -/
+theorem splitSlices_projection (origin : Address) (marker : Nat × Nat) (slices : List Slice)
+    (present : origin ∈ slices.flatMap Slice.traversal)
+    (position : origin.2.isEnd = false)
+    (agrees : InstanceAgrees origin slices) :
+    (splitSlices origin (origin.1, .event marker) slices).1.flatMap Slice.slots =
+        (NotionCoreSpec.cutAfter (slices.flatMap Slice.slots) origin).1 ++
+          [NotionCoreSpec.closeSlot origin.1 marker] ∧
+    (splitSlices origin (origin.1, .event marker) slices).2.flatMap Slice.slots =
+        NotionCoreSpec.boundary origin.1 marker ::
           (NotionCoreSpec.cutAfter (slices.flatMap Slice.slots) origin).2 := by
   induction slices with
   | nil => simp at present
   | cons slice rest ih =>
     by_cases inside : origin ∈ slice.traversal
-    · have cut := split_slice_identity_projection slice origin (slice.traversal.idxOf origin) marker
-        (by rw [Slice.slots_addresses])
+    · have inst := agrees slice (by simp) inside
+      have bound := position_bound slice origin inside (ne_close_of_position slice position)
+      have cut := split_slice_identity_projection slice origin (slice.traversal.idxOf origin) marker
+        (by rw [Slice.slots_addresses]) bound
+      rw [inst] at cut
       have outer := cutAfter_append_left slice.slots (rest.flatMap Slice.slots) origin
         (by rw [Slice.slots_addresses]; exact inside)
       simp only [splitSlices, inside, ↓reduceIte, List.flatMap_cons, List.flatMap_nil,
@@ -267,9 +379,9 @@ theorem splitSlices_projection (origin marker : Address) (slices : List Slice)
         exact present.resolve_left inside
       have outer := cutAfter_append_right slice.slots (rest.flatMap Slice.slots) origin
         (by rw [Slice.slots_addresses]; exact inside)
-      obtain ⟨left, right⟩ := ih later
+      obtain ⟨left, right⟩ := ih later (fun other member => agrees other (by simp [member]))
       simp only [splitSlices, inside, ↓reduceIte, List.flatMap_cons, outer]
-      exact ⟨by rw [left], right⟩
+      exact ⟨by rw [left, List.append_assoc], right⟩
 
 /-- A chain whose only slice holding the origin is preceded by slices not
 holding it is cut exactly at that slice. -/
@@ -305,7 +417,8 @@ def insertSlices (origin : Address) (fresh : List Atom) (slices : List Slice) : 
 
 theorem insertSlices_projection (origin : Address) (fresh : List Atom) (slices : List Slice)
     (unique : (slices.flatMap Slice.traversal).Nodup)
-    (present : origin ∈ slices.flatMap Slice.traversal) :
+    (present : origin ∈ slices.flatMap Slice.traversal)
+    (position : origin.2.isEnd = false) :
     (insertSlices origin fresh slices).flatMap Slice.slots =
       NotionCoreSpec.insertSlots origin (fresh.map Atom.slot) (slices.flatMap Slice.slots) := by
   induction slices with
@@ -326,6 +439,7 @@ theorem insertSlices_projection (origin : Address) (fresh : List Atom) (slices :
         simp [outside]
       have cut := insert_slice_identity_projection slice origin (slice.traversal.idxOf origin) fresh
         (by rw [Slice.slots_addresses])
+        (position_bound slice origin inside (ne_close_of_position slice position))
       have outer := cutAfter_append_left slice.slots (rest.flatMap Slice.slots) origin
         (by rw [Slice.slots_addresses]; exact inside)
       have head : insertSlices origin fresh (slice :: rest) =
@@ -398,10 +512,22 @@ theorem deadSlices_cons_live (slice : Slice) (rest : List Slice)
     · simp [deadSlices, opens]
     · simp [deadSlices, opens] at live
 
+/-- Every address of a slice whose atoms lie in its instance is in that
+instance, its close slot included. -/
+theorem traversal_instance (slice : Slice) (origin : Address)
+    (atoms : ∀ atom ∈ slice.atoms, atom.address.1 = slice.start.1)
+    (held : origin ∈ slice.traversal) : origin.1 = slice.start.1 := by
+  simp only [Slice.traversal, List.mem_cons, List.mem_append, List.mem_map,
+    List.not_mem_nil, or_false] at held
+  rcases held with rfl | ⟨atom, member, rfl⟩ | rfl
+  · rfl
+  · exact atoms atom member
+  · exact NotionCoreSpec.closeOf_inst _ _
+
 theorem erase_normal (block : Block) (targets : List Address) (normal : block.Normal) :
     ({block with slices := block.slices.map (eraseSlice targets)} : Block).Normal := by
-  obtain ⟨atoms, head, dead⟩ := normal
-  refine ⟨?_, ?_, ?_⟩
+  obtain ⟨atoms, head, dead, stops, positions⟩ := normal
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · intro slice member atom inside
     obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
     obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp inside
@@ -416,37 +542,55 @@ theorem erase_normal (block : Block) (targets : List Address) (normal : block.No
   · intro slice member
     rw [deadSlices_map (eraseSlice targets) (fun _ => rfl)] at member
     obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
-    obtain ⟨opens, empty⟩ := dead old oldMember
-    exact ⟨opens, by simp [eraseSlice, empty]⟩
+    obtain ⟨opens, empty, unstopped⟩ := dead old oldMember
+    exact ⟨opens, by simp [eraseSlice, empty], unstopped⟩
+  · intro slice member
+    obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
+    exact stops old oldMember
+  · intro slice member
+    obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
+    refine ⟨(positions old oldMember).1, ?_⟩
+    intro atom inside
+    obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp inside
+    simpa [eraseAtom] using (positions old oldMember).2 original originalMember
 
 theorem insert_normal (block : Block) (origin : Address) (fresh : List Atom)
     (normal : block.Normal)
     (sameInstance : ∀ atom ∈ fresh, atom.address.1 = origin.1)
+    (freshPositions : ∀ atom ∈ fresh, atom.address.2.isEnd = false)
     (live : ∀ dead ∈ deadSlices block.slices, origin ∉ dead.traversal) :
     ({block with slices := insertSlices origin fresh block.slices} : Block).Normal := by
-  obtain ⟨atoms, head, dead⟩ := normal
+  obtain ⟨atoms, head, dead, stops, positions⟩ := normal
   have startSame : ∀ slice : Slice,
       (if origin ∈ slice.traversal then insertSlice slice (slice.traversal.idxOf origin) fresh
         else slice).start = slice.start := by
     intro slice
     split <;> rfl
-  refine ⟨?_, ?_, ?_⟩
+  have stopSame : ∀ slice : Slice,
+      (if origin ∈ slice.traversal then insertSlice slice (slice.traversal.idxOf origin) fresh
+        else slice).stop = slice.stop := by
+    intro slice
+    split <;> rfl
+  have atomsFrom : ∀ old : Slice, ∀ atom ∈
+      (if origin ∈ old.traversal then insertSlice old (old.traversal.idxOf origin) fresh
+        else old).atoms, atom ∈ old.atoms ∨ (origin ∈ old.traversal ∧ atom ∈ fresh) := by
+    intro old atom inside
+    by_cases holds : origin ∈ old.traversal
+    · simp only [holds, ↓reduceIte, insertSlice, List.mem_append] at inside
+      rcases inside with (inside | inside) | inside
+      · exact Or.inl (List.mem_of_mem_take inside)
+      · exact Or.inr ⟨holds, inside⟩
+      · exact Or.inl (List.mem_of_mem_drop inside)
+    · simp only [holds, ↓reduceIte] at inside
+      exact Or.inl inside
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · intro slice member atom inside
     obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
     rw [startSame old]
-    by_cases holds : origin ∈ old.traversal
-    · simp only [holds, ↓reduceIte, insertSlice, List.mem_append] at inside
-      have originInst : origin.1 = old.start.1 := by
-        rcases List.mem_cons.mp holds with equal | later
-        · rw [equal]
-        · obtain ⟨held, heldMember, rfl⟩ := List.mem_map.mp later
-          exact atoms old oldMember held heldMember
-      rcases inside with (inside | inside) | inside
-      · exact atoms old oldMember atom (List.mem_of_mem_take inside)
-      · exact (sameInstance atom inside).trans originInst
-      · exact atoms old oldMember atom (List.mem_of_mem_drop inside)
-    · simp only [holds, ↓reduceIte] at inside
-      exact atoms old oldMember atom inside
+    rcases atomsFrom old atom inside with inside | ⟨holds, inside⟩
+    · exact atoms old oldMember atom inside
+    · exact (sameInstance atom inside).trans
+        (traversal_instance old origin (atoms old oldMember) holds)
   · intro first member
     cases slices : block.slices with
     | nil => simp [slices, insertSlices] at member
@@ -462,6 +606,17 @@ theorem insert_normal (block : Block) (origin : Address) (fresh : List Atom)
     obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
     have untouched : origin ∉ old.traversal := live old oldMember
     simpa [untouched] using dead old oldMember
+  · intro slice member
+    obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
+    rw [startSame old, stopSame old]
+    exact stops old oldMember
+  · intro slice member
+    obtain ⟨old, oldMember, rfl⟩ := List.mem_map.mp member
+    rw [startSame old]
+    refine ⟨(positions old oldMember).1, fun atom inside => ?_⟩
+    rcases atomsFrom old atom inside with inside | ⟨_, inside⟩
+    · exact (positions old oldMember).2 atom inside
+    · exact freshPositions atom inside
 
 /-- Appending an alive normal chain below the last slice of a normal chain
 keeps the holder normal. -/
@@ -469,14 +624,14 @@ theorem append_normal (holder source : Block) (holderNormal : holder.Normal)
     (sourceNormal : source.Normal) (holderAlive : holder.alive = true)
     (alive : source.alive = true) :
     ({holder with slices := holder.slices ++ source.slices} : Block).Normal := by
-  obtain ⟨holderAtoms, holderHead, holderDead⟩ := holderNormal
-  obtain ⟨sourceAtoms, sourceHead, sourceDead⟩ := sourceNormal
+  obtain ⟨holderAtoms, holderHead, holderDead, holderStops, holderPositions⟩ := holderNormal
+  obtain ⟨sourceAtoms, sourceHead, sourceDead, sourceStops, sourcePositions⟩ := sourceNormal
   cases sourceSlices : source.slices with
   | nil => simp [Block.alive, sourceSlices] at alive
   | cons root rest =>
     have opens : root.start.2 = .start := by
       rw [sourceHead root (by simp [sourceSlices])]
-    refine ⟨?_, ?_, ?_⟩
+    refine ⟨?_, ?_, ?_, ?_, ?_⟩
     · intro slice member
       rcases List.mem_append.mp member with old | moved
       · exact holderAtoms slice old
@@ -495,6 +650,14 @@ theorem append_normal (holder source : Block) (holderNormal : holder.Normal)
       rcases member with old | moved
       · exact holderDead slice old
       · exact sourceDead slice (sourceSlices ▸ moved)
+    · intro slice member
+      rcases List.mem_append.mp member with old | moved
+      · exact holderStops slice old
+      · exact sourceStops slice (sourceSlices ▸ moved)
+    · intro slice member
+      rcases List.mem_append.mp member with old | moved
+      · exact holderPositions slice old
+      · exact sourcePositions slice (sourceSlices ▸ moved)
 
 theorem deadSlices_tail (slice : Slice) (rest : List Slice) :
     deadSlices rest ⊆ deadSlices (slice :: rest) := by
@@ -503,39 +666,43 @@ theorem deadSlices_tail (slice : Slice) (rest : List Slice) :
   | cons next tail => exact fun dead member => by simp [deadSlices, member]
 
 /-- The parts of a cut chain: every kept slice is an old slice or the left
-part of one, and the moved part is the right part of the slice holding the
-origin followed by old slices. -/
+part of the slice holding the origin, which stops at the marker, and the
+moved part is the right part of that slice, starting at the marker with the
+old stop, followed by old slices. -/
 theorem splitSlices_parts (origin marker : Address) (slices : List Slice)
     (present : origin ∈ slices.flatMap Slice.traversal) :
     (∀ kept ∈ (splitSlices origin marker slices).1,
-      ∃ old ∈ slices, kept.start = old.start ∧ kept.atoms ⊆ old.atoms) ∧
+      ∃ old ∈ slices, kept.start = old.start ∧ kept.atoms ⊆ old.atoms ∧
+        (kept.stop = old.stop ∨ (origin ∈ old.traversal ∧ kept.stop = some marker))) ∧
     (∃ old ∈ slices, origin ∈ old.traversal ∧ ∃ right later,
       (splitSlices origin marker slices).2 = right :: later ∧ right.start = marker ∧
-      right.atoms ⊆ old.atoms ∧ later ⊆ slices) ∧
+      right.atoms ⊆ old.atoms ∧ right.stop = old.stop ∧ later ⊆ slices) ∧
     (splitSlices origin marker slices).1.head?.map Slice.start = slices.head?.map Slice.start := by
   induction slices with
   | nil => simp at present
   | cons slice rest ih =>
     by_cases inside : origin ∈ slice.traversal
     · simp only [splitSlices, inside, ↓reduceIte]
-      refine ⟨?_, ⟨slice, by simp, inside, _, rest, rfl, rfl, ?_, fun x m => by simp [m]⟩, rfl⟩
+      refine ⟨?_, ⟨slice, by simp, inside, _, rest, rfl, rfl, ?_, rfl, fun x m => by simp [m]⟩, rfl⟩
       · intro kept member
         simp only [List.mem_singleton] at member
         subst kept
-        exact ⟨slice, by simp, rfl, fun atom held => List.mem_of_mem_take held⟩
+        exact ⟨slice, by simp, rfl, fun atom held => List.mem_of_mem_take held,
+          Or.inr ⟨inside, rfl⟩⟩
       · exact fun atom held => List.mem_of_mem_drop held
     · have later : origin ∈ rest.flatMap Slice.traversal := by
         simp only [List.flatMap_cons, List.mem_append] at present
         exact present.resolve_left inside
-      obtain ⟨keptOld, ⟨old, oldMember, held, right, tail, moved, start, atoms, tailOld⟩, _⟩ := ih later
+      obtain ⟨keptOld, ⟨old, oldMember, held, right, tail, moved, start, atoms, stop, tailOld⟩, _⟩ :=
+        ih later
       simp only [splitSlices, inside, ↓reduceIte]
-      refine ⟨?_, ⟨old, by simp [oldMember], held, right, tail, moved, start, atoms,
+      refine ⟨?_, ⟨old, by simp [oldMember], held, right, tail, moved, start, atoms, stop,
         fun x m => List.mem_cons_of_mem _ (tailOld m)⟩, rfl⟩
       intro kept member
       rcases List.mem_cons.mp member with rfl | member
-      · exact ⟨kept, by simp, rfl, fun _ held => held⟩
-      · obtain ⟨old, oldMember, start, atoms⟩ := keptOld kept member
-        exact ⟨old, List.mem_cons_of_mem _ oldMember, start, atoms⟩
+      · exact ⟨kept, by simp, rfl, fun _ held => held, Or.inl rfl⟩
+      · obtain ⟨old, oldMember, start, atoms, stop⟩ := keptOld kept member
+        exact ⟨old, List.mem_cons_of_mem _ oldMember, start, atoms, stop⟩
 
 /-- Cutting a chain at a live slice creates no dead title in either part. -/
 theorem splitSlices_dead (origin marker : Address) (slices : List Slice)
@@ -589,24 +756,23 @@ theorem splitSlices_dead (origin marker : Address) (slices : List Slice)
 theorem split_normal (block : Block) (origin marker : Address) (destination : Nat)
     (normal : block.Normal)
     (present : origin ∈ block.traversal)
-    (sameInstance : marker.1 = origin.1) (markerEvent : marker.2 ≠ .start)
+    (sameInstance : marker.1 = origin.1) (markerId : Nat × Nat)
+    (markerEvent : marker.2 = .event markerId)
     (live : ∀ dead ∈ deadSlices block.slices, origin ∉ dead.traversal) :
     ({block with slices := (splitSlices origin marker block.slices).1} : Block).Normal ∧
-    (⟨destination, destination, ⟨(destination, .start), []⟩ ::
+    (⟨destination, destination, ⟨(destination, .start), [], none⟩ ::
       (splitSlices origin marker block.slices).2⟩ : Block).Normal := by
-  obtain ⟨atoms, head, dead⟩ := normal
-  obtain ⟨keptOld, ⟨old, oldMember, held, right, later, moved, rightStart, rightAtoms, laterOld⟩,
-    heads⟩ := splitSlices_parts origin marker block.slices present
+  obtain ⟨atoms, head, dead, stops, positions⟩ := normal
+  obtain ⟨keptOld, ⟨old, oldMember, held, right, later, moved, rightStart, rightAtoms, rightStop,
+    laterOld⟩, heads⟩ := splitSlices_parts origin marker block.slices present
   obtain ⟨leftDead, rightDead⟩ := splitSlices_dead origin marker block.slices present live
-  have originInst : origin.1 = old.start.1 := by
-    rcases List.mem_cons.mp held with equal | inner
-    · rw [equal]
-    · obtain ⟨atom, atomMember, rfl⟩ := List.mem_map.mp inner
-      exact atoms old oldMember atom atomMember
+  have originInst : origin.1 = old.start.1 :=
+    traversal_instance old origin (atoms old oldMember) held
+  have markerPosition : marker.2.isEnd = false := by rw [markerEvent]; rfl
   constructor
-  · refine ⟨?_, ?_, ?_⟩
+  · refine ⟨?_, ?_, ?_, ?_, ?_⟩
     · intro kept member atom inside
-      obtain ⟨source, sourceMember, start, sub⟩ := keptOld kept member
+      obtain ⟨source, sourceMember, start, sub, -⟩ := keptOld kept member
       rw [start]
       exact atoms source sourceMember atom (sub inside)
     · intro first member
@@ -621,7 +787,22 @@ theorem split_normal (block : Block) (origin marker : Address) (destination : Na
         exact head original (by simp [slices])
     · intro kept member
       exact dead kept (leftDead kept member)
-  · refine ⟨?_, by simp, ?_⟩
+    · intro kept member stop stopped
+      obtain ⟨source, sourceMember, start, -, kind⟩ := keptOld kept member
+      rcases kind with same | ⟨holds, marked⟩
+      · rw [same] at stopped
+        rw [start]
+        exact stops source sourceMember stop stopped
+      · rw [marked, Option.mem_def, Option.some.injEq] at stopped
+        subst stop
+        rw [start, sameInstance, traversal_instance source origin (atoms source sourceMember) holds]
+        exact ⟨rfl, markerId, markerEvent⟩
+    · intro kept member
+      obtain ⟨source, sourceMember, start, sub, -⟩ := keptOld kept member
+      rw [start]
+      exact ⟨(positions source sourceMember).1,
+        fun atom inside => (positions source sourceMember).2 atom (sub inside)⟩
+  · refine ⟨?_, by simp, ?_, ?_, ?_⟩
     · intro slice member atom inside
       simp only [List.mem_cons] at member
       rcases member with rfl | member
@@ -634,11 +815,31 @@ theorem split_normal (block : Block) (origin marker : Address) (destination : Na
     · intro slice member
       simp only at member
       rw [moved] at member rightDead
-      simp only [deadSlices, rightStart, markerEvent, ↓reduceIte, List.singleton_append,
-        List.mem_cons] at member
+      simp only [deadSlices, rightStart, markerEvent, reduceCtorEq, ↓reduceIte,
+        List.singleton_append, List.mem_cons] at member
       rcases member with rfl | member
-      · exact ⟨rfl, rfl⟩
+      · exact ⟨rfl, rfl, rfl⟩
       · exact dead slice (rightDead slice member)
+    · intro slice member stop stopped
+      simp only [List.mem_cons] at member
+      rcases member with rfl | member
+      · simp at stopped
+      · rw [moved] at member
+        rcases List.mem_cons.mp member with rfl | member
+        · rw [rightStop] at stopped
+          rw [rightStart, sameInstance, originInst]
+          exact stops old oldMember stop stopped
+        · exact stops slice (laterOld member) stop stopped
+    · intro slice member
+      simp only [List.mem_cons] at member
+      rcases member with rfl | member
+      · exact ⟨rfl, by simp⟩
+      · rw [moved] at member
+        rcases List.mem_cons.mp member with rfl | member
+        · rw [rightStart]
+          exact ⟨markerPosition,
+            fun atom inside => (positions old oldMember).2 atom (rightAtoms inside)⟩
+        · exact positions slice (laterOld member)
 
 namespace Endpoint
 variable {Token : Type} [DecidableEq Token]

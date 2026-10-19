@@ -48,13 +48,13 @@ theorem erase_shape_active (state result : State) (block inst : BlockKey)
     ShapeInvariant result ∧ ∀ name, ActiveInstance result name ↔ ActiveInstance state name := by
   have frames := NotionCoreMachineErase.erase_physical state result block inst targets accepted
   constructor
-  · refine ⟨?_,?_,?_⟩
+  · refine ⟨?_,?_,?_,?_,?_⟩
     · simpa only [ShapeInvariant,shapeView,frames.1] using prior.1
     · simpa only [ShapeInvariant,shapeView,frames.1] using prior.2.1
     · intro dead member
       have oldMember : (dead,false) ∈ forestNodes state.forest := by
         simpa only [shapeView,frames.1] using member
-      obtain ⟨form,empty,lives⟩ := prior.2.2 dead oldMember
+      obtain ⟨form,empty,lives⟩ := prior.2.2.1 dead oldMember
       refine ⟨form,?_,fun live liveMember => lives live (by simpa only [shapeView,frames.1] using liveMember)⟩
       change physical result dead.start.1 = _
       change physical state dead.start.1 = _ at empty
@@ -63,6 +63,8 @@ theorem erase_shape_active (state result : State) (block inst : BlockKey)
       · rw [empty]
         simp [NotionCoreSliceForest.emptyPhysical,NotionCoreSource.eraseAtom,NotionCorePartition.boundary]
       · exact empty
+    · simpa only [ShapeInvariant,shapeView,frames.1] using prior.2.2.2.1
+    · simpa only [ShapeInvariant,shapeView,frames.1] using prior.2.2.2.2
   · intro name
     simp only [ActiveInstance,frames.1]
 
@@ -244,28 +246,31 @@ theorem canonical_ordinary_step (network : NotionCorePayloadNetwork.State)
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
-  | merge source target =>
+  | merge source inst stop =>
     obtain ⟨next,step,nextPart,nextShape,active⟩ := NotionCoreMachineCanonicalSplit.canonical_merge_preserves_active
-      network reachable peer pre suffix tx position state accepted part shape source target payload
+      network reachable peer pre suffix tx position state accepted part shape source inst stop payload
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
 
 namespace SPOT
 private def cut : Transaction := ⟨⟨2,[66]⟩,.split .initial .initial .start⟩
-private def back : Transaction := ⟨⟨3,[66]⟩,.merge (.issued cut.id) .initial⟩
+private def back : Transaction := ⟨⟨3,[66]⟩,.merge (.issued cut.id) .initial (some cut.id)⟩
 private def liveInstances (state : State) : List Nat :=
   (forestNodes state.forest).filterMap fun node => if node.2 then some node.1.start.1 else none
 /-- Split retains the original instance in both live slices; the fresh
 split destination's own empty title is not a live instance. Merging it back
-keeps both live slices and the dead title inside the absorbing block. -/
+keeps both live slices and the dead title inside the absorbing block; the
+merge is not a no-op. -/
 theorem split_active_control :
     (replay {} [NotionCorePayload.bootstrap [],cut]).map liveInstances = some [0,0] ∧
     (replay {} [NotionCorePayload.bootstrap [],cut]).map liveInstances ≠
         some [0,blockName (.issued cut.id)] ∧
     (replay {} [NotionCorePayload.bootstrap [],cut,back]).map liveInstances = some [0,0] ∧
     (replay {} [NotionCorePayload.bootstrap [],cut,back]).map (fun state => state.forest.length) =
-        some 1 := by decide +kernel
+        some 1 ∧
+    (replay {} [NotionCorePayload.bootstrap [],cut,back]).map (fun state => state.forest.length) ≠
+        some 2 := by decide +kernel
 end SPOT
 
 #print axioms canonical_ordinary_step
@@ -385,9 +390,9 @@ theorem canonical_ordinary_step_version (network : NotionCorePayloadNetwork.Stat
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
-  | merge source target =>
+  | merge source inst stop =>
     obtain ⟨next,step,nextPart,nextShape,active⟩ := NotionCoreMachineCanonicalSplit.canonical_merge_preserves_active_version
-      network reachable version closed pre suffix tx position state accepted part shape source target payload
+      network reachable version closed pre suffix tx position state accepted part shape source inst stop payload
     refine ⟨next,step,nextPart,nextShape,extend_roots pre tx state next rootActive ?_⟩
     intro name
     simpa [rootCreatedBlocks,payload] using active name
@@ -446,7 +451,7 @@ theorem canonical_prefix_reconstruct_version (network : NotionCorePayloadNetwork
       | split block inst origin =>
         exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro atoms; simp [payload])
-      | merge source target =>
+      | merge source inst stop =>
         exact canonical_ordinary_step_version network reachable roots version closed pre suffix tx located
           state accepted part shape rootActive (by intro atoms; simp [payload])
     obtain ⟨next,step,nextPart,nextShape,nextRoots⟩ := nextStep

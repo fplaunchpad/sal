@@ -78,19 +78,9 @@ theorem prepared_references (network : State) (session : Session)
       exact NotionCoreMachineClient.prepared_split_references
         network session _ document received accepted block index payload prepared
   | merge source =>
-      simp only [prepareRequest, NotionCoreMachineClient.prepareMerge] at prepared
-      split at prepared
-      · cases last : ((NotionCoreMachine.visible document).take
-            ((NotionCoreMachine.visible document).idxOf (NotionCoreMachine.blockName source))).getLast? with
-        | none => simp [last] at prepared
-        | some previous =>
-          cases decoded : NotionCoreMachineClient.decodeBlock previous with
-          | none => simp [last, decoded] at prepared
-          | some target =>
-            have same : Payload.merge source target = payload := by simpa [last, decoded] using prepared
-            subst payload
-            simp [NotionCorePayloadNetwork.locatedReferences]
-      · contradiction
+      obtain ⟨-, inst, stop, -, rfl, -⟩ :=
+        NotionCoreMachineClient.prepareMerge_some document source payload prepared
+      simp [NotionCorePayloadNetwork.locatedReferences]
 
 theorem prepared_creators (network : State) (reachable : NotionCoreCreatorNetwork.Reach network)
     (session : Session) (document : NotionCoreMachine.State)
@@ -115,7 +105,7 @@ theorem prepared_creators (network : State) (reachable : NotionCoreCreatorNetwor
         network reachable session _ document received accepted block index payload prepared
   | merge source =>
       exact NotionCoreMachineClient.prepared_merge_creators
-        network session _ document received accepted source payload prepared
+        network reachable session _ document received accepted source payload prepared
 
 /-- The concrete request transition supplies all of the old abstract admission
 checks; it does not require the caller to prove those checks. -/
