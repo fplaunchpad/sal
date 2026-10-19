@@ -9,7 +9,7 @@
   "offline-regression.mjs": 0,
   "spec-controls.mjs": {
    "specControls": "passed",
-   "checks": 31
+   "checks": 58
   }
  },
  "node": "v26.3.1",
@@ -59,39 +59,73 @@
    "variant": "demo",
    "ownMode": "absorb",
    "ra": {
-    "archives": 162802,
+    "archives": 163586,
     "absorb": {
-     "agree": 97826,
+     "agree": 98351,
      "stuck": 42046,
      "conservation": 622,
-     "placement": 22308
+     "placement": 22567
     },
     "skip": {
-     "agree": 92495,
+     "agree": 93020,
      "stuck": 42046,
      "conservation": 622,
-     "placement": 27639
+     "placement": 27898
     },
     "removed": {
-     "agree": 97259,
+     "agree": 97784,
      "stuck": 48770,
      "conservation": 299,
-     "placement": 16474
+     "placement": 16733
+    },
+    "sliceFollow": {
+     "agree": 102649,
+     "stuck": 57896,
+     "conservation": 584,
+     "placement": 2457
+    },
+    "sliceFollowAnchor": {
+     "agree": 102115,
+     "stuck": 57896,
+     "conservation": 584,
+     "placement": 2991
     },
     "orderInversions": 20551,
     "replayExceptions": 12,
     "shape": {
-     "archives": 162802,
-     "branching": 62981,
-     "maxChildren": 4
+     "archives": 163586,
+     "branching": 63633,
+     "maxChildren": 4,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 44228,
+       "chain": 16709
+      },
+      "sliceFollowAnchor": {
+       "branching": 44762,
+       "chain": 16709
+      },
+      "absorb": {
+       "branching": 40700,
+       "chain": 24535
+      },
+      "skip": {
+       "branching": 42548,
+       "chain": 28018
+      },
+      "removed": {
+       "branching": 41185,
+       "chain": 24617
+      }
+     }
     },
     "deletesCrossing": [
-     2952,
-     2952
+     3248,
+     3248
     ],
     "deletesSingle": [
-     25621,
-     25621
+     25893,
+     25893
     ]
    },
    "harness": {
@@ -212,14 +246,20 @@
     }
    ],
    "litmus": {
-    "runs": 2236,
-    "localChecks": 6544,
-    "localFailures": 0,
-    "finalChecks": 48,
-    "finalFailures": 0,
-    "finalSkipFailures": 2,
+    "runs": 3760,
+    "localChecks": 13204,
+    "localFailures": 44,
+    "finalChecks": 60,
+    "finalFailures": 4,
+    "finalSkipFailures": 6,
+    "finalSliceFailures": 0,
     "divergent": 0,
     "exceptions": 12
+   },
+   "litmusOwn": {
+    "column": "expected",
+    "finalChecks": 60,
+    "finalFailures": 4
    },
    "exits": {
     "gate": 0,
@@ -237,39 +277,69 @@
    "variant": "design",
    "ownMode": "absorb",
    "ra": {
-    "archives": 161630,
+    "archives": 162414,
     "absorb": {
-     "agree": 161630,
+     "agree": 162414,
      "stuck": 0,
      "conservation": 0,
      "placement": 0
     },
     "skip": {
-     "agree": 138453,
+     "agree": 139237,
      "stuck": 0,
      "conservation": 0,
      "placement": 23177
     },
     "removed": {
-     "agree": 119363,
+     "agree": 120147,
      "stuck": 42267,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollow": {
+     "agree": 17996,
+     "stuck": 144418,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollowAnchor": {
+     "agree": 17996,
+     "stuck": 144418,
      "conservation": 0,
      "placement": 0
     },
     "orderInversions": 0,
     "replayExceptions": 0,
     "shape": {
-     "archives": 161630,
+     "archives": 162414,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 144418
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 144418
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 42267
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 23177
+      }
+     }
     },
     "deletesCrossing": [
-     2789,
-     2789
+     3085,
+     3085
     ],
     "deletesSingle": [
-     25688,
-     25688
+     25960,
+     25960
     ]
    },
    "harness": {
@@ -384,14 +454,20 @@
     }
    ],
    "litmus": {
-    "runs": 2332,
-    "localChecks": 6736,
+    "runs": 3856,
+    "localChecks": 13396,
     "localFailures": 0,
-    "finalChecks": 52,
+    "finalChecks": 64,
     "finalFailures": 0,
     "finalSkipFailures": 2,
+    "finalSliceFailures": 4,
     "divergent": 0,
     "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "expected",
+    "finalChecks": 64,
+    "finalFailures": 0
    },
    "exits": {
     "gate": 0,
@@ -408,39 +484,69 @@
    "variant": "skip",
    "ownMode": "skip",
    "ra": {
-    "archives": 162616,
+    "archives": 163400,
     "absorb": {
-     "agree": 147504,
+     "agree": 148288,
      "stuck": 0,
      "conservation": 0,
      "placement": 15112
     },
     "skip": {
-     "agree": 162616,
+     "agree": 163400,
      "stuck": 0,
      "conservation": 0,
      "placement": 0
     },
     "removed": {
-     "agree": 112824,
+     "agree": 113608,
      "stuck": 46513,
      "conservation": 0,
      "placement": 3279
     },
+    "sliceFollow": {
+     "agree": 17956,
+     "stuck": 145444,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollowAnchor": {
+     "agree": 17956,
+     "stuck": 145444,
+     "conservation": 0,
+     "placement": 0
+    },
     "orderInversions": 0,
     "replayExceptions": 0,
     "shape": {
-     "archives": 162616,
+     "archives": 163400,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 145444
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 145444
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 49792
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 15112
+      }
+     }
     },
     "deletesCrossing": [
-     2678,
-     2678
+     2974,
+     2974
     ],
     "deletesSingle": [
-     25552,
-     25552
+     25824,
+     25824
     ]
    },
    "harness": {
@@ -559,14 +665,20 @@
     }
    ],
    "litmus": {
-    "runs": 2328,
-    "localChecks": 6724,
+    "runs": 3852,
+    "localChecks": 13384,
     "localFailures": 0,
-    "finalChecks": 52,
+    "finalChecks": 64,
     "finalFailures": 2,
     "finalSkipFailures": 0,
+    "finalSliceFailures": 6,
     "divergent": 0,
     "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "skip",
+    "finalChecks": 64,
+    "finalFailures": 0
    },
    "exits": {
     "gate": 0,
@@ -583,39 +695,73 @@
    "variant": "no-source-check",
    "ownMode": "absorb",
    "ra": {
-    "archives": 161472,
+    "archives": 162256,
     "absorb": {
-     "agree": 154562,
+     "agree": 155346,
      "stuck": 0,
      "conservation": 0,
      "placement": 6910
     },
     "skip": {
-     "agree": 134855,
+     "agree": 135639,
      "stuck": 0,
      "conservation": 0,
      "placement": 26617
     },
     "removed": {
-     "agree": 116680,
+     "agree": 117464,
      "stuck": 43162,
      "conservation": 0,
      "placement": 1630
     },
+    "sliceFollow": {
+     "agree": 18072,
+     "stuck": 144184,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollowAnchor": {
+     "agree": 18072,
+     "stuck": 144184,
+     "conservation": 0,
+     "placement": 0
+    },
     "orderInversions": 0,
     "replayExceptions": 0,
     "shape": {
-     "archives": 161472,
+     "archives": 162256,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 144184
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 144184
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 44792
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 26617
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 6910
+      }
+     }
     },
     "deletesCrossing": [
-     2760,
-     2760
+     3056,
+     3056
     ],
     "deletesSingle": [
-     25683,
-     25683
+     25955,
+     25955
     ]
    },
    "harness": {
@@ -731,14 +877,20 @@
     }
    ],
    "litmus": {
-    "runs": 2332,
-    "localChecks": 6736,
+    "runs": 3856,
+    "localChecks": 13396,
     "localFailures": 0,
-    "finalChecks": 52,
+    "finalChecks": 64,
     "finalFailures": 0,
     "finalSkipFailures": 2,
+    "finalSliceFailures": 4,
     "divergent": 0,
     "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "expected",
+    "finalChecks": 64,
+    "finalFailures": 0
    },
    "exits": {
     "gate": 0,
@@ -756,39 +908,73 @@
    "variant": "remove-independently",
    "ownMode": "absorb",
    "ra": {
-    "archives": 161606,
+    "archives": 162390,
     "absorb": {
-     "agree": 161514,
+     "agree": 162298,
      "stuck": 0,
      "conservation": 92,
      "placement": 0
     },
     "skip": {
-     "agree": 138418,
+     "agree": 139202,
      "stuck": 0,
      "conservation": 92,
      "placement": 23096
     },
     "removed": {
-     "agree": 119338,
+     "agree": 120122,
      "stuck": 42267,
      "conservation": 1,
+     "placement": 0
+    },
+    "sliceFollow": {
+     "agree": 17996,
+     "stuck": 144394,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollowAnchor": {
+     "agree": 17996,
+     "stuck": 144394,
+     "conservation": 0,
      "placement": 0
     },
     "orderInversions": 0,
     "replayExceptions": 0,
     "shape": {
-     "archives": 161606,
+     "archives": 162390,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 144394
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 144394
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 42268
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 23188
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 92
+      }
+     }
     },
     "deletesCrossing": [
-     2785,
-     2785
+     3081,
+     3081
     ],
     "deletesSingle": [
-     25680,
-     25680
+     25952,
+     25952
     ]
    },
    "harness": {
@@ -903,14 +1089,20 @@
     }
    ],
    "litmus": {
-    "runs": 2284,
-    "localChecks": 6640,
+    "runs": 3808,
+    "localChecks": 13300,
     "localFailures": 0,
-    "finalChecks": 52,
+    "finalChecks": 64,
     "finalFailures": 2,
     "finalSkipFailures": 4,
+    "finalSliceFailures": 6,
     "divergent": 0,
     "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "expected",
+    "finalChecks": 64,
+    "finalFailures": 2
    },
    "exits": {
     "gate": 0,
@@ -928,39 +1120,73 @@
    "variant": "skip-remove-independently",
    "ownMode": "skip",
    "ra": {
-    "archives": 153512,
+    "archives": 154296,
     "absorb": {
-     "agree": 147320,
+     "agree": 148104,
      "stuck": 0,
      "conservation": 6103,
      "placement": 89
     },
     "skip": {
-     "agree": 138693,
+     "agree": 139477,
      "stuck": 0,
      "conservation": 6103,
      "placement": 8716
     },
     "removed": {
-     "agree": 114033,
+     "agree": 114817,
      "stuck": 36812,
      "conservation": 2667,
+     "placement": 0
+    },
+    "sliceFollow": {
+     "agree": 18002,
+     "stuck": 136294,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollowAnchor": {
+     "agree": 18002,
+     "stuck": 136294,
+     "conservation": 0,
      "placement": 0
     },
     "orderInversions": 0,
     "replayExceptions": 0,
     "shape": {
-     "archives": 153512,
+     "archives": 154296,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 136294
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 136294
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 39479
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 6192
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 14819
+      }
+     }
     },
     "deletesCrossing": [
-     2660,
-     2660
+     2956,
+     2956
     ],
     "deletesSingle": [
-     25167,
-     25167
+     25439,
+     25439
     ]
    },
    "harness": {
@@ -999,7 +1225,7 @@
     "structural-17003": {
      "states": 577,
      "failures": {
-      "text-loss": 2
+      "text-loss": 85
      }
     }
    },
@@ -1078,14 +1304,20 @@
     }
    ],
    "litmus": {
-    "runs": 2252,
-    "localChecks": 6544,
+    "runs": 3776,
+    "localChecks": 13204,
     "localFailures": 0,
-    "finalChecks": 52,
+    "finalChecks": 64,
     "finalFailures": 4,
     "finalSkipFailures": 4,
+    "finalSliceFailures": 8,
     "divergent": 0,
     "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "skip",
+    "finalChecks": 64,
+    "finalFailures": 4
    },
    "exits": {
     "gate": 0,
@@ -1103,39 +1335,73 @@
    "variant": "design-order-splice",
    "ownMode": "absorb",
    "ra": {
-    "archives": 163365,
+    "archives": 164149,
     "absorb": {
-     "agree": 134365,
+     "agree": 135149,
      "stuck": 0,
      "conservation": 0,
      "placement": 29000
     },
     "skip": {
-     "agree": 119708,
+     "agree": 120492,
      "stuck": 0,
      "conservation": 0,
      "placement": 43657
     },
     "removed": {
-     "agree": 118786,
+     "agree": 119570,
      "stuck": 44579,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollow": {
+     "agree": 18100,
+     "stuck": 146049,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollowAnchor": {
+     "agree": 18100,
+     "stuck": 146049,
      "conservation": 0,
      "placement": 0
     },
     "orderInversions": 40606,
     "replayExceptions": 0,
     "shape": {
-     "archives": 163365,
+     "archives": 164149,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 146049
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 146049
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 29000
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 43657
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 44579
+      }
+     }
     },
     "deletesCrossing": [
-     2871,
-     2871
+     3167,
+     3167
     ],
     "deletesSingle": [
-     26120,
-     26120
+     26392,
+     26392
     ]
    },
    "harness": {
@@ -1251,14 +1517,20 @@
     }
    ],
    "litmus": {
-    "runs": 2332,
-    "localChecks": 6736,
+    "runs": 3856,
+    "localChecks": 13396,
     "localFailures": 0,
-    "finalChecks": 52,
+    "finalChecks": 64,
     "finalFailures": 8,
     "finalSkipFailures": 10,
+    "finalSliceFailures": 12,
     "divergent": 0,
     "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "expected",
+    "finalChecks": 64,
+    "finalFailures": 8
    },
    "exits": {
     "gate": 0,
@@ -1270,6 +1542,636 @@
     "structural-17003": 0,
     "campaign-17002": 0,
     "network-27002-shrink": 0
+   }
+  },
+  {
+   "variant": "slice-following",
+   "ownMode": "sliceFollow",
+   "ra": {
+    "archives": 162373,
+    "absorb": {
+     "agree": 140397,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 21976
+    },
+    "skip": {
+     "agree": 125400,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 36973
+    },
+    "removed": {
+     "agree": 110173,
+     "stuck": 42750,
+     "conservation": 0,
+     "placement": 9450
+    },
+    "sliceFollow": {
+     "agree": 161587,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 786
+    },
+    "sliceFollowAnchor": {
+     "agree": 160997,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 1376
+    },
+    "orderInversions": 0,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 162373,
+     "branching": 2844,
+     "maxChildren": 3,
+     "disagreements": {
+      "removed": {
+       "branching": 2256,
+       "chain": 49944
+      },
+      "skip": {
+       "branching": 2134,
+       "chain": 34839
+      },
+      "absorb": {
+       "branching": 1918,
+       "chain": 20058
+      },
+      "sliceFollowAnchor": {
+       "branching": 1376,
+       "chain": 0
+      },
+      "sliceFollow": {
+       "branching": 786,
+       "chain": 0
+      }
+     }
+    },
+    "deletesCrossing": [
+     3154,
+     3154
+    ],
+    "deletesSingle": [
+     25867,
+     25867
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "split:placement": 4
+     },
+     "mergePasses": 1012
+    },
+    "offline-17102": {
+     "localFailures": 2,
+     "conservationFailures": 0,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 123,
+      "bold:outside": 32
+     },
+     "mergePasses": 6805
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 35,
+      "bold:outside": 8
+     },
+     "mergePasses": 2698
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {}
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": true,
+     "precondition": false,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "abc"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "placement"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 3856,
+    "localChecks": 13396,
+    "localFailures": 44,
+    "finalChecks": 64,
+    "finalFailures": 4,
+    "finalSkipFailures": 6,
+    "finalSliceFailures": 0,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "slice",
+    "finalChecks": 64,
+    "finalFailures": 0
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "sequential-17004": 0,
+    "network-27002": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0,
+    "network-27002-shrink": 0
+   }
+  },
+  {
+   "variant": "slice-remove-independently",
+   "ownMode": "sliceFollow",
+   "ra": {
+    "archives": 162349,
+    "absorb": {
+     "agree": 140395,
+     "stuck": 0,
+     "conservation": 108,
+     "placement": 21846
+    },
+    "skip": {
+     "agree": 125380,
+     "stuck": 0,
+     "conservation": 108,
+     "placement": 36861
+    },
+    "removed": {
+     "agree": 110148,
+     "stuck": 42750,
+     "conservation": 25,
+     "placement": 9426
+    },
+    "sliceFollow": {
+     "agree": 161413,
+     "stuck": 0,
+     "conservation": 108,
+     "placement": 828
+    },
+    "sliceFollowAnchor": {
+     "agree": 160855,
+     "stuck": 0,
+     "conservation": 108,
+     "placement": 1386
+    },
+    "orderInversions": 0,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 162349,
+     "branching": 2844,
+     "maxChildren": 3,
+     "disagreements": {
+      "removed": {
+       "branching": 2256,
+       "chain": 49945
+      },
+      "skip": {
+       "branching": 2126,
+       "chain": 34843
+      },
+      "absorb": {
+       "branching": 1898,
+       "chain": 20056
+      },
+      "sliceFollow": {
+       "branching": 870,
+       "chain": 66
+      },
+      "sliceFollowAnchor": {
+       "branching": 1428,
+       "chain": 66
+      }
+     }
+    },
+    "deletesCrossing": [
+     3150,
+     3150
+    ],
+    "deletesSingle": [
+     25859,
+     25859
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {
+      "split:placement": 4
+     },
+     "mergePasses": 1012
+    },
+    "offline-17102": {
+     "localFailures": 2,
+     "conservationFailures": 12,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 123,
+      "bold:outside": 32
+     },
+     "mergePasses": 6805
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 35,
+      "bold:outside": 8
+     },
+     "mergePasses": 2698
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {}
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": true,
+     "precondition": false,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "abc"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "placement"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 3808,
+    "localChecks": 13300,
+    "localFailures": 44,
+    "finalChecks": 64,
+    "finalFailures": 6,
+    "finalSkipFailures": 8,
+    "finalSliceFailures": 2,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "slice",
+    "finalChecks": 64,
+    "finalFailures": 2
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "network-27002": 0,
+    "sequential-17004": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0,
+    "network-27002-shrink": 0
+   }
+  },
+  {
+   "variant": "anchor-absorb",
+   "ownMode": "sliceFollow",
+   "ra": {
+    "archives": 162373,
+    "absorb": {
+     "agree": 140576,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 21797
+    },
+    "skip": {
+     "agree": 125580,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 36793
+    },
+    "removed": {
+     "agree": 110354,
+     "stuck": 42750,
+     "conservation": 0,
+     "placement": 9269
+    },
+    "sliceFollow": {
+     "agree": 162373,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 0
+    },
+    "sliceFollowAnchor": {
+     "agree": 160722,
+     "stuck": 0,
+     "conservation": 0,
+     "placement": 1651
+    },
+    "orderInversions": 0,
+    "replayExceptions": 0,
+    "shape": {
+     "archives": 162373,
+     "branching": 0,
+     "maxChildren": 1,
+     "disagreements": {
+      "removed": {
+       "branching": 0,
+       "chain": 52019
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 36793
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 21797
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 1651
+      }
+     }
+    },
+    "deletesCrossing": [
+     3154,
+     3154
+    ],
+    "deletesSingle": [
+     25867,
+     25867
+    ]
+   },
+   "harness": {
+    "network-27002": {
+     "failures": {},
+     "mergePasses": 1012
+    },
+    "offline-17102": {
+     "localFailures": 0,
+     "conservationFailures": 0,
+     "exceptions": 0,
+     "locals": 913,
+     "receives": 1826
+    },
+    "campaign-17002": {
+     "failures": {
+      "bold:missed": 123,
+      "bold:outside": 32
+     },
+     "mergePasses": 6805
+    },
+    "campaign-17005": {
+     "failures": {
+      "bold:missed": 35,
+      "bold:outside": 8
+     },
+     "mergePasses": 2698
+    },
+    "sequential-17004": {
+     "failures": {},
+     "mergePasses": 1109
+    },
+    "structural-17003": {
+     "states": 1000,
+     "failures": {}
+    }
+   },
+   "regressions": {
+    "N-002 bold selection misses selected characters": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-002 control": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-003 bold selection changes an unselected character": {
+     "holds": false,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 split at zero": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-001 six-request variant": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    },
+    "N-004 merge into a removed block hides the document": {
+     "holds": true,
+     "precondition": false,
+     "controlsHold": true
+    },
+    "N-005 delayed merge hides a character": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": true
+    },
+    "N-005 persistent-client form": {
+     "holds": true,
+     "precondition": true,
+     "controlsHold": null
+    }
+   },
+   "sensitivity": [
+    {
+     "history": "merge ab|cd",
+     "display": [
+      [
+       "seed-block-1",
+       "abcd"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "agree"
+     }
+    },
+    {
+     "history": "merge b into a || merge c into b",
+     "display": [
+      [
+       "seed-block-1",
+       "abc"
+      ]
+     ],
+     "spec": "agree",
+     "mutants": {
+      "MergeNoOp": "placement",
+      "MergeSourceFirst": "placement",
+      "skipMeaning": "placement"
+     }
+    }
+   ],
+   "litmus": {
+    "runs": 3856,
+    "localChecks": 13396,
+    "localFailures": 0,
+    "finalChecks": 64,
+    "finalFailures": 2,
+    "finalSkipFailures": 4,
+    "finalSliceFailures": 2,
+    "finalAnchorFailures": 0,
+    "divergent": 0,
+    "exceptions": 0
+   },
+   "litmusOwn": {
+    "column": "anchor",
+    "finalChecks": 64,
+    "finalFailures": 0
+   },
+   "exits": {
+    "gate": 0,
+    "litmus": 0,
+    "sequential-17004": 0,
+    "network-27002": 0,
+    "offline-17102": 0,
+    "campaign-17005": 0,
+    "structural-17003": 0,
+    "campaign-17002": 0
    }
   }
  ]

@@ -283,6 +283,18 @@
       "stuck": 3,
       "conservation": 0,
       "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 24,
+      "stuck": 26,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 24,
+      "stuck": 26,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -577,7 +589,29 @@
     "shape": {
      "archives": 50,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 26
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 26
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 1
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 5
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 3
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -598,15 +632,16 @@
     "litmus.mjs"
    ],
    "exit": 0,
-   "seconds": 2.8,
+   "seconds": 4.7,
    "output": {
     "summary": {
-     "runs": 2332,
-     "localChecks": 6736,
+     "runs": 3856,
+     "localChecks": 13396,
      "localFailures": 0,
-     "finalChecks": 52,
+     "finalChecks": 64,
      "finalFailures": 8,
      "finalSkipFailures": 10,
+     "finalSliceFailures": 12,
      "divergent": 0,
      "exceptions": 0
     },
@@ -632,6 +667,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -652,6 +688,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -672,6 +709,7 @@
         ],
         "matchesExpected": false,
         "matchesSkip": false,
+        "matchesSlice": false,
         "avoidsDegenerate": false,
         "conserved": true
        },
@@ -692,6 +730,7 @@
         ],
         "matchesExpected": false,
         "matchesSkip": false,
+        "matchesSlice": false,
         "avoidsDegenerate": false,
         "conserved": true
        }
@@ -701,7 +740,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -719,6 +759,18 @@
        "removed": {
         "agree": 60,
         "stuck": 51,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 7,
+        "stuck": 104,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 7,
+        "stuck": 104,
         "conservation": 0,
         "placement": 0
        }
@@ -745,6 +797,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -765,6 +818,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -785,6 +839,7 @@
         ],
         "matchesExpected": false,
         "matchesSkip": false,
+        "matchesSlice": false,
         "avoidsDegenerate": false,
         "conserved": true
        },
@@ -805,6 +860,7 @@
         ],
         "matchesExpected": false,
         "matchesSkip": false,
+        "matchesSlice": false,
         "avoidsDegenerate": false,
         "conserved": true
        }
@@ -814,7 +870,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -832,6 +889,18 @@
        "removed": {
         "agree": 57,
         "stuck": 55,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 110,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 110,
         "conservation": 0,
         "placement": 0
        }
@@ -858,6 +927,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -878,6 +948,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -898,6 +969,7 @@
         ],
         "matchesExpected": false,
         "matchesSkip": false,
+        "matchesSlice": false,
         "avoidsDegenerate": false,
         "conserved": true
        },
@@ -918,6 +990,7 @@
         ],
         "matchesExpected": false,
         "matchesSkip": false,
+        "matchesSlice": false,
         "avoidsDegenerate": false,
         "conserved": true
        }
@@ -927,7 +1000,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -945,6 +1019,18 @@
        "removed": {
         "agree": 69,
         "stuck": 67,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 134,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 134,
         "conservation": 0,
         "placement": 0
        }
@@ -969,6 +1055,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -987,6 +1074,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1005,6 +1093,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": false,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1023,6 +1112,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": false,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1032,7 +1122,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1050,6 +1141,18 @@
        "removed": {
         "agree": 91,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 5,
+        "stuck": 86,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 5,
+        "stuck": 86,
         "conservation": 0,
         "placement": 0
        }
@@ -1074,6 +1177,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1092,6 +1196,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1110,6 +1215,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1128,6 +1234,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1137,7 +1244,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1155,6 +1263,18 @@
        "removed": {
         "agree": 52,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 52,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 52,
         "conservation": 0,
         "placement": 0
        }
@@ -1179,6 +1299,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1197,6 +1318,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1215,6 +1337,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1233,6 +1356,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1242,7 +1366,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1260,6 +1385,18 @@
        "removed": {
         "agree": 172,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 170,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 170,
         "conservation": 0,
         "placement": 0
        }
@@ -1284,6 +1421,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1302,6 +1440,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1320,6 +1459,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1338,6 +1478,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1347,7 +1488,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1365,6 +1507,18 @@
        "removed": {
         "agree": 86,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 84,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 84,
         "conservation": 0,
         "placement": 0
        }
@@ -1391,6 +1545,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1411,6 +1566,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1431,6 +1587,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1451,6 +1608,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1460,7 +1618,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1478,6 +1637,18 @@
        "removed": {
         "agree": 67,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 67,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 67,
         "conservation": 0,
         "placement": 0
        }
@@ -1504,6 +1675,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1524,6 +1696,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1544,6 +1717,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1564,6 +1738,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1573,7 +1748,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1591,6 +1767,18 @@
        "removed": {
         "agree": 56,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 56,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 56,
         "conservation": 0,
         "placement": 0
        }
@@ -1617,6 +1805,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1637,6 +1826,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1657,6 +1847,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1677,6 +1868,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1686,7 +1878,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1704,6 +1897,18 @@
        "removed": {
         "agree": 56,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 56,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 56,
         "conservation": 0,
         "placement": 0
        }
@@ -1730,6 +1935,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1750,6 +1956,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1770,6 +1977,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1790,6 +1998,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1799,7 +2008,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1817,6 +2027,18 @@
        "removed": {
         "agree": 56,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 56,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 56,
         "conservation": 0,
         "placement": 0
        }
@@ -1843,6 +2065,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1863,6 +2086,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1883,6 +2107,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1903,6 +2128,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1912,7 +2138,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1930,6 +2157,18 @@
        "removed": {
         "agree": 64,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 64,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 64,
         "conservation": 0,
         "placement": 0
        }
@@ -1956,6 +2195,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1976,6 +2216,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1996,6 +2237,7 @@
         ],
         "matchesExpected": false,
         "matchesSkip": false,
+        "matchesSlice": false,
         "avoidsDegenerate": false,
         "conserved": true
        },
@@ -2016,6 +2258,7 @@
         ],
         "matchesExpected": false,
         "matchesSkip": false,
+        "matchesSlice": false,
         "avoidsDegenerate": false,
         "conserved": true
        }
@@ -2025,7 +2268,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -2045,32 +2289,430 @@
         "stuck": 75,
         "conservation": 0,
         "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 150,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 150,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "g",
+      "name": "split T after a || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "acd",
+         "b"
+        ],
+        "expected": [
+         "acd",
+         "b"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "acd",
+         "b"
+        ],
+        "expected": [
+         "acd",
+         "b"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "bcd"
+        ],
+        "expected": [
+         "a",
+         "bcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "bcd"
+        ],
+        "expected": [
+         "a",
+         "bcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 216,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 110,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 110,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "h",
+      "name": "merge U into T || merge S into T, both anchored at the end of T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abZcdYW"
+        ],
+        "expected": [
+         "abZcdYW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abZcdYW"
+        ],
+        "expected": [
+         "abZcdYW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcdYWZ"
+        ],
+        "expected": [
+         "abcdYWZ"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcdYWZ"
+        ],
+        "expected": [
+         "abcdYWZ"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 576,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 300,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 300,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 300,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 6,
+        "stuck": 294,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 6,
+        "stuck": 294,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "i",
+      "name": "then merge V into T anchored at the end of U",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abZcdYXW"
+        ],
+        "expected": [
+         "abZcdYXW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abZcdYXW"
+        ],
+        "expected": [
+         "abZcdYXW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcdYXZW"
+        ],
+        "expected": [
+         "abcdYXZW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcdYXZW"
+        ],
+        "expected": [
+         "abcdYXZW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 720,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 372,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 372,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 372,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 370,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 370,
+        "conservation": 0,
+        "placement": 0
        }
       }
      }
     ]
    },
    "ra": {
-    "archives": 1211,
-    "documentCalls": 111436,
+    "archives": 1995,
+    "documentCalls": 218840,
     "replayExceptions": 0,
     "replayExceptionMessages": {},
     "modes": {
      "absorb": {
-      "agree": 971,
+      "agree": 1755,
       "stuck": 0,
       "conservation": 0,
       "placement": 240
      },
      "skip": {
-      "agree": 930,
+      "agree": 1714,
       "stuck": 0,
       "conservation": 0,
       "placement": 281
      },
      "removed": {
-      "agree": 963,
+      "agree": 1747,
       "stuck": 248,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 32,
+      "stuck": 1963,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 32,
+      "stuck": 1963,
       "conservation": 0,
       "placement": 0
      }
@@ -2297,18 +2939,40 @@
      ]
     },
     "shape": {
-     "archives": 1211,
+     "archives": 1995,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 1963
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 1963
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 240
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 281
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 248
+      }
+     }
     },
     "deletes": {
      "single": {
-      "checked": 416,
-      "agree": 416
+      "checked": 688,
+      "agree": 688
      },
      "crossing": {
-      "checked": 804,
-      "agree": 804
+      "checked": 1100,
+      "agree": 1100
      },
      "crossingExample": {
       "before": [
@@ -2341,7 +3005,7 @@
     "60"
    ],
    "exit": 0,
-   "seconds": 22.7,
+   "seconds": 25.7,
    "output": {
     "mode": "sequential",
     "seed": 17004,
@@ -2387,6 +3051,18 @@
       "stuck": 0,
       "conservation": 0,
       "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 3258,
+      "stuck": 10320,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 3258,
+      "stuck": 10320,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -2397,7 +3073,17 @@
     "shape": {
      "archives": 13578,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 10320
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 10320
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -2439,7 +3125,7 @@
     "80"
    ],
    "exit": 0,
-   "seconds": 80.9,
+   "seconds": 85.5,
    "output": {
     "mode": "network-search",
     "seed": 27002,
@@ -2495,6 +3181,18 @@
      "removed": {
       "agree": 10802,
       "stuck": 6140,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 1920,
+      "stuck": 15022,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 1920,
+      "stuck": 15022,
       "conservation": 0,
       "placement": 0
      }
@@ -2815,7 +3513,29 @@
     "shape": {
      "archives": 16942,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 15022
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 15022
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 4909
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 6128
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 6140
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -2856,7 +3576,7 @@
     "structural"
    ],
    "exit": 0,
-   "seconds": 110.9,
+   "seconds": 121.0,
    "output": {
     "mode": "structural",
     "seed": 17102,
@@ -2897,6 +3617,18 @@
      "removed": {
       "agree": 832,
       "stuck": 1819,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 55,
+      "stuck": 2596,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 55,
+      "stuck": 2596,
       "conservation": 0,
       "placement": 0
      }
@@ -3144,7 +3876,29 @@
     "shape": {
      "archives": 2651,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 2596
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 2596
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 1586
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 1709
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 1819
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -3168,7 +3922,7 @@
     "100"
    ],
    "exit": 0,
-   "seconds": 140.5,
+   "seconds": 176.5,
    "output": {
     "mode": "search",
     "seed": 17005,
@@ -3534,6 +4288,18 @@
       "stuck": 9323,
       "conservation": 0,
       "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 4322,
+      "stuck": 31144,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 4322,
+      "stuck": 31144,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -3810,7 +4576,29 @@
     "shape": {
      "archives": 35466,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 31144
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 31144
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 5338
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 7585
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 9323
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -3853,7 +4641,7 @@
     "structural.mjs"
    ],
    "exit": 0,
-   "seconds": 173.0,
+   "seconds": 228.6,
    "output": {
     "mode": "structural",
     "seed": 17003,
@@ -3862,7 +4650,8 @@
      "checks": 10454
     },
     "findings": [],
-    "findingCount": 0
+    "findingCount": 0,
+    "findingKinds": {}
    },
    "ra": {
     "archives": 14462,
@@ -3885,6 +4674,18 @@
      "removed": {
       "agree": 3915,
       "stuck": 10547,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 230,
+      "stuck": 14232,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 230,
+      "stuck": 14232,
       "conservation": 0,
       "placement": 0
      }
@@ -4345,7 +5146,29 @@
     "shape": {
      "archives": 14462,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 14232
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 14232
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 6549
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 11635
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 10547
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -4369,7 +5192,7 @@
     "250"
    ],
    "exit": 0,
-   "seconds": 326.3,
+   "seconds": 398.7,
    "output": {
     "mode": "search",
     "seed": 17002,
@@ -4735,6 +5558,18 @@
       "stuck": 16499,
       "conservation": 0,
       "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 8259,
+      "stuck": 70746,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 8259,
+      "stuck": 70746,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -5028,7 +5863,29 @@
     "shape": {
      "archives": 79005,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 70746
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 70746
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 16314
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 16499
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 10377
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -5067,7 +5924,7 @@
     "absorb"
    ],
    "exit": 0,
-   "seconds": 55.3,
+   "seconds": 63.0,
    "output": {
     "mode": "absorb",
     "findings": [
@@ -5411,6 +6268,18 @@
       "stuck": 6321,
       "conservation": 0,
       "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 7212,
+      "stuck": 16189,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 7212,
+      "stuck": 16189,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -5664,7 +6533,29 @@
     "shape": {
      "archives": 23401,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 16189
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 16189
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 5090
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 6309
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 6321
+      }
+     }
     },
     "deletes": {
      "single": {

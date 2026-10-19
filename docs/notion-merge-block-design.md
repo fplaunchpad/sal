@@ -94,8 +94,22 @@ split has moved that slice: from `ab · cd`, merging the second block into
 the first while the first is split after `a` gives `a · bcd` in the demo and
 `acd · b` here (recorded in
 [the gate](../experiments/notion-merge-design/results/review-target-placement.json)).
-Neither loses text. The demo's slice-following rule combined with derived
-removal is a further candidate design that has not been gated or verified.
+Neither loses text, and `a · bcd` is the result both sequential orders of
+the two client requests give.
+
+The gate separates targeting from placement. Slice-following, the demo's
+rule with derived removal, gives `a · bcd` and loses no text, but two merges
+issued concurrently into one target record the same anchor, and the anchored
+node then has two children. Trees stop being chains, a split no longer moves
+the whole displayed suffix, and the N-001 failure returns; the unmodified
+demo fails the same split checks. So the demo has two independent defects:
+removal separate from the move loses text, and anchoring on a slice end item
+lets trees branch. Anchor-absorb uses the anchor only to find the holder
+tree and attaches at that tree's last node, as this design does. On the
+gate's archives it agrees with its flat slot specification everywhere, keeps
+every tree a chain, conserves text and gives `a · bcd` in both orders. It is
+this design with the holder found from the recorded anchor instead of from
+the target block's root, and it has not been verified in Lean.
 
 **Every tree is a chain.** The core's split gives the right node all of the
 old children and makes it the only child of the left node; the split's move

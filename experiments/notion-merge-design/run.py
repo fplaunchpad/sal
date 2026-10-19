@@ -2,11 +2,13 @@
 """Executable gate for the block-merge design (docs/notion-merge-block-design.md).
 
 Fetches or reads the seven hash-pinned demo modules, builds one working copy per
-variant (the demo, the design and four controls; see design-patch/patch.py),
+variant (the demo, the design, the slice-following and anchor-absorb
+candidates and controls;
+see design-patch/patch.py),
 and runs in each, with the RA check preloaded:
 
   gate.mjs              the recorded bugs N-001 to N-005, reissued as requests
-  litmus.mjs            merge litmus histories (a) to (f), all schedules
+  litmus.mjs            merge litmus histories (a) to (i), all schedules
   network-search.mjs    persistent replicas, partial causal delivery (seed 27002)
   offline-search.mjs    offline split/merge bursts, conservation (seed 17102)
   campaign.mjs          complete-exchange search 17002 and 17005, sequential 17004
@@ -46,9 +48,14 @@ QUICK_JOBS = {**FULL_JOBS,
     'campaign-17005': ['campaign.mjs', 'search', '17005', '8'],
     'sequential-17004': ['campaign.mjs', 'sequential', '17004', '6'],
 }
-MODES = ['absorb', 'skip', 'removed']
+MODES = ['absorb', 'skip', 'removed', 'sliceFollow', 'sliceFollowAnchor']
 # The specification mode each variant is meant to implement.
-OWN_MODE = {'skip': 'skip', 'skip-remove-independently': 'skip'}
+OWN_MODE = {'skip': 'skip', 'skip-remove-independently': 'skip',
+            'slice-following': 'sliceFollow', 'slice-remove-independently': 'sliceFollow', 'anchor-absorb': 'sliceFollow'}
+# The litmus column of hand-derived finals each variant is checked against
+# (litmus.mjs): `expected` (absorb) unless listed.
+LITMUS_COLUMN = {'skip': 'skip', 'skip-remove-independently': 'skip', 'slice-following': 'slice',
+                 'slice-remove-independently': 'slice', 'anchor-absorb': 'anchor'}
 CALIBRATION = ['original-regressions.mjs', 'regressions.mjs', 'controls.mjs', 'network-controls.mjs', 'offline-regression.mjs']
 
 
@@ -104,6 +111,14 @@ def texts_of(blocks):
     return blocks
 
 
+def finding_kinds(findings):
+    kinds = {}
+    for f in findings:
+        k = f['result'].get('signature') if 'result' in f else 'text-loss'
+        kinds[k] = kinds.get(k, 0) + 1
+    return kinds
+
+
 def compact(name, out, own):
     """Keep counts, findings and RA summaries at a committable size: per-trial
     traces, per-run litmus logs and bulk archives are dropped; for each
@@ -121,8 +136,10 @@ def compact(name, out, own):
             o['results'] = [{**e, 'base': [{k: v for k, v in b.items() if k != 'log'} for b in e['base']]} for e in o['results']]
         if name == 'gate':
             o['cases'] = [{**c, **{k: texts_of(c[k]) for k in ['expected', 'actual'] if k in c}} for c in o['cases']]
-        if name.startswith(('offline', 'structural')) and isinstance(o.get('findings'), list):
+        if name.startswith(('offline', 'structural')) and isinstance(o.get('findings'), list) and 'findingCount' not in o:
             o['findingCount'] = len(o['findings'])
+            if name.startswith('structural'):
+                o['findingKinds'] = finding_kinds(o['findings'])
             o['findings'] = o['findings'][:2]
         if name.endswith('shrink'):
             for f in o.get('findings', []):
@@ -136,7 +153,8 @@ def compact(name, out, own):
         kept = {}
         for category, items in (r.get('failures', {}).get(own) or {}).items():
             if items:
-                x = dict(items[0])
+                # An already compacted file holds one archive per category.
+                x = dict(items if isinstance(items, dict) else items[0])
                 if x.get('transactions') and len(x['transactions']) > 40:
                     x['transactions'] = None
                 kept[category] = x
@@ -149,8 +167,8 @@ def compact(name, out, own):
 
 def summarise(variant, jobs):
     row = {'variant': variant, 'ownMode': OWN_MODE.get(variant, 'absorb')}
-    ra = {'archives': 0, 'absorb': {}, 'skip': {}, 'removed': {}, 'orderInversions': 0, 'replayExceptions': 0,
-          'shape': {'archives': 0, 'branching': 0, 'maxChildren': 0},
+    ra = {'archives': 0, **{mode: {} for mode in MODES}, 'orderInversions': 0, 'replayExceptions': 0,
+          'shape': {'archives': 0, 'branching': 0, 'maxChildren': 0, 'disagreements': {}},
           'deletesCrossing': [0, 0], 'deletesSingle': [0, 0]}
     for name, j in jobs.items():
         r = j.get('ra')
@@ -163,6 +181,10 @@ def summarise(variant, jobs):
             ra['shape']['archives'] += r['shape']['archives']
             ra['shape']['branching'] += r['shape']['branching']
             ra['shape']['maxChildren'] = max(ra['shape']['maxChildren'], r['shape']['maxChildren'])
+            for mode, d in r['shape'].get('disagreements', {}).items():
+                acc = ra['shape']['disagreements'].setdefault(mode, {'branching': 0, 'chain': 0})
+                for k in acc:
+                    acc[k] += d.get(k, 0)
         for mode in MODES:
             for k, v in r['modes'][mode].items():
                 ra[mode][k] = ra[mode].get(k, 0) + v
@@ -181,10 +203,7 @@ def summarise(variant, jobs):
         else:
             local[name] = {'failures': c.get('failures'), 'mergePasses': (c.get('passes') or {}).get('merge')}
     st = (jobs.get('structural-17003') or {}).get('output') or {}
-    kinds = {}
-    for f in st.get('findings', []):
-        k = f['result'].get('signature') if 'result' in f else 'text-loss'
-        kinds[k] = kinds.get(k, 0) + 1
+    kinds = st['findingKinds'] if 'findingKinds' in st else finding_kinds(st.get('findings', []))
     local['structural-17003'] = {'states': (st.get('counts') or {}).get('states'), 'failures': kinds}
     row['harness'] = local
     g = (jobs.get('gate') or {}).get('output') or {}
@@ -194,6 +213,10 @@ def summarise(variant, jobs):
     row['sensitivity'] = g.get('sensitivity')
     lit = (jobs.get('litmus') or {}).get('output') or {}
     row['litmus'] = lit.get('summary')
+    column = LITMUS_COLUMN.get(variant, 'expected')
+    key = {'expected': 'finalFailures', 'skip': 'finalSkipFailures', 'slice': 'finalSliceFailures', 'anchor': 'finalAnchorFailures'}[column]
+    if row['litmus']:
+        row['litmusOwn'] = {'column': column, 'finalChecks': row['litmus'].get('finalChecks'), 'finalFailures': row['litmus'].get(key)}
     row['exits'] = {name: j['exit'] for name, j in jobs.items()}
     return row
 
@@ -215,6 +238,11 @@ def main():
             v = row['variant']
             jobs = json.loads((a.results / f'{v}.json').read_text())['jobs']
             jobs = {k: compact(k, j, OWN_MODE.get(v, 'absorb')) for k, j in jobs.items()}
+            # Files compacted before per-kind structural counts were stored
+            # keep two findings; their counts are taken from the summary row.
+            st = (jobs.get('structural-17003') or {}).get('output')
+            if isinstance(st, dict) and 'findingKinds' not in st:
+                st['findingKinds'] = row['harness']['structural-17003']['failures']
             with (a.results / f'{v}.json').open('w') as out:
                 json.dump({'variant': v, 'jobs': jobs}, out, indent=1)
                 out.write('\n')
@@ -271,6 +299,17 @@ def main():
         summary = {'design': 'docs/notion-merge-block-design.md', 'quick': a.quick, 'calibration': calibration,
                    'node': subprocess.run(['node', '--version'], text=True, stdout=subprocess.PIPE).stdout.strip(),
                    'sourceManifest': manifest, 'variants': [summarise(v, results[v]) for v in dirs]}
+        # A run of some variants keeps the other variants' rows, and the demo
+        # calibration when the demo was not rerun, from an existing summary.
+        previous = a.results / f'summary{suffix}.json'
+        if previous.exists() and set(dirs) != set(patch.VARIANTS):
+            old = json.loads(previous.read_text())
+            rows = {r['variant']: r for r in old.get('variants', [])}
+            rows.update({r['variant']: r for r in summary['variants']})
+            summary['variants'] = [rows[v] for v in patch.VARIANTS if v in rows]
+            if 'demo' not in dirs:
+                summary['calibration'] = {**{k: v for k, v in old.get('calibration', {}).items() if k in CALIBRATION},
+                                          **summary['calibration']}
         for v in dirs:
             with (a.results / f'{v}{suffix}.json').open('w') as out:
                 json.dump({'variant': v, 'jobs': {k: compact(k, j, OWN_MODE.get(v, 'absorb')) for k, j in results[v].items()}}, out, indent=1)
@@ -283,17 +322,19 @@ def main():
 
 def print_table(summary):
     print('\nCalibration (demo scripts must exit 0; specification controls must pass):', summary['calibration'])
-    print('\nRA check against each variant\'s own meaning (own); other = disagreements with the other meaning;')
+    print('\nRA check against each variant\'s own meaning (own) and agreement with every meaning;')
     print('stuck* = stuck when merged sources leave the list; inv = order inversions; xdel = cross-instance deletes')
-    print('agreeing with the positional contract; branch = archives with a slice node of more than one child')
-    print(f'{"variant":26s} {"own":6s} {"archives":>8s} {"agree":>7s} {"stuck":>6s} {"cons":>5s} {"place":>6s} {"other":>6s} '
-          f'{"stuck*":>7s} {"inv":>6s} {"xdel":>9s} {"branch":>6s}')
+    print('agreeing with the positional contract; branch = archives with a slice node of more than one child; maxch = most children')
+    print(f'{"variant":26s} {"own":11s} {"archives":>8s} {"agree":>7s} {"stuck":>6s} {"cons":>5s} {"place":>6s} '
+          f'{"=absorb":>7s} {"=skip":>7s} {"=slice":>7s} {"=sliceA":>7s} {"stuck*":>7s} {"inv":>6s} {"xdel":>9s} {"branch":>6s} {"maxch":>5s}')
     for row in summary['variants']:
         ra, own = row['ra'], row['ownMode']
-        o, other = ra[own], ra['skip' if own == 'absorb' else 'absorb']
-        print(f'{row["variant"]:26s} {own:6s} {ra["archives"]:8d} {o.get("agree",0):7d} {o.get("stuck",0):6d} {o.get("conservation",0):5d} '
-              f'{o.get("placement",0):6d} {sum(v for k, v in other.items() if k != "agree"):6d} {ra["removed"].get("stuck",0):7d} '
-              f'{ra["orderInversions"]:6d} {ra["deletesCrossing"][1]:4d}/{ra["deletesCrossing"][0]:<4d} {ra["shape"]["branching"]:6d}')
+        o = ra[own]
+        agree = {m: ra.get(m, {}).get('agree', 0) for m in ['absorb', 'skip', 'sliceFollow', 'sliceFollowAnchor']}
+        print(f'{row["variant"]:26s} {own:11s} {ra["archives"]:8d} {o.get("agree",0):7d} {o.get("stuck",0):6d} {o.get("conservation",0):5d} '
+              f'{o.get("placement",0):6d} {agree["absorb"]:7d} {agree["skip"]:7d} {agree["sliceFollow"]:7d} {agree["sliceFollowAnchor"]:7d} '
+              f'{ra["removed"].get("stuck",0):7d} {ra["orderInversions"]:6d} {ra["deletesCrossing"][1]:4d}/{ra["deletesCrossing"][0]:<4d} '
+              f'{ra["shape"]["branching"]:6d} {ra["shape"]["maxChildren"]:5d}')
     print('\nLocal positional contract and conservation (harness failure counts)')
     for row in summary['variants']:
         print(f'{row["variant"]:26s}', json.dumps({k: (v.get('failures') if 'failures' in v else v) for k, v in row['harness'].items()}))
@@ -303,10 +344,10 @@ def print_table(summary):
                           f'{"PASS" if r["holds"] else "FAIL" if r["holds"] is False else "n/a"}'
                           f'{"" if r["precondition"] else "(pre no)"}' for k, r in row['regressions'].items())
         print(f'{row["variant"]:26s} {cells}')
-    print('\nLitmus (a)-(f)')
+    print('\nLitmus (a)-(i): failures against the variant\'s own column of hand-derived finals, then all counts')
     for row in summary['variants']:
-        print(f'{row["variant"]:26s}', json.dumps(row['litmus']))
-
+        own = row.get('litmusOwn') or {}
+        print(f'{row["variant"]:26s} {own.get("column")}: {own.get("finalFailures")}/{own.get("finalChecks")}', json.dumps(row['litmus']))
 
 if __name__ == '__main__':
     main()

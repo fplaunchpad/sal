@@ -1,0 +1,30 @@
+{
+  "demo": {
+    "merge-split": [
+      "a",
+      "bcd"
+    ],
+    "split-merge": [
+      "a",
+      "bcd"
+    ],
+    "concurrent": [
+      "a",
+      "bcd"
+    ]
+  },
+  "design": {
+    "merge-split": [
+      "a",
+      "bcd"
+    ],
+    "split-merge": [
+      "a",
+      "bcd"
+    ],
+    "concurrent": [
+      "acd",
+      "b"
+    ]
+  }
+}

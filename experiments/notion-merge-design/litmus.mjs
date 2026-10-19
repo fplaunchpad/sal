@@ -13,6 +13,7 @@
 //   X-aware       X receives the other request, then issues one further request
 // Every valid positional request on X's view is tried as the further request.
 import {Replica} from './replica.js';
+import {iterateTextSliceTree} from './text-slice-tree.js';
 import {request, splitDelete} from './positional-spec.mjs';
 import {initial, view, obs, texts, valid, apply, queries} from './campaign-lib.mjs';
 
@@ -31,14 +32,16 @@ const del = (block, start, end) => ({kind: 'delete', block, start, end});
 
 // A step is a positional request or a function of the replica (for requests
 // outside the positional vocabulary, such as createBlock).
-const createAfter = blockIndex => ({label: `create after block ${blockIndex}, then insert Z`, run: r => {
+const createAfter = (blockIndex, text = 'Z') => ({label: `create after block ${blockIndex}, then insert ${text}`, run: r => {
   const id = r.document().aliveBlocks()[blockIndex].id, {newBlockId} = r.createBlock(id);
-  r.insertText(newBlockId, 0, 'Z');
+  r.insertText(newBlockId, 0, text);
 }});
 
 // Expected final displays are hand-derived from the design's sequential
-// meaning (absorb); `skip` gives the earlier meaning where it differs.
-// `pFirst` says whether P's first transaction replays first.
+// meaning (absorb); `skip` gives the earlier meaning, `slice` the
+// slice-following implementation and `anchor` anchor-absorb where they differ. `pFirst` says whether P's
+// first transaction replays first; where both replicas' last transactions
+// share a counter, it also decides their order.
 const LITMUS = [];
 for (const k of [0, 1, 2]) LITMUS.push({
   id: 'a', name: `split S at ${k} || merge S into T`, seed: ['ab', 'cd'], p: [split(1, k)], q: [merge(1)],
@@ -51,12 +54,19 @@ LITMUS.push({id: 'b', name: 'merge S into T || merge T into U', seed: ['a', 'b',
 LITMUS.push({id: 'c', name: 'merge S into T || forged merge T into S', seed: ['a', 'b'], p: [merge(1)],
   q: [{label: 'forged mergeBlock a into b', forged: true, run: r => {
     const d = r.document(), [a, b] = d.aliveBlocks().map(x => x.id), id = r.clock.reserve();
+    let last = d.blocks.get(b).title;
+    for (const node of iterateTextSliceTree(d.blocks.get(b).title)) last = node;
     r.receive({id, operations: [{command: 'mergeBlock', pointer: {table: 'block', id: a}, path: [],
-      args: {sourceBlockId: a, targetBlockId: b}}]});
+      args: {sourceBlockId: a, targetBlockId: b, targetTextInstanceId: last.textSlice.textInstanceId,
+        targetTextSliceEndItemId: last.textSlice.endItemId}}]});
   }}],
   // P first: b joins a; the forged merge's target b is held by its own source a,
   // the cycle case, a no-op. Forged first: a joins b; then b's merge target a is
-  // held by b itself, again a no-op. Skip gives the same finals.
+  // held by b itself, again a no-op. Skip gives the same finals. Under
+  // slice-following the forged merge is anchored at the end of b's instance,
+  // whose slice lies in a's tree when b's merge replays first: the same finals.
+  // Anchor-absorb reads the same anchor; the anchored node's tree is rooted at
+  // a, the forged merge's source: the same finals.
   expected: pFirst => pFirst ? ['ab'] : ['ba'], wrong: () => []});
 for (const seed of [['ab', 'cd'], ['ab', '']]) LITMUS.push({
   id: 'd', name: `insert X at 0 of S || merge S into T, seed ${JSON.stringify(seed)}`, seed, p: [insert(1, 0, 'X')], q: [merge(1)],
@@ -68,8 +78,38 @@ for (const k of [0, 1, 2, 3, 4]) LITMUS.push({
 LITMUS.push({id: 'f', name: 'create after S || merge S into T', seed: ['ab', 'cd'], p: [createAfter(1)], q: [merge(1)],
   // The new block lands where S was: after T, whichever replays first.
   expected: () => ['abcd', 'Z'], wrong: () => ['Z', 'abcd']});
+LITMUS.push({id: 'g', name: 'split T after a || merge S into T', seed: ['ab', 'cd'], p: [split(0, 1)], q: [merge(1)],
+  // P first: the split moves b to a new block F. Absorb attaches cd under T's
+  // last node, giving acd and b. Slice-following follows the anchor, the end
+  // of T's instance, which is now the slice holding b in F: a and bcd. Q
+  // first: cd hangs under T's root, and the split moves b with cd below it.
+  // Anchor-absorb, P first: the anchored node is F's root, a lone node, so cd
+  // goes under it. The positional sequential result is a and bcd in both
+  // orders.
+  expected: pFirst => pFirst ? ['acd', 'b'] : ['a', 'bcd'], slice: () => ['a', 'bcd'], anchor: () => ['a', 'bcd'],
+  wrong: () => ['a', 'b']});
+LITMUS.push({id: 'h', name: 'merge U into T || merge S into T, both anchored at the end of T', seed: ['ab', 'cd'],
+  p: [createAfter(0, 'Z'), merge(1)], q: [insert(1, 2, 'YW'), merge(1)],
+  // Both merges have counter 9. P first: U hangs under T's root; S's anchor
+  // is the same node, so S becomes its second child and renders after U. Q
+  // first: S, then U. Absorb and skip chain the second source under the
+  // first, with the same text; so does anchor-absorb, whose second merge
+  // finds T's root and goes to the end of T's chain. Inserting S right after
+  // its anchor instead
+  // would give abcdYWZ when P replays first.
+  expected: pFirst => pFirst ? ['abZcdYW'] : ['abcdYWZ'], wrong: pFirst => pFirst ? ['abcdYWZ'] : ['abZcdYW']});
+LITMUS.push({id: 'i', name: 'then merge V into T anchored at the end of U', seed: ['ab', 'cd'],
+  p: [createAfter(0, 'Z'), merge(1), createAfter(0, 'W'), merge(1)], q: [insert(1, 2, 'YX'), merge(1)],
+  // P's second merge (counter 12) is issued after U joined T, so its anchor is
+  // the end of U's instance. P first: T's root has children U then S, and V
+  // hangs under U, rendering before S: abZWcdYX. Absorb and skip append V at
+  // the end of T's chain: abZcdYXW. Q first: S, U, V under absorb and
+  // slice-following alike. Anchor-absorb: V's anchored node, U's root, lies in
+  // the tree rooted at T, so V goes to the end of T's chain, as under absorb.
+  expected: pFirst => pFirst ? ['abZcdYXW'] : ['abcdYXZW'], slice: pFirst => pFirst ? ['abZWcdYX'] : ['abcdYXZW'],
+  wrong: () => ['abZW', 'cdYX']});
 
-const runs = [], summary = {runs: 0, localChecks: 0, localFailures: 0, finalChecks: 0, finalFailures: 0, finalSkipFailures: 0, divergent: 0, exceptions: 0};
+const runs = [], summary = {runs: 0, localChecks: 0, localFailures: 0, finalChecks: 0, finalFailures: 0, finalSkipFailures: 0, finalSliceFailures: 0, finalAnchorFailures: 0, divergent: 0, exceptions: 0};
 function issue(r, step, log) {
   if (step.run) { step.run(r); log.push({request: step.label}); return; }
   const before = obs(view(r));
@@ -113,7 +153,8 @@ function run(lit, names, schedule, followup) {
 
 const results = [];
 for (const lit of LITMUS) {
-  const before = snapshot(), entry = {id: lit.id, name: lit.name, base: [], followups: {runs: 0, localFailures: 0, divergent: 0, exceptions: 0, exceptionExample: null}};
+  const before = snapshot(), entry = {id: lit.id, name: lit.name, base: [],
+    followups: {runs: 0, localFailures: 0, divergent: 0, exceptions: 0, exceptionExample: null, localFailureExample: null}};
   for (const names of [['A', 'B'], ['B', 'A']]) {
     const pFirst = names[0] < names[1];
     for (const schedule of ['exchange-pq', 'exchange-qp']) {
@@ -122,8 +163,12 @@ for (const lit of LITMUS) {
         const {final, log} = run(lit, names, schedule);
         const expected = lit.expected(pFirst), ok = JSON.stringify(final) === JSON.stringify(expected);
         const skip = (lit.skip ?? lit.expected)(pFirst), okSkip = JSON.stringify(final) === JSON.stringify(skip);
+        const slice = (lit.slice ?? lit.expected)(pFirst), okSlice = JSON.stringify(final) === JSON.stringify(slice);
+        const anchor = (lit.anchor ?? lit.expected)(pFirst), okAnchor = JSON.stringify(final) === JSON.stringify(anchor);
         summary.finalChecks++; if (!ok) summary.finalFailures++; if (!okSkip) summary.finalSkipFailures++;
-        entry.base.push({sessions: names, pFirst, schedule, final, expected, matchesExpected: ok, matchesSkip: okSkip,
+        if (!okSlice) summary.finalSliceFailures++;
+        if (!okAnchor) summary.finalAnchorFailures++;
+        entry.base.push({sessions: names, pFirst, schedule, final, expected, matchesExpected: ok, matchesSkip: okSkip, matchesSlice: okSlice, matchesAnchor: okAnchor,
           avoidsDegenerate: JSON.stringify(final) !== JSON.stringify(lit.wrong(pFirst)),
           conserved: bag(final) === bag(expected), log});
       } catch (e) { summary.exceptions++; entry.base.push({sessions: names, schedule, exception: e.message}); }
@@ -145,7 +190,10 @@ for (const lit of LITMUS) {
       for (const f of probe) {
         summary.runs++; entry.followups.runs++;
         const localBefore = summary.localFailures, divBefore = summary.divergent;
-        try { run(lit, names, schedule, f); }
+        try {
+          const {log} = run(lit, names, schedule, f), failed = log.find(x => x.local && x.local !== 'agree');
+          if (failed) entry.followups.localFailureExample ??= {sessions: names, schedule, ...failed};
+        }
         catch (e) { summary.exceptions++; entry.followups.exceptions++; entry.followups.exceptionExample ??= {schedule, followup: f, error: e.message}; }
         entry.followups.localFailures += summary.localFailures - localBefore;
         entry.followups.divergent += summary.divergent - divBefore;

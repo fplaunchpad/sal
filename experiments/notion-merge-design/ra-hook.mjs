@@ -13,9 +13,15 @@ import {installHook, summary} from './ra-check.mjs';
 const state = installHook(Replica);
 globalThis.__raState = state;
 
-// Structural diagnostic: the largest number of children of any slice node and
-// the number of archives in which some node has more than one child.
-state.shape = {archives: 0, branching: 0, maxChildren: 0};
+// Structural diagnostic: the largest number of children of any slice node, the
+// number of archives in which some node has more than one child, and, per
+// specification mode, how many disagreements occur in such archives.
+state.shape = {archives: 0, branching: 0, maxChildren: 0, disagreements: {}};
+let branchingNow = false;
+state.listeners.push((mode, r) => {
+  const d = state.shape.disagreements[mode] ??= {branching: 0, chain: 0};
+  d[branchingNow ? 'branching' : 'chain']++;
+});
 state.archiveListeners.push((txs, document) => {
   state.shape.archives++;
   let most = 0;
@@ -24,6 +30,7 @@ state.archiveListeners.push((txs, document) => {
     const stack = [block.title];
     while (stack.length) { const n = stack.pop(); most = Math.max(most, n.children.length); stack.push(...n.children); }
   }
+  branchingNow = most > 1;
   if (most > 1) state.shape.branching++;
   state.shape.maxChildren = Math.max(state.shape.maxChildren, most);
 });

@@ -26,6 +26,22 @@ patched approximately. Variants:
                the design, except that a merge also deletes the source from
                the display order (the demo's removeBlock bookkeeping), so a
                later block created after the source goes to the front.
+  slice-following
+               the demo's targeting with derived removal: the issuer records
+               the end item of the target's last preorder node, as the demo's
+               mergeBlock does, in one mergeBlock operation. On replay the
+               source's whole tree, root included, becomes the last child of
+               the node that ends with that item, wherever it now lives; a
+               no-op when the source is not alive or that node lies in the
+               source's own tree.
+  slice-remove-independently
+               slice-following plus the independent removeBlock operation.
+  anchor-absorb
+               the request of slice-following; on replay the anchored node is
+               resolved, the holder is the root of its tree, and the source
+               tree is attached under the holder tree's last preorder node, as
+               in the design; a no-op when the source is not alive or the
+               holder is the source's own root.
 
 Run `python3 patch.py --emit DIR --cache CACHE --variant design` to write the
 patched modules for inspection.
@@ -33,7 +49,8 @@ patched modules for inspection.
 import argparse, hashlib, json
 from pathlib import Path
 
-VARIANTS = ['demo', 'design', 'skip', 'no-source-check', 'remove-independently', 'skip-remove-independently', 'design-order-splice']
+VARIANTS = ['demo', 'design', 'skip', 'no-source-check', 'remove-independently', 'skip-remove-independently', 'design-order-splice',
+            'slice-following', 'slice-remove-independently', 'anchor-absorb']
 
 # ---------------------------------------------------------------- document.js
 
@@ -133,6 +150,30 @@ MERGE_ORDER_SPLICE = MERGE_ABSORB.replace('''		last.appendChild(source.title)
 	}''')
 assert MERGE_ORDER_SPLICE != MERGE_ABSORB
 
+MERGE_SLICE = '''	#mergeBlock({ sourceBlockId, targetTextInstanceId, targetTextSliceEndItemId }) {
+		const source = this.blocks.get(sourceBlockId)
+		if (!source || !source.alive) return
+		const target = this.#findNodeEndingWith(targetTextInstanceId, targetTextSliceEndItemId)
+		if (!target) throw new Error("Unable to resolve mergeBlock")
+		for (let cursor = target.node; cursor; cursor = cursor.parent) {
+			if (cursor === source.title) return
+		}
+		target.node.appendChild(source.title)
+	}'''
+
+MERGE_ANCHOR_ABSORB = '''	#mergeBlock({ sourceBlockId, targetTextInstanceId, targetTextSliceEndItemId }) {
+		const source = this.blocks.get(sourceBlockId)
+		if (!source || !source.alive) return
+		const target = this.#findNodeEndingWith(targetTextInstanceId, targetTextSliceEndItemId)
+		if (!target) throw new Error("Unable to resolve mergeBlock")
+		let holder = target.node
+		while (holder.parent) holder = holder.parent
+		if (holder === source.title) return
+		let last = holder
+		for (const node of iterateTextSliceTree(holder)) last = node
+		last.appendChild(source.title)
+	}'''
+
 REMOVE_BLOCK_FLAG = '''	#removeBlock(blockId) {
 		const block = this.blocks.get(blockId)
 		if (!block) return
@@ -214,14 +255,30 @@ REMOVE_OPERATION = '''
 					args: { blockId: source.id },
 				},'''
 
-def merge_request(with_remove):
+SLICE_MERGE_OPERATION = '''				{
+					command: "mergeBlock",
+					pointer: pointer(source.id),
+					path: [],
+					args: {
+						sourceBlockId: source.id,
+						targetBlockId: target.id,
+						targetTextInstanceId: targetLastNode.textSlice.textInstanceId,
+						targetTextSliceEndItemId: targetLastNode.textSlice.endItemId,
+					},
+				},'''
+
+
+def merge_request(with_remove, slice_following=False):
+    anchor = '''		let targetLastNode = target.title
+		for (const node of iterateTextSliceTree(target.title)) targetLastNode = node
+''' if slice_following else ''
     return '''		const source = blocks[sourceIndex]
 		const target = blocks[sourceIndex - 1]
-		const id = this.clock.reserve()
+''' + anchor + '''		const id = this.clock.reserve()
 		const transaction = {
 			id,
 			operations: [
-''' + MERGE_OPERATION + (REMOVE_OPERATION if with_remove else '') + '''
+''' + (SLICE_MERGE_OPERATION if slice_following else MERGE_OPERATION) + (REMOVE_OPERATION if with_remove else '') + '''
 			],
 		}'''
 
@@ -236,8 +293,10 @@ def hunks(variant):
     if variant == 'demo':
         return {}
     remove = variant.endswith('remove-independently')
+    anchored = variant.startswith('slice') or variant == 'anchor-absorb'
     merge = {'skip': MERGE_SKIP, 'skip-remove-independently': MERGE_SKIP, 'no-source-check': MERGE_NO_SOURCE_CHECK,
-             'design-order-splice': MERGE_ORDER_SPLICE}.get(variant, MERGE_ABSORB)
+             'design-order-splice': MERGE_ORDER_SPLICE, 'slice-following': MERGE_SLICE,
+             'slice-remove-independently': MERGE_SLICE, 'anchor-absorb': MERGE_ANCHOR_ABSORB}.get(variant, MERGE_ABSORB)
     document = [
         (BLOCK_RECORD_OLD, BLOCK_RECORD_REMOVE if remove else BLOCK_RECORD_DESIGN),
         (RECREATE_OLD, RECREATE_NEW),
@@ -248,7 +307,7 @@ def hunks(variant):
         (INVARIANT_TAIL_OLD, INVARIANT_TAIL_NEW),
     ]
     replica = [
-        (MERGE_REQUEST_OLD, merge_request(remove)),
+        (MERGE_REQUEST_OLD, merge_request(remove, anchored)),
         (SUMMARY_OLD, SUMMARY_NEW),
     ]
     return {'document.js': document, 'replica.js': replica}

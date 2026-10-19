@@ -34,6 +34,36 @@
 // leaves the list. Under it, a later `create ... after source` is stuck.
 // Option `merge: 'skip'` gives the earlier meaning: a no-op unless the target
 // itself is alive and distinct from the source.
+//
+// Option `merge: 'sliceFollow'` gives the meaning of the demo's own targeting.
+// The decoded merge carries an anchor (instance, end): the instance of the
+// target's last slice at issue time and the end item of that slice, either a
+// split marker or `end`. The anchor denotes a position, the end of the slice
+// ending there, not a slot: for `end` it is the position after the last slot
+// of the instance, and for a marker m it is the position immediately before
+// m in the instance. The slot m itself heads the next slice, so reading the
+// anchor as the slot m would make merging a split-off block back into its
+// origin a no-op. In this mode the specification records these positions as
+// invisible end slots: a created block is [instance/start, instance/^end],
+// and a split at origin o with marker m leaves instance/^m immediately after
+// o in the block that keeps the prefix. Then
+//
+//   merge source target (instance, end)
+//                                 the holder is the block whose slots contain
+//                                 instance/^end; a no-op when the source is
+//                                 not alive or the holder is the source;
+//                                 otherwise the source's slots are appended at
+//                                 the end of the holder (option `placement:
+//                                 'end'`, the default) or immediately after
+//                                 instance/^end (`placement: 'anchor'`), and
+//                                 the source becomes a tombstone
+//
+// Neither placement is the implementation's rule in general. The
+// implementation attaches the source as the last child of the slice node, so
+// it renders after that node's whole subtree. That is the holder's end when
+// the subtree is a suffix of the holder, and right after the anchor when the
+// node has no children. Two concurrent merges into one anchor give the node
+// two children, and then the slots alone do not determine the subtree.
 
 export class SpecStuck extends Error {
   constructor(message, command) { super(message); this.command = command; }
@@ -42,15 +72,18 @@ export class SpecStuck extends Error {
 export const address = (instance, local) => `${instance}/${local}`;
 
 export class IdentitySpec {
-  constructor({removeMergedSource = false, merge = 'absorb'} = {}) {
-    if (merge !== 'absorb' && merge !== 'skip') throw new Error('unknown merge meaning ' + merge);
+  constructor({removeMergedSource = false, merge = 'absorb', placement = 'end'} = {}) {
+    if (!['absorb', 'skip', 'sliceFollow'].includes(merge)) throw new Error('unknown merge meaning ' + merge);
+    if (placement !== 'end' && placement !== 'anchor') throw new Error('unknown placement ' + placement);
     this.blocks = [];
     this.instanceOf = {};
     this.removeMergedSource = removeMergedSource;
     this.merge = merge;
+    this.placement = placement;
+    this.ends = merge === 'sliceFollow';
   }
   clone() {
-    const s = new this.constructor({removeMergedSource: this.removeMergedSource, merge: this.merge});
+    const s = new this.constructor({removeMergedSource: this.removeMergedSource, merge: this.merge, placement: this.placement});
     s.blocks = structuredClone(this.blocks);
     s.instanceOf = {...this.instanceOf};
     return s;
@@ -64,6 +97,7 @@ export class IdentitySpec {
         if (this.blocks.some(b => b.id === c.block)) throw new SpecStuck('block already exists', c);
         this.instanceOf[c.block] = c.instance;
         const fresh = {id: c.block, alive: true, slots: [{address: address(c.instance, 'start'), value: '', visible: false}]};
+        if (this.ends) fresh.slots.push({address: address(c.instance, '^end'), value: '', visible: false});
         if (c.after === undefined || c.after === null) { this.blocks.unshift(fresh); break; }
         const at = this.blocks.findIndex(b => b.id === c.after);
         if (at < 0) throw new SpecStuck('create after a block that is not in the document', c);
@@ -89,10 +123,12 @@ export class IdentitySpec {
         if (!target || target === source) throw new SpecStuck('split target not alive or equal to source', c);
         const at = source.slots.findIndex(s => s.address === origin);
         const suffix = source.slots.splice(at + 1);
+        if (this.ends) source.slots.push({address: address(c.instance, '^' + c.marker), value: '', visible: false});
         target.slots.push({address: address(c.instance, c.marker), value: '', visible: false}, ...suffix);
         break;
       }
       case 'merge': {
+        if (this.merge === 'sliceFollow') { this.sliceMerge(c); break; }
         const source = this.live(c.source), instance = this.instanceOf[c.target];
         const target = this.merge === 'skip' ? this.live(c.target)
           : instance === undefined ? undefined : this.owner(address(instance, 'start'));
@@ -105,6 +141,18 @@ export class IdentitySpec {
       default: throw new Error('unknown command ' + c.kind);
     }
     return this;
+  }
+  sliceMerge(c) {
+    if (!c.anchor) throw new SpecStuck('merge without an anchor', c);
+    const source = this.live(c.source);
+    if (!source) return;
+    const end = address(c.anchor.instance, '^' + c.anchor.end), holder = this.owner(end);
+    if (!holder) throw new SpecStuck('merge anchor has no owner', c);
+    if (holder === source) return;
+    const at = this.placement === 'anchor' ? holder.slots.findIndex(s => s.address === end) + 1 : holder.slots.length;
+    holder.slots.splice(at, 0, ...source.slots);
+    if (this.removeMergedSource) this.blocks.splice(this.blocks.indexOf(source), 1);
+    else { source.slots = []; source.alive = false; }
   }
   // An atomic group: either every command applies or the document is unchanged.
   group(commands) {
@@ -129,17 +177,22 @@ const shift = (id, k) => ({sessionId: id.sessionId, counter: id.counter + k});
 // One transaction becomes one atomic command group. Merge transactions of the
 // demo (split at the source root, move, remove), of the design (mergeBlock) and
 // of the control variants (mergeBlock plus removeBlock) all decode to the
-// request's intent: merge source target. Formatting operations are outside the
-// specification and decode to nothing.
+// request's intent: merge source target. When the transaction records the end
+// item of the target's last slice (the demo's move and the slice-following
+// mergeBlock), the command also carries it as `anchor`. Formatting operations
+// are outside the specification and decode to nothing.
 export function decode(transaction) {
   const ops = transaction.operations, out = [], has = c => ops.some(o => o.command === c);
   if (has('mergeBlock') || has('moveTextSlice')) {
-    let source, target;
-    if (has('mergeBlock')) ({sourceBlockId: source, targetBlockId: target} = ops.find(o => o.command === 'mergeBlock').args);
-    else { source = ops.find(o => o.command === 'removeBlock').args.blockId; target = ops.find(o => o.command === 'moveTextSlice').args.targetBlockId; }
+    let source, target, args;
+    if (has('mergeBlock')) ({sourceBlockId: source, targetBlockId: target} = args = ops.find(o => o.command === 'mergeBlock').args);
+    else { source = ops.find(o => o.command === 'removeBlock').args.blockId; ({targetBlockId: target} = args = ops.find(o => o.command === 'moveTextSlice').args); }
     const allowed = new Set(['mergeBlock', 'moveTextSlice', 'splitText', 'removeBlock']);
     if (!ops.every(o => allowed.has(o.command))) throw new Error('unexpected operation in a merge transaction');
-    return [{kind: 'merge', source, target}];
+    const command = {kind: 'merge', source, target};
+    if (args.targetTextSliceEndItemId !== undefined)
+      command.anchor = {instance: args.targetTextInstanceId, end: key(args.targetTextSliceEndItemId)};
+    return [command];
   }
   for (const op of ops) {
     const a = op.args;

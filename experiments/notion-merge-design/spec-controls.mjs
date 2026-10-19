@@ -104,4 +104,66 @@ const ne = (a, b) => { assert.notDeepEqual(a, b); checks++; };
   eq(fold(merged, {merge: 'skip'}).view, [['R', ''], ['Y', '']]);
   ne(fold(archive).view, [['R', ''], ['X', ''], ['Y', '']]);
 }
+// sliceFollow: the merge follows the anchor recorded at issue time.
+{
+  const SF = {merge: 'sliceFollow'}, SA = {merge: 'sliceFollow', placement: 'anchor'};
+  const m = (source, target, instance, end) => ({kind: 'merge', source, target, anchor: {instance, end}});
+  // An unsplit target is anchored at the end of its instance.
+  eq(base(SF).step(m('S', 'T', 't', 'end')).view(), [['T', 'abcd']]);
+  ne(base(SF).step(m('S', 'T', 't', 'end')).view(), [['T', 'ab'], ['S', 'cd']]);
+  // End slots are invisible and addresses stay unique.
+  const d = base(SF).step(m('S', 'T', 't', 'end'));
+  eq(d.addresses(), ['t/start', 't/t1', 't/t2', 't/^end', 's/start', 's/s1', 's/s2', 's/^end']);
+  ne(d.addresses(), ['t/start', 't/t1', 't/t2', 's/start', 's/s1', 's/s2']);
+  // The review's case: split T after a, then the merge anchored at T's end. The
+  // end of instance t now lies in the split-off block F, so S follows b.
+  const review = options => base(options).step({kind: 'create', block: 'F', instance: 'f', after: 'T'})
+    .step({kind: 'split', instance: 't', origin: 't1', marker: 'm', target: 'F'})
+    .step(m('S', 'T', 't', 'end'));
+  eq(review(SF).view(), [['T', 'a'], ['F', 'bcd']]);
+  ne(review(SF).view(), [['T', 'acd'], ['F', 'b']]);   // the absorb meaning
+  eq(review().view(), [['T', 'acd'], ['F', 'b']]);       // absorb ignores the anchor
+  ne(review().view(), [['T', 'a'], ['F', 'bcd']]);
+  // A marker anchor is the position before the marker, not the marker's slot:
+  // abc split after a into F, then F merged back into T, anchored at m.
+  const back = new IdentitySpec(SF).step({kind: 'create', block: 'T', instance: 't'})
+    .step(ins('t', 'start', ['t1', 'a'], ['t2', 'b'], ['t3', 'c']))
+    .step({kind: 'create', block: 'F', instance: 'f', after: 'T'})
+    .step({kind: 'split', instance: 't', origin: 't1', marker: 'm', target: 'F'});
+  eq(back.view(), [['T', 'a'], ['F', 'bc']]);
+  eq(back.clone().step(m('F', 'T', 't', 'm')).view(), [['T', 'abc']]);
+  ne(back.clone().step(m('F', 'T', 't', 'm')).view(), [['T', 'a'], ['F', 'bc']]);  // slot m is in F: a no-op
+  // A holder that absorbed U after the anchor: both merges anchored at T's end.
+  const two = options => base(options).step({kind: 'create', block: 'U', instance: 'u', after: 'T'})
+    .step(ins('u', 'start', ['u1', 'Z']))
+    .step(m('U', 'T', 't', 'end')).step(m('S', 'T', 't', 'end'));
+  eq(two(SF).view(), [['T', 'abZcd']]);
+  ne(two(SF).view(), [['T', 'abcdZ']]);
+  eq(two(SA).view(), [['T', 'abcdZ']]);
+  ne(two(SA).view(), [['T', 'abZcd']]);
+  // A third merge anchored at U's end lands at the holder's end, or right
+  // after U's slots, depending on the placement.
+  const three = options => two(options).step({kind: 'create', block: 'V', instance: 'v', after: 'T'})
+    .step(ins('v', 'start', ['v1', 'W'])).step(m('V', 'T', 'u', 'end'));
+  eq(three(SF).view(), [['T', 'abZcdW']]);
+  ne(three(SF).view(), [['T', 'abZWcd']]);
+  eq(three(SA).view(), [['T', 'abcdZW']]);
+  ne(three(SA).view(), [['T', 'abcdWZ']]);
+  // No-ops: the anchor held by the source (the cycle case) and a dead source.
+  const merged = base(SF).step(m('S', 'T', 't', 'end'));
+  eq(merged.clone().step(m('T', 'S', 's', 'end')).view(), [['T', 'abcd']]);
+  ne(merged.clone().step(m('T', 'S', 's', 'end')).view(), []);
+  eq(merged.clone().step(m('S', 'T', 't', 'end')).view(), [['T', 'abcd']]);
+  ne(merged.clone().step(m('S', 'T', 't', 'end')).view(), [['T', 'abcdcd']]);
+  // Without an anchor the mode gives the merge no meaning.
+  assert.throws(() => base(SF).step({kind: 'merge', source: 'S', target: 'T'}), SpecStuck); checks++;
+  // Decoder: the anchor is carried when the transaction records it.
+  const id = {sessionId: 'A', counter: 9}, args = {sourceBlockId: 'S', targetBlockId: 'T', targetTextInstanceId: 't'};
+  eq(decode({id, operations: [{command: 'mergeBlock', args: {...args, targetTextSliceEndItemId: 'end'}}]}),
+    [{kind: 'merge', source: 'S', target: 'T', anchor: {instance: 't', end: 'end'}}]);
+  eq(decode({id, operations: [{command: 'mergeBlock', args: {...args, targetTextSliceEndItemId: {sessionId: 'B', counter: 5}}}]})[0].anchor,
+    {instance: 't', end: 'B:5'});
+  ne(decode({id, operations: [{command: 'mergeBlock', args: {...args, targetTextSliceEndItemId: 'end'}}]}),
+    [{kind: 'merge', source: 'S', target: 'T'}]);
+}
 console.log(JSON.stringify({specControls: 'passed', checks}));

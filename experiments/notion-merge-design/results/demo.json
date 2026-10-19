@@ -281,6 +281,18 @@
       "stuck": 3,
       "conservation": 2,
       "placement": 2
+     },
+     "sliceFollow": {
+      "agree": 42,
+      "stuck": 5,
+      "conservation": 2,
+      "placement": 1
+     },
+     "sliceFollowAnchor": {
+      "agree": 42,
+      "stuck": 5,
+      "conservation": 2,
+      "placement": 1
      }
     },
     "failures": {
@@ -1115,7 +1127,29 @@
     "shape": {
      "archives": 50,
      "branching": 7,
-     "maxChildren": 2
+     "maxChildren": 2,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 4,
+       "chain": 4
+      },
+      "sliceFollowAnchor": {
+       "branching": 4,
+       "chain": 4
+      },
+      "absorb": {
+       "branching": 2,
+       "chain": 4
+      },
+      "skip": {
+       "branching": 2,
+       "chain": 6
+      },
+      "removed": {
+       "branching": 2,
+       "chain": 5
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -1136,15 +1170,16 @@
     "litmus.mjs"
    ],
    "exit": 0,
-   "seconds": 2.6,
+   "seconds": 5.2,
    "output": {
     "summary": {
-     "runs": 2236,
-     "localChecks": 6544,
-     "localFailures": 0,
-     "finalChecks": 48,
-     "finalFailures": 0,
-     "finalSkipFailures": 2,
+     "runs": 3760,
+     "localChecks": 13204,
+     "localFailures": 44,
+     "finalChecks": 60,
+     "finalFailures": 4,
+     "finalSkipFailures": 6,
+     "finalSliceFailures": 0,
      "divergent": 0,
      "exceptions": 12
     },
@@ -1170,6 +1205,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1190,6 +1226,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1210,6 +1247,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1230,6 +1268,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1239,7 +1278,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1255,6 +1295,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 111,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 111,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 111,
         "stuck": 0,
         "conservation": 0,
@@ -1283,6 +1335,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1303,6 +1356,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1323,6 +1377,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1343,6 +1398,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1352,7 +1408,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1368,6 +1425,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 112,
         "stuck": 0,
         "conservation": 0,
@@ -1396,6 +1465,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1416,6 +1486,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1436,6 +1507,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1456,6 +1528,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1465,7 +1538,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1481,6 +1555,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 136,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 136,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 136,
         "stuck": 0,
         "conservation": 0,
@@ -1507,6 +1593,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1525,6 +1612,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1543,6 +1631,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": false,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1561,6 +1650,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": false,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1570,7 +1660,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1586,6 +1677,18 @@
         "placement": 41
        },
        "removed": {
+        "agree": 91,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 91,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 91,
         "stuck": 0,
         "conservation": 0,
@@ -1635,7 +1738,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 8,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1651,6 +1755,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 2,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 2,
         "stuck": 0,
         "conservation": 0,
@@ -1677,6 +1793,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1695,6 +1812,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1713,6 +1831,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1731,6 +1850,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1740,7 +1860,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1756,6 +1877,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 172,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 172,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 172,
         "stuck": 0,
         "conservation": 0,
@@ -1782,6 +1915,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1800,6 +1934,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1818,6 +1953,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1836,6 +1972,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1845,7 +1982,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1861,6 +1999,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 86,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 86,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 86,
         "stuck": 0,
         "conservation": 0,
@@ -1889,6 +2039,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1909,6 +2060,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1929,6 +2081,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1949,6 +2102,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1958,7 +2112,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1974,6 +2129,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 67,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 67,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 67,
         "stuck": 0,
         "conservation": 0,
@@ -2002,6 +2169,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2022,6 +2190,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2042,6 +2211,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2062,6 +2232,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -2071,7 +2242,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -2087,6 +2259,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 48,
+        "stuck": 8,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 48,
+        "stuck": 8,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 48,
         "stuck": 8,
         "conservation": 0,
@@ -2115,6 +2299,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2135,6 +2320,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2155,6 +2341,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2175,6 +2362,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -2184,7 +2372,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -2200,6 +2389,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 48,
+        "stuck": 8,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 48,
+        "stuck": 8,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 48,
         "stuck": 8,
         "conservation": 0,
@@ -2228,6 +2429,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2248,6 +2450,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2268,6 +2471,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2288,6 +2492,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -2297,7 +2502,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -2313,6 +2519,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 56,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 56,
         "stuck": 0,
         "conservation": 0,
@@ -2341,6 +2559,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2361,6 +2580,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2381,6 +2601,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2401,6 +2622,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -2410,7 +2632,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -2426,6 +2649,18 @@
         "placement": 0
        },
        "removed": {
+        "agree": 64,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 64,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
         "agree": 64,
         "stuck": 0,
         "conservation": 0,
@@ -2454,6 +2689,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2474,6 +2710,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2494,6 +2731,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -2514,6 +2752,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -2523,7 +2762,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -2543,36 +2783,476 @@
         "stuck": 0,
         "conservation": 0,
         "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 152,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 152,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "g",
+      "name": "split T after a || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "bcd"
+        ],
+        "expected": [
+         "acd",
+         "b"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "bcd"
+        ],
+        "expected": [
+         "acd",
+         "b"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "bcd"
+        ],
+        "expected": [
+         "a",
+         "bcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "bcd"
+        ],
+        "expected": [
+         "a",
+         "bcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 216,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 10,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 102
+       },
+       "skip": {
+        "agree": 10,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 102
+       },
+       "removed": {
+        "agree": 10,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 102
+       },
+       "sliceFollow": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "h",
+      "name": "merge U into T || merge S into T, both anchored at the end of T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abZcdYW"
+        ],
+        "expected": [
+         "abZcdYW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abZcdYW"
+        ],
+        "expected": [
+         "abZcdYW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcdYWZ"
+        ],
+        "expected": [
+         "abcdYWZ"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcdYWZ"
+        ],
+        "expected": [
+         "abcdYWZ"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 576,
+       "localFailures": 20,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "schedule": "P-unaware",
+        "request": {
+         "kind": "split",
+         "block": 0,
+         "index": 3
+        },
+        "local": {
+         "expected": [
+          "abZ",
+          "cdYW"
+         ],
+         "actual": [
+          "abZcdYW",
+          ""
+         ]
+        }
+       }
+      },
+      "ra": {
+       "absorb": {
+        "agree": 290,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 10
+       },
+       "skip": {
+        "agree": 290,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 10
+       },
+       "removed": {
+        "agree": 290,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 10
+       },
+       "sliceFollow": {
+        "agree": 290,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 10
+       },
+       "sliceFollowAnchor": {
+        "agree": 62,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 238
+       }
+      }
+     },
+     {
+      "id": "i",
+      "name": "then merge V into T anchored at the end of U",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abZWcdYX"
+        ],
+        "expected": [
+         "abZcdYXW"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abZWcdYX"
+        ],
+        "expected": [
+         "abZcdYXW"
+        ],
+        "matchesExpected": false,
+        "matchesSkip": false,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcdYXZW"
+        ],
+        "expected": [
+         "abcdYXZW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcdYXZW"
+        ],
+        "expected": [
+         "abcdYXZW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 720,
+       "localFailures": 24,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "schedule": "P-unaware",
+        "request": {
+         "kind": "split",
+         "block": 0,
+         "index": 3
+        },
+        "local": {
+         "expected": [
+          "abZ",
+          "WcdYX"
+         ],
+         "actual": [
+          "abZcdYX",
+          "W"
+         ]
+        }
+       }
+      },
+      "ra": {
+       "absorb": {
+        "agree": 225,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 147
+       },
+       "skip": {
+        "agree": 225,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 147
+       },
+       "removed": {
+        "agree": 225,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 147
+       },
+       "sliceFollow": {
+        "agree": 225,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 147
+       },
+       "sliceFollowAnchor": {
+        "agree": 70,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 302
        }
       }
      }
     ]
    },
    "ra": {
-    "archives": 1161,
-    "documentCalls": 108392,
+    "archives": 1945,
+    "documentCalls": 215796,
     "replayExceptions": 12,
     "replayExceptionMessages": {
      "Unknown operation command: mergeBlock": 12
     },
     "modes": {
      "absorb": {
-      "agree": 1145,
+      "agree": 1670,
       "stuck": 16,
       "conservation": 0,
-      "placement": 0
+      "placement": 259
      },
      "skip": {
-      "agree": 1104,
+      "agree": 1629,
       "stuck": 16,
       "conservation": 0,
-      "placement": 41
+      "placement": 300
      },
      "removed": {
-      "agree": 1145,
+      "agree": 1670,
       "stuck": 16,
       "conservation": 0,
-      "placement": 0
+      "placement": 259
+     },
+     "sliceFollow": {
+      "agree": 1772,
+      "stuck": 16,
+      "conservation": 0,
+      "placement": 157
+     },
+     "sliceFollowAnchor": {
+      "agree": 1389,
+      "stuck": 16,
+      "conservation": 0,
+      "placement": 540
      }
     },
     "failures": {
@@ -2905,24 +3585,288 @@
          ]
         }
        ]
+      },
+      "placement": {
+       "size": 6,
+       "result": {
+        "category": "placement",
+        "spec": [
+         [
+          "seed-block-1",
+          "acd"
+         ],
+         [
+          "A-block-7",
+          "b"
+         ]
+        ],
+        "display": [
+         [
+          "seed-block-1",
+          "a"
+         ],
+         [
+          "A-block-7",
+          "bcd"
+         ]
+        ]
+       },
+       "transactions": [
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 1
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 2
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 2
+            },
+            "originId": "start",
+            "content": "ab"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 4
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-4",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-4"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "seed",
+          "counter": 5
+         },
+         "operations": [
+          {
+           "command": "insertText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "seed",
+             "counter": 5
+            },
+            "originId": "start",
+            "content": "cd"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "A",
+          "counter": 7
+         },
+         "operations": [
+          {
+           "command": "createBlock",
+           "pointer": {
+            "table": "block",
+            "id": "A-block-7"
+           },
+           "path": [],
+           "args": {
+            "blockId": "A-block-7",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "A-block-7"
+           }
+          },
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "A",
+             "counter": 7
+            },
+            "originId": {
+             "sessionId": "seed",
+             "counter": 2
+            }
+           }
+          },
+          {
+           "command": "moveTextSliceIntoBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "A",
+             "counter": 7
+            },
+            "targetBlockId": "A-block-7"
+           }
+          }
+         ]
+        },
+        {
+         "id": {
+          "sessionId": "B",
+          "counter": 27
+         },
+         "operations": [
+          {
+           "command": "splitText",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "searchLabel": "",
+            "id": {
+             "sessionId": "B",
+             "counter": 27
+            },
+            "originId": "start"
+           }
+          },
+          {
+           "command": "moveTextSlice",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "opVersion": 2,
+           "args": {
+            "textInstanceId": "seed-block-4",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+             "sessionId": "B",
+             "counter": 27
+            },
+            "targetBlockId": "seed-block-1",
+            "targetTextInstanceId": "seed-block-1",
+            "targetSearchLabel": "",
+            "targetTextSliceEndItemId": "end",
+            "isMerge": true
+           }
+          },
+          {
+           "command": "removeBlock",
+           "pointer": {
+            "table": "block",
+            "id": "seed-block-4"
+           },
+           "path": [],
+           "args": {
+            "blockId": "seed-block-4"
+           }
+          }
+         ]
+        }
+       ]
       }
      }
     },
     "orderInversions": 0,
     "orderInversionExample": null,
     "shape": {
-     "archives": 1161,
-     "branching": 0,
-     "maxChildren": 1
+     "archives": 1945,
+     "branching": 652,
+     "maxChildren": 2,
+     "disagreements": {
+      "skip": {
+       "branching": 157,
+       "chain": 159
+      },
+      "absorb": {
+       "branching": 157,
+       "chain": 118
+      },
+      "removed": {
+       "branching": 157,
+       "chain": 118
+      },
+      "sliceFollow": {
+       "branching": 157,
+       "chain": 16
+      },
+      "sliceFollowAnchor": {
+       "branching": 540,
+       "chain": 16
+      }
+     }
     },
     "deletes": {
      "single": {
-      "checked": 400,
-      "agree": 400
+      "checked": 672,
+      "agree": 672
      },
      "crossing": {
-      "checked": 796,
-      "agree": 796
+      "checked": 1092,
+      "agree": 1092
      },
      "crossingExample": {
       "before": [
@@ -2955,7 +3899,7 @@
     "60"
    ],
    "exit": 0,
-   "seconds": 23.5,
+   "seconds": 29.0,
    "output": {
     "mode": "sequential",
     "seed": 17004,
@@ -2997,6 +3941,18 @@
       "placement": 0
      },
      "removed": {
+      "agree": 11260,
+      "stuck": 2318,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 11260,
+      "stuck": 2318,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
       "agree": 11260,
       "stuck": 2318,
       "conservation": 0,
@@ -3307,7 +4263,29 @@
     "shape": {
      "archives": 13578,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "absorb": {
+       "branching": 0,
+       "chain": 2318
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 2318
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 2318
+      },
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 2318
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 2318
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -3349,7 +4327,7 @@
     "80"
    ],
    "exit": 0,
-   "seconds": 98.8,
+   "seconds": 120.6,
    "output": {
     "mode": "network-search",
     "seed": 27002,
@@ -3563,6 +4541,18 @@
       "stuck": 6388,
       "conservation": 193,
       "placement": 2924
+     },
+     "sliceFollow": {
+      "agree": 9893,
+      "stuck": 5492,
+      "conservation": 442,
+      "placement": 1324
+     },
+     "sliceFollowAnchor": {
+      "agree": 9774,
+      "stuck": 5492,
+      "conservation": 442,
+      "placement": 1443
      }
     },
     "failures": {
@@ -4511,7 +5501,29 @@
     "shape": {
      "archives": 17151,
      "branching": 8894,
-     "maxChildren": 4
+     "maxChildren": 4,
+     "disagreements": {
+      "absorb": {
+       "branching": 7033,
+       "chain": 2328
+      },
+      "skip": {
+       "branching": 7295,
+       "chain": 2440
+      },
+      "removed": {
+       "branching": 7154,
+       "chain": 2351
+      },
+      "sliceFollow": {
+       "branching": 6090,
+       "chain": 1168
+      },
+      "sliceFollowAnchor": {
+       "branching": 6209,
+       "chain": 1168
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -4552,7 +5564,7 @@
     "structural"
    ],
    "exit": 0,
-   "seconds": 147.5,
+   "seconds": 155.6,
    "output": {
     "mode": "structural",
     "seed": 17102,
@@ -5945,6 +6957,18 @@
       "stuck": 1830,
       "conservation": 0,
       "placement": 419
+     },
+     "sliceFollow": {
+      "agree": 822,
+      "stuck": 1511,
+      "conservation": 26,
+      "placement": 292
+     },
+     "sliceFollowAnchor": {
+      "agree": 790,
+      "stuck": 1511,
+      "conservation": 26,
+      "placement": 324
      }
     },
     "failures": {
@@ -8555,7 +9579,29 @@
     "shape": {
      "archives": 2651,
      "branching": 2069,
-     "maxChildren": 3
+     "maxChildren": 3,
+     "disagreements": {
+      "absorb": {
+       "branching": 1981,
+       "chain": 268
+      },
+      "skip": {
+       "branching": 1990,
+       "chain": 275
+      },
+      "removed": {
+       "branching": 1981,
+       "chain": 268
+      },
+      "sliceFollow": {
+       "branching": 1775,
+       "chain": 54
+      },
+      "sliceFollowAnchor": {
+       "branching": 1807,
+       "chain": 54
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -8579,7 +9625,7 @@
     "100"
    ],
    "exit": 0,
-   "seconds": 178.9,
+   "seconds": 205.6,
    "output": {
     "mode": "search",
     "seed": 17005,
@@ -9181,6 +10227,18 @@
       "stuck": 9337,
       "conservation": 0,
       "placement": 2865
+     },
+     "sliceFollow": {
+      "agree": 22234,
+      "stuck": 12387,
+      "conservation": 0,
+      "placement": 113
+     },
+     "sliceFollowAnchor": {
+      "agree": 22234,
+      "stuck": 12387,
+      "conservation": 0,
+      "placement": 113
      }
     },
     "failures": {
@@ -9894,7 +10952,29 @@
     "shape": {
      "archives": 34734,
      "branching": 12083,
-     "maxChildren": 3
+     "maxChildren": 3,
+     "disagreements": {
+      "absorb": {
+       "branching": 6063,
+       "chain": 6139
+      },
+      "skip": {
+       "branching": 6101,
+       "chain": 7069
+      },
+      "removed": {
+       "branching": 6063,
+       "chain": 6139
+      },
+      "sliceFollow": {
+       "branching": 7780,
+       "chain": 4720
+      },
+      "sliceFollowAnchor": {
+       "branching": 7780,
+       "chain": 4720
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -9937,7 +11017,7 @@
     "structural.mjs"
    ],
    "exit": 0,
-   "seconds": 304.5,
+   "seconds": 323.1,
    "output": {
     "mode": "structural",
     "seed": 17003,
@@ -10272,7 +11352,10 @@
       }
      }
     ],
-    "findingCount": 1
+    "findingCount": 1,
+    "findingKinds": {
+     "split:placement": 1
+    }
    },
    "ra": {
     "archives": 15105,
@@ -10297,6 +11380,18 @@
       "stuck": 8662,
       "conservation": 0,
       "placement": 3515
+     },
+     "sliceFollow": {
+      "agree": 3448,
+      "stuck": 11235,
+      "conservation": 0,
+      "placement": 422
+     },
+     "sliceFollowAnchor": {
+      "agree": 3448,
+      "stuck": 11235,
+      "conservation": 0,
+      "placement": 422
      }
     },
     "failures": {
@@ -11152,7 +12247,29 @@
     "shape": {
      "archives": 15105,
      "branching": 13352,
-     "maxChildren": 3
+     "maxChildren": 3,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 11606,
+       "chain": 51
+      },
+      "sliceFollowAnchor": {
+       "branching": 11606,
+       "chain": 51
+      },
+      "absorb": {
+       "branching": 11405,
+       "chain": 607
+      },
+      "skip": {
+       "branching": 12134,
+       "chain": 718
+      },
+      "removed": {
+       "branching": 11570,
+       "chain": 607
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -11176,7 +12293,7 @@
     "250"
    ],
    "exit": 0,
-   "seconds": 495.9,
+   "seconds": 533.4,
    "output": {
     "mode": "search",
     "seed": 17002,
@@ -11741,6 +12858,18 @@
       "stuck": 20216,
       "conservation": 104,
       "placement": 6749
+     },
+     "sliceFollow": {
+      "agree": 53178,
+      "stuck": 24932,
+      "conservation": 114,
+      "placement": 148
+     },
+     "sliceFollowAnchor": {
+      "agree": 53178,
+      "stuck": 24932,
+      "conservation": 114,
+      "placement": 148
      }
     },
     "failures": {
@@ -12764,7 +13893,29 @@
     "shape": {
      "archives": 78372,
      "branching": 26576,
-     "maxChildren": 3
+     "maxChildren": 3,
+     "disagreements": {
+      "skip": {
+       "branching": 14869,
+       "chain": 15033
+      },
+      "absorb": {
+       "branching": 14059,
+       "chain": 12753
+      },
+      "removed": {
+       "branching": 14258,
+       "chain": 12811
+      },
+      "sliceFollow": {
+       "branching": 16816,
+       "chain": 8378
+      },
+      "sliceFollowAnchor": {
+       "branching": 16816,
+       "chain": 8378
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -12803,7 +13954,7 @@
     "absorb"
    ],
    "exit": 0,
-   "seconds": 72.8,
+   "seconds": 90.7,
    "output": {
     "mode": "absorb",
     "findings": [
@@ -14149,6 +15300,18 @@
       "stuck": 6341,
       "conservation": 207,
       "placement": 3232
+     },
+     "sliceFollow": {
+      "agree": 23554,
+      "stuck": 5483,
+      "conservation": 456,
+      "placement": 1308
+     },
+     "sliceFollowAnchor": {
+      "agree": 23435,
+      "stuck": 5483,
+      "conservation": 456,
+      "placement": 1427
      }
     },
     "failures": {
@@ -15049,7 +16212,29 @@
     "shape": {
      "archives": 30801,
      "branching": 9001,
-     "maxChildren": 4
+     "maxChildren": 4,
+     "disagreements": {
+      "absorb": {
+       "branching": 7007,
+       "chain": 2660
+      },
+      "skip": {
+       "branching": 7253,
+       "chain": 2762
+      },
+      "removed": {
+       "branching": 7109,
+       "chain": 2671
+      },
+      "sliceFollow": {
+       "branching": 6059,
+       "chain": 1188
+      },
+      "sliceFollowAnchor": {
+       "branching": 6178,
+       "chain": 1188
+      }
+     }
     },
     "deletes": {
      "single": {

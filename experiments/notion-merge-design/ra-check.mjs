@@ -17,9 +17,13 @@ const blockKeys = txs => {
 };
 
 // The specification (absorb), the earlier merge meaning (skip: a no-op unless
-// the target itself is alive), and the reading in which a merged source
-// leaves the block list instead of staying as a tombstone (removed).
-export const MODES = {absorb: {}, skip: {merge: 'skip'}, removed: {removeMergedSource: true}};
+// the target itself is alive), the reading in which a merged source leaves the
+// block list instead of staying as a tombstone (removed), and the meaning of
+// the demo's targeting (sliceFollow: append at the end of the block holding
+// the recorded anchor; sliceFollowAnchor: insert right after the anchor; see
+// identity-spec.mjs).
+export const MODES = {absorb: {}, skip: {merge: 'skip'}, removed: {removeMergedSource: true},
+  sliceFollow: {merge: 'sliceFollow'}, sliceFollowAnchor: {merge: 'sliceFollow', placement: 'anchor'}};
 
 // Outcome categories: agree; stuck (the specification gives the archive no
 // meaning); conservation (visible character multisets differ, H2); placement

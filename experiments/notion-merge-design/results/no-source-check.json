@@ -283,6 +283,18 @@
       "stuck": 3,
       "conservation": 0,
       "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 24,
+      "stuck": 26,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 24,
+      "stuck": 26,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -293,7 +305,25 @@
     "shape": {
      "archives": 50,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 26
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 26
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 3
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 3
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -314,15 +344,16 @@
     "litmus.mjs"
    ],
    "exit": 0,
-   "seconds": 2.3,
+   "seconds": 4.6,
    "output": {
     "summary": {
-     "runs": 2332,
-     "localChecks": 6736,
+     "runs": 3856,
+     "localChecks": 13396,
      "localFailures": 0,
-     "finalChecks": 52,
+     "finalChecks": 64,
      "finalFailures": 0,
      "finalSkipFailures": 2,
+     "finalSliceFailures": 4,
      "divergent": 0,
      "exceptions": 0
     },
@@ -348,6 +379,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -368,6 +400,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -388,6 +421,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -408,6 +442,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -417,7 +452,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -435,6 +471,18 @@
        "removed": {
         "agree": 60,
         "stuck": 51,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 7,
+        "stuck": 104,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 7,
+        "stuck": 104,
         "conservation": 0,
         "placement": 0
        }
@@ -461,6 +509,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -481,6 +530,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -501,6 +551,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -521,6 +572,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -530,7 +582,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -548,6 +601,18 @@
        "removed": {
         "agree": 57,
         "stuck": 55,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 110,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 110,
         "conservation": 0,
         "placement": 0
        }
@@ -574,6 +639,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -594,6 +660,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -614,6 +681,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -634,6 +702,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -643,7 +712,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -661,6 +731,18 @@
        "removed": {
         "agree": 69,
         "stuck": 67,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 134,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 134,
         "conservation": 0,
         "placement": 0
        }
@@ -685,6 +767,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -703,6 +786,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -721,6 +805,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": false,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -739,6 +824,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": false,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -748,7 +834,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -766,6 +853,18 @@
        "removed": {
         "agree": 91,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 5,
+        "stuck": 86,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 5,
+        "stuck": 86,
         "conservation": 0,
         "placement": 0
        }
@@ -790,6 +889,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -808,6 +908,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -826,6 +927,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -844,6 +946,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -853,7 +956,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -871,6 +975,18 @@
        "removed": {
         "agree": 52,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 52,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 52,
         "conservation": 0,
         "placement": 0
        }
@@ -895,6 +1011,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -913,6 +1030,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -931,6 +1049,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -949,6 +1068,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -958,7 +1078,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -976,6 +1097,18 @@
        "removed": {
         "agree": 172,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 170,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 170,
         "conservation": 0,
         "placement": 0
        }
@@ -1000,6 +1133,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1018,6 +1152,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1036,6 +1171,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1054,6 +1190,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1063,7 +1200,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1081,6 +1219,18 @@
        "removed": {
         "agree": 86,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 84,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 84,
         "conservation": 0,
         "placement": 0
        }
@@ -1107,6 +1257,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1127,6 +1278,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1147,6 +1299,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1167,6 +1320,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1176,7 +1330,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1194,6 +1349,18 @@
        "removed": {
         "agree": 67,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 67,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 67,
         "conservation": 0,
         "placement": 0
        }
@@ -1220,6 +1387,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1240,6 +1408,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1260,6 +1429,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1280,6 +1450,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1289,7 +1460,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1307,6 +1479,18 @@
        "removed": {
         "agree": 56,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 56,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 56,
         "conservation": 0,
         "placement": 0
        }
@@ -1333,6 +1517,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1353,6 +1538,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1373,6 +1559,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1393,6 +1580,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1402,7 +1590,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1420,6 +1609,18 @@
        "removed": {
         "agree": 56,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 56,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 56,
         "conservation": 0,
         "placement": 0
        }
@@ -1446,6 +1647,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1466,6 +1668,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1486,6 +1689,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1506,6 +1710,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1515,7 +1720,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1533,6 +1739,18 @@
        "removed": {
         "agree": 56,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 56,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 56,
         "conservation": 0,
         "placement": 0
        }
@@ -1559,6 +1777,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1579,6 +1798,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1599,6 +1819,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1619,6 +1840,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1628,7 +1850,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1646,6 +1869,18 @@
        "removed": {
         "agree": 64,
         "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 0,
+        "stuck": 64,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 0,
+        "stuck": 64,
         "conservation": 0,
         "placement": 0
        }
@@ -1672,6 +1907,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1692,6 +1928,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1712,6 +1949,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        },
@@ -1732,6 +1970,7 @@
         ],
         "matchesExpected": true,
         "matchesSkip": true,
+        "matchesSlice": true,
         "avoidsDegenerate": true,
         "conserved": true
        }
@@ -1741,7 +1980,8 @@
        "localFailures": 0,
        "divergent": 0,
        "exceptions": 0,
-       "exceptionExample": null
+       "exceptionExample": null,
+       "localFailureExample": null
       },
       "ra": {
        "absorb": {
@@ -1761,32 +2001,430 @@
         "stuck": 75,
         "conservation": 0,
         "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 150,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 150,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "g",
+      "name": "split T after a || merge S into T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "acd",
+         "b"
+        ],
+        "expected": [
+         "acd",
+         "b"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "acd",
+         "b"
+        ],
+        "expected": [
+         "acd",
+         "b"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "a",
+         "bcd"
+        ],
+        "expected": [
+         "a",
+         "bcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "a",
+         "bcd"
+        ],
+        "expected": [
+         "a",
+         "bcd"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 216,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 112,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 110,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 110,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "h",
+      "name": "merge U into T || merge S into T, both anchored at the end of T",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abZcdYW"
+        ],
+        "expected": [
+         "abZcdYW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abZcdYW"
+        ],
+        "expected": [
+         "abZcdYW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcdYWZ"
+        ],
+        "expected": [
+         "abcdYWZ"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcdYWZ"
+        ],
+        "expected": [
+         "abcdYWZ"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 576,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 300,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 300,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 300,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 6,
+        "stuck": 294,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 6,
+        "stuck": 294,
+        "conservation": 0,
+        "placement": 0
+       }
+      }
+     },
+     {
+      "id": "i",
+      "name": "then merge V into T anchored at the end of U",
+      "base": [
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-pq",
+        "final": [
+         "abZcdYXW"
+        ],
+        "expected": [
+         "abZcdYXW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "A",
+         "B"
+        ],
+        "pFirst": true,
+        "schedule": "exchange-qp",
+        "final": [
+         "abZcdYXW"
+        ],
+        "expected": [
+         "abZcdYXW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": false,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-pq",
+        "final": [
+         "abcdYXZW"
+        ],
+        "expected": [
+         "abcdYXZW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       },
+       {
+        "sessions": [
+         "B",
+         "A"
+        ],
+        "pFirst": false,
+        "schedule": "exchange-qp",
+        "final": [
+         "abcdYXZW"
+        ],
+        "expected": [
+         "abcdYXZW"
+        ],
+        "matchesExpected": true,
+        "matchesSkip": true,
+        "matchesSlice": true,
+        "avoidsDegenerate": true,
+        "conserved": true
+       }
+      ],
+      "followups": {
+       "runs": 720,
+       "localFailures": 0,
+       "divergent": 0,
+       "exceptions": 0,
+       "exceptionExample": null,
+       "localFailureExample": null
+      },
+      "ra": {
+       "absorb": {
+        "agree": 372,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "skip": {
+        "agree": 372,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "removed": {
+        "agree": 372,
+        "stuck": 0,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollow": {
+        "agree": 2,
+        "stuck": 370,
+        "conservation": 0,
+        "placement": 0
+       },
+       "sliceFollowAnchor": {
+        "agree": 2,
+        "stuck": 370,
+        "conservation": 0,
+        "placement": 0
        }
       }
      }
     ]
    },
    "ra": {
-    "archives": 1211,
-    "documentCalls": 111436,
+    "archives": 1995,
+    "documentCalls": 218840,
     "replayExceptions": 0,
     "replayExceptionMessages": {},
     "modes": {
      "absorb": {
-      "agree": 1211,
+      "agree": 1995,
       "stuck": 0,
       "conservation": 0,
       "placement": 0
      },
      "skip": {
-      "agree": 1170,
+      "agree": 1954,
       "stuck": 0,
       "conservation": 0,
       "placement": 41
      },
      "removed": {
-      "agree": 963,
+      "agree": 1747,
       "stuck": 248,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 32,
+      "stuck": 1963,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 32,
+      "stuck": 1963,
       "conservation": 0,
       "placement": 0
      }
@@ -1797,18 +2435,36 @@
     "orderInversions": 0,
     "orderInversionExample": null,
     "shape": {
-     "archives": 1211,
+     "archives": 1995,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 1963
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 1963
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 248
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 41
+      }
+     }
     },
     "deletes": {
      "single": {
-      "checked": 416,
-      "agree": 416
+      "checked": 688,
+      "agree": 688
      },
      "crossing": {
-      "checked": 804,
-      "agree": 804
+      "checked": 1100,
+      "agree": 1100
      },
      "crossingExample": {
       "before": [
@@ -1841,7 +2497,7 @@
     "60"
    ],
    "exit": 0,
-   "seconds": 21.9,
+   "seconds": 25.9,
    "output": {
     "mode": "sequential",
     "seed": 17004,
@@ -1887,6 +2543,18 @@
       "stuck": 0,
       "conservation": 0,
       "placement": 0
+     },
+     "sliceFollow": {
+      "agree": 3258,
+      "stuck": 10320,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 3258,
+      "stuck": 10320,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -1897,7 +2565,17 @@
     "shape": {
      "archives": 13578,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 10320
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 10320
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -1939,7 +2617,7 @@
     "80"
    ],
    "exit": 0,
-   "seconds": 81.0,
+   "seconds": 88.9,
    "output": {
     "mode": "network-search",
     "seed": 27002,
@@ -1997,6 +2675,18 @@
       "stuck": 6073,
       "conservation": 0,
       "placement": 915
+     },
+     "sliceFollow": {
+      "agree": 1814,
+      "stuck": 15073,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 1814,
+      "stuck": 15073,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -2270,7 +2960,29 @@
     "shape": {
      "archives": 16887,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 15073
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 15073
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 6988
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 2669
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 4918
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -2311,7 +3023,7 @@
     "structural"
    ],
    "exit": 0,
-   "seconds": 122.6,
+   "seconds": 125.7,
    "output": {
     "mode": "structural",
     "seed": 17102,
@@ -2354,6 +3066,18 @@
       "stuck": 1819,
       "conservation": 0,
       "placement": 89
+     },
+     "sliceFollow": {
+      "agree": 55,
+      "stuck": 2596,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 55,
+      "stuck": 2596,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -2668,7 +3392,29 @@
     "shape": {
      "archives": 2651,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 2596
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 2596
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 1908
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 1589
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 1022
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -2692,7 +3438,7 @@
     "100"
    ],
    "exit": 0,
-   "seconds": 158.4,
+   "seconds": 169.1,
    "output": {
     "mode": "search",
     "seed": 17005,
@@ -3058,6 +3804,18 @@
       "stuck": 8263,
       "conservation": 0,
       "placement": 2
+     },
+     "sliceFollow": {
+      "agree": 4322,
+      "stuck": 30084,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 4322,
+      "stuck": 30084,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -4249,7 +5007,29 @@
     "shape": {
      "archives": 34406,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 30084
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 30084
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 8265
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 2732
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 134
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -4292,7 +5072,7 @@
     "structural.mjs"
    ],
    "exit": 0,
-   "seconds": 259.2,
+   "seconds": 236.2,
    "output": {
     "mode": "structural",
     "seed": 17003,
@@ -4301,7 +5081,8 @@
      "checks": 10276
     },
     "findings": [],
-    "findingCount": 0
+    "findingCount": 0,
+    "findingKinds": {}
    },
    "ra": {
     "archives": 14284,
@@ -4326,6 +5107,18 @@
       "stuck": 10791,
       "conservation": 0,
       "placement": 396
+     },
+     "sliceFollow": {
+      "agree": 308,
+      "stuck": 13976,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 308,
+      "stuck": 13976,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -4713,7 +5506,29 @@
     "shape": {
      "archives": 14284,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 13976
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 13976
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 11187
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 9927
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 2775
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -4737,7 +5552,7 @@
     "250"
    ],
    "exit": 0,
-   "seconds": 427.2,
+   "seconds": 437.3,
    "output": {
     "mode": "search",
     "seed": 17002,
@@ -5103,6 +5918,18 @@
       "stuck": 15965,
       "conservation": 0,
       "placement": 228
+     },
+     "sliceFollow": {
+      "agree": 8259,
+      "stuck": 70146,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 8259,
+      "stuck": 70146,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -5367,7 +6194,29 @@
     "shape": {
      "archives": 78405,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 70146
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 70146
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 7407
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 310
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 16193
+      }
+     }
     },
     "deletes": {
      "single": {
@@ -5408,7 +6257,7 @@
     "absorb"
    ],
    "exit": 0,
-   "seconds": 54.6,
+   "seconds": 62.1,
    "output": {
     "mode": "absorb",
     "findings": [
@@ -5748,6 +6597,18 @@
       "stuck": 6092,
       "conservation": 0,
       "placement": 932
+     },
+     "sliceFollow": {
+      "agree": 3140,
+      "stuck": 15700,
+      "conservation": 0,
+      "placement": 0
+     },
+     "sliceFollowAnchor": {
+      "agree": 3140,
+      "stuck": 15700,
+      "conservation": 0,
+      "placement": 0
      }
     },
     "failures": {
@@ -5982,7 +6843,29 @@
     "shape": {
      "archives": 18840,
      "branching": 0,
-     "maxChildren": 1
+     "maxChildren": 1,
+     "disagreements": {
+      "sliceFollow": {
+       "branching": 0,
+       "chain": 15700
+      },
+      "sliceFollowAnchor": {
+       "branching": 0,
+       "chain": 15700
+      },
+      "removed": {
+       "branching": 0,
+       "chain": 7024
+      },
+      "absorb": {
+       "branching": 0,
+       "chain": 2686
+      },
+      "skip": {
+       "branching": 0,
+       "chain": 4935
+      }
+     }
     },
     "deletes": {
      "single": {
