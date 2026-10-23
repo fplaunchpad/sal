@@ -10,6 +10,12 @@ lake build \
   Sal.MRDTs.Instances.NotionTransactionSet \
   Sal.MRDTs.Instances.NotionRunAllocation \
   Sal.MRDTs.Instances.NotionCoreSpec \
+  Sal.MRDTs.Instances.NotionCoreFormattingSourceSPOT \
+  Sal.MRDTs.Instances.NotionCoreFormattingSpec \
+  Sal.MRDTs.Instances.NotionCoreFormattingBridge \
+  Sal.MRDTs.Instances.NotionCoreFormattingPlannerSPOT \
+  Sal.MRDTs.Instances.NotionCoreFormattingEvolution \
+  Sal.MRDTs.Instances.NotionCoreFormattingMachineSPOT \
   Sal.MRDTs.Instances.NotionCoreInvariant \
   Sal.MRDTs.Instances.NotionCoreRGA \
   Sal.MRDTs.Instances.NotionCoreSource \

@@ -8,6 +8,80 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Notion bold-formatting formalisation
+
+- [x] Model the demo's annotation anchors, interval coverage and last-writer
+  boolean resolution faithfully, retaining the two known formatting failures.
+- [x] Define an independent rich-document selection specification and prove
+  local formatting effects and preservation of the underlying plain document.
+- [x] Connect the source evaluator to exact selection under explicit coverage
+  conditions; test insertion inheritance and cross-instance selections against
+  the pinned JavaScript before choosing a corrected formatting design.
+- [x] Independently review and build the new modules; record the remaining
+  protocol, VC and full history-bridge integration obligations accurately.
+- [x] Prove the maximal-run candidate planner establishes exact visible
+  selection coverage, including markers and tombstones; connect that theorem
+  to the independent local formatting specification.
+- [x] Establish the insertion-inheritance boundary and investigate concurrent
+  insertion, erasure, split and corrected merge. Keep dynamic protocol
+  correctness distinct from immediate selection correctness.
+- [x] Integrate dynamic annotations with the actual editing interpreter;
+  prove whole-replay and rendered-text conservativity, including failures.
+- [ ] Derive displayed source/core coordinate and annotation freshness facts
+  from a rich-text issuance protocol; extend the independent specification
+  with dynamic inheritance and prove the rich sequential-history bridge.
+
+  The current increment proves immediate selection and executable conservative
+  integration, not full rich-text RA. Evidence and exact boundaries are in
+  `docs/notion-formatting-design.md`.
+
+## Combined grant/revoke access control
+
+- [x] Specialise the PaPoC 2026 capability-group semantics to a fixed owner
+  with dynamic grants and named revocations; mechanise authorisation and
+  convergence separately, with positive and negative execution controls.
+- [x] Define an independent sequential specification and establish a bridge
+  or checked obstruction. Distinguish honest owner-ordered executions from
+  concurrent owner actions and literal from specification-visible RA.
+- [x] Review source correspondence and theorem strength independently;
+  document hypotheses, results and remaining protocol obligations.
+- [ ] Construct a complete sequential run and prove name-query agreement
+  for an owner whose events form a causal chain. The administrative cut and
+  permission-guard equivalence are already proved.
+- [ ] Connect the source issuance/reconciliation protocol to the framework's
+  certified version-DAG executions before claiming a production certificate.
+
+  Concurrent owner devices have a checked source-reachable obstruction to
+  specification-visible RA; literal RA still accepts it. This does not refute
+  the honest owner-chain case. See `docs/capability-group-sequential.md`.
+
+## Release-gate CI
+
+- [x] Diagnose the failing run: the Ubuntu runner lacks ripgrep. Install it
+  explicitly and fail early when the gate's source-audit dependency is absent.
+- [x] Run the complete local production gate after the repair.
+- [ ] Verify the next GitHub Actions run after the change is pushed.
+
+## Notion public-demo correctness campaign
+
+- [x] Broaden the search to persistent offline replicas and partial causal
+  delivery; independently audit schedules, minimise any new correctness bugs,
+  and record coverage and limits alongside the first campaign.
+  The follow-up found N-004 and N-005; the public report and original-source
+  reproductions are in `reports/notion-demo-bugs/README.md`.
+
+- [x] Generate and probe valid concurrent client histories against independent
+  local edit semantics; keep searching after known failures.
+- [x] Minimise and classify failures, add executable regressions with passing
+  controls, and mechanise useful new semantic counterparts.
+- [x] Record reproducible scope, counts, root causes and limits in
+  `docs/notion-correctness-campaign.md`; preserve existing paper claims.
+
+  Completed 122,074 local edit checks. All 422 failing probes in the two
+  concurrent runs match known split/interval causes; no new root cause was
+  confirmed. Added a six-request split setup and same-display passing control.
+  Existing Lean semantic counterparts rebuild; no new Lean theorem is claimed.
+
 ## Appendix round 2 and theorem-scope alignment
 
 - [x] Produce the documented standalone paper source artifact. The exporter

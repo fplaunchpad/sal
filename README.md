@@ -115,6 +115,17 @@ The [report for the Notion team](reports/notion-demo-bugs/README.md) collects
 all five reproductions, expected and observed results, saved transactions and
 commands that run the public demo JavaScript without building Lean.
 
+The [bold-formatting investigation](docs/notion-formatting-design.md) proves
+that a maximal-run interval planner covers exactly the selected visible
+characters and implements the independent local toggle under a structural
+source/core coordinate relation. A separate rich interpreter delegates edits
+to the actual core, resolves anchors dynamically, and provably recovers the
+old text query when formatting is forgotten. The
+[offline probes](experiments/notion-formatting/README.md) retain N-002/N-003
+against the original compiler and test the candidate with concurrent insertion,
+deletion, split and merge. Formatting is not yet included in the protocol's
+RA-linearizability theorem above.
+
 The [follow-up correctness campaign](docs/notion-correctness-campaign.md)
 tests ordinary local edits after concurrent restructuring, preserves generated
 failures, and gives a smaller split-bug reproduction with a passing control.
@@ -123,6 +134,25 @@ public-demo sources and an independent list specification. The
 [merge design gate](experiments/notion-merge-design/README.md) reruns those
 harnesses on a patched demo with the corrected merge: 162,373 archive comparisons,
 deduplicated within each harness, agree with its specification, with no split failure and no text loss.
+
+### Capability groups — combined grant and revoke
+
+The [access-control investigation](docs/capability-group-research.md)
+specialises the PaPoC 2026 capability group to an immutable owner with dynamic
+grants and named revocations. Its checked results separate union convergence,
+authorisation safety, and preservation of causal admission through issuance
+and reconciliation. An [independent sequential specification and counterexample](docs/capability-group-sequential.md)
+show a boundary with concurrent owner devices: the literal RA criterion admits
+the example, while specification visibility rejects it. For a causally ordered
+owner, the administrative cut and its permission guard agree; a complete
+sequential-history bridge remains open. This is a research model, with no
+production certificate or cryptographic implementation.
+
+```sh
+sh scripts/check-capability-group-research.sh
+```
+
+### Sequential specifications
 
 The [natural-specification audit](docs/natural-sequential-specifications.md)
 separates client requests from generated replication messages. Simple sets and
@@ -575,6 +605,9 @@ log/tree carrier is staged.
 The runtime implementation lives in [`runtime`](runtime).
 
 ## Verification
+
+The release gate requires Lean/Lake, Node.js, and ripgrep (`rg`). The GitHub
+Actions workflow installs ripgrep explicitly; local users need it on `PATH`.
 
 The paper branch has an additional theorem and axiom gate:
 
