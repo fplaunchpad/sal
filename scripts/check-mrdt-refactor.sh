@@ -1,6 +1,12 @@
 #!/usr/bin/env sh
 set -eu
 
+# Fail before the build when a required source-audit tool is unavailable.
+command -v rg >/dev/null 2>&1 || {
+  echo 'The release gate requires ripgrep (rg).' >&2
+  exit 127
+}
+
 lake build \
   Sal.MRDTs.Metatheory.PublicCertificateGate \
   Sal.MRDTs.Metatheory.NegativeLedger \
