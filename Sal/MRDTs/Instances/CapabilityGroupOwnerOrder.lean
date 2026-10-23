@@ -7,10 +7,20 @@ or equality of a complete sequential run with the source MV name projection. -/
 namespace Sal.MRDTs.Instances.CapabilityGroup.OwnerOrder
 open Sal.MRDTs.Paper1
 
+/-- Assignment actions, including the owner's own assignments, are placed
+among assignments rather than in the administrative chain. -/
+abbrev isAdministrative (action : Action) : Bool :=
+  match action with | .grant _ | .revoke _ => true | .assign _ _ => false
+
 /-- Place an assignment after all administration that is not its causal successor.
 This includes concurrent administration, enforcing revoke-wins at the cut. -/
 abbrev AdminBeforeCut (owner : Actor) (e a : Event) : Prop :=
-  a.actor = owner ∧ ¬ before e a
+  a.actor = owner ∧ isAdministrative a.action = true ∧ ¬ before e a
+
+theorem assignment_not_before_cut (owner : Actor) (e a : Event) (gid : Id) (n : Name)
+    (ha : a.action = .assign gid n) : ¬ AdminBeforeCut owner e a := by
+  simp only [AdminBeforeCut, ha, isAdministrative, Bool.false_eq_true, false_and,
+    and_false, not_false_eq_true]
 
 theorem before_trans {s : State} (hs : WellFormed s) {a b c : Event}
     (_ha : a ∈ s) (hb : b ∈ s) (hc : c ∈ s)
@@ -22,23 +32,25 @@ theorem before_asymm {s : State} (hs : WellFormed s) {a b : Event}
   intro hba
   exact (Nat.lt_asymm (hs.ranked b hb a.id hab) (hs.ranked a ha b.id hba))
 
-/-- The proposed cut is a true initial segment of the owner chain: every owner
-operation on its left causally precedes every owner operation on its right. -/
+/-- The proposed cut is a true initial segment of the administrative owner
+chain: each administrative event on its left precedes those on its right. -/
 theorem cut_is_initial_segment {owner : Actor} {s : State}
     (hs : WellFormed s) (ho : OwnerOrdered owner s) {e a b : Event}
     (he : e ∈ s) (ha : a ∈ s) (hb : b ∈ s)
     (hleft : AdminBeforeCut owner e a) (howner : b.actor = owner)
+    (_hadmin : isAdministrative b.action = true)
     (hright : before e b) : before a b := by
   rcases ho a ha b hb hleft.1 howner with h | h | h
-  · subst b; exact False.elim (hleft.2 hright)
+  · subst b; exact False.elim (hleft.2.2 hright)
   · exact h
-  · exact False.elim (hleft.2 (before_trans hs he hb ha hright h))
+  · exact False.elim (hleft.2.2 (before_trans hs he hb ha hright h))
 
-/-- Causal owner precursors lie on the left of the cut. -/
+/-- Administrative owner precursors lie on the left of the cut. -/
 theorem precursor_left_of_cut {owner : Actor} {s : State} (hs : WellFormed s)
     {e a : Event} (he : e ∈ s) (ha : a ∈ s) (hao : a.actor = owner)
+    (hadmin : isAdministrative a.action = true)
     (hae : before a e) : AdminBeforeCut owner e a :=
-  ⟨hao, before_asymm hs ha he hae⟩
+  ⟨hao, hadmin, before_asymm hs ha he hae⟩
 
 def grantEntries (owner : Actor) (s : State) (e : Event) : Finset (Id × Actor) :=
   s.biUnion fun g => match g.action with
@@ -89,7 +101,8 @@ theorem admitted_grant_at_cut {owner : Actor} {s : State} (hs : WellFormed s)
   apply Finset.mem_biUnion.mpr
   refine ⟨g, hgs, ?_⟩
   simp only [haction]
-  have hcut := precursor_left_of_cut hs he hgs howner hbefore
+  have hcut := precursor_left_of_cut hs he hgs howner
+    (by simp only [haction, isAdministrative]) hbefore
   rw [if_pos hcut]
   simp only [Finset.mem_singleton, hid]
 
@@ -138,5 +151,17 @@ example : revokedIds 0
 example : revokedIds 0
     {⟨1, 0, ∅, .grant 1⟩, ⟨2, 1, {1}, .assign 1 10⟩, ⟨3, 0, {1, 2}, .revoke 1⟩}
     ⟨2, 1, {1}, .assign 1 10⟩ ≠ {1} := by decide
+
+/-- Owner self-assignment stays outside its own administrative prefix, while
+its actual precursor grant remains in the prefix. Ownership must not classify
+all of an actor's events as administrative events. -/
+theorem owner_self_assignment_cut_control :
+    let g : Event := ⟨1, 0, ∅, .grant 0⟩
+    let e : Event := ⟨2, 0, {1}, .assign 1 10⟩
+    ¬ AdminBeforeCut 0 e e ∧
+    AdminBeforeCut 0 e g ∧
+    grantEntries 0 {g,e} e = {(1,0)} ∧
+    grantEntries 0 {g,e} e ≠ ∅ ∧
+    authorized 0 {g,e} e ∧ names 0 {g,e} = {10} ∧ names 0 {g,e} ≠ ∅ := by decide
 
 end Sal.MRDTs.Instances.CapabilityGroup.OwnerOrder

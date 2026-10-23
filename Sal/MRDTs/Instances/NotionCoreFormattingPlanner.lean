@@ -409,10 +409,14 @@ theorem selectedAt_decoded (selection : List Character) (instanceId : Nat)
   simp only [selectedAt, List.any_eq_true, Bool.and_eq_true, decide_eq_true_eq,
     beq_iff_eq, List.contains_iff_mem, List.mem_map, physical_address_eq]
 
-/-- Successful-input core of candidate `planToggle`. JavaScript additionally
-checks duplicate selected addresses, selected visibility, and instance presence.
-This total typed function omits exception machinery. Its scanner is the actual
-maximal-run accumulator, not singleton intervals or a selected-ID renderer. -/
+/-- Core of candidate `planToggle` on the normal adapter's distinct instance
+enumeration (`Map.values` in JavaScript). JavaScript additionally checks
+duplicate selected addresses, selected visibility, and instance presence.
+This total typed function omits exception machinery. On duplicate instance
+enumerations it can emit duplicate runs, whereas JavaScript consumes each
+pending selection once; that domain is outside the correspondence claim.
+The immediate coverage theorem below remains valid on that broader domain.
+Its scanner is the actual maximal-run accumulator, not singleton intervals. -/
 def planToggle (forests : Nat → Forest) (instances : List Nat)
     (session : NotionRunAllocation.Session) (counter : Nat) (selection : List Character) :=
   emit session counter (!(selection.all Character.bold))

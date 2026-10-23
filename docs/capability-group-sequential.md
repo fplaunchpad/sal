@@ -57,8 +57,11 @@ Each revocation follows one write and is concurrent with the other. The source
 suppresses both writes: `left` is disqualified by `revokeRight`, and `right` by
 `revokeLeft`. The resulting name query is empty.
 
-This is a well-formed, locally admissible source execution using multiple
-devices for one authenticated owner. `source_wellFormed` proves timestamp
+This is a well-formed, locally admissible source execution using concurrent
+devices for both the authenticated owner and the recipient. The recipient's
+two writes are concurrent as well as the owner's two revocations. The witness
+does not isolate owner-only concurrency with single-device recipients.
+`source_wellFormed` proves timestamp
 closure, ranking, and ID uniqueness. `source_fresh_issue_schedule` checks the
 actual `CanIssue` contract at each local cut, including a timestamp equal to
 all locally known IDs and a fresh ranked ID. `SourceReach` defines empty logs,
@@ -69,6 +72,8 @@ theorem `SourceReach.valid` proves well-formedness and local admission.
 admitted.
 `owner_equivocates` proves that the owner events are not causally ordered.
 Consequently this example does not refute the honest single-owner-replica case.
+It also does not refute the paper's separate verified simplified algorithms
+or its stated authorisation invariants.
 
 The independent specification conflicts on grant/write and same-grant
 write/revoke pairs. The four conflict theorems prove this using accepted and
@@ -112,7 +117,7 @@ owner events.
 The honest owner-chain case remains a separate positive target. A candidate
 construction places each assignment immediately before its earliest causally
 succeeding owner event, or after all owner events when none succeeds it.
-Owner events retain their chain order; assignments within each gap follow
+Owner administrative events retain their chain order; assignments within each gap follow
 causality. This places every concurrent revocation before its competing use
 while preserving uses in the revocation's past. The general existence and
 query-agreement bridge must be established separately; the concurrent-owner

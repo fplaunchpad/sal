@@ -181,7 +181,8 @@ instance : IsTrans MarkOp Ascending where
 Library insertion sort makes this model kernel-reducible. Its sortedness and
 permutation contract determines the source order on unique operation IDs;
 the JavaScript sorting algorithm is not encoded. Conflicting duplicate
-operation IDs are excluded by the source archive. -/
+operation IDs are excluded by an additional annotation-issuance assumption,
+not by the source archive's transaction-ID duplicate check. -/
 def sortOperations (operations : List MarkOp) : List MarkOp :=
   operations.insertionSort Ascending
 
@@ -215,7 +216,8 @@ theorem preserves_value (forest : Forest) (operations : List MarkOp) (index : Na
 
 /-- A greatest covering Lamport operation wins independently of input list
 order. The premise excludes conflicting payloads sharing its operation ID,
-as source transaction-ID integrity does. Repeated identical operations are OK. -/
+as an explicit annotation-ID integrity premise. Transaction-ID integrity alone
+does not imply this. Repeated identical operations are OK. -/
 theorem greatest_covering_wins (forest : Forest) (operations : List MarkOp) (operation : MarkOp)
     (index : Nat) (member : operation ∈ operations) (inside : covers forest operation index = true)
     (greatest : ∀ other ∈ operations, covers forest other index = true →

@@ -51,7 +51,7 @@ sole active bounded counter is the published Balegas matrix/max design.
 - [ ] Connect the source issuance/reconciliation protocol to the framework's
   certified version-DAG executions before claiming a production certificate.
 
-  Concurrent owner devices have a checked source-reachable obstruction to
+  Concurrent owner and recipient devices have a source-reachable obstruction to
   specification-visible RA; literal RA still accepts it. This does not refute
   the honest owner-chain case. See `docs/capability-group-sequential.md`.
 

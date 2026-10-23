@@ -42,5 +42,7 @@ display. These exports are inputs to an independent formal oracle; they are not
 a proof that an importer or a later model faithfully implements the source.
 
 See `docs/notion-formatting-design.md` for the research question, exact source
-claims, counterexamples, and staged integration work. This experiment changes no
-formatting implementation and establishes no protocol-level guarantee.
+claims, counterexamples, and staged integration work. This experiment leaves
+the pinned source unchanged. Typed planner proofs and the separate executable
+integration are documented in the research note; runtime checks alone
+establish no protocol-level guarantee.

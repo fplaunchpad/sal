@@ -146,8 +146,9 @@ theorem resolve_fresh_uniform (forest : Forest) (old fresh : List MarkOp) (index
   rw [resolve_fresh_batch forest old fresh index oldOrdered freshOrdered later]
   exact applyOrdered_uniform forest fresh index value _ uniform
 
-/-- An operation ID denotes one payload. This is the source archive's integrity
-condition; it allows repeated copies of an identical annotation. -/
+/-- An operation ID denotes one payload. This is a separate issuance/integrity
+premise, not a consequence of the source's transaction-ID validation.
+Repeated copies of an identical annotation are allowed. -/
 def ConsistentIds (operations : List MarkOp) : Prop :=
   ∀ a ∈ operations, ∀ b ∈ operations, a.id = b.id → a = b
 

@@ -155,9 +155,11 @@ harmless because it is not a displayed text character.
 
 This candidate preserves the existing interval shape and its ordinary
 before-next-visible growth rule. A future insertion inside a run or before its
-original successor inherits the run's value. An insertion that sorts before the
-run's first anchor stays outside. Splitting a displayed selection into physical
-runs gives each run this policy. In particular, newly inserted text between two
+original successor belongs to that interval. It receives the run's value when
+no later covering annotation overrides it; the greatest covering annotation
+determines the final bold flag. An insertion that sorts before the run's first
+anchor stays outside. Splitting a displayed selection into physical runs gives
+each run this policy. In particular, newly inserted text between two
 selected display characters may be plain when its physical instance location is
 outside all runs. That policy is a design choice requiring an explicit claim,
 not an implication of immediate exactness.
@@ -189,7 +191,12 @@ The original source failures are reported separately and continue to reproduce.
 ### Checked planner and evolution results
 
 `NotionCoreFormattingPlanner.planToggle` implements the same maximal-run
-scanner on typed, successful inputs. It groups raw source IDs rather than
+scanner on typed inputs from the adapter's distinct instance enumeration
+(`Map.values`). The Lean function can process repeated instance keys, but its
+raw output then differs from JavaScript, which consumes each pending selection
+only once. Such enumerations are outside the source-correspondence claim;
+they do not invalidate the more general immediate-coverage theorem.
+The planner groups raw source IDs rather than
 assuming they are semantic addresses. `selectedAt_decoded` proves that the
 existing injective session encoding preserves selection membership.
 
@@ -219,7 +226,10 @@ anchor-coordinate embedding; it is not a universal rich-history theorem.
 Finally, `resolve_fresh_unsorted` proves that a uniform fresh batch overwrites
 exactly its covered positions even with existing annotations. Its premises
 require fresh Lamport IDs and one payload per operation ID; they are not yet
-derived by a rich-text network issuer.
+derived by a rich-text network issuer. The demo's archive rejects conflicting
+transaction IDs, but it does not reject conflicting annotation IDs carried
+inside distinct transactions. Annotation-ID integrity therefore remains an
+explicit issuance premise, not a fact established by that archive check.
 
 ### Source-to-core obstacles
 

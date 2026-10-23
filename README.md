@@ -142,7 +142,7 @@ specialises the PaPoC 2026 capability group to an immutable owner with dynamic
 grants and named revocations. Its checked results separate union convergence,
 authorisation safety, and preservation of causal admission through issuance
 and reconciliation. An [independent sequential specification and counterexample](docs/capability-group-sequential.md)
-show a boundary with concurrent owner devices: the literal RA criterion admits
+show a boundary with concurrent owner and recipient devices: literal RA admits
 the example, while specification visibility rejects it. For a causally ordered
 owner, the administrative cut and its permission guard agree; a complete
 sequential-history bridge remains open. This is a research model, with no
