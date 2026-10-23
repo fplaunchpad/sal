@@ -63,8 +63,8 @@ two writes are concurrent as well as the owner's two revocations. The witness
 does not isolate owner-only concurrency with single-device recipients.
 `source_wellFormed` proves timestamp
 closure, ranking, and ID uniqueness. `source_fresh_issue_schedule` checks the
-actual `CanIssue` contract at each local cut, including a timestamp equal to
-all locally known IDs and a fresh ranked ID. `SourceReach` defines empty logs,
+actual `CanIssue` contract at each local cut, including a precursor-ID set
+equal to all locally known IDs and a fresh ranked ID. `SourceReach` defines empty logs,
 such issuance, and compatible union reconciliation. Its general preservation
 theorem `SourceReach.valid` proves well-formedness and local admission.
 `source_reachable` constructs both branches and their reconciliation;
@@ -114,17 +114,23 @@ trace. The wrapper deliberately separates authenticated actors from Sal
 replica IDs. Claims requiring actor=replica would exclude its concurrent
 owner events.
 
-The honest owner-chain case remains a separate positive target. A candidate
-construction places each assignment immediately before its earliest causally
-succeeding owner event, or after all owner events when none succeeds it.
-Owner administrative events retain their chain order; assignments within each gap follow
-causality. This places every concurrent revocation before its competing use
-while preserving uses in the revocation's past. The general existence and
-query-agreement bridge must be established separately; the concurrent-owner
-counterexample provides no negative result about that target.
+The honest owner-chain case now has a separate positive certificate.
+`CapabilityGroupOwnerLinearization` constructs a complete causal order using
+the administrative cuts; `CapabilityGroupOwnerRefinement` proves that the
+actual sequential ACL checks and name query agree with the source semantics.
+The [protocol result](capability-group-protocol.md) derives the owner chain
+and source validity from an explicit authenticated single-owner issuer in
+actual certified executions. `Certificate.projectedRAV` and `eventRAV` cover
+ordinary and canonical recursive-base semantics with one concrete-event
+witness supplying coverage, visibility and query agreement. The source
+`SourceReach` definition now lives in
+`Instances/CapabilityGroupSourceProtocol.lean`; every registered certified
+state has such a derivation. This does not make the concurrent-owner
+counterexample a certified endpoint or a negative result about the
+owner-ordered protocol.
 
 Run the focused checks with:
 
 ```
-lake build Sal.MRDTs.Paper1.CapabilityGroupSpec Sal.MRDTs.Paper1.CapabilityGroupBridge
+sh scripts/check-capability-group-research.sh
 ```

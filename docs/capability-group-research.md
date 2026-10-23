@@ -46,8 +46,26 @@ The following results are **machine-checked** by `lake build Sal.MRDTs.Instances
 
 The hand-derived PASS+FAIL scenarios cover owner grant and use, wrong-recipient borrowing, concurrent revoke versus admission, causal-before-revoke preservation, post-revoke denial, a fresh grant ID, delayed delivery, unauthorised grant/revoke, causal overwrite, concurrent multi-value names, valid histories, missing-precursor rejection, and local issuance. Owner-cut controls distinguish a concurrent revoke from a causal successor revoke. These directed controls are not a randomized test campaign or a complete differential validation against the paper's Rust implementation.
 
-## Honest owner-chain bridge remains open
+## Completed owner-chain bridge
 
-The proposed cut includes owner grants and revocations that are not causal successors of the assignment. `OwnerOrder.cut_is_initial_segment` proves that every included administrative event precedes every excluded one when the owner is causally ordered. Administration includes only grants and revocations: an owner's own assignment does not belong before its own cut, as checked by `assignment_not_before_cut` and `owner_self_assignment_cut_control`. This is a local ordering fact, not a constructed complete sequential run. `source_authorized_iff_cut_guard` relates authorisation at that cut to the independent ACL machine's acceptance guard. The cut's grant/revoke summaries are explicit finite tables, not a proof that a complete sequential run reaches those tables.
+The cut includes owner grants and revocations that are not causal successors of the assignment. `OwnerOrder.cut_is_initial_segment` proves that every included administrative event precedes every excluded one when the owner is causally ordered. Administration includes only grants and revocations: an owner's own assignment does not belong before its own cut, as checked by `assignment_not_before_cut` and `owner_self_assignment_cut_control`.
 
-A theorem constructing a complete list of all events with these cuts, proving it meets Sal's visibility/order requirements, and proving equality of the final multi-value name projection with the independent sequential machine remains **open**. Do not report the local guard theorem as full sequential refinement. The separate bridge analysis records the actual Sal criterion and its finite contrast with stronger visibility obligations.
+`OwnerLinearization` now constructs a complete causal list with these cuts.
+`OwnerRefinement` proves the permission tables over actual sequential prefixes,
+then derives equality of live entries and final name values. These are full
+finite-history results, beyond the earlier local guard theorem.
+
+The [protocol certificate](capability-group-protocol.md) derives all required
+source invariants from actual issuance-certified version-DAG executions. A
+replica-to-actor binding authenticates each event; one designated replica
+issues all owner events, while recipients may use several devices. The public
+certificate covers ordinary and canonical recursive merge bases and preserves
+full visibility in the same witness used for query agreement. It is checked
+in `Metatheory/CapabilityGroupLedger.lean`, alongside the source protocol
+correspondence and a concrete nonempty execution.
+
+The concurrent-owner counterexample is retained. The positive result is per
+version/head and observes name values; it does not supply a single order of
+all reads, a cryptographic implementation, or equivalence to the source's
+Rust code. Source correspondence establishes a source issue/reconcile
+derivation for each registered log, not a replica-by-replica bisimulation.

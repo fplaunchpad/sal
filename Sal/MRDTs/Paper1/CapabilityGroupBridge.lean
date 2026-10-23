@@ -1,4 +1,5 @@
 import Sal.MRDTs.Paper1.CapabilityGroupSpec
+import Sal.MRDTs.Instances.CapabilityGroupSourceProtocol
 import Sal.MRDTs.Paper1.HistoryInputs
 import Mathlib.Data.List.Permutation
 import Mathlib.Tactic
@@ -74,28 +75,6 @@ theorem source_fresh_issue_schedule :
     CanIssue 0 (step ∅ grant) right ∧
     CanIssue 0 (step (step ∅ grant) left) revokeLeft ∧
     CanIssue 0 (step (step ∅ grant) right) revokeRight := by decide
-
-/-- A minimal source protocol: replicas can issue at their complete local cut
-and reconcile compatible logs. Authentication is supplied by the actor field.
-This protocol is deliberately separate from Sal's version-DAG network. -/
-inductive SourceReach (owner : Actor) : State → Prop where
-  | empty : SourceReach owner ∅
-  | issue {s e} : SourceReach owner s → CanIssue owner s e →
-      SourceReach owner (step s e)
-  | reconcile {s t} : SourceReach owner s → SourceReach owner t →
-      (∀ a ∈ s, ∀ b ∈ t, a.id = b.id → a = b) → SourceReach owner (s ∪ t)
-
-/-- Both validity and immutable admission are preserved by every source
-protocol execution, including compatible reconciliation. -/
-theorem SourceReach.valid {owner : Actor} {s : State} (h : SourceReach owner s) :
-    WellFormed s ∧ LocallyAdmitted owner s := by
-  induction h with
-  | empty => exact ⟨wellFormed_empty, by intro e he; exact (Finset.notMem_empty e he).elim⟩
-  | issue _ hc ih =>
-      exact ⟨wellFormed_step ih.1 hc.1, locallyAdmitted_step ih.1 ih.2 hc⟩
-  | reconcile _ _ hc ihs iht =>
-      exact ⟨wellFormed_union ihs.1 iht.1 hc,
-        locallyAdmitted_union ihs.1 iht.1 hc ihs.2 iht.2⟩
 
 theorem source_reachable : SourceReach 0 log := by
   have hgrant : SourceReach 0 (step ∅ grant) := .issue .empty (by decide)

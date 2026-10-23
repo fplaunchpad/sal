@@ -1,0 +1,4864 @@
+{
+  "schema": "notion-formatting-atomic-fracture-run-v1",
+  "sourceManifest": "experiments/notion-oracle/sources.json",
+  "sourceHashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+  },
+  "cachedSourcesUnchanged": true,
+  "candidatePlannerHash": "fa55a1d1659e380d207d8d55d78a481c7200306f1cc784425a4ae8f39c4001de",
+  "node": "v26.3.1",
+  "variants": {
+    "slice-following": {
+      "schema": "notion-formatting-atomic-fracture-v1",
+      "evidence": "measured finite source execution plus independent finite atomic oracle",
+      "subject": "corrected maximal-run interval candidate with per-segment Lamport priorities",
+      "classification": "atomic-selection refinement obstruction; not a new original-demo N-number",
+      "sourcePolicy": "hash-pinned modules; corrected merge variant only; original toggleBold unchanged; separate candidate planner",
+      "normalisation": {
+        "source": "create S:1; text S:2..S:6; initial mark S:7; format A:11,A:12 and B:11",
+        "lean": "atomic bootstrap chars 1..5 session UTF16 [65]; initial mark6; format A:10,A:11 and B:10",
+        "instance": "source S-block-1 corresponds to Lean initial instance 0",
+        "correspondence": "manual correspondence of character IDs and later operations: subtract one from counters and rename seed session S to Lean bootstrap A; source create+insert is represented by one typed factory bootstrap, not a proved full-trace extraction"
+      },
+      "trace": {
+        "root": "S-block-1",
+        "base": [
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 1
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "S-block-1",
+                  "titleTextInstanceId": "S-block-1"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 2
+            },
+            "operations": [
+              {
+                "command": "insertText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 2
+                  },
+                  "originId": "start",
+                  "content": "abcde"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 7
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 7
+                  },
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "initialMark": {
+          "id": {
+            "sessionId": "S",
+            "counter": 7
+          },
+          "operations": [
+            {
+              "command": "addAnnotation",
+              "pointer": {
+                "table": "block",
+                "id": "S-block-1"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "S-block-1",
+                "searchLabel": "",
+                "id": {
+                  "sessionId": "S",
+                  "counter": 7
+                },
+                "start": {
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 3
+                  },
+                  "anchor": "before"
+                },
+                "end": {
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 6
+                  },
+                  "anchor": "before"
+                },
+                "annotation": [
+                  "b"
+                ]
+              }
+            }
+          ]
+        },
+        "splitA": {
+          "transaction": {
+            "id": {
+              "sessionId": "A",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "A-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "A-block-8",
+                  "afterBlockId": "S-block-1",
+                  "titleTextInstanceId": "A-block-8"
+                }
+              },
+              {
+                "command": "splitText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 8
+                  },
+                  "originId": {
+                    "sessionId": "S",
+                    "counter": 3
+                  }
+                }
+              },
+              {
+                "command": "moveTextSliceIntoBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "sourceSearchLabel": "",
+                  "textSliceStartItemId": {
+                    "sessionId": "A",
+                    "counter": 8
+                  },
+                  "targetBlockId": "A-block-8"
+                }
+              }
+            ]
+          },
+          "newBlockId": "A-block-8"
+        },
+        "splitC": {
+          "transaction": {
+            "id": {
+              "sessionId": "C",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "C-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "C-block-8",
+                  "afterBlockId": "S-block-1",
+                  "titleTextInstanceId": "C-block-8"
+                }
+              },
+              {
+                "command": "splitText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "C",
+                    "counter": 8
+                  },
+                  "originId": {
+                    "sessionId": "S",
+                    "counter": 4
+                  }
+                }
+              },
+              {
+                "command": "moveTextSliceIntoBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "sourceSearchLabel": "",
+                  "textSliceStartItemId": {
+                    "sessionId": "C",
+                    "counter": 8
+                  },
+                  "targetBlockId": "C-block-8"
+                }
+              }
+            ]
+          },
+          "newBlockId": "C-block-8"
+        },
+        "beforeMerge": [
+          {
+            "id": "S-block-1",
+            "text": "ab",
+            "bits": "01"
+          },
+          {
+            "id": "C-block-8",
+            "text": "de",
+            "bits": "10"
+          },
+          {
+            "id": "A-block-8",
+            "text": "c",
+            "bits": "1"
+          }
+        ],
+        "merge": {
+          "transaction": {
+            "id": {
+              "sessionId": "A",
+              "counter": 9
+            },
+            "operations": [
+              {
+                "command": "mergeBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "C-block-8"
+                },
+                "path": [],
+                "args": {
+                  "sourceBlockId": "C-block-8",
+                  "targetBlockId": "S-block-1",
+                  "targetTextInstanceId": "S-block-1",
+                  "targetTextSliceEndItemId": {
+                    "sessionId": "A",
+                    "counter": 8
+                  }
+                }
+              }
+            ]
+          },
+          "targetBlockId": "S-block-1",
+          "targetIndex": 2
+        },
+        "paddingA": {
+          "transaction": {
+            "id": {
+              "sessionId": "A",
+              "counter": 10
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "A-block-10"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "A-block-10",
+                  "titleTextInstanceId": "A-block-10"
+                }
+              }
+            ]
+          },
+          "newBlockId": "A-block-10"
+        },
+        "paddingB": [
+          {
+            "transaction": {
+              "id": {
+                "sessionId": "B",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-8",
+                    "titleTextInstanceId": "B-block-8"
+                  }
+                }
+              ]
+            },
+            "newBlockId": "B-block-8"
+          },
+          {
+            "transaction": {
+              "id": {
+                "sessionId": "B",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-9"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-9",
+                    "titleTextInstanceId": "B-block-9"
+                  }
+                }
+              ]
+            },
+            "newBlockId": "B-block-9"
+          },
+          {
+            "transaction": {
+              "id": {
+                "sessionId": "B",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-10",
+                    "titleTextInstanceId": "B-block-10"
+                  }
+                }
+              ]
+            },
+            "newBlockId": "B-block-10"
+          }
+        ],
+        "beforeA": [
+          {
+            "id": "A-block-10",
+            "text": "",
+            "bits": ""
+          },
+          {
+            "id": "S-block-1",
+            "text": "abde",
+            "bits": "0110"
+          },
+          {
+            "id": "A-block-8",
+            "text": "c",
+            "bits": "1"
+          }
+        ],
+        "beforeB": [
+          {
+            "id": "B-block-10",
+            "text": "",
+            "bits": ""
+          },
+          {
+            "id": "B-block-9",
+            "text": "",
+            "bits": ""
+          },
+          {
+            "id": "B-block-8",
+            "text": "",
+            "bits": ""
+          },
+          {
+            "id": "S-block-1",
+            "text": "abcde",
+            "bits": "01110"
+          }
+        ],
+        "preparedA": {
+          "request": {
+            "target": "S-block-1",
+            "start": 0,
+            "end": 4
+          },
+          "selectedText": "abde",
+          "selection": [
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 2
+              },
+              "bold": false
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 3
+              },
+              "bold": true
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 5
+              },
+              "bold": true
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 6
+              },
+              "bold": false
+            }
+          ],
+          "value": true,
+          "segments": [
+            {
+              "textInstanceId": "S-block-1",
+              "start": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 2
+                },
+                "anchor": "before"
+              },
+              "end": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 4
+                },
+                "anchor": "before"
+              }
+            },
+            {
+              "textInstanceId": "S-block-1",
+              "start": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 5
+                },
+                "anchor": "before"
+              },
+              "end": {
+                "id": "end",
+                "anchor": "before"
+              }
+            }
+          ],
+          "clockBefore": 10,
+          "clockAfter": 12,
+          "operationIds": [
+            {
+              "sessionId": "A",
+              "counter": 11
+            },
+            {
+              "sessionId": "A",
+              "counter": 12
+            }
+          ],
+          "guards": {
+            "liveTarget": true,
+            "boundedDisplayedRange": true,
+            "finiteExactCoverage": true,
+            "locallyExact": true,
+            "effectNotNoop": true,
+            "actualConsecutiveReservations": true
+          },
+          "transaction": {
+            "id": {
+              "sessionId": "A",
+              "counter": 11
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 2
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 4
+                    },
+                    "anchor": "before"
+                  },
+                  "searchLabel": "L",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 11
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              },
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 5
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": "end",
+                    "anchor": "before"
+                  },
+                  "searchLabel": "L",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 12
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "preparedB": {
+          "request": {
+            "target": "S-block-1",
+            "start": 1,
+            "end": 4
+          },
+          "selectedText": "bcd",
+          "selection": [
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 3
+              },
+              "bold": true
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 4
+              },
+              "bold": true
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 5
+              },
+              "bold": true
+            }
+          ],
+          "value": false,
+          "segments": [
+            {
+              "textInstanceId": "S-block-1",
+              "start": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 3
+                },
+                "anchor": "before"
+              },
+              "end": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 6
+                },
+                "anchor": "before"
+              }
+            }
+          ],
+          "clockBefore": 10,
+          "clockAfter": 11,
+          "operationIds": [
+            {
+              "sessionId": "B",
+              "counter": 11
+            }
+          ],
+          "guards": {
+            "liveTarget": true,
+            "boundedDisplayedRange": true,
+            "finiteExactCoverage": true,
+            "locallyExact": true,
+            "effectNotNoop": true,
+            "actualConsecutiveReservations": true
+          },
+          "transaction": {
+            "id": {
+              "sessionId": "B",
+              "counter": 11
+            },
+            "operations": [
+              {
+                "command": "removeAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "B",
+                    "counter": 11
+                  },
+                  "annotationKey": "b"
+                }
+              }
+            ]
+          }
+        },
+        "publicRequests": [
+          {
+            "replica": "S",
+            "request": "createBlock",
+            "result": "S-block-1"
+          },
+          {
+            "replica": "S",
+            "request": "insertText",
+            "block": "S-block-1",
+            "index": 0,
+            "text": "abcde"
+          },
+          {
+            "replica": "S",
+            "request": "toggleBold",
+            "block": "S-block-1",
+            "start": 1,
+            "end": 4
+          },
+          {
+            "request": "fork",
+            "from": "S",
+            "to": [
+              "A",
+              "B",
+              "C"
+            ]
+          },
+          {
+            "replica": "A",
+            "request": "splitBlock",
+            "block": "S-block-1",
+            "index": 2
+          },
+          {
+            "replica": "C",
+            "request": "splitBlock",
+            "block": "S-block-1",
+            "index": 3
+          },
+          {
+            "replica": "A",
+            "request": "receive",
+            "transaction": "C:8"
+          },
+          {
+            "replica": "A",
+            "request": "mergeBlock",
+            "block": "C-block-8",
+            "actualPrevious": "S-block-1"
+          },
+          {
+            "replica": "A",
+            "request": "createBlock",
+            "after": null
+          },
+          {
+            "replica": "B",
+            "request": "createBlock",
+            "after": null
+          },
+          {
+            "replica": "B",
+            "request": "createBlock",
+            "after": null
+          },
+          {
+            "replica": "B",
+            "request": "createBlock",
+            "after": null
+          },
+          {
+            "replica": "A",
+            "request": "candidateToggle",
+            "block": "S-block-1",
+            "start": 0,
+            "end": 4
+          },
+          {
+            "replica": "B",
+            "request": "candidateToggle",
+            "block": "S-block-1",
+            "start": 1,
+            "end": 4
+          },
+          {
+            "request": "receiveCompleteArchives",
+            "orders": [
+              "A-then-B",
+              "B-then-A"
+            ]
+          }
+        ],
+        "archiveA": [
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 1
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "S-block-1",
+                  "titleTextInstanceId": "S-block-1"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 2
+            },
+            "operations": [
+              {
+                "command": "insertText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 2
+                  },
+                  "originId": "start",
+                  "content": "abcde"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 7
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 7
+                  },
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "A",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "A-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "A-block-8",
+                  "afterBlockId": "S-block-1",
+                  "titleTextInstanceId": "A-block-8"
+                }
+              },
+              {
+                "command": "splitText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 8
+                  },
+                  "originId": {
+                    "sessionId": "S",
+                    "counter": 3
+                  }
+                }
+              },
+              {
+                "command": "moveTextSliceIntoBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "sourceSearchLabel": "",
+                  "textSliceStartItemId": {
+                    "sessionId": "A",
+                    "counter": 8
+                  },
+                  "targetBlockId": "A-block-8"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "C",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "C-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "C-block-8",
+                  "afterBlockId": "S-block-1",
+                  "titleTextInstanceId": "C-block-8"
+                }
+              },
+              {
+                "command": "splitText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "C",
+                    "counter": 8
+                  },
+                  "originId": {
+                    "sessionId": "S",
+                    "counter": 4
+                  }
+                }
+              },
+              {
+                "command": "moveTextSliceIntoBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "sourceSearchLabel": "",
+                  "textSliceStartItemId": {
+                    "sessionId": "C",
+                    "counter": 8
+                  },
+                  "targetBlockId": "C-block-8"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "A",
+              "counter": 9
+            },
+            "operations": [
+              {
+                "command": "mergeBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "C-block-8"
+                },
+                "path": [],
+                "args": {
+                  "sourceBlockId": "C-block-8",
+                  "targetBlockId": "S-block-1",
+                  "targetTextInstanceId": "S-block-1",
+                  "targetTextSliceEndItemId": {
+                    "sessionId": "A",
+                    "counter": 8
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "A",
+              "counter": 10
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "A-block-10"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "A-block-10",
+                  "titleTextInstanceId": "A-block-10"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "A",
+              "counter": 11
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 2
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 4
+                    },
+                    "anchor": "before"
+                  },
+                  "searchLabel": "L",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 11
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              },
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 5
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": "end",
+                    "anchor": "before"
+                  },
+                  "searchLabel": "L",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 12
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "archiveB": [
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 1
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "S-block-1",
+                  "titleTextInstanceId": "S-block-1"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 2
+            },
+            "operations": [
+              {
+                "command": "insertText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 2
+                  },
+                  "originId": "start",
+                  "content": "abcde"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 7
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 7
+                  },
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "B",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "B-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "B-block-8",
+                  "titleTextInstanceId": "B-block-8"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "B",
+              "counter": 9
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "B-block-9"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "B-block-9",
+                  "titleTextInstanceId": "B-block-9"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "B",
+              "counter": 10
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "B-block-10"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "B-block-10",
+                  "titleTextInstanceId": "B-block-10"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "B",
+              "counter": 11
+            },
+            "operations": [
+              {
+                "command": "removeAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "B",
+                    "counter": 11
+                  },
+                  "annotationKey": "b"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "deliveries": [
+        {
+          "order": "A-then-B",
+          "physicalByOriginalIdentity": [
+            {
+              "address": "S-block-1/S:2",
+              "character": "a",
+              "bold": true
+            },
+            {
+              "address": "S-block-1/S:3",
+              "character": "b",
+              "bold": false
+            },
+            {
+              "address": "S-block-1/S:4",
+              "character": "c",
+              "bold": false
+            },
+            {
+              "address": "S-block-1/S:5",
+              "character": "d",
+              "bold": true
+            },
+            {
+              "address": "S-block-1/S:6",
+              "character": "e",
+              "bold": true
+            }
+          ],
+          "flags": "10011",
+          "view": [
+            {
+              "id": "B-block-10",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "A-block-10",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "B-block-9",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "B-block-8",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "S-block-1",
+              "text": "abde",
+              "bits": "1011"
+            },
+            {
+              "id": "A-block-8",
+              "text": "c",
+              "bits": "0"
+            }
+          ],
+          "nonemptyView": [
+            [
+              "abde",
+              "1011"
+            ],
+            [
+              "c",
+              "0"
+            ]
+          ],
+          "transactions": [
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 1
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "S-block-1",
+                    "titleTextInstanceId": "S-block-1"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 2
+              },
+              "operations": [
+                {
+                  "command": "insertText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 2
+                    },
+                    "originId": "start",
+                    "content": "abcde"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 7
+              },
+              "operations": [
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 7
+                    },
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 3
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 6
+                      },
+                      "anchor": "before"
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "A-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "A-block-8",
+                    "afterBlockId": "S-block-1",
+                    "titleTextInstanceId": "A-block-8"
+                  }
+                },
+                {
+                  "command": "splitText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 8
+                    },
+                    "originId": {
+                      "sessionId": "S",
+                      "counter": 3
+                    }
+                  }
+                },
+                {
+                  "command": "moveTextSliceIntoBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "sourceSearchLabel": "",
+                    "textSliceStartItemId": {
+                      "sessionId": "A",
+                      "counter": 8
+                    },
+                    "targetBlockId": "A-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "C",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "C-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "C-block-8",
+                    "afterBlockId": "S-block-1",
+                    "titleTextInstanceId": "C-block-8"
+                  }
+                },
+                {
+                  "command": "splitText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "C",
+                      "counter": 8
+                    },
+                    "originId": {
+                      "sessionId": "S",
+                      "counter": 4
+                    }
+                  }
+                },
+                {
+                  "command": "moveTextSliceIntoBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "sourceSearchLabel": "",
+                    "textSliceStartItemId": {
+                      "sessionId": "C",
+                      "counter": 8
+                    },
+                    "targetBlockId": "C-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "mergeBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "C-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "sourceBlockId": "C-block-8",
+                    "targetBlockId": "S-block-1",
+                    "targetTextInstanceId": "S-block-1",
+                    "targetTextSliceEndItemId": {
+                      "sessionId": "A",
+                      "counter": 8
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "A-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "A-block-10",
+                    "titleTextInstanceId": "A-block-10"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 11
+              },
+              "operations": [
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 2
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 4
+                      },
+                      "anchor": "before"
+                    },
+                    "searchLabel": "L",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 11
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                },
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 5
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": "end",
+                      "anchor": "before"
+                    },
+                    "searchLabel": "L",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 12
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-8",
+                    "titleTextInstanceId": "B-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-9"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-9",
+                    "titleTextInstanceId": "B-block-9"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-10",
+                    "titleTextInstanceId": "B-block-10"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 11
+              },
+              "operations": [
+                {
+                  "command": "removeAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 3
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 6
+                      },
+                      "anchor": "before"
+                    },
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "B",
+                      "counter": 11
+                    },
+                    "annotationKey": "b"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": "B-then-A",
+          "physicalByOriginalIdentity": [
+            {
+              "address": "S-block-1/S:2",
+              "character": "a",
+              "bold": true
+            },
+            {
+              "address": "S-block-1/S:3",
+              "character": "b",
+              "bold": false
+            },
+            {
+              "address": "S-block-1/S:4",
+              "character": "c",
+              "bold": false
+            },
+            {
+              "address": "S-block-1/S:5",
+              "character": "d",
+              "bold": true
+            },
+            {
+              "address": "S-block-1/S:6",
+              "character": "e",
+              "bold": true
+            }
+          ],
+          "flags": "10011",
+          "view": [
+            {
+              "id": "B-block-10",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "A-block-10",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "B-block-9",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "B-block-8",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "S-block-1",
+              "text": "abde",
+              "bits": "1011"
+            },
+            {
+              "id": "A-block-8",
+              "text": "c",
+              "bits": "0"
+            }
+          ],
+          "nonemptyView": [
+            [
+              "abde",
+              "1011"
+            ],
+            [
+              "c",
+              "0"
+            ]
+          ],
+          "transactions": [
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 1
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "S-block-1",
+                    "titleTextInstanceId": "S-block-1"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 2
+              },
+              "operations": [
+                {
+                  "command": "insertText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 2
+                    },
+                    "originId": "start",
+                    "content": "abcde"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 7
+              },
+              "operations": [
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 7
+                    },
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 3
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 6
+                      },
+                      "anchor": "before"
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-8",
+                    "titleTextInstanceId": "B-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-9"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-9",
+                    "titleTextInstanceId": "B-block-9"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-10",
+                    "titleTextInstanceId": "B-block-10"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 11
+              },
+              "operations": [
+                {
+                  "command": "removeAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 3
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 6
+                      },
+                      "anchor": "before"
+                    },
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "B",
+                      "counter": 11
+                    },
+                    "annotationKey": "b"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "A-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "A-block-8",
+                    "afterBlockId": "S-block-1",
+                    "titleTextInstanceId": "A-block-8"
+                  }
+                },
+                {
+                  "command": "splitText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 8
+                    },
+                    "originId": {
+                      "sessionId": "S",
+                      "counter": 3
+                    }
+                  }
+                },
+                {
+                  "command": "moveTextSliceIntoBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "sourceSearchLabel": "",
+                    "textSliceStartItemId": {
+                      "sessionId": "A",
+                      "counter": 8
+                    },
+                    "targetBlockId": "A-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "C",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "C-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "C-block-8",
+                    "afterBlockId": "S-block-1",
+                    "titleTextInstanceId": "C-block-8"
+                  }
+                },
+                {
+                  "command": "splitText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "C",
+                      "counter": 8
+                    },
+                    "originId": {
+                      "sessionId": "S",
+                      "counter": 4
+                    }
+                  }
+                },
+                {
+                  "command": "moveTextSliceIntoBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "sourceSearchLabel": "",
+                    "textSliceStartItemId": {
+                      "sessionId": "C",
+                      "counter": 8
+                    },
+                    "targetBlockId": "C-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "mergeBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "C-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "sourceBlockId": "C-block-8",
+                    "targetBlockId": "S-block-1",
+                    "targetTextInstanceId": "S-block-1",
+                    "targetTextSliceEndItemId": {
+                      "sessionId": "A",
+                      "counter": 8
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "A-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "A-block-10",
+                    "titleTextInstanceId": "A-block-10"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 11
+              },
+              "operations": [
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 2
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 4
+                      },
+                      "anchor": "before"
+                    },
+                    "searchLabel": "L",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 11
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                },
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 5
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": "end",
+                      "anchor": "before"
+                    },
+                    "searchLabel": "L",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 12
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "serialOrders": [
+        {
+          "order": "MAB",
+          "recomputedToggle": "10001",
+          "retainedIssuerVerdict": "10001"
+        },
+        {
+          "order": "MBA",
+          "recomputedToggle": "11011",
+          "retainedIssuerVerdict": "11011"
+        },
+        {
+          "order": "AMB",
+          "recomputedToggle": "10001",
+          "retainedIssuerVerdict": "10001"
+        },
+        {
+          "order": "ABM",
+          "recomputedToggle": "10001",
+          "retainedIssuerVerdict": "11111"
+        },
+        {
+          "order": "BMA",
+          "recomputedToggle": "11011",
+          "retainedIssuerVerdict": "11111"
+        },
+        {
+          "order": "BAM",
+          "recomputedToggle": "10001",
+          "retainedIssuerVerdict": "11111"
+        }
+      ],
+      "controls": {
+        "actualDisplayedSelections": true,
+        "actualClockReservations": true,
+        "initialMarkLocallyExact": true,
+        "bothCandidatesLocallyExact": true,
+        "freshDisjointReservedRuns": true,
+        "perSegmentPriorityInterleaving": [
+          "A:11",
+          "B:11",
+          "A:12"
+        ],
+        "deliveryOrdersAgree": true,
+        "preservesFiveVisibleCharacters": true,
+        "differsFromAllSixAtomicOrders": true,
+        "differsWithRetainedIssuerVerdicts": true,
+        "fractureIsSharedIntersection": {
+          "b": false,
+          "d": true
+        }
+      },
+      "summary": {
+        "sourceReceivers": 2,
+        "atomicOrdersChecked": 6,
+        "flags": "10011",
+        "nonemptyView": [
+          [
+            "abde",
+            "1011"
+          ],
+          [
+            "c",
+            "0"
+          ]
+        ],
+        "passFailControlsHold": true
+      },
+      "workingModuleHashes": {
+        "replica.js": "74e009a1b894db9dbd6967ad8764974f5586dc5665d4dfa8eb2e676287648857",
+        "document.js": "0bcd2df7060768b6bd24f1664f4e759d7cbcefb2980396e9375ed95264f322ee",
+        "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+        "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+        "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+        "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+        "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+      },
+      "workingModulesUnchangedDuringExecution": true,
+      "originalToggleBoldUnchanged": true,
+      "candidatePlannerUnchangedDuringExecution": true
+    },
+    "design": {
+      "schema": "notion-formatting-atomic-fracture-v1",
+      "evidence": "measured finite source execution plus independent finite atomic oracle",
+      "subject": "corrected maximal-run interval candidate with per-segment Lamport priorities",
+      "classification": "atomic-selection refinement obstruction; not a new original-demo N-number",
+      "sourcePolicy": "hash-pinned modules; corrected merge variant only; original toggleBold unchanged; separate candidate planner",
+      "normalisation": {
+        "source": "create S:1; text S:2..S:6; initial mark S:7; format A:11,A:12 and B:11",
+        "lean": "atomic bootstrap chars 1..5 session UTF16 [65]; initial mark6; format A:10,A:11 and B:10",
+        "instance": "source S-block-1 corresponds to Lean initial instance 0",
+        "correspondence": "manual correspondence of character IDs and later operations: subtract one from counters and rename seed session S to Lean bootstrap A; source create+insert is represented by one typed factory bootstrap, not a proved full-trace extraction"
+      },
+      "trace": {
+        "root": "S-block-1",
+        "base": [
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 1
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "S-block-1",
+                  "titleTextInstanceId": "S-block-1"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 2
+            },
+            "operations": [
+              {
+                "command": "insertText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 2
+                  },
+                  "originId": "start",
+                  "content": "abcde"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 7
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 7
+                  },
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "initialMark": {
+          "id": {
+            "sessionId": "S",
+            "counter": 7
+          },
+          "operations": [
+            {
+              "command": "addAnnotation",
+              "pointer": {
+                "table": "block",
+                "id": "S-block-1"
+              },
+              "path": [],
+              "opVersion": 2,
+              "args": {
+                "textInstanceId": "S-block-1",
+                "searchLabel": "",
+                "id": {
+                  "sessionId": "S",
+                  "counter": 7
+                },
+                "start": {
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 3
+                  },
+                  "anchor": "before"
+                },
+                "end": {
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 6
+                  },
+                  "anchor": "before"
+                },
+                "annotation": [
+                  "b"
+                ]
+              }
+            }
+          ]
+        },
+        "splitA": {
+          "transaction": {
+            "id": {
+              "sessionId": "A",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "A-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "A-block-8",
+                  "afterBlockId": "S-block-1",
+                  "titleTextInstanceId": "A-block-8"
+                }
+              },
+              {
+                "command": "splitText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 8
+                  },
+                  "originId": {
+                    "sessionId": "S",
+                    "counter": 3
+                  }
+                }
+              },
+              {
+                "command": "moveTextSliceIntoBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "sourceSearchLabel": "",
+                  "textSliceStartItemId": {
+                    "sessionId": "A",
+                    "counter": 8
+                  },
+                  "targetBlockId": "A-block-8"
+                }
+              }
+            ]
+          },
+          "newBlockId": "A-block-8"
+        },
+        "splitC": {
+          "transaction": {
+            "id": {
+              "sessionId": "C",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "C-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "C-block-8",
+                  "afterBlockId": "S-block-1",
+                  "titleTextInstanceId": "C-block-8"
+                }
+              },
+              {
+                "command": "splitText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "C",
+                    "counter": 8
+                  },
+                  "originId": {
+                    "sessionId": "S",
+                    "counter": 4
+                  }
+                }
+              },
+              {
+                "command": "moveTextSliceIntoBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "sourceSearchLabel": "",
+                  "textSliceStartItemId": {
+                    "sessionId": "C",
+                    "counter": 8
+                  },
+                  "targetBlockId": "C-block-8"
+                }
+              }
+            ]
+          },
+          "newBlockId": "C-block-8"
+        },
+        "beforeMerge": [
+          {
+            "id": "S-block-1",
+            "text": "ab",
+            "bits": "01"
+          },
+          {
+            "id": "C-block-8",
+            "text": "de",
+            "bits": "10"
+          },
+          {
+            "id": "A-block-8",
+            "text": "c",
+            "bits": "1"
+          }
+        ],
+        "merge": {
+          "transaction": {
+            "id": {
+              "sessionId": "A",
+              "counter": 9
+            },
+            "operations": [
+              {
+                "command": "mergeBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "C-block-8"
+                },
+                "path": [],
+                "args": {
+                  "sourceBlockId": "C-block-8",
+                  "targetBlockId": "S-block-1"
+                }
+              }
+            ]
+          },
+          "targetBlockId": "S-block-1",
+          "targetIndex": 2
+        },
+        "paddingA": {
+          "transaction": {
+            "id": {
+              "sessionId": "A",
+              "counter": 10
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "A-block-10"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "A-block-10",
+                  "titleTextInstanceId": "A-block-10"
+                }
+              }
+            ]
+          },
+          "newBlockId": "A-block-10"
+        },
+        "paddingB": [
+          {
+            "transaction": {
+              "id": {
+                "sessionId": "B",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-8",
+                    "titleTextInstanceId": "B-block-8"
+                  }
+                }
+              ]
+            },
+            "newBlockId": "B-block-8"
+          },
+          {
+            "transaction": {
+              "id": {
+                "sessionId": "B",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-9"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-9",
+                    "titleTextInstanceId": "B-block-9"
+                  }
+                }
+              ]
+            },
+            "newBlockId": "B-block-9"
+          },
+          {
+            "transaction": {
+              "id": {
+                "sessionId": "B",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-10",
+                    "titleTextInstanceId": "B-block-10"
+                  }
+                }
+              ]
+            },
+            "newBlockId": "B-block-10"
+          }
+        ],
+        "beforeA": [
+          {
+            "id": "A-block-10",
+            "text": "",
+            "bits": ""
+          },
+          {
+            "id": "S-block-1",
+            "text": "abde",
+            "bits": "0110"
+          },
+          {
+            "id": "A-block-8",
+            "text": "c",
+            "bits": "1"
+          }
+        ],
+        "beforeB": [
+          {
+            "id": "B-block-10",
+            "text": "",
+            "bits": ""
+          },
+          {
+            "id": "B-block-9",
+            "text": "",
+            "bits": ""
+          },
+          {
+            "id": "B-block-8",
+            "text": "",
+            "bits": ""
+          },
+          {
+            "id": "S-block-1",
+            "text": "abcde",
+            "bits": "01110"
+          }
+        ],
+        "preparedA": {
+          "request": {
+            "target": "S-block-1",
+            "start": 0,
+            "end": 4
+          },
+          "selectedText": "abde",
+          "selection": [
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 2
+              },
+              "bold": false
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 3
+              },
+              "bold": true
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 5
+              },
+              "bold": true
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 6
+              },
+              "bold": false
+            }
+          ],
+          "value": true,
+          "segments": [
+            {
+              "textInstanceId": "S-block-1",
+              "start": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 2
+                },
+                "anchor": "before"
+              },
+              "end": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 4
+                },
+                "anchor": "before"
+              }
+            },
+            {
+              "textInstanceId": "S-block-1",
+              "start": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 5
+                },
+                "anchor": "before"
+              },
+              "end": {
+                "id": "end",
+                "anchor": "before"
+              }
+            }
+          ],
+          "clockBefore": 10,
+          "clockAfter": 12,
+          "operationIds": [
+            {
+              "sessionId": "A",
+              "counter": 11
+            },
+            {
+              "sessionId": "A",
+              "counter": 12
+            }
+          ],
+          "guards": {
+            "liveTarget": true,
+            "boundedDisplayedRange": true,
+            "finiteExactCoverage": true,
+            "locallyExact": true,
+            "effectNotNoop": true,
+            "actualConsecutiveReservations": true
+          },
+          "transaction": {
+            "id": {
+              "sessionId": "A",
+              "counter": 11
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 2
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 4
+                    },
+                    "anchor": "before"
+                  },
+                  "searchLabel": "L",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 11
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              },
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 5
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": "end",
+                    "anchor": "before"
+                  },
+                  "searchLabel": "L",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 12
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "preparedB": {
+          "request": {
+            "target": "S-block-1",
+            "start": 1,
+            "end": 4
+          },
+          "selectedText": "bcd",
+          "selection": [
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 3
+              },
+              "bold": true
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 4
+              },
+              "bold": true
+            },
+            {
+              "instanceId": "S-block-1",
+              "itemId": {
+                "sessionId": "S",
+                "counter": 5
+              },
+              "bold": true
+            }
+          ],
+          "value": false,
+          "segments": [
+            {
+              "textInstanceId": "S-block-1",
+              "start": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 3
+                },
+                "anchor": "before"
+              },
+              "end": {
+                "id": {
+                  "sessionId": "S",
+                  "counter": 6
+                },
+                "anchor": "before"
+              }
+            }
+          ],
+          "clockBefore": 10,
+          "clockAfter": 11,
+          "operationIds": [
+            {
+              "sessionId": "B",
+              "counter": 11
+            }
+          ],
+          "guards": {
+            "liveTarget": true,
+            "boundedDisplayedRange": true,
+            "finiteExactCoverage": true,
+            "locallyExact": true,
+            "effectNotNoop": true,
+            "actualConsecutiveReservations": true
+          },
+          "transaction": {
+            "id": {
+              "sessionId": "B",
+              "counter": 11
+            },
+            "operations": [
+              {
+                "command": "removeAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "B",
+                    "counter": 11
+                  },
+                  "annotationKey": "b"
+                }
+              }
+            ]
+          }
+        },
+        "publicRequests": [
+          {
+            "replica": "S",
+            "request": "createBlock",
+            "result": "S-block-1"
+          },
+          {
+            "replica": "S",
+            "request": "insertText",
+            "block": "S-block-1",
+            "index": 0,
+            "text": "abcde"
+          },
+          {
+            "replica": "S",
+            "request": "toggleBold",
+            "block": "S-block-1",
+            "start": 1,
+            "end": 4
+          },
+          {
+            "request": "fork",
+            "from": "S",
+            "to": [
+              "A",
+              "B",
+              "C"
+            ]
+          },
+          {
+            "replica": "A",
+            "request": "splitBlock",
+            "block": "S-block-1",
+            "index": 2
+          },
+          {
+            "replica": "C",
+            "request": "splitBlock",
+            "block": "S-block-1",
+            "index": 3
+          },
+          {
+            "replica": "A",
+            "request": "receive",
+            "transaction": "C:8"
+          },
+          {
+            "replica": "A",
+            "request": "mergeBlock",
+            "block": "C-block-8",
+            "actualPrevious": "S-block-1"
+          },
+          {
+            "replica": "A",
+            "request": "createBlock",
+            "after": null
+          },
+          {
+            "replica": "B",
+            "request": "createBlock",
+            "after": null
+          },
+          {
+            "replica": "B",
+            "request": "createBlock",
+            "after": null
+          },
+          {
+            "replica": "B",
+            "request": "createBlock",
+            "after": null
+          },
+          {
+            "replica": "A",
+            "request": "candidateToggle",
+            "block": "S-block-1",
+            "start": 0,
+            "end": 4
+          },
+          {
+            "replica": "B",
+            "request": "candidateToggle",
+            "block": "S-block-1",
+            "start": 1,
+            "end": 4
+          },
+          {
+            "request": "receiveCompleteArchives",
+            "orders": [
+              "A-then-B",
+              "B-then-A"
+            ]
+          }
+        ],
+        "archiveA": [
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 1
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "S-block-1",
+                  "titleTextInstanceId": "S-block-1"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 2
+            },
+            "operations": [
+              {
+                "command": "insertText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 2
+                  },
+                  "originId": "start",
+                  "content": "abcde"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 7
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 7
+                  },
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "A",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "A-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "A-block-8",
+                  "afterBlockId": "S-block-1",
+                  "titleTextInstanceId": "A-block-8"
+                }
+              },
+              {
+                "command": "splitText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 8
+                  },
+                  "originId": {
+                    "sessionId": "S",
+                    "counter": 3
+                  }
+                }
+              },
+              {
+                "command": "moveTextSliceIntoBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "sourceSearchLabel": "",
+                  "textSliceStartItemId": {
+                    "sessionId": "A",
+                    "counter": 8
+                  },
+                  "targetBlockId": "A-block-8"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "C",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "C-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "C-block-8",
+                  "afterBlockId": "S-block-1",
+                  "titleTextInstanceId": "C-block-8"
+                }
+              },
+              {
+                "command": "splitText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "C",
+                    "counter": 8
+                  },
+                  "originId": {
+                    "sessionId": "S",
+                    "counter": 4
+                  }
+                }
+              },
+              {
+                "command": "moveTextSliceIntoBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "sourceSearchLabel": "",
+                  "textSliceStartItemId": {
+                    "sessionId": "C",
+                    "counter": 8
+                  },
+                  "targetBlockId": "C-block-8"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "A",
+              "counter": 9
+            },
+            "operations": [
+              {
+                "command": "mergeBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "C-block-8"
+                },
+                "path": [],
+                "args": {
+                  "sourceBlockId": "C-block-8",
+                  "targetBlockId": "S-block-1"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "A",
+              "counter": 10
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "A-block-10"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "A-block-10",
+                  "titleTextInstanceId": "A-block-10"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "A",
+              "counter": 11
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 2
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 4
+                    },
+                    "anchor": "before"
+                  },
+                  "searchLabel": "L",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 11
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              },
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 5
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": "end",
+                    "anchor": "before"
+                  },
+                  "searchLabel": "L",
+                  "id": {
+                    "sessionId": "A",
+                    "counter": 12
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "archiveB": [
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 1
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "S-block-1",
+                  "titleTextInstanceId": "S-block-1"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 2
+            },
+            "operations": [
+              {
+                "command": "insertText",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 2
+                  },
+                  "originId": "start",
+                  "content": "abcde"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "S",
+              "counter": 7
+            },
+            "operations": [
+              {
+                "command": "addAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "S",
+                    "counter": 7
+                  },
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "annotation": [
+                    "b"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "B",
+              "counter": 8
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "B-block-8"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "B-block-8",
+                  "titleTextInstanceId": "B-block-8"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "B",
+              "counter": 9
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "B-block-9"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "B-block-9",
+                  "titleTextInstanceId": "B-block-9"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "B",
+              "counter": 10
+            },
+            "operations": [
+              {
+                "command": "createBlock",
+                "pointer": {
+                  "table": "block",
+                  "id": "B-block-10"
+                },
+                "path": [],
+                "args": {
+                  "blockId": "B-block-10",
+                  "titleTextInstanceId": "B-block-10"
+                }
+              }
+            ]
+          },
+          {
+            "id": {
+              "sessionId": "B",
+              "counter": 11
+            },
+            "operations": [
+              {
+                "command": "removeAnnotation",
+                "pointer": {
+                  "table": "block",
+                  "id": "S-block-1"
+                },
+                "path": [],
+                "opVersion": 2,
+                "args": {
+                  "textInstanceId": "S-block-1",
+                  "start": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 3
+                    },
+                    "anchor": "before"
+                  },
+                  "end": {
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 6
+                    },
+                    "anchor": "before"
+                  },
+                  "searchLabel": "",
+                  "id": {
+                    "sessionId": "B",
+                    "counter": 11
+                  },
+                  "annotationKey": "b"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "deliveries": [
+        {
+          "order": "A-then-B",
+          "physicalByOriginalIdentity": [
+            {
+              "address": "S-block-1/S:2",
+              "character": "a",
+              "bold": true
+            },
+            {
+              "address": "S-block-1/S:3",
+              "character": "b",
+              "bold": false
+            },
+            {
+              "address": "S-block-1/S:4",
+              "character": "c",
+              "bold": false
+            },
+            {
+              "address": "S-block-1/S:5",
+              "character": "d",
+              "bold": true
+            },
+            {
+              "address": "S-block-1/S:6",
+              "character": "e",
+              "bold": true
+            }
+          ],
+          "flags": "10011",
+          "view": [
+            {
+              "id": "B-block-10",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "A-block-10",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "B-block-9",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "B-block-8",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "S-block-1",
+              "text": "abde",
+              "bits": "1011"
+            },
+            {
+              "id": "A-block-8",
+              "text": "c",
+              "bits": "0"
+            }
+          ],
+          "nonemptyView": [
+            [
+              "abde",
+              "1011"
+            ],
+            [
+              "c",
+              "0"
+            ]
+          ],
+          "transactions": [
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 1
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "S-block-1",
+                    "titleTextInstanceId": "S-block-1"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 2
+              },
+              "operations": [
+                {
+                  "command": "insertText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 2
+                    },
+                    "originId": "start",
+                    "content": "abcde"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 7
+              },
+              "operations": [
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 7
+                    },
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 3
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 6
+                      },
+                      "anchor": "before"
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "A-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "A-block-8",
+                    "afterBlockId": "S-block-1",
+                    "titleTextInstanceId": "A-block-8"
+                  }
+                },
+                {
+                  "command": "splitText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 8
+                    },
+                    "originId": {
+                      "sessionId": "S",
+                      "counter": 3
+                    }
+                  }
+                },
+                {
+                  "command": "moveTextSliceIntoBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "sourceSearchLabel": "",
+                    "textSliceStartItemId": {
+                      "sessionId": "A",
+                      "counter": 8
+                    },
+                    "targetBlockId": "A-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "C",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "C-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "C-block-8",
+                    "afterBlockId": "S-block-1",
+                    "titleTextInstanceId": "C-block-8"
+                  }
+                },
+                {
+                  "command": "splitText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "C",
+                      "counter": 8
+                    },
+                    "originId": {
+                      "sessionId": "S",
+                      "counter": 4
+                    }
+                  }
+                },
+                {
+                  "command": "moveTextSliceIntoBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "sourceSearchLabel": "",
+                    "textSliceStartItemId": {
+                      "sessionId": "C",
+                      "counter": 8
+                    },
+                    "targetBlockId": "C-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "mergeBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "C-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "sourceBlockId": "C-block-8",
+                    "targetBlockId": "S-block-1"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "A-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "A-block-10",
+                    "titleTextInstanceId": "A-block-10"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 11
+              },
+              "operations": [
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 2
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 4
+                      },
+                      "anchor": "before"
+                    },
+                    "searchLabel": "L",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 11
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                },
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 5
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": "end",
+                      "anchor": "before"
+                    },
+                    "searchLabel": "L",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 12
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-8",
+                    "titleTextInstanceId": "B-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-9"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-9",
+                    "titleTextInstanceId": "B-block-9"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-10",
+                    "titleTextInstanceId": "B-block-10"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 11
+              },
+              "operations": [
+                {
+                  "command": "removeAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 3
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 6
+                      },
+                      "anchor": "before"
+                    },
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "B",
+                      "counter": 11
+                    },
+                    "annotationKey": "b"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": "B-then-A",
+          "physicalByOriginalIdentity": [
+            {
+              "address": "S-block-1/S:2",
+              "character": "a",
+              "bold": true
+            },
+            {
+              "address": "S-block-1/S:3",
+              "character": "b",
+              "bold": false
+            },
+            {
+              "address": "S-block-1/S:4",
+              "character": "c",
+              "bold": false
+            },
+            {
+              "address": "S-block-1/S:5",
+              "character": "d",
+              "bold": true
+            },
+            {
+              "address": "S-block-1/S:6",
+              "character": "e",
+              "bold": true
+            }
+          ],
+          "flags": "10011",
+          "view": [
+            {
+              "id": "B-block-10",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "A-block-10",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "B-block-9",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "B-block-8",
+              "text": "",
+              "bits": ""
+            },
+            {
+              "id": "S-block-1",
+              "text": "abde",
+              "bits": "1011"
+            },
+            {
+              "id": "A-block-8",
+              "text": "c",
+              "bits": "0"
+            }
+          ],
+          "nonemptyView": [
+            [
+              "abde",
+              "1011"
+            ],
+            [
+              "c",
+              "0"
+            ]
+          ],
+          "transactions": [
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 1
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "S-block-1",
+                    "titleTextInstanceId": "S-block-1"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 2
+              },
+              "operations": [
+                {
+                  "command": "insertText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 2
+                    },
+                    "originId": "start",
+                    "content": "abcde"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "S",
+                "counter": 7
+              },
+              "operations": [
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "S",
+                      "counter": 7
+                    },
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 3
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 6
+                      },
+                      "anchor": "before"
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-8",
+                    "titleTextInstanceId": "B-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-9"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-9",
+                    "titleTextInstanceId": "B-block-9"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "B-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "B-block-10",
+                    "titleTextInstanceId": "B-block-10"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "B",
+                "counter": 11
+              },
+              "operations": [
+                {
+                  "command": "removeAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 3
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 6
+                      },
+                      "anchor": "before"
+                    },
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "B",
+                      "counter": 11
+                    },
+                    "annotationKey": "b"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "A-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "A-block-8",
+                    "afterBlockId": "S-block-1",
+                    "titleTextInstanceId": "A-block-8"
+                  }
+                },
+                {
+                  "command": "splitText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 8
+                    },
+                    "originId": {
+                      "sessionId": "S",
+                      "counter": 3
+                    }
+                  }
+                },
+                {
+                  "command": "moveTextSliceIntoBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "sourceSearchLabel": "",
+                    "textSliceStartItemId": {
+                      "sessionId": "A",
+                      "counter": 8
+                    },
+                    "targetBlockId": "A-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "C",
+                "counter": 8
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "C-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "C-block-8",
+                    "afterBlockId": "S-block-1",
+                    "titleTextInstanceId": "C-block-8"
+                  }
+                },
+                {
+                  "command": "splitText",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "searchLabel": "",
+                    "id": {
+                      "sessionId": "C",
+                      "counter": 8
+                    },
+                    "originId": {
+                      "sessionId": "S",
+                      "counter": 4
+                    }
+                  }
+                },
+                {
+                  "command": "moveTextSliceIntoBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "sourceSearchLabel": "",
+                    "textSliceStartItemId": {
+                      "sessionId": "C",
+                      "counter": 8
+                    },
+                    "targetBlockId": "C-block-8"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 9
+              },
+              "operations": [
+                {
+                  "command": "mergeBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "C-block-8"
+                  },
+                  "path": [],
+                  "args": {
+                    "sourceBlockId": "C-block-8",
+                    "targetBlockId": "S-block-1"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 10
+              },
+              "operations": [
+                {
+                  "command": "createBlock",
+                  "pointer": {
+                    "table": "block",
+                    "id": "A-block-10"
+                  },
+                  "path": [],
+                  "args": {
+                    "blockId": "A-block-10",
+                    "titleTextInstanceId": "A-block-10"
+                  }
+                }
+              ]
+            },
+            {
+              "id": {
+                "sessionId": "A",
+                "counter": 11
+              },
+              "operations": [
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 2
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 4
+                      },
+                      "anchor": "before"
+                    },
+                    "searchLabel": "L",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 11
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                },
+                {
+                  "command": "addAnnotation",
+                  "pointer": {
+                    "table": "block",
+                    "id": "S-block-1"
+                  },
+                  "path": [],
+                  "opVersion": 2,
+                  "args": {
+                    "textInstanceId": "S-block-1",
+                    "start": {
+                      "id": {
+                        "sessionId": "S",
+                        "counter": 5
+                      },
+                      "anchor": "before"
+                    },
+                    "end": {
+                      "id": "end",
+                      "anchor": "before"
+                    },
+                    "searchLabel": "L",
+                    "id": {
+                      "sessionId": "A",
+                      "counter": 12
+                    },
+                    "annotation": [
+                      "b"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "serialOrders": [
+        {
+          "order": "MAB",
+          "recomputedToggle": "10001",
+          "retainedIssuerVerdict": "10001"
+        },
+        {
+          "order": "MBA",
+          "recomputedToggle": "11011",
+          "retainedIssuerVerdict": "11011"
+        },
+        {
+          "order": "AMB",
+          "recomputedToggle": "10001",
+          "retainedIssuerVerdict": "10001"
+        },
+        {
+          "order": "ABM",
+          "recomputedToggle": "10001",
+          "retainedIssuerVerdict": "11111"
+        },
+        {
+          "order": "BMA",
+          "recomputedToggle": "11011",
+          "retainedIssuerVerdict": "11111"
+        },
+        {
+          "order": "BAM",
+          "recomputedToggle": "10001",
+          "retainedIssuerVerdict": "11111"
+        }
+      ],
+      "controls": {
+        "actualDisplayedSelections": true,
+        "actualClockReservations": true,
+        "initialMarkLocallyExact": true,
+        "bothCandidatesLocallyExact": true,
+        "freshDisjointReservedRuns": true,
+        "perSegmentPriorityInterleaving": [
+          "A:11",
+          "B:11",
+          "A:12"
+        ],
+        "deliveryOrdersAgree": true,
+        "preservesFiveVisibleCharacters": true,
+        "differsFromAllSixAtomicOrders": true,
+        "differsWithRetainedIssuerVerdicts": true,
+        "fractureIsSharedIntersection": {
+          "b": false,
+          "d": true
+        }
+      },
+      "summary": {
+        "sourceReceivers": 2,
+        "atomicOrdersChecked": 6,
+        "flags": "10011",
+        "nonemptyView": [
+          [
+            "abde",
+            "1011"
+          ],
+          [
+            "c",
+            "0"
+          ]
+        ],
+        "passFailControlsHold": true
+      },
+      "workingModuleHashes": {
+        "replica.js": "da0cbf766102a367d12d338119863decdbae5d49cd832855d92144af4f524462",
+        "document.js": "32c0dcf10bc742e7b6dcf2001236bf4aef965ee4af29572c056cd1e01690b9c1",
+        "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+        "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+        "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+        "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+        "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+      },
+      "workingModulesUnchangedDuringExecution": true,
+      "originalToggleBoldUnchanged": true,
+      "candidatePlannerUnchangedDuringExecution": true
+    }
+  }
+}

@@ -2,6 +2,8 @@ import Sal.MRDTs.Paper1.OperationLabelsInvariant
 import Sal.MRDTs.Paper1.AppendixReviewControls
 import Sal.MRDTs.Metatheory.NotionCoreLedger
 import Sal.MRDTs.Metatheory.NotionCoreStructuralRuntimeLedger
+import Sal.MRDTs.Metatheory.NotionFormattingLedger
+import Sal.MRDTs.Metatheory.CapabilityGroupLedger
 import Sal.MRDTs.Paper1.SetWinsMapAudit
 import Sal.MRDTs.Paper1.RemoveWinsSetAudit
 import Sal.MRDTs.Paper1.OptionalRegisterAudit

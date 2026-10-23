@@ -123,8 +123,15 @@ to the actual core, resolves anchors dynamically, and provably recovers the
 old text query when formatting is forgotten. The
 [offline probes](experiments/notion-formatting/README.md) retain N-002/N-003
 against the original compiler and test the candidate with concurrent insertion,
-deletion, split and merge. Formatting is not yet included in the protocol's
-RA-linearizability theorem above.
+deletion, split and merge. Whole rich transactions now have a reachable caller
+model, fresh annotation allocation and a five-VC finite carrier. However, a
+[checked atomicity counterexample](docs/notion-formatting-atomicity.md) refutes
+the intended atomic-selection bridge for the candidate's per-segment priorities:
+one toggle can win on one segment and lose on another. The pinned JavaScript
+reproduces this candidate-design obstruction. It is separate from the five
+original-demo bugs. Formatting is not included in the protocol's
+RA-linearizability theorem above; a shared transaction priority is a proposed,
+unproved repair.
 
 The [follow-up correctness campaign](docs/notion-correctness-campaign.md)
 tests ordinary local edits after concurrent restructuring, preserves generated
@@ -143,10 +150,15 @@ grants and named revocations. Its checked results separate union convergence,
 authorisation safety, and preservation of causal admission through issuance
 and reconciliation. An [independent sequential specification and counterexample](docs/capability-group-sequential.md)
 show a boundary with concurrent owner and recipient devices: literal RA admits
-the example, while specification visibility rejects it. For a causally ordered
-owner, the administrative cut and its permission guard agree; a complete
-sequential-history bridge remains open. This is a research model, with no
-production certificate or cryptographic implementation.
+the example, while specification visibility rejects it. The
+[owner-ordered protocol certificate](docs/capability-group-protocol.md) proves
+the positive case: an authenticated single owner issuer, with potentially
+several recipient replicas, gives a complete sequential ACL/name history for
+each registered version. Source validity and owner ordering follow from actual
+certified executions. The same witness supplies event coverage, full visibility
+and query agreement, for ordinary and canonical recursive merge bases. The
+research ledger includes a nonempty execution control; this result does not
+add a uniform runtime package or a cryptographic implementation.
 
 ```sh
 sh scripts/check-capability-group-research.sh

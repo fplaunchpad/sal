@@ -41,8 +41,35 @@ Replica records also carry the original source-compatible transactions and
 display. These exports are inputs to an independent formal oracle; they are not
 a proof that an importer or a later model faithfully implements the source.
 
+## Atomic-selection obstruction
+
+The candidate's immediate coverage does not imply atomic formatting under
+concurrency. A source-issued trace splits one selection into two intervals
+whose priorities straddle a concurrent removal. The actual result is `10011`
+on character identities `abcde`; every atomic ordering keeps `b` and `d`
+equally formatted, so none explains that result.
+
+```sh
+python3 experiments/notion-formatting/run-atomic-fracture.py --cache /tmp/notion-formatting-sources
+lake build Sal.MRDTs.Metatheory.NotionFormattingLedger
+```
+
+[`results/atomic-fracture.json`](results/atomic-fracture.json) records complete
+requests, transactions, both receipt orders and all six atomic formatting
+orders. The runner uses the separate candidate planner with the source's
+annotation operations and clock reservations, under both corrected merge
+variants. Harmless empty-block requests align clocks; no annotation IDs or
+toggle verdicts are forged. This is an obstruction to the proposed repair,
+not a new original-demo bug. The Lean witness independently checks a reachable
+typed caller, fresh allocations and the actual finite-carrier query; its
+bootstrap correspondence to JavaScript is manual.
+
+See [`docs/notion-formatting-atomicity.md`](../../docs/notion-formatting-atomicity.md)
+for the invariant excluding all atomic histories and the proposed shared
+transaction-priority repair, which is not yet implemented or proved.
+
 See `docs/notion-formatting-design.md` for the research question, exact source
-claims, counterexamples, and staged integration work. This experiment leaves
+claims, counterexamples, and remaining design work. This experiment leaves
 the pinned source unchanged. Typed planner proofs and the separate executable
 integration are documented in the research note; runtime checks alone
 establish no protocol-level guarantee.

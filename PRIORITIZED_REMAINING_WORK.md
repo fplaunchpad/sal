@@ -27,13 +27,24 @@ sole active bounded counter is the published Balegas matrix/max design.
   correctness distinct from immediate selection correctness.
 - [x] Integrate dynamic annotations with the actual editing interpreter;
   prove whole-replay and rendered-text conservativity, including failures.
-- [ ] Derive displayed source/core coordinate and annotation freshness facts
-  from a rich-text issuance protocol; extend the independent specification
-  with dynamic inheritance and prove the rich sequential-history bridge.
+- [x] Integrate whole rich transactions with an actual positional caller and
+  finite-store MRDT. Derive disjoint allocation and annotation-ID freshness
+  from reachability, and prove ordinary/recursive carrier convergence through
+  the five VCs. The general dynamic coordinate/inheritance bridge is not proved.
+- [x] Check atomic-toggle compatibility with per-segment annotation IDs before
+  claiming a rich-text certificate. Preserve any genuine source-issued
+  counterexample and state the required semantic change explicitly.
+- [ ] Resolve the atomicity obstruction before resuming the intended full
+  dynamic inheritance and rich RA bridge. The current per-segment design is
+  refuted by a reachable caller and actual carrier observation: flags `10011`
+  cannot arise from any uniform atomic formatting history. A shared
+  transaction-level priority is a proposed semantic repair, not an existing
+  theorem. Retain separate segment identities and the checked regression.
 
-  The current increment proves immediate selection and executable conservative
-  integration, not full rich-text RA. Evidence and exact boundaries are in
-  `docs/notion-formatting-design.md`.
+  The full atomic rich-text theorem is not claimed. The obstruction is to the
+  candidate repair, not a sixth original-demo bug or a theorem negating a named
+  framework RA predicate. Evidence is in `docs/notion-formatting-atomicity.md`
+  and `Metatheory/NotionFormattingLedger.lean`; N-002/N-003 are preserved.
 
 ## Combined grant/revoke access control
 
@@ -45,15 +56,22 @@ sole active bounded counter is the published Balegas matrix/max design.
   concurrent owner actions and literal from specification-visible RA.
 - [x] Review source correspondence and theorem strength independently;
   document hypotheses, results and remaining protocol obligations.
-- [ ] Construct a complete sequential run and prove name-query agreement
+- [x] Construct a complete sequential run and prove name-query agreement
   for an owner whose events form a causal chain. The administrative cut and
-  permission-guard equivalence are already proved.
-- [ ] Connect the source issuance/reconciliation protocol to the framework's
-  certified version-DAG executions before claiming a production certificate.
+  permission-guard equivalence are realised over actual sequential prefixes.
+- [x] Connect the source issuance/reconciliation protocol to the framework's
+  certified version-DAG executions. An authenticated single owner issuer
+  derives the source invariants and owner chain; one lifted concrete-event
+  witness supplies coverage, full visibility and independent ACL/name-query
+  agreement, with ordinary and canonical recursive-base certificates.
+- [x] Check a nonempty actual framework execution and independently audit the
+  positive endpoints. Register the research theorem in the release ledger
+  without adding a uniform runtime package.
 
   Concurrent owner and recipient devices have a source-reachable obstruction to
   specification-visible RA; literal RA still accepts it. This does not refute
-  the honest owner-chain case. See `docs/capability-group-sequential.md`.
+  the honest owner-chain case, whose positive certificate is now proved.
+  See `docs/capability-group-protocol.md` for the proof chain and exact scope.
 
 ## Release-gate CI
 

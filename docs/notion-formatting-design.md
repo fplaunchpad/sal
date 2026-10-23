@@ -8,6 +8,14 @@ characters, including with the corrected block-merge design. An immediate
 selected-identity specification can express the desired local effect, but it
 does not specify how later inserted text inherits bold.
 
+The subsequent end-to-end attempt found a separate obstruction in the
+maximal-run candidate: per-segment priorities can fracture one atomic toggle
+under concurrency. The [atomicity note](notion-formatting-atomicity.md)
+records a reachable typed caller, the actual finite-carrier observation,
+an independent all-history invariant and a pinned JavaScript reproduction.
+The intended atomic rich-text bridge is therefore **refuted for this
+candidate**, even though its immediate coverage theorem is true.
+
 ## Research enquiry
 
 - **Goal:** identify a formatting preparation rule that changes exactly the
@@ -210,8 +218,13 @@ existing injective session encoding preserves selection membership.
 
 The coordinate relation is a structural source/core relation, not an assumed
 exact-coverage conclusion. The theorem checks all displayed slots, including
-unselected slots in other blocks. It does not derive that relation from every
-reachable rich-text protocol state. The original compiler cannot satisfy this
+unselected slots in other blocks. The planner theorem itself does not derive
+that relation from every reachable rich-text protocol state. The later
+executable rich caller computes the selection, source-instance traversal and
+anchors from its current query; the atomicity witness uses these actual
+computations rather than assuming coverage or choosing an arbitrary Boolean
+verdict. A general dynamic source/core refinement is not proved. The original
+compiler cannot satisfy this
 theorem: `SourceSPOT` retains the exact N-002 and N-003 counterexamples, while
 `PlannerSPOT` proves the repaired results and invokes the general refinement
 theorem on a nonempty reversed-display fixture.
@@ -225,11 +238,12 @@ after the left endpoint and at or before the right endpoint (`old_membership`,
 anchor-coordinate embedding; it is not a universal rich-history theorem.
 Finally, `resolve_fresh_unsorted` proves that a uniform fresh batch overwrites
 exactly its covered positions even with existing annotations. Its premises
-require fresh Lamport IDs and one payload per operation ID; they are not yet
-derived by a rich-text network issuer. The demo's archive rejects conflicting
-transaction IDs, but it does not reject conflicting annotation IDs carried
-inside distinct transactions. Annotation-ID integrity therefore remains an
-explicit issuance premise, not a fact established by that archive check.
+require fresh Lamport IDs and one payload per operation ID.
+`NotionCoreRichNetwork` now reserves full transaction widths at issuance and
+derives disjoint allocations and annotation freshness from reachability
+(`allocation_reachable`, `new_annotations_fresh`). The original demo's archive
+check alone still only rejects conflicting transaction IDs; the typed issuer's
+allocation proof supplies the stronger annotation-ID integrity result.
 
 ### Source-to-core obstacles
 
@@ -247,8 +261,12 @@ recovers exactly the existing core run. `render_forget` and
 including failures. The ten `MachineSPOT` controls exercise bootstrap, the
 candidate planner, boundary insertion, tombstoned anchors, split, corrected
 merge, multi-instance atomic batches, overlapping removal, and query/edit
-failure. This is executable interpreter integration; format issuance and
-archive/network transport are not yet part of the production protocol.
+failure. `NotionCoreRichPayload`, `NotionCoreRichNetwork` and
+`NotionCoreRichMRDT` extend this executable integration with whole-transaction
+transport, actual positional request preparation, reachability-derived fresh
+IDs and a finite carrier. The carrier's five VCs establish ordinary and
+canonical recursive-base convergence. They do not supply the missing atomic
+sequential bridge or enlarge the existing plain editing certificate.
 
 An address-mark wrapper around the existing structural `Spec.step` keeps old
 address marks while structural requests run. It can state immediate selected
@@ -273,17 +291,29 @@ isolation does not justify an observer seeing the partially applied toggle.
 
 ### Remaining proof boundary
 
-The successful typed planner's immediate coverage and local refinement are
-proved. A full dynamic insertion-inheritance refinement, a rich-text
-RA-linearizability extension, arbitrary JavaScript/protocol correspondence,
-and production Notion equivalence remain **staged**. Exact current selection
-alone does not establish those results. The candidate does not modify the
-pinned demo or silently enlarge the existing core certificate.
+The typed planner's immediate coverage and local refinement are proved.
+The intended full atomic rich-text bridge is **refuted for the current
+per-segment-priority candidate**. `NotionCoreRichAtomicCounterexample`
+constructs a reachable caller and observes flags `10011` on identities
+`abcde`. Every atomic formatting request treats `b` and `d` alike, so no
+atomic ordering explains the observation. This remains true with arbitrary
+prepared verdicts and interleaved structural reshapes; the witness contains
+no later visible insertions. Inheritance choices therefore cannot repair it.
+
+The independent atomic oracle proves a necessary uniform-selection property,
+not a theorem negating a named framework RA predicate or a certified
+version-DAG counterexample. A full dynamic inheritance specification and rich
+RA certificate have not been produced. A proposed repair gives all segments
+one transaction-level priority; that semantic change is unimplemented and
+needs a new proof. Arbitrary JavaScript/protocol correspondence and production
+Notion equivalence are also unproved. The candidate leaves the pinned demo
+and existing plain editing certificate unchanged.
 
 Root verification used a fresh combined Lean build and an independent offline
 rerun of both JavaScript variants. The latter passed 25 original-source controls,
 21 candidate controls and 304 bounded coverage cases per variant; both original
 formatting failures still reproduce. Standard Lean axioms are the only
 dependencies reported for the checked proof results. The production release
-gate is checked separately; this research extension does not change its
-registered datatype inventory.
+gate builds the new research ledger without changing its registered runtime
+datatype inventory. The separate atomicity runner records both corrected
+merge variants, both delivery orders and all six format orderings.

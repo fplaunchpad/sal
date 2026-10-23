@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
-# Separate research gate: the production ledger intentionally does not register
-# this separately scoped typed Notion protocol certificate.
+# Focused research gate. The main ledger builds the checked research entries,
+# but the uniform runtime package registry is unchanged.
 lake build \
   Sal.MRDTs.Instances.NotionSplitSpec \
   Sal.MRDTs.Instances.NotionFormattingCounterexample \
@@ -16,6 +16,7 @@ lake build \
   Sal.MRDTs.Instances.NotionCoreFormattingPlannerSPOT \
   Sal.MRDTs.Instances.NotionCoreFormattingEvolution \
   Sal.MRDTs.Instances.NotionCoreFormattingMachineSPOT \
+  Sal.MRDTs.Metatheory.NotionFormattingLedger \
   Sal.MRDTs.Instances.NotionCoreInvariant \
   Sal.MRDTs.Instances.NotionCoreRGA \
   Sal.MRDTs.Instances.NotionCoreSource \
