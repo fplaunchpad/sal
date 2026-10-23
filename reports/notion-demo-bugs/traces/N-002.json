@@ -1,0 +1,328 @@
+{
+  "name": "reversed-bold-selected-effect-failure",
+  "initial": [
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 1
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 2
+      },
+      "operations": [
+        {
+          "command": "insertText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "seed",
+              "counter": 2
+            },
+            "originId": "start",
+            "content": "ab"
+          }
+        }
+      ]
+    }
+  ],
+  "transactions": [
+    {
+      "id": {
+        "sessionId": "A",
+        "counter": 4
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-4"
+          },
+          "path": [],
+          "args": {
+            "blockId": "A-block-4",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "A-block-4"
+          }
+        },
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "A",
+              "counter": 4
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSliceIntoBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "A",
+              "counter": 4
+            },
+            "targetBlockId": "A-block-4"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "B",
+        "counter": 4
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "B-block-4"
+          },
+          "path": [],
+          "args": {
+            "blockId": "B-block-4",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "B-block-4"
+          }
+        },
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "B",
+              "counter": 4
+            },
+            "originId": {
+              "sessionId": "seed",
+              "counter": 2
+            }
+          }
+        },
+        {
+          "command": "moveTextSliceIntoBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "B",
+              "counter": 4
+            },
+            "targetBlockId": "B-block-4"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "A",
+        "counter": 25
+      },
+      "operations": [
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-4"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "A-block-4",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "A",
+              "counter": 25
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSlice",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-4"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "A-block-4",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "A",
+              "counter": 25
+            },
+            "targetBlockId": "B-block-4",
+            "targetTextInstanceId": "seed-block-1",
+            "targetSearchLabel": "t",
+            "targetTextSliceEndItemId": "end",
+            "isMerge": true
+          }
+        },
+        {
+          "command": "removeBlock",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-4"
+          },
+          "path": [],
+          "args": {
+            "blockId": "A-block-4"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "A",
+        "counter": 26
+      },
+      "operations": [
+        {
+          "command": "addAnnotation",
+          "pointer": {
+            "table": "block",
+            "id": "B-block-4"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "t",
+            "id": {
+              "sessionId": "A",
+              "counter": 26
+            },
+            "start": {
+              "id": {
+                "sessionId": "seed",
+                "counter": 3
+              },
+              "anchor": "before"
+            },
+            "end": {
+              "id": {
+                "sessionId": "seed",
+                "counter": 3
+              },
+              "anchor": "before"
+            },
+            "annotation": [
+              "b"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "before": [
+    {
+      "id": "seed-block-1",
+      "text": "",
+      "characters": []
+    },
+    {
+      "id": "B-block-4",
+      "text": "ba",
+      "characters": [
+        {
+          "text": "b",
+          "bold": false
+        },
+        {
+          "text": "a",
+          "bold": false
+        }
+      ]
+    }
+  ],
+  "expected": [
+    [],
+    [
+      {
+        "text": "b",
+        "bold": true
+      },
+      {
+        "text": "a",
+        "bold": true
+      }
+    ]
+  ],
+  "actual": [
+    {
+      "id": "seed-block-1",
+      "text": "",
+      "characters": []
+    },
+    {
+      "id": "B-block-4",
+      "text": "ba",
+      "characters": [
+        {
+          "text": "b",
+          "bold": false
+        },
+        {
+          "text": "a",
+          "bold": false
+        }
+      ]
+    }
+  ],
+  "specAgreement": false
+}

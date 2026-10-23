@@ -1,0 +1,540 @@
+{
+  "name": "merge-into-removed-block-loses-document-failure",
+  "initial": [
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 1
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 2
+      },
+      "operations": [
+        {
+          "command": "insertText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "seed",
+              "counter": 2
+            },
+            "originId": "start",
+            "content": "a"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 3
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+          },
+          "path": [],
+          "args": {
+            "blockId": "seed-block-3",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-3"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 4
+      },
+      "operations": [
+        {
+          "command": "insertText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-3",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "seed",
+              "counter": 4
+            },
+            "originId": "start",
+            "content": "b"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 5
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+          },
+          "path": [],
+          "args": {
+            "blockId": "seed-block-5",
+            "afterBlockId": "seed-block-3",
+            "titleTextInstanceId": "seed-block-5"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 6
+      },
+      "operations": [
+        {
+          "command": "insertText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-5",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "seed",
+              "counter": 6
+            },
+            "originId": "start",
+            "content": "c"
+          }
+        }
+      ]
+    }
+  ],
+  "transactions": [
+    {
+      "id": {
+        "sessionId": "A",
+        "counter": 27
+      },
+      "operations": [
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-5",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "A",
+              "counter": 27
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSlice",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-5",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "A",
+              "counter": 27
+            },
+            "targetBlockId": "seed-block-3",
+            "targetTextInstanceId": "seed-block-3",
+            "targetSearchLabel": "",
+            "targetTextSliceEndItemId": "end",
+            "isMerge": true
+          }
+        },
+        {
+          "command": "removeBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-5"
+          },
+          "path": [],
+          "args": {
+            "blockId": "seed-block-5"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "A",
+        "counter": 28
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-28"
+          },
+          "path": [],
+          "args": {
+            "blockId": "A-block-28",
+            "afterBlockId": "seed-block-3",
+            "titleTextInstanceId": "A-block-28"
+          }
+        },
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-3",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "A",
+              "counter": 28
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSliceIntoBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-3",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "A",
+              "counter": 28
+            },
+            "targetBlockId": "A-block-28"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "A",
+        "counter": 49
+      },
+      "operations": [
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-28"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "A-block-28",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "A",
+              "counter": 49
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSlice",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-28"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "A-block-28",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "A",
+              "counter": 49
+            },
+            "targetBlockId": "seed-block-3",
+            "targetTextInstanceId": "seed-block-3",
+            "targetSearchLabel": "L",
+            "targetTextSliceEndItemId": {
+              "sessionId": "A",
+              "counter": 28
+            },
+            "isMerge": true
+          }
+        },
+        {
+          "command": "removeBlock",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-28"
+          },
+          "path": [],
+          "args": {
+            "blockId": "A-block-28"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "B",
+        "counter": 27
+      },
+      "operations": [
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-3",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "B",
+              "counter": 27
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSlice",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-3",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "B",
+              "counter": 27
+            },
+            "targetBlockId": "seed-block-1",
+            "targetTextInstanceId": "seed-block-1",
+            "targetSearchLabel": "",
+            "targetTextSliceEndItemId": "end",
+            "isMerge": true
+          }
+        },
+        {
+          "command": "removeBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-3"
+          },
+          "path": [],
+          "args": {
+            "blockId": "seed-block-3"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "B",
+        "counter": 49
+      },
+      "operations": [
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "B",
+              "counter": 49
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSlice",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "B",
+              "counter": 49
+            },
+            "targetBlockId": "A-block-28",
+            "targetTextInstanceId": "seed-block-3",
+            "targetSearchLabel": "T",
+            "targetTextSliceEndItemId": {
+              "sessionId": "B",
+              "counter": 27
+            },
+            "isMerge": true
+          }
+        },
+        {
+          "command": "removeBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "args": {
+            "blockId": "seed-block-1"
+          }
+        }
+      ]
+    }
+  ],
+  "before": [
+    {
+      "id": "A-block-28",
+      "text": "",
+      "characters": []
+    },
+    {
+      "id": "seed-block-1",
+      "text": "abc",
+      "characters": [
+        {
+          "text": "a",
+          "bold": false
+        },
+        {
+          "text": "b",
+          "bold": false
+        },
+        {
+          "text": "c",
+          "bold": false
+        }
+      ]
+    }
+  ],
+  "afterLocal": [
+    {
+      "id": "A-block-28",
+      "text": "abc",
+      "characters": [
+        {
+          "text": "a",
+          "bold": false
+        },
+        {
+          "text": "b",
+          "bold": false
+        },
+        {
+          "text": "c",
+          "bold": false
+        }
+      ]
+    }
+  ],
+  "expected": "abc",
+  "actual": [],
+  "storedCharacters": "abc",
+  "controls": {
+    "noFirstMerge": [
+      {
+        "id": "seed-block-1",
+        "text": "abc",
+        "characters": [
+          {
+            "text": "a",
+            "bold": false
+          },
+          {
+            "text": "b",
+            "bold": false
+          },
+          {
+            "text": "c",
+            "bold": false
+          }
+        ]
+      }
+    ],
+    "lastMergeDeliveredEarly": [
+      {
+        "id": "seed-block-1",
+        "text": "abc",
+        "characters": [
+          {
+            "text": "a",
+            "bold": false
+          },
+          {
+            "text": "b",
+            "bold": false
+          },
+          {
+            "text": "c",
+            "bold": false
+          }
+        ]
+      }
+    ]
+  },
+  "specAgreement": false
+}

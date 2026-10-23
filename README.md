@@ -111,6 +111,10 @@ comparison. JavaScript number/string/JSON extraction and production Notion
 correspondence are not proved. See the [research conclusion](docs/notion-research.md)
 and [paper-writing handoff](docs/notion-integration.md).
 
+The [report for the Notion team](reports/notion-demo-bugs/README.md) collects
+all five reproductions, expected and observed results, saved transactions and
+commands that run the public demo JavaScript without building Lean.
+
 The [follow-up correctness campaign](docs/notion-correctness-campaign.md)
 tests ordinary local edits after concurrent restructuring, preserves generated
 failures, and gives a smaller split-bug reproduction with a passing control.

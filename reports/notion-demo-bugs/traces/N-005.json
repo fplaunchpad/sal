@@ -1,0 +1,372 @@
+{
+  "name": "cyclic-merge-removal-hides-character-failure",
+  "initial": [
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 1
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "args": {
+            "blockId": "seed-block-1",
+            "titleTextInstanceId": "seed-block-1"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "seed",
+        "counter": 2
+      },
+      "operations": [
+        {
+          "command": "insertText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "seed",
+              "counter": 2
+            },
+            "originId": "start",
+            "content": "x"
+          }
+        }
+      ]
+    }
+  ],
+  "transactions": [
+    {
+      "id": {
+        "sessionId": "A",
+        "counter": 3
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-3"
+          },
+          "path": [],
+          "args": {
+            "blockId": "A-block-3",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "A-block-3"
+          }
+        },
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "A",
+              "counter": 3
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSliceIntoBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "A",
+              "counter": 3
+            },
+            "targetBlockId": "A-block-3"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "B",
+        "counter": 3
+      },
+      "operations": [
+        {
+          "command": "createBlock",
+          "pointer": {
+            "table": "block",
+            "id": "B-block-3"
+          },
+          "path": [],
+          "args": {
+            "blockId": "B-block-3",
+            "afterBlockId": "seed-block-1",
+            "titleTextInstanceId": "B-block-3"
+          }
+        },
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "B",
+              "counter": 3
+            },
+            "originId": {
+              "sessionId": "seed",
+              "counter": 2
+            }
+          }
+        },
+        {
+          "command": "moveTextSliceIntoBlock",
+          "pointer": {
+            "table": "block",
+            "id": "seed-block-1"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "seed-block-1",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "B",
+              "counter": 3
+            },
+            "targetBlockId": "B-block-3"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "B",
+        "counter": 24
+      },
+      "operations": [
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "B-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "B-block-3",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "B",
+              "counter": 24
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSlice",
+          "pointer": {
+            "table": "block",
+            "id": "B-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "B-block-3",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "B",
+              "counter": 24
+            },
+            "targetBlockId": "seed-block-1",
+            "targetTextInstanceId": "seed-block-1",
+            "targetSearchLabel": "L",
+            "targetTextSliceEndItemId": {
+              "sessionId": "B",
+              "counter": 3
+            },
+            "isMerge": true
+          }
+        },
+        {
+          "command": "removeBlock",
+          "pointer": {
+            "table": "block",
+            "id": "B-block-3"
+          },
+          "path": [],
+          "args": {
+            "blockId": "B-block-3"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "sessionId": "A",
+        "counter": 24
+      },
+      "operations": [
+        {
+          "command": "splitText",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "A-block-3",
+            "searchLabel": "",
+            "id": {
+              "sessionId": "A",
+              "counter": 24
+            },
+            "originId": "start"
+          }
+        },
+        {
+          "command": "moveTextSlice",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-3"
+          },
+          "path": [],
+          "opVersion": 2,
+          "args": {
+            "textInstanceId": "A-block-3",
+            "sourceSearchLabel": "",
+            "textSliceStartItemId": {
+              "sessionId": "A",
+              "counter": 24
+            },
+            "targetBlockId": "B-block-3",
+            "targetTextInstanceId": "seed-block-1",
+            "targetSearchLabel": "t",
+            "targetTextSliceEndItemId": "end",
+            "isMerge": true
+          }
+        },
+        {
+          "command": "removeBlock",
+          "pointer": {
+            "table": "block",
+            "id": "A-block-3"
+          },
+          "path": [],
+          "args": {
+            "blockId": "A-block-3"
+          }
+        }
+      ]
+    }
+  ],
+  "before": [
+    {
+      "id": "seed-block-1",
+      "text": "",
+      "characters": []
+    },
+    {
+      "id": "B-block-3",
+      "text": "",
+      "characters": []
+    },
+    {
+      "id": "A-block-3",
+      "text": "x",
+      "characters": [
+        {
+          "text": "x",
+          "bold": false
+        }
+      ]
+    }
+  ],
+  "expected": "x",
+  "actual": [
+    {
+      "id": "seed-block-1",
+      "text": "",
+      "characters": []
+    }
+  ],
+  "storedCharacters": "x",
+  "controls": {
+    "notDelivered": [
+      {
+        "id": "seed-block-1",
+        "text": "",
+        "characters": []
+      },
+      {
+        "id": "B-block-3",
+        "text": "x",
+        "characters": [
+          {
+            "text": "x",
+            "bold": false
+          }
+        ]
+      }
+    ],
+    "noLocalMerge": [
+      {
+        "id": "seed-block-1",
+        "text": "",
+        "characters": []
+      },
+      {
+        "id": "A-block-3",
+        "text": "x",
+        "characters": [
+          {
+            "text": "x",
+            "bold": false
+          }
+        ]
+      }
+    ],
+    "deliveredEarly": [
+      {
+        "id": "seed-block-1",
+        "text": "x",
+        "characters": [
+          {
+            "text": "x",
+            "bold": false
+          }
+        ]
+      }
+    ]
+  },
+  "specAgreement": false
+}
