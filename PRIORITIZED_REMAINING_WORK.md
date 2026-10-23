@@ -60,7 +60,11 @@ sole active bounded counter is the published Balegas matrix/max design.
 - [x] Diagnose the failing run: the Ubuntu runner lacks ripgrep. Install it
   explicitly and fail early when the gate's source-audit dependency is absent.
 - [x] Run the complete local production gate after the repair.
-- [ ] Verify the next GitHub Actions run after the change is pushed.
+- [x] Verify the hosted release gate after pushing. Revision `7dceb9b` passed
+  [run 39916499945](https://github.com/fplaunchpad/sal/actions/runs/39916499945),
+  including dependency installation, Lean, certificate/runtime checks and
+  benchmark validation. The research modules also pass their separate local
+  build and axiom audits.
 
 ## Notion public-demo correctness campaign
 
