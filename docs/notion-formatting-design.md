@@ -16,6 +16,28 @@ an independent all-history invariant and a pinned JavaScript reproduction.
 The intended atomic rich-text bridge is therefore **refuted for this
 candidate**, even though its immediate coverage theorem is true.
 
+## Positive atomic repair
+
+The [rich-text protocol certificate](notion-rich-text-certificate.md) now proves
+insertion inheritance and atomic whole-selection updates. The repaired model
+assigns one arbitration priority to every segment of a transaction while
+retaining each segment's distinct allocation ID. One Boolean value is chosen
+from the issuer's complete selection and retained by the issued operation.
+
+The immediate falsifier is a reachable execution whose observation cannot be
+explained by any ordering of these whole updates. The existing `10011` trace
+is the first regression; concurrent overlapping selections and edits that
+change interval boundaries supply further tests. Passing that trace alone
+does not establish the target.
+
+The formal oracle relates the repaired interpreter to an independent
+incremental rich-document specification and derives the same-event history
+witness from actual protocol reachability. The abstract state retains physical
+cells and current character/sticky-gap marks. It contains no annotation log or
+replay sorting. The reality oracle is the pinned JavaScript with an explicitly
+separate temporary repair; original source and original-demo failures remain
+unchanged. The guide records the public theorem and its exact scope.
+
 ## Research enquiry
 
 - **Goal:** identify a formatting preparation rule that changes exactly the
@@ -139,7 +161,7 @@ coordinate algorithm. Importing it into Lean can test that the independently
 defined evaluator agrees on these literal fixtures; it does not establish a
 general refinement theorem.
 
-## Integration steps and staged claims
+## Source compiler and local refinement
 
 ### A concrete candidate compiler
 
@@ -223,7 +245,9 @@ that relation from every reachable rich-text protocol state. The later
 executable rich caller computes the selection, source-instance traversal and
 anchors from its current query; the atomicity witness uses these actual
 computations rather than assuming coverage or choosing an arbitrary Boolean
-verdict. A general dynamic source/core refinement is not proved. The original
+verdict. The repaired protocol now derives the full dynamic relation in
+`NotionCoreRichCanonicalHistory`; the original per-segment compiler remains
+outside that positive theorem. The original
 compiler cannot satisfy this
 theorem: `SourceSPOT` retains the exact N-002 and N-003 counterexamples, while
 `PlannerSPOT` proves the repaired results and invokes the general refinement
@@ -245,7 +269,7 @@ derives disjoint allocations and annotation freshness from reachability
 check alone still only rejects conflicting transaction IDs; the typed issuer's
 allocation proof supplies the stronger annotation-ID integrity result.
 
-### Source-to-core obstacles
+### Original integration and the repaired bridge
 
 `NotionCoreFormattingMachine` now supplies a separate executable extension of
 the actual editing interpreter. Each edit delegates to
@@ -268,28 +292,28 @@ IDs and a finite carrier. The carrier's five VCs establish ordinary and
 canonical recursive-base convergence. They do not supply the missing atomic
 sequential bridge or enlarge the existing plain editing certificate.
 
-An address-mark wrapper around the existing structural `Spec.step` keeps old
+The initial address-mark wrapper around the structural `Spec.step` keeps old
 address marks while structural requests run. It can state immediate selected
 effects. It does not calculate a new inserted character's inherited value, so
 it cannot establish full rich-text sequential semantics or a full
 RA-linearizability extension.
 
-For that extension, retain a dynamic relation between anchors and insertion
-structure. A sufficient source-facing state includes per-instance origin trees,
+The repaired extension retains a dynamic relation between anchors and insertion
+structure. Its source-facing state includes per-instance origin trees,
 stable item IDs, split markers, tombstones, and anchored annotation operations.
 Recompute scalar entry/exit coordinates after insertion; a coordinate snapshot
 alone cannot be reused as a stable anchor. A smaller abstract state is possible
 only with a separate theorem showing it preserves all relevant insertion and
 subtree-exit observations.
 
-The integration relation must connect displayed core slot addresses to source
-instance/item IDs and their current preorder coordinates. It must preserve
-unselected characters in other displayed blocks as well as selected ones. It
-must also relate one client toggle to one atomic core step even when the source
-transaction contains several interval operations. Proving each segment in
-isolation does not justify an observer seeing the partially applied toggle.
+The checked integration relation connects displayed core slot addresses to
+source instance/item IDs and their current preorder coordinates. It preserves
+unselected characters in other displayed blocks and relates one client toggle
+to one atomic core step even when its transaction contains several intervals.
+The [certificate guide](notion-rich-text-certificate.md) records the independent
+character/gap state and the derived whole-history result.
 
-### Remaining proof boundary
+### Proof boundary
 
 The typed planner's immediate coverage and local refinement are proved.
 The intended full atomic rich-text bridge is **refuted for the current
@@ -302,12 +326,19 @@ no later visible insertions. Inheritance choices therefore cannot repair it.
 
 The independent atomic oracle proves a necessary uniform-selection property,
 not a theorem negating a named framework RA predicate or a certified
-version-DAG counterexample. A full dynamic inheritance specification and rich
-RA certificate have not been produced. A proposed repair gives all segments
-one transaction-level priority; that semantic change is unimplemented and
-needs a new proof. Arbitrary JavaScript/protocol correspondence and production
-Notion equivalence are also unproved. The candidate leaves the pinned demo
-and existing plain editing certificate unchanged.
+version-DAG counterexample. The separate shared-priority repair now has a full
+dynamic character/gap specification, derived actual caller-selection theorem,
+canonical rich-history simulation and positive per-version/head RA certificate.
+`NotionCoreRichProtocolCertificate` consumes actual protocol reachability;
+it does not assume a completed state relation or rich-query agreement.
+Ordinary and canonical recursive-base merge steps use the same proof.
+
+Arbitrary JavaScript/protocol correspondence and production Notion equivalence
+remain unproved. The supported typed API uses natural clipped indices and
+before-item/END formatting boundaries, with one value fixed at issuance.
+Its independent state retains the physical origin distinction needed for
+different inheritance at an empty root and a moved split marker. The repair
+leaves the pinned demo and existing plain editing certificate unchanged.
 
 Root verification used a fresh combined Lean build and an independent offline
 rerun of both JavaScript variants. The latter passed 25 original-source controls,

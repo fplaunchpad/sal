@@ -66,10 +66,45 @@ bootstrap correspondence to JavaScript is manual.
 
 See [`docs/notion-formatting-atomicity.md`](../../docs/notion-formatting-atomicity.md)
 for the invariant excluding all atomic histories and the proposed shared
-transaction-priority repair, which is not yet implemented or proved.
+transaction-priority repair.
+
+## Repaired shared-priority protocol
+
+The separate repaired path now has a positive
+[rich-text protocol certificate](../../docs/notion-rich-text-certificate.md).
+`atomic-priority-patch.py` changes only temporary source copies: annotation
+arbitration uses the enclosing transaction ID while segment IDs stay distinct.
+`atomic-priority-adapter.mjs` uses the unchanged maximal-run planner and actual
+source allocation. The pinned source's `toggleBold` body stays unchanged.
+
+```sh
+sh scripts/check-notion-rich-text.sh /tmp/notion-formatting-sources
+```
+
+This checks the Lean ledger, original N-002/N-003 cases, old per-segment
+obstruction and repaired source tests. Logs and complete fresh results are
+written to a new temporary directory. For just the repaired source tests:
+
+```sh
+python3 experiments/notion-formatting/run-atomic-priority.py --cache /tmp/notion-formatting-sources
+```
+
+The saved [repaired results](results/atomic-priority.json) include 44 directed
+positive/negative controls per merge variant. The generated gate exhausts all
+30 Boolean patterns of lengths one to four, every nonempty selected interval
+and insertion gap, both session orders, equal and unequal clock priorities,
+and both delivery orders. A separate direct character/gap machine checks
+12,384 base cases and 70,992 later insertions probing every resulting gap:
+83,376 paired controls per variant, with zero discarded cases. The old
+per-segment compiler is run as a failing control. Expected selection verdicts
+and flags are independently calculated.
+
+These finite source checks validate the temporary repair; the general result
+is the separate Lean protocol theorem. Neither establishes JavaScript
+extraction or production Notion equivalence.
 
 See `docs/notion-formatting-design.md` for the research question, exact source
-claims, counterexamples, and remaining design work. This experiment leaves
+claims, counterexamples, and the independent model. This experiment leaves
 the pinned source unchanged. Typed planner proofs and the separate executable
 integration are documented in the research note; runtime checks alone
 establish no protocol-level guarantee.

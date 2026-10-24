@@ -130,8 +130,17 @@ the intended atomic-selection bridge for the candidate's per-segment priorities:
 one toggle can win on one segment and lose on another. The pinned JavaScript
 reproduces this candidate-design obstruction. It is separate from the five
 original-demo bugs. Formatting is not included in the protocol's
-RA-linearizability theorem above; a shared transaction priority is a proposed,
-unproved repair.
+RA-linearizability theorem above. A separate shared-transaction-priority
+repair now has a [positive rich-text protocol certificate](docs/notion-rich-text-certificate.md).
+Its independent specification stores current character and insertion-gap
+marks. The proof covers insertion, deletion, split, corrected merge and atomic
+formatting; actual reachability derives the source/core coordinates, fresh
+IDs and issued Boolean. One whole-event witness proves the full rich-query
+result for every registered version, with ordinary and canonical recursive
+merge bases. Forgetting formatting preserves the existing plain query.
+Each corrected JavaScript variant passes 44 directed controls and 83,376
+generated paired controls against a separate character/gap oracle. The result
+concerns the repaired typed model; production Notion equivalence is unproved.
 
 The [follow-up correctness campaign](docs/notion-correctness-campaign.md)
 tests ordinary local edits after concurrent restructuring, preserves generated

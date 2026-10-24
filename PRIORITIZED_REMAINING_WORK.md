@@ -34,16 +34,40 @@ sole active bounded counter is the published Balegas matrix/max design.
 - [x] Check atomic-toggle compatibility with per-segment annotation IDs before
   claiming a rich-text certificate. Preserve any genuine source-issued
   counterexample and state the required semantic change explicitly.
-- [ ] Resolve the atomicity obstruction before resuming the intended full
-  dynamic inheritance and rich RA bridge. The current per-segment design is
-  refuted by a reachable caller and actual carrier observation: flags `10011`
-  cannot arise from any uniform atomic formatting history. A shared
-  transaction-level priority is a proposed semantic repair, not an existing
-  theorem. Retain separate segment identities and the checked regression.
+- [x] Implement a separate shared-transaction-priority repair, retaining
+  distinct segment IDs and the old per-segment obstruction. The repaired
+  source trace returns `10001`; the old trace still returns `10011`.
+  Independent reruns passed 44 directed controls plus 12,384 generated
+  concurrent-format/insertion cases and 70,992 latent-gap probes per merge
+  variant. These bounded tests are not the full correctness theorem.
+- [x] Define the independent incremental character/sticky-gap specification
+  and prove its painting, insertion and erasure algebra, including exact
+  left/right inheritance and root-versus-marker controls. Its state contains
+  no transaction log, priorities or implementation replay.
+- [x] Derive the repaired source/framework pairing, historical-version
+  selection, fresh allocation and exact projection into the existing plain
+  editing protocol. Prove forgetting formatting preserves the old query at
+  every registered version, including failures.
+- [x] Finish the canonical rich-history simulation and instantiate the
+  actual protocol's independent sequential bridge and same-event RA witness.
+  The public certificate has no supplied state relation, successful replay,
+  coordinate, endpoint-presence or query-agreement premise. Source reachability
+  also derives exact caller selection and the actual finite-carrier update's
+  immediate rich effect.
+- [x] Independently audit the positive certificate and nonempty actual
+  framework control; register the repaired result and preserved obstruction
+  in the production theorem ledger and update the supporting documentation.
+- [x] Run the complete local release gate and focused source checks:
+  3,946 Lean jobs, 18 public certificate contracts, 13 certificate tests,
+  187 runtime tests and 569 benchmark records. Original failures and all
+  repaired directed/generated source controls reproduce with pinned hashes.
+- [ ] Commit and push the completed campaign and verify the hosted gate.
 
-  The full atomic rich-text theorem is not claimed. The obstruction is to the
-  candidate repair, not a sixth original-demo bug or a theorem negating a named
-  framework RA predicate. Evidence is in `docs/notion-formatting-atomicity.md`
+  The shared-priority repaired protocol now has the positive full rich-text
+  theorem. The preserved obstruction is to the earlier per-segment candidate,
+  not a sixth original-demo bug or a theorem
+  negating a named framework RA predicate. Evidence is in
+  `docs/notion-rich-text-certificate.md`, `docs/notion-formatting-atomicity.md`
   and `Metatheory/NotionFormattingLedger.lean`; N-002/N-003 are preserved.
 
 ## Combined grant/revoke access control

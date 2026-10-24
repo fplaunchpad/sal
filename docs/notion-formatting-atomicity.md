@@ -89,10 +89,16 @@ They cannot supply the missing atomic-selection semantics. The most direct
 candidate repair is to give every segment of a transaction one shared
 arbitration priority, while retaining separate IDs for segment identity and
 allocation. That changes the current per-annotation conflict resolution and
-requires a new proof; it is not implemented or certified here.
+requires a new proof. The separate `NotionCoreAtomicFormatting` implementation
+now makes this change, and the repaired trace returns `10001`. Its direct
+character/gap specification, generic simulation laws and source tests are
+checked. The [positive protocol certificate](notion-rich-text-certificate.md)
+now derives the full independent rich-history bridge from reachable
+source/framework executions.
 
 Other choices change the contract: expose individual spans as separate
 sequential updates, or restrict concurrent overlapping multi-span requests.
 The latter cannot generally be checked locally without additional coordination.
 The existing plain-text certificate and immediate exact-selection theorem
-remain valid; the full atomic rich-text certificate is not claimed.
+remain valid. The old per-segment candidate remains refuted; the positive
+certificate applies to the separate shared-priority repair.
