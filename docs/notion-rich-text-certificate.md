@@ -121,6 +121,12 @@ framework fixture. The complete local release gate passed 3,946 Lean jobs,
 569 benchmark records. The repaired ledger and load-bearing public results
 depend only on `propext`, `Classical.choice` and `Quot.sound`.
 
+The same release gate passed on the hosted runner for source revision
+[`04bf222`](https://github.com/fplaunchpad/sal/commit/04bf22203447e5a6baafc80ccfb9a3e9182bca3b)
+on 24 October 2026. The
+[completed CI log](https://github.com/fplaunchpad/sal/actions/runs/40064692119)
+confirms all of the counts above and the repaired ledger's axiom audit.
+
 The formal result concerns this repaired typed model. Differential tests
 validate the stated source behaviours on the recorded finite scope; they
 are not JavaScript extraction or equivalence proofs. Raw demo operations

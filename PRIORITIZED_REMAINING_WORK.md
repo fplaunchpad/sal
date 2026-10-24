@@ -30,7 +30,7 @@ sole active bounded counter is the published Balegas matrix/max design.
 - [x] Integrate whole rich transactions with an actual positional caller and
   finite-store MRDT. Derive disjoint allocation and annotation-ID freshness
   from reachability, and prove ordinary/recursive carrier convergence through
-  the five VCs. The general dynamic coordinate/inheritance bridge is not proved.
+  the five VCs. The full dynamic coordinate/inheritance bridge is completed below.
 - [x] Check atomic-toggle compatibility with per-segment annotation IDs before
   claiming a rich-text certificate. Preserve any genuine source-issued
   counterexample and state the required semantic change explicitly.
@@ -61,7 +61,11 @@ sole active bounded counter is the published Balegas matrix/max design.
   3,946 Lean jobs, 18 public certificate contracts, 13 certificate tests,
   187 runtime tests and 569 benchmark records. Original failures and all
   repaired directed/generated source controls reproduce with pinned hashes.
-- [ ] Commit and push the completed campaign and verify the hosted gate.
+- [x] Commit and push the completed campaign and verify the hosted gate.
+  Revision `04bf222` passed the
+  [hosted release gate](https://github.com/fplaunchpad/sal/actions/runs/40064692119)
+  on 24 October 2026: all 3,946 Lean jobs, 18 public certificate contracts,
+  13 certificate tests, 187 runtime tests and 569 benchmark records passed.
 
   The shared-priority repaired protocol now has the positive full rich-text
   theorem. The preserved obstruction is to the earlier per-segment candidate,
