@@ -51,6 +51,33 @@ const orsetAddRm = {
   steps: [add(1, 'a'), deliver(1, 2), rm(1, 'a'), add(2, 'a'), deliver(1, 2), deliver(2, 1)],
 };
 
+// Two replicas each add one element and remove the other's, without having
+// seen it; the runtime shows both elements. The search here asks for a
+// linear extension of the whole causal order, program order included, and
+// none exists: every extension removes one element. The paper's order
+// omits edges between commuting operations, so under it the removals
+// precede the additions and the view is explained. The end-to-end check is
+// therefore RA-linearizability with respect to the causal order, which is
+// stricter here than the paper's criterion; the law layer, not this check,
+// evaluates the paper's order.
+const orsetCrossRemoval = {
+  replicas: 2,
+  steps: [add(1, 'x'), rm(1, 'y'), add(2, 'y'), rm(2, 'x'), deliver(1, 2)],
+};
+
+test('OR-set: cross removals of unseen elements have no causal-order witness, though the paper admits the view', () => {
+  const trace = execute(orsetReplicated, orsetCrossRemoval);
+  assert.deepEqual(trace.ops.map((o) => o.specOps.map((x) => x.tags ?? null)), [[null], [[]], [null], [[]]]);
+  assert.deepEqual(trace.snapshots[4].visible, ['x', 'y']);
+  const ra = trace.checks.raLinearizability;
+  assert.equal(ra.pass, false);
+  const f = ra.details.failures[0];
+  assert.equal(f.replica, 2);
+  assert.deepEqual(f.actual, ['x', 'y']);
+  assert.deepEqual(f.expected.admittedViews.map((v) => v.join('')).sort(), ['', 'x', 'y']);
+  assert.equal(trace.checks.convergence.pass, true);
+});
+
 test('OR-set: a removal concurrent with an addition of the same element keeps it', () => {
   const trace = execute(orsetReplicated, orsetAddRm);
   assertAllPass(trace);

@@ -37,6 +37,8 @@ Instances, each with a sequential specification and an adapter:
 | Automerge text with marks, 3.5.0 pinned | deployed library under test | `ra-pbt/instances/automerge`, `experiments/automerge-oracle` |
 | Loro text with styles, 1.17.1 pinned | deployed library under test | `ra-pbt/instances/loro`, `experiments/loro-oracle` |
 | Notion block editor demo (hash-pinned modules) and its corrected variant | product model under test, and its repair | `ra-pbt/instances/notion`, `experiments/notion-ra-pbt` |
+| Notion production editing code, text layer (63 assets pinned 2026-10-29, exported outside the repository) | product code under test | `ra-pbt/instances/notion-production-text`, `experiments/notion-production-text` |
+| Notion production editing code, block layer | product code under test | `ra-pbt/instances/notion-production-blocks`, `experiments/notion-production-blocks` |
 | Sal runtime OR-set and RGA | positive control, verified counterparts | `ra-pbt/instances/sal-runtime` |
 | Broken OR-set and broken RGA | negative control | `ra-pbt/instances/sal-runtime` |
 
@@ -179,6 +181,53 @@ existing experiments report. Two further demo shapes outside the catalogue
 were found, a split replayed after a concurrent merge that moves no text
 and the empty-block removal path, neither on the corrected model.
 
+### Notion production editing code, text layer (`docs/notion-production-text.md`)
+
+Measured the same way as the three libraries, the production text CRDT
+passes formatting under causal delivery: plain text satisfies the strong
+list specification and the one-sided RGA rule (not the two-sided one);
+bold is RA-linearizable under the anchor specification the operations
+record (2,000 trials, 34,596 versions, no failure); determinism,
+convergence and conservation hold over 3,800 trials; the five Yjs
+formatting classes give admitted documents. Three refuted readings: the
+positional specification lacks left-neighbour inheritance of bold (NT-1),
+the two-sided list rule (NT-2), the Yjs-style interval reading of a format
+(NT-3). The passing witness orders inserts and annotations by id and places
+each delete after the largest id in its past; it works because the list is
+RGA, format boundaries sit on the sides of existing characters, and
+conflicting formats are settled by largest id, a candidate composition
+theorem. One defect outside the client's delivery contract: under
+out-of-order delivery, an insert that arrives before its origin after the
+origin was split is rebuilt from a partial chain, and the original insert
+is then swallowed as a duplicate, losing the rest of the run for good
+(P-4). Whether Notion's transport ever delivers out of order is unknown.
+
+### Notion production editing code, block layer (`docs/notion-production-blocks.md`)
+
+Six defect classes of the production split and merge path, none of them a
+demo defect, each with a minimal trace, a control and a reproduction:
+
+| Class | Shape | Mechanism |
+|---|---|---|
+| label-divergence | concurrent splits, then an insertion into a split block is rejected at the other replica; replicas diverge for good | slice labels are reassigned by binary subdivision at every split, so they depend on the order concurrent splits were applied; a receiver routes an operation only to slices in its label's range |
+| past-boundary | a second split, or an insertion at a block's start, concurrent with a merge is rejected | the merge's split marker reserves twenty ticks, so a concurrent item sorts past the end of the origin's slice |
+| concurrent-move | two concurrent splits move the same slice; last move applied wins, no rejection | both splits move the slice by its start item |
+| stale-merge | a late duplicate merge of a removed block moves its text again | the move handler proceeds when the source block is already removed |
+| removed-anchor | a block listed after a merged-away block goes to the end of the page | `listAfter` appends when its anchor is missing |
+| order-mismatch | block order follows application order, text division follows identifiers; no single order explains both | two orders in one document |
+
+Each class shows at a replica that applied causally ordered records, so a
+sequencing server receiving them in that order would show it; what a live
+client does with a rejected transaction is outside the experiment. N-001,
+N-004 and N-005 pass on the production path; N-002 and N-003 have the
+correct local effect but the bold is rejected at the other replica by label
+divergence after the final exchange, which the main-tree replays could not
+see because they never compared replicas after a full exchange. Two harness
+choices are documented: trees are parsed with the editor's per-instance
+clock holders rather than the client adapter's single clock (the single
+clock gives two concurrent-free splits the same marker id), and clients
+share one runtime for memory.
+
 ### Sal runtime (`ra-pbt/instances/sal-runtime/README.md`)
 
 The codec omits the content id of a commit whose child follows it in the
@@ -231,6 +280,8 @@ schedule that passes.
 | Yjs reproductions | 7 of 7 on 13.6.31 and 13.6.33; 6 of 7 plus Y-008 on rc.29 |
 | Automerge: spec tests, regressions, reproductions | 12 of 12, 18 of 18, 3 of 3 |
 | Loro: spec tests, regressions, reproductions | 17 of 17, 54 of 54, 5 of 5 |
+| Notion production text: spec tests, regressions, reproductions | 14 of 14, 24 of 24, 6 of 6 |
+| Notion production blocks: spec tests, regressions, reproductions | 15 of 15, 35 of 35, 6 of 6 |
 | Notion: regressions | 34 of 34 |
 | Lean counterexamples | both build, standard axioms |
 
@@ -267,7 +318,15 @@ schedule that passes.
 
 ## Limits
 
-A pass is a measurement on a pinned version over bounded schedules, not a
+The end-to-end check is RA-linearizability with respect to the causal
+order, program order included, the standard definition; the paper's
+criterion orders only dependent and non-commuting pairs, so a view can be
+admitted by the paper and have no causal-order witness, as a pinned OR-set
+case shows (`ra-pbt/test/endtoend-sal.test.js`). Only the law layer
+evaluates the paper's order. The upstream reports rest on two-operation
+shapes where both orders agree and on specifications that retain
+identities, so this distinction does not affect them. A pass is a
+measurement on a pinned version over bounded schedules, not a
 proof. The witness search is exact but bounded (twenty events, witness
 bound twelve). The law layer samples states beyond four events. The
 runtime's `apply` is partial and the adapters fall back to the paper's

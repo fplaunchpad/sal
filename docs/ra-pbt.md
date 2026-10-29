@@ -31,7 +31,16 @@ The **end-to-end layer** (`ra-pbt/src/checks.js`) generates schedules over
 replicas of a running implementation, with deliveries, out-of-order sends
 and opened replicas, and checks convergence, RA-linearizability of every
 version by an exact witness search over the causal order, local edit
-meaning, determinism and conservation. A failure is a replayable schedule
+meaning, determinism and conservation. The witness search asks for a
+linear extension of the whole causal order, program order included, as in
+the standard definition of RA-linearizability; the paper's criterion
+orders only dependent and non-commuting pairs, so the two differ where
+commuting operations are program-ordered. A pinned OR-set case shows the
+difference: two replicas each add one element and remove the other's
+unseen element, the runtime shows both, the paper's order explains it and
+no extension of the causal order does. The end-to-end verdict is therefore
+causal-order RA-linearizability, bounded as stated under limits; the law
+layer evaluates the paper's order. A failure is a replayable schedule
 shrunk to a representative. This layer needs an adapter that can create
 replicas, issue requests and report the identities the implementation
 assigned, deliver updates and expose views.

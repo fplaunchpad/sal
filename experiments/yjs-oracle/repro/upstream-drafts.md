@@ -2,7 +2,7 @@
 
 Two issues and two comments for github.com/yjs/yjs, posted from KC's
 account on 2026-10-29: issue 1 is yjs/yjs#829, issue 2 is yjs/yjs#828, the
-comments are on #382 and #385.
+comments are on #382 and #385. Issue 2 and both comments were edited in place on 2026-10-29 (see `docs/upstream-corrections.md`); the texts below are the live ones.
 Scripts are the `v14/` versions; on 13.6.33 replace `doc.get('t')` with
 `doc.getText('t')` and read `toDelta()` directly. Each script exits
 non-zero when the defect shows.
@@ -202,11 +202,11 @@ Shape 3  observed [{"insert":"wvz"}]                                           e
 
 **Expected behavior**
 
-A format over a range marks exactly the characters in that range; a character carries the attributes of the last format that covered it; and when two users edit concurrently the merged document equals the result of applying both operations in one of the two orders. In each shape both orders give the document marked "expected", and the merged document is different from it. The deviation is always the same: characters lose formatting that the user who typed or formatted them asked for, or keep formatting that was removed.
+A format over a range marks exactly the characters in that range; a character carries the attributes of the last format that covered it; and when two users edit concurrently the merged document equals the result of applying both operations in one of the two orders. In each shape both orders give the document marked "expected", and the merged document is different from it. "Both orders" means applying each edit with the character identities and anchors recorded when it was issued, not reissuing the same numeric indices against the other replica's document: in shape 3 the insert after `b` stays anchored after `b` once `b` is a tombstone, so in either order `z` is inserted after it and is bold. The deviation is always the same: characters lose formatting that the user who typed or formatted them asked for, or keep formatting that was removed.
 
 **Relation to open issues**
 
-#382 (overlapping bolds of the same key lose a span) and #385 (a format spreads over a concurrently inserted character) are two more shapes of the same cause: the extent of a span is decided by markers and their positions rather than by the operation that created the span. #291 and #521 look like earlier sightings. All of #382, #385 and the three shapes here reproduce on 14.0.0-rc.29 and 13.6.33. I am filing one issue for the three unreported shapes rather than three because a fix for one is a fix for all: a span's extent has to be recorded with the operation that created it, or every marker that a format's result depends on has to be owned by that format.
+#382 (overlapping bolds of the same key lose a span) and #385 (a format spreads over a concurrently inserted character) are two more shapes of the same cause: the extent of a span is decided by markers and their positions rather than by the operation that created the span. #291 and #521 look like earlier sightings. All of #382, #385 and the three shapes here reproduce on 14.0.0-rc.29 and 13.6.33. I grouped the three unreported shapes into one issue because in each a formatting marker that another edit relied on was deleted or reused by a concurrent operation; they may need separate repairs, and none was tried. #382 is the overlapping-formats face of the same marker handling. #385 additionally involves how a concurrent insertion is ordered against a format boundary, which a change to marker ownership alone need not affect.
 
 **Environment**
 
@@ -216,6 +216,8 @@ A format over a range marks exactly the characters in that range; a character ca
 **How this was found**
 
 While checking Yjs text against a sequential specification of formatted text, as part of a verification project on replicated data types at IIT Madras (FP Launchpad). The specification is the one above; the list part of Y.Text passes it in every history we generated, so these are formatting results and not an artefact of a strict ordering rule. The reproductions come from a property-based testing harness, were minimised, and were checked by hand against the source; the harness was built with AI assistance.
+
+Edited 2026-10-29: the relation to #382 and #385 was narrowed (no shared fix is claimed) and the meaning of "both orders" was stated.
 
 ---
 
@@ -243,7 +245,7 @@ console.log('expected', expected, '(both orders bold all three)');
 process.exit(show(d1) === expected ? 0 : 1);
 ```
 
-The cause is shared with #385 and with the three shapes in #828: the span's extent is decided by marker positions rather than by the format that created it. Details and the other shapes there.
+This is the overlapping-formats face of the marker handling in #828, in which a format's extent is decided by marker items and their positions; the shapes there and this one may need separate repairs. Details there.
 
 ---
 
@@ -271,4 +273,4 @@ console.log('expected', expected, '(user 2 never formatted "h"; both orders give
 process.exit(show(d1) === expected ? 0 : 1);
 ```
 
-With the client ids swapped the spread happens at the right boundary instead. The cause is shared with #382 and with the three shapes in #828. Details there.
+With the client ids swapped the spread happens at the right boundary instead. This case involves how a concurrent insertion is ordered against a format boundary, which is related to but not the same mechanism as the marker reuse and cleanup in #828 and #382; a repair of one need not repair the other.
