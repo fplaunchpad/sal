@@ -1,0 +1,9554 @@
+{
+ "summary": {
+  "seed": 25,
+  "trials": 200,
+  "options": {
+   "steps": 12
+  },
+  "witnessBound": 12,
+  "edits": 1975,
+  "deliveries": 1229,
+  "sends": 0,
+  "pendingSends": 0,
+  "opens": 0,
+  "cleanups": 0,
+  "versionsChecked": 3204,
+  "witnessSkips": 0,
+  "witnessSkipsPartial": 0,
+  "causalGaps": 0,
+  "anomalies": 0,
+  "failingTrials": 9,
+  "failuresByCheck": {
+   "convergence": 0,
+   "raLinearizability": 31,
+   "localMeaning": 0,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "trialsFailingByCheck": {
+   "convergence": 0,
+   "raLinearizability": 9,
+   "localMeaning": 0,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "localMeaningByKind": {
+   "insert": 1511,
+   "delete": 464
+  },
+  "localMeaningFailuresByKind": {},
+  "rule": "both",
+  "attrs": "carry",
+  "seconds": 0.642
+ },
+ "failing": [
+  {
+   "trial": 0,
+   "seed": 25000075,
+   "schedule": {
+    "seed": 25000075,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 2,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "bu"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 1,
+      "text": "af"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "a"
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 4,
+      "text": "r"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 1,
+      "text": "o"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 2,
+      "text": "t"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "s"
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 2
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 3,
+      "text": "uk"
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 14,
+      "failureCount": 3,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 10,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "r",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "r",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "b",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           5
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           6
+          ],
+          "ch": "t",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "f",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "u",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           4
+          ],
+          "ch": "r",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "s",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r2#0",
+         "r2#1",
+         "r2#2"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 12,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "r",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "r",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "b",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           5
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           6
+          ],
+          "ch": "t",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           7
+          ],
+          "ch": "u",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           8
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "f",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "u",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           4
+          ],
+          "ch": "r",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "s",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r1#5",
+         "r2#0",
+         "r2#1",
+         "r2#2"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 13,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "r",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           },
+           {
+            "ch": "r",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "b",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           5
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           6
+          ],
+          "ch": "t",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           7
+          ],
+          "ch": "u",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           8
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "f",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "u",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           4
+          ],
+          "ch": "r",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "s",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r1#5",
+         "r2#0",
+         "r2#1",
+         "r2#2"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "bu"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "b",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "u",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "af"
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        2
+       ],
+       "ch": "a",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": [
+        1,
+        1
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        3
+       ],
+       "ch": "f",
+       "origin": [
+        1,
+        2
+       ],
+       "rightOrigin": [
+        1,
+        1
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      4
+     ],
+     "step": 1
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "a"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "a",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 2
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 4,
+      "text": "r"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        4
+       ],
+       "ch": "r",
+       "origin": [
+        1,
+        1
+       ],
+       "rightOrigin": [
+        2,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      4,
+      5
+     ],
+     "step": 5
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "o"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        5
+       ],
+       "ch": "o",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": [
+        1,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      5,
+      6
+     ],
+     "step": 6
+    },
+    {
+     "key": "r1#4",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 2,
+      "text": "t"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        6
+       ],
+       "ch": "t",
+       "origin": [
+        1,
+        5
+       ],
+       "rightOrigin": [
+        1,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      6,
+      7
+     ],
+     "step": 7
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "deleted": [
+      [
+       2,
+       0
+      ]
+     ],
+     "counters": [
+      1,
+      2
+     ],
+     "step": 8
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "s"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        2
+       ],
+       "ch": "s",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 9
+    },
+    {
+     "key": "r1#5",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 3,
+      "text": "uk"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r1#4",
+      "r2#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        7
+       ],
+       "ch": "u",
+       "origin": [
+        1,
+        6
+       ],
+       "rightOrigin": [
+        1,
+        2
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        8
+       ],
+       "ch": "k",
+       "origin": [
+        1,
+        7
+       ],
+       "rightOrigin": [
+        1,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      7,
+      9
+     ],
+     "step": 11
+    }
+   ]
+  },
+  {
+   "trial": 7,
+   "seed": 25000082,
+   "schedule": {
+    "seed": 25000082,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 2,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "yc"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "nk"
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 2
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "u"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 1,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "z"
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 2
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 4,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 14,
+      "failureCount": 2,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 9,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "u",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "z",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 10,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "u",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "u",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "z",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "yc"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "y",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "c",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "deleted": [
+      [
+       1,
+       0
+      ]
+     ],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 1
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "nk"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "n",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        1
+       ],
+       "ch": "k",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 2
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "u"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        3
+       ],
+       "ch": "u",
+       "origin": null,
+       "rightOrigin": [
+        1,
+        1
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      3,
+      4
+     ],
+     "step": 4
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2"
+     ],
+     "deleted": [
+      [
+       1,
+       1
+      ]
+     ],
+     "counters": [
+      4,
+      5
+     ],
+     "step": 5
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 1,
+      "len": 2
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0"
+     ],
+     "deleted": [
+      [
+       2,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "counters": [
+      2,
+      4
+     ],
+     "step": 6
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r2#1"
+     ],
+     "deleted": [
+      [
+       1,
+       1
+      ]
+     ],
+     "counters": [
+      4,
+      5
+     ],
+     "step": 7
+    },
+    {
+     "key": "r2#3",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "z"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        5
+       ],
+       "ch": "z",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      5,
+      6
+     ],
+     "step": 8
+    },
+    {
+     "key": "r1#4",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r2#3"
+     ],
+     "deleted": [
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       5
+      ]
+     ],
+     "counters": [
+      5,
+      7
+     ],
+     "step": 11
+    }
+   ]
+  },
+  {
+   "trial": 27,
+   "seed": 25000102,
+   "schedule": {
+    "seed": 25000102,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "s"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "c"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "pc"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "dx"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "oz"
+     },
+     {
+      "type": "deliver",
+      "from": 3,
+      "to": 2
+     },
+     {
+      "type": "deliver",
+      "from": 3,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 2,
+      "text": "a"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "delete",
+      "index": 2,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "s"
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 18,
+      "failureCount": 5,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 12,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           0
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           3
+          ],
+          "ch": "z",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "d",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           1
+          ],
+          "ch": "x",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r2#1",
+         "r3#0",
+         "r3#1"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 14,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           0
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           3
+          ],
+          "ch": "z",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "d",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           1
+          ],
+          "ch": "x",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r2#1",
+         "r3#0",
+         "r3#1"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 3,
+        "step": 15,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           0
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           6
+          ],
+          "ch": "s",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           3
+          ],
+          "ch": "z",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r2#1",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 16,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           0
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           6
+          ],
+          "ch": "s",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           3
+          ],
+          "ch": "z",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r2#1",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 17,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "z",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           0
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           6
+          ],
+          "ch": "s",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           3
+          ],
+          "ch": "z",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r2#1",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "s"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "s",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "c"
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "c",
+       "origin": null,
+       "rightOrigin": [
+        1,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      1,
+      2
+     ],
+     "step": 1
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "pc"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "p",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        1
+       ],
+       "ch": "c",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 2
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "dx"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        3,
+        0
+       ],
+       "ch": "d",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        3,
+        1
+       ],
+       "ch": "x",
+       "origin": [
+        3,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 3
+    },
+    {
+     "key": "r3#1",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "oz"
+     },
+     "deps": [
+      "r3#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        3,
+        2
+       ],
+       "ch": "o",
+       "origin": null,
+       "rightOrigin": [
+        3,
+        0
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        3,
+        3
+       ],
+       "ch": "z",
+       "origin": [
+        3,
+        2
+       ],
+       "rightOrigin": [
+        3,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      4
+     ],
+     "step": 4
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 2,
+      "text": "a"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r3#0",
+      "r3#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        2
+       ],
+       "ch": "a",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": [
+        3,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 7
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r3#0",
+      "r3#1"
+     ],
+     "deleted": [
+      [
+       1,
+       0
+      ]
+     ],
+     "counters": [
+      3,
+      4
+     ],
+     "step": 8
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     "deps": [
+      "r2#0",
+      "r3#0",
+      "r3#1"
+     ],
+     "deleted": [
+      [
+       2,
+       1
+      ]
+     ],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 9
+    },
+    {
+     "key": "r3#2",
+     "replica": 3,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 2,
+      "len": 2
+     },
+     "deps": [
+      "r3#0",
+      "r3#1"
+     ],
+     "deleted": [
+      [
+       3,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "counters": [
+      4,
+      6
+     ],
+     "step": 10
+    },
+    {
+     "key": "r3#3",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "s"
+     },
+     "deps": [
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        3,
+        6
+       ],
+       "ch": "s",
+       "origin": null,
+       "rightOrigin": [
+        3,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      6,
+      7
+     ],
+     "step": 11
+    }
+   ]
+  },
+  {
+   "trial": 89,
+   "seed": 25000164,
+   "schedule": {
+    "seed": 25000164,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 2,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "d"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "as"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 1,
+      "text": "w"
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 2,
+      "text": "f"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 1,
+      "len": 2
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "ka"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 1,
+      "text": "x"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 1,
+      "text": "v"
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 2
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 14,
+      "failureCount": 3,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 11,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "x",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "d",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "f",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "x",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           7
+          ],
+          "ch": "v",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r2#5"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 12,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "x",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "d",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "f",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "x",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           7
+          ],
+          "ch": "v",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r2#5"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 13,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           },
+           {
+            "ch": "x",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "x",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "a",
+            "attrs": {}
+           },
+           {
+            "ch": "d",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "a",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "d",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "f",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "x",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           7
+          ],
+          "ch": "v",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r2#5"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "d"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "d",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 0
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "as"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "a",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        1
+       ],
+       "ch": "s",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 1
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "w"
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        2
+       ],
+       "ch": "w",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": [
+        2,
+        1
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 2
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 2,
+      "text": "f"
+     },
+     "deps": [
+      "r1#0",
+      "r2#0",
+      "r2#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "f",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": [
+        2,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      1,
+      2
+     ],
+     "step": 4
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 1,
+      "len": 2
+     },
+     "deps": [
+      "r2#0",
+      "r2#1"
+     ],
+     "deleted": [
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "counters": [
+      3,
+      5
+     ],
+     "step": 5
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "ka"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        2
+       ],
+       "ch": "k",
+       "origin": null,
+       "rightOrigin": [
+        1,
+        0
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        3
+       ],
+       "ch": "a",
+       "origin": [
+        1,
+        2
+       ],
+       "rightOrigin": [
+        1,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      4
+     ],
+     "step": 7
+    },
+    {
+     "key": "r2#3",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "x"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        5
+       ],
+       "ch": "x",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      5,
+      6
+     ],
+     "step": 8
+    },
+    {
+     "key": "r2#4",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r2#3"
+     ],
+     "deleted": [
+      [
+       2,
+       0
+      ]
+     ],
+     "counters": [
+      6,
+      7
+     ],
+     "step": 9
+    },
+    {
+     "key": "r2#5",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "v"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r2#3",
+      "r2#4"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        7
+       ],
+       "ch": "v",
+       "origin": [
+        2,
+        5
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      7,
+      8
+     ],
+     "step": 10
+    }
+   ]
+  },
+  {
+   "trial": 107,
+   "seed": 25000182,
+   "schedule": {
+    "seed": 25000182,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "l"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "i"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "l"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 1,
+      "text": "ux"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "delete",
+      "index": 1,
+      "len": 2
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 3
+     },
+     {
+      "type": "deliver",
+      "from": 3,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 2,
+      "text": "o"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 1,
+      "text": "nw"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 2,
+      "text": "ok"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     {
+      "type": "deliver",
+      "from": 3,
+      "to": 1
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 13,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 18,
+      "failureCount": 5,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 12,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "l",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "w",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 14,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "l",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "w",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 3,
+        "step": 15,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "l",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "w",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 16,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "l",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "w",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 17,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "l",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "l",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "w",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "l"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "l",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 0
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "i"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "i",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 1
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "l"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        3,
+        0
+       ],
+       "ch": "l",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 2
+    },
+    {
+     "key": "r3#1",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "ux"
+     },
+     "deps": [
+      "r3#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        3,
+        1
+       ],
+       "ch": "u",
+       "origin": [
+        3,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        3,
+        2
+       ],
+       "ch": "x",
+       "origin": [
+        3,
+        1
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      1,
+      3
+     ],
+     "step": 3
+    },
+    {
+     "key": "r3#2",
+     "replica": 3,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 1,
+      "len": 2
+     },
+     "deps": [
+      "r3#0",
+      "r3#1"
+     ],
+     "deleted": [
+      [
+       3,
+       1
+      ],
+      [
+       3,
+       2
+      ]
+     ],
+     "counters": [
+      3,
+      5
+     ],
+     "step": 4
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 2,
+      "text": "o"
+     },
+     "deps": [
+      "r1#0",
+      "r2#0",
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "o",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": [
+        3,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      1,
+      2
+     ],
+     "step": 7
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "nw"
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        1
+       ],
+       "ch": "n",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        2
+       ],
+       "ch": "w",
+       "origin": [
+        2,
+        1
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      1,
+      3
+     ],
+     "step": 8
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 2,
+      "text": "ok"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        3
+       ],
+       "ch": "o",
+       "origin": [
+        2,
+        1
+       ],
+       "rightOrigin": [
+        2,
+        2
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        4
+       ],
+       "ch": "k",
+       "origin": [
+        2,
+        3
+       ],
+       "rightOrigin": [
+        2,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      3,
+      5
+     ],
+     "step": 9
+    },
+    {
+     "key": "r3#3",
+     "replica": 3,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     "deps": [
+      "r2#0",
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ],
+     "deleted": [
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "counters": [
+      5,
+      7
+     ],
+     "step": 10
+    }
+   ]
+  },
+  {
+   "trial": 116,
+   "seed": 25000191,
+   "schedule": {
+    "seed": 25000191,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "dq"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "kv"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "jv"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "n"
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 3
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 2
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "ec"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 2,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "pw"
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 18,
+      "failureCount": 5,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 12,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "e",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           6
+          ],
+          "ch": "e",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           7
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 14,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "e",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           6
+          ],
+          "ch": "e",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           7
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 3,
+        "step": 15,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "e",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "e",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           6
+          ],
+          "ch": "e",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           7
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "n",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r3#0"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 16,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "e",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "e",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           6
+          ],
+          "ch": "e",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           7
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "n",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r3#0"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 17,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "e",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "e",
+            "attrs": {}
+           },
+           {
+            "ch": "c",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           6
+          ],
+          "ch": "e",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           7
+          ],
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "n",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r3#0"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "dq"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "d",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "q",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "kv"
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        2
+       ],
+       "ch": "k",
+       "origin": null,
+       "rightOrigin": [
+        1,
+        0
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        3
+       ],
+       "ch": "v",
+       "origin": [
+        1,
+        2
+       ],
+       "rightOrigin": [
+        1,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      4
+     ],
+     "step": 1
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "jv"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "j",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        1
+       ],
+       "ch": "v",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 2
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "deleted": [
+      [
+       2,
+       1
+      ]
+     ],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 3
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r2#0",
+      "r2#1"
+     ],
+     "deleted": [
+      [
+       2,
+       0
+      ]
+     ],
+     "counters": [
+      3,
+      4
+     ],
+     "step": 4
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "n"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        3,
+        0
+       ],
+       "ch": "n",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 5
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     "deps": [
+      "r1#0",
+      "r1#1"
+     ],
+     "deleted": [
+      [
+       1,
+       2
+      ],
+      [
+       1,
+       3
+      ]
+     ],
+     "counters": [
+      4,
+      6
+     ],
+     "step": 8
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "ec"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        6
+       ],
+       "ch": "e",
+       "origin": null,
+       "rightOrigin": [
+        1,
+        0
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        7
+       ],
+       "ch": "c",
+       "origin": [
+        1,
+        6
+       ],
+       "rightOrigin": [
+        1,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      6,
+      8
+     ],
+     "step": 9
+    },
+    {
+     "key": "r1#4",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 2,
+      "len": 2
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3"
+     ],
+     "deleted": [
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "counters": [
+      8,
+      10
+     ],
+     "step": 10
+    },
+    {
+     "key": "r2#3",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "pw"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        4
+       ],
+       "ch": "p",
+       "origin": null,
+       "rightOrigin": [
+        1,
+        2
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        5
+       ],
+       "ch": "w",
+       "origin": [
+        2,
+        4
+       ],
+       "rightOrigin": [
+        1,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      4,
+      6
+     ],
+     "step": 11
+    }
+   ]
+  },
+  {
+   "trial": 124,
+   "seed": 25000199,
+   "schedule": {
+    "seed": 25000199,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "p"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 1,
+      "text": "ft"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "k"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "sj"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "yz"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "jo"
+     },
+     {
+      "type": "deliver",
+      "from": 3,
+      "to": 1
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 3
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 4,
+      "text": "qm"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 14,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 18,
+      "failureCount": 1,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 3,
+        "step": 13,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "m",
+            "attrs": {}
+           },
+           {
+            "ch": "j",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "j",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "j",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "m",
+            "attrs": {}
+           },
+           {
+            "ch": "j",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "s",
+            "attrs": {}
+           },
+           {
+            "ch": "j",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "p",
+            "attrs": {}
+           },
+           {
+            "ch": "f",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "m",
+            "attrs": {}
+           },
+           {
+            "ch": "j",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           3
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "p",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "f",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "t",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           4
+          ],
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           5
+          ],
+          "ch": "m",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           0
+          ],
+          "ch": "s",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "j",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           4
+          ],
+          "ch": "j",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           5
+          ],
+          "ch": "o",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r3#0",
+         "r3#1",
+         "r3#2"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "p"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "p",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "ft"
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "f",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        2
+       ],
+       "ch": "t",
+       "origin": [
+        1,
+        1
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      1,
+      3
+     ],
+     "step": 1
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "k"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        3
+       ],
+       "ch": "k",
+       "origin": null,
+       "rightOrigin": [
+        1,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      3,
+      4
+     ],
+     "step": 2
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "sj"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "s",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        1
+       ],
+       "ch": "j",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 3
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "yz"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        3,
+        0
+       ],
+       "ch": "y",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        3,
+        1
+       ],
+       "ch": "z",
+       "origin": [
+        3,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 4
+    },
+    {
+     "key": "r3#1",
+     "replica": 3,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     "deps": [
+      "r3#0"
+     ],
+     "deleted": [
+      [
+       3,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "counters": [
+      2,
+      4
+     ],
+     "step": 5
+    },
+    {
+     "key": "r3#2",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "jo"
+     },
+     "deps": [
+      "r3#0",
+      "r3#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        3,
+        4
+       ],
+       "ch": "j",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        3,
+        5
+       ],
+       "ch": "o",
+       "origin": [
+        3,
+        4
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      4,
+      6
+     ],
+     "step": 6
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 4,
+      "text": "qm"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        4
+       ],
+       "ch": "q",
+       "origin": [
+        1,
+        2
+       ],
+       "rightOrigin": [
+        3,
+        4
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        5
+       ],
+       "ch": "m",
+       "origin": [
+        1,
+        4
+       ],
+       "rightOrigin": [
+        3,
+        4
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      4,
+      6
+     ],
+     "step": 9
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 1,
+      "len": 1
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "deleted": [
+      [
+       2,
+       1
+      ]
+     ],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 10
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r2#0",
+      "r2#1"
+     ],
+     "deleted": [
+      [
+       2,
+       0
+      ]
+     ],
+     "counters": [
+      3,
+      4
+     ],
+     "step": 11
+    }
+   ]
+  },
+  {
+   "trial": 154,
+   "seed": 25000229,
+   "schedule": {
+    "seed": 25000229,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 2,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "q"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "t"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "w"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "qx"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 2,
+      "text": "wk"
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 5,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 2,
+      "text": "mk"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "qv"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 5,
+      "text": "b"
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 14,
+      "failureCount": 2,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 12,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "m",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "m",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "t",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           7
+          ],
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           8
+          ],
+          "ch": "v",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           4
+          ],
+          "ch": "m",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           5
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           9
+          ],
+          "ch": "b",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r2#5"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 13,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "m",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "t",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "t",
+            "attrs": {}
+           },
+           {
+            "ch": "m",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "v",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "t",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           7
+          ],
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           8
+          ],
+          "ch": "v",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           4
+          ],
+          "ch": "m",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           5
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           4
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           9
+          ],
+          "ch": "b",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r2#5"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 11,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 11,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "q"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "q",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "deleted": [
+      [
+       1,
+       0
+      ]
+     ],
+     "counters": [
+      1,
+      2
+     ],
+     "step": 1
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "t"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        2
+       ],
+       "ch": "t",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 2
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "w"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "w",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 3
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "qx"
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        1
+       ],
+       "ch": "q",
+       "origin": null,
+       "rightOrigin": [
+        2,
+        0
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        2
+       ],
+       "ch": "x",
+       "origin": [
+        2,
+        1
+       ],
+       "rightOrigin": [
+        2,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      1,
+      3
+     ],
+     "step": 4
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 2,
+      "text": "wk"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        3
+       ],
+       "ch": "w",
+       "origin": [
+        2,
+        2
+       ],
+       "rightOrigin": [
+        2,
+        0
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        4
+       ],
+       "ch": "k",
+       "origin": [
+        2,
+        3
+       ],
+       "rightOrigin": [
+        2,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      3,
+      5
+     ],
+     "step": 5
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 5,
+      "len": 1
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "deleted": [
+      [
+       2,
+       0
+      ]
+     ],
+     "counters": [
+      3,
+      4
+     ],
+     "step": 7
+    },
+    {
+     "key": "r1#4",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 2,
+      "text": "mk"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        4
+       ],
+       "ch": "m",
+       "origin": [
+        2,
+        1
+       ],
+       "rightOrigin": [
+        2,
+        2
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        5
+       ],
+       "ch": "k",
+       "origin": [
+        1,
+        4
+       ],
+       "rightOrigin": [
+        2,
+        2
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      4,
+      6
+     ],
+     "step": 8
+    },
+    {
+     "key": "r2#3",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     "deps": [
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "deleted": [
+      [
+       2,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ],
+     "counters": [
+      5,
+      7
+     ],
+     "step": 9
+    },
+    {
+     "key": "r2#4",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "qv"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r2#3"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        7
+       ],
+       "ch": "q",
+       "origin": null,
+       "rightOrigin": [
+        2,
+        3
+       ],
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        8
+       ],
+       "ch": "v",
+       "origin": [
+        2,
+        7
+       ],
+       "rightOrigin": [
+        2,
+        3
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      7,
+      9
+     ],
+     "step": 10
+    },
+    {
+     "key": "r2#5",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 5,
+      "text": "b"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r2#3",
+      "r2#4"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        9
+       ],
+       "ch": "b",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      9,
+      10
+     ],
+     "step": 11
+    }
+   ]
+  },
+  {
+   "trial": 174,
+   "seed": 25000249,
+   "schedule": {
+    "seed": 25000249,
+    "options": {
+     "steps": 12,
+     "withStyles": false,
+     "partialDelivery": false,
+     "openedReplicas": false,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "k"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "ay"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 2,
+      "text": "q"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 3,
+      "text": "o"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "bi"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 1,
+      "text": "k"
+     },
+     {
+      "type": "deliver",
+      "from": 3,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 4,
+      "text": "n"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 1,
+      "text": "i"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 3,
+      "text": "w"
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "delete",
+      "index": 2,
+      "len": 1
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 8,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": false,
+     "details": {
+      "runs": 18,
+      "failureCount": 5,
+      "failures": [
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 12,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "i",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "y",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "b",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           1
+          ],
+          "ch": "i",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r3#0",
+         "r3#1"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 14,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "i",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "y",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "b",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           1
+          ],
+          "ch": "i",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r3#0",
+         "r3#1"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 3,
+        "step": 15,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "i",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "y",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "b",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r3#0",
+         "r3#1",
+         "r3#2"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 1,
+        "step": 16,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "i",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "y",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "b",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r3#0",
+         "r3#1",
+         "r3#2"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       },
+       {
+        "check": "raLinearizability",
+        "replica": 2,
+        "step": 17,
+        "expected": {
+         "admittedViews": [
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ],
+          [
+           {
+            "ch": "y",
+            "attrs": {}
+           },
+           {
+            "ch": "q",
+            "attrs": {}
+           },
+           {
+            "ch": "o",
+            "attrs": {}
+           },
+           {
+            "ch": "w",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "i",
+            "attrs": {}
+           },
+           {
+            "ch": "b",
+            "attrs": {}
+           },
+           {
+            "ch": "k",
+            "attrs": {}
+           },
+           {
+            "ch": "n",
+            "attrs": {}
+           }
+          ]
+         ]
+        },
+        "actual": [
+         {
+          "id": [
+           1,
+           0
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           2
+          ],
+          "ch": "i",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           1
+          ],
+          "ch": "y",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           2
+          ],
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           3
+          ],
+          "ch": "o",
+          "attrs": {}
+         },
+         {
+          "id": [
+           2,
+           5
+          ],
+          "ch": "w",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           0
+          ],
+          "ch": "b",
+          "attrs": {}
+         },
+         {
+          "id": [
+           3,
+           2
+          ],
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "id": [
+           1,
+           1
+          ],
+          "ch": "n",
+          "attrs": {}
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3",
+         "r2#4",
+         "r3#0",
+         "r3#1",
+         "r3#2"
+        ],
+        "causalGaps": 0,
+        "signature": "raLinearizability:delete+insert"
+       }
+      ]
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": true,
+     "details": {
+      "runs": 11,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 11,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "k"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "k",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 0
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "ay"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        2,
+        0
+       ],
+       "ch": "a",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        2,
+        1
+       ],
+       "ch": "y",
+       "origin": [
+        2,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 1
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 2,
+      "text": "q"
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        2
+       ],
+       "ch": "q",
+       "origin": [
+        2,
+        1
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 2
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 3,
+      "text": "o"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        3
+       ],
+       "ch": "o",
+       "origin": [
+        2,
+        2
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      3,
+      4
+     ],
+     "step": 3
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "bi"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        3,
+        0
+       ],
+       "ch": "b",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        3,
+        1
+       ],
+       "ch": "i",
+       "origin": [
+        3,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 4
+    },
+    {
+     "key": "r3#1",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "k"
+     },
+     "deps": [
+      "r3#0"
+     ],
+     "chars": [
+      {
+       "id": [
+        3,
+        2
+       ],
+       "ch": "k",
+       "origin": [
+        3,
+        0
+       ],
+       "rightOrigin": [
+        3,
+        1
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 5
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 4,
+      "text": "n"
+     },
+     "deps": [
+      "r1#0",
+      "r3#0",
+      "r3#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "n",
+       "origin": [
+        3,
+        1
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      1,
+      2
+     ],
+     "step": 7
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 1,
+      "text": "i"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r3#0",
+      "r3#1"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        2
+       ],
+       "ch": "i",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": [
+        3,
+        0
+       ],
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      2,
+      3
+     ],
+     "step": 8
+    },
+    {
+     "key": "r2#3",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "deleted": [
+      [
+       2,
+       0
+      ]
+     ],
+     "counters": [
+      4,
+      5
+     ],
+     "step": 9
+    },
+    {
+     "key": "r2#4",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 3,
+      "text": "w"
+     },
+     "deps": [
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r2#3"
+     ],
+     "chars": [
+      {
+       "id": [
+        2,
+        5
+       ],
+       "ch": "w",
+       "origin": [
+        2,
+        3
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      5,
+      6
+     ],
+     "step": 10
+    },
+    {
+     "key": "r3#2",
+     "replica": 3,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 2,
+      "len": 1
+     },
+     "deps": [
+      "r3#0",
+      "r3#1"
+     ],
+     "deleted": [
+      [
+       3,
+       1
+      ]
+     ],
+     "counters": [
+      3,
+      4
+     ],
+     "step": 11
+    }
+   ]
+  }
+ ],
+ "shrunk": []
+}

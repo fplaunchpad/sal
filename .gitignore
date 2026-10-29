@@ -24,3 +24,6 @@ __pycache__/
 
 # Generated standalone paper artifact (rebuild with artifact/export-paper1.py).
 /artifact/dist/
+
+# Locked third-party packages are acquired locally, never source artifacts.
+**/node_modules/

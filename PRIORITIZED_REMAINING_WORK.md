@@ -8,6 +8,46 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Review and publish the property-testing results
+
+- [x] Import the added sources from `yjs-oracle` revision `14f073e` without
+  replacing the newer framework, rich-text certificates or unrelated work.
+- [x] Correct bounded-search verdicts and independently check the VC
+  transcription, specification choices and representative library failures.
+- [x] Repair and regression-test duplicate ingestion of overlapping encoded
+  deltas in both runtime clients.
+- [ ] Update the chosen paper with evidence-supported, version-scoped claims.
+- [ ] Add reproducible property tests and library counterexamples to the
+  anonymous artifact; check source integrity, commands and claim boundaries.
+- [ ] Run the relevant Lean, JavaScript, paper and artifact checks, and record
+  the review in the Claude exchange.
+
+## Production Notion client extraction
+
+- [x] Replay the five reported demo failures using the production split/merge
+  request builders and record handlers; retain intermediate layouts, causal
+  delivery checks and independent local-contract comparisons. Re-run the
+  original demo as a failing control and distinguish this harness from live UI.
+  Ten analogous schedules (both replica-ID orders) did not reproduce a failure;
+  all 50 local contracts passed. All five critical demo layouts differed. The
+  fresh original-demo run reproduced five failures and one passing control.
+
+- [x] Pin the public production bundles and extract their module bodies using
+  a JavaScript parser, with reproducible download and integrity checks.
+- [x] Run the original text-slice and slice-tree implementation offline;
+  fail explicitly on missing modules or unsupported runtime dependencies.
+- [x] Exercise insertion, deletion, formatting, splitting and controlled
+  delivery between independent instances, with positive and negative controls.
+- [x] Isolate the cross-block operation handlers and identify the record
+  adapter needed to run the existing split/merge traces.
+- [x] Document the executable interface, source provenance, test results and
+  remaining difference from testing the live production application.
+
+  The [extraction experiment](experiments/notion-production-client/README.md)
+  pins 63 public assets and exports 4,335 original module bodies. Its 19 tests
+  pass, including original record-level split/move/merge handlers and independent
+  delivery. Full UI transactions and production bug reproduction remain separate.
+
 ## Notion bold-formatting formalisation
 
 - [x] Model the demo's annotation anchors, interval coverage and last-writer

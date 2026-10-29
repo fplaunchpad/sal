@@ -5,6 +5,7 @@ import ast
 import hashlib
 import gzip
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -13,6 +14,83 @@ import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / 'artifact' / 'paper1'
+
+# Executable support is selected explicitly; the Lean import closure below
+# continues to require tracked sources. These trees contain only first-party
+# harnesses and lockfiles, not the libraries they execute.
+PBT_EXPERIMENTS = ('yjs-oracle', 'automerge-oracle', 'loro-oracle', 'notion-ra-pbt')
+RUNTIME_TESTS = ('ingest', 'hash', 'dag', 'rga', 'virtual-lca', 'commitbatch', 'applybatch', 'mint')
+
+
+def copy_pbt_support(out):
+    selected = set()
+    for directory in ('ra-pbt', 'runtime/src', *(f'experiments/{n}' for n in PBT_EXPERIMENTS)):
+        for here, dirs, names in os.walk(ROOT / directory, followlinks=False):
+            dirs[:] = sorted(d for d in dirs if d not in {
+                'node_modules', '.git', '.lake', '__pycache__', 'results'})
+            for name in sorted(names):
+                path = Path(here) / name
+                if path.is_symlink():
+                    raise SystemExit('Refusing symlink in executable support: ' + str(path))
+                if path.suffix not in {'.js', '.mjs', '.py', '.json', '.md'} or name.startswith('upstream-drafts'):
+                    continue
+                selected.add(str(path.relative_to(ROOT)))
+    selected |= {'runtime/package.json', 'experiments/notion-oracle/sources.json',
+                 'experiments/notion-merge-design/design-patch/patch.py'}
+    selected |= {f'runtime/test/{name}.test.js' for name in RUNTIME_TESTS}
+    # Include the first-party sequential specifications imported by adapters;
+    # these are outside the experiment-driver trees selected above.
+    pending = list(selected)
+    while pending:
+        filename = pending.pop()
+        if Path(filename).suffix not in {'.js', '.mjs'}:
+            continue
+        text = (ROOT / filename).read_text()
+        for ref in re.findall(r'''(?:from\s*|import\s*)['"](\.[^'"]+)['"]''', text):
+            dependency = (ROOT / filename).parent.joinpath(ref).resolve()
+            if not dependency.is_relative_to(ROOT) or 'node_modules' in dependency.parts:
+                raise SystemExit('Unexpected executable support import: ' + ref + ' in ' + filename)
+            if not dependency.is_file():
+                raise SystemExit('Missing executable support import: ' + ref + ' in ' + filename)
+            relative = str(dependency.relative_to(ROOT))
+            if relative not in selected:
+                selected.add(relative)
+                pending.append(relative)
+    for filename in sorted(selected):
+        destination = out / filename
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        text = (ROOT / filename).read_text()
+        if filename.endswith('/repro/README.md'):
+            # Posted reports link back to identifying user accounts. Keep the
+            # executable reproductions and version table, omit report history.
+            text = re.sub(r'\nPosted upstream\b.*\Z', '\n', text, flags=re.S)
+        write(destination, text)
+
+    recorded = out / 'recorded/pbt'
+    record_inputs = {}
+    for name in PBT_EXPERIMENTS:
+        for path in sorted((ROOT / 'experiments' / name / 'results').glob('*.json')):
+            # Large raw failing-trial dumps and logs are intentionally omitted.
+            # Keep aggregate counters and every already-shrunk representative.
+            if path.name.startswith('left-search-'):
+                continue
+            data = json.loads(path.read_text())
+            if path.name == 'campaign.json' and name != 'notion-ra-pbt':
+                for run in data.get('runs', []):
+                    run.pop('trials', None)
+                    if 'source' in run:
+                        run['omitted_raw_source'] = run.pop('source')
+                data['artifact_selection'] = 'Aggregate counters and all stored representatives; per-trial records, raw search dumps and logs omitted.'
+            write(recorded / name / path.name, json.dumps(data, indent=2) + '\n')
+            record_inputs[str(path.relative_to(ROOT))] = sha(path)
+    write(recorded / 'selection.json', json.dumps({
+        'input_sha256': record_inputs,
+        'selection': 'Top-level JSON evidence, with per-trial lists removed from external campaign summaries; all stored representative schedules retained.',
+        'omitted': ['node_modules and downloaded third-party sources', 'upstream-drafts and posted-report history',
+                    'raw campaign subdirectories and logs', 'redundant Loro left-search no-failure dumps'],
+        'interpretation': 'Recorded bounded experiments, not library proofs. Notion law snapshots predate inconclusive-status reporting; rerun current code for honest statuses.',
+    }, indent=2) + '\n')
+    return selected
 
 
 def sha(path):
@@ -26,6 +104,7 @@ def write(path, data):
 
 def anonymous_text(text):
     # Token-boundary replacements preserve words such as “causal” and all lines.
+    text = text.replace('// "SAL", binary-wire version 1', '// Binary-wire version 1; original magic bytes retained.')
     text = text.replace('Types* (Soundarapandian,\nKamath, Nagar, Sivaramakrishnan; PLDI 2022)', 'Types* (PLDI\n2022)')
     text = re.sub(r'\bVimala\b', 'CertifiedMRDTs2022', text)
     return re.sub(r'\bsal\b', 'artifact', re.sub(r'\bSal\b', 'Artifact', text))
@@ -77,10 +156,12 @@ def anonymise(out):
         obj = json.loads(path.read_text())
         obj['source_sha256'] = {f: sha(out / f) for f in obj['source_sha256']}
         if name == 'provenance.json':
+            obj['support_source_sha256'] = {f: sha(out / f) for f in obj['support_source_sha256']}
             obj['packaging_adaptations'] += [
                 'Neutral project/module names; no change to proof structure or source line counts.',
                 'Repository revision metadata removed; source hashes recomputed after renaming.',
-                'Unused legacy tactic macro and its package dependency removed; source line numbers preserved.']
+                'Unused legacy tactic macro and its package dependency removed; source line numbers preserved.',
+                'Original binary-wire magic bytes retained for format compatibility; identifying comment neutralized.']
         write(path, json.dumps(obj, indent=2) + '\n')
     forbidden = re.compile(r'\bSal\b|\bsal\b|kayceesrk|kcsrk|fplaunchpad|Sivaramakrishnan|Soundarapandian|Vimala|Kartik|/Users/kc|olp_[A-Za-z0-9]+', re.I)
     for path in out.rglob('*'):
@@ -114,7 +195,9 @@ def main():
     seeds |= {'Sal/MRDTs/Paper1/OperationLabelsInvariant.lean',
               'Sal/MRDTs/Instances/NotionSplitSpec.lean',
               'Sal/MRDTs/Instances/NotionFormattingCounterexample.lean',
-              'Sal/MRDTs/Instances/NotionMergeLossCounterexample.lean'}
+              'Sal/MRDTs/Instances/NotionMergeLossCounterexample.lean',
+              'Sal/MRDTs/Instances/YjsMarkerCounterexample.lean',
+              'Sal/MRDTs/Instances/YjsDeleteSetCounterexample.lean'}
     files, pending = set(), list(seeds)
     tracked = set(subprocess.check_output(['git', 'ls-files'], cwd=ROOT, text=True).splitlines())
     while pending:
@@ -129,6 +212,7 @@ def main():
                 pending.extend(mod.replace('.', '/') + '.lean' for mod in line[7:].split()
                                if mod.startswith('Sal.'))
     shutil.copytree(TEMPLATE, out, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+    support_files = copy_pbt_support(out)
     for filename in sorted(files | {'lean-toolchain', 'lakefile.toml', 'lake-manifest.json'}):
         destination = out / filename
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -140,6 +224,13 @@ def main():
     # Preserve the original counting code, changing only its imports and revision
     # lookup so it works without the larger repository ledger or .git directory.
     adaptations = []
+    adaptations += [
+        'Executable PBT harnesses, exact npm lockfiles, external-library verifiers and standalone reproductions included; third-party installations excluded.',
+        'Runtime source plus eight portable test files included, including the binary overlapping-delta ingest regression; no runtime extraction or GC result claimed.',
+        'Recorded campaign summaries retain aggregate counters and all stored representatives, omitting per-trial lists, raw search dumps and logs; recorded/pbt/selection.json identifies inputs.',
+        'Posted-report drafts and identifying upstream-report history omitted from reproduction READMEs.',
+        'Notion PBT includes its original seven-module source manifest and exact design patcher; anchor-absorb is an older experiment, separate from the current rich Lean model.',
+    ]
     for name in ['measure.py', 'measure_metatheory.py']:
         text = (ROOT / 'experiments/paper-implementation' / name).read_text()
         text = text.replace('Sal.MRDTs.Metatheory.RefactorLedger', 'Sal.Artifact.Paper')
@@ -186,6 +277,14 @@ def main():
         'Sal.MRDTs.Instances.NotionCoreMRDTClient.merge_effect',
         'Sal.MRDTs.Instances.NotionCoreSpecMerge.merge_text_conserved',
         'Sal.MRDTs.Instances.NotionCoreStructuralRender.SPOT.merge_outside_scope',
+        'Sal.MRDTs.Instances.YjsMarkerCounterexample.merged_not_sequential',
+        'Sal.MRDTs.Instances.YjsMarkerCounterexample.closer_control',
+        'Sal.MRDTs.Instances.YjsMarkerCounterexample.live_closer_control',
+        'Sal.MRDTs.Instances.YjsDeleteSetCounterexample.gap_render',
+        'Sal.MRDTs.Instances.YjsDeleteSetCounterexample.delivery',
+        'Sal.MRDTs.Instances.YjsDeleteSetCounterexample.integrated_not_closed',
+        'Sal.MRDTs.Instances.YjsDeleteSetCounterexample.no_admitted_view',
+        'Sal.MRDTs.Instances.YjsDeleteSetCounterexample.arrival_control',
     }
     imports = '\n'.join('import ' + f[:-5].replace('/', '.') for f in sorted(seeds))
     audit = r'''
@@ -217,6 +316,7 @@ elab "audit_paper " n:ident : command => do
                   'selected_roots': sorted(roots), 'paper_rows': counts['paper_row_count'],
                   'configurations': counts['configuration_count'],
                   'source_sha256': {f: sha(ROOT / f) for f in sorted(files)},
+                  'support_source_sha256': {f: sha(ROOT / f) for f in sorted(support_files)},
                   'packaging_adaptations': adaptations,
                   'dependency_only_gc_modules': sorted(f for f in files if 'GC' in f),
                   'scope': 'Paper proofs and supporting reproductions; no GC result is an artifact claim.'}

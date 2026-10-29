@@ -9,6 +9,12 @@ root = Path(__file__).resolve().parents[1]
 manifest = json.loads((root / 'manifest.json').read_text())['sha256']
 # Build products and locally downloaded demo modules are not shipped sources.
 ignored_dirs = {'.lake', 'results', 'vendor/notion'}
+for name in ('yjs', 'automerge', 'loro'):
+    ignored_dirs.add(f'ra-pbt/instances/{name}/node_modules')
+for name in ('yjs-oracle', 'automerge-oracle', 'loro-oracle', 'notion-ra-pbt'):
+    ignored_dirs.add(f'experiments/{name}/results')
+    ignored_dirs.add(f'experiments/{name}/repro/node_modules')
+ignored_dirs.add('experiments/yjs-oracle/repro/v14/node_modules')
 actual = set()
 for directory, dirs, names in os.walk(root):
     relative = Path(directory).relative_to(root)

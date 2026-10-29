@@ -1,0 +1,74 @@
+sources verified: yjs@13.6.31
+seed                                            19
+trials                                          200
+options                                         {"steps":12,"withFormat":true,"partialDelivery":true,"openedReplicas":true}
+edits                                           1599
+deliveries                                      820
+sends (pending after)                           578 (115)
+opens                                           223
+cleanup events                                  29
+versions checked                                3197
+witness skips (bound / partial)                 0 / 23
+causal gaps                                     53
+execution anomalies                             0
+failing trials                                  51
+  convergence (failures / trials)               0 / 0
+  raLinearizability (failures / trials)         190 / 49
+  localMeaning (failures / trials)              1 / 1
+  determinism (failures / trials)               3 / 3
+  conservation (failures / trials)              0 / 0
+  localMeaning on insert (failures / requests)  0 / 990
+  localMeaning on delete (failures / requests)  1 / 304
+  localMeaning on format (failures / requests)  0 / 305
+
+raLinearizability:delete+insert  (trial 7, 12 -> 6 steps)
+  r1 insert 0 "d"
+  r1 insert 1 "ds" {"bold":true}
+  r1 delete [0,2)
+  open r2 from 1
+  r1 insert 1 "l" {"bold":true}
+  r2 delete [0,1)
+  failure: {"replica":2,"step":6,"expected":{"admittedViews":["l(bold)"]},"actual":"l","opKeys":["r1#0","r1#1","r1#2","r1#3","r2#0"]}
+
+raLinearizability:delete+format+insert  (trial 7, 12 -> 7 steps)
+  r1 insert 0 "d"
+  r1 insert 1 "d" {"bold":true}
+  r1 delete [0,1)
+  open r2 from 1
+  open r3 from 2
+  r1 insert 1 "l" {"bold":true}
+  r3 format [0,1) {"bold":null}
+  failure: {"replica":3,"step":8,"expected":{"admittedViews":["d l(bold)"]},"actual":"d l","opKeys":["r1#0","r1#1","r1#2","r1#3","r3#0"]}
+
+determinism:delete:delete+format+insert  (trial 10, 12 -> 4 steps)
+  r2 insert 0 "sr" {"bold":true}
+  r2 insert 2 "u"
+  r2 format [0,1) {"italic":true}
+  r2 delete [1,2)
+  failure: {"replica":2,"step":3,"request":{"kind":"delete","index":1,"len":1},"before":"s(bold,italic) r(bold) u","expected":{"visible":"s(bold,italic) u"},"actual":{"visible":"s(bold,italic) u(bold,italic)"},"actorOutcome":"s(bold,italic) u","actorOpened":false,"opKeys":["r2#0","r2#1","r2#2","r2#3"]}
+
+raLinearizability:format+insert  (trial 23, 12 -> 4 steps)
+  r1 insert 0 "i"
+  open r2 from 1
+  r1 format [0,1) {"bold":true}
+  r2 insert 0 "h" {"bold":true}
+  failure: {"replica":2,"step":4,"expected":{"admittedViews":["h(bold) i(bold)"]},"actual":"h(bold) i","opKeys":["r1#0","r1#1","r2#0","r2#1"]}
+
+localMeaning:delete:delete+insert  (trial 65, 12 -> 5 steps)
+  r1 insert 0 "ao"
+  r1 insert 1 "p" {"bold":true}
+  open r2 from 1
+  r2 insert 2 "m" {"bold":true}
+  r2 delete [2,3)
+  failure: {"replica":2,"step":4,"request":{"kind":"delete","index":2,"len":1},"before":"a p(bold) m(bold) o","expected":"a p(bold) o","actual":"a p(bold) o(bold)","opKeys":["r1#0","r1#1","r2#0","r2#1"]}
+
+determinism:delete:delete+insert  (trial 65, 12 -> 5 steps)
+  r1 insert 0 "ao"
+  r1 insert 1 "p" {"bold":true}
+  open r2 from 1
+  r2 insert 2 "m" {"bold":true}
+  r2 delete [2,3)
+  failure: {"replica":2,"step":4,"request":{"kind":"delete","index":2,"len":1},"before":"a p(bold) m(bold) o","expected":{"visible":"a p(bold) o"},"actual":{"visible":"a p(bold) o(bold)"},"actorOutcome":"a p(bold) o(bold)","actorOpened":true,"opKeys":["r1#0","r1#1","r2#0","r2#1"]}
+sources verified after run
+(node:75025) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)

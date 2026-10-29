@@ -1,0 +1,586 @@
+{
+ "summary": {
+  "seed": 31,
+  "trials": 200,
+  "options": {
+   "withFormat": true,
+   "partialDelivery": true,
+   "openedReplicas": false
+  },
+  "witnessBound": 12,
+  "edits": 1770,
+  "deliveries": 876,
+  "sends": 630,
+  "pendingSends": 237,
+  "opens": 0,
+  "cleanups": 0,
+  "versionsChecked": 3276,
+  "witnessSkips": 0,
+  "witnessSkipsPartial": 0,
+  "causalGaps": 0,
+  "anomalies": 0,
+  "failingTrials": 1,
+  "failuresByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 1,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "trialsFailingByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 1,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "localMeaningByKind": {
+   "insert": 1147,
+   "format": 358,
+   "delete": 265
+  },
+  "localMeaningFailuresByKind": {
+   "insert": 1
+  },
+  "semantics": "marker",
+  "mix": "partial-marks"
+ },
+ "failing": [
+  {
+   "trial": 35,
+   "seed": 31000128,
+   "schedule": {
+    "seed": 31000128,
+    "options": {
+     "steps": 12,
+     "withFormat": true,
+     "partialDelivery": true,
+     "openedReplicas": false
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "t",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 1,
+      "text": "q",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "ah",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "g",
+      "attrs": {
+       "bold": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "format",
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "link": "u303977"
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "send",
+      "from": 1,
+      "to": 3,
+      "op": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 1,
+      "text": "q",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 2,
+      "text": "n",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 2,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "format",
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "link": "u566279"
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "cx",
+      "attrs": {}
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": true,
+     "details": {
+      "runs": 18,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": false,
+     "details": {
+      "runs": 11,
+      "failureCount": 1,
+      "failures": [
+       {
+        "check": "localMeaning",
+        "replica": 3,
+        "step": 11,
+        "request": {
+         "kind": "insert",
+         "index": 0,
+         "text": "cx",
+         "attrs": {}
+        },
+        "before": [],
+        "expected": [
+         {
+          "ch": "c",
+          "attrs": {}
+         },
+         {
+          "ch": "x",
+          "attrs": {}
+         }
+        ],
+        "actual": [
+         {
+          "ch": "c",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "x",
+          "attrs": {
+           "bold": true
+          }
+         }
+        ],
+        "opKeys": [
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "signature": "localMeaning:insert:delete+format+insert"
+       }
+      ]
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 11,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "t",
+      "attrs": {}
+     },
+     "deps": [],
+     "hash": "1ac95cccc1ac9183f2d85e93e7a91c3ce84dc6b703b9c6b226a5ee9b1815cd85",
+     "chars": [
+      {
+       "id": "2@01",
+       "ch": "t",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 1,
+      "text": "q",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "hash": "ec97ed6a5cb9d2c02281a01b4697700e343d8861bb0aa48291d415e09bbf2467",
+     "chars": [
+      {
+       "id": "3@01",
+       "ch": "q",
+       "origin": "2@01",
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 1
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "ah",
+      "attrs": {}
+     },
+     "deps": [],
+     "hash": "50db1b178addb428e68069a4f4b9ed58f54247d37c33c726e1a934d45d2c2e04",
+     "chars": [
+      {
+       "id": "2@02",
+       "ch": "a",
+       "origin": null,
+       "rightOrigin": null
+      },
+      {
+       "id": "3@02",
+       "ch": "h",
+       "origin": "2@02",
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 2
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "g",
+      "attrs": {
+       "bold": true
+      }
+     },
+     "deps": [],
+     "hash": "0e794ef2c7f221920ac2973747451f77529675c2f024cf1ca51ac4ef6da140ef",
+     "chars": [
+      {
+       "id": "2@03",
+       "ch": "g",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [
+      {
+       "id": "3@03",
+       "name": "bold",
+       "value": true,
+       "expand": "after",
+       "start": {
+        "side": "before",
+        "id": "2@03"
+       },
+       "end": null,
+       "begin": [
+        "3@03",
+        null,
+        "2@03"
+       ],
+       "endBoundary": [
+        "4@03",
+        "2@03",
+        null
+       ]
+      }
+     ],
+     "step": 3
+    },
+    {
+     "key": "r3#1",
+     "replica": 3,
+     "kind": "format",
+     "request": {
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "link": "u303977"
+      }
+     },
+     "deps": [
+      "r3#0"
+     ],
+     "hash": "4511b212d3f472f7900ca5d7e2f9fa0ae51881bd816afe45f6de78f82b0f3291",
+     "marks": [
+      {
+       "id": "5@03",
+       "name": "link",
+       "value": "u303977",
+       "expand": "none",
+       "start": {
+        "side": "before",
+        "id": "2@03"
+       },
+       "end": {
+        "side": "after",
+        "id": "2@03"
+       },
+       "begin": [
+        "5@03",
+        null,
+        "3@03"
+       ],
+       "endBoundary": [
+        "6@03",
+        "2@03",
+        "4@03"
+       ]
+      }
+     ],
+     "step": 4
+    },
+    {
+     "key": "r3#2",
+     "replica": 3,
+     "kind": "delete",
+     "request": {
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r3#0",
+      "r3#1"
+     ],
+     "hash": "c1cf535ee9a5683dbe49ccf1a814bccdfed8f330e306d398eacb7efef2193a19",
+     "deleted": [
+      "2@03"
+     ],
+     "step": 5
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 1,
+      "text": "q",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0",
+      "r1#1"
+     ],
+     "hash": "a1ee75d531ba11346378466976c5fe402927f00e0e3c0f0f295770ae72f745df",
+     "chars": [
+      {
+       "id": "4@01",
+       "ch": "q",
+       "origin": "2@01",
+       "rightOrigin": "3@01"
+      }
+     ],
+     "marks": [],
+     "step": 7
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 2,
+      "text": "n",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2"
+     ],
+     "hash": "a731f8c6309be10123cf9398f9a33ddcc236c4518e2c24f46b1a82cbbe7f0d46",
+     "chars": [
+      {
+       "id": "5@01",
+       "ch": "n",
+       "origin": "4@01",
+       "rightOrigin": "3@01"
+      }
+     ],
+     "marks": [],
+     "step": 8
+    },
+    {
+     "key": "r1#4",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "index": 2,
+      "len": 1
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3"
+     ],
+     "hash": "2739781dff6a524716d281957251fcc35fb2f853b5c01cee24ffc9ca4f9ab477",
+     "deleted": [
+      "5@01"
+     ],
+     "step": 9
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "format",
+     "request": {
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "link": "u566279"
+      }
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "hash": "4bf74755eabd2c53592be4bd9bcb8200e1fa0c3faecdf598d050de82d15bb8b9",
+     "marks": [
+      {
+       "id": "4@02",
+       "name": "link",
+       "value": "u566279",
+       "expand": "none",
+       "start": {
+        "side": "before",
+        "id": "2@02"
+       },
+       "end": {
+        "side": "after",
+        "id": "2@02"
+       },
+       "begin": [
+        "4@02",
+        null,
+        "2@02"
+       ],
+       "endBoundary": [
+        "5@02",
+        "2@02",
+        "3@02"
+       ]
+      }
+     ],
+     "step": 10
+    },
+    {
+     "key": "r3#3",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "cx",
+      "attrs": {}
+     },
+     "deps": [
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ],
+     "hash": "b426af6049cb06db122a8092781a11e38f6f76a0fe5c69bb4a236b259ea5d665",
+     "chars": [
+      {
+       "id": "8@03",
+       "ch": "c",
+       "origin": "6@03",
+       "rightOrigin": "4@03"
+      },
+      {
+       "id": "9@03",
+       "ch": "x",
+       "origin": "8@03",
+       "rightOrigin": "4@03"
+      }
+     ],
+     "marks": [],
+     "step": 11
+    }
+   ]
+  }
+ ],
+ "shrunk": []
+}

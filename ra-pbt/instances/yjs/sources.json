@@ -1,0 +1,10 @@
+{
+  "package": "yjs",
+  "version": "13.6.31",
+  "resolved": "https://registry.npmjs.org/yjs/-/yjs-13.6.31.tgz",
+  "integrity": "sha512-Eq+5BRfbeGyqGVrTJL3bEcr8gKkxPuyuoHmAwpk52fDb8kOVMrfVSTRPd6yiGgX5Fskb96qCRjzjbRjrL4YEnw==",
+  "sha256": {
+    "node_modules/yjs/dist/yjs.mjs": "da487316488770c06877210d76e30b7d4daaef826731b1630fcea18ea2a3365a",
+    "node_modules/yjs/package.json": "ebe6efd8e33ebc6bc9fea6cce26bf3156733b7156a2889d203bffc1a200b8914"
+  }
+}

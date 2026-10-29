@@ -2,8 +2,9 @@
 
 This is a standalone Lean source package for the paper's framework, MRDT
 implementations and sequential specifications. It also includes reproducible
-experiments for five bugs in Notion's public CRDT demo and the data and scripts
-behind the implementation table. No development checkout, Git history, browser,
+experiments for five bugs in Notion's public CRDT demo, bounded PBT support for
+replicated implementations, and the data and scripts behind the implementation
+table. No development checkout, Git history, browser,
 Overleaf account or private credentials are needed.
 
 Start with [the numbered paper-to-source index](docs/paper-index.md),
@@ -30,17 +31,18 @@ lake exe cache get
 sh scripts/check.sh
 ```
 
-`check-manifest.py` verifies the shipped files, the 444 measured source hashes,
+`check-manifest.py` verifies the shipped files, the measured source hashes,
 and local Lean imports. It also rejects unexpected files outside the documented
 build/output directories (`.lake/`, `results/`, `vendor/notion/`, and Python
-bytecode caches). `check.sh` builds `Sal.Artifact.Guide` and audits the
-252 selected declarations and all their transitive axiom dependencies. Only
+bytecode caches, the documented npm installation paths and experiment results).
+`check.sh` builds `Sal.Artifact.Guide` and audits the selected declarations
+listed in `provenance.json` and all their transitive axiom dependencies. Only
 `propext`, `Classical.choice`, and `Quot.sound` are permitted; a `sorry` in any
 of these dependency chains fails the audit.
 
 This audit does not cover every declaration compiled by the build. In
 particular, other concrete examples use `native_decide`; compiling them is
-separate from auditing the 252 selected declarations. Expect `PAPER_CHECKED`
+separate from auditing the selected declarations. Expect `PAPER_CHECKED`
 records and a successful build. Repeated builds may reuse checked outputs.
 
 For an annotated reading path, open
@@ -72,6 +74,25 @@ sequences, expected/observed results, source boundaries and Lean counterparts.
 The findings concern the pinned public educational demo, not Notion production.
 Saved observations are in `notion/recorded-observations.jsonl`; the command
 executes the requests afresh rather than returning this file.
+
+## Reproduce the bounded PBT checks
+
+With Node.js 18 or newer and npm installed:
+
+```sh
+python3 scripts/check-pbt.py
+python3 scripts/check-pbt.py --install
+python3 scripts/check-pbt.py --external
+```
+
+The first command runs offline harness, selected runtime and specification
+tests. The second explicitly acquires the locked Yjs, Automerge and Loro
+releases and checks their asserted regressions; the third repeats them offline.
+Use the [PBT reproduction guide](docs/pbt-reproduction.md) for the older Notion
+`anchor-absorb` instance, standalone release comparisons, law-result statuses,
+and the two checked Yjs semantic counterparts. Recorded evidence and its
+selection policy are in `recorded/pbt/`. Passing bounded tests does not verify
+an external library, and no GC result is claimed.
 
 ## Reproduce the paper's code counts
 
@@ -111,13 +132,12 @@ paper *Certified mergeable replicated data types*.
 
 ## Recorded validation
 
-[validation.json](validation.json) records the checked environment and results:
-a clean build of all supplied Lean sources with 252 root audits, an exact match
-of all 24 table rows and 444 measured source hashes, the generic theorem counts,
-and a fresh download followed by offline reproduction of the five demo bugs.
-The clean build reused the pinned third-party Lake package cache; it did not
-reuse any compiled project output. Full initial dependency acquisition was not part
-of this validation run.
+[validation.json](validation.json) preserves validation of the earlier proof
+bundle as historical evidence. It does not claim that the newly added support
+has completed a fresh combined export build. Run `scripts/check.sh` and the PBT
+commands above for this snapshot; the latter writes current command results
+to `results/pbt/summary.json`. The earlier build reused pinned third-party Lake
+packages and did not validate fresh external dependency acquisition.
 
 ## Contents and scope
 
@@ -128,7 +148,11 @@ of this validation run.
 | `docs/` | Numbered paper index, claim map, datatype guide and Notion reproduction instructions |
 | `measurements/` | Paper table, exact selected roots, source hashes and counting scripts |
 | `notion/` | First-party regression fixtures, independent local specification, pinned source manifest and recorded observations |
-| `scripts/` | Integrity/build checks and Notion runner; counting-script support modules |
+| `ra-pbt/` | Dependency-free schedule/law harness, independent specifications, adapters and tests; npm pins for external instances |
+| `runtime/` | Handwritten runtime source and eight portable test files, including overlapping binary-delta ingestion |
+| `experiments/` | External-library and older Notion PBT runners, standalone repros, original Notion manifest and exact design patcher |
+| `recorded/pbt/` | Compact historical evidence, representative traces and input-selection hashes |
+| `scripts/` | Integrity/build checks, Notion and PBT runners; counting-script support modules |
 | `manifest.json`, `provenance.json` | File integrity and packaging changes |
 
 The two `scripts/*paper1-automation*.py` modules support the counting scripts.

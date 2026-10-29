@@ -23,8 +23,18 @@ executions with inconsistently supplied arguments.
 The [paper artifact exporter](artifact/README.md) produces a standalone Lean
 source bundle with neutral project/module names, numbered paper-to-source
 references, an annotated Lean reading guide, reproducible implementation-table
-counts, and five public Notion demo bug reproductions. Its clean source build
-checks 252 selected roots; no development checkout is needed to use the bundle.
+counts, five public Notion demo bug reproductions, and bounded property tests.
+Its source build audits 260 selected roots, including two small Yjs semantic
+counterexamples; no development checkout is needed to use the bundle.
+
+The [property-testing library](ra-pbt/README.md) checks generated instances of
+VC1–VC5 and executes pinned Yjs, Automerge, Loro and public-demo adapters.
+Its separate history search preserves full causal dependencies; it does not
+implement the paper's general `lo_E` criterion. A finite commutation search
+without a witness is inconclusive. The [review](docs/property-testing-review.md)
+records these distinctions, the repaired overlapping-delta runtime bug and
+the [proposed upstream-report corrections](docs/upstream-report-review.md).
+Bounded passes do not verify the external libraries.
 
 The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
 changes against the current Overleaf manuscript, with numbered references to a
@@ -39,6 +49,12 @@ assumptions at that lifting step.
 The [prioritized technical review](docs/paper1-technical-issues.md) records
 where the manuscript still needs to state the checked extensions used by the
 case studies: event-scoped laws, invariant domains and full causal dependencies.
+
+The [production-client extraction experiment](experiments/notion-production-client/README.md)
+runs hash-pinned production JavaScript editing modules offline, including the
+original record map and cross-block handlers. Its 19 tests cover independently
+managed records and delivery. Ten analogous schedules for the five demo bugs
+did not reproduce them; this does not establish live-production correctness.
 
 ### Notion core — structured implementation and executable refinement
 

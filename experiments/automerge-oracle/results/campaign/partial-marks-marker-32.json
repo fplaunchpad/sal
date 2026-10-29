@@ -1,0 +1,495 @@
+{
+ "summary": {
+  "seed": 32,
+  "trials": 200,
+  "options": {
+   "withFormat": true,
+   "partialDelivery": true,
+   "openedReplicas": false
+  },
+  "witnessBound": 12,
+  "edits": 1749,
+  "deliveries": 816,
+  "sends": 651,
+  "pendingSends": 266,
+  "opens": 0,
+  "cleanups": 0,
+  "versionsChecked": 3216,
+  "witnessSkips": 0,
+  "witnessSkipsPartial": 0,
+  "causalGaps": 0,
+  "anomalies": 0,
+  "failingTrials": 1,
+  "failuresByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 1,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "trialsFailingByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 1,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "localMeaningByKind": {
+   "insert": 1140,
+   "delete": 269,
+   "format": 340
+  },
+  "localMeaningFailuresByKind": {
+   "insert": 1
+  },
+  "semantics": "marker",
+  "mix": "partial-marks"
+ },
+ "failing": [
+  {
+   "trial": 52,
+   "seed": 32000148,
+   "schedule": {
+    "seed": 32000148,
+    "options": {
+     "steps": 12,
+     "withFormat": true,
+     "partialDelivery": true,
+     "openedReplicas": false
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "m",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "format",
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "italic": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "co",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "x",
+      "attrs": {
+       "bold": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "send",
+      "from": 3,
+      "to": 1,
+      "op": 1
+     },
+     {
+      "type": "send",
+      "from": 3,
+      "to": 1,
+      "op": 0
+     },
+     {
+      "type": "send",
+      "from": 2,
+      "to": 1,
+      "op": 0
+     },
+     {
+      "type": "send",
+      "from": 1,
+      "to": 2,
+      "op": 0
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 1,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "z",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "p",
+      "attrs": {}
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 11,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": true,
+     "details": {
+      "runs": 18,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": false,
+     "details": {
+      "runs": 8,
+      "failureCount": 1,
+      "failures": [
+       {
+        "check": "localMeaning",
+        "replica": 1,
+        "step": 10,
+        "request": {
+         "kind": "insert",
+         "index": 0,
+         "text": "z",
+         "attrs": {}
+        },
+        "before": [
+         {
+          "ch": "c",
+          "attrs": {
+           "italic": true
+          }
+         }
+        ],
+        "expected": [
+         {
+          "ch": "z",
+          "attrs": {
+           "italic": true
+          }
+         },
+         {
+          "ch": "c",
+          "attrs": {
+           "italic": true
+          }
+         }
+        ],
+        "actual": [
+         {
+          "ch": "z",
+          "attrs": {
+           "bold": true,
+           "italic": true
+          }
+         },
+         {
+          "ch": "c",
+          "attrs": {
+           "italic": true
+          }
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r3#0",
+         "r3#1"
+        ],
+        "signature": "localMeaning:insert:delete+format+insert"
+       }
+      ]
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 8,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "m",
+      "attrs": {}
+     },
+     "deps": [],
+     "hash": "cc8c3a1acbd0bab273409759d0824dbc9b45419d058c291090a4456e8e72f2ed",
+     "chars": [
+      {
+       "id": "2@01",
+       "ch": "m",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "format",
+     "request": {
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "italic": true
+      }
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "hash": "8bc4f38056ab34a024f2178d73c2493ba8e9f42c94282f2631ee44ebda3068ee",
+     "marks": [
+      {
+       "id": "3@01",
+       "name": "italic",
+       "value": true,
+       "expand": "before",
+       "start": null,
+       "end": {
+        "side": "after",
+        "id": "2@01"
+       },
+       "begin": [
+        "3@01",
+        null,
+        "2@01"
+       ],
+       "endBoundary": [
+        "4@01",
+        "2@01",
+        null
+       ]
+      }
+     ],
+     "step": 1
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "co",
+      "attrs": {}
+     },
+     "deps": [],
+     "hash": "c59ad3bd62906cca0925fa992798659a4f033a4506435f216340deb1e29bb985",
+     "chars": [
+      {
+       "id": "2@02",
+       "ch": "c",
+       "origin": null,
+       "rightOrigin": null
+      },
+      {
+       "id": "3@02",
+       "ch": "o",
+       "origin": "2@02",
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 2
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "x",
+      "attrs": {
+       "bold": true
+      }
+     },
+     "deps": [],
+     "hash": "dd24509eb95f9e5539ad8c56b2a79c2ced13d0aea8e1e79cbfde1508be8a7f48",
+     "chars": [
+      {
+       "id": "2@03",
+       "ch": "x",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [
+      {
+       "id": "3@03",
+       "name": "bold",
+       "value": true,
+       "expand": "after",
+       "start": {
+        "side": "before",
+        "id": "2@03"
+       },
+       "end": null,
+       "begin": [
+        "3@03",
+        null,
+        "2@03"
+       ],
+       "endBoundary": [
+        "4@03",
+        "2@03",
+        null
+       ]
+      }
+     ],
+     "step": 3
+    },
+    {
+     "key": "r3#1",
+     "replica": 3,
+     "kind": "delete",
+     "request": {
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r3#0"
+     ],
+     "hash": "2d9971f9dc9b4005320e162d2406413f6654c38116beb9c95b0efc50b2c9cd12",
+     "deleted": [
+      "2@03"
+     ],
+     "step": 4
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "index": 1,
+      "len": 2
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r3#0",
+      "r3#1"
+     ],
+     "hash": "5f14591d9ed5d29e1dfc8b813bd7afe34e9c2d7635f6f4096ab279c7f2a19eed",
+     "deleted": [
+      "3@02",
+      "2@01"
+     ],
+     "step": 9
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "z",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r3#0",
+      "r3#1"
+     ],
+     "hash": "a31f8047f654c0192f7f962485160525df6c89745191498bec77e74f8c4fe98b",
+     "chars": [
+      {
+       "id": "8@01",
+       "ch": "z",
+       "origin": "3@01",
+       "rightOrigin": "2@03"
+      }
+     ],
+     "marks": [],
+     "step": 10
+    },
+    {
+     "key": "r3#2",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "p",
+      "attrs": {}
+     },
+     "deps": [
+      "r3#0",
+      "r3#1"
+     ],
+     "hash": "f9b09ba03ea1bea8765ad691a2ebc241155891034b3644cf69a1afc32deed7d6",
+     "chars": [
+      {
+       "id": "6@03",
+       "ch": "p",
+       "origin": null,
+       "rightOrigin": "3@03"
+      }
+     ],
+     "marks": [],
+     "step": 11
+    }
+   ]
+  }
+ ],
+ "shrunk": []
+}

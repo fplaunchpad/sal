@@ -1,0 +1,117 @@
+% Supplementary empirical evidence; these implementations are not verified rows.
+\section{Testing External Replicated Implementations}
+\label{app:property-testing}
+
+We also used sequential specifications to test executable implementations.
+These experiments complement the Lean proofs: a passing finite test does not
+prove a verification condition or establish RA-linearizability. We tested
+Yjs~\cite{YjsLibrary} 13.6.31, Automerge~\cite{Automerge} 3.5.0 and
+Loro~\cite{LoroLibrary} 1.17.1, with separately pinned reproductions for
+Yjs's candidate release, \texttt{@y/y} 14.0.0-rc.29. Package lockfiles and
+selected source-file hashes identify the tested code. The code package
+includes hand-derived expected results, nearby controls, and standalone
+JavaScript reproductions.
+
+\paragraph{Two kinds of test.}
+For implementations exposing states, updates and three-way merge, one test
+layer instantiates the five VCs and the conditions on $\rcrel$ over generated
+finite configurations. A failed equation supplies a concrete counterexample
+to that equation on the sampled inputs. The comparison uses implementation
+state equality when the adapter supplies it; otherwise it uses the supplied
+observation. In particular, observation equality alone cannot check a VC
+requiring concrete state equality. Failure to find a non-commuting state in
+a bounded search is reported as inconclusive, rather than as evidence of
+universal commutativity.
+
+A separate test layer executes editing requests and deliveries, then searches
+for a sequential history explaining each checked display. This search keeps
+all causal dependencies between the integrated records. It does not construct
+the implementation-dependent $\loOn{E}$ or add concurrent $\rcrel$ edges.
+Thus its verdict is about that causal-history condition, rather than the
+general definition of RA-linearizability in the paper. The search is bounded
+by the number of events; skipped versions and missing dependencies are
+recorded. For a fixed concurrent example with no permitted sequential order
+explaining its result, one can instead establish the mismatch directly, as
+in the Yjs example below.
+
+The distinction between orders matters even for a correct OR-set. Let one
+replica add $x$ and remove $y$, and another add $y$ and remove $x$, with
+$x\ne y$. Both removals observe no matching addition, so the merged set
+contains $x$ and $y$. No ordering preserving both replicas' complete causal
+orders explains this using ordinary sequential-set operations: retaining
+both elements would require both removals before their matching additions,
+creating a cycle. However, $\loOn{E}$ does not retain the commuting
+cross-element visibility edges. Both removals followed by both additions is
+a permitted explanation. Conversely, a causal-history search may admit an
+order that a concurrent $\rcrel$ edge would prohibit. The code package pins
+both distinctions with tests.
+
+\paragraph{Formatting examples.}
+The tests distinguish specifications that attach marks to character
+identities and boundaries from specifications that interpret formatting
+markers as elements of the underlying list. Their outcomes can differ.
+Table~\ref{tab:external-formatting} gives representative measured failures
+and states the expectation being tested. These are neither additional
+verified implementations nor a count of independent root causes.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Representative formatting observations on pinned implementations.}
+\label{tab:external-formatting}
+\begin{tabular}{p{0.16\linewidth}p{0.76\linewidth}}
+\hline
+Implementation & Request and observed result \\
+\hline
+Yjs & Concurrently bold $ab$ and unbold $bc$, starting from $abc$ with only
+$b$ bold. Both replicas display all three characters bold. Neither sequential order of those
+two fixed-range formatting requests produces that result. \\[3pt]
+Automerge & Concurrently insert a plain character before a marked range
+whose start does not expand. Whether the inserted character acquires the
+mark can change with operation counters, although the requested boundary
+policy is unchanged. \\[3pt]
+Loro & On one replica, highlight $ab$, remove that highlight, then insert
+$X$ at the beginning. With highlight configured to expand at both ends,
+$X$ becomes highlighted. The tested expectation is that removing the
+highlight leaves subsequent typing plain. \\
+\hline
+\end{tabular}
+\end{table}
+
+For the Yjs example, the two sequential results have bold-character sets
+$\{a\}$ and $\{a,b\}$; the observed result has $\{a,b,c\}$.
+In particular, neither request bolds $c$. The measured
+merged item list nevertheless renders $c$ bold because concurrent marker
+cleanup removes the boundary that would clear the attribute. A small Lean
+model checks these fixed item lists, their rendering, both sequential
+results, and controls retaining or adding the missing closer. This is a
+checked semantic counterpart of the measured execution, not a formalisation
+of Yjs's integration algorithm or a proof relating its JavaScript to Lean.
+
+The Automerge boundary observation is relative to the stated non-expanding
+anchor interpretation; the tests do not establish that every possible
+formatting specification rejects it. In particular, our expanding
+end-of-text convention is a modelling choice, so failures specific to that
+convention are not counted as unconditional library defects. The Loro
+example requires no concurrency. Its result differs from the corresponding
+bold configuration that expands only after the range, which leaves $X$
+plain. Deleting the only highlighted character and then typing can also
+retain the highlight; that variant is not a passing control.
+
+\paragraph{Delivery and implementation boundaries.}
+Separate Yjs tests display effects of a delete-only update, or in the
+candidate release a later insertion, before their causal predecessors have
+arrived. Delivering the missing updates restores convergence in these
+examples. The question is whether intermediate displays must correspond to
+causally closed histories; these observations do not refute eventual
+convergence. A second small Lean model checks fixed delivery and rendering
+data under that stronger observation condition, without proving source
+correspondence.
+
+The Notion adapter in these property tests runs the public demo and an
+earlier block-merge repair. It is separate from the current verified rich-text
+implementation and from the extracted production-client tests. Passing
+sampled union-merge equations does not establish the correctness of the
+editor's request to merge blocks. The five public-demo failures remain the
+ones described in Appendix~\ref{app:notion-bugs}; their reproductions do not
+establish failures in Notion's production application.

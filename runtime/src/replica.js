@@ -353,6 +353,13 @@ export class DistributedReplica {
     for (const wc of wireCommits) {
       if (wc.gid !== null && this.byGid.has(wc.gid)) { priorGid = wc.gid; continue; }
       const parentGids = wc.parents.map((g) => g === null ? priorGid : g);
+      // Binary runs omit intermediate authored ids. Dedup by the reconstructed
+      // id BEFORE inserting, preserving the canonical local node and ancestry.
+      if (wc.gid === null && wc.kind === 'op') {
+        const op = { replica: wc.op.replica, seq: wc.op.seq, payload: wc.payload };
+        const g = commitContentId({ parents: parentGids, op }, parentGids, { hash: this.hash });
+        if (this.byGid.has(g)) { priorGid = g; continue; }
+      }
       if (parentGids.includes(this.rootGid) && !this.byGid.has(this.rootGid)) {
         const root = this.dag.add({ parents: [], op: null, state: this.datatype.init() });
         this.epochOf.set(root.id, EPOCH0);

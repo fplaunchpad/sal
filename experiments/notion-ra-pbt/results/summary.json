@@ -1,0 +1,1575 @@
+{
+ "quick": false,
+ "models": {
+  "demo": {
+   "endToEndFailingTrials": 293,
+   "endToEndTrials": 3050,
+   "probes": 17060,
+   "failingProbes": 78,
+   "systematicPrefixes": 342,
+   "failingSystematicPrefixes": 0,
+   "lawFailures": [
+    {
+     "property": "specConformance",
+     "texts": [
+      "x"
+     ],
+     "profile": "structure",
+     "observation": "bag",
+     "seed": 1,
+     "class": "N-005",
+     "size": 5
+    },
+    {
+     "property": "specConformance",
+     "texts": [
+      "x"
+     ],
+     "profile": "structure",
+     "observation": "bag",
+     "seed": 2,
+     "class": "N-005",
+     "size": 4
+    },
+    {
+     "property": "specConformance",
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure",
+     "observation": "view",
+     "seed": 1,
+     "class": "split-after-removal",
+     "size": 3
+    },
+    {
+     "property": "specConformance",
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure",
+     "observation": "view",
+     "seed": 2,
+     "class": "split-after-removal",
+     "size": 4
+    },
+    {
+     "property": "specConformance",
+     "texts": [
+      "ab",
+      "cd"
+     ],
+     "profile": "structure",
+     "observation": "view",
+     "seed": 1,
+     "class": "split-after-removal",
+     "size": 4
+    },
+    {
+     "property": "specConformance",
+     "texts": [
+      "ab",
+      "cd"
+     ],
+     "profile": "structure",
+     "observation": "view",
+     "seed": 2,
+     "class": "split-after-removal",
+     "size": 4
+    },
+    {
+     "property": "specConformance",
+     "texts": [
+      "a"
+     ],
+     "profile": "text",
+     "observation": "view",
+     "seed": 2,
+     "class": "N-005-path",
+     "size": 10
+    }
+   ]
+  },
+  "anchor-absorb": {
+   "endToEndFailingTrials": 1,
+   "endToEndTrials": 3050,
+   "probes": 17060,
+   "failingProbes": 29,
+   "systematicPrefixes": 342,
+   "failingSystematicPrefixes": 0,
+   "lawFailures": []
+  }
+ },
+ "classes": {
+  "N-005": {
+   "demo": {
+    "endToEnd": {
+     "conservation": {
+      "edits": 8,
+      "steps": 9,
+      "texts": [
+       "a",
+       "b",
+       "c"
+      ],
+      "profile": "structure",
+      "systematic": false,
+      "rendered": [
+       "1: split block 0 at 0",
+       "2: split block 0 at 1",
+       "send 2#0->1",
+       "1: split block 0 at 0",
+       "1: merge block 1",
+       "1: merge block 1",
+       "1: merge block 1",
+       "2: merge block 1",
+       "1: merge block 1"
+      ],
+      "failure": {
+       "check": "conservation",
+       "replica": 1,
+       "step": 10,
+       "final": false,
+       "signature": "conservation:merge+split",
+       "expected": [
+        "a@seed-block-1/seed:2",
+        "b@seed-block-3/seed:4",
+        "c@seed-block-5/seed:6"
+       ],
+       "actual": [
+        "c@seed-block-5/seed:6"
+       ]
+      }
+     },
+     "raLinearizability": {
+      "edits": 8,
+      "steps": 10,
+      "texts": [
+       "a",
+       "b",
+       "c"
+      ],
+      "profile": "structure",
+      "systematic": false,
+      "rendered": [
+       "1: split block 0 at 0",
+       "2: split block 0 at 0",
+       "send 2#0->1",
+       "1: split block 3 at 0",
+       "2: split block 2 at 1",
+       "send 2#1->1",
+       "1: merge block 1",
+       "2: merge block 3",
+       "1: merge block 1",
+       "1: merge block 3"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 2,
+       "step": 10,
+       "final": false,
+       "signature": "raLinearizability:merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": [
+            {
+             "text": "a",
+             "bold": false
+            }
+           ]
+          },
+          {
+           "id": "seed-block-3",
+           "chars": []
+          },
+          {
+           "id": "B-block-8",
+           "chars": [
+            {
+             "text": "b",
+             "bold": false
+            }
+           ]
+          },
+          {
+           "id": "seed-block-5",
+           "chars": [
+            {
+             "text": "c",
+             "bold": false
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        },
+        {
+         "id": "seed-block-3",
+         "chars": []
+        },
+        {
+         "id": "seed-block-5",
+         "chars": [
+          {
+           "text": "c",
+           "bold": false
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "laws": {
+     "specConformance/bag": {
+      "size": 4,
+      "texts": [
+       "x"
+      ],
+      "events": [
+       "r1: r: split block 0 at 1 = R:3 vis {}",
+       "p1: p: split block 0 at 0 = P:3 vis {}",
+       "p2: p: merge block 2 = P:24 vis {r1,p1}",
+       "r2: r: merge block 1 = R:24 vis {r1}"
+      ]
+     }
+    }
+   }
+  },
+  "split-after-removal": {
+   "demo": {
+    "endToEnd": {
+     "raLinearizability": {
+      "edits": 3,
+      "steps": 3,
+      "texts": [
+       "a",
+       "b",
+       "c"
+      ],
+      "profile": "structure",
+      "systematic": false,
+      "rendered": [
+       "3: merge block 1",
+       "1: merge block 2",
+       "3: split block 1 at 0"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 3,
+       "step": 4,
+       "final": false,
+       "signature": "raLinearizability:merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": [
+            {
+             "text": "a",
+             "bold": false
+            },
+            {
+             "text": "b",
+             "bold": false
+            }
+           ]
+          },
+          {
+           "id": "C-block-28",
+           "chars": [
+            {
+             "text": "c",
+             "bold": false
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "C-block-28",
+         "chars": []
+        },
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": false
+          },
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "c",
+           "bold": false
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "probe:raLinearizability": {
+      "edits": 3,
+      "steps": 4,
+      "texts": [
+       "a",
+       "b",
+       "c"
+      ],
+      "profile": "structure",
+      "systematic": false,
+      "rendered": [
+       "1: merge block 1",
+       "2: merge block 2",
+       "2: split block 1 at 0",
+       "send 1#0->2"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 2,
+       "step": 3,
+       "final": false,
+       "signature": "raLinearizability:merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": [
+            {
+             "text": "a",
+             "bold": false
+            }
+           ]
+          },
+          {
+           "id": "B-block-28",
+           "chars": [
+            {
+             "text": "b",
+             "bold": false
+            },
+            {
+             "text": "c",
+             "bold": false
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "B-block-28",
+         "chars": []
+        },
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": false
+          },
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "c",
+           "bold": false
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "laws": {
+     "specConformance/view": {
+      "size": 3,
+      "texts": [
+       "a",
+       "b",
+       "c"
+      ],
+      "events": [
+       "r1: r: merge block 2 = R:27 vis {}",
+       "r2: r: split block 1 at 2 = R:28 vis {r1}",
+       "p1: p: merge block 1 = P:27 vis {}"
+      ]
+     }
+    }
+   }
+  },
+  "N-001": {
+   "demo": {
+    "endToEnd": {
+     "localMeaning": {
+      "edits": 5,
+      "steps": 6,
+      "texts": [
+       "ab",
+       "cd"
+      ],
+      "profile": "structure",
+      "systematic": false,
+      "rendered": [
+       "1: merge block 1",
+       "2: merge block 1",
+       "2: split block 0 at 3",
+       "send 1#0->2",
+       "2: merge block 1",
+       "2: split block 0 at 3"
+      ],
+      "failure": {
+       "check": "localMeaning",
+       "replica": 2,
+       "step": 5,
+       "final": false,
+       "signature": "localMeaning:split:merge+split",
+       "request": {
+        "kind": "split",
+        "block": 0,
+        "index": 3
+       },
+       "expected": [
+        [
+         {
+          "text": "a",
+          "bold": false
+         },
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "c",
+          "bold": false
+         }
+        ],
+        [
+         {
+          "text": "d",
+          "bold": false
+         }
+        ]
+       ],
+       "actual": [
+        [
+         {
+          "text": "a",
+          "bold": false
+         },
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "c",
+          "bold": false
+         },
+         {
+          "text": "d",
+          "bold": false
+         }
+        ],
+        []
+       ]
+      }
+     },
+     "raLinearizability": {
+      "edits": 4,
+      "steps": 4,
+      "texts": [
+       "ab",
+       "cd"
+      ],
+      "profile": "format",
+      "systematic": false,
+      "rendered": [
+       "1: merge block 1",
+       "3: merge block 1",
+       "3: delete block 0 [0,2)",
+       "3: split block 0 at 0"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 3,
+       "step": 5,
+       "final": false,
+       "signature": "raLinearizability:delete+merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": []
+          },
+          {
+           "id": "C-block-29",
+           "chars": [
+            {
+             "text": "c",
+             "bold": false
+            },
+            {
+             "text": "d",
+             "bold": false
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "c",
+           "bold": false
+          },
+          {
+           "text": "d",
+           "bold": false
+          }
+         ]
+        },
+        {
+         "id": "C-block-29",
+         "chars": []
+        }
+       ]
+      }
+     },
+     "probe:localMeaning": {
+      "edits": 6,
+      "steps": 7,
+      "texts": [
+       "a",
+       "b",
+       "c"
+      ],
+      "profile": "structure",
+      "systematic": false,
+      "rendered": [
+       "1: merge block 1",
+       "2: merge block 1",
+       "send 1#0->2",
+       "2: split block 0 at 1",
+       "2: split block 0 at 0",
+       "2: merge block 3",
+       "2: split block 2 at 0"
+      ],
+      "failure": {
+       "check": "localMeaning",
+       "replica": 2,
+       "step": 6,
+       "final": false,
+       "signature": "localMeaning:split:merge+split",
+       "request": {
+        "kind": "split",
+        "block": 2,
+        "index": 0
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "a",
+          "bold": false
+         }
+        ],
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "c",
+          "bold": false
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "a",
+          "bold": false
+         }
+        ],
+        [
+         {
+          "text": "c",
+          "bold": false
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": false
+         }
+        ]
+       ]
+      }
+     },
+     "probe:raLinearizability": {
+      "edits": 4,
+      "steps": 6,
+      "texts": [
+       "a",
+       "b",
+       "c"
+      ],
+      "profile": "structure",
+      "systematic": false,
+      "rendered": [
+       "1: merge block 2",
+       "1: merge block 1",
+       "2: merge block 1",
+       "2: split block 1 at 0",
+       "send 2#1->1",
+       "send 2#0->1"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 1,
+       "step": 5,
+       "final": false,
+       "signature": "raLinearizability:merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": [
+            {
+             "text": "a",
+             "bold": false
+            },
+            {
+             "text": "b",
+             "bold": false
+            }
+           ]
+          },
+          {
+           "id": "B-block-28",
+           "chars": [
+            {
+             "text": "c",
+             "bold": false
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "B-block-28",
+         "chars": []
+        },
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": false
+          },
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "c",
+           "bold": false
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "laws": {}
+   }
+  },
+  "N-002": {
+   "demo": {
+    "endToEnd": {
+     "localMeaning": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "ab"
+      ],
+      "profile": "format",
+      "systematic": false,
+      "rendered": [
+       "1: split block 0 at 0",
+       "3: split block 0 at 1",
+       "deliver 3->1",
+       "1: merge block 2",
+       "1: bold block 1 [0,2)"
+      ],
+      "failure": {
+       "check": "localMeaning",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "localMeaning:bold:bold+merge+split",
+       "request": {
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": true
+         },
+         {
+          "text": "a",
+          "bold": true
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       ]
+      }
+     },
+     "raLinearizability": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "ab"
+      ],
+      "profile": "format",
+      "systematic": false,
+      "rendered": [
+       "1: split block 0 at 0",
+       "3: split block 0 at 1",
+       "deliver 3->1",
+       "1: merge block 2",
+       "1: bold block 1 [0,2)"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "raLinearizability:bold+merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": []
+          },
+          {
+           "id": "C-block-4",
+           "chars": [
+            {
+             "text": "b",
+             "bold": true
+            },
+            {
+             "text": "a",
+             "bold": true
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "seed-block-1",
+         "chars": []
+        },
+        {
+         "id": "C-block-4",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "probe:localMeaning": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "ab"
+      ],
+      "profile": "format",
+      "systematic": true,
+      "rendered": [
+       "1: split block 0 at 0",
+       "2: split block 0 at 1",
+       "send 2#0->1",
+       "1: merge block 2",
+       "1: bold block 1 [0,2)"
+      ],
+      "failure": {
+       "check": "localMeaning",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "localMeaning:bold:bold+merge+split",
+       "request": {
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": true
+         },
+         {
+          "text": "a",
+          "bold": true
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       ]
+      }
+     },
+     "probe:raLinearizability": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "ab"
+      ],
+      "profile": "format",
+      "systematic": true,
+      "rendered": [
+       "1: split block 0 at 0",
+       "2: split block 0 at 1",
+       "send 2#0->1",
+       "1: merge block 2",
+       "1: bold block 1 [0,2)"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "raLinearizability:bold+merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": []
+          },
+          {
+           "id": "B-block-4",
+           "chars": [
+            {
+             "text": "b",
+             "bold": true
+            },
+            {
+             "text": "a",
+             "bold": true
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "seed-block-1",
+         "chars": []
+        },
+        {
+         "id": "B-block-4",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "laws": {}
+   },
+   "anchor-absorb": {
+    "endToEnd": {
+     "localMeaning": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "ab"
+      ],
+      "profile": "format",
+      "systematic": false,
+      "rendered": [
+       "1: split block 0 at 0",
+       "3: split block 0 at 1",
+       "deliver 3->1",
+       "1: merge block 2",
+       "1: bold block 1 [0,2)"
+      ],
+      "failure": {
+       "check": "localMeaning",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "localMeaning:bold:bold+merge+split",
+       "request": {
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": true
+         },
+         {
+          "text": "a",
+          "bold": true
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       ]
+      }
+     },
+     "raLinearizability": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "ab"
+      ],
+      "profile": "format",
+      "systematic": false,
+      "rendered": [
+       "1: split block 0 at 0",
+       "3: split block 0 at 1",
+       "deliver 3->1",
+       "1: merge block 2",
+       "1: bold block 1 [0,2)"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "raLinearizability:bold+merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": []
+          },
+          {
+           "id": "C-block-4",
+           "chars": [
+            {
+             "text": "b",
+             "bold": true
+            },
+            {
+             "text": "a",
+             "bold": true
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "seed-block-1",
+         "chars": []
+        },
+        {
+         "id": "C-block-4",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "probe:localMeaning": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "ab"
+      ],
+      "profile": "format",
+      "systematic": true,
+      "rendered": [
+       "1: split block 0 at 0",
+       "2: split block 0 at 1",
+       "send 2#0->1",
+       "1: merge block 2",
+       "1: bold block 1 [0,2)"
+      ],
+      "failure": {
+       "check": "localMeaning",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "localMeaning:bold:bold+merge+split",
+       "request": {
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": true
+         },
+         {
+          "text": "a",
+          "bold": true
+         }
+        ]
+       ],
+       "actual": [
+        [],
+        [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       ]
+      }
+     },
+     "probe:raLinearizability": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "ab"
+      ],
+      "profile": "format",
+      "systematic": true,
+      "rendered": [
+       "1: split block 0 at 0",
+       "2: split block 0 at 1",
+       "send 2#0->1",
+       "1: merge block 2",
+       "1: bold block 1 [0,2)"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "raLinearizability:bold+merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": []
+          },
+          {
+           "id": "B-block-4",
+           "chars": [
+            {
+             "text": "b",
+             "bold": true
+            },
+            {
+             "text": "a",
+             "bold": true
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "seed-block-1",
+         "chars": []
+        },
+        {
+         "id": "B-block-4",
+         "chars": [
+          {
+           "text": "b",
+           "bold": false
+          },
+          {
+           "text": "a",
+           "bold": false
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "laws": {}
+   }
+  },
+  "N-004": {
+   "demo": {
+    "endToEnd": {
+     "conservation": {
+      "edits": 8,
+      "steps": 9,
+      "texts": [
+       "a",
+       "b",
+       "c"
+      ],
+      "profile": "structure",
+      "systematic": false,
+      "rendered": [
+       "1: split block 0 at 0",
+       "2: split block 0 at 1",
+       "send 2#0->1",
+       "1: split block 0 at 0",
+       "1: merge block 1",
+       "1: merge block 1",
+       "1: merge block 1",
+       "2: merge block 1",
+       "1: merge block 1"
+      ],
+      "failure": {
+       "check": "conservation",
+       "replica": 1,
+       "step": 10,
+       "final": false,
+       "signature": "conservation:merge+split",
+       "expected": [
+        "a@seed-block-1/seed:2",
+        "b@seed-block-3/seed:4",
+        "c@seed-block-5/seed:6"
+       ],
+       "actual": [
+        "c@seed-block-5/seed:6"
+       ]
+      }
+     }
+    },
+    "laws": {}
+   }
+  },
+  "N-003": {
+   "demo": {
+    "endToEnd": {
+     "probe:localMeaning": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "abc"
+      ],
+      "profile": "format",
+      "systematic": true,
+      "rendered": [
+       "1: split block 0 at 1",
+       "2: split block 0 at 2",
+       "send 2#0->1",
+       "1: merge block 1",
+       "1: bold block 0 [0,2)"
+      ],
+      "failure": {
+       "check": "localMeaning",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "localMeaning:bold:bold+merge+split",
+       "request": {
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": false
+         }
+        ]
+       ],
+       "actual": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": true
+         }
+        ]
+       ]
+      }
+     },
+     "probe:raLinearizability": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "abc"
+      ],
+      "profile": "format",
+      "systematic": true,
+      "rendered": [
+       "1: split block 0 at 1",
+       "2: split block 0 at 2",
+       "send 2#0->1",
+       "1: merge block 1",
+       "1: bold block 0 [0,2)"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "raLinearizability:bold+merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": [
+            {
+             "text": "a",
+             "bold": true
+            },
+            {
+             "text": "c",
+             "bold": true
+            }
+           ]
+          },
+          {
+           "id": "A-block-5",
+           "chars": [
+            {
+             "text": "b",
+             "bold": false
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": true
+          },
+          {
+           "text": "c",
+           "bold": true
+          }
+         ]
+        },
+        {
+         "id": "A-block-5",
+         "chars": [
+          {
+           "text": "b",
+           "bold": true
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "laws": {}
+   },
+   "anchor-absorb": {
+    "endToEnd": {
+     "probe:localMeaning": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "abc"
+      ],
+      "profile": "format",
+      "systematic": true,
+      "rendered": [
+       "1: split block 0 at 1",
+       "2: split block 0 at 2",
+       "send 2#0->1",
+       "1: merge block 1",
+       "1: bold block 0 [0,2)"
+      ],
+      "failure": {
+       "check": "localMeaning",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "localMeaning:bold:bold+merge+split",
+       "request": {
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       },
+       "expected": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": false
+         }
+        ]
+       ],
+       "actual": [
+        [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ],
+        [
+         {
+          "text": "b",
+          "bold": true
+         }
+        ]
+       ]
+      }
+     },
+     "probe:raLinearizability": {
+      "edits": 4,
+      "steps": 5,
+      "texts": [
+       "abc"
+      ],
+      "profile": "format",
+      "systematic": true,
+      "rendered": [
+       "1: split block 0 at 1",
+       "2: split block 0 at 2",
+       "send 2#0->1",
+       "1: merge block 1",
+       "1: bold block 0 [0,2)"
+      ],
+      "failure": {
+       "check": "raLinearizability",
+       "replica": 1,
+       "step": 4,
+       "final": false,
+       "signature": "raLinearizability:bold+merge+split",
+       "expected": {
+        "admittedViews": [
+         [
+          {
+           "id": "seed-block-1",
+           "chars": [
+            {
+             "text": "a",
+             "bold": true
+            },
+            {
+             "text": "c",
+             "bold": true
+            }
+           ]
+          },
+          {
+           "id": "A-block-5",
+           "chars": [
+            {
+             "text": "b",
+             "bold": false
+            }
+           ]
+          }
+         ]
+        ]
+       },
+       "actual": [
+        {
+         "id": "seed-block-1",
+         "chars": [
+          {
+           "text": "a",
+           "bold": true
+          },
+          {
+           "text": "c",
+           "bold": true
+          }
+         ]
+        },
+        {
+         "id": "A-block-5",
+         "chars": [
+          {
+           "text": "b",
+           "bold": true
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "laws": {}
+   }
+  },
+  "N-005-path": {
+   "demo": {
+    "endToEnd": {},
+    "laws": {
+     "specConformance/view": {
+      "size": 10,
+      "texts": [
+       "a"
+      ],
+      "events": [
+       "r1: r: insert block 0 \"Z\" at 0 = R:3 vis {}",
+       "q1: q: insert block 0 \"W\" at 0 = Q:3 vis {}",
+       "q2: q: split block 0 at 1 = Q:4 vis {q1}",
+       "r2: r: split block 0 at 2 = R:4 vis {r1}",
+       "p1: p: split block 0 at 1 = P:3 vis {}",
+       "q3: q: insert block 1 \"V\" at 1 = Q:5 vis {q1,q2}",
+       "q4: q: delete block 1 [0,2) = Q:6 vis {q1,q2,q3}",
+       "r3: r: insert block 0 \"U\" at 1 = R:5 vis {r1,r2}",
+       "q5: q: merge block 2 = Q:27 vis {r1,q1,q2,r2,p1,q3,q4,r3}",
+       "r4: r: merge block 1 = R:26 vis {r1,r2,r3}"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

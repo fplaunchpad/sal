@@ -15,6 +15,16 @@ measurement and public-demo bug reproductions. It never copies `.git`, local
 credentials, `_references`, caches, or unrelated working files. Required
 GC-named dependencies are retained; no GC result is an artifact claim.
 
+It also includes the bounded `ra-pbt` harness and adapters, Yjs/Automerge/Loro
+and older Notion PBT reproductions, locked acquisition manifests, compact
+recorded evidence, the original Notion manifest and exact design patcher, and
+current runtime source with eight portable test files. Two Yjs semantic
+counterexamples are added to the checked Lean roots; this does not verify the
+external libraries or their integration algorithms. Installed packages, raw
+campaign dumps/logs and identifying posted-report drafts/history are omitted.
+The standalone `scripts/check-pbt.py` runner separates offline core checks from
+explicit third-party acquisition. See its exported reproduction guide.
+
 The result has its own Lake configuration, pinned dependencies, documented
 commands and file hashes. Third-party Notion demo sources are acquired separately
 through a hash-checked downloader. No distribution licence is added or changed.

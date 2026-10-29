@@ -1,0 +1,22 @@
+sources verified: loro-crdt@1.17.1
+seed                                            41
+rule / attrs                                    left / carry
+trials                                          2000
+options                                         {"steps":20,"withStyles":false,"partialDelivery":false,"replicas":3}
+edits                                           33239
+deliveries                                      18761
+sends (pending after)                           0 (0)
+opens                                           0
+versions checked                                42957
+witness skips (bound / partial)                 9043 / 0
+causal gaps                                     0
+execution anomalies                             0
+failing trials                                  0
+  convergence (failures / trials)               0 / 0
+  raLinearizability (failures / trials)         0 / 0
+  localMeaning (failures / trials)              0 / 0
+  determinism (failures / trials)               0 / 0
+  conservation (failures / trials)              0 / 0
+  localMeaning on insert (failures / requests)  0 / 24709
+  localMeaning on delete (failures / requests)  0 / 8530
+sources verified after run

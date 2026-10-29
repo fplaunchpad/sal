@@ -1,0 +1,454 @@
+{
+ "summary": {
+  "seed": 34,
+  "trials": 200,
+  "options": {
+   "steps": 8,
+   "withStyles": true,
+   "openedReplicas": true
+  },
+  "witnessBound": 8,
+  "edits": 1022,
+  "deliveries": 1120,
+  "sends": 0,
+  "pendingSends": 0,
+  "opens": 226,
+  "cleanups": 0,
+  "versionsChecked": 2368,
+  "witnessSkips": 0,
+  "witnessSkipsPartial": 0,
+  "causalGaps": 0,
+  "anomalies": 0,
+  "failingTrials": 1,
+  "failuresByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 1,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "trialsFailingByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 1,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "localMeaningByKind": {
+   "insert": 596,
+   "mark": 259,
+   "delete": 152,
+   "unmark": 15
+  },
+  "localMeaningFailuresByKind": {
+   "insert": 1
+  },
+  "rule": "gap",
+  "attrs": "persistent",
+  "seconds": 1.024
+ },
+ "failing": [
+  {
+   "trial": 127,
+   "seed": 34000229,
+   "schedule": {
+    "seed": 34000229,
+    "options": {
+     "steps": 8,
+     "withStyles": true,
+     "partialDelivery": false,
+     "openedReplicas": true,
+     "styleKeys": [
+      "bold",
+      "link",
+      "sup",
+      "hl"
+     ]
+    },
+    "replicas": 2,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "kx"
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "mark",
+      "index": 1,
+      "len": 1,
+      "key": "bold",
+      "value": true
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "mark",
+      "index": 0,
+      "len": 1,
+      "key": "hl",
+      "value": true
+     },
+     {
+      "type": "open",
+      "replica": 2,
+      "from": 1
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "qm"
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 4,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": false,
+     "details": {
+      "runs": 6,
+      "failureCount": 1,
+      "failures": [
+       {
+        "check": "localMeaning",
+        "replica": 1,
+        "step": 6,
+        "request": {
+         "kind": "insert",
+         "index": 0,
+         "text": "qm"
+        },
+        "before": [],
+        "expected": [
+         {
+          "ch": "q",
+          "attrs": {}
+         },
+         {
+          "ch": "m",
+          "attrs": {}
+         }
+        ],
+        "actual": [
+         {
+          "ch": "q",
+          "attrs": {
+           "hl": true
+          }
+         },
+         {
+          "ch": "m",
+          "attrs": {
+           "hl": true
+          }
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r1#4"
+        ],
+        "signature": "localMeaning:insert:delete+insert+mark"
+       }
+      ]
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 6,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "kx"
+     },
+     "deps": [],
+     "chars": [
+      {
+       "id": [
+        1,
+        0
+       ],
+       "ch": "k",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {}
+      },
+      {
+       "id": [
+        1,
+        1
+       ],
+       "ch": "x",
+       "origin": [
+        1,
+        0
+       ],
+       "rightOrigin": null,
+       "attrs": {}
+      }
+     ],
+     "knownMarks": [],
+     "counters": [
+      0,
+      2
+     ],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "mark",
+     "request": {
+      "kind": "mark",
+      "index": 1,
+      "len": 1,
+      "key": "bold",
+      "value": true
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "range": {
+      "left": [
+       1,
+       1
+      ],
+      "right": [
+       1,
+       1
+      ],
+      "outerLeft": [
+       1,
+       0
+      ],
+      "outerRight": null
+     },
+     "styleKey": "bold",
+     "markId": "1:2",
+     "value": true,
+     "counters": [
+      2,
+      4
+     ],
+     "step": 1
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "mark",
+     "request": {
+      "kind": "mark",
+      "index": 0,
+      "len": 1,
+      "key": "hl",
+      "value": true
+     },
+     "deps": [
+      "r1#0",
+      "r1#1"
+     ],
+     "range": {
+      "left": [
+       1,
+       0
+      ],
+      "right": [
+       1,
+       0
+      ],
+      "outerLeft": null,
+      "outerRight": [
+       1,
+       1
+      ]
+     },
+     "styleKey": "hl",
+     "markId": "1:4",
+     "value": true,
+     "counters": [
+      4,
+      6
+     ],
+     "step": 2
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2"
+     ],
+     "deleted": [
+      [
+       1,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "counters": [
+      6,
+      8
+     ],
+     "step": 5
+    },
+    {
+     "key": "r1#4",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "kind": "insert",
+      "index": 0,
+      "text": "qm"
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3"
+     ],
+     "chars": [
+      {
+       "id": [
+        1,
+        8
+       ],
+       "ch": "q",
+       "origin": null,
+       "rightOrigin": null,
+       "attrs": {
+        "hl": true
+       }
+      },
+      {
+       "id": [
+        1,
+        9
+       ],
+       "ch": "m",
+       "origin": [
+        1,
+        8
+       ],
+       "rightOrigin": null,
+       "attrs": {
+        "hl": true
+       }
+      }
+     ],
+     "knownMarks": [
+      "1:2",
+      "1:4"
+     ],
+     "counters": [
+      8,
+      10
+     ],
+     "step": 6
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2"
+     ],
+     "deleted": [
+      [
+       1,
+       0
+      ]
+     ],
+     "counters": [
+      0,
+      1
+     ],
+     "step": 7
+    }
+   ]
+  }
+ ],
+ "shrunk": []
+}

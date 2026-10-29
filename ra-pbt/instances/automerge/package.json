@@ -1,0 +1,8 @@
+{
+  "name": "ra-pbt-automerge",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@automerge/automerge": "3.5.0"
+  }
+}

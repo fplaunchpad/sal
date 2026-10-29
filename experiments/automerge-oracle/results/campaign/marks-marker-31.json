@@ -1,0 +1,1732 @@
+{
+ "summary": {
+  "seed": 31,
+  "trials": 200,
+  "options": {
+   "withFormat": true,
+   "openedReplicas": false
+  },
+  "witnessBound": 12,
+  "edits": 1898,
+  "deliveries": 1378,
+  "sends": 0,
+  "pendingSends": 0,
+  "opens": 0,
+  "cleanups": 0,
+  "versionsChecked": 3276,
+  "witnessSkips": 0,
+  "witnessSkipsPartial": 0,
+  "causalGaps": 0,
+  "anomalies": 0,
+  "failingTrials": 3,
+  "failuresByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 3,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "trialsFailingByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 3,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "localMeaningByKind": {
+   "insert": 1187,
+   "format": 404,
+   "delete": 307
+  },
+  "localMeaningFailuresByKind": {
+   "insert": 3
+  },
+  "semantics": "marker",
+  "mix": "marks"
+ },
+ "failing": [
+  {
+   "trial": 21,
+   "seed": 31000114,
+   "schedule": {
+    "seed": 31000114,
+    "options": {
+     "steps": 12,
+     "withFormat": true,
+     "partialDelivery": false,
+     "openedReplicas": false
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "s",
+      "attrs": {
+       "bold": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "format",
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "link": "u751801"
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "mv",
+      "attrs": {
+       "bold": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 2,
+      "text": "dz",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "c",
+      "attrs": {
+       "bold": true
+      }
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 3
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 3
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "kq",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "format",
+      "index": 1,
+      "len": 1,
+      "attrs": {
+       "bold": null
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "format",
+      "index": 1,
+      "len": 2,
+      "attrs": {
+       "italic": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 2,
+      "text": "q",
+      "attrs": {
+       "bold": true
+      }
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": true,
+     "details": {
+      "runs": 18,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": false,
+     "details": {
+      "runs": 10,
+      "failureCount": 1,
+      "failures": [
+       {
+        "check": "localMeaning",
+        "replica": 1,
+        "step": 8,
+        "request": {
+         "kind": "insert",
+         "index": 0,
+         "text": "kq",
+         "attrs": {}
+        },
+        "before": [],
+        "expected": [
+         {
+          "ch": "k",
+          "attrs": {}
+         },
+         {
+          "ch": "q",
+          "attrs": {}
+         }
+        ],
+        "actual": [
+         {
+          "ch": "k",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "q",
+          "attrs": {
+           "bold": true
+          }
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3"
+        ],
+        "signature": "localMeaning:insert:delete+format+insert"
+       }
+      ]
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "s",
+      "attrs": {
+       "bold": true
+      }
+     },
+     "deps": [],
+     "hash": "a975cd04c5829dfb4af81e7eb0ffc5d1af23f2cff7ab08d0f5b3ae995d7361ab",
+     "chars": [
+      {
+       "id": "2@01",
+       "ch": "s",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [
+      {
+       "id": "3@01",
+       "name": "bold",
+       "value": true,
+       "expand": "after",
+       "start": {
+        "side": "before",
+        "id": "2@01"
+       },
+       "end": null,
+       "begin": [
+        "3@01",
+        null,
+        "2@01"
+       ],
+       "endBoundary": [
+        "4@01",
+        "2@01",
+        null
+       ]
+      }
+     ],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "format",
+     "request": {
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "link": "u751801"
+      }
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "hash": "fb33679a1cff65bd1c2c635a1223d40e2b53cd95896282a63c5782a5fe504898",
+     "marks": [
+      {
+       "id": "5@01",
+       "name": "link",
+       "value": "u751801",
+       "expand": "none",
+       "start": {
+        "side": "before",
+        "id": "2@01"
+       },
+       "end": {
+        "side": "after",
+        "id": "2@01"
+       },
+       "begin": [
+        "5@01",
+        null,
+        "3@01"
+       ],
+       "endBoundary": [
+        "6@01",
+        "2@01",
+        "4@01"
+       ]
+      }
+     ],
+     "step": 1
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r1#0",
+      "r1#1"
+     ],
+     "hash": "e1f9a93580e21b2f3b308af24ecb7a7bc170cdd4736cd6419b8fa8b5ebb4f82b",
+     "deleted": [
+      "2@01"
+     ],
+     "step": 2
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "mv",
+      "attrs": {
+       "bold": true
+      }
+     },
+     "deps": [],
+     "hash": "d6fc265a3884b365f6a6fb316a1715b1baff427476bb92a14fc1f96cd6d3c3c7",
+     "chars": [
+      {
+       "id": "2@02",
+       "ch": "m",
+       "origin": null,
+       "rightOrigin": null
+      },
+      {
+       "id": "3@02",
+       "ch": "v",
+       "origin": "2@02",
+       "rightOrigin": null
+      }
+     ],
+     "marks": [
+      {
+       "id": "4@02",
+       "name": "bold",
+       "value": true,
+       "expand": "after",
+       "start": {
+        "side": "before",
+        "id": "2@02"
+       },
+       "end": null,
+       "begin": [
+        "4@02",
+        null,
+        "2@02"
+       ],
+       "endBoundary": [
+        "5@02",
+        "3@02",
+        null
+       ]
+      }
+     ],
+     "step": 3
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "index": 2,
+      "text": "dz",
+      "attrs": {}
+     },
+     "deps": [
+      "r2#0"
+     ],
+     "hash": "402740fda81a306600f00d6012db6031d7614308660673e17771797ae8e5ebbd",
+     "chars": [
+      {
+       "id": "6@02",
+       "ch": "d",
+       "origin": "3@02",
+       "rightOrigin": "5@02"
+      },
+      {
+       "id": "7@02",
+       "ch": "z",
+       "origin": "6@02",
+       "rightOrigin": "5@02"
+      }
+     ],
+     "marks": [],
+     "step": 4
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "c",
+      "attrs": {
+       "bold": true
+      }
+     },
+     "deps": [],
+     "hash": "279601d5a5207ae3dbf964cad559e2d59663bdb61fbdc980ddbeef529e9a2510",
+     "chars": [
+      {
+       "id": "2@03",
+       "ch": "c",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [
+      {
+       "id": "3@03",
+       "name": "bold",
+       "value": true,
+       "expand": "after",
+       "start": {
+        "side": "before",
+        "id": "2@03"
+       },
+       "end": null,
+       "begin": [
+        "3@03",
+        null,
+        "2@03"
+       ],
+       "endBoundary": [
+        "4@03",
+        "2@03",
+        null
+       ]
+      }
+     ],
+     "step": 5
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "kq",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2"
+     ],
+     "hash": "62359ecdab02518a3a47ec1448417576f2460bb270c22853a87b880b14808bfc",
+     "chars": [
+      {
+       "id": "8@01",
+       "ch": "k",
+       "origin": "6@01",
+       "rightOrigin": "4@01"
+      },
+      {
+       "id": "9@01",
+       "ch": "q",
+       "origin": "8@01",
+       "rightOrigin": "4@01"
+      }
+     ],
+     "marks": [],
+     "step": 8
+    },
+    {
+     "key": "r1#4",
+     "replica": 1,
+     "kind": "format",
+     "request": {
+      "index": 1,
+      "len": 1,
+      "attrs": {
+       "bold": null
+      }
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3"
+     ],
+     "hash": "b3b5c58ee86c674fe5fb562293e0a668615f94131b192f7033bc12ac6756bda1",
+     "marks": [
+      {
+       "id": "10@01",
+       "name": "bold",
+       "value": null,
+       "expand": "after",
+       "start": {
+        "side": "before",
+        "id": "9@01"
+       },
+       "end": null,
+       "begin": [
+        "10@01",
+        "8@01",
+        "9@01"
+       ],
+       "endBoundary": [
+        "11@01",
+        "9@01",
+        "4@01"
+       ]
+      }
+     ],
+     "step": 9
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "format",
+     "request": {
+      "index": 1,
+      "len": 2,
+      "attrs": {
+       "italic": true
+      }
+     },
+     "deps": [
+      "r2#0",
+      "r2#1"
+     ],
+     "hash": "8de0e4b8aed7dced7d5845a8bf83a2ecccc75c1279a6f167a194f7069ecfbc8f",
+     "marks": [
+      {
+       "id": "8@02",
+       "name": "italic",
+       "value": true,
+       "expand": "before",
+       "start": {
+        "side": "after",
+        "id": "2@02"
+       },
+       "end": {
+        "side": "after",
+        "id": "6@02"
+       },
+       "begin": [
+        "8@02",
+        "2@02",
+        "3@02"
+       ],
+       "endBoundary": [
+        "9@02",
+        "6@02",
+        "7@02"
+       ]
+      }
+     ],
+     "step": 10
+    },
+    {
+     "key": "r3#1",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 2,
+      "text": "q",
+      "attrs": {
+       "bold": true
+      }
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1",
+      "r3#0"
+     ],
+     "hash": "eec0baccfa580695a3d735fc1b7951ef3df4dcdc490da80716f8ed3e14f80d2b",
+     "chars": [
+      {
+       "id": "8@03",
+       "ch": "q",
+       "origin": "2@02",
+       "rightOrigin": "3@02"
+      }
+     ],
+     "marks": [
+      {
+       "id": "9@03",
+       "name": "bold",
+       "value": true,
+       "expand": "after",
+       "start": {
+        "side": "before",
+        "id": "8@03"
+       },
+       "end": {
+        "side": "before",
+        "id": "3@02"
+       },
+       "begin": [
+        "9@03",
+        "2@02",
+        "8@03"
+       ],
+       "endBoundary": [
+        "10@03",
+        "8@03",
+        "3@02"
+       ]
+      }
+     ],
+     "step": 11
+    }
+   ]
+  },
+  {
+   "trial": 43,
+   "seed": 31000136,
+   "schedule": {
+    "seed": 31000136,
+    "options": {
+     "steps": 12,
+     "withFormat": true,
+     "partialDelivery": false,
+     "openedReplicas": false
+    },
+    "replicas": 3,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "f",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 0,
+      "len": 1
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "mb",
+      "attrs": {
+       "bold": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "n",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "format",
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "italic": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 1,
+      "text": "zg",
+      "attrs": {}
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 2
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 3
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "vc",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "format",
+      "index": 1,
+      "len": 1,
+      "attrs": {
+       "link": "u888167"
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 2,
+      "text": "b",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 3,
+      "kind": "insert",
+      "index": 0,
+      "text": "s",
+      "attrs": {}
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 9,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": true,
+     "details": {
+      "runs": 18,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": false,
+     "details": {
+      "runs": 10,
+      "failureCount": 1,
+      "failures": [
+       {
+        "check": "localMeaning",
+        "replica": 3,
+        "step": 11,
+        "request": {
+         "kind": "insert",
+         "index": 0,
+         "text": "s",
+         "attrs": {}
+        },
+        "before": [
+         {
+          "ch": "n",
+          "attrs": {
+           "bold": true,
+           "italic": true
+          }
+         },
+         {
+          "ch": "z",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "g",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "m",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "b",
+          "attrs": {
+           "bold": true
+          }
+         }
+        ],
+        "expected": [
+         {
+          "ch": "s",
+          "attrs": {
+           "italic": true
+          }
+         },
+         {
+          "ch": "n",
+          "attrs": {
+           "bold": true,
+           "italic": true
+          }
+         },
+         {
+          "ch": "z",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "g",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "m",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "b",
+          "attrs": {
+           "bold": true
+          }
+         }
+        ],
+        "actual": [
+         {
+          "ch": "s",
+          "attrs": {
+           "bold": true,
+           "italic": true
+          }
+         },
+         {
+          "ch": "n",
+          "attrs": {
+           "bold": true,
+           "italic": true
+          }
+         },
+         {
+          "ch": "z",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "g",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "m",
+          "attrs": {
+           "bold": true
+          }
+         },
+         {
+          "ch": "b",
+          "attrs": {
+           "bold": true
+          }
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r2#0",
+         "r3#0",
+         "r3#1",
+         "r3#2",
+         "r3#3"
+        ],
+        "signature": "localMeaning:insert:delete+format+insert"
+       }
+      ]
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 10,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 3,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "f",
+      "attrs": {}
+     },
+     "deps": [],
+     "hash": "6e7042af9f765a2fe687ab3c59a535d2de629a122e12e07bca2d5ed4dbc4e3bd",
+     "chars": [
+      {
+       "id": "2@01",
+       "ch": "f",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "index": 0,
+      "len": 1
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "hash": "65e7b00df5314f11e3eec3492c7adb0d37aadc27b989ecc49ebae23e1d3225cb",
+     "deleted": [
+      "2@01"
+     ],
+     "step": 1
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "mb",
+      "attrs": {
+       "bold": true
+      }
+     },
+     "deps": [],
+     "hash": "4a9b1141a5d17bb167cae174a94971855b5bd4c446bf9de0af96fe3e9707fcb4",
+     "chars": [
+      {
+       "id": "2@02",
+       "ch": "m",
+       "origin": null,
+       "rightOrigin": null
+      },
+      {
+       "id": "3@02",
+       "ch": "b",
+       "origin": "2@02",
+       "rightOrigin": null
+      }
+     ],
+     "marks": [
+      {
+       "id": "4@02",
+       "name": "bold",
+       "value": true,
+       "expand": "after",
+       "start": {
+        "side": "before",
+        "id": "2@02"
+       },
+       "end": null,
+       "begin": [
+        "4@02",
+        null,
+        "2@02"
+       ],
+       "endBoundary": [
+        "5@02",
+        "3@02",
+        null
+       ]
+      }
+     ],
+     "step": 2
+    },
+    {
+     "key": "r3#0",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "n",
+      "attrs": {}
+     },
+     "deps": [],
+     "hash": "8219f2109e8144a71d3a51f1ef9a7a445fe4f5e10d36d7fb726a3a1b3b8f1143",
+     "chars": [
+      {
+       "id": "2@03",
+       "ch": "n",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 3
+    },
+    {
+     "key": "r3#1",
+     "replica": 3,
+     "kind": "format",
+     "request": {
+      "index": 0,
+      "len": 1,
+      "attrs": {
+       "italic": true
+      }
+     },
+     "deps": [
+      "r3#0"
+     ],
+     "hash": "d59b48d17d9b43f5d0a1734698bcac1c8906f26870058c6eea6e39e6415cc71a",
+     "marks": [
+      {
+       "id": "3@03",
+       "name": "italic",
+       "value": true,
+       "expand": "before",
+       "start": null,
+       "end": {
+        "side": "after",
+        "id": "2@03"
+       },
+       "begin": [
+        "3@03",
+        null,
+        "2@03"
+       ],
+       "endBoundary": [
+        "4@03",
+        "2@03",
+        null
+       ]
+      }
+     ],
+     "step": 4
+    },
+    {
+     "key": "r3#2",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 1,
+      "text": "zg",
+      "attrs": {}
+     },
+     "deps": [
+      "r3#0",
+      "r3#1"
+     ],
+     "hash": "e6fec4dc056bd7e4fa8bbdbd0f062be3b236bdb7a865ca81a12a20d328fdf907",
+     "chars": [
+      {
+       "id": "5@03",
+       "ch": "z",
+       "origin": "4@03",
+       "rightOrigin": null
+      },
+      {
+       "id": "6@03",
+       "ch": "g",
+       "origin": "5@03",
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 5
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "vc",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0",
+      "r1#1"
+     ],
+     "hash": "8d4694fd372ef6beaa9371256261bc4639766546caa699a2b92111068aca550a",
+     "chars": [
+      {
+       "id": "4@01",
+       "ch": "v",
+       "origin": null,
+       "rightOrigin": "2@01"
+      },
+      {
+       "id": "5@01",
+       "ch": "c",
+       "origin": "4@01",
+       "rightOrigin": "2@01"
+      }
+     ],
+     "marks": [],
+     "step": 8
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "format",
+     "request": {
+      "index": 1,
+      "len": 1,
+      "attrs": {
+       "link": "u888167"
+      }
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2"
+     ],
+     "hash": "8ca24bb58498947676a1ae391eb9e0ad94b74fd55c2b6081e32b1bb13fe89d17",
+     "marks": [
+      {
+       "id": "6@01",
+       "name": "link",
+       "value": "u888167",
+       "expand": "none",
+       "start": {
+        "side": "before",
+        "id": "5@01"
+       },
+       "end": {
+        "side": "after",
+        "id": "5@01"
+       },
+       "begin": [
+        "6@01",
+        "4@01",
+        "5@01"
+       ],
+       "endBoundary": [
+        "7@01",
+        "5@01",
+        "2@01"
+       ]
+      }
+     ],
+     "step": 9
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "index": 2,
+      "text": "b",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0"
+     ],
+     "hash": "047c56904c76f1f56cb219b63fcc13e0dd61fbeb3f82b2bc7869b9c7935ef4d6",
+     "chars": [
+      {
+       "id": "6@02",
+       "ch": "b",
+       "origin": "3@02",
+       "rightOrigin": "5@02"
+      }
+     ],
+     "marks": [],
+     "step": 10
+    },
+    {
+     "key": "r3#3",
+     "replica": 3,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "s",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ],
+     "hash": "9b37d0d2bb9219a82e471a52b96112373464f8210e82445e8fc1a3745aff5dd0",
+     "chars": [
+      {
+       "id": "7@03",
+       "ch": "s",
+       "origin": "3@03",
+       "rightOrigin": "2@03"
+      }
+     ],
+     "marks": [],
+     "step": 11
+    }
+   ]
+  },
+  {
+   "trial": 167,
+   "seed": 31000260,
+   "schedule": {
+    "seed": 31000260,
+    "options": {
+     "steps": 12,
+     "withFormat": true,
+     "partialDelivery": false,
+     "openedReplicas": false
+    },
+    "replicas": 2,
+    "steps": [
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "t",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "up",
+      "attrs": {}
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "insert",
+      "index": 0,
+      "text": "ka",
+      "attrs": {}
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 2
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "delete",
+      "index": 2,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "delete",
+      "index": 0,
+      "len": 2
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "format",
+      "index": 2,
+      "len": 1,
+      "attrs": {
+       "italic": true
+      }
+     },
+     {
+      "type": "edit",
+      "replica": 2,
+      "kind": "format",
+      "index": 0,
+      "len": 2,
+      "attrs": {
+       "italic": true
+      }
+     },
+     {
+      "type": "deliver",
+      "from": 1,
+      "to": 2
+     },
+     {
+      "type": "deliver",
+      "from": 2,
+      "to": 1
+     },
+     {
+      "type": "edit",
+      "replica": 1,
+      "kind": "insert",
+      "index": 0,
+      "text": "u",
+      "attrs": {}
+     }
+    ]
+   },
+   "checks": {
+    "convergence": {
+     "name": "convergence",
+     "pass": true,
+     "details": {
+      "runs": 5,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "raLinearizability": {
+     "name": "raLinearizability",
+     "pass": true,
+     "details": {
+      "runs": 14,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "localMeaning": {
+     "name": "localMeaning",
+     "pass": false,
+     "details": {
+      "runs": 8,
+      "failureCount": 1,
+      "failures": [
+       {
+        "check": "localMeaning",
+        "replica": 1,
+        "step": 11,
+        "request": {
+         "kind": "insert",
+         "index": 0,
+         "text": "u",
+         "attrs": {}
+        },
+        "before": [
+         {
+          "ch": "t",
+          "attrs": {
+           "italic": true
+          }
+         }
+        ],
+        "expected": [
+         {
+          "ch": "u",
+          "attrs": {
+           "italic": true
+          }
+         },
+         {
+          "ch": "t",
+          "attrs": {
+           "italic": true
+          }
+         }
+        ],
+        "actual": [
+         {
+          "ch": "u",
+          "attrs": {}
+         },
+         {
+          "ch": "t",
+          "attrs": {
+           "italic": true
+          }
+         }
+        ],
+        "opKeys": [
+         "r1#0",
+         "r1#1",
+         "r1#2",
+         "r1#3",
+         "r2#0",
+         "r2#1",
+         "r2#2",
+         "r2#3"
+        ],
+        "signature": "localMeaning:insert:delete+format+insert"
+       }
+      ]
+     }
+    },
+    "determinism": {
+     "name": "determinism",
+     "pass": true,
+     "details": {
+      "runs": 8,
+      "failureCount": 0,
+      "failures": []
+     }
+    },
+    "conservation": {
+     "name": "conservation",
+     "pass": true,
+     "details": {
+      "runs": 2,
+      "failureCount": 0,
+      "failures": []
+     }
+    }
+   },
+   "anomalies": [],
+   "ops": [
+    {
+     "key": "r1#0",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "t",
+      "attrs": {}
+     },
+     "deps": [],
+     "hash": "1ac95cccc1ac9183f2d85e93e7a91c3ce84dc6b703b9c6b226a5ee9b1815cd85",
+     "chars": [
+      {
+       "id": "2@01",
+       "ch": "t",
+       "origin": null,
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 0
+    },
+    {
+     "key": "r1#1",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "up",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0"
+     ],
+     "hash": "3fbaf6f96951705eb732676f183a20117d9a0bc5411ac2b1c296613a00db7c9b",
+     "chars": [
+      {
+       "id": "3@01",
+       "ch": "u",
+       "origin": null,
+       "rightOrigin": "2@01"
+      },
+      {
+       "id": "4@01",
+       "ch": "p",
+       "origin": "3@01",
+       "rightOrigin": "2@01"
+      }
+     ],
+     "marks": [],
+     "step": 1
+    },
+    {
+     "key": "r2#0",
+     "replica": 2,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "ka",
+      "attrs": {}
+     },
+     "deps": [],
+     "hash": "3fa70ab871fd45645b5426059163a846712704b3becfaa007ef1155568d77700",
+     "chars": [
+      {
+       "id": "2@02",
+       "ch": "k",
+       "origin": null,
+       "rightOrigin": null
+      },
+      {
+       "id": "3@02",
+       "ch": "a",
+       "origin": "2@02",
+       "rightOrigin": null
+      }
+     ],
+     "marks": [],
+     "step": 2
+    },
+    {
+     "key": "r1#2",
+     "replica": 1,
+     "kind": "delete",
+     "request": {
+      "index": 2,
+      "len": 2
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0"
+     ],
+     "hash": "b9143983491be5c777b56b226741854bc2f621688d4739ae5cba00d20228f534",
+     "deleted": [
+      "2@02",
+      "3@02"
+     ],
+     "step": 5
+    },
+    {
+     "key": "r2#1",
+     "replica": 2,
+     "kind": "delete",
+     "request": {
+      "index": 0,
+      "len": 2
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0"
+     ],
+     "hash": "480a9354d19f8c24333339984cccc57cf7a82d0a2eb01fc39d068318ce58d190",
+     "deleted": [
+      "3@01",
+      "4@01"
+     ],
+     "step": 6
+    },
+    {
+     "key": "r2#2",
+     "replica": 2,
+     "kind": "format",
+     "request": {
+      "index": 2,
+      "len": 1,
+      "attrs": {
+       "italic": true
+      }
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r2#1"
+     ],
+     "hash": "dd06acee91221b3964b7710ab535ba50573ac668e3fc43eb23e9868e74135f87",
+     "marks": [
+      {
+       "id": "7@02",
+       "name": "italic",
+       "value": true,
+       "expand": "before",
+       "start": {
+        "side": "after",
+        "id": "3@02"
+       },
+       "end": {
+        "side": "after",
+        "id": "2@01"
+       },
+       "begin": [
+        "7@02",
+        "3@02",
+        "2@01"
+       ],
+       "endBoundary": [
+        "8@02",
+        "2@01",
+        null
+       ]
+      }
+     ],
+     "step": 7
+    },
+    {
+     "key": "r2#3",
+     "replica": 2,
+     "kind": "format",
+     "request": {
+      "index": 0,
+      "len": 2,
+      "attrs": {
+       "italic": true
+      }
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ],
+     "hash": "23cb425188dd06d4da328b3cabf70d8ee20da9da291ba62868d183e0d1efd7f7",
+     "marks": [
+      {
+       "id": "9@02",
+       "name": "italic",
+       "value": true,
+       "expand": "before",
+       "start": null,
+       "end": {
+        "side": "after",
+        "id": "3@02"
+       },
+       "begin": [
+        "9@02",
+        null,
+        "3@01"
+       ],
+       "endBoundary": [
+        "10@02",
+        "7@02",
+        "2@01"
+       ]
+      }
+     ],
+     "step": 8
+    },
+    {
+     "key": "r1#3",
+     "replica": 1,
+     "kind": "insert",
+     "request": {
+      "index": 0,
+      "text": "u",
+      "attrs": {}
+     },
+     "deps": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r2#3"
+     ],
+     "hash": "b494badbf24122d8ad626a9b14c21b8bc5c8899a326845ba8cc4ac3cef609a52",
+     "chars": [
+      {
+       "id": "11@01",
+       "ch": "u",
+       "origin": null,
+       "rightOrigin": "9@02"
+      }
+     ],
+     "marks": [],
+     "step": 11
+    }
+   ]
+  }
+ ],
+ "shrunk": []
+}

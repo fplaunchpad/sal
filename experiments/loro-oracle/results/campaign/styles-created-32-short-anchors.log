@@ -1,0 +1,22 @@
+rule / attrs                                    gap / anchors
+seed                                            32
+trials                                          200
+options                                         {"steps":8,"withStyles":true,"openedReplicas":false}
+edits                                           1282
+deliveries                                      1134
+sends (pending after)                           0 (0)
+opens                                           0
+versions checked                                2416
+witness skips (bound / partial)                 0 / 0
+causal gaps                                     0
+execution anomalies                             0
+failing trials                                  2
+  convergence (failures / trials)               0 / 0
+  raLinearizability (failures / trials)         0 / 0
+  localMeaning (failures / trials)              2 / 2
+  determinism (failures / trials)               0 / 0
+  conservation (failures / trials)              0 / 0
+  localMeaning on insert (failures / requests)  2 / 831
+  localMeaning on delete (failures / requests)  0 / 169
+  localMeaning on mark (failures / requests)    0 / 273
+  localMeaning on unmark (failures / requests)  0 / 9

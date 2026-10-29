@@ -1,0 +1,2058 @@
+{
+ "model": "anchor-absorb",
+ "hashes": {
+  "replica.js": "74e009a1b894db9dbd6967ad8764974f5586dc5665d4dfa8eb2e676287648857",
+  "document.js": "bb3d773de012aa8f54a0274f787a068709f597133974bcb44e09652986225f8a",
+  "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+  "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+  "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+  "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+  "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+ },
+ "configurations": [
+  {
+   "texts": [
+    "x"
+   ],
+   "profile": "structure",
+   "partial": true,
+   "replicas": 2,
+   "steps": 12,
+   "trials": 300,
+   "seed": 1,
+   "totals": {
+    "trials": 300,
+    "edits": 2570,
+    "versionsChecked": 4200,
+    "witnessSkips": 0,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 686,
+    "raLinearizability": 4200,
+    "localMeaning": 2570,
+    "determinism": 2570,
+    "conservation": 600
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "partial": true,
+   "replicas": 2,
+   "steps": 14,
+   "trials": 300,
+   "seed": 1,
+   "totals": {
+    "trials": 300,
+    "edits": 2940,
+    "versionsChecked": 4800,
+    "witnessSkips": 0,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 681,
+    "raLinearizability": 4800,
+    "localMeaning": 2940,
+    "determinism": 2940,
+    "conservation": 600
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "partial": true,
+   "replicas": 3,
+   "steps": 16,
+   "trials": 200,
+   "seed": 1,
+   "totals": {
+    "trials": 200,
+    "edits": 2466,
+    "versionsChecked": 4131,
+    "witnessSkips": 269,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 1789,
+    "raLinearizability": 4131,
+    "localMeaning": 2466,
+    "determinism": 2466,
+    "conservation": 600
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "ab",
+    "cd"
+   ],
+   "profile": "structure",
+   "partial": true,
+   "steps": 14,
+   "trials": 200,
+   "seed": 1,
+   "totals": {
+    "trials": 200,
+    "edits": 2093,
+    "versionsChecked": 3622,
+    "witnessSkips": 30,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 1226,
+    "raLinearizability": 3622,
+    "localMeaning": 2093,
+    "determinism": 2093,
+    "conservation": 513
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "a"
+   ],
+   "profile": "text",
+   "partial": false,
+   "steps": 14,
+   "trials": 200,
+   "seed": 1,
+   "totals": {
+    "trials": 200,
+    "edits": 2292,
+    "versionsChecked": 3558,
+    "witnessSkips": 94,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 1478,
+    "raLinearizability": 3558,
+    "localMeaning": 2292,
+    "determinism": 2292,
+    "conservation": 513
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "abc"
+   ],
+   "profile": "text",
+   "partial": true,
+   "steps": 14,
+   "trials": 200,
+   "seed": 1,
+   "totals": {
+    "trials": 200,
+    "edits": 2092,
+    "versionsChecked": 3607,
+    "witnessSkips": 45,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 1198,
+    "raLinearizability": 3607,
+    "localMeaning": 2092,
+    "determinism": 2092,
+    "conservation": 513
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "ab"
+   ],
+   "profile": "format",
+   "partial": false,
+   "steps": 10,
+   "trials": 200,
+   "seed": 1,
+   "totals": {
+    "trials": 200,
+    "edits": 1636,
+    "versionsChecked": 2852,
+    "witnessSkips": 0,
+    "failingTrials": 1,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 1508,
+    "raLinearizability": 2852,
+    "localMeaning": 1636,
+    "determinism": 1636,
+    "conservation": 513
+   },
+   "representatives": [
+    {
+     "probe": false,
+     "check": "localMeaning",
+     "class": "N-002",
+     "trials": 1,
+     "originalSteps": 10,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "3: split block 0 at 1",
+      "deliver 3->1",
+      "1: merge block 2",
+      "1: bold block 1 [0,2)"
+     ],
+     "schedule": {
+      "seed": 1000060,
+      "options": {
+       "openedReplicas": false,
+       "steps": 10,
+       "partialDelivery": false
+      },
+      "replicas": 3,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 3,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "deliver",
+        "from": 3,
+        "to": 1
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "localMeaning",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "localMeaning:bold:bold+merge+split",
+      "request": {
+       "kind": "bold",
+       "block": 1,
+       "start": 0,
+       "end": 2
+      },
+      "expected": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": true
+        },
+        {
+         "text": "a",
+         "bold": true
+        }
+       ]
+      ],
+      "actual": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": false
+        },
+        {
+         "text": "a",
+         "bold": false
+        }
+       ]
+      ]
+     }
+    },
+    {
+     "probe": false,
+     "check": "raLinearizability",
+     "class": "N-002",
+     "trials": 1,
+     "originalSteps": 10,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "3: split block 0 at 1",
+      "deliver 3->1",
+      "1: merge block 2",
+      "1: bold block 1 [0,2)"
+     ],
+     "schedule": {
+      "seed": 1000060,
+      "options": {
+       "openedReplicas": false,
+       "steps": 10,
+       "partialDelivery": false
+      },
+      "replicas": 3,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 3,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "deliver",
+        "from": 3,
+        "to": 1
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "raLinearizability",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "raLinearizability:bold+merge+split",
+      "expected": {
+       "admittedViews": [
+        [
+         {
+          "id": "seed-block-1",
+          "chars": []
+         },
+         {
+          "id": "C-block-4",
+          "chars": [
+           {
+            "text": "b",
+            "bold": true
+           },
+           {
+            "text": "a",
+            "bold": true
+           }
+          ]
+         }
+        ]
+       ]
+      },
+      "actual": [
+       {
+        "id": "seed-block-1",
+        "chars": []
+       },
+       {
+        "id": "C-block-4",
+        "chars": [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "texts": [
+    "abc"
+   ],
+   "profile": "format",
+   "partial": true,
+   "steps": 12,
+   "trials": 200,
+   "seed": 1,
+   "totals": {
+    "trials": 200,
+    "edits": 1822,
+    "versionsChecked": 3252,
+    "witnessSkips": 0,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 1240,
+    "raLinearizability": 3252,
+    "localMeaning": 1822,
+    "determinism": 1822,
+    "conservation": 513
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "ab",
+    "cd"
+   ],
+   "profile": "format",
+   "partial": false,
+   "steps": 12,
+   "trials": 200,
+   "seed": 1,
+   "totals": {
+    "trials": 200,
+    "edits": 1971,
+    "versionsChecked": 3252,
+    "witnessSkips": 0,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 1480,
+    "raLinearizability": 3252,
+    "localMeaning": 1971,
+    "determinism": 1971,
+    "conservation": 513
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "ab"
+   ],
+   "profile": "format",
+   "partial": true,
+   "replicas": 2,
+   "steps": 6,
+   "trials": 150,
+   "probe": true,
+   "seed": 1,
+   "totals": {
+    "trials": 150,
+    "edits": 720,
+    "versionsChecked": 1200,
+    "witnessSkips": 0,
+    "failingTrials": 0,
+    "skipped": {},
+    "probes": 2879,
+    "failingProbes": 0,
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 345,
+    "raLinearizability": 1200,
+    "localMeaning": 720,
+    "determinism": 720,
+    "conservation": 300
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "abc"
+   ],
+   "profile": "format",
+   "partial": true,
+   "replicas": 2,
+   "steps": 6,
+   "trials": 150,
+   "probe": true,
+   "seed": 1,
+   "totals": {
+    "trials": 150,
+    "edits": 719,
+    "versionsChecked": 1200,
+    "witnessSkips": 0,
+    "failingTrials": 0,
+    "skipped": {},
+    "probes": 4457,
+    "failingProbes": 0,
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 346,
+    "raLinearizability": 1200,
+    "localMeaning": 719,
+    "determinism": 719,
+    "conservation": 300
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "partial": true,
+   "replicas": 2,
+   "steps": 10,
+   "trials": 150,
+   "probe": true,
+   "seed": 1,
+   "totals": {
+    "trials": 150,
+    "edits": 1096,
+    "versionsChecked": 1800,
+    "witnessSkips": 0,
+    "failingTrials": 0,
+    "skipped": {},
+    "probes": 3002,
+    "failingProbes": 0,
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 348,
+    "raLinearizability": 1800,
+    "localMeaning": 1096,
+    "determinism": 1096,
+    "conservation": 300
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "partial": true,
+   "replicas": 2,
+   "steps": 40,
+   "trials": 300,
+   "seed": 1,
+   "totals": {
+    "trials": 300,
+    "edits": 7769,
+    "versionsChecked": 8520,
+    "witnessSkips": 4080,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 657,
+    "raLinearizability": 8520,
+    "localMeaning": 7769,
+    "determinism": 7769,
+    "conservation": 600
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "partial": true,
+   "replicas": 3,
+   "steps": 40,
+   "trials": 300,
+   "seed": 1,
+   "totals": {
+    "trials": 300,
+    "edits": 8778,
+    "versionsChecked": 11559,
+    "witnessSkips": 2241,
+    "failingTrials": 0,
+    "skipped": {},
+    "rejectedRequests": 0
+   },
+   "checkRuns": {
+    "convergence": 2282,
+    "raLinearizability": 11559,
+    "localMeaning": 8778,
+    "determinism": 8778,
+    "conservation": 900
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "ab"
+   ],
+   "profile": "format",
+   "systematic": true,
+   "totals": {
+    "prefixes": 27,
+    "probes": 291,
+    "failingProbes": 1,
+    "failingPrefixes": 0
+   },
+   "representatives": [
+    {
+     "probe": true,
+     "check": "localMeaning",
+     "class": "N-002",
+     "trials": 1,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "2: split block 0 at 1",
+      "send 2#0->1",
+      "1: merge block 2",
+      "1: bold block 1 [0,2)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "localMeaning",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "localMeaning:bold:bold+merge+split",
+      "request": {
+       "kind": "bold",
+       "block": 1,
+       "start": 0,
+       "end": 2
+      },
+      "expected": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": true
+        },
+        {
+         "text": "a",
+         "bold": true
+        }
+       ]
+      ],
+      "actual": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": false
+        },
+        {
+         "text": "a",
+         "bold": false
+        }
+       ]
+      ]
+     }
+    },
+    {
+     "probe": true,
+     "check": "raLinearizability",
+     "class": "N-002",
+     "trials": 1,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "2: split block 0 at 1",
+      "send 2#0->1",
+      "1: merge block 2",
+      "1: bold block 1 [0,2)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "raLinearizability",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "raLinearizability:bold+merge+split",
+      "expected": {
+       "admittedViews": [
+        [
+         {
+          "id": "seed-block-1",
+          "chars": []
+         },
+         {
+          "id": "B-block-4",
+          "chars": [
+           {
+            "text": "b",
+            "bold": true
+           },
+           {
+            "text": "a",
+            "bold": true
+           }
+          ]
+         }
+        ]
+       ]
+      },
+      "actual": [
+       {
+        "id": "seed-block-1",
+        "chars": []
+       },
+       {
+        "id": "B-block-4",
+        "chars": [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "texts": [
+    "abc"
+   ],
+   "profile": "format",
+   "systematic": true,
+   "totals": {
+    "prefixes": 48,
+    "probes": 772,
+    "failingProbes": 6,
+    "failingPrefixes": 0
+   },
+   "representatives": [
+    {
+     "probe": true,
+     "check": "localMeaning",
+     "class": "N-002",
+     "trials": 5,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "2: split block 0 at 1",
+      "send 2#0->1",
+      "1: merge block 2",
+      "1: bold block 1 [1,3)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 1,
+        "end": 3
+       }
+      ]
+     },
+     "failure": {
+      "check": "localMeaning",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "localMeaning:bold:bold+merge+split",
+      "request": {
+       "kind": "bold",
+       "block": 1,
+       "start": 1,
+       "end": 3
+      },
+      "expected": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": false
+        },
+        {
+         "text": "c",
+         "bold": true
+        },
+        {
+         "text": "a",
+         "bold": true
+        }
+       ]
+      ],
+      "actual": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": false
+        },
+        {
+         "text": "c",
+         "bold": false
+        },
+        {
+         "text": "a",
+         "bold": false
+        }
+       ]
+      ]
+     }
+    },
+    {
+     "probe": true,
+     "check": "localMeaning",
+     "class": "N-003",
+     "trials": 1,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 1",
+      "2: split block 0 at 2",
+      "send 2#0->1",
+      "1: merge block 1",
+      "1: bold block 0 [0,2)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 2
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 1
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "localMeaning",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "localMeaning:bold:bold+merge+split",
+      "request": {
+       "kind": "bold",
+       "block": 0,
+       "start": 0,
+       "end": 2
+      },
+      "expected": [
+       [
+        {
+         "text": "a",
+         "bold": true
+        },
+        {
+         "text": "c",
+         "bold": true
+        }
+       ],
+       [
+        {
+         "text": "b",
+         "bold": false
+        }
+       ]
+      ],
+      "actual": [
+       [
+        {
+         "text": "a",
+         "bold": true
+        },
+        {
+         "text": "c",
+         "bold": true
+        }
+       ],
+       [
+        {
+         "text": "b",
+         "bold": true
+        }
+       ]
+      ]
+     }
+    },
+    {
+     "probe": true,
+     "check": "raLinearizability",
+     "class": "N-002",
+     "trials": 5,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "2: split block 0 at 1",
+      "send 2#0->1",
+      "1: merge block 2",
+      "1: bold block 1 [1,3)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 1,
+        "end": 3
+       }
+      ]
+     },
+     "failure": {
+      "check": "raLinearizability",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "raLinearizability:bold+merge+split",
+      "expected": {
+       "admittedViews": [
+        [
+         {
+          "id": "seed-block-1",
+          "chars": []
+         },
+         {
+          "id": "B-block-5",
+          "chars": [
+           {
+            "text": "b",
+            "bold": false
+           },
+           {
+            "text": "c",
+            "bold": true
+           },
+           {
+            "text": "a",
+            "bold": true
+           }
+          ]
+         }
+        ]
+       ]
+      },
+      "actual": [
+       {
+        "id": "seed-block-1",
+        "chars": []
+       },
+       {
+        "id": "B-block-5",
+        "chars": [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "c",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "probe": true,
+     "check": "raLinearizability",
+     "class": "N-003",
+     "trials": 1,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 1",
+      "2: split block 0 at 2",
+      "send 2#0->1",
+      "1: merge block 1",
+      "1: bold block 0 [0,2)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 2
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 1
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "raLinearizability",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "raLinearizability:bold+merge+split",
+      "expected": {
+       "admittedViews": [
+        [
+         {
+          "id": "seed-block-1",
+          "chars": [
+           {
+            "text": "a",
+            "bold": true
+           },
+           {
+            "text": "c",
+            "bold": true
+           }
+          ]
+         },
+         {
+          "id": "A-block-5",
+          "chars": [
+           {
+            "text": "b",
+            "bold": false
+           }
+          ]
+         }
+        ]
+       ]
+      },
+      "actual": [
+       {
+        "id": "seed-block-1",
+        "chars": [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         }
+        ]
+       },
+       {
+        "id": "A-block-5",
+        "chars": [
+         {
+          "text": "b",
+          "bold": true
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "texts": [
+    "abcd"
+   ],
+   "profile": "format",
+   "systematic": true,
+   "totals": {
+    "prefixes": 75,
+    "probes": 1695,
+    "failingProbes": 20,
+    "failingPrefixes": 0
+   },
+   "representatives": [
+    {
+     "probe": true,
+     "check": "localMeaning",
+     "class": "N-002",
+     "trials": 15,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "2: split block 0 at 1",
+      "send 2#0->1",
+      "1: merge block 2",
+      "1: bold block 1 [2,4)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 2,
+        "end": 4
+       }
+      ]
+     },
+     "failure": {
+      "check": "localMeaning",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "localMeaning:bold:bold+merge+split",
+      "request": {
+       "kind": "bold",
+       "block": 1,
+       "start": 2,
+       "end": 4
+      },
+      "expected": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": false
+        },
+        {
+         "text": "c",
+         "bold": false
+        },
+        {
+         "text": "d",
+         "bold": true
+        },
+        {
+         "text": "a",
+         "bold": true
+        }
+       ]
+      ],
+      "actual": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": false
+        },
+        {
+         "text": "c",
+         "bold": false
+        },
+        {
+         "text": "d",
+         "bold": false
+        },
+        {
+         "text": "a",
+         "bold": false
+        }
+       ]
+      ]
+     }
+    },
+    {
+     "probe": true,
+     "check": "localMeaning",
+     "class": "N-003",
+     "trials": 5,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 1",
+      "2: split block 0 at 2",
+      "send 2#0->1",
+      "1: merge block 1",
+      "1: bold block 0 [0,2)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 2
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 1
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "localMeaning",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "localMeaning:bold:bold+merge+split",
+      "request": {
+       "kind": "bold",
+       "block": 0,
+       "start": 0,
+       "end": 2
+      },
+      "expected": [
+       [
+        {
+         "text": "a",
+         "bold": true
+        },
+        {
+         "text": "c",
+         "bold": true
+        },
+        {
+         "text": "d",
+         "bold": false
+        }
+       ],
+       [
+        {
+         "text": "b",
+         "bold": false
+        }
+       ]
+      ],
+      "actual": [
+       [
+        {
+         "text": "a",
+         "bold": true
+        },
+        {
+         "text": "c",
+         "bold": true
+        },
+        {
+         "text": "d",
+         "bold": false
+        }
+       ],
+       [
+        {
+         "text": "b",
+         "bold": true
+        }
+       ]
+      ]
+     }
+    },
+    {
+     "probe": true,
+     "check": "raLinearizability",
+     "class": "N-002",
+     "trials": 15,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "2: split block 0 at 1",
+      "send 2#0->1",
+      "1: merge block 2",
+      "1: bold block 1 [2,4)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 2,
+        "end": 4
+       }
+      ]
+     },
+     "failure": {
+      "check": "raLinearizability",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "raLinearizability:bold+merge+split",
+      "expected": {
+       "admittedViews": [
+        [
+         {
+          "id": "seed-block-1",
+          "chars": []
+         },
+         {
+          "id": "B-block-6",
+          "chars": [
+           {
+            "text": "b",
+            "bold": false
+           },
+           {
+            "text": "c",
+            "bold": false
+           },
+           {
+            "text": "d",
+            "bold": true
+           },
+           {
+            "text": "a",
+            "bold": true
+           }
+          ]
+         }
+        ]
+       ]
+      },
+      "actual": [
+       {
+        "id": "seed-block-1",
+        "chars": []
+       },
+       {
+        "id": "B-block-6",
+        "chars": [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "c",
+          "bold": false
+         },
+         {
+          "text": "d",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "probe": true,
+     "check": "raLinearizability",
+     "class": "N-003",
+     "trials": 5,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 1",
+      "2: split block 0 at 2",
+      "send 2#0->1",
+      "1: merge block 1",
+      "1: bold block 0 [0,2)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 2
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 1
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 0,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "raLinearizability",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "raLinearizability:bold+merge+split",
+      "expected": {
+       "admittedViews": [
+        [
+         {
+          "id": "seed-block-1",
+          "chars": [
+           {
+            "text": "a",
+            "bold": true
+           },
+           {
+            "text": "c",
+            "bold": true
+           },
+           {
+            "text": "d",
+            "bold": false
+           }
+          ]
+         },
+         {
+          "id": "A-block-6",
+          "chars": [
+           {
+            "text": "b",
+            "bold": false
+           }
+          ]
+         }
+        ]
+       ]
+      },
+      "actual": [
+       {
+        "id": "seed-block-1",
+        "chars": [
+         {
+          "text": "a",
+          "bold": true
+         },
+         {
+          "text": "c",
+          "bold": true
+         },
+         {
+          "text": "d",
+          "bold": false
+         }
+        ]
+       },
+       {
+        "id": "A-block-6",
+        "chars": [
+         {
+          "text": "b",
+          "bold": true
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "texts": [
+    "ab",
+    "cd"
+   ],
+   "profile": "format",
+   "systematic": true,
+   "totals": {
+    "prefixes": 72,
+    "probes": 1532,
+    "failingProbes": 2,
+    "failingPrefixes": 0
+   },
+   "representatives": [
+    {
+     "probe": true,
+     "check": "localMeaning",
+     "class": "N-002",
+     "trials": 2,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "2: split block 0 at 1",
+      "send 2#0->1",
+      "1: merge block 2",
+      "1: bold block 1 [0,2)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "localMeaning",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "localMeaning:bold:bold+merge+split",
+      "request": {
+       "kind": "bold",
+       "block": 1,
+       "start": 0,
+       "end": 2
+      },
+      "expected": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": true
+        },
+        {
+         "text": "a",
+         "bold": true
+        }
+       ],
+       [
+        {
+         "text": "c",
+         "bold": false
+        },
+        {
+         "text": "d",
+         "bold": false
+        }
+       ]
+      ],
+      "actual": [
+       [],
+       [
+        {
+         "text": "b",
+         "bold": false
+        },
+        {
+         "text": "a",
+         "bold": false
+        }
+       ],
+       [
+        {
+         "text": "c",
+         "bold": false
+        },
+        {
+         "text": "d",
+         "bold": false
+        }
+       ]
+      ]
+     }
+    },
+    {
+     "probe": true,
+     "check": "raLinearizability",
+     "class": "N-002",
+     "trials": 2,
+     "originalSteps": 5,
+     "steps": 5,
+     "edits": 4,
+     "rendered": [
+      "1: split block 0 at 0",
+      "2: split block 0 at 1",
+      "send 2#0->1",
+      "1: merge block 2",
+      "1: bold block 1 [0,2)"
+     ],
+     "schedule": {
+      "replicas": 2,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "split",
+        "block": 0,
+        "index": 0
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "split",
+        "block": 0,
+        "index": 1
+       },
+       {
+        "type": "send",
+        "from": 2,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "merge",
+        "block": 2
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "bold",
+        "block": 1,
+        "start": 0,
+        "end": 2
+       }
+      ]
+     },
+     "failure": {
+      "check": "raLinearizability",
+      "replica": 1,
+      "step": 4,
+      "final": false,
+      "signature": "raLinearizability:bold+merge+split",
+      "expected": {
+       "admittedViews": [
+        [
+         {
+          "id": "seed-block-1",
+          "chars": []
+         },
+         {
+          "id": "B-block-7",
+          "chars": [
+           {
+            "text": "b",
+            "bold": true
+           },
+           {
+            "text": "a",
+            "bold": true
+           }
+          ]
+         },
+         {
+          "id": "seed-block-4",
+          "chars": [
+           {
+            "text": "c",
+            "bold": false
+           },
+           {
+            "text": "d",
+            "bold": false
+           }
+          ]
+         }
+        ]
+       ]
+      },
+      "actual": [
+       {
+        "id": "seed-block-1",
+        "chars": []
+       },
+       {
+        "id": "B-block-7",
+        "chars": [
+         {
+          "text": "b",
+          "bold": false
+         },
+         {
+          "text": "a",
+          "bold": false
+         }
+        ]
+       },
+       {
+        "id": "seed-block-4",
+        "chars": [
+         {
+          "text": "c",
+          "bold": false
+         },
+         {
+          "text": "d",
+          "bold": false
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "texts": [
+    "abc"
+   ],
+   "profile": "text",
+   "systematic": true,
+   "totals": {
+    "prefixes": 48,
+    "probes": 802,
+    "failingProbes": 0,
+    "failingPrefixes": 0
+   },
+   "representatives": []
+  },
+  {
+   "texts": [
+    "ab",
+    "cd"
+   ],
+   "profile": "text",
+   "systematic": true,
+   "totals": {
+    "prefixes": 72,
+    "probes": 1630,
+    "failingProbes": 0,
+    "failingPrefixes": 0
+   },
+   "representatives": []
+  }
+ ]
+}
