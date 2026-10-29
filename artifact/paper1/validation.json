@@ -1,24 +1,48 @@
 {
-  "scope": "Historical proof-bundle validation, not a fresh validation of the expanded PBT export. Run scripts/check.sh and scripts/check-pbt.py for the current snapshot.",
-  "historical_proof_bundle": {
-    "date": "2026-10-15",
-    "platform": "macOS arm64",
-    "lean": "4.28.0",
-    "python": "3.14.6",
-    "node": "26.3.1",
-    "validation": "pass",
-    "original_lean_sources": 507,
-    "selected_roots": 242,
-    "build_jobs": 3612,
-    "fresh_project_build": true,
-    "build_scope": "Fresh project build with only standard Lean/Mathlib dependencies available; no optional solver package or project compiled outputs reused. No fresh external dependency bootstrap claimed.",
-    "notion": "Fresh download verified all seven hashes; offline runner reproduced five known demo bugs and one positive control (Notion rerun 2026-10-17).",
-    "measurements": "All 24 row counts, 444 renamed-source hashes and generic metatheory category counts reproduced after renaming.",
-    "excluded": "No Git history, credentials, original repository .lake directory, untracked research files, or third-party Notion sources in source archive.",
-    "negative_controls": "Unapproved Lean axiom rejected; existing export directory refused; Notion corrupt-cache and output-overwrite rejection checked. Unexpected additional source file rejected by the manifest checker.",
-    "navigation_declaration_checks": 52,
-    "numbered_paper_statements": 16,
-    "anonymity": "Neutral project/module names; project revision identifiers and author references removed; official dependency attributions retained. Archive owner names, numeric owners and timestamps cleared."
+  "date": "2026-10-29",
+  "platform": "macOS arm64",
+  "lean": {
+    "copied_sources": 514,
+    "generated_guide_and_audit_files": 2,
+    "selected_roots": 260,
+    "build_jobs": 3619,
+    "result": "pass",
+    "build_scope": "Fresh compilation of renamed project sources, reusing pinned Lean and Mathlib dependency outputs; no fresh external dependency bootstrap claimed.",
+    "axioms_allowed": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_decide_scope": "Other concrete examples compile but are outside the selected-declaration axiom audit."
   },
-  "current_pbt_support": "Reproducible support supplied; command results are generated at results/pbt/summary.json when run. External libraries are not verified; no GC result is claimed."
+  "node": "26.3.1",
+  "validation": "pass",
+  "scope": "Renamed Lean proof closure and bounded executable tests; no external-library verification or GC result is claimed.",
+  "executable_checks": {
+    "harness_tests": 55,
+    "packaged_runtime_tests": 38,
+    "specification_assertions": {
+      "yjs": 26,
+      "automerge": 12,
+      "loro": 17
+    },
+    "regressions": {
+      "yjs": 28,
+      "automerge": 18,
+      "loro": 54,
+      "notion_demo_and_older_repair": 34
+    },
+    "pinned_packages": "npm ci --ignore-scripts from local cache; executable source digests checked before and after tests.",
+    "notion": "Seven original demo modules hash-checked; offline preparation and regressions passed."
+  },
+  "integrity_and_anonymity": {
+    "manifest": "pass; rejects unexpected source files",
+    "archive": "Owner names, numeric owners and timestamps neutral; no symlinks, Git history, node_modules, credentials or identifying report drafts.",
+    "negative_controls": [
+      "unexpected source rejected",
+      "existing export refused",
+      "corrupt-cache and output-overwrite rejection retained"
+    ]
+  },
+  "historical_campaigns": "Original random-campaign measurements are retained as historical observations, not fresh measurements or proof verdicts. Current generic witness search checks causal-history conformance; paper RA is not checked by that search."
 }

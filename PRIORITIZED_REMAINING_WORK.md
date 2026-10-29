@@ -16,11 +16,16 @@ sole active bounded counter is the published Balegas matrix/max design.
   transcription, specification choices and representative library failures.
 - [x] Repair and regression-test duplicate ingestion of overlapping encoded
   deltas in both runtime clients.
-- [ ] Update the chosen paper with evidence-supported, version-scoped claims.
-- [ ] Add reproducible property tests and library counterexamples to the
+- [x] Update the chosen paper with evidence-supported, version-scoped claims.
+- [x] Add reproducible property tests and library counterexamples to the
   anonymous artifact; check source integrity, commands and claim boundaries.
-- [ ] Run the relevant Lean, JavaScript, paper and artifact checks, and record
+- [x] Run the relevant Lean, JavaScript, paper and artifact checks, and record
   the review in the Claude exchange.
+
+  Local integration: `491ab00`; original Overleaf manuscript: `1393a21`.
+  Release gate, 55 PBT tests and final package regressions passed. The fresh
+  renamed proof build passed 3,619 jobs and audited all 260 selected roots.
+  Public-report amendments remain proposals; no upstream post was edited.
 
 ## Production Notion client extraction
 

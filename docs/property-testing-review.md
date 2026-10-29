@@ -67,3 +67,15 @@ was rerun for this final documentation pass.
 The manuscript and anonymous package now distinguish law tests, bounded
 causal-history searches and direct counterexamples. No upstream report has
 been amended; proposed replacements are in the linked upstream review.
+
+The fresh anonymous Lean build passed 3,619 jobs and audited all 260 selected
+roots. Its 514 copied Lean sources and two generated Lean files match the
+release export byte for byte. The final package passed 21 runner commands,
+including package-hash checks, 55 harness tests, 38 packaged runtime tests,
+26/12/17 Yjs/Automerge/Loro specification assertions, 28/18/54 corresponding
+regressions and 34 Notion regressions. Archive metadata, the manifest and its
+unexpected-source rejection control passed. The manuscript and supplement
+compile and their changed pages were visually checked. Both the unchanged
+manuscript parent and the revised version are 26 pages including references;
+their data-availability sections are on page 24, so this is not a claim that
+the body has been reduced to 23 pages.
