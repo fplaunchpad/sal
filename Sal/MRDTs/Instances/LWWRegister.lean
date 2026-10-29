@@ -51,6 +51,9 @@ def read : State → Option Nat
 def update (state : State) (event : Op LWWOp) : State :=
   max state ↑(packedWrite event)
 
+/- check for a non-bot state with an event-/
+#eval update (some (1, 1, 45) : State) (1, 1, LWWOp.write 49)
+
 def D : MRDTSig where
   State := State
   dec_state := inferInstance
