@@ -23,8 +23,14 @@ by itself evidence of a failure in live Notion.
 - [x] Add a compact, evidence-scoped findings catalogue to the supplement;
   include supported production experiments and acquisition instructions in
   the anonymous package without redistributing downloaded client code.
-- [ ] Run relevant checks, commit reviewed changes, push the code and paper,
-  and publish the anonymous source package with its digest.
+- [x] Run relevant checks, commit reviewed changes and push the reviewed code
+  and manuscript. Code: `3e4248b`; paper: `1896865` on Overleaf and the
+  GitHub paper repository's `overleaf` branch.
+
+KC confirmed the paper is submitted and stopped further archive generation
+and publication. No GitHub release was created. Existing local bundles remain
+ignored build outputs. Subsequent research findings belong in repo docs;
+do not continue changing the manuscript without a new request.
 
 ## Review and publish the property-testing results
 
