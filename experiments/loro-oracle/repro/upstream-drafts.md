@@ -1,7 +1,7 @@
 # Upstream drafts for loro-dev/loro
 
 One comment and one issue, posted from KC's account on 2026-10-29: the
-comment is on loro-dev/loro#1009, the issue is loro-dev/loro#1240. Scripts
+comment is on loro-dev/loro#1009, the issue is loro-dev/loro#1240. Both were edited in place on 2026-10-29 (see `docs/upstream-corrections.md`); the texts below are the live ones. Scripts
 are the ones in this directory; each exits non-zero when the defect shows
 and the control does not.
 
@@ -41,6 +41,8 @@ peers 2,1: [{"insert":"h"},{"insert":"a","attributes":{"bold":true}}]
 
 Cause: a style's start and end anchors are ordinary list elements (`diff_calc.rs`, `new_style_anchor`), and an anchor and a concurrent insert with the same neighbours are ordered by peer (`tracker/crdt_rope.rs`, the `other_elem.id.peer > content.id.peer` comparisons). The expand setting is consulted only when the typing replica places its own text (`richtext_state.rs`, `find_best_insert_pos`), which is why the local case in the report is right and the merged one is not. The `ExpandType` documentation says text inserted before a style that does not expand before "should **not** inherit this style", without restricting that to the local replica.
 
+The script above is the expand-after start case this issue reported, with the peer ids swapped to show the dependence. The statement that the same ordering decides the outcome for every expand setting and at either end comes from a property-based run over 1,200 trials, not from this script; the minimal shapes for a non-expanding link end and for the crossed case are in that run's regression file, and I can post them if useful. The undo residue in the original report was not re-run.
+
 Found while checking Loro text against a sequential specification of styled text for a verification project on replicated data types at IIT Madras (FP Launchpad); the shape comes from a property-based testing harness, minimised and checked by hand against the source, with the harness built with AI assistance. The same class exists in Yjs (yjs/yjs#385) and Automerge (automerge/automerge#1649); of the concurrent formatting classes found in Yjs, this is the only one Loro shares.
 
 ---
@@ -53,7 +55,7 @@ Found while checking Loro text against a sequential specification of styled text
 
 Four shapes, three of them on a single replica with no concurrency, in which a locally typed character gets styles that neither displayed neighbour has, or misses one both have. The common cause is how the insertion point is chosen among the style anchors between the two neighbours: one scan serves every style name, anchors of removed or deleted styles still count, and after an unmark the expand setting is reversed.
 
-Shape 1, a style no displayed character carries. Highlight `ab` (expand both), remove the highlight, type `X` at 0: `X` is highlighted. The same with bold (expand after) is correct, and so is the variant where the only highlighted character is deleted and a character is typed into its place.
+Shape 1, a style no displayed character carries. Highlight `ab` (expand both), remove the highlight, type `X` at 0: `X` is highlighted. The same with bold (expand after) is correct. The variant where the only highlighted character is deleted and a character is typed into its place fails the same way: from `abc`, highlight `b`, delete `b` and type `X` at 1 gives `X` highlighted between `a` and `c`, while the same with link (expand none) gives `aXc` plain.
 
 ```js
 import { LoroDoc } from 'loro-crdt';
@@ -166,7 +168,7 @@ control  (user 1 sup, user 2 bold) [{"insert":"X","attributes":{"sup":true}},{"i
 
 **Expected behavior**
 
-A typed character takes, for each style name, what the expand setting says given its two displayed neighbours: the style of the left neighbour if the style expands after, of the right neighbour if it expands before, and nothing from a style no displayed neighbour carries. That gives `X` plain in shape 1, plain in shape 2, linked in shape 3 and superscript only in shape 4. Two documents that display the same text with the same styles should give the same result for the same request (shape 3).
+A typed character takes, for each style name, what the expand setting says given its two displayed neighbours: the style of the left neighbour if the style expands after, of the right neighbour if it expands before, and nothing from a style no displayed neighbour carries. That gives `X` plain in shape 1, plain in shape 2, linked in shape 3 and superscript only in shape 4. Shape 3 assumes that two documents displaying the same text with the same styles give the same result for the same request; their hidden anchors differ, and whether the API promises this is for you to say.
 
 **Where it happens**
 
@@ -178,4 +180,6 @@ A typed character takes, for each style name, what the expand setting says given
 
 **How this was found**
 
-While checking Loro text against a sequential specification of styled text, as part of a verification project on replicated data types at IIT Madras (FP Launchpad). The shapes come from a property-based testing harness, were minimised, and were checked by hand against the Rust source; the harness was built with AI assistance. For what it is worth, Loro's list, delivery and convergence behaviour passed every check in the same runs: every change with missing dependencies is held back, deletes and unmarks included, and the Fugue list satisfies the strong list specification over 800 plain-text trials.
+While checking Loro text against a sequential specification of styled text, as part of a verification project on replicated data types at IIT Madras (FP Launchpad). The shapes come from a property-based testing harness, were minimised, and were checked by hand against the Rust source; the harness was built with AI assistance. For what it is worth, Loro's list, delivery and convergence behaviour passed every check in the same runs: every change with missing dependencies is held back, deletes and unmarks included, and no checked plain-text version lacked a witness under the strong list specification in 800 trials.
+
+Edited 2026-10-29: shape 1 originally said the deleted-character variant was correct; it fails the same way, as now stated. The shape 3 assumption and the last sentence were also made explicit.

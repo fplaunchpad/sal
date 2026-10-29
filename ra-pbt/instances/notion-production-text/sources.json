@@ -1,0 +1,27 @@
+{
+  "description": "SHA-256 digests of the standalone export written by experiments/notion-production-client/extract.mjs from the 63 public production assets pinned on 2026-10-29. The export itself is proprietary and lives outside the repository (NOTION_PRODUCTION_LIBRARY); only these digests are recorded here.",
+  "exportFiles": {
+    "client.mjs": "564729b916d7344ef4024d20311e38f6e9620d65705c36c70b26cd3d72660892",
+    "index.mjs": "d48d9dcce273cc7d88d26bec22d666403d1c346860858c181ee39a2797de02df",
+    "modules.json": "8ecc246d0707254baf0f8230c271cdee125819377d96f9fe1f92a85463771bc8",
+    "requests.mjs": "7a319d594ecc3b9a8c04a21c80e4820309eb1babaab66eb0553d0ac10bddab18",
+    "runtime.mjs": "d88b5eab5387afe9fe1e0e52caeed5eb89f57d2094d07f6bc42b716589106303",
+    "sources.json": "6c31e32d25cc102d61de01e4b4476bab7cc456c2686d86e106d2ab92adb097be"
+  },
+  "modules": 4335,
+  "assets": 63,
+  "assetBytes": 9006862,
+  "textModules": {
+    "textSlice": "458789",
+    "sliceTree": "300957",
+    "clock": "508649",
+    "recordOperations": "971340",
+    "items": "829138",
+    "annotationOpSet": "519193",
+    "annotationResolution": "499116",
+    "insertBuilder": "769718",
+    "deleteBuilder": "55709",
+    "annotationBuilders": "709022",
+    "richText": "146739"
+  }
+}

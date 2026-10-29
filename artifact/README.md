@@ -25,6 +25,13 @@ campaign dumps/logs and identifying posted-report drafts/history are omitted.
 The standalone `scripts/check-pbt.py` runner separates offline core checks from
 explicit third-party acquisition. See its exported reproduction guide.
 
+Reviewed production-client support adds first-party extraction code, fixture
+text/block experiments and native editor-clock review controls. The 63 public
+assets and generated 4,335-module library are acquired separately outside the
+bundle. The exporter preserves the five copied library inputs byte for byte,
+so anonymisation reproduces the same six pinned export digests. A curated
+guide replaces prereview report prose and keeps deployment claims conditional.
+
 The result has its own Lake configuration, pinned dependencies, documented
 commands and file hashes. Third-party Notion demo sources are acquired separately
 through a hash-checked downloader. No distribution licence is added or changed.

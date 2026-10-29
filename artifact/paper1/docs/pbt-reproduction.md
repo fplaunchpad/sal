@@ -117,6 +117,12 @@ from an empty failure list. These distinctions are exercised by the core suite.
 
 ## Checked semantic counterparts and recorded evidence
 
+The separately acquired production-client source snapshot has its own
+[reviewed reproduction guide](production-client.md). The package includes
+first-party extraction and fixture experiments, not the downloaded 63 assets or
+4,335 module bodies. Its review controls distinguish pending integration from
+same-record-set divergence and retain the unknown server-protocol boundary.
+
 Two additional Lean modules are imported and their selected roots audited:
 
 | Module under `Sal/MRDTs/Instances/` | Checked scope |
@@ -145,6 +151,6 @@ Recorded Notion law files predate the corrected inconclusive-status reporting
 and are historical observations. Their old `pass` booleans must not be used as
 checked-law verdicts; rerun the current law CLI for statuses. The counts and
 representative schedules are retained for traceability, not relabelled as new
-measurements. Recorded evidence is not a claim that this newly exported bundle
-has already completed a fresh combined Lean/external-dependency build; follow
-the commands above and `scripts/check.sh` to validate the current snapshot.
+measurements. See `validation.json` for the actual full-build checkpoint and
+subsequent source comparisons; follow the commands above and `scripts/check.sh`
+to validate the current snapshot in a new environment.

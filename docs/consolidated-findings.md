@@ -1,11 +1,19 @@
 # Consolidated findings: proof obligations as property tests
 
 Historical measurements from the `yjs-oracle` source baseline `14f073e`,
-committed in `/Users/kc/repos/sal-yjs` on 2026-10-29. Its integration into
-`/Users/kc/repos/sal` is currently uncommitted. Counts below describe those
+integrated in `491ab00` on 2026-10-29. Counts below describe those
 recorded campaigns, not fresh runs on the integrated tree. The law-layer
 commutation evaluator was corrected during review: historical law verdicts and
 counts are pre-review candidates pending reruns with the corrected evaluator.
+
+The later review also removed target-ID pruning from the four visual text
+specifications. Their observations erase IDs, so that optimisation could
+produce false negative witness verdicts. Historical negative counts are not
+fresh verdicts of the corrected search. Independent production-client reviews
+are in [text](notion-production-text.md), [blocks](notion-production-blocks.md)
+and [protocol](notion-production-protocol-review.md); none establishes a
+live Notion failure. The paper supplement gives the complete evidence
+inventory, separating specification choices and delivery probes from defects.
 
 ## The question
 

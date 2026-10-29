@@ -27,6 +27,17 @@ const fold = (ops) => ops.reduce((s, op) => (s === null ? null : apply(s, op)), 
 const plain = (text) => [...text].map((ch) => ({ ch, attrs: {} }));
 const v = (...pairs) => pairs.map(([ch, attrs]) => ({ ch, attrs: attrs ?? {} }));
 
+test('gap witnesses compare repeated characters without imposing the target identity order', () => {
+  const events = [
+    { key: 'a', deps: [], specOps: [ins(A, 'x', null)] },
+    { key: 'b', deps: ['a'], specOps: [{ ...ins(B, 'x', null), rightOrigin: A }] },
+  ];
+  // The only placement is B,A, displaying xx; the query ignores the ids.
+  const target = [{ id: A, ch: 'x', attrs: {} }, { id: B, ch: 'x', attrs: {} }];
+  assert.equal(findWitness(events, target, { rule: 'gap' }).found, true);
+  assert.equal(findWitness(events, [{ ...target[0], attrs: { bold: true } }, target[1]], { rule: 'gap' }).found, false);
+});
+
 test('insert after an origin places the later sibling nearer the anchor', () => {
   // a at head; b after a gives "ab"; c after a goes immediately after a: "acb".
   const s = fold([ins(A, 'a', null), ins(B, 'b', A), ins(C, 'c', A)]);
@@ -321,21 +332,20 @@ test('witness over 20 events terminates and reports', () => {
   assert.equal(neg.explored, 1 + 2 ** 19);
 });
 
-test('witness under the gap rule with identities places each character where the target has it', () => {
-  // The 12-event wide history: 11 concurrent inserts after distinct anchors.
-  // With the target's identities each placement is forced up to deleted
-  // neighbours, so the search stays small and still finds the witness.
-  const ops = wideHistory(11);
+test('small gap histories admit identity-bearing targets with distinct characters', () => {
+  // Full observation-preserving search explores all placements; target ids
+  // do not justify pruning. Keep this relational example small.
+  const ops = wideHistory(3);
   const withIds = (s) => [...s].map((ch) => {
     const lower = ch.toLowerCase();
     const k = lower.charCodeAt(0) - 97;
     return { id: ch === lower ? [0, k] : [k + 1, 0], ch, attrs: {} };
   });
-  const w = findWitness(ops, withIds('aAbBcCdDeEfFgGhHiIjJkK'));
+  const w = findWitness(ops, withIds('aAbBcC'));
   assert.equal(w.found, true);
   assert.equal(w.order[0], 'base');
   // A capital placed before its anchor violates its gap: no witness.
-  const neg = findWitness(ops, withIds('AabBcCdDeEfFgGhHiIjJkK'));
+  const neg = findWitness(ops, withIds('AabBcC'));
   assert.equal(neg.found, false);
   // Without identities the gap enumeration is capped and says so.
   const views = allFinalViews(wideHistory(6), { limit: 500 });

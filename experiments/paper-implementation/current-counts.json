@@ -1,6 +1,6 @@
 {
   "method": "Kernel dependencies of explicitly listed current declaration roots; union complete declaration source ranges, exclude blank/comment lines; generated source-range overlaps are attributed to theorem/support roles rather than definition/specification roles; disjoint per-row roles prioritize implementation definitions, independent specification definitions, VC proof/input-support closures, then remaining bridge/execution closures. The 19 automation-selected cases use actual CommonVerification.verify application/evidence closures; other cases use their named raw five-VC, policy-expansion or direct-assembly dependency closures, with root packaging included. Shared libraries are excluded. Counts are dependency-footprint LOC, not handwritten proof-body sizes or person-hours; cross-row overlap is not subtracted. The direct structural Notion carrier assembly is explicitly listed in direct_vc_dependency_roots.",
-  "git_head": "9a58ed0ef5f4d69d5f7e089dfe0d7784785644e0",
+  "git_head": "63dc921d2d9ccf1382ba8fe97702490a721383e3",
   "deduplicated_concrete_total": 50701,
   "deduplicated_shared_dependency_total": 8477,
   "source_sha256": {
@@ -20,7 +20,7 @@
     "Sal/MRDTs/Instances/FinsetStore.lean": "9f5067ae8301f1a9573c8c09149f620c7e0e9130852c2db01cd6bbc5730b60a8",
     "Sal/MRDTs/Instances/FlatCounters.lean": "da5f56721fdc32b224652893706d9fd6bc95aaeac73763295d5de5c32ce7b37c",
     "Sal/MRDTs/Instances/FlatGrowOnly.lean": "55bc55bd3084cbd84ed80e884dd93090e594b4c31099759a8a265e9f76884c45",
-    "Sal/MRDTs/Instances/LWWRegister.lean": "f092bade9768906e9f9eea71d67e9548ee513df7814cb0d710b702a153a953c9",
+    "Sal/MRDTs/Instances/LWWRegister.lean": "1e9d409e85b50bb3e7f1d6d654bc676d73c9e37b2fe710df67acadcf201a2b1a",
     "Sal/MRDTs/Instances/MVRLive.lean": "6c01f7c1498ffdb4817b139730e7190650fcc4588668663b0e14b04c633edb50",
     "Sal/MRDTs/Instances/MVR.lean": "8c8fb3c25657f81ed2b0b1e230626ba4667f2b2c8d2e3a3328d5c6d52f7fb876",
     "Sal/MRDTs/Instances/MVRContract.lean": "e1a1cf7eb22ea634d67031480bff87b361fb07b77ba24d2f05ebe6cc173f9627",
@@ -1160,20 +1160,20 @@
               52
             ],
             [
-              54,
-              64
+              57,
+              67
             ],
             [
-              137,
-              138
+              140,
+              141
             ]
           ]
         },
         "specification": {
           "Sal/MRDTs/Instances/LWWRegister.lean": [
             [
-              143,
-              148
+              146,
+              151
             ]
           ],
           "Sal/MRDTs/Paper1/GuardedLWWPort.lean": [
@@ -1192,8 +1192,8 @@
           ],
           "Sal/MRDTs/Instances/LWWRegister.lean": [
             [
-              66,
-              69
+              69,
+              72
             ]
           ],
           "Sal/MRDTs/Paper1/Automation/TransferLWW.lean": [
@@ -1226,10 +1226,6 @@
               45
             ],
             [
-              153,
-              154
-            ],
-            [
               156,
               157
             ],
@@ -1251,11 +1247,15 @@
             ],
             [
               171,
-              173
+              172
             ],
             [
-              192,
-              216
+              174,
+              176
+            ],
+            [
+              195,
+              219
             ]
           ],
           "Sal/MRDTs/Paper1/GuardedLWWPort.lean": [

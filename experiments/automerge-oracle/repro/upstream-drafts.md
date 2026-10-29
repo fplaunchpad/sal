@@ -1,7 +1,7 @@
 # Upstream drafts for automerge/automerge
 
 Two issues, posted from KC's account on 2026-10-29: issue A is
-automerge/automerge#1649, issue B is automerge/automerge#1650. Scripts are
+automerge/automerge#1649, issue B is automerge/automerge#1650. Issue A was edited in place on 2026-10-29 (see `docs/upstream-corrections.md`); the text below is the live one. Scripts are
 the ones in this directory; each exits non-zero when the defect shows and
 the control does not.
 
@@ -13,7 +13,7 @@ the control does not.
 
 **Describe the bug**
 
-Whether a character inserted concurrently at the boundary of a mark ends up inside the mark depends on operation counters, not on the mark's expand policy. The same two operations give different documents depending on which replica happens to have the larger counter, and the control that differs only in a counter is correct.
+Whether a character inserted concurrently at the boundary of a mark ends up inside the mark depends on operation counters, not on the mark's expand policy. The same two operations give different documents depending on which replica happens to have the larger counter. The controls below change the text as well as the counter (the first keeps `x`, the second has no `z`); what they share with the failing runs is the formatting expectation under the stated reading, `h` plain and `x` outside the link. A third run, after shape 2, changes only the counter.
 
 Two shapes.
 
@@ -80,6 +80,34 @@ observed (with z)    [{"type":"text","value":"z"},{"type":"text","value":"abx","
 control  (without z) [{"type":"text","value":"ab","marks":{"link":"u"}},{"type":"text","value":"x"}]
 ```
 
+Shape 3, the counter alone. The same as shape 1 without the delete, but with an edit outside the text in the same change as the mark, which raises the counter and leaves the text identical. With the extra edit `h` is bold; without it `h` is plain.
+
+```js
+import * as A from '@automerge/automerge';
+const show = (d) => JSON.stringify(A.spans(d, ['t']));
+const run = (bump) => {
+  let d1 = A.from({ t: '', n: 0 }, { actor: 'aaaa' });
+  d1 = A.change(d1, (doc) => { A.splice(doc, ['t'], 0, 0, 'a'); });
+  let d2 = A.clone(d1, { actor: 'bbbb' });
+  d1 = A.change(d1, (doc) => {
+    if (bump) doc.n = 1;                                                     // raises the counter; text unchanged
+    A.mark(doc, ['t'], { start: 0, end: 1, expand: 'after' }, 'bold', true);
+  });
+  d2 = A.change(d2, (doc) => { A.splice(doc, ['t'], 0, 0, 'h'); });
+  const m1 = show(A.merge(A.clone(d1), d2)), m2 = show(A.merge(A.clone(d2), d1));
+  return m1 === m2 ? m1 : `${m1} / ${m2}`;
+};
+console.log('with the extra edit   ', run(true));
+console.log('without the extra edit', run(false));
+```
+
+Output on 3.5.0:
+
+```
+with the extra edit    [{"type":"text","value":"ha","marks":{"bold":true}}]
+without the extra edit [{"type":"text","value":"h"},{"type":"text","value":"a","marks":{"bold":true}}]
+```
+
 **Expected behavior**
 
 The documentation says expand "allows you to decide whether new text inserted at the start/end of your mark should also inherit the mark" and points to the Peritext essay for the rule, which is that "an inserted character inherits the bold/non-bold status of the preceding character", with anchors that are positions in the document. Under that rule `h` before a non-expanding bold is plain and `x` after a non-expanding link is outside it, whoever inserted them and whenever. Both shapes also fail the weaker requirement that the merged document equal the result of applying the two concurrent operations in one of the two orders: in each shape both orders give the control's document.
@@ -96,7 +124,9 @@ If expand is meant to be a rule for the local cursor only, so that concurrent in
 
 **How this was found**
 
-While checking Automerge text with marks against a sequential specification of formatted text, as part of a verification project on replicated data types at IIT Madras (FP Launchpad). The shapes come from a property-based testing harness, were minimised, and were checked by hand against the Rust source; the harness was built with AI assistance. For comparison, Automerge passes every concurrent formatting shape on which Yjs fails (yjs/yjs#828); this boundary case is the one place the two differ in Automerge's disfavour.
+While checking Automerge text with marks against a sequential specification of formatted text, as part of a verification project on replicated data types at IIT Madras (FP Launchpad). The shapes come from a property-based testing harness, were minimised, and were checked by hand against the Rust source; the harness was built with AI assistance. For comparison, Automerge passes the concurrent formatting shapes reported in yjs/yjs#828 and #382; this boundary case is the one place among the shapes tested where the two differ in Automerge's disfavour.
+
+Edited 2026-10-29: the description of the controls was corrected (they change text as well as counter), a text-identical control was added as shape 3, and the comparison with Yjs was bounded to the shapes tested.
 
 ---
 

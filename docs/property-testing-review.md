@@ -79,3 +79,24 @@ compile and their changed pages were visually checked. Both the unchanged
 manuscript parent and the revised version are 26 pages including references;
 their data-availability sections are on page 24, so this is not a claim that
 the body has been reduced to 23 pages.
+
+
+## Production-client review and publication update
+
+The subsequent review imported the separate production text/block experiments,
+with source-pinned acquisition and first-party reproductions. Independent
+controls distinguish handler rejection from same-record divergence, and
+causal-history rejection from rejection under all event orders. The
+[block review](notion-production-blocks-review.md),
+[text review](notion-production-text-review.md) and
+[protocol review](notion-production-protocol-review.md) record their limits.
+The four visual text specifications no longer prune by hidden identity order;
+their repeated-character regressions expose the original false rejection.
+Historical campaign JSON was not rewritten. Live-client recovery remains
+outside the fixtures.
+
+Six previously posted reports were corrected in place by Claude and fetched
+again for verification; no duplicate comments were posted. New collaborator
+commits were merged before publication. Rebuilding the changed LWW module and
+rerunning the declaration-footprint audit refreshed source hashes/ranges;
+all 24 table rows, 26 configurations and table values remain unchanged.

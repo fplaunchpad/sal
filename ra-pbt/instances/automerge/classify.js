@@ -69,6 +69,9 @@ import { findWitness, allFinalViews } from '../../src/witness.js';
 import { Execution, eventsAt, execute, instanceFor, finalSyncSteps, CHECKS } from './index.js';
 import { normaliseAttrs, insertedAttrs } from './spec.js';
 import { walk } from './adapter.js';
+import { confirmWitness } from './confirm-witness.js';
+
+export { confirmWitness } from './confirm-witness.js';
 
 export const CLASSES = { 'A-001': 'boundary placed by operation order', 'A-002': 'shared insertion point', 'A-003': 'emptied mark', 'layout-artefact': 'witness found under the visible-character direction', 'view-artefact': 'index-level expectation blind to a covered position', other: 'other' };
 
@@ -280,32 +283,6 @@ function classifyRA(schedule, r, step, semantics) {
   const kinds = [...new Set(explained.map((d) => d.by))];
   const cls = diffs.length > 0 && !kinds.includes(null) ? kinds.sort().join('+') : 'other';
   return { ...out, class: cls, reference: renderView(reference), differences: explained };
-}
-
-/**
- * The witness search directed by the visible characters only, bounded by
- * `budget` applications of the specification: true when a witness exists,
- * false when none does, 'undecided' when the budget runs out. Every
- * placement of deleted characters and boundaries is explored, so false is
- * exact.
- */
-export function confirmWitness(semantics, events, target, budget = 200_000) {
-  const base = instanceFor(semantics, 'chars').spec;
-  let n = 0;
-  const OUT = new Error('budget');
-  const bounded = {
-    ...base,
-    applyDirected: (s, op, t) => {
-      if (++n > budget) throw OUT;
-      return base.applyDirected(s, op, t);
-    },
-  };
-  try {
-    return findWitness(bounded, events, target).found;
-  } catch (e) {
-    if (e === OUT) return 'undecided';
-    throw e;
-  }
 }
 
 /** Value of `key` at list position `at` (an insertion point: between at-1 and at) under Automerge's rule. */

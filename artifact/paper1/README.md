@@ -94,6 +94,17 @@ and the two checked Yjs semantic counterparts. Recorded evidence and its
 selection policy are in `recorded/pbt/`. Passing bounded tests does not verify
 an external library, and no GC result is claimed.
 
+The [reviewed client-code guide](docs/production-client.md) covers separately
+acquired public application assets, the pinned extraction, text/block fixture
+experiments and review controls. For example, after acquiring its 63 assets:
+
+```sh
+python3 scripts/check-pbt.py --install --production-cache /tmp/public-editor-assets
+```
+
+Downloaded assets and generated module bodies stay outside the bundle. These
+experiments do not establish server acceptance or the live deployment protocol.
+
 ## Reproduce the paper's code counts
 
 After the Lean build, run:
@@ -132,12 +143,13 @@ paper *Certified mergeable replicated data types*.
 
 ## Recorded validation
 
-[validation.json](validation.json) preserves validation of the earlier proof
-bundle as historical evidence. It does not claim that the newly added support
-has completed a fresh combined export build. Run `scripts/check.sh` and the PBT
-commands above for this snapshot; the latter writes current command results
-to `results/pbt/summary.json`. The earlier build reused pinned third-party Lake
-packages and did not validate fresh external dependency acquisition.
+[validation.json](validation.json) records the checked Lean closure and bounded
+executable checks, distinguishing the prior full renamed build from subsequent
+source comparisons and focused validation. The build reused pinned third-party
+Lake packages. Run `scripts/check.sh` and the PBT commands above for this
+snapshot; the latter writes current command results to
+`results/pbt/summary.json`. Package acquisition during validation used local
+caches; fresh network dependency acquisition is not claimed.
 
 ## Contents and scope
 
@@ -150,7 +162,7 @@ packages and did not validate fresh external dependency acquisition.
 | `notion/` | First-party regression fixtures, independent local specification, pinned source manifest and recorded observations |
 | `ra-pbt/` | Dependency-free schedule/law harness, independent specifications, adapters and tests; npm pins for external instances |
 | `runtime/` | Handwritten runtime source and eight portable test files, including overlapping binary-delta ingestion |
-| `experiments/` | External-library and older Notion PBT runners, standalone repros, original Notion manifest and exact design patcher |
+| `experiments/` | External-library, older Notion and extracted client-code runners, first-party extractor, standalone repros, original demo manifest and exact design patcher |
 | `recorded/pbt/` | Compact historical evidence, representative traces and input-selection hashes |
 | `scripts/` | Integrity/build checks, Notion and PBT runners; counting-script support modules |
 | `manifest.json`, `provenance.json` | File integrity and packaging changes |

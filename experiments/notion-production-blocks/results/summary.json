@@ -1,0 +1,2794 @@
+{
+ "scope": "Production Notion block-layer editing code (exported library, verified digests), shared record handlers, harness block creation and removal, causal peer-to-peer delivery; not live production",
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "quick": false,
+ "trials": 4500,
+ "edits": 34778,
+ "versionsChecked": 59784,
+ "witnessSkips": 0,
+ "failingTrials": 2258,
+ "trialsWithRejection": 1719,
+ "rejectedApplies": 2613,
+ "determinismRuns": 34778,
+ "determinismFailures": 0,
+ "ms": 192308,
+ "classes": {
+  "convergence:label-divergence": {
+   "check": "convergence",
+   "class": "label-divergence",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 65,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 93,
+     "of": 300
+    },
+    {
+     "name": "abc-structure",
+     "trials": 216,
+     "of": 300
+    },
+    {
+     "name": "x-structure",
+     "trials": 206,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks",
+     "trials": 79,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 95,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 159,
+     "of": 300
+    },
+    {
+     "name": "ab-format",
+     "trials": 107,
+     "of": 300
+    },
+    {
+     "name": "abc-format",
+     "trials": 112,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 65,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 36,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 54,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 65,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 65,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 1,
+    "trial": 1,
+    "seed": 1000004,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 1000004,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "send",
+       "from": 2,
+       "to": 1,
+       "op": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 0",
+     "2: split block 0 at 0",
+     "send 2#0->1",
+     "1: split block 0 at 0"
+    ],
+    "edits": 3,
+    "reductions": 10,
+    "failingChecks": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "label-divergence"
+     ],
+     "conservation": [
+      "label-divergence"
+     ]
+    },
+    "failure": {
+     "check": "convergence",
+     "replica": [
+      1,
+      2
+     ],
+     "step": 5,
+     "expected": "empty | empty | empty | a | b | c",
+     "actual": "empty | empty | a | b | c"
+    }
+   }
+  },
+  "conservation:label-divergence": {
+   "check": "conservation",
+   "class": "label-divergence",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 73,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 100,
+     "of": 300
+    },
+    {
+     "name": "abc-structure",
+     "trials": 234,
+     "of": 300
+    },
+    {
+     "name": "x-structure",
+     "trials": 245,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks",
+     "trials": 80,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 96,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 161,
+     "of": 300
+    },
+    {
+     "name": "ab-format",
+     "trials": 123,
+     "of": 300
+    },
+    {
+     "name": "abc-format",
+     "trials": 123,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 72,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 37,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 56,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 73,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 72,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 1,
+    "trial": 1,
+    "seed": 1000004,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 1000004,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "send",
+       "from": 2,
+       "to": 1,
+       "op": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 0",
+     "2: split block 0 at 0",
+     "send 2#0->1",
+     "1: split block 0 at 0"
+    ],
+    "edits": 3,
+    "reductions": 10,
+    "failingChecks": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "label-divergence"
+     ],
+     "conservation": [
+      "label-divergence"
+     ]
+    },
+    "failure": {
+     "check": "conservation",
+     "replica": 2,
+     "step": 5,
+     "expected": 3,
+     "actual": 3,
+     "pending": true,
+     "notIntegrated": [
+      "r1#1"
+     ]
+    }
+   }
+  },
+  "convergence:past-boundary": {
+   "check": "convergence",
+   "class": "past-boundary",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 22,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 36,
+     "of": 300
+    },
+    {
+     "name": "abc-structure",
+     "trials": 3,
+     "of": 300
+    },
+    {
+     "name": "x-structure",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks",
+     "trials": 15,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 17,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "ab-format",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "abc-format",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 12,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 6,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 22,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 12,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 1,
+    "trial": 14,
+    "seed": 1000017,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 1000017,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 2
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 2,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 2,
+       "index": 0
+      }
+     ]
+    },
+    "rendered": [
+     "1: merge block 2",
+     "2: split block 2 at 0",
+     "2: split block 2 at 0"
+    ],
+    "edits": 3,
+    "reductions": 8,
+    "failingChecks": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "past-boundary"
+     ],
+     "conservation": [
+      "past-boundary"
+     ]
+    },
+    "failure": {
+     "check": "convergence",
+     "replica": [
+      1,
+      2
+     ],
+     "step": 4,
+     "expected": "a | b | c",
+     "actual": "a | b | empty | c"
+    }
+   }
+  },
+  "conservation:past-boundary": {
+   "check": "conservation",
+   "class": "past-boundary",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 22,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 38,
+     "of": 300
+    },
+    {
+     "name": "abc-structure",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "x-structure",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks",
+     "trials": 16,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 17,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "ab-format",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "abc-format",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 12,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 6,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 22,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 12,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 1,
+    "trial": 14,
+    "seed": 1000017,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 1000017,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 2
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 2,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 2,
+       "index": 0
+      }
+     ]
+    },
+    "rendered": [
+     "1: merge block 2",
+     "2: split block 2 at 0",
+     "2: split block 2 at 0"
+    ],
+    "edits": 3,
+    "reductions": 8,
+    "failingChecks": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "past-boundary"
+     ],
+     "conservation": [
+      "past-boundary"
+     ]
+    },
+    "failure": {
+     "check": "conservation",
+     "replica": 1,
+     "step": 4,
+     "expected": 3,
+     "actual": 3,
+     "pending": true,
+     "notIntegrated": [
+      "r2#1"
+     ]
+    }
+   }
+  },
+  "raLinearizability:stale-merge": {
+   "check": "raLinearizability",
+   "class": "stale-merge",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 14,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 25,
+     "of": 300
+    },
+    {
+     "name": "abc-structure",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 11,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 8,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 3,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 19,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 21,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 1,
+    "trial": 31,
+    "seed": 1000034,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 1000034,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "send",
+       "from": 2,
+       "to": 1,
+       "op": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 2
+      }
+     ]
+    },
+    "rendered": [
+     "1: merge block 1",
+     "2: merge block 1",
+     "send 2#0->1",
+     "1: split block 0 at 2"
+    ],
+    "edits": 3,
+    "reductions": 6,
+    "failingChecks": [
+     "raLinearizability"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "stale-merge"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 1,
+     "step": 3,
+     "actual": "ab | empty | c",
+     "admitted": [
+      "a | b | c"
+     ]
+    }
+   }
+  },
+  "raLinearizability:label-divergence": {
+   "check": "raLinearizability",
+   "class": "label-divergence",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 2,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "abc-structure",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 7,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 3,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 14,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 1,
+    "trial": 47,
+    "seed": 1000050,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 1000050,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "send",
+       "from": 2,
+       "to": 1,
+       "op": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 3
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 1,
+       "index": 0
+      }
+     ]
+    },
+    "rendered": [
+     "1: merge block 1",
+     "1: merge block 1",
+     "2: merge block 1",
+     "send 2#0->1",
+     "1: split block 0 at 3",
+     "1: split block 1 at 0"
+    ],
+    "edits": 5,
+    "reductions": 5,
+    "failingChecks": [
+     "convergence",
+     "raLinearizability",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "label-divergence"
+     ],
+     "raLinearizability": [
+      "label-divergence",
+      "stale-merge"
+     ],
+     "conservation": [
+      "label-divergence"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 1,
+     "step": 4,
+     "actual": "abc | empty",
+     "admitted": [
+      "a | bc"
+     ]
+    }
+   }
+  },
+  "convergence:concurrent-move": {
+   "check": "convergence",
+   "class": "concurrent-move",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 1,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 3,
+    "trial": 15,
+    "seed": 3000024,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 3000024,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "send",
+       "from": 2,
+       "to": 1,
+       "op": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      }
+     ]
+    },
+    "rendered": [
+     "2: merge block 1",
+     "send 2#0->1",
+     "2: split block 0 at 1",
+     "2: merge block 1",
+     "1: split block 0 at 1"
+    ],
+    "edits": 4,
+    "reductions": 5,
+    "failingChecks": [
+     "convergence"
+    ],
+    "classes": {
+     "convergence": [
+      "concurrent-move"
+     ]
+    },
+    "failure": {
+     "check": "convergence",
+     "replica": [
+      1,
+      2
+     ],
+     "step": 6,
+     "expected": "ab | empty | c",
+     "actual": "a | b | c"
+    }
+   }
+  },
+  "raLinearizability:past-boundary": {
+   "check": "raLinearizability",
+   "class": "past-boundary",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 2,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 1,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 3,
+    "trial": 29,
+    "seed": 3000038,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 3000038,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 1,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 3
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 1,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 2
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 1 at 0",
+     "1: merge block 3",
+     "2: merge block 1",
+     "1: split block 1 at 0",
+     "2: merge block 1",
+     "2: split block 0 at 2"
+    ],
+    "edits": 6,
+    "reductions": 5,
+    "failingChecks": [
+     "convergence",
+     "raLinearizability",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "past-boundary"
+     ],
+     "raLinearizability": [
+      "past-boundary",
+      "stale-merge"
+     ],
+     "conservation": [
+      "past-boundary"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 2,
+     "step": 6,
+     "actual": "a | bc | empty",
+     "admitted": [
+      "a | b | c"
+     ]
+    }
+   }
+  },
+  "convergence:stale-merge": {
+   "check": "convergence",
+   "class": "stale-merge",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 1,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure",
+    "campaignSeed": 3,
+    "trial": 83,
+    "seed": 3000092,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 3000092,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true,
+      "replicas": 2
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 2
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      },
+      {
+       "type": "send",
+       "from": 2,
+       "to": 1,
+       "op": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      }
+     ]
+    },
+    "rendered": [
+     "1: merge block 1",
+     "1: merge block 1",
+     "1: split block 0 at 2",
+     "2: merge block 1",
+     "2: split block 0 at 1",
+     "send 2#0->1",
+     "1: merge block 1",
+     "1: split block 0 at 1"
+    ],
+    "edits": 7,
+    "reductions": 3,
+    "failingChecks": [
+     "convergence",
+     "raLinearizability"
+    ],
+    "classes": {
+     "convergence": [
+      "stale-merge"
+     ],
+     "raLinearizability": [
+      "stale-merge"
+     ]
+    },
+    "failure": {
+     "check": "convergence",
+     "replica": [
+      1,
+      2
+     ],
+     "step": 9,
+     "expected": "a | b | c",
+     "actual": "a | bc | empty"
+    }
+   }
+  },
+  "convergence:list-order": {
+   "check": "convergence",
+   "class": "list-order",
+   "configurations": [
+    {
+     "name": "abc-blocks3-structure-r3",
+     "trials": 7,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks",
+     "trials": 54,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 62,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 62,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 31,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 32,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 48,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 31,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-blocks3-structure-r3",
+    "campaignSeed": 2,
+    "trial": 0,
+    "seed": 2000006,
+    "steps": 12
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a",
+      "b",
+      "c"
+     ],
+     "profile": "structure"
+    },
+    "schedule": {
+     "seed": 2000006,
+     "options": {
+      "openedReplicas": false,
+      "steps": 12,
+      "partialDelivery": true,
+      "replicas": 3
+     },
+     "replicas": 3,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 3,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      },
+      {
+       "type": "edit",
+       "replica": 3,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      }
+     ]
+    },
+    "rendered": [
+     "1: merge block 1",
+     "3: merge block 1",
+     "1: split block 0 at 1",
+     "3: split block 0 at 1"
+    ],
+    "edits": 4,
+    "reductions": 8,
+    "failingChecks": [
+     "convergence",
+     "raLinearizability"
+    ],
+    "classes": {
+     "convergence": [
+      "list-order"
+     ],
+     "raLinearizability": [
+      "stale-merge"
+     ]
+    },
+    "failure": {
+     "check": "convergence",
+     "replica": [
+      1,
+      3
+     ],
+     "step": 8,
+     "expected": "a | empty | b | c",
+     "actual": "a | b | empty | c"
+    }
+   }
+  },
+  "raLinearizability:order-mismatch": {
+   "check": "raLinearizability",
+   "class": "order-mismatch",
+   "configurations": [
+    {
+     "name": "ab-cd-blocks",
+     "trials": 3,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 8,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 15,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed",
+     "trials": 3,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 9,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 3,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "ab-cd-blocks",
+    "campaignSeed": 1,
+    "trial": 62,
+    "seed": 1000065,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "ab",
+      "cd"
+     ],
+     "profile": "blocks"
+    },
+    "schedule": {
+     "seed": 1000065,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "insert",
+       "block": 1,
+       "index": 0,
+       "text": "V"
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "insert",
+       "block": 1,
+       "index": 2,
+       "text": "W"
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "create",
+       "after": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 2,
+       "index": 1
+      }
+     ]
+    },
+    "rendered": [
+     "1: insert block 1 \"V\" at 0",
+     "1: insert block 1 \"W\" at 2",
+     "2: split block 0 at 0",
+     "1: create after block 0",
+     "2: split block 2 at 1"
+    ],
+    "edits": 5,
+    "reductions": 8,
+    "failingChecks": [
+     "convergence",
+     "raLinearizability"
+    ],
+    "classes": {
+     "convergence": [
+      "list-order"
+     ],
+     "raLinearizability": [
+      "order-mismatch"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 1,
+     "step": 6,
+     "actual": "empty | ab | empty | VcW | d",
+     "admitted": [
+      "empty | empty | ab | Vc | Wd",
+      "empty | empty | ab | VcW | d",
+      "empty | ab | empty | Vc | Wd"
+     ]
+    }
+   }
+  },
+  "raLinearizability:removed-anchor": {
+   "check": "raLinearizability",
+   "class": "removed-anchor",
+   "configurations": [
+    {
+     "name": "ab-cd-blocks",
+     "trials": 6,
+     "of": 300
+    },
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 8,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 5,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 3,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks3-structure-source-reading",
+     "trials": 9,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 13,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "ab-cd-blocks",
+    "campaignSeed": 1,
+    "trial": 95,
+    "seed": 1000098,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "ab",
+      "cd"
+     ],
+     "profile": "blocks"
+    },
+    "schedule": {
+     "seed": 1000098,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "create",
+       "after": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 2
+      },
+      {
+       "type": "send",
+       "from": 2,
+       "to": 1,
+       "op": 0
+      },
+      {
+       "type": "send",
+       "from": 2,
+       "to": 1,
+       "op": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "create",
+       "after": 3
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 0",
+     "2: split block 0 at 1",
+     "2: create after block 0",
+     "2: merge block 2",
+     "send 2#0->1",
+     "send 2#1->1",
+     "1: create after block 3"
+    ],
+    "edits": 5,
+    "reductions": 4,
+    "failingChecks": [
+     "convergence",
+     "raLinearizability"
+    ],
+    "classes": {
+     "convergence": [
+      "list-order"
+     ],
+     "raLinearizability": [
+      "removed-anchor"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 2,
+     "step": 7,
+     "actual": "empty | a | b | cd | empty",
+     "admitted": [
+      "empty | a | b | empty | cd",
+      "empty | b | a | empty | cd"
+     ]
+    }
+   }
+  },
+  "raLinearizability:unclassified": {
+   "check": "raLinearizability",
+   "class": "unclassified",
+   "configurations": [
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 3,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "ab-cd-blocks-exchange",
+    "campaignSeed": 2,
+    "trial": 52,
+    "seed": 2000058,
+    "steps": 12
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "ab",
+      "cd"
+     ],
+     "profile": "blocks"
+    },
+    "schedule": {
+     "seed": 2000058,
+     "options": {
+      "openedReplicas": false,
+      "steps": 12,
+      "partialDelivery": false
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "insert",
+       "block": 2,
+       "index": 2,
+       "text": "X"
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "insert",
+       "block": 0,
+       "index": 4,
+       "text": "V"
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "insert",
+       "block": 0,
+       "index": 0,
+       "text": "X"
+      }
+     ]
+    },
+    "rendered": [
+     "1: merge block 1",
+     "2: split block 0 at 0",
+     "2: insert block 2 \"X\" at 2",
+     "2: merge block 1",
+     "1: insert block 0 \"V\" at 4",
+     "1: split block 0 at 0",
+     "2: insert block 0 \"X\" at 0"
+    ],
+    "edits": 7,
+    "reductions": 5,
+    "failingChecks": [
+     "convergence",
+     "raLinearizability",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "label-divergence"
+     ],
+     "raLinearizability": [
+      "unclassified"
+     ],
+     "conservation": [
+      "label-divergence"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 2,
+     "step": 7,
+     "actual": "X | abcdVX",
+     "admitted": [
+      "empty | XabcdVX",
+      "empty | XabcdXV",
+      "X | abcdXV"
+     ]
+    }
+   }
+  },
+  "convergence:rejected-other": {
+   "check": "convergence",
+   "class": "rejected-other",
+   "configurations": [
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 1,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "ab-cd-blocks-exchange",
+    "campaignSeed": 3,
+    "trial": 65,
+    "seed": 3000074,
+    "steps": 12
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "ab",
+      "cd"
+     ],
+     "profile": "blocks"
+    },
+    "schedule": {
+     "seed": 3000074,
+     "options": {
+      "openedReplicas": false,
+      "steps": 12,
+      "partialDelivery": false
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "deliver",
+       "from": 2,
+       "to": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "insert",
+       "block": 0,
+       "index": 0,
+       "text": "S"
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "insert",
+       "block": 0,
+       "index": 0,
+       "text": "U"
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 0",
+     "2: split block 0 at 0",
+     "deliver 2->1",
+     "1: insert block 0 \"S\" at 0",
+     "2: insert block 0 \"U\" at 0",
+     "2: split block 0 at 1"
+    ],
+    "edits": 5,
+    "reductions": 8,
+    "failingChecks": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "rejected-other"
+     ],
+     "conservation": [
+      "rejected-other"
+     ]
+    },
+    "failure": {
+     "check": "convergence",
+     "replica": [
+      1,
+      2
+     ],
+     "step": 7,
+     "expected": "U | S | empty | ab | cd",
+     "actual": "U | empty | empty | ab | cd"
+    }
+   }
+  },
+  "conservation:rejected-other": {
+   "check": "conservation",
+   "class": "rejected-other",
+   "configurations": [
+    {
+     "name": "ab-cd-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "a-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "abc-blocks-opened-exchange",
+     "trials": 1,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "ab-cd-blocks-exchange",
+    "campaignSeed": 3,
+    "trial": 65,
+    "seed": 3000074,
+    "steps": 12
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "ab",
+      "cd"
+     ],
+     "profile": "blocks"
+    },
+    "schedule": {
+     "seed": 3000074,
+     "options": {
+      "openedReplicas": false,
+      "steps": 12,
+      "partialDelivery": false
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "deliver",
+       "from": 2,
+       "to": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "insert",
+       "block": 0,
+       "index": 0,
+       "text": "S"
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "insert",
+       "block": 0,
+       "index": 0,
+       "text": "U"
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 0",
+     "2: split block 0 at 0",
+     "deliver 2->1",
+     "1: insert block 0 \"S\" at 0",
+     "2: insert block 0 \"U\" at 0",
+     "2: split block 0 at 1"
+    ],
+    "edits": 5,
+    "reductions": 8,
+    "failingChecks": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "rejected-other"
+     ],
+     "conservation": [
+      "rejected-other"
+     ]
+    },
+    "failure": {
+     "check": "conservation",
+     "replica": 2,
+     "step": 7,
+     "expected": 6,
+     "actual": 5,
+     "pending": true,
+     "notIntegrated": [
+      "r1#1"
+     ]
+    }
+   }
+  },
+  "raLinearizability:rejected-other": {
+   "check": "raLinearizability",
+   "class": "rejected-other",
+   "configurations": [
+    {
+     "name": "a-blocks-exchange",
+     "trials": 1,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "a-blocks-exchange",
+    "campaignSeed": 1,
+    "trial": 27,
+    "seed": 1000030,
+    "steps": 12
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "a"
+     ],
+     "profile": "blocks"
+    },
+    "schedule": {
+     "seed": 1000030,
+     "options": {
+      "openedReplicas": false,
+      "steps": 12,
+      "partialDelivery": false
+     },
+     "replicas": 3,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "insert",
+       "block": 0,
+       "index": 0,
+       "text": "W"
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 3,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 3,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 3,
+       "kind": "insert",
+       "block": 0,
+       "index": 0,
+       "text": "X"
+      },
+      {
+       "type": "deliver",
+       "from": 3,
+       "to": 2
+      },
+      {
+       "type": "deliver",
+       "from": 2,
+       "to": 3
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "merge",
+       "block": 2
+      },
+      {
+       "type": "edit",
+       "replica": 3,
+       "kind": "create",
+       "after": 2
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 0",
+     "1: split block 0 at 0",
+     "2: insert block 0 \"W\" at 0",
+     "2: split block 0 at 0",
+     "3: split block 0 at 0",
+     "3: split block 0 at 0",
+     "3: insert block 0 \"X\" at 0",
+     "deliver 3->2",
+     "deliver 2->3",
+     "2: merge block 2",
+     "3: create after block 2"
+    ],
+    "edits": 9,
+    "reductions": 3,
+    "failingChecks": [
+     "convergence",
+     "raLinearizability",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "rejected-other"
+     ],
+     "raLinearizability": [
+      "rejected-other",
+      "removed-anchor"
+     ],
+     "conservation": [
+      "rejected-other"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 1,
+     "step": 15,
+     "actual": "X | empty | empty | W | a | empty",
+     "admitted": [
+      "empty | empty | empty | WX | empty | a",
+      "empty | empty | empty | X | empty | Wa",
+      "empty | empty | empty | X | W | a",
+      "empty | empty | empty | XW | empty | a",
+      "empty | empty | W | X | empty | a",
+      "empty | empty | WX | empty | empty | a",
+      "empty | empty | X | empty | empty | Wa",
+      "empty | empty | X | empty | W | a",
+      "empty | empty | X | empty | Wa | empty",
+      "empty | empty | X | W | empty | a",
+      "empty | empty | XW | empty | empty | a",
+      "empty | W | empty | X | empty | a",
+      "empty | WX | empty | empty | empty | a",
+      "empty | X | empty | empty | empty | Wa",
+      "empty | X | empty | empty | W | a",
+      "empty | X | empty | empty | Wa | empty",
+      "empty | X | empty | W | empty | a",
+      "empty | X | W | empty | empty | a",
+      "empty | XW | empty | empty | empty | a",
+      "W | empty | empty | X | empty | a",
+      "W | empty | X | empty | empty | a",
+      "WX | empty | empty | empty | empty | a",
+      "X | empty | empty | empty | empty | Wa",
+      "X | empty | empty | empty | W | a",
+      "X | empty | empty | empty | Wa | empty",
+      "X | empty | empty | W | empty | a",
+      "X | empty | W | empty | empty | a",
+      "X | W | empty | empty | empty | a",
+      "XW | empty | empty | empty | empty | a"
+     ]
+    }
+   }
+  },
+  "raLinearizability:bold-flags": {
+   "check": "raLinearizability",
+   "class": "bold-flags",
+   "configurations": [
+    {
+     "name": "ab-c-mixed",
+     "trials": 7,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 6,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 53,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "ab-c-mixed",
+    "campaignSeed": 1,
+    "trial": 12,
+    "seed": 1000015,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "ab",
+      "c"
+     ],
+     "profile": "mixed"
+    },
+    "schedule": {
+     "seed": 1000015,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "insert",
+       "block": 1,
+       "index": 0,
+       "text": "X"
+      },
+      {
+       "type": "edit",
+       "replica": 2,
+       "kind": "bold",
+       "block": 0,
+       "start": 0,
+       "end": 1
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 1",
+     "1: insert block 1 \"X\" at 0",
+     "2: bold block 0 [0,1)"
+    ],
+    "edits": 3,
+    "reductions": 8,
+    "failingChecks": [
+     "raLinearizability"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "bold-flags"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 2,
+     "step": 3,
+     "actual": "[a] | [X]b | c",
+     "admitted": [
+      "[a] | Xb | c"
+     ]
+    }
+   }
+  },
+  "localMeaning:format-carry": {
+   "check": "localMeaning",
+   "class": "format-carry",
+   "configurations": [
+    {
+     "name": "ab-c-mixed",
+     "trials": 1,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-opened",
+     "trials": 4,
+     "of": 300
+    },
+    {
+     "name": "ab-c-mixed-issue-reading",
+     "trials": 1,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "ab-c-mixed",
+    "campaignSeed": 2,
+    "trial": 96,
+    "seed": 2000102,
+    "steps": 10
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "ab",
+      "c"
+     ],
+     "profile": "mixed"
+    },
+    "schedule": {
+     "seed": 2000102,
+     "options": {
+      "openedReplicas": false,
+      "steps": 10,
+      "partialDelivery": true
+     },
+     "replicas": 2,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "bold",
+       "block": 1,
+       "start": 0,
+       "end": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 1,
+       "index": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "insert",
+       "block": 2,
+       "index": 0,
+       "text": "Y"
+      }
+     ]
+    },
+    "rendered": [
+     "1: bold block 1 [0,1)",
+     "1: split block 1 at 1",
+     "1: insert block 2 \"Y\" at 0"
+    ],
+    "edits": 3,
+    "reductions": 7,
+    "failingChecks": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "bold-flags"
+     ],
+     "localMeaning": [
+      "format-carry"
+     ]
+    },
+    "failure": {
+     "check": "localMeaning",
+     "replica": 1,
+     "step": 2,
+     "request": "1: insert block 2 \"Y\" at 0",
+     "before": "ab | [c] | empty",
+     "expected": "ab | [c] | Y",
+     "actual": "ab | [c] | [Y]"
+    }
+   }
+  },
+  "raLinearizability:duplicate-marker": {
+   "check": "raLinearizability",
+   "class": "duplicate-marker",
+   "configurations": [
+    {
+     "name": "abc-structure-record-model-clocks",
+     "trials": 103,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-structure-record-model-clocks",
+    "campaignSeed": 1,
+    "trial": 0,
+    "seed": 1000003,
+    "steps": 8
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "abc"
+     ],
+     "profile": "structure",
+     "liveClock": false
+    },
+    "schedule": {
+     "seed": 1000003,
+     "options": {
+      "openedReplicas": false,
+      "steps": 8,
+      "partialDelivery": true,
+      "replicas": 1
+     },
+     "replicas": 1,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 1,
+       "index": 0
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 0",
+     "1: split block 0 at 0",
+     "1: merge block 1",
+     "1: split block 1 at 0"
+    ],
+    "edits": 4,
+    "reductions": 5,
+    "failingChecks": [
+     "raLinearizability"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "duplicate-marker"
+     ]
+    },
+    "failure": {
+     "check": "raLinearizability",
+     "replica": 1,
+     "step": 3,
+     "actual": "empty | empty | abc",
+     "admitted": [
+      "empty | abc | empty"
+     ]
+    }
+   }
+  },
+  "localMeaning:duplicate-marker": {
+   "check": "localMeaning",
+   "class": "duplicate-marker",
+   "configurations": [
+    {
+     "name": "abc-structure-record-model-clocks",
+     "trials": 51,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-structure-record-model-clocks",
+    "campaignSeed": 1,
+    "trial": 0,
+    "seed": 1000003,
+    "steps": 8
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "abc"
+     ],
+     "profile": "structure",
+     "liveClock": false
+    },
+    "schedule": {
+     "seed": 1000003,
+     "options": {
+      "openedReplicas": false,
+      "steps": 8,
+      "partialDelivery": true,
+      "replicas": 1
+     },
+     "replicas": 1,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 1,
+       "index": 0
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 1",
+     "1: split block 0 at 0",
+     "1: merge block 1",
+     "1: split block 1 at 0"
+    ],
+    "edits": 4,
+    "reductions": 5,
+    "failingChecks": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "duplicate-marker"
+     ],
+     "localMeaning": [
+      "duplicate-marker"
+     ]
+    },
+    "failure": {
+     "check": "localMeaning",
+     "replica": 1,
+     "step": 3,
+     "request": "1: split block 1 at 0",
+     "before": "a | bc",
+     "expected": "a | empty | bc",
+     "actual": "empty | a | bc"
+    }
+   }
+  },
+  "conservation:duplicate-marker": {
+   "check": "conservation",
+   "class": "duplicate-marker",
+   "configurations": [
+    {
+     "name": "abc-structure-record-model-clocks",
+     "trials": 4,
+     "of": 300
+    }
+   ],
+   "firstFound": {
+    "config": "abc-structure-record-model-clocks",
+    "campaignSeed": 1,
+    "trial": 38,
+    "seed": 1000041,
+    "steps": 8
+   },
+   "shrunk": {
+    "options": {
+     "texts": [
+      "abc"
+     ],
+     "profile": "structure",
+     "liveClock": false
+    },
+    "schedule": {
+     "seed": 1000041,
+     "options": {
+      "openedReplicas": false,
+      "steps": 8,
+      "partialDelivery": true,
+      "replicas": 1
+     },
+     "replicas": 1,
+     "steps": [
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 1,
+       "index": 1
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 2
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "split",
+       "block": 0,
+       "index": 0
+      },
+      {
+       "type": "edit",
+       "replica": 1,
+       "kind": "merge",
+       "block": 2
+      }
+     ]
+    },
+    "rendered": [
+     "1: split block 0 at 0",
+     "1: split block 1 at 1",
+     "1: split block 0 at 0",
+     "1: merge block 2",
+     "1: split block 0 at 0",
+     "1: merge block 2"
+    ],
+    "edits": 6,
+    "reductions": 5,
+    "failingChecks": [
+     "raLinearizability",
+     "localMeaning",
+     "conservation"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "duplicate-marker"
+     ],
+     "localMeaning": [
+      "duplicate-marker"
+     ],
+     "conservation": [
+      "duplicate-marker"
+     ]
+    },
+    "failure": {
+     "check": "conservation",
+     "replica": 1,
+     "step": 5,
+     "expected": 3,
+     "actual": 2,
+     "pending": false,
+     "notIntegrated": []
+    }
+   }
+  }
+ }
+}

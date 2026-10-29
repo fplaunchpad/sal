@@ -8,6 +8,24 @@ Completed campaign records below retain historical counts and measurements;
 they do not restore removed datatypes or describe the current inventory. The
 sole active bounded counter is the published Balegas matrix/max design.
 
+## Review production Notion evidence and publish reviewed work
+
+Research question: which failures of the extracted block handlers survive
+faithful clock allocation and the production delivery/rejection protocol?
+A bounded text-layer pass is not a theorem; a handler counterexample is not
+by itself evidence of a failure in live Notion.
+
+- [x] Independently review text and block findings, source hashes, minimal
+  traces, controls and the per-instance clock adapter.
+- [x] Establish what the extracted sync code guarantees; distinguish measured
+  handler failures from unresolved live-client behaviour.
+- [x] Verify already-applied upstream corrections and record the live texts.
+- [x] Add a compact, evidence-scoped findings catalogue to the supplement;
+  include supported production experiments and acquisition instructions in
+  the anonymous package without redistributing downloaded client code.
+- [ ] Run relevant checks, commit reviewed changes, push the code and paper,
+  and publish the anonymous source package with its digest.
+
 ## Review and publish the property-testing results
 
 - [x] Import the added sources from `yjs-oracle` revision `14f073e` without

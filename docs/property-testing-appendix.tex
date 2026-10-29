@@ -78,6 +78,7 @@ highlight leaves subsequent typing plain. \\
 \end{tabular}
 \end{table}
 
+
 For the Yjs example, the two sequential results have bold-character sets
 $\{a\}$ and $\{a,b\}$; the observed result has $\{a,b,c\}$.
 In particular, neither request bolds $c$. The measured
@@ -115,3 +116,129 @@ sampled union-merge equations does not establish the correctness of the
 editor's request to merge blocks. The five public-demo failures remain the
 ones described in Appendix~\ref{app:notion-bugs}; their reproductions do not
 establish failures in Notion's production application.
+
+\paragraph{Evidence inventory.}
+Table~\ref{tab:external-inventory} lists the recorded classes, including
+rejected bug hypotheses and observations requiring a stronger API contract.
+The identifiers match the executable reproductions in the code package.
+Several traces can share a cause; the rows are not a count of independent
+bugs. Historical campaign counts describe the original tester. During
+review, we found and corrected a search optimisation that could reject a
+valid character-and-formatting observation by requiring a particular order
+of hidden character identities. The preserved short reproductions and
+controls supply separate evidence from those campaign counts.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Recorded external-library findings and their scope.}
+\label{tab:external-inventory}
+\begin{tabular}{p{0.13\linewidth}p{0.79\linewidth}}
+\hline
+Identifier & Observation and qualification \\
+\hline
+Y-001 & Concurrent formatting reuses or removes another request's
+boundary; the merged formatting differs from both sequential results. \\
+Y-002 & Cleanup treats a needed opening marker as redundant, leaving
+inserted or selected text without its requested formatting. \\
+Y-003 & Deleting a character removes a boundary needed by a concurrent
+formatted insertion; the inserted character becomes plain. \\
+Y-004 & A concurrent insertion inherits a neighbouring range's formatting,
+depending on identity order. This tests the stated anchor interpretation. \\
+Y-005 & Two overlapping bold requests converge with part of their union
+plain, although either sequential order bolds the entire union. \\
+Y-006 & Editing a reopened document changes formatting outside the deleted
+range. Reproduced on 13.6.31; absent in the tested candidate release. \\
+Y-007 & A delete-only update affects a display before a causal predecessor
+arrives. The causally closed observation requirement is additional to
+eventual convergence. \\
+Y-008 & The candidate release displays an insertion beyond a missing clock
+range. The same intermediate-observation qualification applies. \\
+A-001 & Non-expanding formatting boundaries depend on operation counters.
+An expanding end-sentinel example instead refutes our modelling choice. \\
+A-002 & Removing linked, bold text leaves bold on subsequently typed text.
+This violates the tested local-edit expectation; a marker reading can admit it. \\
+A-003 & An emptied mark behaves differently from our expanding anchor
+model. This is a rejected bug hypothesis, not an additional library defect. \\
+L-001 & Concurrent boundary inheritance varies with peer order. The
+expectation being tested is the configured expansion policy. \\
+L-002 & A removed highlight can affect subsequent typing, including after
+its only character is deleted. The bold and link controls differ. \\
+L-003 & Typing beside an unmarked character can inherit a neighbouring
+non-expanding link. This tests the explicit local inheritance contract. \\
+L-004 & Adjacent spans with the same link value can leave typed text
+unlinked. Equal displays can conceal different formatting anchors. \\
+L-005 & After concurrent marks of different keys, typing can fail to inherit
+the requested combination of attributes. The per-key contract is explicit. \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Extracted Notion client routines.}
+We separately examined code shipped to production Notion clients, using
+63 hash-pinned public application assets. A parser extracts 4,335 original
+module bodies; the code package contains the extractor, fixture adapters,
+specifications and tests, while the downloaded client code is acquired
+separately. This experiment does not run the live application or its server.
+
+At the one-block text layer, the recorded anchored-formatting campaigns
+found no missing causal-history witness in 34,596 checked versions. This is
+a bounded observation under the supplied specification, not a correctness
+theorem. Cases NT-1--NT-3 distinguish inheritance and insertion-boundary
+specifications: the observed results are admitted by the selected reading.
+Delivery probes P-1 and P-4 show, respectively, an early deletion taking no
+effect and a partial insertion backfill losing a suffix. Both probes bypass
+the harness's causal-delivery contract. P-2 rejects an annotation whose
+anchor has not arrived and succeeds after re-delivery; P-3 is a successful
+backfill control. These are not established live-application failures.
+
+The block experiments require particular care with clocks. The record-model
+getter supplies per-tree clock holders, while the editor's getter shares
+holders by text instance. Independent controls invoke the original editor
+getter in isolated runtimes and reproduce the observations in
+Table~\ref{tab:notion-handler-inventory}. In that fixture, two re-expressed
+demo schedules have the correct immediate formatting effect, but the
+receiving handler rejects the formatting record. Every character remains
+present. Directly extending the earlier record-model fixture through final
+exchange reproduces one rejection, while its other schedule succeeds.
+The clock and fixture distinction therefore matters. These observations
+differ from the demo's incorrect immediate selection.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Recorded block-handler classes under fixture-based causal peer delivery.}
+\label{tab:notion-handler-inventory}
+\begin{tabular}{p{0.23\linewidth}p{0.69\linewidth}}
+\hline
+Class & Observation and interpretation \\
+\hline
+Label divergence & Concurrent splits assign different search labels;
+a later insertion or formatting record is rejected at one receiver. \\
+Past boundary & A concurrent merge changes where a split item integrates;
+a receiver rejects the later split. \\
+Concurrent move & Both replicas integrate the same four records with no
+pending records, but display different block divisions. This is
+non-convergence under the extracted peer-handler contract. \\
+Stale merge & A late merge of an already removed block moves its text
+again. No ordering explains the minimal result under the specification
+in which merging an already removed source is a no-op. \\
+Removed anchor & A new block listed after a removed block is appended
+at the end. The causal-history check rejects the result, but a witness
+exists when all order constraints are removed. \\
+Order mismatch & Page order and text division resolve requests differently.
+Again, the tested causal order rejects the result but a relaxed order admits it. \\
+\hline
+\end{tabular}
+\end{table}
+
+A rejected record has not been integrated, so the first two rows do not by
+themselves establish non-convergence of replicas holding identical records.
+The stale-merge conclusion depends on the stated sequential policy for an
+already removed block; it does not settle the product's intended policy.
+The last two rows alone do not refute the paper's ordering criterion.
+Finally, the shipped client has optimistic local application, versioned
+record receipt, retries and rollback/refetch paths that the fixture does not
+execute. Whether the server accepts these commands and how recovery affects
+their visible results remain open. We therefore report the six classes as
+extracted-handler findings, not six confirmed bugs in the live service.

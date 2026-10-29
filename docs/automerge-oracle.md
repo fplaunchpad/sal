@@ -1,5 +1,12 @@
 # Automerge text with marks: causal-history conformance and anchor semantics
 
+Review update (2026-10-29): the packaged visual specification now searches
+all admitted placements. The original target-ID pruning could reject an
+observation that ignores IDs when characters repeat. Campaign JSON below
+is preserved historical evidence; negative campaign verdicts require a
+corrected rerun. The named short reproductions and their controls were
+checked separately. See [the search review](notion-production-text-review.md).
+
 ## Claim and falsifiers
 
 Candidate claim, tested rather than proved. Automerge text with marks
@@ -102,13 +109,14 @@ change whose dependencies are missing; a record is integrated when
 `getMissingDeps` is nonempty. Opened replicas `load` a saved document;
 created replicas apply the shared genesis change.
 
-The witness search is directed by the full element layout of the target
-replica, which is fast but can miss a witness whose deleted characters or
-boundaries stand elsewhere. Every reported causal-history failure is therefore
-re-checked with the search directed by the visible characters only, which
-explores every placement of what is not displayed and is exact; failures it
-refutes are counted as layout artefacts and excluded below. No
-re-check ran out of its budget.
+The original campaign first searched the full target layout, then tried
+visible-character-directed confirmation. Both forms could constrain hidden
+identities more than the visual query permits. The current specification
+uses full observation-preserving search instead. Its confirmation helper
+budgets `applyAll` and reports `undecided` on exhaustion. Historical
+"confirmed" and layout-artefact counts below are the old classification,
+not freshly validated negative verdicts. The hand-derived minimal examples
+have independent controls.
 
 ## Results
 

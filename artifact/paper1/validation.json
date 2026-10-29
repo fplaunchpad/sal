@@ -7,7 +7,11 @@
     "selected_roots": 260,
     "build_jobs": 3619,
     "result": "pass",
-    "build_scope": "Fresh compilation of renamed project sources, reusing pinned Lean and Mathlib dependency outputs; no fresh external dependency bootstrap claimed.",
+    "build_scope": "Prior full renamed project build (3619 jobs), reusing pinned Lean and Mathlib dependency outputs. Current 516-file closure compared against that build: 515 byte-identical; only LWWRegister.lean adds a three-line comment/#eval example. The changed renamed module was freshly compiled and the generated 260-root audit rerun with its new olean and the unchanged validated dependencies. No new full build or fresh dependency bootstrap claimed.",
+    "current_lean_files_compared": 516,
+    "unchanged_lean_files": 515,
+    "focused_rebuild": "Sal/MRDTs/Instances/LWWRegister.lean; #eval returns some (1, 1, 49); no theorem definition changed.",
+    "fresh_root_audits": 260,
     "axioms_allowed": [
       "propext",
       "Classical.choice",
@@ -22,18 +26,32 @@
     "harness_tests": 55,
     "packaged_runtime_tests": 38,
     "specification_assertions": {
-      "yjs": 26,
-      "automerge": 12,
-      "loro": 17
+      "yjs": 27,
+      "automerge": 14,
+      "loro": 18,
+      "production_text": 15,
+      "production_blocks": 15
     },
     "regressions": {
       "yjs": 28,
       "automerge": 18,
       "loro": 54,
-      "notion_demo_and_older_repair": 34
+      "notion_demo_and_older_repair": 34,
+      "production_text": 24,
+      "production_blocks": 35
     },
     "pinned_packages": "npm ci --ignore-scripts from local cache; executable source digests checked before and after tests.",
-    "notion": "Seven original demo modules hash-checked; offline preparation and regressions passed."
+    "notion": "Seven original demo modules hash-checked; offline preparation and regressions passed.",
+    "production_extraction_controls": 19,
+    "production_review_controls": 16,
+    "production_library": "Five first-party export inputs preserved byte-for-byte through anonymisation; generated external library exactly matches all six original file digests. All 63 asset hashes and 4335 module source slices verified before and after testing; no downloaded asset or generated module body shipped.",
+    "clean_core": "Core and all three independent specification suites passed before any third-party package was installed in the new export.",
+    "runner": "All 34 commands of check-pbt.py --install --production-cache <63-asset-cache> --notion-cache <7-module-cache> passed; npm installs used the local cache with network disabled."
+  },
+  "package_counts": {
+    "hashed_files_excluding_manifest": 801,
+    "measured_source_hashes": 448,
+    "first_party_support_sources": 235
   },
   "integrity_and_anonymity": {
     "manifest": "pass; rejects unexpected source files",
@@ -44,5 +62,5 @@
       "corrupt-cache and output-overwrite rejection retained"
     ]
   },
-  "historical_campaigns": "Original random-campaign measurements are retained as historical observations, not fresh measurements or proof verdicts. Current generic witness search checks causal-history conformance; paper RA is not checked by that search."
+  "historical_campaigns": "Original random-campaign measurements are retained as historical observations, not fresh measurements or proof verdicts. Current generic witness search checks causal-history conformance; paper RA is not checked by that search. Production-client rejections/pending work are distinguished from same-record-set divergence, and the live acceptance/ordering/recovery protocol remains unknown."
 }

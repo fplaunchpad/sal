@@ -36,6 +36,15 @@ records these distinctions, the repaired overlapping-delta runtime bug and
 the [proposed upstream-report corrections](docs/upstream-report-review.md).
 Bounded passes do not verify the external libraries.
 
+The [reviewed production-client experiments](docs/notion-production-blocks.md)
+exercise extracted text and block handlers with source hashes and independent
+clock controls. They distinguish rejected records, same-record divergence,
+and specification disagreements. The real client also has optimistic edits,
+versioned receipt and rollback/refetch paths; these fixtures do not establish
+bugs in live Notion. [The protocol review](docs/notion-production-protocol-review.md)
+records that boundary. The four visual text specifications now search without
+unsound target-ID pruning; historical negative campaign counts need rechecking.
+
 The [paper revision note](docs/paper1-formalism-reconciliation.md) identifies
 changes against the current Overleaf manuscript, with numbered references to a
 [self-contained formal reference PDF](docs/paper1-formal-reference/main.pdf).

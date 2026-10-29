@@ -1,12 +1,19 @@
 # Loro text: causal-history conformance of a Fugue list with styles
 
+Review update (2026-10-29): the packaged visual specification now searches
+all admitted placements. The original target-ID pruning could reject an
+observation that ignores IDs when characters repeat. Campaign JSON below
+is preserved historical evidence; negative campaign verdicts require a
+corrected rerun. The named short reproductions and their controls were
+checked separately. See [the search review](notion-production-text-review.md).
+
 ## Research question
 
 The recorded Yjs plain-text search found witnesses under the strong list
 specification (an insertion lands anywhere strictly between its recorded
 neighbours), while two tested deterministic refinements have concrete
-counterexamples. Its formatting fails in six concurrent classes and one
-single-user class (`docs/yjs-oracle.md`). Loro's text is a different design
+counterexamples. Its formatting has recorded concurrent and single-user
+failures (`docs/yjs-oracle.md`). Loro's text is a different design
 on both counts: its list is Fugue (Weidner and Kleppmann 2023), and its styles
 are Peritext-like marks whose anchors are elements of the list, with an
 expand behaviour configured per style key. Does the different design change

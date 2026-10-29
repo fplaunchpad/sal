@@ -48,6 +48,17 @@ const link = { link: true };
 const sup = { sup: true };
 const hl = { hl: true };
 
+test('gap witnesses compare repeated characters without imposing the target identity order', () => {
+  const events = [
+    { key: 'a', deps: [], specOps: [ins(A, 'x', null)] },
+    { key: 'b', deps: ['a'], specOps: [ins(B, 'x', null, A)] },
+  ];
+  // The only placement is B,A, displaying xx; bold remains observable.
+  const target = [{ id: A, ch: 'x', attrs: {} }, { id: B, ch: 'x', attrs: {} }];
+  assert.equal(findWitness(events, target, { rule: 'gap' }).found, true);
+  assert.equal(findWitness(events, [{ ...target[0], attrs: bold }, target[1]], { rule: 'gap' }).found, false);
+});
+
 test('the expand table is the one the instance configures', () => {
   assert.deepEqual({ ...EXPAND }, { bold: 'after', link: 'none', sup: 'before', hl: 'both' });
   assert.notEqual(EXPAND.link, 'after');

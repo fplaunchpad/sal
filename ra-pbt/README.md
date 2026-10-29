@@ -40,6 +40,13 @@ remaining slice is checked, even though it is not a causally closed version
 of the paper model. Bound skips are counted in `witnessSkips`. These skips
 and gaps must accompany any reported coverage or verdict.
 
+The packaged Yjs, Automerge, Loro and production-Notion visual specifications
+use full observation-preserving search. An earlier optimisation constrained
+target identity order even though their queries ignore identities; repeated
+characters exposed a false rejection. Historical negative campaign counts
+must be rechecked with the corrected search. Full relational enumeration can
+be expensive; report skips, truncation and undecided confirmation separately.
+
 **Law layer** (`src/laws.js`). The five verification conditions of the paper
 (VC1 to VC5) and its conditions on the conflict relation `rc`, checked as
 properties over randomly generated configurations of a state-based datatype

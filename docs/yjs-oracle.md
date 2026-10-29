@@ -1,5 +1,12 @@
 # Yjs text: causal-history conformance and local edit meaning
 
+Review update (2026-10-29): the packaged visual specification now searches
+all admitted placements. The original target-ID pruning could reject an
+observation that ignores IDs when characters repeat. Campaign JSON below
+is preserved historical evidence; negative campaign verdicts require a
+corrected rerun. The named short reproductions and their controls were
+checked separately. See [the search review](notion-production-text-review.md).
+
 ## Research question
 
 Do displayed versions of the shared text type of Yjs admit causal-history

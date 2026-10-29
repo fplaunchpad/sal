@@ -1,0 +1,642 @@
+{
+ "library": {
+  "index.mjs": {
+   "bytes": 436,
+   "sha256": "d48d9dcce273cc7d88d26bec22d666403d1c346860858c181ee39a2797de02df"
+  },
+  "client.mjs": {
+   "bytes": 4064,
+   "sha256": "564729b916d7344ef4024d20311e38f6e9620d65705c36c70b26cd3d72660892"
+  },
+  "runtime.mjs": {
+   "bytes": 3158,
+   "sha256": "d88b5eab5387afe9fe1e0e52caeed5eb89f57d2094d07f6bc42b716589106303"
+  },
+  "requests.mjs": {
+   "bytes": 1792,
+   "sha256": "7a319d594ecc3b9a8c04a21c80e4820309eb1babaab66eb0553d0ac10bddab18"
+  },
+  "modules.json": {
+   "bytes": 9379972,
+   "sha256": "8ecc246d0707254baf0f8230c271cdee125819377d96f9fe1f92a85463771bc8"
+  },
+  "sources.json": {
+   "bytes": 14336,
+   "sha256": "6c31e32d25cc102d61de01e4b4476bab7cc456c2686d86e106d2ab92adb097be"
+  }
+ },
+ "cases": [
+  {
+   "name": "N-001: split after concurrent restructuring",
+   "group": "N-001",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r5: empty | empty | Xa",
+     "r1: empty | empty | Xa",
+     "r2: empty | empty | Xa",
+     "r3: empty | empty | Xa",
+     "r4: empty | empty | Xa"
+    ]
+   }
+  },
+  {
+   "name": "N-001: six-request variant reaches the demo layout and splits correctly",
+   "group": "N-001",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r4: empty | empty | ab",
+     "r1: empty | empty | ab",
+     "r2: empty | empty | ab",
+     "r3: empty | empty | ab"
+    ]
+   }
+  },
+  {
+   "name": "N-002: the bold has its local effect, then is rejected at the other replica",
+   "group": "N-002",
+   "expected": "fail: convergence (label-divergence); conservation (label-divergence)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "label-divergence"
+     ],
+     "conservation": [
+      "label-divergence"
+     ]
+    },
+    "final": [
+     "r2: empty | ab",
+     "r1: empty | [a][b]"
+    ]
+   }
+  },
+  {
+   "name": "N-002 control: B receives A split before splitting (no concurrent splits)",
+   "group": "N-002",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: empty | [a][b]",
+     "r1: empty | [a][b]"
+    ]
+   }
+  },
+  {
+   "name": "N-003: the bold stays in its block, then is rejected at the other replica",
+   "group": "N-003",
+   "expected": "fail: convergence (label-divergence); conservation (label-divergence)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "label-divergence"
+     ],
+     "conservation": [
+      "label-divergence"
+     ]
+    },
+    "final": [
+     "r2: ab | c",
+     "r1: [a][b] | c"
+    ]
+   }
+  },
+  {
+   "name": "N-004: abc stays visible",
+   "group": "N-004",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: abc",
+     "r1: abc"
+    ]
+   }
+  },
+  {
+   "name": "N-005: x stays visible",
+   "group": "N-005",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: empty | x",
+     "r1: empty | x"
+    ]
+   }
+  },
+  {
+   "name": "label-divergence: an insertion into a concurrently split slice is rejected",
+   "group": "label-divergence",
+   "expected": "fail: convergence (label-divergence); conservation (label-divergence)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "label-divergence"
+     ],
+     "conservation": [
+      "label-divergence"
+     ]
+    },
+    "final": [
+     "r2: a | b | c",
+     "r1: a | Xb | c"
+    ]
+   }
+  },
+  {
+   "name": "label-divergence control: the splits are not concurrent",
+   "group": "label-divergence",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: a | Xb | c",
+     "r1: a | Xb | c"
+    ]
+   }
+  },
+  {
+   "name": "label-divergence at a sequencing replica",
+   "group": "label-divergence",
+   "expected": "the sequencing replica rejects the insertion",
+   "pass": true,
+   "results": {
+    "rejected": [
+     "B:2 insert: Cannot backfill prev item that is not a text item"
+    ],
+    "sequencer": "a | b | c"
+   }
+  },
+  {
+   "name": "label-divergence at a sequencing replica, control: A saw B split first",
+   "group": "label-divergence",
+   "expected": "the sequencing replica integrates the insertion",
+   "pass": true,
+   "results": {
+    "rejected": [],
+    "sequencer": "a | Xb | c"
+   }
+  },
+  {
+   "name": "past-boundary: a split concurrent with a merge of its block is rejected",
+   "group": "past-boundary",
+   "expected": "fail: convergence (past-boundary); conservation (past-boundary)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "past-boundary"
+     ],
+     "conservation": [
+      "past-boundary"
+     ]
+    },
+    "final": [
+     "r2: a | b | c",
+     "r1: a | empty | b | c"
+    ]
+   }
+  },
+  {
+   "name": "past-boundary control: one split only",
+   "group": "past-boundary",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: a | b | c",
+     "r1: a | b | c"
+    ]
+   }
+  },
+  {
+   "name": "past-boundary in a merge: concurrent merges of one block",
+   "group": "past-boundary",
+   "expected": "fail: conservation (past-boundary)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "conservation"
+    ],
+    "classes": {
+     "conservation": [
+      "past-boundary"
+     ]
+    },
+    "final": [
+     "r2: abW | cd",
+     "r1: abW | cd"
+    ]
+   }
+  },
+  {
+   "name": "past-boundary for an insertion: typing into a block concurrently merged",
+   "group": "past-boundary",
+   "expected": "fail: convergence (past-boundary); conservation (past-boundary)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence",
+     "conservation"
+    ],
+    "classes": {
+     "convergence": [
+      "past-boundary"
+     ],
+     "conservation": [
+      "past-boundary"
+     ]
+    },
+    "final": [
+     "r2: ab | cd",
+     "r1: abT | cd"
+    ]
+   }
+  },
+  {
+   "name": "past-boundary for an insertion, control: A does not type",
+   "group": "past-boundary",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: ab | cd",
+     "r1: ab | cd"
+    ]
+   }
+  },
+  {
+   "name": "stale-merge: a late duplicate merge undoes a later split",
+   "group": "stale-merge",
+   "expected": "fail: raLinearizability (stale-merge)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "stale-merge"
+     ]
+    },
+    "final": [
+     "r2: a | bc | empty",
+     "r1: a | bc | empty"
+    ],
+    "admitted": [
+     "a | b | c"
+    ]
+   }
+  },
+  {
+   "name": "stale-merge control: a single merge, then a split",
+   "group": "stale-merge",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: a | b | c",
+     "r1: a | b | c"
+    ]
+   }
+  },
+  {
+   "name": "removed-anchor: blocks listed after a removed block go to the end of the page",
+   "group": "removed-anchor",
+   "expected": "fail: convergence (list-order); raLinearizability (removed-anchor)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence",
+     "raLinearizability"
+    ],
+    "classes": {
+     "convergence": [
+      "list-order"
+     ],
+     "raLinearizability": [
+      "removed-anchor"
+     ]
+    },
+    "final": [
+     "r2: ab | empty | empty | cd",
+     "r1: ab | empty | cd | empty"
+    ]
+   }
+  },
+  {
+   "name": "removed-anchor control: A does not merge",
+   "group": "removed-anchor",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: ab | empty | empty | empty | cd",
+     "r1: ab | empty | empty | empty | cd"
+    ]
+   }
+  },
+  {
+   "name": "order-mismatch: block order by application, text division by identifier",
+   "group": "order-mismatch",
+   "expected": "fail: convergence (list-order); raLinearizability (order-mismatch)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence",
+     "raLinearizability"
+    ],
+    "classes": {
+     "convergence": [
+      "list-order"
+     ],
+     "raLinearizability": [
+      "order-mismatch"
+     ]
+    },
+    "final": [
+     "r2: empty | empty | Ya",
+     "r1: empty | Ya | empty"
+    ],
+    "admitted": [
+     "empty | Ya | empty",
+     "Y | empty | a",
+     "Y | a | empty"
+    ]
+   }
+  },
+  {
+   "name": "order-mismatch control: A saw the split first",
+   "group": "order-mismatch",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: Y | empty | a",
+     "r1: Y | empty | a"
+    ]
+   }
+  },
+  {
+   "name": "concurrent-move: two splits move the same slice, and the replicas never converge",
+   "group": "concurrent-move",
+   "expected": "fail: convergence (concurrent-move)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence"
+    ],
+    "classes": {
+     "convergence": [
+      "concurrent-move"
+     ]
+    },
+    "final": [
+     "r2: a | b | c",
+     "r1: ab | empty | c"
+    ]
+   }
+  },
+  {
+   "name": "concurrent-move control: B does not merge back",
+   "group": "concurrent-move",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: a | empty | b | c",
+     "r1: a | empty | b | c"
+    ]
+   }
+  },
+  {
+   "name": "concurrent-move control: A sees B records before splitting",
+   "group": "concurrent-move",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: a | b | c",
+     "r1: a | b | c"
+    ]
+   }
+  },
+  {
+   "name": "list-order: concurrent creations after one block, peer-to-peer",
+   "group": "list-order",
+   "expected": "fail: convergence (list-order)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "convergence"
+    ],
+    "classes": {
+     "convergence": [
+      "list-order"
+     ]
+    },
+    "final": [
+     "r2: a | X | Y",
+     "r1: a | Y | X"
+    ]
+   }
+  },
+  {
+   "name": "list-order control: the creations are not concurrent",
+   "group": "list-order",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: a | Y | X",
+     "r1: a | Y | X"
+    ]
+   }
+  },
+  {
+   "name": "split placement after the holder: pass",
+   "group": "reading",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: a | b | empty | c",
+     "r1: a | b | empty | c"
+    ]
+   }
+  },
+  {
+   "name": "split placement after the issuer source: fails",
+   "group": "reading",
+   "expected": "fail: raLinearizability (order-mismatch, removed-anchor)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "order-mismatch",
+      "removed-anchor"
+     ]
+    },
+    "final": [
+     "r2: a | b | empty | c",
+     "r1: a | b | empty | c"
+    ]
+   }
+  },
+  {
+   "name": "inheritance at application: pass",
+   "group": "reading",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r2: ab | [c][V]",
+     "r1: ab | [c][V]"
+    ]
+   }
+  },
+  {
+   "name": "inheritance as issued: fails",
+   "group": "reading",
+   "expected": "fail: raLinearizability (bold-flags)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "bold-flags"
+     ]
+    },
+    "final": [
+     "r2: ab | [c][V]",
+     "r1: ab | [c][V]"
+    ]
+   }
+  },
+  {
+   "name": "format-carry: typing after a split at the end of bold text",
+   "group": "reading",
+   "expected": "fail: raLinearizability (bold-flags); localMeaning (format-carry)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes": {
+     "raLinearizability": [
+      "bold-flags"
+     ],
+     "localMeaning": [
+      "format-carry"
+     ]
+    },
+    "final": [
+     "r1: ab | [c] | [X]"
+    ]
+   }
+  },
+  {
+   "name": "live clocks: a sequential split/merge history is correct",
+   "group": "harness",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "classes": {},
+    "final": [
+     "r1: a | b | c"
+    ]
+   }
+  },
+  {
+   "name": "record-model clocks: duplicate marker identifiers misplace a merge",
+   "group": "harness",
+   "expected": "fail: localMeaning (duplicate-marker)",
+   "pass": true,
+   "results": {
+    "failing": [
+     "localMeaning"
+    ],
+    "classes": {
+     "localMeaning": [
+      "duplicate-marker"
+     ]
+    },
+    "final": [
+     "r1: ac | b | empty"
+    ]
+   }
+  },
+  {
+   "name": "shared and isolated runtimes give identical traces",
+   "group": "harness",
+   "expected": "identical displays and failing checks",
+   "pass": true,
+   "results": {
+    "compared": 4
+   }
+  }
+ ]
+}

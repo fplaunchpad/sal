@@ -18,16 +18,22 @@ TEMPLATE = ROOT / 'artifact' / 'paper1'
 # Executable support is selected explicitly; the Lean import closure below
 # continues to require tracked sources. These trees contain only first-party
 # harnesses and lockfiles, not the libraries they execute.
-PBT_EXPERIMENTS = ('yjs-oracle', 'automerge-oracle', 'loro-oracle', 'notion-ra-pbt')
+PBT_EXPERIMENTS = ('yjs-oracle', 'automerge-oracle', 'loro-oracle', 'notion-ra-pbt',
+                   'notion-production-text', 'notion-production-blocks')
 RUNTIME_TESTS = ('ingest', 'hash', 'dag', 'rga', 'virtual-lca', 'commitbatch', 'applybatch', 'mint')
+PRODUCTION_CLIENT = 'experiments/notion-production-client'
+PRODUCTION_EXPORT_INPUTS = {f'{PRODUCTION_CLIENT}/{name}' for name in
+                            ('client.mjs', 'index.mjs', 'runtime.mjs', 'requests.mjs', 'sources.json')}
 
 
 def copy_pbt_support(out):
     selected = set()
-    for directory in ('ra-pbt', 'runtime/src', *(f'experiments/{n}' for n in PBT_EXPERIMENTS)):
+    for directory in ('ra-pbt', 'runtime/src',
+                      *(f'experiments/{n}' for n in PBT_EXPERIMENTS)):
         for here, dirs, names in os.walk(ROOT / directory, followlinks=False):
             dirs[:] = sorted(d for d in dirs if d not in {
-                'node_modules', '.git', '.lake', '__pycache__', 'results'})
+                'node_modules', '.git', '.lake', '__pycache__', 'results',
+                'cache', 'extracted', 'extracted-replay'})
             for name in sorted(names):
                 path = Path(here) / name
                 if path.is_symlink():
@@ -38,6 +44,16 @@ def copy_pbt_support(out):
     selected |= {'runtime/package.json', 'experiments/notion-oracle/sources.json',
                  'experiments/notion-merge-design/design-patch/patch.py'}
     selected |= {f'runtime/test/{name}.test.js' for name in RUNTIME_TESTS}
+    # An explicit allow-list keeps all downloaded assets and generated module
+    # bodies out, regardless of the names used for local cache/export folders.
+    selected |= {f'{PRODUCTION_CLIENT}/{name}' for name in (
+        'client.mjs', 'index.mjs', 'runtime.mjs', 'requests.mjs', 'sources.json',
+        'extract.mjs', 'download.py', 'replay.mjs', 'run-replays.mjs', 'package.json',
+        'package-lock.json', 'README.md', 'test/extraction.test.mjs', 'test/replays.test.mjs')}
+    pins = json.loads((ROOT / 'ra-pbt/instances/notion-production-text/sources.json').read_text())['exportFiles']
+    for filename in PRODUCTION_EXPORT_INPUTS:
+        if sha(ROOT / filename) != pins[Path(filename).name]:
+            raise SystemExit('Pinned production export input changed: ' + filename)
     # Include the first-party sequential specifications imported by adapters;
     # these are outside the experiment-driver trees selected above.
     pending = list(selected)
@@ -60,6 +76,15 @@ def copy_pbt_support(out):
         destination = out / filename
         destination.parent.mkdir(parents=True, exist_ok=True)
         text = (ROOT / filename).read_text()
+        if filename.startswith('experiments/notion-production-') and Path(filename).suffix == '.md':
+            link = os.path.relpath(out / 'docs/production-client.md', destination.parent)
+            text = '# Extracted client experiment support\n\n' \
+                   f'See the [reviewed reproduction guide]({link}) for commands, source pins, ' \
+                   'specification choices and protocol limits. The supplied executable histories ' \
+                   'are offline fixture experiments, not observations of the live service.\n'
+        elif filename not in PRODUCTION_EXPORT_INPUTS:
+            text = text.replace('docs/notion-production-blocks.md', 'docs/production-client.md')
+            text = text.replace('docs/notion-production-text.md', 'docs/production-client.md')
         if filename.endswith('/repro/README.md'):
             # Posted reports link back to identifying user accounts. Keep the
             # executable reproductions and version table, omit report history.
@@ -75,6 +100,21 @@ def copy_pbt_support(out):
             if path.name.startswith('left-search-'):
                 continue
             data = json.loads(path.read_text())
+            if name.startswith('notion-production-'):
+                # Host paths identify only the review machine, not the source.
+                def neutral_paths(value):
+                    if isinstance(value, dict):
+                        return {k: neutral_paths(v) for k, v in value.items()}
+                    if isinstance(value, list):
+                        return [neutral_paths(v) for v in value]
+                    if isinstance(value, str) and value.startswith(('/Users/', '/private/tmp/', '/tmp/')):
+                        return 'external-source-path'
+                    return value
+                data = neutral_paths(data)
+                if path.name == 'out-of-order.json':
+                    for run in data.values():
+                        if isinstance(run, dict):
+                            run.pop('failing', None)
             if path.name == 'campaign.json' and name != 'notion-ra-pbt':
                 for run in data.get('runs', []):
                     run.pop('trials', None)
@@ -88,7 +128,7 @@ def copy_pbt_support(out):
         'selection': 'Top-level JSON evidence, with per-trial lists removed from external campaign summaries; all stored representative schedules retained.',
         'omitted': ['node_modules and downloaded third-party sources', 'upstream-drafts and posted-report history',
                     'raw campaign subdirectories and logs', 'redundant Loro left-search no-failure dumps'],
-        'interpretation': 'Recorded bounded experiments, not library proofs. Notion law snapshots predate inconclusive-status reporting; rerun current code for honest statuses.',
+        'interpretation': 'Historical bounded experiments, not library proofs. Notion law snapshots predate inconclusive-status reporting; rerun current code for honest statuses. Production-client campaign verdicts predate review: pending or rejected records are not same-record-set divergence, and causal witness failures are not automatically failures of the paper criterion. See docs/production-client.md.',
     }, indent=2) + '\n')
     return selected
 
@@ -134,6 +174,10 @@ def anonymise(out):
     # Transform text and paths in one pass. Third-party notices remain untouched.
     for path in sorted(out.rglob('*')):
         if not path.is_file() or 'vendor' in path.relative_to(out).parts:
+            continue
+        if str(path.relative_to(out)) in PRODUCTION_EXPORT_INPUTS:
+            # extract.mjs copies these files verbatim into the separately
+            # acquired library. Renaming/reformatting would invalidate its pins.
             continue
         data = anonymous_text(path.read_text())
         if path.suffix == '.json':
@@ -230,6 +274,9 @@ def main():
         'Recorded campaign summaries retain aggregate counters and all stored representatives, omitting per-trial lists, raw search dumps and logs; recorded/pbt/selection.json identifies inputs.',
         'Posted-report drafts and identifying upstream-report history omitted from reproduction READMEs.',
         'Notion PBT includes its original seven-module source manifest and exact design patcher; anchor-absorb is an older experiment, separate from the current rich Lean model.',
+        'Production-client support includes only first-party acquisition/extraction/harness code; downloaded assets and generated module bodies are acquired outside the bundle.',
+        'The five production export inputs are preserved byte-for-byte to reproduce the same six pinned library files. Production experiment READMEs point to a curated reviewed guide; source note paths in harness diagnostics are adapted.',
+        'Production recorded machine paths are neutralized; raw failing lists in the out-of-order probe are omitted, preserving summaries and shrunk representatives. Historical pre-review verdicts are not promoted to deployment claims.',
     ]
     for name in ['measure.py', 'measure_metatheory.py']:
         text = (ROOT / 'experiments/paper-implementation' / name).read_text()
@@ -322,6 +369,10 @@ elab "audit_paper " n:ident : command => do
                   'scope': 'Paper proofs and supporting reproductions; no GC result is an artifact claim.'}
     write(out / 'provenance.json', json.dumps(provenance, indent=2) + '\n')
     anonymise(out)
+    export_pins = json.loads((out / 'ra-pbt/instances/notion-production-text/sources.json').read_text())['exportFiles']
+    for filename in PRODUCTION_EXPORT_INPUTS:
+        if sha(out / filename) != export_pins[Path(filename).name]:
+            raise SystemExit('Packaging changed a pinned production export input: ' + filename)
     hashes = {str(p.relative_to(out)): sha(p) for p in sorted(out.rglob('*')) if p.is_file()}
     write(out / 'manifest.json', json.dumps({'sha256': hashes}, indent=2) + '\n')
     if args.archive:

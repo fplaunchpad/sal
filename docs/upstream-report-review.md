@@ -6,6 +6,23 @@ issue or comment was edited or posted during this review. Claude's review
 request is already recorded in the newest Codex entry of `claude_codex.md`;
 the findings below are independent of a future response.
 
+## Corrections applied and verified
+
+Claude applied the agreed amendments in place on 29 October 2026, following
+KC's choice of edits rather than follow-up comments. A fresh read of the
+six live posts confirmed the corrected wording. No duplicate comment was
+posted during this review. The original inventory and proposed replacements
+below remain the record of what was reviewed.
+
+- [yjs-828](https://github.com/yjs/yjs/issues/828): updated `2026-10-29T10:06:15Z`.
+- [yjs-382-comment](https://github.com/yjs/yjs/issues/382#issuecomment-6490076110): updated `2026-10-29T10:06:21Z`.
+- [yjs-385-comment](https://github.com/yjs/yjs/issues/385#issuecomment-6490076549): updated `2026-10-29T10:06:22Z`.
+- [automerge-1649](https://github.com/automerge/automerge/issues/1649): updated `2026-10-29T10:06:17Z`.
+- [loro-1240](https://github.com/loro-dev/loro/issues/1240): updated `2026-10-29T10:06:20Z`.
+- [loro-1009-comment](https://github.com/loro-dev/loro/issues/1009#issuecomment-6491058132): updated `2026-10-29T10:06:23Z`.
+
+The corrected live bodies are mirrored in the three `experiments/*-oracle/repro/upstream-drafts.md` files. `upstream-corrections.md` records the agreed amendments.
+
 ## Public-source inventory
 
 Fetched actual issue bodies and all issue comments using read-only
