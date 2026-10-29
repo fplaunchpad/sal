@@ -16,6 +16,7 @@
   "versionsChecked": 3208,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 0,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 0,

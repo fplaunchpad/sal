@@ -215,7 +215,8 @@ export function apply(state, op) {
  * relative to the placed elements already present; an unplaced one may sit
  * anywhere in its gap. Elements never move once placed, so a witness under
  * `applyAll` that ends in the target's order exists exactly when one exists
- * among these placements.
+ * among these placements. This identity-order restriction is stronger than
+ * viewKey equality and is not used by the packaged visual specification.
  */
 export function applyPlaced(state, op, placed) {
   return applyAll(state, op, placed);
@@ -362,20 +363,13 @@ export function placementOf(target, mode) {
   return placed;
 }
 
-const PLACEMENTS = new WeakMap();
-function placementCached(target, mode) {
-  let byMode = PLACEMENTS.get(target);
-  if (!byMode) PLACEMENTS.set(target, (byMode = {}));
-  return (byMode[mode] ??= placementOf(target, mode));
-}
-
 /**
  * The specification as an ra-pbt specification object. `semantics` selects
- * the mark semantics ('anchor' or 'marker'); `direct` selects what directs
- * the witness search: 'layout' (the target's full element order, deleted
- * characters and boundaries included) or 'chars' (its visible characters
- * only). Both are relational over the gap rule; 'chars' explores every
- * placement of elements the target does not display.
+ * the mark semantics ('anchor' or 'marker'); `direct` names the former
+ * witness optimisation ('layout' or 'chars'). It remains as
+ * configuration metadata, but both now use the full relational search.
+ * The observation ignores identities, so restricting the search by target
+ * identities or hidden layout can discard visually matching witnesses.
  */
 export function textSpec({ semantics = 'anchor', direct = 'layout' } = {}) {
   return {
@@ -384,8 +378,9 @@ export function textSpec({ semantics = 'anchor', direct = 'layout' } = {}) {
     init: initial,
     apply,
     applyAll: (state, op) => applyAll(state, op),
-    applyDirected: (state, op, target) => applyPlaced(state, op, placementCached(target, direct)),
-    directs: (target) => target !== null && target.length > 0 && target[0].id !== undefined,
+    // Keep the hook for consumers that wrap it, with no target pruning.
+    applyDirected: (state, op) => applyAll(state, op),
+    directs: () => false,
     view,
     serialise,
     viewKey,

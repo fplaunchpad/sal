@@ -222,8 +222,9 @@ function annotationIds(a) {
 }
 
 /**
- * The ra-pbt adapter. The view carries ids, so the gap rule's witness search
- * is directed by it; the displayed value is the shipped rich-text value.
+ * The ra-pbt adapter. The view carries ids for the classifier; the witness
+ * search compares views without them. The displayed value is the shipped
+ * rich-text value.
  */
 export const notionTextAdapter = {
   createReplica: (id, { opened = false } = {}) => new Replica(id, { opened }),

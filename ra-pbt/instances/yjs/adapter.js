@@ -409,8 +409,8 @@ const k2 = (id) => id[0] + ':' + id[1];
  * deletes is deleted there; it is partly integrated when some but not all
  * of that effect is present. Delete effects are attributed only to records
  * the replica has received, so two concurrent deletes of one character are
- * not confused. The view carries character identities, so the gap rule's
- * search is directed by it; the displayed value is Yjs's own `toDelta`
+ * not confused. The view carries character identities for the classifier; the
+ * witness search compares views without them. The displayed value is Yjs's own `toDelta`
  * rendering.
  */
 export const yjsAdapter = {

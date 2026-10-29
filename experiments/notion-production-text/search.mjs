@@ -9,7 +9,7 @@
  */
 import { generate, execute, shrink, failuresOf, trialSeed, CHECKS, prepareInstance } from '../../ra-pbt/src/index.js';
 
-const STAT_KEYS = ['edits', 'deliveries', 'sends', 'pendingSends', 'opens', 'cleanups', 'versionsChecked', 'witnessSkips', 'witnessSkipsPartial', 'causalGaps'];
+const STAT_KEYS = ['edits', 'deliveries', 'sends', 'pendingSends', 'opens', 'cleanups', 'versionsChecked', 'witnessSkips', 'witnessSkipsPartial', 'witnessSkipsTruncated', 'causalGaps'];
 export const yieldToTimers = () => new Promise((resolve) => setTimeout(resolve, 2));
 
 const add = (into, from) => {

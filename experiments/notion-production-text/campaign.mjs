@@ -83,6 +83,7 @@ function summarise() {
       opens: s.opens,
       versionsChecked: s.versionsChecked,
       witnessSkips: s.witnessSkips,
+      witnessSkipsTruncated: s.witnessSkipsTruncated ?? 0,
       anomalies: s.anomalies,
       failingTrials: s.failingTrials,
       failuresByCheck: s.failuresByCheck,

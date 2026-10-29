@@ -8,6 +8,7 @@
    "partialDelivery": true
   },
   "witnessBound": 8,
+  "witnessStateLimit": 1000000,
   "edits": 1051,
   "deliveries": 808,
   "sends": 324,
@@ -17,6 +18,7 @@
   "versionsChecked": 2408,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 0,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 3,
@@ -45,7 +47,7 @@
   },
   "rule": "gap",
   "attrs": "persistent",
-  "seconds": 1.317
+  "seconds": 1.883
  },
  "failing": [
   {

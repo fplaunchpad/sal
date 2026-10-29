@@ -265,7 +265,8 @@ function placementsIn(state, op, lo, hi, { attrsMode = 'carry', expand = EXPAND 
  * it relative to the target's characters; a character absent from the target
  * (deleted later) may sit anywhere in its gap. Characters never move once
  * placed, so a witness under the gap rule exists exactly when one exists
- * among these placements.
+ * among these placements for an exact identity-order target. This does not
+ * preserve viewKey equality and is not used by the packaged visual specification.
  */
 export function applyPlaced(state, op, placed, opts = {}) {
   if (op.kind !== 'insert') return applyAll(state, op, 'gap', opts);
@@ -400,16 +401,6 @@ export function interpret(record) {
   }
 }
 
-const PLACEMENTS = new WeakMap();
-
-function placementCached(target) {
-  let placed = PLACEMENTS.get(target);
-  if (!placed) PLACEMENTS.set(target, (placed = placementOf(target)));
-  return placed;
-}
-
-const carriesIds = (target) => target.length > 0 && target[0].id !== undefined;
-
 /**
  * The specification as an ra-pbt specification object under an insertion
  * rule ('gap', the default, 'left' or 'both'), a reading of the expand
@@ -417,8 +408,9 @@ const carriesIds = (target) => target.length > 0 && target[0].id !== undefined;
  * an expand configuration. The 'anchors' reading is relational in marks, so
  * under it even the deterministic insertion rules use `applyAll`. The gap
  * rule is relational: `applyAll` admits every placement in the gap,
- * `applyDirected` those consistent with a target that carries identities,
- * and `apply` returns the leftmost placement.
+ * `apply` returns the leftmost placement. The observation ignores identities,
+ * so target-id placement restrictions are not a sound witness optimisation
+ * when characters repeat.
  */
 export function textSpec(rule = 'gap', { attrsMode = 'carry', expand = EXPAND } = {}) {
   const opts = { attrsMode, expand };
@@ -438,8 +430,6 @@ export function textSpec(rule = 'gap', { attrsMode = 'carry', expand = EXPAND } 
       rule,
       apply: (state, op) => applyAll(state, op, 'gap', opts)[0] ?? null,
       applyAll: (state, op) => applyAll(state, op, 'gap', opts),
-      applyDirected: (state, op, target) => applyPlaced(state, op, placementCached(target), opts),
-      directs: (target) => target !== null && carriesIds(target),
     };
   if ((rule === 'left' || rule === 'both') && attrsMode === 'anchors')
     return { ...common, rule, apply: (state, op) => apply(state, op, rule, opts), applyAll: (state, op) => applyAll(state, op, rule, opts) };

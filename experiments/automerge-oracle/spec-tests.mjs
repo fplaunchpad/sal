@@ -7,6 +7,7 @@
 import assert from 'node:assert/strict';
 import { initial, apply, applyAll, view, viewWithIds, localEdit, insertedAttrs, anchorsOf, viewsEqual, textSpec } from '../../ra-pbt/instances/automerge/spec.js';
 import { findWitness, allFinalViews } from '../../ra-pbt/src/witness.js';
+import { confirmWitness } from '../../ra-pbt/instances/automerge/confirm-witness.js';
 
 let passed = 0;
 function test(name, fn) {
@@ -32,6 +33,30 @@ const fold = (ops) => ops.reduce((s, op) => (s === null ? null : apply(s, op)), 
 const v = (...pairs) => pairs.map(([ch, attrs]) => ({ ch, attrs: attrs ?? {} }));
 const plain = (s) => v(...[...s].map((ch) => [ch]));
 const abc = [ins('a', 'a'), ins('b', 'b', 'a'), ins('c', 'c', 'b')];
+
+test('confirmation budgets the full search and distinguishes exhaustion from rejection', () => {
+  const events = [{ key: 'a', deps: [], specOps: [ins('1@a', 'x')] }];
+  const target = [{ id: '1@a', ch: 'x', attrs: {} }];
+  assert.equal(confirmWitness('anchor', events, target, 0), 'undecided');
+  assert.notEqual(confirmWitness('anchor', events, target, 0), false);
+  assert.equal(confirmWitness('anchor', events, target, 1), true);
+  assert.equal(confirmWitness('anchor', events, [{ ...target[0], ch: 'y' }], 1), false);
+});
+
+test('witnesses compare repeated characters without imposing target ids or hidden layout', () => {
+  const events = [
+    { key: 'a', deps: [], specOps: [ins('1@a', 'x')] },
+    { key: 'b', deps: ['a'], specOps: [ins('2@a', 'x', null, '1@a')] },
+  ];
+  // The only placement is 2@a,1@a, but both visible identity orders read xx.
+  const target = [{ id: '1@a', ch: 'x', attrs: {} }, { id: '2@a', ch: 'x', attrs: {} }];
+  target.layout = ['1@a', '2@a'];
+  for (const direct of ['chars', 'layout']) {
+    const spec = textSpec({ direct });
+    assert.equal(findWitness(spec, events, target).found, true);
+    assert.equal(findWitness(spec, events, [{ ...target[0], attrs: B }, target[1]]).found, false);
+  }
+});
 
 test('gap rule: every position strictly between origin and right origin', () => {
   // a b c; x after a, before c: positions between a and b, or between b and c.

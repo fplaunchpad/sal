@@ -7,6 +7,7 @@
    "replicas": 3
   },
   "witnessBound": 14,
+  "witnessStateLimit": 1000000,
   "edits": 3337,
   "deliveries": 1863,
   "sends": 0,
@@ -16,6 +17,7 @@
   "versionsChecked": 4242,
   "witnessSkips": 958,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 0,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 0,
@@ -40,7 +42,7 @@
   "localMeaningFailuresByKind": {},
   "rule": "left",
   "attrs": "carry",
-  "seconds": 1.685
+  "seconds": 1.821
  },
  "failing": [],
  "shrunk": []

@@ -8,6 +8,7 @@
    "openedReplicas": true
   },
   "witnessBound": 8,
+  "witnessStateLimit": 1000000,
   "edits": 1022,
   "deliveries": 1120,
   "sends": 0,
@@ -17,6 +18,7 @@
   "versionsChecked": 2368,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 0,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 2,
@@ -45,7 +47,7 @@
   },
   "rule": "gap",
   "attrs": "anchors",
-  "seconds": 0.927
+  "seconds": 1.027
  },
  "failing": [
   {
@@ -599,7 +601,8 @@
             "attrs": {}
            }
           ]
-         ]
+         ],
+         "admittedViewCount": 3
         },
         "actual": [
          {
@@ -701,7 +704,8 @@
             "attrs": {}
            }
           ]
-         ]
+         ],
+         "admittedViewCount": 3
         },
         "actual": [
          {
@@ -803,7 +807,8 @@
             "attrs": {}
            }
           ]
-         ]
+         ],
+         "admittedViewCount": 3
         },
         "actual": [
          {
@@ -905,7 +910,8 @@
             "attrs": {}
            }
           ]
-         ]
+         ],
+         "admittedViewCount": 3
         },
         "actual": [
          {
@@ -1007,7 +1013,8 @@
             "attrs": {}
            }
           ]
-         ]
+         ],
+         "admittedViewCount": 3
         },
         "actual": [
          {

@@ -15,7 +15,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { failuresOf, writeJson } from '../../ra-pbt/src/index.js';
-import { verifySources, runCampaign, execute, shrink, renderStep, CHECKS } from '../../ra-pbt/instances/loro/index.js';
+import { verifySources, runCampaign, execute, shrink, renderStep, loroText, CHECKS } from '../../ra-pbt/instances/loro/index.js';
 import { classifyTrial, CLASSES } from '../../ra-pbt/instances/loro/classify.js';
 import { renderFailure, renderView } from './render.mjs';
 
@@ -76,7 +76,7 @@ function parseArgs(argv) {
 
 const showsClass = (cls, run, bound) => (schedule) => {
   const trace = execute(schedule, { rule: run.rule, attrs: run.attrs ?? 'carry', witnessBound: bound });
-  return classifyTrial(trace.checks, trace.ops).classes.includes(cls);
+  return classifyTrial(trace.checks, trace.ops, { spec: loroText(run.rule, run.attrs ?? 'carry').spec }).classes.includes(cls);
 };
 
 /** Compact evidence of a classified record. */
@@ -97,7 +97,7 @@ function summaryLines(s) {
     ['sends (pending after)', `${s.sends} (${s.pendingSends})`],
     ['opens', s.opens],
     ['versions checked', s.versionsChecked],
-    ['witness skips (bound / partial)', `${s.witnessSkips} / ${s.witnessSkipsPartial}`],
+    ['witness skips (bound / partial / truncated)', `${s.witnessSkips} / ${s.witnessSkipsPartial} / ${s.witnessSkipsTruncated ?? 0}`],
     ['causal gaps', s.causalGaps],
     ['execution anomalies', s.anomalies],
     ['failing trials', s.failingTrials],
@@ -132,7 +132,7 @@ function main() {
     const byOnset = {};
     const byRecord = {};
     const expandSplit = { consistent: 0, inconsistent: 0 };
-    const classified = failing.map((t) => ({ t, c: classifyTrial(t.checks, t.ops) }));
+    const classified = failing.map((t) => ({ t, c: classifyTrial(t.checks, t.ops, { spec: loroText(run.rule, attrs).spec }) }));
     for (const { c } of classified) {
       if (c.onset) byOnset[c.onset] = (byOnset[c.onset] ?? 0) + 1;
       for (const k of c.classes) byTrial[k] = (byTrial[k] ?? 0) + 1;
@@ -151,7 +151,7 @@ function main() {
         if (doShrink) {
           const res = shrink(t.schedule, showsClass(cls, run, bound), { rule: run.rule, attrs });
           const trace = execute(res.schedule, { rule: run.rule, attrs, witnessBound: bound });
-          const recs = classifyTrial(trace.checks, trace.ops).records.filter((r) => r.class === cls);
+          const recs = classifyTrial(trace.checks, trace.ops, { spec: loroText(run.rule, attrs).spec }).records.filter((r) => r.class === cls);
           const f = failuresOf(trace).find((x) => x.step === recs[0]?.step && x.check === recs[0]?.check);
           Object.assign(rep, { schedule: res.schedule, rendered: res.schedule.steps.map(renderStep), evidence: recs.slice(0, 2).map(compact), failure: f && renderFailure(f) });
         } else rep.evidence = c.records.filter((r) => r.class === cls).slice(0, 1).map(compact);

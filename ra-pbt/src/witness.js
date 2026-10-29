@@ -114,28 +114,39 @@ function explore(spec, events, onFinal, target = null, limit = Infinity) {
  * Searches for a linear extension folding to `target`.
  * Returns { found: true, order: [key] } or
  * { found: false, explored, reachableViews } where `reachableViews` counts the
- * distinct final views of the (possibly directed) search.
+ * distinct final views of the (possibly directed) search. With a finite
+ * `limit`, a search that would explore more than `limit` (subset, state)
+ * pairs stops and returns { found: false, truncated: true, explored }: no
+ * verdict, since a relational specification can need more states than
+ * the limit allows.
  */
-export function findWitness(spec, events, target) {
+export function findWitness(spec, events, target, { limit = Infinity } = {}) {
   const s = normaliseSpec(spec);
   const want = s.viewKey(target);
   const directed = s.directs(target) ? target : null;
   let hit = null;
   const views = new Set();
-  const explored = explore(
-    s,
-    events,
-    (node) => {
-      const k = s.viewKey(s.view(node.state));
-      views.add(k);
-      if (k === want) {
-        hit = node;
-        return true;
-      }
-      return false;
-    },
-    directed,
-  );
+  let explored;
+  try {
+    explored = explore(
+      s,
+      events,
+      (node) => {
+        const k = s.viewKey(s.view(node.state));
+        views.add(k);
+        if (k === want) {
+          hit = node;
+          return true;
+        }
+        return false;
+      },
+      directed,
+      limit,
+    );
+  } catch (e) {
+    if (!(e instanceof RangeError) || !/state limit/.test(e.message)) throw e;
+    return { found: false, truncated: true, explored: limit };
+  }
   if (hit) return { found: true, order: orderOf(hit, events) };
   return { found: false, explored, reachableViews: views.size };
 }

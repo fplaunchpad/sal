@@ -6,15 +6,17 @@
    "steps": 12
   },
   "witnessBound": 12,
+  "witnessStateLimit": 1000000,
   "edits": 1941,
   "deliveries": 1275,
   "sends": 0,
   "pendingSends": 0,
   "opens": 0,
   "cleanups": 0,
-  "versionsChecked": 3216,
+  "versionsChecked": 3148,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 68,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 0,
@@ -39,7 +41,7 @@
   "localMeaningFailuresByKind": {},
   "rule": "gap",
   "attrs": "carry",
-  "seconds": 4.872
+  "seconds": 115.518
  },
  "failing": [],
  "shrunk": []

@@ -244,13 +244,6 @@ export function interpret(record) {
   }
 }
 
-/** Every visible id position of a target view, by key. */
-function placementOf(target) {
-  const placed = new Map();
-  target.forEach((e, i) => e.id !== undefined && placed.set(idKey(e.id), i));
-  return placed;
-}
-
 /**
  * The specification as an ra-pbt specification object.
  *   rule     'gap' (relational, the default), 'left' or 'both'
@@ -258,12 +251,6 @@ function placementOf(target) {
  *   local    'positional' (the default) or 'inherit'
  */
 export function textSpec({ rule = 'gap', reading = 'anchored', local = 'positional' } = {}) {
-  const placements = new WeakMap();
-  const placedOf = (target) => {
-    let p = placements.get(target);
-    if (!p) placements.set(target, (p = placementOf(target)));
-    return p;
-  };
   return {
     rule,
     reading,
@@ -276,7 +263,9 @@ export function textSpec({ rule = 'gap', reading = 'anchored', local = 'position
     localEdit: (v, request) => localEdit(v, request, local),
     apply: (s, op) => applyAll(s, op, { rule, reading })[0] ?? null,
     applyAll: (s, op) => applyAll(s, op, { rule, reading }),
-    applyDirected: (s, op, target) => applyAll(s, op, { rule, reading, placed: placedOf(target) }),
-    directs: (target) => Array.isArray(target) && target.length > 0 && target[0].id !== undefined,
+    // viewKey observes characters and bold, not identities. Restricting the
+    // search to the target's identity order can lose a visually matching
+    // witness when characters repeat. Use the full applyAll search; merely
+    // receiving a target that carries ids does not justify that pruning.
   };
 }

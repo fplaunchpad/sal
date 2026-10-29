@@ -7,15 +7,17 @@
    "openedReplicas": true
   },
   "witnessBound": 12,
+  "witnessStateLimit": 1000000,
   "edits": 1633,
   "deliveries": 1413,
   "sends": 0,
   "pendingSends": 0,
   "opens": 230,
   "cleanups": 0,
-  "versionsChecked": 3276,
+  "versionsChecked": 3194,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 82,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 4,
@@ -1051,7 +1053,7 @@
      "name": "raLinearizability",
      "pass": true,
      "details": {
-      "runs": 18,
+      "runs": 15,
       "failureCount": 0,
       "failures": []
      }

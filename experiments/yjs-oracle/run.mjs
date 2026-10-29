@@ -80,7 +80,7 @@ function printSummary(s, shrunk) {
     ['opens', s.opens],
     ['cleanup events', s.cleanups],
     ['versions checked', s.versionsChecked],
-    ['witness skips (bound / partial)', `${s.witnessSkips} / ${s.witnessSkipsPartial}`],
+    ['witness skips (bound / partial / truncated)', `${s.witnessSkips} / ${s.witnessSkipsPartial} / ${s.witnessSkipsTruncated ?? 0}`],
     ['causal gaps', s.causalGaps],
     ['execution anomalies', s.anomalies],
     ['failing trials', s.failingTrials],

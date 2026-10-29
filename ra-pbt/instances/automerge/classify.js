@@ -48,9 +48,10 @@
  * A failure whose differing attributes have different explanations is
  * classed by the joined ids (for instance A-001+A-002).
  *
- * A raLinearizability failure for which the visible-character search finds
- * a witness is classed `layout-artefact`: the layout-directed search missed
- * a witness, and the version is RA-linearizable.
+ * A raLinearizability failure for which the confirmation search finds a
+ * witness is classed `layout-artefact`. The end-to-end check and the
+ * confirmation search are now the same full search, so the class is kept
+ * for records of earlier runs and cannot arise.
  *
  * Method. The schedule is re-executed without checks up to the failing step.
  * The replica's element walk, the records' marks (boundary ids and anchors)
@@ -58,17 +59,19 @@
  * boundary gaps and whether their inserts are concurrent with it. For a
  * raLinearizability failure the displayed view is compared with the nearest
  * admitted view (same characters, fewest differing attributes); each
- * failure is also re-checked with the witness search directed by the
- * visible characters only, which explores every placement of deleted
- * characters and boundaries, so a reported failure does not depend on the
- * layout direction.
+ * failure is also repeated by the confirmation search under an application
+ * budget and a state cap, which marks it undecided when either runs out.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { findWitness, allFinalViews } from '../../src/witness.js';
+import { DEFAULT_WITNESS_STATE_LIMIT } from '../../src/checks.js';
 import { Execution, eventsAt, execute, instanceFor, finalSyncSteps, CHECKS } from './index.js';
 import { normaliseAttrs, insertedAttrs } from './spec.js';
 import { walk } from './adapter.js';
+import { confirmWitness } from './confirm-witness.js';
+
+export { confirmWitness } from './confirm-witness.js';
 
 export const CLASSES = { 'A-001': 'boundary placed by operation order', 'A-002': 'shared insertion point', 'A-003': 'emptied mark', 'layout-artefact': 'witness found under the visible-character direction', 'view-artefact': 'index-level expectation blind to a covered position', other: 'other' };
 
@@ -234,9 +237,10 @@ function classifyRA(schedule, r, step, semantics) {
   const target = rep.visibleWithIds();
   const { events } = eventsAt(ex, r);
   const charsOnly = confirmWitness(semantics, events, target);
-  const markerWitness = findWitness(instanceFor('marker', 'layout').spec, events.map((e) => ({ ...e, specOps: ex.byKey.get(e.key).specOpsBySemantics.marker })), Object.assign(target.map((c) => ({ ...c })), { layout: target.boundaries })).found;
+  const markerSearch = findWitness(instanceFor('marker', 'layout').spec, events.map((e) => ({ ...e, specOps: ex.byKey.get(e.key).specOpsBySemantics.marker })), Object.assign(target.map((c) => ({ ...c })), { layout: target.boundaries }), { limit: DEFAULT_WITNESS_STATE_LIMIT });
+  const markerWitness = markerSearch.truncated ? 'undecided' : markerSearch.found;
   if (charsOnly === true) return { check: 'raLinearizability', replica: r, step, class: 'layout-artefact', witnessCharsOnly: true };
-  const admitted = allFinalViews(instanceFor(semantics, 'layout').spec, events, { target });
+  const admitted = allFinalViews(instanceFor(semantics, 'layout').spec, events, { target, limit: DEFAULT_WITNESS_STATE_LIMIT });
   const reference = nearest(target, admitted);
   const mis = misplacements(ex, r, list);
   const out = { check: 'raLinearizability', replica: r, step, witnessCharsOnly: charsOnly, witnessMarker: markerWitness, walk: renderWalk(list), misplaced: mis };
@@ -280,32 +284,6 @@ function classifyRA(schedule, r, step, semantics) {
   const kinds = [...new Set(explained.map((d) => d.by))];
   const cls = diffs.length > 0 && !kinds.includes(null) ? kinds.sort().join('+') : 'other';
   return { ...out, class: cls, reference: renderView(reference), differences: explained };
-}
-
-/**
- * The witness search directed by the visible characters only, bounded by
- * `budget` applications of the specification: true when a witness exists,
- * false when none does, 'undecided' when the budget runs out. Every
- * placement of deleted characters and boundaries is explored, so false is
- * exact.
- */
-export function confirmWitness(semantics, events, target, budget = 200_000) {
-  const base = instanceFor(semantics, 'chars').spec;
-  let n = 0;
-  const OUT = new Error('budget');
-  const bounded = {
-    ...base,
-    applyDirected: (s, op, t) => {
-      if (++n > budget) throw OUT;
-      return base.applyDirected(s, op, t);
-    },
-  };
-  try {
-    return findWitness(bounded, events, target).found;
-  } catch (e) {
-    if (e === OUT) return 'undecided';
-    throw e;
-  }
 }
 
 /** Value of `key` at list position `at` (an insertion point: between at-1 and at) under Automerge's rule. */

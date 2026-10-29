@@ -55,8 +55,12 @@ the text of an already removed block again (**stale-merge**). A block listed
 after a removed block goes to the end of the page (**removed-anchor**).
 Block order follows application order while text division follows
 identifiers (**order-mismatch**). Each defect class shows on one replica
-that applied causally ordered records. A sequencing server that received
-those records in that order would therefore show it too. Only the
+that applied causally ordered records through the shared record handlers.
+Whether a sequencing server would show the same depends on a premise this
+experiment does not establish: that the deployed server accepts and applies
+these exact commands against the corresponding state, and that the client's
+optimistic application, versioned receipt and rollback paths (which the
+fixture does not execute) do not change the outcome. Only the
 non-convergence of block order (`list-order`) depends on peer-to-peer
 delivery.
 
@@ -533,3 +537,32 @@ cd ../../ra-pbt && npm test       # 48/48
 `verify-sources.js` pins the export used for the results above. A different
 export, for instance after a change to the production-client harness files,
 fails verification.
+
+## Review qualifications
+
+An independent review (`docs/notion-production-blocks-review.md` and
+`docs/notion-production-protocol-review.md` in the main tree, 2026-10-29)
+re-ran every class with the original editor getter in isolated runtimes and
+sharpened what each establishes:
+
+- concurrent-move: both replicas integrate the same four records with
+  nothing pending and display different block divisions, in both session
+  orders; genuine same-record non-convergence under the extracted
+  peer-handler contract;
+- stale-merge: the displayed result is excluded by the specification even
+  with every event-order edge removed, under the reading that merging an
+  already removed source is a no-op; which policy the product intends is
+  not established;
+- label-divergence and past-boundary: causally ready records are rejected
+  by the handlers, so the receiver has not integrated the same records as
+  the issuer; a handler rejection in the fixture is not same-record
+  non-convergence and not proof of a permanent live failure, since the
+  client's rollback and refetch paths are not executed;
+- removed-anchor and order-mismatch: rejected under the causal-order
+  search, admitted when every event-order edge is removed, so they are not
+  counterexamples to the paper's order-relaxed criterion;
+- N-002 and N-003: with the editor's per-instance clock holders both are
+  rejected at the receiver after the final exchange; extending the original
+  replay wrapper with its actual one-character full-block selection gives
+  N-002 rejected and N-003 succeeding, so the missing final exchange alone
+  does not explain both, and the clock fixture is load-bearing.

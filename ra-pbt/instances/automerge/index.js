@@ -5,14 +5,13 @@
  * ra-pbt entry points bound to them.
  *
  * `instanceFor(semantics, direct)` is the instance under a mark semantics
- * ('anchor', Peritext's anchors, or 'marker', boundaries as list elements)
- * with the witness search directed by the full element layout ('layout') or
- * by the visible characters only ('chars'). `automergeText` is the anchor
- * instance directed by layout. A witness found under either direction is a
- * witness; the layout direction can miss a witness in which deleted
- * characters or boundaries stand elsewhere than in Automerge's list, so a
- * failure it reports is confirmed by `confirmWitness` in `classify.js`,
- * which searches under the visible-character direction.
+ * ('anchor', Peritext's anchors, or 'marker', boundaries as list elements).
+ * `direct` is retained as configuration metadata ('layout' or 'chars');
+ * both values use the full relational search, which explores every
+ * placement the gap rule admits and compares views without identities.
+ * `automergeText` is the anchor instance. A failure the end-to-end check
+ * reports is repeated by `confirmWitness` in `classify.js` under an
+ * application budget, which distinguishes exhaustion from rejection.
  */
 import * as core from '../../src/index.js';
 import { textSpec } from './spec.js';

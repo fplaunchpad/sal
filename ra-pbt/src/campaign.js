@@ -11,7 +11,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { execute, prepareInstance } from './schedule.js';
-import { CHECKS } from './checks.js';
+import { CHECKS, DEFAULT_WITNESS_STATE_LIMIT } from './checks.js';
 import { generate } from './generate.js';
 import { shrink } from './shrink.js';
 
@@ -23,7 +23,7 @@ export function failuresOf(trace) {
 /** The seed of trial t under a campaign seed. */
 export const trialSeed = (seed, t) => (seed * 1000003 + t) >>> 0;
 
-const STAT_KEYS = ['edits', 'deliveries', 'sends', 'pendingSends', 'opens', 'cleanups', 'versionsChecked', 'witnessSkips', 'witnessSkipsPartial', 'causalGaps'];
+const STAT_KEYS = ['edits', 'deliveries', 'sends', 'pendingSends', 'opens', 'cleanups', 'versionsChecked', 'witnessSkips', 'witnessSkipsPartial', 'witnessSkipsTruncated', 'causalGaps'];
 
 function addCounts(into, from) {
   for (const [k, v] of Object.entries(from ?? {})) into[k] = (into[k] ?? 0) + v;
@@ -31,18 +31,22 @@ function addCounts(into, from) {
 
 /**
  * runCampaign(instance, { seed = 1 | seeds: [seed], trials = 20, bound = 12,
- *             options = {}, shrink = true, renderStep?, renderFailure? })
+ *             stateLimit?, options = {}, shrink = true, renderStep?, renderFailure? })
  * returns { summary, failing, shrunk }. With several seeds every failing
  * trial and shrunk representative also records its campaign seed.
+ * `stateLimit` is the witness search's state cap (checks.js); versions it
+ * truncates are counted in the summary's `witnessSkipsTruncated`.
  */
-export function runCampaign(instance, { seed = 1, seeds, trials = 20, bound = 12, options = {}, shrink: doShrink = true, renderStep, renderFailure } = {}) {
+export function runCampaign(instance, { seed = 1, seeds, trials = 20, bound = 12, stateLimit, options = {}, shrink: doShrink = true, renderStep, renderFailure } = {}) {
   const inst = prepareInstance(instance);
   const seedList = seeds ?? [seed];
+  const exec = (schedule) => execute(inst, schedule, { witnessBound: bound, witnessStateLimit: stateLimit });
   const summary = {
     ...(seeds ? { seeds } : { seed }),
     trials,
     options,
     witnessBound: bound,
+    witnessStateLimit: stateLimit ?? DEFAULT_WITNESS_STATE_LIMIT,
     ...Object.fromEntries(STAT_KEYS.map((k) => [k, 0])),
     anomalies: 0,
     failingTrials: 0,
@@ -57,7 +61,7 @@ export function runCampaign(instance, { seed = 1, seeds, trials = 20, bound = 12
     for (let t = 0; t < trials; t++) {
       const ts = trialSeed(s, t);
       const schedule = generate(inst, ts, options);
-      const trace = execute(inst, schedule, { witnessBound: bound });
+      const trace = exec(schedule);
       const st = trace.stats;
       for (const k of STAT_KEYS) summary[k] += st[k];
       summary.anomalies += trace.anomalies.length;
@@ -80,9 +84,9 @@ export function runCampaign(instance, { seed = 1, seeds, trials = 20, bound = 12
   const shrunk = [];
   if (doShrink)
     for (const [signature, first] of firstBySignature) {
-      const fails = (s) => failuresOf(execute(inst, s, { witnessBound: bound })).some((f) => f.signature === signature);
+      const fails = (s) => failuresOf(exec(s)).some((f) => f.signature === signature);
       const res = shrink(inst, first.schedule, fails);
-      const trace = execute(inst, res.schedule, { witnessBound: bound });
+      const trace = exec(res.schedule);
       const f = failuresOf(trace).find((x) => x.signature === signature);
       const entry = {
         signature,

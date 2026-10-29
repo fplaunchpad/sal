@@ -7,15 +7,17 @@
    "openedReplicas": false
   },
   "witnessBound": 12,
+  "witnessStateLimit": 1000000,
   "edits": 1905,
   "deliveries": 1311,
   "sends": 0,
   "pendingSends": 0,
   "opens": 0,
   "cleanups": 0,
-  "versionsChecked": 3216,
+  "versionsChecked": 2775,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 441,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 6,
@@ -733,7 +735,7 @@
      "name": "raLinearizability",
      "pass": true,
      "details": {
-      "runs": 18,
+      "runs": 13,
       "failureCount": 0,
       "failures": []
      }
@@ -2424,7 +2426,7 @@
      "name": "raLinearizability",
      "pass": true,
      "details": {
-      "runs": 18,
+      "runs": 12,
       "failureCount": 0,
       "failures": []
      }

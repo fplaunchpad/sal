@@ -207,8 +207,10 @@ export function applyAll(state, op, rule = 'gap') {
  * it relative to the target's characters; a character absent from the target
  * (deleted later) may sit anywhere in its gap, since its position still
  * bounds later insertions. Characters never move once placed, so a witness
- * under the gap rule exists exactly when one exists among these placements.
- * An empty list is a precondition failure.
+ * under the gap rule ending in that exact identity order exists exactly when
+ * one exists among these placements. This is stronger than viewKey equality
+ * and is not used by the packaged visual specification.
+ * An empty list is a precondition failure for this restricted placement.
  */
 export function applyPlaced(state, op, placed) {
   if (op.kind !== 'insert') {
@@ -282,23 +284,13 @@ export function normaliseView(v) {
   return v.map((e) => ({ ch: e.ch, attrs: normaliseAttrs(e.attrs) }));
 }
 
-const PLACEMENTS = new WeakMap();
-
-function placementCached(target) {
-  let placed = PLACEMENTS.get(target);
-  if (!placed) PLACEMENTS.set(target, (placed = placementOf(target)));
-  return placed;
-}
-
-/** Whether a target view carries identities, so that placements can be directed by it. */
-const carriesIds = (target) => target.length > 0 && target[0].id !== undefined;
-
 /**
  * The specification as an ra-pbt specification object under an insertion
  * rule. The gap rule (the default) is relational: `applyAll` admits every
- * placement in the gap, `applyDirected` those consistent with a target that
- * carries identities, and `apply` returns the leftmost placement. The
+ * placement in the gap, and `apply` returns the leftmost placement. The
  * one-sided (`left`) and two-sided (`both`) rules are deterministic.
+ * The observation ignores identities, so target-id placement restrictions
+ * are not a sound witness optimisation when characters repeat.
  */
 export function textSpec(rule = 'gap') {
   const common = {
@@ -315,8 +307,6 @@ export function textSpec(rule = 'gap') {
       rule,
       apply: (state, op) => applyAll(state, op, 'gap')[0] ?? null,
       applyAll: (state, op) => applyAll(state, op, 'gap'),
-      applyDirected: (state, op, target) => applyPlaced(state, op, placementCached(target)),
-      directs: (target) => target !== null && carriesIds(target),
     };
   if (rule === 'left' || rule === 'both') return { ...common, rule, apply: (state, op) => apply(state, op, rule) };
   throw new Error('unknown insertion rule: ' + rule);

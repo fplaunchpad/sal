@@ -83,15 +83,26 @@ final synchronisation, failed nowhere.
 
 | Run | Trials | Edits | Deliveries | Versions checked | Failing trials | RA-linearizability | Local meaning | Determinism | Conservation | Format requests checked |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| plain-16 | 200 | 2,064 | 1,536 | 3,600 | 0 | 0 | 0 | 0 | 0 | 0 |
-| partial-17 | 200 | 1,883 | 1,200 | 3,592 | 0 | 0 | 0 | 0 | 0 | 0 |
+| plain-16 | 200 | 2,064 | 1,536 | 3,548 | 0 | 0 | 0 | 0 | 0 | 0 |
+| partial-17 | 200 | 1,883 | 1,200 | 3,556 | 0 | 0 | 0 | 0 | 0 | 0 |
 | format-created-11 | 200 | 1,876 | 1,334 | 3,210 | 41 | 112 | 0 | 12 | 0 | 343 |
-| format-created-12 | 200 | 1,852 | 1,382 | 3,234 | 41 | 147 | 0 | 9 | 0 | 333 |
-| format-created-13 | 200 | 1,877 | 1,335 | 3,212 | 49 | 163 | 0 | 8 | 0 | 342 |
+| format-created-12 | 200 | 1,852 | 1,382 | 3,221 | 41 | 147 | 0 | 9 | 0 | 333 |
+| format-created-13 | 200 | 1,877 | 1,335 | 3,209 | 49 | 163 | 0 | 8 | 0 | 342 |
 | format-opened-14 | 200 | 1,612 | 1,418 | 3,262 | 58 | 264 | 0 | 2 | 0 | 336 |
 | format-opened-15 | 200 | 1,622 | 1,379 | 3,218 | 52 | 191 | 0 | 9 | 0 | 348 |
-| partial-format-18 | 200 | 1,749 | 848 | 3,241 | 37 | 109 | 0 | 10 | 0 | 294 |
+| partial-format-18 | 200 | 1,749 | 848 | 3,238 | 37 | 109 | 0 | 10 | 0 | 294 |
 | partial-format-19 | 200 | 1,599 | 820 | 3,197 | 51 | 190 | 1 | 3 | 0 | 305 |
+
+The table is from the rerun of 2026-10-29 with the full witness search
+(every admitted placement explored, views compared without identities,
+at most one million explored states per version). The earlier campaign
+directed the search by the target's identity order, which can reject a view
+that has a witness when characters repeat; the rerun gave the same failing
+trials, the same failure counts and the same classes in every run. The
+difference is 107 versions of 29,766 (52 in plain-16, 36 in partial-17, 13,
+3 and 3 in format-created-12, format-created-13 and partial-format-18) whose
+search exceeded the state cap; they are counted as truncated and neither
+passed nor failed, where the directed search had found a witness for each.
 
 Plain text passed every check under the strong list specification. Both
 deterministic refinements of it are refuted by plain-text histories, and the

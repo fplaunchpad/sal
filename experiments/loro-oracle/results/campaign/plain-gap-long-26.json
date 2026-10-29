@@ -7,15 +7,17 @@
    "replicas": 4
   },
   "witnessBound": 12,
+  "witnessStateLimit": 1000000,
   "edits": 2861,
   "deliveries": 2739,
   "sends": 0,
   "pendingSends": 0,
   "opens": 0,
   "cleanups": 0,
-  "versionsChecked": 4491,
+  "versionsChecked": 4288,
   "witnessSkips": 1109,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 203,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 0,
@@ -40,7 +42,7 @@
   "localMeaningFailuresByKind": {},
   "rule": "gap",
   "attrs": "carry",
-  "seconds": 61.868
+  "seconds": 550.012
  },
  "failing": [],
  "shrunk": []

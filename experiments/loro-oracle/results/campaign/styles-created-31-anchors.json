@@ -8,15 +8,17 @@
    "openedReplicas": false
   },
   "witnessBound": 10,
+  "witnessStateLimit": 1000000,
   "edits": 1904,
   "deliveries": 1372,
   "sends": 0,
   "pendingSends": 0,
   "opens": 0,
   "cleanups": 0,
-  "versionsChecked": 3196,
+  "versionsChecked": 3063,
   "witnessSkips": 80,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 133,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 11,
@@ -45,7 +47,7 @@
   },
   "rule": "gap",
   "attrs": "anchors",
-  "seconds": 17.635
+  "seconds": 194.593
  },
  "failing": [
   {
@@ -1901,7 +1903,7 @@
      "name": "raLinearizability",
      "pass": true,
      "details": {
-      "runs": 15,
+      "runs": 14,
       "failureCount": 0,
       "failures": []
      }
@@ -4327,7 +4329,7 @@
      "name": "raLinearizability",
      "pass": true,
      "details": {
-      "runs": 18,
+      "runs": 15,
       "failureCount": 0,
       "failures": []
      }

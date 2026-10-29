@@ -7,7 +7,7 @@ deliveries                                      808
 sends (pending after)                           324 (42)
 opens                                           225
 versions checked                                2408
-witness skips (bound / partial)                 0 / 0
+witness skips (bound / partial / truncated)     0 / 0 / 0
 causal gaps                                     0
 execution anomalies                             0
 failing trials                                  34

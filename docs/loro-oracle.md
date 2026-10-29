@@ -136,14 +136,29 @@ edits. Readings run on the same seeds execute the same schedules. 9,200 trials,
 conservation failed nowhere, no execution anomaly was recorded, and no
 causal gap occurred.
 
+The tables are from the rerun of 2026-10-29 with the full witness search
+(every admitted placement explored, views compared without identities, at
+most one million explored states per version), replacing the campaign
+whose search was directed by the target's identity order, a pruning that
+can reject a view that has a witness when characters repeat. The rerun
+changed no verdict: every failing trial of the directed campaign fails
+again, except one trial of `styles-created-32-expand` whose versions
+exceed the state cap (it fails again at three million states). Versions
+over the cap are counted as truncated and neither passed nor failed: 878
+of 135,417 across the 46 runs, most of them in the plain gap-rule runs
+(68, 144, 203 and 33 in `plain-gap-21`, `plain-gap-22`,
+`plain-gap-long-26` and `partial-plain-27`) and the anchors reading (133
+and 55 in `styles-created-31-anchors` and `-32-anchors`), where the
+directed search had found a witness for each.
+
 Plain text:
 
 | Run | Rule | Requests / bound | Edits | Versions checked | Failing trials |
 |---|---|---|---:|---:|---:|
-| plain-gap-21 | gap | 12 / 12 | 1,941 | 3,216 | 0 |
-| plain-gap-22 | gap | 12 / 12, 3 replicas | 2,056 | 3,600 | 0 |
-| plain-gap-long-26 | gap | 16 / 12, 4 replicas | 2,861 | 4,491 | 0 |
-| partial-plain-27 | gap | 12 / 12, partial delivery (216 sends left pending) | 1,814 | 3,228 | 0 |
+| plain-gap-21 | gap | 12 / 12 | 1,941 | 3,148 | 0 |
+| plain-gap-22 | gap | 12 / 12, 3 replicas | 2,056 | 3,456 | 0 |
+| plain-gap-long-26 | gap | 16 / 12, 4 replicas | 2,861 | 4,288 | 0 |
+| partial-plain-27 | gap | 12 / 12, partial delivery (216 sends left pending) | 1,814 | 3,195 | 0 |
 | plain-left-23 | left | 12 / 12 | 1,956 | 3,184 | 0 |
 | plain-left-long-24 | left | 20 / 14, 3 replicas | 3,337 | 4,242 | 0 |
 | plain-both-25 | both | 12 / 12 | 1,975 | 3,204 | 9 |
@@ -160,12 +175,12 @@ local meaning does not depend on the reading):
 | Seed and mix | carry | inherit | expand | anchors (bound 10) |
 |---|---:|---:|---:|---:|
 | 31 created replicas | 28 / 11 | 25 / 11 | 33 / 11 | 0 / 11 |
-| 32 created replicas | 23 / 4 | | 30 / 4 | 0 / 4 |
+| 32 created replicas | 23 / 4 | | 29 / 4 | 0 / 4 |
 | 33 opened replicas | 56 / 13 | 46 / 13 | 33 / 13 | 1 / 13 |
 | 34 opened replicas | 53 / 11 | | 37 / 11 | 4 / 11 |
 | 35 partial delivery, opened | 54 / 12 | 47 / 12 | 42 / 12 | 0 / 12 |
 | 36 partial delivery, created | 22 / 3 | | 31 / 3 | 1 / 3 |
-| total (1,200 trials) | 236 / 54 | | 206 / 54 | 6 / 54 |
+| total (1,200 trials) | 236 / 54 | | 205 / 54 | 6 / 54 |
 
 Twelve requests per trial, bound 12 except where noted. The same seeds with
 eight requests and bound 8, where the persistent reading is tractable:
@@ -186,11 +201,15 @@ witness under the persistent reading (`node residues.mjs`,
 `results/residues.json`).
 
 Classes over the six carry runs at twelve requests, as trials showing the
-class (the earliest failure is L-001 in 228 of the 281 failing trials): L-001 236, L-002 48,
+class (the earliest failure is L-001 in 226 of the 281 failing trials): L-001 234, L-002 48,
 L-003 4, L-005 3, L-004 0 (it needs two adjacent spans of one value, which the
-generator rarely builds; the regression shows it). Of 1,002 L-001 failure
-records, 457 concern a side to which the key's expand type extends the mark
-and 545 a side to which it does not. The 63 local-meaning failures were all
+generator rarely builds; the regression shows it), and 2 trials unexplained:
+under the directed search each of their failing versions had a single
+admitted view, explained as L-001; the full search admits 162 and 15 views
+for them, and the nearest differs from the display by a bold the L-001 rule
+does not account for. Of 995 L-001 failure
+records, 453 concern a side to which the key's expand type extends the mark
+and 542 a side to which it does not. The 63 local-meaning failures were all
 on insertions, out of 5,874 insert requests; none of 2,802 mark, 162 unmark
 and 1,507 delete requests failed.
 
@@ -419,5 +438,5 @@ node run.mjs --mode replay --input results/campaign/styles-created-31.json
 ```
 
 `run.mjs --mode search` takes `--rule gap|left|both` and `--attrs
-carry|inherit|expand|anchors|persistent`. The campaign takes about five
-minutes.
+carry|inherit|expand|anchors|persistent`. The campaign takes about forty
+minutes with the full witness search and peaks near six gigabytes.

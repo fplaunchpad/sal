@@ -8,15 +8,17 @@
    "partialDelivery": true
   },
   "witnessBound": 10,
+  "witnessStateLimit": 1000000,
   "edits": 1586,
   "deliveries": 808,
   "sends": 589,
   "pendingSends": 138,
   "opens": 225,
   "cleanups": 0,
-  "versionsChecked": 3205,
+  "versionsChecked": 3192,
   "witnessSkips": 3,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 13,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 12,
@@ -45,7 +47,7 @@
   },
   "rule": "gap",
   "attrs": "anchors",
-  "seconds": 2.387
+  "seconds": 28.415
  },
  "failing": [
   {

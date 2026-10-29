@@ -22,15 +22,17 @@
      "steps": 12
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1941,
     "deliveries": 1275,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3216,
+    "versionsChecked": 3148,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 68,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -55,7 +57,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 4.872
+    "seconds": 115.518
    },
    "failureRecordsByClass": {},
    "trialsByClass": {},
@@ -77,15 +79,17 @@
      "replicas": 3
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 2056,
     "deliveries": 1544,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3600,
+    "versionsChecked": 3456,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 144,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -110,7 +114,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 5.94
+    "seconds": 241.004
    },
    "failureRecordsByClass": {},
    "trialsByClass": {},
@@ -131,6 +135,7 @@
      "steps": 12
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1956,
     "deliveries": 1228,
     "sends": 0,
@@ -140,6 +145,7 @@
     "versionsChecked": 3184,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -164,7 +170,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "left",
     "attrs": "carry",
-    "seconds": 0.673
+    "seconds": 0.748
    },
    "failureRecordsByClass": {},
    "trialsByClass": {},
@@ -186,6 +192,7 @@
      "replicas": 3
     },
     "witnessBound": 14,
+    "witnessStateLimit": 1000000,
     "edits": 3337,
     "deliveries": 1863,
     "sends": 0,
@@ -195,6 +202,7 @@
     "versionsChecked": 4242,
     "witnessSkips": 958,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -219,7 +227,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "left",
     "attrs": "carry",
-    "seconds": 1.685
+    "seconds": 1.821
    },
    "failureRecordsByClass": {},
    "trialsByClass": {},
@@ -240,6 +248,7 @@
      "steps": 12
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1975,
     "deliveries": 1229,
     "sends": 0,
@@ -249,6 +258,7 @@
     "versionsChecked": 3204,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 9,
@@ -273,7 +283,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "both",
     "attrs": "carry",
-    "seconds": 0.642
+    "seconds": 0.76
    },
    "failureRecordsByClass": {
     "plain-order": 31
@@ -389,7 +399,8 @@
        "admittedViews": [
         "b a f u s r",
         "s b a f u r"
-       ]
+       ],
+       "admittedViewCount": 2
       },
       "actual": "b a f u r s",
       "opKeys": [
@@ -415,15 +426,17 @@
      "replicas": 4
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 2861,
     "deliveries": 2739,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 4491,
+    "versionsChecked": 4288,
     "witnessSkips": 1109,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 203,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -448,7 +461,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 61.868
+    "seconds": 550.012
    },
    "failureRecordsByClass": {},
    "trialsByClass": {},
@@ -470,15 +483,17 @@
      "partialDelivery": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1814,
     "deliveries": 828,
     "sends": 586,
     "pendingSends": 216,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3228,
+    "versionsChecked": 3195,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 33,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -503,7 +518,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 1.666
+    "seconds": 89.337
    },
    "failureRecordsByClass": {},
    "trialsByClass": {},
@@ -526,15 +541,17 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1904,
     "deliveries": 1372,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3276,
+    "versionsChecked": 3259,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 17,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 38,
@@ -563,7 +580,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 1.564
+    "seconds": 44.592
    },
    "failureRecordsByClass": {
     "L-001": 105,
@@ -699,7 +716,8 @@
       "expected": {
        "admittedViews": [
         "h x(sup)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "h(sup) x(sup)",
       "opKeys": [
@@ -1041,15 +1059,17 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1902,
     "deliveries": 1314,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3216,
+    "versionsChecked": 3204,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 12,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 27,
@@ -1078,23 +1098,26 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 1.439
+    "seconds": 37.48
    },
    "failureRecordsByClass": {
-    "L-001": 87,
-    "L-002": 4
+    "L-001": 84,
+    "L-002": 4,
+    "other": 3
    },
    "trialsByClass": {
-    "L-001": 23,
-    "L-002": 4
+    "L-001": 22,
+    "L-002": 4,
+    "other": 1
    },
    "trialsByOnset": {
-    "L-001": 23,
-    "L-002": 4
+    "L-001": 22,
+    "L-002": 4,
+    "other": 1
    },
    "boundaryRecordsByExpand": {
     "consistent": 37,
-    "inconsistent": 50
+    "inconsistent": 47
    },
    "representatives": [
     {
@@ -1130,7 +1153,7 @@
         "replica": 2,
         "kind": "insert",
         "index": 0,
-        "text": "q"
+        "text": "qy"
        },
        {
         "type": "edit",
@@ -1143,6 +1166,15 @@
         "type": "deliver",
         "from": 1,
         "to": 3
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "mark",
+        "index": 0,
+        "len": 2,
+        "key": "link",
+        "value": true
        },
        {
         "type": "edit",
@@ -1164,9 +1196,10 @@
      },
      "rendered": [
       "r1 insert 0 \"to\"",
-      "r2 insert 0 \"q\"",
+      "r2 insert 0 \"qy\"",
       "r3 insert 0 \"y\"",
       "deliver 1->3",
+      "r2 mark [0,2) link",
       "r3 insert 2 \"a\"",
       "r3 mark [3,4) bold"
      ],
@@ -1174,12 +1207,25 @@
       {
        "check": "raLinearizability",
        "replica": 3,
-       "step": 9,
+       "step": 10,
        "class": "L-001",
-       "reference": "t o a q y(bold)",
+       "reference": "t o a q(link) y(link) y(bold)",
        "differences": [
         {
          "char": "q",
+         "key": "bold",
+         "actual": true,
+         "expected": null,
+         "side": "start",
+         "markKind": "mark",
+         "markRecord": "r3#2",
+         "insertRecord": "r2#0",
+         "expand": "after",
+         "expandConsistent": false,
+         "endpointsVisible": true
+        },
+        {
+         "char": "y",
          "key": "bold",
          "actual": true,
          "expected": null,
@@ -1197,12 +1243,25 @@
       {
        "check": "raLinearizability",
        "replica": 1,
-       "step": 10,
+       "step": 11,
        "class": "L-001",
-       "reference": "t o a q y(bold)",
+       "reference": "t o a q(link) y(link) y(bold)",
        "differences": [
         {
          "char": "q",
+         "key": "bold",
+         "actual": true,
+         "expected": null,
+         "side": "start",
+         "markKind": "mark",
+         "markRecord": "r3#2",
+         "insertRecord": "r2#0",
+         "expand": "after",
+         "expandConsistent": false,
+         "endpointsVisible": true
+        },
+        {
+         "char": "y",
          "key": "bold",
          "actual": true,
          "expected": null,
@@ -1220,16 +1279,51 @@
      ],
      "failure": {
       "replica": 3,
-      "step": 9,
+      "step": 10,
       "expected": {
        "admittedViews": [
-        "t o a q y(bold)"
-       ]
+        "t o a q(link) y(bold,link) y(link)",
+        "t o a q(link) y(link) y(bold)",
+        "t o a q(link) y(bold) y(link)",
+        "t o a y(bold) q(link) y(link)",
+        "t o q(link) a(link) y(bold,link) y(link)",
+        "t o q(link) a(link) y(link) y(bold)",
+        "t o q(link) a y(bold,link) y(link)",
+        "t o q(link) a y(link) y(bold)",
+        "t o q(link) y(link) a y(bold)",
+        "t o q(link) a y(bold) y(link)",
+        "t q(link) o(link) a(link) y(bold,link) y(link)",
+        "t q(link) o(link) a(link) y(link) y(bold)",
+        "t q(link) o(link) a y(bold,link) y(link)",
+        "t q(link) o(link) a y(link) y(bold)",
+        "t q(link) o(link) y(link) a y(bold)",
+        "t q(link) o a y(bold,link) y(link)",
+        "t q(link) o a y(link) y(bold)",
+        "t q(link) o y(link) a y(bold)",
+        "t q(link) y(link) o a y(bold)",
+        "q(link) t(link) o(link) a(link) y(bold,link) y(link)",
+        "q(link) t(link) o(link) a(link) y(link) y(bold)",
+        "q(link) t(link) o(link) a y(bold,link) y(link)",
+        "q(link) t(link) o(link) a y(link) y(bold)",
+        "q(link) t(link) o(link) y(link) a y(bold)",
+        "q(link) t(link) y(link) o a y(bold)",
+        "q(link) t o a y(bold,link) y(link)",
+        "q(link) t o a y(link) y(bold)",
+        "q(link) t o y(link) a y(bold)",
+        "q(link) t y(link) o a y(bold)",
+        "q(link) y(link) t o a y(bold)",
+        "t q(link) o(link) a y(bold) y(link)",
+        "t q(link) o a y(bold) y(link)",
+        "q(link) t(link) o(link) a y(bold) y(link)",
+        "q(link) t o a y(bold) y(link)"
+       ],
+       "admittedViewCount": 34
       },
-      "actual": "t o a q(bold) y(bold)",
+      "actual": "t o a q(bold,link) y(bold,link) y(bold)",
       "opKeys": [
        "r1#0",
        "r2#0",
+       "r2#1",
        "r3#0",
        "r3#1",
        "r3#2"
@@ -1327,6 +1421,187 @@
        "r1#3"
       ]
      }
+    },
+    {
+     "class": "other",
+     "trial": 119,
+     "seed": 32000215,
+     "originalSteps": 12,
+     "schedule": {
+      "seed": 32000215,
+      "options": {
+       "steps": 12,
+       "withStyles": true,
+       "partialDelivery": false,
+       "openedReplicas": false,
+       "styleKeys": [
+        "bold",
+        "link",
+        "sup",
+        "hl"
+       ]
+      },
+      "replicas": 3,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "insert",
+        "index": 0,
+        "text": "nc"
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "insert",
+        "index": 0,
+        "text": "l"
+       },
+       {
+        "type": "edit",
+        "replica": 3,
+        "kind": "insert",
+        "index": 0,
+        "text": "lv"
+       },
+       {
+        "type": "deliver",
+        "from": 1,
+        "to": 3
+       },
+       {
+        "type": "deliver",
+        "from": 1,
+        "to": 2
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "mark",
+        "index": 0,
+        "len": 3,
+        "key": "bold",
+        "value": true
+       },
+       {
+        "type": "edit",
+        "replica": 3,
+        "kind": "mark",
+        "index": 2,
+        "len": 2,
+        "key": "sup",
+        "value": true
+       }
+      ]
+     },
+     "rendered": [
+      "r1 insert 0 \"nc\"",
+      "r2 insert 0 \"l\"",
+      "r3 insert 0 \"lv\"",
+      "deliver 1->3",
+      "deliver 1->2",
+      "r2 mark [0,3) bold",
+      "r3 mark [2,4) sup"
+     ],
+     "evidence": [
+      {
+       "check": "raLinearizability",
+       "replica": 3,
+       "step": 10,
+       "class": "other",
+       "reference": "n(bold) c(bold) l(bold,sup) l(bold,sup) v(sup)",
+       "differences": [
+        {
+         "index": 3,
+         "key": "bold",
+         "actual": null,
+         "expected": true
+        }
+       ],
+       "unexplained": {
+        "index": 3,
+        "key": "bold",
+        "actual": null,
+        "expected": true
+       }
+      },
+      {
+       "check": "raLinearizability",
+       "replica": 1,
+       "step": 11,
+       "class": "other",
+       "reference": "n(bold) c(bold) l(bold,sup) l(bold,sup) v(sup)",
+       "differences": [
+        {
+         "index": 3,
+         "key": "bold",
+         "actual": null,
+         "expected": true
+        }
+       ],
+       "unexplained": {
+        "index": 3,
+        "key": "bold",
+        "actual": null,
+        "expected": true
+       }
+      }
+     ],
+     "failure": {
+      "replica": 3,
+      "step": 10,
+      "expected": {
+       "admittedViews": [
+        "n(bold) c(bold) l(bold,sup) l(bold,sup) v(sup)",
+        "n(bold) c(bold) l(bold,sup) l(bold) v(sup)",
+        "n(bold) c(bold) l(bold) l(sup) v(sup)",
+        "n(bold) c(bold) l(bold,sup) v(bold,sup) l(bold)",
+        "n(bold) c(bold) l(sup) l(bold,sup) v(sup)",
+        "n(bold) l(bold,sup) l(bold,sup) c(sup) v(sup)",
+        "n(bold) l(bold) c l(sup) v(sup)",
+        "n(bold) l(sup) l(bold,sup) c(sup) v(sup)",
+        "l(sup) n(bold,sup) l(bold,sup) c(sup) v(sup)",
+        "n(bold) c(bold) l(sup) v(sup) l(bold)",
+        "n(bold) l(bold,sup) c(bold,sup) l(bold,sup) v(sup)",
+        "n(bold) l(bold,sup) c(bold,sup) l(bold) v(sup)",
+        "n(bold) l(bold,sup) l(bold,sup) v(sup) c",
+        "n(bold) l(bold,sup) l(bold) c(sup) v(sup)",
+        "n(bold) l(bold) l(sup) c(sup) v(sup)",
+        "n(bold) l(sup) c(bold,sup) l(bold,sup) v(sup)",
+        "n(bold) l(sup) l(bold,sup) v(sup) c",
+        "l(sup) n(bold,sup) c(bold,sup) l(bold,sup) v(sup)",
+        "l(sup) n(bold,sup) c(bold,sup) l(bold) v(sup)",
+        "l(sup) n(bold,sup) l(bold,sup) v(sup) c",
+        "l(sup) n(bold,sup) l(bold) c(sup) v(sup)",
+        "n(bold) l(bold,sup) c(bold,sup) v(bold,sup) l(bold)",
+        "n(bold) l(bold,sup) l(bold) v(sup) c",
+        "n(bold) l(bold,sup) v(bold,sup) c(bold) l(bold)",
+        "n(bold) l(bold,sup) v(bold,sup) l(bold) c",
+        "n(bold) l(bold) l(sup) v(sup) c",
+        "n(bold) l(sup) c(bold,sup) v(sup) l(bold)",
+        "n(bold) l(sup) v(sup) c(bold) l(bold)",
+        "n(bold) l(sup) v(sup) l(bold) c",
+        "l(sup) n(bold,sup) c(bold,sup) v(bold,sup) l(bold)",
+        "l(sup) n(bold,sup) c(bold,sup) v(sup) l(bold)",
+        "l(sup) n(bold,sup) l(bold) v(sup) c",
+        "l(sup) n(bold,sup) v(bold,sup) c(bold) l(bold)",
+        "l(sup) n(bold,sup) v(bold,sup) l(bold) c",
+        "l(sup) n(bold,sup) v(sup) c(bold) l(bold)",
+        "l(sup) n(bold,sup) v(sup) l(bold) c",
+        "l(sup) v(sup) n(bold) c(bold) l(bold)",
+        "l(sup) v(sup) n(bold) l(bold) c"
+       ],
+       "admittedViewCount": 38
+      },
+      "actual": "n(bold) c(bold) l(bold,sup) l(sup) v(sup)",
+      "opKeys": [
+       "r1#0",
+       "r2#0",
+       "r2#1",
+       "r3#0",
+       "r3#1"
+      ]
+     }
     }
    ]
   },
@@ -1342,6 +1617,7 @@
      "openedReplicas": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1607,
     "deliveries": 1337,
     "sends": 0,
@@ -1351,6 +1627,7 @@
     "versionsChecked": 3164,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 66,
@@ -1379,7 +1656,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 0.806
+    "seconds": 2.395
    },
    "failureRecordsByClass": {
     "L-001": 254,
@@ -1515,7 +1792,8 @@
       "expected": {
        "admittedViews": [
         "s r(link)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "s(link) r(link)",
       "opKeys": [
@@ -1855,6 +2133,7 @@
      "openedReplicas": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1610,
     "deliveries": 1332,
     "sends": 0,
@@ -1864,6 +2143,7 @@
     "versionsChecked": 3168,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 63,
@@ -1892,7 +2172,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 0.832
+    "seconds": 1.6
    },
    "failureRecordsByClass": {
     "L-001": 234,
@@ -2025,7 +2305,8 @@
       "expected": {
        "admittedViews": [
         "d w(bold)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "d(bold) w(bold)",
       "opKeys": [
@@ -2271,15 +2552,17 @@
      "partialDelivery": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1586,
     "deliveries": 808,
     "sends": 589,
     "pendingSends": 138,
     "opens": 225,
     "cleanups": 0,
-    "versionsChecked": 3208,
+    "versionsChecked": 3203,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 5,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 63,
@@ -2308,25 +2591,28 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 0.868
+    "seconds": 5.239
    },
    "failureRecordsByClass": {
-    "L-001": 245,
+    "L-001": 241,
     "L-002": 13,
-    "L-003": 1
+    "L-003": 1,
+    "other": 4
    },
    "trialsByClass": {
-    "L-001": 54,
+    "L-001": 53,
     "L-002": 11,
-    "L-003": 1
+    "L-003": 1,
+    "other": 1
    },
    "trialsByOnset": {
-    "L-001": 52,
+    "L-001": 51,
     "L-002": 10,
-    "L-003": 1
+    "L-003": 1,
+    "other": 1
    },
    "boundaryRecordsByExpand": {
-    "consistent": 108,
+    "consistent": 104,
     "inconsistent": 137
    },
    "representatives": [
@@ -2456,7 +2742,8 @@
       "expected": {
        "admittedViews": [
         "q(sup) i"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "q i",
       "opKeys": [
@@ -2741,6 +3028,150 @@
        "r2#1"
       ]
      }
+    },
+    {
+     "class": "other",
+     "trial": 152,
+     "seed": 35000257,
+     "originalSteps": 12,
+     "schedule": {
+      "seed": 35000257,
+      "options": {
+       "steps": 12,
+       "withStyles": true,
+       "partialDelivery": true,
+       "openedReplicas": true,
+       "styleKeys": [
+        "bold",
+        "link",
+        "sup",
+        "hl"
+       ]
+      },
+      "replicas": 3,
+      "steps": [
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "insert",
+        "index": 0,
+        "text": "y"
+       },
+       {
+        "type": "edit",
+        "replica": 3,
+        "kind": "insert",
+        "index": 0,
+        "text": "i"
+       },
+       {
+        "type": "send",
+        "from": 3,
+        "to": 1,
+        "op": 0
+       },
+       {
+        "type": "edit",
+        "replica": 1,
+        "kind": "insert",
+        "index": 2,
+        "text": "x"
+       },
+       {
+        "type": "edit",
+        "replica": 3,
+        "kind": "mark",
+        "index": 0,
+        "len": 1,
+        "key": "bold",
+        "value": true
+       },
+       {
+        "type": "edit",
+        "replica": 3,
+        "kind": "insert",
+        "index": 1,
+        "text": "x"
+       }
+      ]
+     },
+     "rendered": [
+      "r1 insert 0 \"y\"",
+      "r3 insert 0 \"i\"",
+      "send 3#0->1",
+      "r1 insert 2 \"x\"",
+      "r3 mark [0,1) bold",
+      "r3 insert 1 \"x\""
+     ],
+     "evidence": [
+      {
+       "check": "raLinearizability",
+       "replica": 3,
+       "step": 7,
+       "class": "other",
+       "reference": "y i(bold) x(bold) x",
+       "differences": [
+        {
+         "index": 3,
+         "key": "bold",
+         "actual": true,
+         "expected": null
+        }
+       ],
+       "unexplained": {
+        "index": 3,
+        "key": "bold",
+        "actual": true,
+        "expected": null
+       }
+      },
+      {
+       "check": "raLinearizability",
+       "replica": 3,
+       "step": 9,
+       "class": "other",
+       "reference": "y i(bold) x(bold) x",
+       "differences": [
+        {
+         "index": 3,
+         "key": "bold",
+         "actual": true,
+         "expected": null
+        }
+       ],
+       "unexplained": {
+        "index": 3,
+        "key": "bold",
+        "actual": true,
+        "expected": null
+       }
+      }
+     ],
+     "failure": {
+      "replica": 3,
+      "step": 7,
+      "expected": {
+       "admittedViews": [
+        "y i(bold) x(bold) x",
+        "y i(bold) x x(bold)",
+        "i(bold) x x(bold) y",
+        "i(bold) x y x(bold)",
+        "i(bold) y x(bold) x",
+        "i(bold) y x x(bold)",
+        "i(bold) x(bold) x y",
+        "i(bold) x(bold) y x"
+       ],
+       "admittedViewCount": 8
+      },
+      "actual": "y i(bold) x(bold) x(bold)",
+      "opKeys": [
+       "r1#0",
+       "r1#1",
+       "r3#0",
+       "r3#1",
+       "r3#2"
+      ]
+     }
     }
    ]
   },
@@ -2757,15 +3188,17 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1736,
     "deliveries": 772,
     "sends": 664,
     "pendingSends": 261,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3172,
+    "versionsChecked": 3166,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 6,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 24,
@@ -2794,7 +3227,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 1.184
+    "seconds": 31.684
    },
    "failureRecordsByClass": {
     "L-001": 77,
@@ -2932,8 +3365,11 @@
       "step": 5,
       "expected": {
        "admittedViews": [
-        "e o j t(bold)"
-       ]
+        "e o j t(bold)",
+        "e j o t(bold)",
+        "j e o t(bold)"
+       ],
+       "admittedViewCount": 3
       },
       "actual": "e o j(bold) t(bold)",
       "opKeys": [
@@ -3051,21 +3487,23 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1904,
     "deliveries": 1372,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3276,
+    "versionsChecked": 3251,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 25,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 25,
     "failuresByCheck": {
      "convergence": 0,
-     "raLinearizability": 99,
+     "raLinearizability": 96,
      "localMeaning": 13,
      "determinism": 0,
      "conservation": 0
@@ -3088,10 +3526,10 @@
     },
     "rule": "gap",
     "attrs": "inherit",
-    "seconds": 3.794
+    "seconds": 73.075
    },
    "failureRecordsByClass": {
-    "other": 36,
+    "other": 33,
     "L-002": 25,
     "L-001": 46,
     "L-003": 4,
@@ -3344,10 +3782,11 @@
       "step": 5,
       "expected": {
        "admittedViews": [
-        "l(hl) p(hl) k(hl)",
         "l p(hl) k(hl)",
-        "l p k"
-       ]
+        "l p k",
+        "l(hl) p(hl) k(hl)"
+       ],
+       "admittedViewCount": 3
       },
       "actual": "l p k(hl)",
       "opKeys": [
@@ -3478,7 +3917,8 @@
       "expected": {
        "admittedViews": [
         "x w(bold)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "x(bold) w(bold)",
       "opKeys": [
@@ -3581,7 +4021,8 @@
       "expected": {
        "admittedViews": [
         "a(link) b s"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "a(link) b(link) s",
       "opKeys": [
@@ -3706,9 +4147,10 @@
       "step": 6,
       "expected": {
        "admittedViews": [
-        "b(hl) n(bold,hl)",
-        "b(hl) n(hl)"
-       ]
+        "b(hl) n(hl)",
+        "b(hl) n(bold,hl)"
+       ],
+       "admittedViewCount": 2
       },
       "actual": "b n(hl)",
       "opKeys": [
@@ -3736,6 +4178,7 @@
      "openedReplicas": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1607,
     "deliveries": 1337,
     "sends": 0,
@@ -3745,6 +4188,7 @@
     "versionsChecked": 3164,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 46,
@@ -3773,7 +4217,7 @@
     },
     "rule": "gap",
     "attrs": "inherit",
-    "seconds": 1.169
+    "seconds": 11.307
    },
    "failureRecordsByClass": {
     "L-001": 136,
@@ -3912,7 +4356,8 @@
       "expected": {
        "admittedViews": [
         "s r(link)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "s(link) r(link)",
       "opKeys": [
@@ -4049,7 +4494,8 @@
         "u(hl) l(hl) b(hl,sup) b(sup)",
         "u(hl) l(hl) b(hl) b(sup)",
         "u(hl) l(hl) b b(sup)"
-       ]
+       ],
+       "admittedViewCount": 3
       },
       "actual": "u(hl) l(hl) b(sup) b(sup)",
       "opKeys": [
@@ -4152,7 +4598,8 @@
       "expected": {
        "admittedViews": [
         "i"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "i(hl)",
       "opKeys": [
@@ -4276,7 +4723,8 @@
       "expected": {
        "admittedViews": [
         "k z(bold,link) k(bold)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "k z(bold,link) k(bold,link)",
       "opKeys": [
@@ -4394,10 +4842,11 @@
       "step": 5,
       "expected": {
        "admittedViews": [
-        "x(bold,sup) d(bold,sup) k(bold,sup) a(sup)",
+        "x(bold) d(bold) k(bold,sup) a(sup)",
         "x(bold) d(bold) k(bold,sup) a(bold,sup)",
-        "x(bold) d(bold) k(bold,sup) a(sup)"
-       ]
+        "x(bold,sup) d(bold,sup) k(bold,sup) a(sup)"
+       ],
+       "admittedViewCount": 3
       },
       "actual": "x(bold) d(bold) k(bold) a(sup)",
       "opKeys": [
@@ -4424,15 +4873,17 @@
      "partialDelivery": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1586,
     "deliveries": 808,
     "sends": 589,
     "pendingSends": 138,
     "opens": 225,
     "cleanups": 0,
-    "versionsChecked": 3208,
+    "versionsChecked": 3203,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 5,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 47,
@@ -4461,7 +4912,7 @@
     },
     "rule": "gap",
     "attrs": "inherit",
-    "seconds": 1.011
+    "seconds": 4.952
    },
    "failureRecordsByClass": {
     "L-002": 43,
@@ -4624,7 +5075,8 @@
       "expected": {
        "admittedViews": [
         "g"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "g(sup)",
       "opKeys": [
@@ -4768,7 +5220,8 @@
       "expected": {
        "admittedViews": [
         "l(hl) x(hl,link) i(hl)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "l(hl) x(hl,link) i(hl,link)",
       "opKeys": [
@@ -4913,8 +5366,12 @@
       "step": 8,
       "expected": {
        "admittedViews": [
-        "l e p(link) z"
-       ]
+        "l e p(link) z",
+        "e l p(link) z",
+        "e p(link) l z",
+        "e p(link) z l"
+       ],
+       "admittedViewCount": 4
       },
       "actual": "l e p(link) z(link)",
       "opKeys": [
@@ -5048,8 +5505,11 @@
       "expected": {
        "admittedViews": [
         "s(hl) b(hl)",
-        "s b"
-       ]
+        "s b",
+        "b(hl) s(hl)",
+        "b s"
+       ],
+       "admittedViewCount": 4
       },
       "actual": "s b(hl)",
       "opKeys": [
@@ -5076,15 +5536,17 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1904,
     "deliveries": 1372,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3276,
+    "versionsChecked": 3237,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 39,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 42,
@@ -5113,7 +5575,7 @@
     },
     "rule": "gap",
     "attrs": "expand",
-    "seconds": 3.069
+    "seconds": 136.893
    },
    "failureRecordsByClass": {
     "other": 87,
@@ -5258,11 +5720,23 @@
       "step": 6,
       "expected": {
        "admittedViews": [
-        "j(bold,hl) o(bold,hl) o(bold,hl) d(bold,hl)",
-        "j(bold,hl) o(bold,hl) o(bold,hl) d(hl)",
+        "j(bold) o(bold) o(bold) d(bold,hl)",
         "j(bold,hl) o(bold) o(bold) d(bold,hl)",
-        "j(bold) o(bold) o(bold) d(bold,hl)"
-       ]
+        "j(bold) d(bold,hl) o(bold) o(bold)",
+        "j(bold) o(bold) d(bold,hl) o(bold)",
+        "d(hl) j(bold,hl) o(bold) o(bold)",
+        "d(hl) j(bold) o(bold) o(bold)",
+        "j(bold,hl) d(bold,hl) o(bold) o(bold)",
+        "j(bold,hl) o(bold,hl) o(bold,hl) d(hl)",
+        "j(bold,hl) o(bold) d(bold,hl) o(bold)",
+        "d(hl) j(bold,hl) o(bold,hl) o(bold,hl)",
+        "j(bold,hl) d(bold,hl) o(bold,hl) o(bold,hl)",
+        "j(bold,hl) d(hl) o(bold,hl) o(bold,hl)",
+        "j(bold,hl) o(bold,hl) d(bold,hl) o(bold,hl)",
+        "j(bold,hl) o(bold,hl) d(hl) o(bold,hl)",
+        "j(bold,hl) o(bold,hl) o(bold,hl) d(bold,hl)"
+       ],
+       "admittedViewCount": 15
       },
       "actual": "j(bold) o(bold) o(bold) d(hl)",
       "opKeys": [
@@ -5500,7 +5974,8 @@
       "expected": {
        "admittedViews": [
         "x w(bold)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "x(bold) w(bold)",
       "opKeys": [
@@ -5737,28 +6212,30 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1902,
     "deliveries": 1314,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3216,
+    "versionsChecked": 3194,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 22,
     "causalGaps": 0,
     "anomalies": 0,
-    "failingTrials": 34,
+    "failingTrials": 33,
     "failuresByCheck": {
      "convergence": 0,
-     "raLinearizability": 131,
+     "raLinearizability": 128,
      "localMeaning": 4,
      "determinism": 0,
      "conservation": 0
     },
     "trialsFailingByCheck": {
      "convergence": 0,
-     "raLinearizability": 30,
+     "raLinearizability": 29,
      "localMeaning": 4,
      "determinism": 0,
      "conservation": 0
@@ -5774,26 +6251,26 @@
     },
     "rule": "gap",
     "attrs": "expand",
-    "seconds": 2.432
+    "seconds": 82.854
    },
    "failureRecordsByClass": {
-    "L-001": 45,
+    "L-001": 42,
     "other": 86,
     "L-002": 4
    },
    "trialsByClass": {
-    "L-001": 12,
+    "L-001": 11,
     "other": 18,
     "L-002": 4
    },
    "trialsByOnset": {
-    "L-001": 12,
+    "L-001": 11,
     "other": 18,
     "L-002": 4
    },
    "boundaryRecordsByExpand": {
     "consistent": 0,
-    "inconsistent": 45
+    "inconsistent": 42
    },
    "representatives": [
     {
@@ -5922,8 +6399,14 @@
       "step": 9,
       "expected": {
        "admittedViews": [
-        "t o a q y(bold)"
-       ]
+        "t o a q y(bold)",
+        "t o a y(bold) q(bold)",
+        "t o a y(bold) q",
+        "t o q a y(bold)",
+        "t q o a y(bold)",
+        "q t o a y(bold)"
+       ],
+       "admittedViewCount": 6
       },
       "actual": "t o a q(bold) y(bold)",
       "opKeys": [
@@ -6045,10 +6528,13 @@
       "step": 4,
       "expected": {
        "admittedViews": [
-        "q(hl,sup) s(hl,sup)",
         "q(hl,sup) s(sup)",
-        "q(hl) s(hl,sup)"
-       ]
+        "q(hl) s(hl,sup)",
+        "q(hl,sup) s(hl,sup)",
+        "s(hl,sup) q(hl)",
+        "s(sup) q(hl)"
+       ],
+       "admittedViewCount": 5
       },
       "actual": "q(hl) s(sup)",
       "opKeys": [
@@ -6166,6 +6652,7 @@
      "openedReplicas": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1607,
     "deliveries": 1337,
     "sends": 0,
@@ -6175,6 +6662,7 @@
     "versionsChecked": 3164,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 42,
@@ -6203,7 +6691,7 @@
     },
     "rule": "gap",
     "attrs": "expand",
-    "seconds": 1.133
+    "seconds": 4.888
    },
    "failureRecordsByClass": {
     "L-001": 130,
@@ -6341,7 +6829,8 @@
       "expected": {
        "admittedViews": [
         "s r(link)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "s(link) r(link)",
       "opKeys": [
@@ -6777,10 +7266,15 @@
       "step": 4,
       "expected": {
        "admittedViews": [
-        "x(bold,sup) d(bold,sup) a(bold,sup)",
+        "x(bold) d(bold) a(bold,sup)",
         "x(bold,sup) d(bold,sup) a(sup)",
-        "x(bold) d(bold) a(bold,sup)"
-       ]
+        "x(bold) a(bold,sup) d(bold)",
+        "a(sup) x(bold) d(bold)",
+        "x(bold,sup) a(bold,sup) d(bold)",
+        "x(bold,sup) a(sup) d(bold)",
+        "x(bold,sup) d(bold,sup) a(bold,sup)"
+       ],
+       "admittedViewCount": 7
       },
       "actual": "x(bold) d(bold) a(sup)",
       "opKeys": [
@@ -6806,6 +7300,7 @@
      "openedReplicas": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1610,
     "deliveries": 1332,
     "sends": 0,
@@ -6815,6 +7310,7 @@
     "versionsChecked": 3168,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 47,
@@ -6843,7 +7339,7 @@
     },
     "rule": "gap",
     "attrs": "expand",
-    "seconds": 1.105
+    "seconds": 2.27
    },
    "failureRecordsByClass": {
     "L-001": 117,
@@ -6978,7 +7474,8 @@
       "expected": {
        "admittedViews": [
         "d w(bold)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "d(bold) w(bold)",
       "opKeys": [
@@ -7212,8 +7709,10 @@
        "admittedViews": [
         "z(bold) s(bold,sup) i(sup)",
         "z(bold) s(sup) i(sup)",
-        "z(bold) s i(sup)"
-       ]
+        "z(bold) s i(sup)",
+        "z(bold) i(sup) s"
+       ],
+       "admittedViewCount": 4
       },
       "actual": "z(bold) s(bold) i(sup)",
       "opKeys": [
@@ -7364,15 +7863,17 @@
      "partialDelivery": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1586,
     "deliveries": 808,
     "sends": 589,
     "pendingSends": 138,
     "opens": 225,
     "cleanups": 0,
-    "versionsChecked": 3208,
+    "versionsChecked": 3203,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 5,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 52,
@@ -7401,29 +7902,29 @@
     },
     "rule": "gap",
     "attrs": "expand",
-    "seconds": 1.302
+    "seconds": 6.811
    },
    "failureRecordsByClass": {
-    "other": 32,
+    "other": 31,
     "L-002": 13,
     "L-003": 1,
-    "L-001": 138
+    "L-001": 139
    },
    "trialsByClass": {
-    "other": 10,
+    "other": 9,
     "L-002": 11,
     "L-003": 1,
     "L-001": 35
    },
    "trialsByOnset": {
-    "other": 10,
+    "other": 9,
     "L-002": 10,
     "L-003": 1,
-    "L-001": 31
+    "L-001": 32
    },
    "boundaryRecordsByExpand": {
     "consistent": 0,
-    "inconsistent": 138
+    "inconsistent": 139
    },
    "representatives": [
     {
@@ -7544,11 +8045,23 @@
       "step": 5,
       "expected": {
        "admittedViews": [
-        "t(bold,hl) q(bold,hl) l(bold,hl) k(bold,hl)",
+        "t(bold) q(bold) l(bold) k(bold,hl)",
+        "t(bold) q(bold) k(bold,hl) l(bold)",
         "t(bold,hl) q(bold,hl) l(bold,hl) k(hl)",
         "t(bold,hl) q(bold,hl) l(bold) k(bold,hl)",
-        "t(bold) q(bold) l(bold) k(bold,hl)"
-       ]
+        "t(bold) k(bold,hl) q(bold) l(bold)",
+        "k(hl) t(bold,hl) q(bold,hl) l(bold,hl)",
+        "k(hl) t(bold,hl) q(bold,hl) l(bold)",
+        "k(hl) t(bold) q(bold) l(bold)",
+        "t(bold,hl) k(bold,hl) q(bold,hl) l(bold,hl)",
+        "t(bold,hl) k(bold,hl) q(bold,hl) l(bold)",
+        "t(bold,hl) k(hl) q(bold,hl) l(bold,hl)",
+        "t(bold,hl) q(bold,hl) k(bold,hl) l(bold,hl)",
+        "t(bold,hl) q(bold,hl) k(bold,hl) l(bold)",
+        "t(bold,hl) q(bold,hl) k(hl) l(bold,hl)",
+        "t(bold,hl) q(bold,hl) l(bold,hl) k(bold,hl)"
+       ],
+       "admittedViewCount": 15
       },
       "actual": "t(bold) q(bold) l(bold) k(hl)",
       "opKeys": [
@@ -7967,8 +8480,12 @@
       "step": 8,
       "expected": {
        "admittedViews": [
-        "l e p(link) z"
-       ]
+        "l e p(link) z",
+        "e l p(link) z",
+        "e p(link) l z",
+        "e p(link) z l"
+       ],
+       "admittedViewCount": 4
       },
       "actual": "l e p(link) z(link)",
       "opKeys": [
@@ -7995,21 +8512,23 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1736,
     "deliveries": 772,
     "sends": 664,
     "pendingSends": 261,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3172,
+    "versionsChecked": 3163,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 9,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 33,
     "failuresByCheck": {
      "convergence": 0,
-     "raLinearizability": 103,
+     "raLinearizability": 100,
      "localMeaning": 3,
      "determinism": 0,
      "conservation": 0
@@ -8032,10 +8551,10 @@
     },
     "rule": "gap",
     "attrs": "expand",
-    "seconds": 2.177
+    "seconds": 69.678
    },
    "failureRecordsByClass": {
-    "other": 43,
+    "other": 40,
     "L-001": 60,
     "L-002": 3
    },
@@ -8144,7 +8663,7 @@
        "replica": 2,
        "step": 7,
        "class": "other",
-       "reference": "e(link) o(link) j(link) t(bold,link) e(bold) c(bold)",
+       "reference": "e(link) o(link) j t(bold,link) e(bold) c",
        "differences": [
         {
          "index": 2,
@@ -8153,17 +8672,17 @@
          "expected": null
         },
         {
-         "index": 5,
-         "key": "bold",
-         "actual": null,
-         "expected": true
+         "index": 2,
+         "key": "link",
+         "actual": true,
+         "expected": null
         }
        ],
        "unexplained": {
-        "index": 5,
-        "key": "bold",
-        "actual": null,
-        "expected": true
+        "index": 2,
+        "key": "link",
+        "actual": true,
+        "expected": null
        }
       },
       {
@@ -8171,7 +8690,7 @@
        "replica": 1,
        "step": 8,
        "class": "other",
-       "reference": "e(link) o(link) j(link) t(bold,link) e(bold) c(bold)",
+       "reference": "e(link) o(link) j t(bold,link) e(bold) c",
        "differences": [
         {
          "index": 2,
@@ -8180,17 +8699,17 @@
          "expected": null
         },
         {
-         "index": 5,
-         "key": "bold",
-         "actual": null,
-         "expected": true
+         "index": 2,
+         "key": "link",
+         "actual": true,
+         "expected": null
         }
        ],
        "unexplained": {
-        "index": 5,
-        "key": "bold",
-        "actual": null,
-        "expected": true
+        "index": 2,
+        "key": "link",
+        "actual": true,
+        "expected": null
        }
       }
      ],
@@ -8199,10 +8718,52 @@
       "step": 7,
       "expected": {
        "admittedViews": [
+        "e(link) o(link) j t(bold,link) e(bold) c",
+        "e(link) j o(link) t(bold,link) e(bold) c",
         "e(link) o(link) j(link) t(bold,link) e(bold) c(bold)",
         "e(link) o(link) j t(bold,link) e(bold) c(bold)",
-        "e(link) o(link) j t(bold,link) e(bold) c"
-       ]
+        "e(link) j(link) o(link) t(bold,link) e(bold) c(bold)",
+        "e(link) j o(link) t(bold,link) e(bold) c(bold)",
+        "e(link) o(link) j(link) t(bold,link) c(bold) e(bold)",
+        "e(link) o(link) j t(bold,link) c(bold) e(bold)",
+        "e(link) o(link) j t(bold,link) c e(bold)",
+        "j e(link) o(link) t(bold,link) e(bold) c",
+        "e(link) j(link) o(link) t(bold,link) c(bold) e(bold)",
+        "e(link) j o(link) t(bold,link) c(bold) e(bold)",
+        "e(link) j o(link) t(bold,link) c e(bold)",
+        "e(link) o(link) c(link) j(link) t(bold,link) e(bold)",
+        "e(link) o(link) c(link) j t(bold,link) e(bold)",
+        "e(link) o(link) c j t(bold,link) e(bold)",
+        "e(link) o(link) j(link) c(link) t(bold,link) e(bold)",
+        "e(link) o(link) j c(link) t(bold,link) e(bold)",
+        "e(link) o(link) j c t(bold,link) e(bold)",
+        "j e(link) o(link) t(bold,link) e(bold) c(bold)",
+        "e(link) c(link) j(link) o(link) t(bold,link) e(bold)",
+        "e(link) c(link) j o(link) t(bold,link) e(bold)",
+        "e(link) c(link) o(link) j(link) t(bold,link) e(bold)",
+        "e(link) c(link) o(link) j t(bold,link) e(bold)",
+        "e(link) c j o(link) t(bold,link) e(bold)",
+        "e(link) c o(link) j t(bold,link) e(bold)",
+        "e(link) j(link) c(link) o(link) t(bold,link) e(bold)",
+        "e(link) j(link) o(link) c(link) t(bold,link) e(bold)",
+        "e(link) j c(link) o(link) t(bold,link) e(bold)",
+        "e(link) j c o(link) t(bold,link) e(bold)",
+        "e(link) j o(link) c(link) t(bold,link) e(bold)",
+        "e(link) j o(link) c t(bold,link) e(bold)",
+        "j e(link) o(link) t(bold,link) c(bold) e(bold)",
+        "j e(link) o(link) t(bold,link) c e(bold)",
+        "c e(link) j(link) o(link) t(bold,link) e(bold)",
+        "c e(link) j o(link) t(bold,link) e(bold)",
+        "c e(link) o(link) j(link) t(bold,link) e(bold)",
+        "c e(link) o(link) j t(bold,link) e(bold)",
+        "c j e(link) o(link) t(bold,link) e(bold)",
+        "j c e(link) o(link) t(bold,link) e(bold)",
+        "j e(link) c(link) o(link) t(bold,link) e(bold)",
+        "j e(link) c o(link) t(bold,link) e(bold)",
+        "j e(link) o(link) c(link) t(bold,link) e(bold)",
+        "j e(link) o(link) c t(bold,link) e(bold)"
+       ],
+       "admittedViewCount": 44
       },
       "actual": "e(link) o(link) j(bold,link) t(bold,link) e(bold) c",
       "opKeys": [
@@ -8342,8 +8903,23 @@
       "step": 6,
       "expected": {
        "admittedViews": [
-        "c z n c k(link)"
-       ]
+        "c z n c k(link)",
+        "c z c n k(link)",
+        "c z n k(link) c",
+        "c c z n k(link)",
+        "c z c k(link) n",
+        "c z k(link) c n",
+        "c z k(link) n c",
+        "c c k(link) z n",
+        "c c z k(link) n",
+        "c k(link) c z n",
+        "c k(link) z c n",
+        "c k(link) z n c",
+        "k(link) c c z n",
+        "k(link) c z c n",
+        "k(link) c z n c"
+       ],
+       "admittedViewCount": 15
       },
       "actual": "c z n c(link) k(link)",
       "opKeys": [
@@ -8462,15 +9038,17 @@
      "openedReplicas": false
     },
     "witnessBound": 10,
+    "witnessStateLimit": 1000000,
     "edits": 1904,
     "deliveries": 1372,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3196,
+    "versionsChecked": 3063,
     "witnessSkips": 80,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 133,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 11,
@@ -8499,7 +9077,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 17.635
+    "seconds": 194.593
    },
    "failureRecordsByClass": {
     "L-002": 11,
@@ -8854,15 +9432,17 @@
      "openedReplicas": false
     },
     "witnessBound": 10,
+    "witnessStateLimit": 1000000,
     "edits": 1902,
     "deliveries": 1314,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3114,
+    "versionsChecked": 3059,
     "witnessSkips": 102,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 55,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 4,
@@ -8891,7 +9471,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 6.779
+    "seconds": 138.103
    },
    "failureRecordsByClass": {
     "L-002": 4
@@ -9014,15 +9594,17 @@
      "openedReplicas": true
     },
     "witnessBound": 10,
+    "witnessStateLimit": 1000000,
     "edits": 1607,
     "deliveries": 1337,
     "sends": 0,
     "pendingSends": 0,
     "opens": 220,
     "cleanups": 0,
-    "versionsChecked": 3164,
+    "versionsChecked": 3158,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 6,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 14,
@@ -9051,7 +9633,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 2.169
+    "seconds": 16.289
    },
    "failureRecordsByClass": {
     "L-002": 14,
@@ -9305,7 +9887,8 @@
         "y(sup) e(bold,sup) u",
         "y e(bold,sup) u(bold)",
         "y e(bold,sup) u"
-       ]
+       ],
+       "admittedViewCount": 3
       },
       "actual": "y(sup) e(bold,sup) u(bold)",
       "opKeys": [
@@ -9556,6 +10139,7 @@
      "openedReplicas": true
     },
     "witnessBound": 10,
+    "witnessStateLimit": 1000000,
     "edits": 1610,
     "deliveries": 1332,
     "sends": 0,
@@ -9565,6 +10149,7 @@
     "versionsChecked": 3168,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 15,
@@ -9593,7 +10178,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 3.271
+    "seconds": 15.895
    },
    "failureRecordsByClass": {
     "L-002": 10,
@@ -9855,7 +10440,8 @@
         "b n(link,sup) p(link,sup) c(link,sup) k",
         "b n(link,sup) p(link) c(link,sup) k(link)",
         "b n(link,sup) p(link) c(link,sup) k"
-       ]
+       ],
+       "admittedViewCount": 6
       },
       "actual": "b(sup) n(link,sup) p(link,sup) c(link,sup) k(link)",
       "opKeys": [
@@ -10007,15 +10593,17 @@
      "partialDelivery": true
     },
     "witnessBound": 10,
+    "witnessStateLimit": 1000000,
     "edits": 1586,
     "deliveries": 808,
     "sends": 589,
     "pendingSends": 138,
     "opens": 225,
     "cleanups": 0,
-    "versionsChecked": 3205,
+    "versionsChecked": 3192,
     "witnessSkips": 3,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 13,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 12,
@@ -10044,7 +10632,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 2.387
+    "seconds": 28.415
    },
    "failureRecordsByClass": {
     "L-002": 13,
@@ -10354,15 +10942,17 @@
      "openedReplicas": false
     },
     "witnessBound": 10,
+    "witnessStateLimit": 1000000,
     "edits": 1736,
     "deliveries": 772,
     "sends": 664,
     "pendingSends": 261,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3137,
+    "versionsChecked": 3081,
     "witnessSkips": 35,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 56,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 4,
@@ -10391,7 +10981,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 9.485
+    "seconds": 105.329
    },
    "failureRecordsByClass": {
     "L-002": 3,
@@ -10650,7 +11240,8 @@
         "u(link) t(bold,link) o(bold) c",
         "u t(bold,link) o(bold) c(bold)",
         "u t(bold,link) o(bold) c"
-       ]
+       ],
+       "admittedViewCount": 3
       },
       "actual": "u(link) t(bold,link) o(bold) c(bold)",
       "opKeys": [
@@ -10678,6 +11269,7 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1300,
     "deliveries": 1176,
     "sends": 0,
@@ -10687,6 +11279,7 @@
     "versionsChecked": 2476,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 9,
@@ -10715,7 +11308,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 0.916
+    "seconds": 2.452
    },
    "failureRecordsByClass": {
     "L-001": 17,
@@ -10858,8 +11451,18 @@
       "step": 6,
       "expected": {
        "admittedViews": [
-        "k n o g(bold) c"
-       ]
+        "k n o g(bold) c",
+        "k o n g(bold) c",
+        "k o g(bold) c n",
+        "k o g(bold) n c",
+        "o k n g(bold) c",
+        "o g(bold) c k n",
+        "o g(bold) k c n",
+        "o g(bold) k n c",
+        "o k g(bold) c n",
+        "o k g(bold) n c"
+       ],
+       "admittedViewCount": 10
       },
       "actual": "k n o g(bold) c(bold)",
       "opKeys": [
@@ -11001,6 +11604,7 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1300,
     "deliveries": 1176,
     "sends": 0,
@@ -11010,6 +11614,7 @@
     "versionsChecked": 2476,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 2,
@@ -11038,7 +11643,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 1.089
+    "seconds": 15.83
    },
    "failureRecordsByClass": {
     "L-002": 2
@@ -11185,15 +11790,17 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1300,
     "deliveries": 1176,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 2476,
+    "versionsChecked": 2466,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 10,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 2,
@@ -11222,7 +11829,7 @@
     },
     "rule": "gap",
     "attrs": "persistent",
-    "seconds": 2.113
+    "seconds": 24.637
    },
    "failureRecordsByClass": {
     "L-002": 2
@@ -11368,6 +11975,7 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1282,
     "deliveries": 1134,
     "sends": 0,
@@ -11377,6 +11985,7 @@
     "versionsChecked": 2416,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 6,
@@ -11405,7 +12014,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 0.948
+    "seconds": 1.909
    },
    "failureRecordsByClass": {
     "L-001": 13,
@@ -11550,8 +12159,14 @@
       "step": 7,
       "expected": {
        "admittedViews": [
-        "z u h(sup) w"
-       ]
+        "z u h(sup) w",
+        "z h(sup) u w",
+        "z h(sup) w u",
+        "h(sup) w z u",
+        "h(sup) z u w",
+        "h(sup) z w u"
+       ],
+       "admittedViewCount": 6
       },
       "actual": "z u h(sup) w(sup)",
       "opKeys": [
@@ -11685,6 +12300,7 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1282,
     "deliveries": 1134,
     "sends": 0,
@@ -11694,6 +12310,7 @@
     "versionsChecked": 2416,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 2,
@@ -11722,7 +12339,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 1.202
+    "seconds": 6.842
    },
    "failureRecordsByClass": {
     "L-002": 2
@@ -11860,15 +12477,17 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1282,
     "deliveries": 1134,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 2416,
+    "versionsChecked": 2413,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 3,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 2,
@@ -11897,7 +12516,7 @@
     },
     "rule": "gap",
     "attrs": "persistent",
-    "seconds": 1.779
+    "seconds": 12.404
    },
    "failureRecordsByClass": {
     "L-002": 2
@@ -12034,6 +12653,7 @@
      "openedReplicas": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1022,
     "deliveries": 1122,
     "sends": 0,
@@ -12043,6 +12663,7 @@
     "versionsChecked": 2364,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 22,
@@ -12071,7 +12692,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 0.847
+    "seconds": 0.992
    },
    "failureRecordsByClass": {
     "L-001": 60,
@@ -12201,7 +12822,8 @@
       "expected": {
        "admittedViews": [
         "s r(link)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "s(link) r(link)",
       "opKeys": [
@@ -12335,6 +12957,7 @@
      "openedReplicas": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1022,
     "deliveries": 1122,
     "sends": 0,
@@ -12344,6 +12967,7 @@
     "versionsChecked": 2364,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 2,
@@ -12372,7 +12996,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 0.867
+    "seconds": 0.968
    },
    "failureRecordsByClass": {
     "L-002": 2
@@ -12512,6 +13136,7 @@
      "openedReplicas": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1022,
     "deliveries": 1122,
     "sends": 0,
@@ -12521,6 +13146,7 @@
     "versionsChecked": 2364,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 2,
@@ -12549,7 +13175,7 @@
     },
     "rule": "gap",
     "attrs": "persistent",
-    "seconds": 0.925
+    "seconds": 1.212
    },
    "failureRecordsByClass": {
     "L-002": 2
@@ -12688,6 +13314,7 @@
      "openedReplicas": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1022,
     "deliveries": 1120,
     "sends": 0,
@@ -12697,6 +13324,7 @@
     "versionsChecked": 2368,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 20,
@@ -12725,7 +13353,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 0.882
+    "seconds": 1.023
    },
    "failureRecordsByClass": {
     "L-001": 66,
@@ -12855,7 +13483,8 @@
       "expected": {
        "admittedViews": [
         "b v(bold)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "b(bold) v(bold)",
       "opKeys": [
@@ -12972,6 +13601,7 @@
      "openedReplicas": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1022,
     "deliveries": 1120,
     "sends": 0,
@@ -12981,6 +13611,7 @@
     "versionsChecked": 2368,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 2,
@@ -13009,7 +13640,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 0.927
+    "seconds": 1.027
    },
    "failureRecordsByClass": {
     "L-002": 1,
@@ -13251,7 +13882,8 @@
         "b(link) u(link) b",
         "b u(link) b(link)",
         "b u(link) b"
-       ]
+       ],
+       "admittedViewCount": 3
       },
       "actual": "b(link) u(link) b(link)",
       "opKeys": [
@@ -13278,6 +13910,7 @@
      "openedReplicas": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1022,
     "deliveries": 1120,
     "sends": 0,
@@ -13287,6 +13920,7 @@
     "versionsChecked": 2368,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 1,
@@ -13315,7 +13949,7 @@
     },
     "rule": "gap",
     "attrs": "persistent",
-    "seconds": 1.024
+    "seconds": 1.107
    },
    "failureRecordsByClass": {
     "L-002": 1
@@ -13437,6 +14071,7 @@
      "partialDelivery": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1051,
     "deliveries": 808,
     "sends": 324,
@@ -13446,6 +14081,7 @@
     "versionsChecked": 2408,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 34,
@@ -13474,7 +14110,7 @@
     },
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 0.939
+    "seconds": 1.126
    },
    "failureRecordsByClass": {
     "L-001": 106,
@@ -13619,7 +14255,8 @@
       "expected": {
        "admittedViews": [
         "q(sup) i"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "q i",
       "opKeys": [
@@ -13748,6 +14385,7 @@
      "partialDelivery": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1051,
     "deliveries": 808,
     "sends": 324,
@@ -13757,6 +14395,7 @@
     "versionsChecked": 2408,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 3,
@@ -13785,7 +14424,7 @@
     },
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 0.959
+    "seconds": 1.196
    },
    "failureRecordsByClass": {
     "L-002": 4
@@ -13919,6 +14558,7 @@
      "partialDelivery": true
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1051,
     "deliveries": 808,
     "sends": 324,
@@ -13928,6 +14568,7 @@
     "versionsChecked": 2408,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 3,
@@ -13956,7 +14597,7 @@
     },
     "rule": "gap",
     "attrs": "persistent",
-    "seconds": 1.317
+    "seconds": 1.883
    },
    "failureRecordsByClass": {
     "L-002": 4
@@ -14090,6 +14731,7 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1208,
     "deliveries": 772,
     "sends": 392,
@@ -14099,6 +14741,7 @@
     "versionsChecked": 2372,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 5,
@@ -14125,7 +14768,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "gap",
     "attrs": "carry",
-    "seconds": 1.022
+    "seconds": 3.906
    },
    "failureRecordsByClass": {
     "L-001": 11
@@ -14253,7 +14896,8 @@
       "expected": {
        "admittedViews": [
         "q n(sup)"
-       ]
+       ],
+       "admittedViewCount": 1
       },
       "actual": "q(sup) n(sup)",
       "opKeys": [
@@ -14279,15 +14923,17 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1208,
     "deliveries": 772,
     "sends": 392,
     "pendingSends": 122,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 2372,
+    "versionsChecked": 2369,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 3,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -14314,7 +14960,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "gap",
     "attrs": "anchors",
-    "seconds": 1.519
+    "seconds": 7.163
    },
    "failureRecordsByClass": {},
    "trialsByClass": {},
@@ -14339,15 +14985,17 @@
      "openedReplicas": false
     },
     "witnessBound": 8,
+    "witnessStateLimit": 1000000,
     "edits": 1208,
     "deliveries": 772,
     "sends": 392,
     "pendingSends": 122,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 2372,
+    "versionsChecked": 2366,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 6,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -14374,7 +15022,7 @@
     "localMeaningFailuresByKind": {},
     "rule": "gap",
     "attrs": "persistent",
-    "seconds": 2.064
+    "seconds": 15.424
    },
    "failureRecordsByClass": {},
    "trialsByClass": {},

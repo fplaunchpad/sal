@@ -37,7 +37,8 @@
  *
  * Method. A failure record already holds what is needed: for
  * raLinearizability, the replica's view with identities and the admitted
- * views with the same character order (the directed search); for
+ * views with the same character order (recomputed in full here when the
+ * record keeps only the nearest fifty); for
  * localMeaning, the request, the view before it, the expected and the
  * actual view. The trial's records give each character's insert record and
  * each mark's interval, key, value and causal past. Deleted characters are
@@ -51,7 +52,8 @@
  * first unexplained difference, or L-001 when all are explained.
  */
 import { EXPAND, unmarkExpand, idKey, normaliseAttrs, interpret, initial, applyPlaced, placementOf, textSpec } from './spec.js';
-import { findWitness } from '../../src/witness.js';
+import { findWitness, allFinalViews } from '../../src/witness.js';
+import { DEFAULT_WITNESS_STATE_LIMIT } from '../../src/checks.js';
 
 export const CLASSES = {
   'L-001': 'boundary inheritance under concurrency',
@@ -102,7 +104,7 @@ const ORDER_SPEC = { ...textSpec('gap'), viewKey: (v) => JSON.stringify(v.map((e
 function fullOrders(idx, opKeys, actual, limit = 64) {
   const keys = new Set(opKeys);
   const events = opKeys.map((k) => idx.byKey.get(k)).filter(Boolean).map((o) => ({ key: o.key, deps: o.deps.filter((d) => keys.has(d)), specOps: interpret(o) }));
-  const w = findWitness(ORDER_SPEC, events, actual);
+  const w = findWitness(ORDER_SPEC, events, actual, { limit: DEFAULT_WITNESS_STATE_LIMIT });
   if (!w.found) return [];
   const placed = placementOf(actual);
   const ops = w.order.flatMap((k) => events.find((e) => e.key === k).specOps);
@@ -172,10 +174,16 @@ function explainIn(diff, actual, idx, order) {
 }
 
 /** Classifies one raLinearizability failure record; `lmByStep` maps a step to its classified localMeaning failure. */
-function classifyRaLin(f, idx, lmByStep = new Map()) {
+function classifyRaLin(f, idx, lmByStep = new Map(), spec = null) {
   const kinds = new Set(f.opKeys.map((k) => idx.byKey.get(k)?.kind));
   if (!kinds.has('mark') && !kinds.has('unmark')) return { class: 'plain-order' };
-  const admitted = f.expected?.admittedViews ?? [];
+  let admitted = f.expected?.admittedViews ?? [];
+  // A failure record keeps only the nearest admitted views; with the run's specification the whole set is recomputed.
+  if (spec && (f.expected?.admittedViewCount ?? 0) > admitted.length) {
+    const keys = new Set(f.opKeys);
+    const events = f.opKeys.map((k) => idx.byKey.get(k)).filter(Boolean).map((o) => ({ key: o.key, deps: o.deps.filter((d) => keys.has(d)), specOps: interpret(o) }));
+    admitted = allFinalViews(spec, events, { target: f.actual, limit: DEFAULT_WITNESS_STATE_LIMIT });
+  }
   const actual = f.actual;
   const candidates = admitted.filter((w) => w.length === actual.length && w.every((e, i) => e.ch === actual[i].ch));
   if (candidates.length === 0) return { class: 'other', pattern: 'no admitted view with the displayed character order' };
@@ -230,19 +238,19 @@ function classifyInsert(f) {
 }
 
 /** Classifies one failure record of a trial with records `ops`. */
-export function classifyFailure(f, ops, lmByStep) {
+export function classifyFailure(f, ops, lmByStep, spec = null) {
   const idx = indexOps(ops);
-  if (f.check === 'raLinearizability') return { check: f.check, replica: f.replica, step: f.step, ...classifyRaLin(f, idx, lmByStep) };
+  if (f.check === 'raLinearizability') return { check: f.check, replica: f.replica, step: f.step, ...classifyRaLin(f, idx, lmByStep, spec) };
   if (f.check === 'localMeaning' && f.request?.kind === 'insert') return { check: f.check, replica: f.replica, step: f.step, ...classifyInsert(f) };
   return { check: f.check, replica: f.replica, step: f.step, class: 'other' };
 }
 
 /** Classifies every failure of a trial; `onset` is the class of the earliest failing step. */
-export function classifyTrial(checks, ops) {
+export function classifyTrial(checks, ops, { spec = null } = {}) {
   const lmByStep = new Map();
   for (const f of checks.localMeaning?.details.failures ?? []) lmByStep.set(f.step, classifyFailure({ check: 'localMeaning', ...f }, ops));
   const records = [];
-  for (const c of Object.values(checks)) for (const f of c.details.failures) records.push(c.name === 'localMeaning' ? lmByStep.get(f.step) : classifyFailure({ check: c.name, ...f }, ops, lmByStep));
+  for (const c of Object.values(checks)) for (const f of c.details.failures) records.push(c.name === 'localMeaning' ? lmByStep.get(f.step) : classifyFailure({ check: c.name, ...f }, ops, lmByStep, spec));
   records.sort((a, b) => (a.step ?? 0) - (b.step ?? 0));
   return { onset: records[0]?.class ?? null, classes: [...new Set(records.map((r) => r.class))].sort(), records };
 }

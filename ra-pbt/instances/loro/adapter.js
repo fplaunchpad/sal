@@ -236,8 +236,8 @@ const k2 = (id) => id[0] + ':' + id[1];
  * dependencies are present and holds it pending otherwise, so a record is
  * integrated exactly when the replica's oplog version vector covers its
  * counter range (the default `integrated` by dots, counters ending at
- * `counterEnd`). The view carries character identities, so the gap rule's
- * search is directed by it; the displayed value is Loro's own `toDelta`.
+ * `counterEnd`). The view carries character identities for the classifier; the
+ * witness search compares views without them. The displayed value is Loro's own `toDelta`.
  */
 export const loroAdapter = {
   createReplica: (id, { opened = false } = {}) => new Replica(id, { opened }),

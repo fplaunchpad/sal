@@ -147,8 +147,8 @@ A state is a list of characters with identities, deleted characters
 remaining as anchors, and the applied annotations in application order.
 
 **List rules.** `gap`: strictly between the recorded origin and the visible
-right neighbour (relational; the search is directed by the identities in
-the displayed view). `left`: immediately after the recorded origin. `both`:
+right neighbour (relational; every admitted placement is searched, since
+the displayed view is compared without identities). `left`: immediately after the recorded origin. `both`:
 immediately before the visible right neighbour when there is one, else after
 the origin.
 
@@ -182,28 +182,31 @@ the final synchronisation. Requests insert one or two letters, delete one or
 two characters, or toggle bold on one or two. Runs sharing a seed execute the
 same schedules, so their verdicts differ only by the specification
 configuration. 3,800 trials, 1,800 distinct schedules, 37,311 edits (17,637
-distinct) and 65,584 checked versions (32,084 distinct); no witness search
-was skipped. Results are in `experiments/notion-production-text/results/`.
+distinct) and 65,584 versions, of which 65,274 were judged and 310 exceeded
+the witness search's state cap (counted as truncated, neither passed nor
+failed; 160 of them in `bold-long-34`, 68 in `plain-created-21`, 34 in
+`bold-interval-31`). Results are in
+`experiments/notion-production-text/results/`.
 
 | Run | Mix | Rule | Reading | Local | Edits | Versions | Failing trials | RA-lin | Local meaning | Determinism | Convergence | Conservation | Classes (trials) |
 |---|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| plain-created-21 | plain | gap | anchored | positional | 1,941 | 3,216 | 0 | 0 | 0 | 0 | 0 | 0 | none |
+| plain-created-21 | plain | gap | anchored | positional | 1,941 | 3,148 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 | plain-left-21 | plain | left | anchored | positional | 1,941 | 3,216 | 0 | 0 | 0 | 0 | 0 | 0 | none |
-| plain-both-21 | plain | both | anchored | positional | 1,941 | 3,216 | 105 | 556 | 0 | 0 | 0 | 0 | NT-2 105 |
+| plain-both-21 | plain | both | anchored | positional | 1,941 | 3,216 | 105 | 552 | 0 | 0 | 0 | 0 | NT-2 105 |
 | plain-opened-22 | plain, opened | gap | anchored | positional | 1,675 | 3,220 | 0 | 0 | 0 | 0 | 0 | 0 | none |
-| plain-partial-23 | plain, partial | gap | anchored | positional | 1,813 | 3,184 | 0 | 0 | 0 | 0 | 0 | 0 | none |
+| plain-partial-23 | plain, partial | gap | anchored | positional | 1,813 | 3,161 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 | plain-partial-left-23 | plain, partial | left | anchored | positional | 1,813 | 3,184 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 | plain-four-24 | plain, 4 replicas | left | anchored | positional | 2,469 | 5,200 | 0 | 0 | 0 | 0 | 0 | 0 | none |
-| bold-created-31 | bold | gap | anchored | positional | 1,973 | 3,276 | 64 | 0 | 85 | 0 | 0 | 0 | NT-1 64 |
-| bold-inherit-31 | bold | gap | anchored | inherit | 1,973 | 3,276 | 0 | 0 | 0 | 0 | 0 | 0 | none |
+| bold-created-31 | bold | gap | anchored | positional | 1,973 | 3,265 | 64 | 0 | 85 | 0 | 0 | 0 | NT-1 64 |
+| bold-inherit-31 | bold | gap | anchored | inherit | 1,973 | 3,265 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 | bold-left-31 | bold | left | anchored | inherit | 1,973 | 3,276 | 0 | 0 | 0 | 0 | 0 | 0 | none |
-| bold-both-31 | bold | both | anchored | inherit | 1,973 | 3,276 | 71 | 379 | 0 | 0 | 0 | 0 | NT-2 71 |
-| bold-interval-31 | bold | gap | interval | inherit | 1,973 | 3,276 | 77 | 377 | 0 | 0 | 0 | 0 | NT-3 77 |
+| bold-both-31 | bold | both | anchored | inherit | 1,973 | 3,276 | 70 | 376 | 0 | 0 | 0 | 0 | NT-2 70 |
+| bold-interval-31 | bold | gap | interval | inherit | 1,973 | 3,242 | 76 | 359 | 0 | 0 | 0 | 0 | NT-3 76 |
 | bold-opened-32 | bold, opened | gap | anchored | inherit | 1,659 | 3,216 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 | bold-opened-left-32 | bold, opened | left | anchored | inherit | 1,659 | 3,216 | 0 | 0 | 0 | 0 | 0 | 0 | none |
-| bold-partial-33 | bold, partial | gap | anchored | inherit | 1,785 | 3,164 | 0 | 0 | 0 | 0 | 0 | 0 | none |
+| bold-partial-33 | bold, partial | gap | anchored | inherit | 1,785 | 3,161 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 | bold-partial-left-33 | bold, partial | left | anchored | inherit | 1,785 | 3,164 | 0 | 0 | 0 | 0 | 0 | 0 | none |
-| bold-long-34 | bold, 16 requests | gap | anchored | inherit | 2,643 | 4,400 | 0 | 0 | 0 | 0 | 0 | 0 | none |
+| bold-long-34 | bold, 16 requests | gap | anchored | inherit | 2,643 | 4,240 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 | bold-long-left-34 | bold, 16 requests | left | anchored | inherit | 2,643 | 4,400 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 | bold-opened-35 | bold, opened | gap | anchored | inherit | 1,679 | 3,208 | 0 | 0 | 0 | 0 | 0 | 0 | none |
 
@@ -438,3 +441,28 @@ node out-of-order.mjs --seed 41 --trials 200 --output results/out-of-order.json
 node repro/run-all.mjs
 cd ../../ra-pbt && npm test
 ```
+
+## Review qualifications
+
+An independent review (`docs/notion-production-text-review.md` in the main
+tree, 2026-10-29) accepted the short reproductions and qualified the
+headline. The end-to-end check is RA-linearizability with respect to the
+full causal order (causal-history conformance), not the paper's order; the
+client runs under a fixture clock path; and the witness search in this
+instance, as in the Yjs, Automerge and Loro instances, originally pruned
+placements by the target view's identity order while views are compared
+without identities, which can reject a view that has a witness when
+characters repeat (the two-insert case `x` then `x` with the second placed
+before the first, offered to the search with the identities the other way
+round). The full observation-preserving search, imported from the main
+tree, replaced it, and the campaign was rerun with it on 2026-10-29; the
+table above is from that rerun. The rerun changed no verdict under the gap
+rule. Under the two-sided rule and the interval reading, where the pruning
+map also constrained a deterministic placement, the directed search had
+been wrong in both directions: it rejected eight versions that have a
+witness (four in `plain-both-21`, three in `bold-both-31`, one in
+`bold-interval-31`; each is found by the full search without reaching the
+state cap) and it accepted eight versions of one `bold-both-31` trial that
+the two-sided rule admits no order for. The trial counts moved by one:
+NT-2 71 to 70 and NT-3 77 to 76 in the bold runs, 105 unchanged in the
+plain run. The minimal shapes, which were hand-derived, are unaffected.

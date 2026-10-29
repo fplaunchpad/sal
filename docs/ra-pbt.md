@@ -141,5 +141,5 @@ anchor) and the adapters fall back to the paper's total effect where the
 guard fails, which the paper's definitions require and the runtime never
 issues. VC3 to VC5 are checked on random admissible event sets with a
 maximal event, and are vacuous on configurations without one. The
-end-to-end layer's witness search is exact but bounded, as in the Yjs
-note.
+end-to-end layer's witness search is exact but bounded, by the number of
+edits in a version and by the states it may explore, as in the Yjs note.

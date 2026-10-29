@@ -105,6 +105,23 @@ test('a directed search agrees with the undirected one', () => {
   assert.deepEqual(allFinalViews(gapList, ptdj, { target: withIds('ptdj') }), ['ptdj']);
 });
 
+test('a witness search over the state cap is truncated, not judged', () => {
+  const evs = wideHistory(6).map((e) => ({ ...e, specOps: e.specOps.map((o) => ({ ...o })) }));
+  const some = allFinalViews(gapList, evs)[0];
+  const capped = findWitness(gapList, evs, some, { limit: 20 });
+  assert.equal(capped.found, false);
+  assert.equal(capped.truncated, true);
+  assert.equal(capped.explored, 20);
+  // The same search without a cap finds the witness; a view no order reaches is rejected, not truncated.
+  assert.equal(findWitness(gapList, evs, some).found, true);
+  const rejected = findWitness(gapList, evs, 'x');
+  assert.equal(rejected.found, false);
+  assert.notEqual(rejected.truncated, true);
+  // A deterministic specification stays within one state per subset: 2^6 + 1 at most.
+  assert.notEqual(findWitness(rgaList, wideHistory(6), 'x', { limit: 65 }).truncated, true);
+  assert.equal(findWitness(rgaList, wideHistory(6), 'x', { limit: 10 }).truncated, true);
+});
+
 test('the undirected enumeration of a relational specification is capped', () => {
   const evs = wideHistory(6).map((e) => ({ ...e, specOps: e.specOps.map((o) => ({ ...o })) }));
   const capped = allFinalViews(gapList, evs, { limit: 20 });

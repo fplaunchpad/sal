@@ -5,6 +5,7 @@
   "Y-003": "delete removes neighbour formatting",
   "Y-004": "boundary spread",
   "Y-005": "overlapping same attribute",
+  "Y-006": "opened document",
   "other": "other"
  },
  "runs": [
@@ -21,6 +22,7 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1876,
     "deliveries": 1334,
     "sends": 0,
@@ -30,6 +32,7 @@
     "versionsChecked": 3210,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 41,
@@ -9560,15 +9563,17 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1852,
     "deliveries": 1382,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 21,
-    "versionsChecked": 3234,
+    "versionsChecked": 3221,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 13,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 41,
@@ -10143,18 +10148,10 @@
       "steps": [
        {
         "type": "edit",
-        "replica": 1,
-        "kind": "insert",
-        "index": 0,
-        "text": "pf",
-        "attrs": {}
-       },
-       {
-        "type": "edit",
         "replica": 2,
         "kind": "insert",
         "index": 0,
-        "text": "b",
+        "text": "bv",
         "attrs": {}
        },
        {
@@ -10166,6 +10163,11 @@
         "attrs": {
          "bold": true
         }
+       },
+       {
+        "type": "deliver",
+        "from": 2,
+        "to": 3
        },
        {
         "type": "deliver",
@@ -10181,40 +10183,49 @@
         "attrs": {
          "italic": true
         }
+       },
+       {
+        "type": "edit",
+        "replica": 2,
+        "kind": "insert",
+        "index": 2,
+        "text": "g",
+        "attrs": {}
        }
       ]
      },
      "rendered": [
-      "r1 insert 0 \"pf\"",
-      "r2 insert 0 \"b\"",
+      "r2 insert 0 \"bv\"",
       "r3 insert 0 \"f\" {\"bold\":true}",
+      "deliver 2->3",
       "deliver 3->1",
-      "r1 format [2,3) {\"italic\":true}"
+      "r1 format [2,3) {\"italic\":true}",
+      "r2 insert 2 \"g\""
      ],
      "evidence": [
       {
        "check": "raLinearizability",
        "replica": 2,
-       "step": 5,
+       "step": 6,
        "class": "Y-004",
-       "reference": "p f b f(bold,italic)",
+       "reference": "b v g f(bold,italic)",
        "differences": [
         {
-         "char": "2:0",
-         "ch": "b",
+         "char": "2:2",
+         "ch": "g",
          "key": "italic",
          "actual": true,
          "wanted": null,
          "governingMarker": {
-          "id": "1:2",
+          "id": "1:0",
           "value": true,
-          "createdBy": "r1#1"
+          "createdBy": "r1#0"
          },
          "class": "Y-004",
          "direction": "spread into concurrent insert",
          "boundary": "after the opener",
          "spanOwner": {
-          "key": "r1#1",
+          "key": "r1#0",
           "kind": "format",
           "request": {
            "index": 2,
@@ -10225,11 +10236,11 @@
           }
          },
          "insertedBy": {
-          "key": "r2#0",
+          "key": "r2#1",
           "kind": "insert",
           "request": {
-           "index": 0,
-           "text": "b",
+           "index": 2,
+           "text": "g",
            "attrs": {}
           }
          }
@@ -10239,26 +10250,26 @@
       {
        "check": "raLinearizability",
        "replica": 1,
-       "step": 7,
+       "step": 8,
        "class": "Y-004",
-       "reference": "p f b f(bold,italic)",
+       "reference": "b v g f(bold,italic)",
        "differences": [
         {
-         "char": "2:0",
-         "ch": "b",
+         "char": "2:2",
+         "ch": "g",
          "key": "italic",
          "actual": true,
          "wanted": null,
          "governingMarker": {
-          "id": "1:2",
+          "id": "1:0",
           "value": true,
-          "createdBy": "r1#1"
+          "createdBy": "r1#0"
          },
          "class": "Y-004",
          "direction": "spread into concurrent insert",
          "boundary": "after the opener",
          "spanOwner": {
-          "key": "r1#1",
+          "key": "r1#0",
           "kind": "format",
           "request": {
            "index": 2,
@@ -10269,11 +10280,11 @@
           }
          },
          "insertedBy": {
-          "key": "r2#0",
+          "key": "r2#1",
           "kind": "insert",
           "request": {
-           "index": 0,
-           "text": "b",
+           "index": 2,
+           "text": "g",
            "attrs": {}
           }
          }
@@ -22102,15 +22113,17 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1877,
     "deliveries": 1335,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 19,
-    "versionsChecked": 3212,
+    "versionsChecked": 3209,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 3,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 49,
@@ -35383,6 +35396,7 @@
      "openedReplicas": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1612,
     "deliveries": 1418,
     "sends": 0,
@@ -35392,6 +35406,7 @@
     "versionsChecked": 3262,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 58,
@@ -57369,6 +57384,7 @@
      "openedReplicas": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1622,
     "deliveries": 1379,
     "sends": 0,
@@ -57378,6 +57394,7 @@
     "versionsChecked": 3218,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 52,
@@ -69446,42 +69463,27 @@
        "replica": 3,
        "step": 11,
        "class": "Y-003",
-       "reference": "i o o(bold) v(bold) u(bold) r x",
+       "reference": "i o(bold) o v(bold) u(bold) r x",
        "differences": [
         {
-         "char": "3:4",
+         "char": "1:2",
          "ch": "o",
          "key": "bold",
          "actual": null,
          "wanted": true,
          "governingMarker": null,
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#2",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "o",
-           "attrs": {
-            "bold": true
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#2",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "io",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "2:0",
-          "value": true,
-          "createdBy": "r2#0"
-         },
-         "deletedBy": {
-          "key": "r2#1",
-          "kind": "delete",
-          "request": {
-           "index": 0,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:0",
@@ -69553,49 +69555,35 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"l\"@1:0x \"io\"@1:1 [bold=true@2:0]x \"o\"@3:4 \"vu\"@3:0 \"n\"@2:1x [bold=null@2:2]x \"rx\"@3:2"
       },
       {
        "check": "raLinearizability",
        "replica": 3,
        "step": 13,
        "class": "Y-003",
-       "reference": "i o o(bold) v(bold) u(bold) r x",
+       "reference": "i o(bold) o v(bold) u(bold) r x",
        "differences": [
         {
-         "char": "3:4",
+         "char": "1:2",
          "ch": "o",
          "key": "bold",
          "actual": null,
          "wanted": true,
          "governingMarker": null,
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#2",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "o",
-           "attrs": {
-            "bold": true
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#2",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "io",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "2:0",
-          "value": true,
-          "createdBy": "r2#0"
-         },
-         "deletedBy": {
-          "key": "r2#1",
-          "kind": "delete",
-          "request": {
-           "index": 0,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:0",
@@ -69667,49 +69655,35 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"l\"@1:0x \"io\"@1:1 [bold=true@2:0]x \"o\"@3:4 \"vu\"@3:0 \"n\"@2:1x [bold=null@2:2]x \"rx\"@3:2"
       },
       {
        "check": "raLinearizability",
        "replica": 3,
        "step": 15,
        "class": "Y-003",
-       "reference": "i o o(bold) v(bold) u(bold) r x",
+       "reference": "i o(bold) o v(bold) u(bold) r x",
        "differences": [
         {
-         "char": "3:4",
+         "char": "1:2",
          "ch": "o",
          "key": "bold",
          "actual": null,
          "wanted": true,
          "governingMarker": null,
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#2",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "o",
-           "attrs": {
-            "bold": true
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#2",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "io",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "2:0",
-          "value": true,
-          "createdBy": "r2#0"
-         },
-         "deletedBy": {
-          "key": "r2#1",
-          "kind": "delete",
-          "request": {
-           "index": 0,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:0",
@@ -69781,49 +69755,35 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"l\"@1:0x \"io\"@1:1 [bold=true@2:0]x \"o\"@3:4 \"vu\"@3:0 \"n\"@2:1x [bold=null@2:2]x \"rx\"@3:2"
       },
       {
        "check": "raLinearizability",
        "replica": 1,
        "step": 16,
        "class": "Y-003",
-       "reference": "i o o(bold) v(bold) u(bold) r x",
+       "reference": "i o(bold) o v(bold) u(bold) r x",
        "differences": [
         {
-         "char": "3:4",
+         "char": "1:2",
          "ch": "o",
          "key": "bold",
          "actual": null,
          "wanted": true,
          "governingMarker": null,
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#2",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "o",
-           "attrs": {
-            "bold": true
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#2",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "io",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "2:0",
-          "value": true,
-          "createdBy": "r2#0"
-         },
-         "deletedBy": {
-          "key": "r2#1",
-          "kind": "delete",
-          "request": {
-           "index": 0,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:0",
@@ -69895,49 +69855,35 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"l\"@1:0x \"io\"@1:1 [bold=true@2:0]x \"o\"@3:4 \"vu\"@3:0 \"n\"@2:1x [bold=null@2:2]x \"rx\"@3:2"
       },
       {
        "check": "raLinearizability",
        "replica": 2,
        "step": 17,
        "class": "Y-003",
-       "reference": "i o o(bold) v(bold) u(bold) r x",
+       "reference": "i o(bold) o v(bold) u(bold) r x",
        "differences": [
         {
-         "char": "3:4",
+         "char": "1:2",
          "ch": "o",
          "key": "bold",
          "actual": null,
          "wanted": true,
          "governingMarker": null,
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#2",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "o",
-           "attrs": {
-            "bold": true
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#2",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "io",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "2:0",
-          "value": true,
-          "createdBy": "r2#0"
-         },
-         "deletedBy": {
-          "key": "r2#1",
-          "kind": "delete",
-          "request": {
-           "index": 0,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:0",
@@ -70009,7 +69955,8 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"l\"@1:0x \"io\"@1:1 [bold=true@2:0]x \"o\"@3:4 \"vu\"@3:0 \"n\"@2:1x [bold=null@2:2]x \"rx\"@3:2"
       }
      ]
     },
@@ -73417,15 +73364,17 @@
      "replicas": 3
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 2064,
     "deliveries": 1536,
     "sends": 0,
     "pendingSends": 0,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3600,
+    "versionsChecked": 3548,
     "witnessSkips": 0,
     "witnessSkipsPartial": 0,
+    "witnessSkipsTruncated": 52,
     "causalGaps": 0,
     "anomalies": 0,
     "failingTrials": 0,
@@ -73468,15 +73417,17 @@
      "replicas": 3
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1883,
     "deliveries": 1200,
     "sends": 517,
     "pendingSends": 215,
     "opens": 0,
     "cleanups": 0,
-    "versionsChecked": 3592,
+    "versionsChecked": 3556,
     "witnessSkips": 0,
     "witnessSkipsPartial": 8,
+    "witnessSkipsTruncated": 36,
     "causalGaps": 3,
     "anomalies": 0,
     "failingTrials": 0,
@@ -73519,15 +73470,17 @@
      "openedReplicas": false
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1749,
     "deliveries": 848,
     "sends": 651,
     "pendingSends": 246,
     "opens": 0,
     "cleanups": 18,
-    "versionsChecked": 3241,
+    "versionsChecked": 3238,
     "witnessSkips": 0,
     "witnessSkipsPartial": 7,
+    "witnessSkipsTruncated": 3,
     "causalGaps": 41,
     "anomalies": 0,
     "failingTrials": 37,
@@ -81414,42 +81367,27 @@
        "replica": 3,
        "step": 13,
        "class": "Y-003",
-       "reference": "i b i(bold) s(bold) v(bold) x(bold)",
+       "reference": "i(bold) b i s(bold) v(bold) x(bold)",
        "differences": [
         {
-         "char": "3:3",
+         "char": "1:0",
          "ch": "i",
          "key": "bold",
          "actual": null,
          "wanted": true,
          "governingMarker": null,
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#1",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "is",
-           "attrs": {
-            "bold": true
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#0",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "i",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "3:0",
-          "value": true,
-          "createdBy": "r3#0"
-         },
-         "deletedBy": {
-          "key": "r1#2",
-          "kind": "delete",
-          "request": {
-           "index": 1,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:4",
@@ -81486,53 +81424,35 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"i\"@1:0 [italic=true@1:1]x \"b\"@2:0 [bold=true@3:0]x \"is\"@3:3 \"a\"@3:1x [bold=null@3:2]x [italic=null@1:2]x [bold=true@1:3] \"vx\"@1:4 [bold=null@1:6]"
       },
       {
        "check": "raLinearizability",
        "replica": 3,
        "step": 15,
        "class": "Y-003",
-       "reference": "i n(bold) e(bold) b t(bold) i(bold) s(bold) v(bold) x(bold)",
+       "reference": "i(bold) n(bold) e(bold) b t(bold) i s(bold) v(bold) x(bold)",
        "differences": [
         {
-         "char": "3:3",
+         "char": "1:0",
          "ch": "i",
          "key": "bold",
          "actual": null,
          "wanted": true,
-         "governingMarker": {
-          "id": "2:3",
-          "value": null,
-          "createdBy": "r2#1"
-         },
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#1",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "is",
-           "attrs": {
-            "bold": true
+         "governingMarker": null,
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#0",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "i",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "3:0",
-          "value": true,
-          "createdBy": "r3#0"
-         },
-         "deletedBy": {
-          "key": "r1#2",
-          "kind": "delete",
-          "request": {
-           "index": 1,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:4",
@@ -81573,53 +81493,35 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"i\"@1:0 [italic=true@1:1]x [bold=true@2:4] \"ne\"@2:5 [bold=null@2:7] \"b\"@2:0 [bold=true@2:1] \"t\"@2:2 [bold=null@2:3] [bold=true@3:0]x \"is\"@3:3 \"a\"@3:1x [bold=null@3:2]x [italic=null@1:2]x [bold=true@1:3] \"vx\"@1:4 [bold=null@1:6]"
       },
       {
        "check": "raLinearizability",
        "replica": 1,
        "step": 16,
        "class": "Y-003",
-       "reference": "i n(bold) e(bold) b t(bold) i(bold) s(bold) v(bold) x(bold)",
+       "reference": "i(bold) n(bold) e(bold) b t(bold) i s(bold) v(bold) x(bold)",
        "differences": [
         {
-         "char": "3:3",
+         "char": "1:0",
          "ch": "i",
          "key": "bold",
          "actual": null,
          "wanted": true,
-         "governingMarker": {
-          "id": "2:3",
-          "value": null,
-          "createdBy": "r2#1"
-         },
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#1",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "is",
-           "attrs": {
-            "bold": true
+         "governingMarker": null,
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#0",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "i",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "3:0",
-          "value": true,
-          "createdBy": "r3#0"
-         },
-         "deletedBy": {
-          "key": "r1#2",
-          "kind": "delete",
-          "request": {
-           "index": 1,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:4",
@@ -81660,53 +81562,35 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"i\"@1:0 [italic=true@1:1]x [bold=true@2:4] \"ne\"@2:5 [bold=null@2:7] \"b\"@2:0 [bold=true@2:1] \"t\"@2:2 [bold=null@2:3] [bold=true@3:0]x \"is\"@3:3 \"a\"@3:1x [bold=null@3:2]x [italic=null@1:2]x [bold=true@1:3] \"vx\"@1:4 [bold=null@1:6]"
       },
       {
        "check": "raLinearizability",
        "replica": 2,
        "step": 17,
        "class": "Y-003",
-       "reference": "i n(bold) e(bold) b t(bold) i(bold) s(bold) v(bold) x(bold)",
+       "reference": "i(bold) n(bold) e(bold) b t(bold) i s(bold) v(bold) x(bold)",
        "differences": [
         {
-         "char": "3:3",
+         "char": "1:0",
          "ch": "i",
          "key": "bold",
          "actual": null,
          "wanted": true,
-         "governingMarker": {
-          "id": "2:3",
-          "value": null,
-          "createdBy": "r2#1"
-         },
-         "class": "Y-003",
-         "direction": "opener lost",
-         "writer": {
-          "key": "r3#1",
-          "kind": "insert",
-          "request": {
-           "index": 0,
-           "text": "is",
-           "attrs": {
-            "bold": true
+         "governingMarker": null,
+         "class": "other",
+         "writers": [
+          {
+           "key": "r1#0",
+           "kind": "insert",
+           "request": {
+            "index": 0,
+            "text": "i",
+            "attrs": {}
            }
           }
-         },
-         "writerRelation": "wrote the character",
-         "reliedMarker": {
-          "id": "3:0",
-          "value": true,
-          "createdBy": "r3#0"
-         },
-         "deletedBy": {
-          "key": "r1#2",
-          "kind": "delete",
-          "request": {
-           "index": 1,
-           "len": 1
-          }
-         }
+         ]
         },
         {
          "char": "3:4",
@@ -81747,7 +81631,8 @@
           }
          }
         }
-       ]
+       ],
+       "items": "\"i\"@1:0 [italic=true@1:1]x [bold=true@2:4] \"ne\"@2:5 [bold=null@2:7] \"b\"@2:0 [bold=true@2:1] \"t\"@2:2 [bold=null@2:3] [bold=true@3:0]x \"is\"@3:3 \"a\"@3:1x [bold=null@3:2]x [italic=null@1:2]x [bold=true@1:3] \"vx\"@1:4 [bold=null@1:6]"
       }
      ]
     },
@@ -83551,6 +83436,7 @@
      "openedReplicas": true
     },
     "witnessBound": 12,
+    "witnessStateLimit": 1000000,
     "edits": 1599,
     "deliveries": 820,
     "sends": 578,
@@ -83560,6 +83446,7 @@
     "versionsChecked": 3197,
     "witnessSkips": 0,
     "witnessSkipsPartial": 23,
+    "witnessSkipsTruncated": 0,
     "causalGaps": 53,
     "anomalies": 0,
     "failingTrials": 51,

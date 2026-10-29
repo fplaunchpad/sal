@@ -173,18 +173,13 @@ export function applyAll(state, op, placed = null) {
   }
 }
 
-/** The 'persistent' reading as an ra-pbt specification object (gap rule; relational). */
+/**
+ * The 'persistent' reading as an ra-pbt specification object (gap rule;
+ * relational). The observation ignores identities, so the search is not
+ * restricted by the target's identity order: with repeated characters such
+ * a restriction can reject a view that has a witness.
+ */
 export function anchoredSpec({ expand = EXPAND } = {}) {
-  const placements = new WeakMap();
-  const placedOf = (target) => {
-    let p = placements.get(target);
-    if (!p) {
-      p = new Map();
-      target.forEach((e, i) => e.id !== undefined && p.set(idKey(e.id), i));
-      placements.set(target, p);
-    }
-    return p;
-  };
   return {
     rule: 'gap',
     attrsMode: 'persistent',
@@ -197,7 +192,5 @@ export function anchoredSpec({ expand = EXPAND } = {}) {
     localEdit: (v, request) => localEdit(v, request, expand),
     apply: (state, op) => applyAll(state, op)[0] ?? null,
     applyAll: (state, op) => applyAll(state, op),
-    applyDirected: (state, op, target) => applyAll(state, op, placedOf(target)),
-    directs: (target) => target !== null && target.length > 0 && target[0].id !== undefined,
   };
 }

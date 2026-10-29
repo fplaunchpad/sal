@@ -120,8 +120,9 @@ could be.
 | A-002 | single replica: bold `q`, link `q`, delete `q`, type `i`: `i` is bold; without the link it is plain | one sticky insertion point serves every mark name | local-meaning defect; automerge/automerge#1650 |
 | A-003 | after deleting an italic character, a new character is plain | Automerge skips an emptied begin/end pair | specification artefact of the anchor reading, recorded as a refuted candidate |
 
-Automerge is RA-linearizable under the marker specification: 2,000 trials,
-no failing version. The Yjs classes re-expressed on Automerge pass (Y-001,
+Under the marker specification no judged version lacked a witness in 2,000
+trials; 1,806 versions of the marks mixes were left unjudged at the state
+cap of the full search. The Yjs classes re-expressed on Automerge pass (Y-001,
 Y-002, Y-003, Y-005, Y-007), Y-004 becomes A-001 when the counter is
 raised, and opened replicas agree with created ones. The one A-001 trace at
 the end of the text rests on a specification choice Peritext does not make
@@ -216,13 +217,20 @@ demo defect, each with a minimal trace, a control and a reproduction:
 | removed-anchor | a block listed after a merged-away block goes to the end of the page | `listAfter` appends when its anchor is missing |
 | order-mismatch | block order follows application order, text division follows identifiers; no single order explains both | two orders in one document |
 
-Each class shows at a replica that applied causally ordered records, so a
-sequencing server receiving them in that order would show it; what a live
-client does with a rejected transaction is outside the experiment. N-001,
-N-004 and N-005 pass on the production path; N-002 and N-003 have the
-correct local effect but the bold is rejected at the other replica by label
-divergence after the final exchange, which the main-tree replays could not
-see because they never compared replicas after a full exchange. Two harness
+These are findings about the extracted handlers under causally ordered
+delivery, not confirmed bugs in live Notion: the client's optimistic
+application, versioned receipt and rollback paths are not executed, and
+whether the server accepts these exact commands is not established. The
+independent review sharpened the classes: concurrent-move is same-record
+non-convergence (same four records integrated, different displays);
+stale-merge is excluded by the specification whatever the order;
+label-divergence and past-boundary are handler rejections, so the receiver
+has not integrated the issuer's records; removed-anchor and order-mismatch
+are admitted once all event-order edges are removed. N-001, N-004 and
+N-005 pass on the production path; with the editor's clock holders N-002
+and N-003 are rejected at the receiver after the final exchange, while the
+original replay wrapper with its actual selection rejects N-002 and passes
+N-003. Two harness
 choices are documented: trees are parsed with the editor's per-instance
 clock holders rather than the client adapter's single clock (the single
 clock gives two concurrent-free splits the same marker id), and clients
@@ -318,7 +326,30 @@ schedule that passes.
 
 ## Limits
 
-The end-to-end check is RA-linearizability with respect to the causal
+The text instances' witness search was at first directed by the target
+view's identity order while views are compared without identities; when
+characters repeat this can reject a view that has a witness. The main-tree
+copy of the library replaced it by the full search (`paper1`, 3e4248b),
+imported here with a state cap of one million explored states per version,
+above which a version is counted truncated and neither passed nor failed.
+Every campaign was rerun under the full search on 2026-10-29. Yjs: every
+verdict and class identical, 107 of 29,766 versions truncated. Loro: one
+truncation changed a verdict (one `styles-created-32-expand` trial, which
+fails again at a cap of three million), two trials moved from L-001 to
+unexplained because the full enumeration has a nearer admitted view with an
+unexplained bold difference, 878 of 135,417 versions truncated. Automerge:
+34 anchor trials that failed only by rejections of the directed search
+pass, every other failing trial fails under both searches, 26 trials gained
+an unexplained record for the same nearer-view reason as Loro, and 1,914
+of 64,920 versions were truncated, 1,806 of them in the marker runs with
+marks, so the marker-semantics result is "no judged version without a
+witness" rather than a verdict on every version. Notion production text:
+under the two-sided boundary rule and the interval reading the directed
+search had both rejected views with witnesses (8 records) and accepted
+views without one (8 records in one trial), because its placement map
+overrode a deterministic rule; the campaign counts in that note are the
+rerun's. The hand-derived minimal shapes were never affected. The end-to-end check is
+RA-linearizability with respect to the causal
 order, program order included, the standard definition; the paper's
 criterion orders only dependent and non-commuting pairs, so a view can be
 admitted by the paper and have no causal-order witness, as a pinned OR-set

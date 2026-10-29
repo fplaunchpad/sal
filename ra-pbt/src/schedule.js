@@ -68,7 +68,7 @@ export function actorOf(step) {
  * checks.js (empty for a bare run).
  */
 export class Execution {
-  constructor(instance, n, { checks = CHECKS, witnessBound = 12 } = {}) {
+  constructor(instance, n, { checks = CHECKS, witnessBound = 12, witnessStateLimit } = {}) {
     const inst = prepareInstance(instance);
     this.instance = inst;
     this.spec = inst.spec;
@@ -96,7 +96,7 @@ export class Execution {
     this.anomalies = [];
     this.stats = { edits: 0, deliveries: 0, sends: 0, pendingSends: 0, cleanups: 0, opens: 0 };
     this.checkNames = checks;
-    this.checkState = newCheckState(checks, { witnessBound });
+    this.checkState = newCheckState(checks, { witnessBound, witnessStateLimit });
   }
 
   replica(r) {
@@ -256,8 +256,8 @@ export class Execution {
  * when a step is invalid (an out-of-range request, an unknown record, a
  * request the implementation rejects).
  */
-export function execute(instance, schedule, { checks = CHECKS, witnessBound = 12, finalSync = true } = {}) {
-  const ex = new Execution(instance, schedule.replicas, { checks, witnessBound });
+export function execute(instance, schedule, { checks = CHECKS, witnessBound = 12, witnessStateLimit, finalSync = true } = {}) {
+  const ex = new Execution(instance, schedule.replicas, { checks, witnessBound, witnessStateLimit });
   for (const s of schedule.steps) ex.apply(s);
   if (finalSync) ex.finish();
   return ex.trace(schedule);

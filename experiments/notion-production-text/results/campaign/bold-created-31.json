@@ -12,9 +12,10 @@
   "pendingSends": 0,
   "opens": 0,
   "cleanups": 0,
-  "versionsChecked": 3276,
+  "versionsChecked": 3265,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 11,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 64,
@@ -20706,7 +20707,7 @@
      "name": "raLinearizability",
      "pass": true,
      "details": {
-      "runs": 18,
+      "runs": 15,
       "failureCount": 0,
       "failures": []
      }

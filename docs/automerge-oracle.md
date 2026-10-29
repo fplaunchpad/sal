@@ -92,45 +92,49 @@ change whose dependencies are missing; a record is integrated when
 `getMissingDeps` is nonempty. Opened replicas `load` a saved document;
 created replicas apply the shared genesis change.
 
-The witness search is directed by the full element layout of the target
-replica, which is fast but can miss a witness whose deleted characters or
-boundaries stand elsewhere. Every RA-linearizability failure is therefore
-re-checked with the search directed by the visible characters only, which
-explores every placement of what is not displayed and is exact; failures it
-refutes are counted as layout artefacts and excluded below. No
-re-check ran out of its budget.
+The witness search explores every placement the gap rule admits, deleted
+characters and boundaries included, and compares views without identities.
+An earlier version of the search was directed by the target's element
+layout and re-checked each failure with a search directed by the visible
+characters only; both directions prune by identity order while the
+comparison ignores identities, which with repeated characters can reject a
+view that has a witness. The campaign below was rerun with the full search
+on 2026-10-29; `confirmWitness` (`confirm-witness.js`) remains as a budgeted
+full search that distinguishes exhaustion from rejection.
 
 ## Results
 
 Twenty searches of 200 trials, twelve requests each over two or three
 replicas, the witness search on every version (no version exceeded the
 bound of twelve edits), `experiments/automerge-oracle/results/campaign/`.
-"Confirmed" counts failing trials with at least one failure that is not an
-artefact of the layout-directed search or of the index-level expectation
-(classes below).
+"Confirmed" counts failing trials with at least one failure that is not a
+view artefact of the index-level expectation (a class below). "Truncated"
+counts versions whose search reached the cap of one million explored states
+and were neither passed nor failed; they are not among the versions
+checked.
 
-| Run | Semantics | Edits | Deliveries | Sends (queued) | Opens | Versions checked | Failing trials | Confirmed | RA-lin (trials) | Local meaning (trials) |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| plain-31 | anchor | 1,974 | 1,302 | 0 | 0 | 3,276 | 0 | 0 | 0 | 0 |
-| plain-32 | anchor | 1,945 | 1,271 | 0 | 0 | 3,216 | 0 | 0 | 0 | 0 |
-| plain-31 | marker | 1,974 | 1,302 | 0 | 0 | 3,276 | 0 | 0 | 0 | 0 |
-| plain-32 | marker | 1,945 | 1,271 | 0 | 0 | 3,216 | 0 | 0 | 0 | 0 |
-| partial-plain-31 | anchor | 1,821 | 876 | 579 (227) | 0 | 3,276 | 0 | 0 | 0 | 0 |
-| partial-plain-32 | anchor | 1,802 | 816 | 598 (246) | 0 | 3,216 | 0 | 0 | 0 | 0 |
-| partial-plain-31 | marker | 1,821 | 876 | 579 (227) | 0 | 3,276 | 0 | 0 | 0 | 0 |
-| partial-plain-32 | marker | 1,802 | 816 | 598 (246) | 0 | 3,216 | 0 | 0 | 0 | 0 |
-| marks-31 | anchor | 1,898 | 1,378 | 0 | 0 | 3,276 | 164 | 150 | 164 | 3 |
-| marks-32 | anchor | 1,905 | 1,311 | 0 | 0 | 3,216 | 149 | 143 | 149 | 6 |
-| marks-31 | marker | 1,898 | 1,378 | 0 | 0 | 3,276 | 3 | 3 | 0 | 3 |
-| marks-32 | marker | 1,905 | 1,311 | 0 | 0 | 3,216 | 6 | 4 | 0 | 6 |
-| marks-opened-31 | anchor | 1,633 | 1,413 | 0 | 230 | 3,276 | 111 | 108 | 107 | 4 |
-| marks-opened-32 | anchor | 1,600 | 1,386 | 0 | 230 | 3,216 | 112 | 112 | 110 | 4 |
-| marks-opened-31 | marker | 1,633 | 1,413 | 0 | 230 | 3,276 | 4 | 4 | 0 | 4 |
-| marks-opened-32 | marker | 1,600 | 1,386 | 0 | 230 | 3,216 | 4 | 4 | 0 | 4 |
-| partial-marks-31 | anchor | 1,770 | 876 | 630 (237) | 0 | 3,276 | 171 | 166 | 171 | 1 |
-| partial-marks-32 | anchor | 1,749 | 816 | 651 (266) | 0 | 3,216 | 158 | 153 | 158 | 1 |
-| partial-marks-31 | marker | 1,770 | 876 | 630 (237) | 0 | 3,276 | 1 | 1 | 0 | 1 |
-| partial-marks-32 | marker | 1,749 | 816 | 651 (266) | 0 | 3,216 | 1 | 1 | 0 | 1 |
+| Run | Semantics | Edits | Deliveries | Sends (queued) | Opens | Versions checked | Truncated | Failing trials | Confirmed | RA-lin (trials) | Local meaning (trials) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| plain-31 | anchor | 1,974 | 1,302 | 0 | 0 | 3,245 | 31 | 0 | 0 | 0 | 0 |
+| plain-32 | anchor | 1,945 | 1,271 | 0 | 0 | 3,190 | 26 | 0 | 0 | 0 | 0 |
+| plain-31 | marker | 1,974 | 1,302 | 0 | 0 | 3,245 | 31 | 0 | 0 | 0 | 0 |
+| plain-32 | marker | 1,945 | 1,271 | 0 | 0 | 3,190 | 26 | 0 | 0 | 0 | 0 |
+| partial-plain-31 | anchor | 1,821 | 876 | 579 (227) | 0 | 3,246 | 30 | 0 | 0 | 0 | 0 |
+| partial-plain-32 | anchor | 1,802 | 816 | 598 (246) | 0 | 3,201 | 15 | 0 | 0 | 0 | 0 |
+| partial-plain-31 | marker | 1,821 | 876 | 579 (227) | 0 | 3,246 | 30 | 0 | 0 | 0 | 0 |
+| partial-plain-32 | marker | 1,802 | 816 | 598 (246) | 0 | 3,201 | 15 | 0 | 0 | 0 | 0 |
+| marks-31 | anchor | 1,898 | 1,378 | 0 | 0 | 3,276 | 0 | 150 | 150 | 150 | 3 |
+| marks-32 | anchor | 1,905 | 1,311 | 0 | 0 | 3,210 | 6 | 142 | 142 | 142 | 6 |
+| marks-31 | marker | 1,898 | 1,378 | 0 | 0 | 2,837 | 439 | 3 | 3 | 0 | 3 |
+| marks-32 | marker | 1,905 | 1,311 | 0 | 0 | 2,775 | 441 | 6 | 4 | 0 | 6 |
+| marks-opened-31 | anchor | 1,633 | 1,413 | 0 | 230 | 3,276 | 0 | 108 | 108 | 104 | 4 |
+| marks-opened-32 | anchor | 1,600 | 1,386 | 0 | 230 | 3,216 | 0 | 112 | 112 | 110 | 4 |
+| marks-opened-31 | marker | 1,633 | 1,413 | 0 | 230 | 3,194 | 82 | 4 | 4 | 0 | 4 |
+| marks-opened-32 | marker | 1,600 | 1,386 | 0 | 230 | 3,145 | 71 | 4 | 4 | 0 | 4 |
+| partial-marks-31 | anchor | 1,770 | 876 | 630 (237) | 0 | 3,276 | 0 | 166 | 166 | 166 | 1 |
+| partial-marks-32 | anchor | 1,749 | 816 | 651 (266) | 0 | 3,216 | 0 | 153 | 153 | 153 | 1 |
+| partial-marks-31 | marker | 1,770 | 876 | 630 (237) | 0 | 2,920 | 356 | 1 | 1 | 0 | 1 |
+| partial-marks-32 | marker | 1,749 | 816 | 651 (266) | 0 | 2,901 | 315 | 1 | 1 | 0 | 1 |
 
 Convergence, determinism (opened against created replicas, 230 opens per
 opened run and a fork pair before every edit) and conservation failed
@@ -139,17 +143,46 @@ check under both semantics, with and without partial delivery. Formatting
 exactness held: no format request disagreed with the index-level edit
 (2,191 in the anchor runs, the same requests in the marker runs).
 
-**The claim is refuted.** Under the anchor semantics, 832 of 1,200 trials
-with marks fail (layout artefacts excluded); 761 of them first fail in class
-A-001. **Under the marker semantics Automerge is RA-linearizable** in all
-2,000 trials of every mix: no version without a witness. What remains under
-it are local-meaning failures in 17 trials (A-002 10, A-001 6, both 1) and
-two view artefacts.
+**The claim is refuted.** Under the anchor semantics, 831 of 1,200 trials
+with marks fail; 794 of them first fail in class A-001. **Under the marker
+semantics no judged version lacked a witness** in the 2,000 trials of every
+mix; 1,806 versions of the marks mixes were left unjudged at the state cap
+(below). What remains under it are local-meaning failures in 17 trials
+(A-002 10, A-001 6, both 1) and two view artefacts.
 
 Trials per class over the anchor runs (a trial counts once per class it
-shows; onset in brackets): A-001 811 (761), A-003 34 (25), A-002 11 (7),
-A-001+A-003 13, A-001+A-002 1, A-002+A-003 1, view artefact 2 (1), layout
-artefact 160 (71). No failure was left unclassified.
+shows; onset in brackets): A-001 807 (794), A-003 34 (26), A-002 11 (7),
+A-001+A-003 11, A-001+A-002 1, A-002+A-003 1, view artefact 2 (1), other 26
+(3). The 102 records of class "other", in 26 trials, fail under both
+searches; what the mechanisms do not explain is the reference view. The
+classifier takes as reference the admitted view with the same characters
+nearest to Automerge's, and the full enumeration admits more views than the
+directed one did (for trial 5 of marks-32, 180 and 6,924 views at the two
+failing steps against one each), so a nearer view with a difference none of
+the three mechanisms accounts for can displace the one that was explained.
+Under the directed enumeration all 26 were classed A-001, and 23 of them
+still show A-001 in another record.
+
+**Rerun under the full search.** The campaign was first run with the
+directed search and rerun on 2026-10-29 with the full search under the
+state cap. Thirty-four anchor trials that had failed only by rejections of
+the directed search now pass: thirty-three had been classed layout artefact
+alone, and one (marks-32, trial 117) also carried a record that the
+visible-character direction had not linearised either. Re-running trials
+12, 16 and 27 of marks-31 and trial 117 of marks-32 by hand gives the same
+pair of verdicts, the directed search rejecting and the full search finding
+a witness, with no version at the cap. In 117 further trials a layout
+artefact record disappeared beside records of other classes. Every other
+failing trial fails under both searches, and no trial that passed before
+fails now. The versions the cap cut off number 1,914 of 64,920: 102 in the
+plain runs, 6 in marks-32 under the anchor semantics, none in the other
+anchor runs with marks, and 1,806 in the marker runs with marks (439, 441,
+82, 71, 356 and 315), where boundaries are list elements and the placements
+multiply. The confirmation search (`confirmWitness`) repeats the
+end-to-end search under a budget of 200,000 specification applications; in
+96 records (28, 19, 5, 24 and 20 in the anchor runs with marks) the budget
+ran out and the record is counted undecided for the confirmation, though
+the end-to-end check had rejected the version without reaching the cap.
 
 ## Classes
 
@@ -221,9 +254,9 @@ attached to them rather than leaving it at the reference. The candidate "a mark 
 refuted for emptied marks; it is recorded, not repaired, since the marker
 semantics already describes what Automerge does.
 
-**Artefacts.** A *layout artefact* is a version the layout-directed search
-rejected and the visible-character search linearised (160 anchor trials, no
-marker trial). A *view artefact* is a local-meaning record in which a link
+**Artefacts.** A *layout artefact* was a version the layout-directed search
+rejected and the visible-character search linearised; the class cannot
+arise under the full search. A *view artefact* is a local-meaning record in which a link
 covers the insertion point but loses to a later link on both displayed
 neighbours (`iz` linked, `i` relinked, insert between them): the index-level
 expectation cannot see that coverage, and the anchor reading agrees with

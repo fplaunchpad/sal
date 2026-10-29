@@ -89,8 +89,8 @@ node run.mjs --mode search --format --opened false --seed 12 --trials 200 --outp
 node run.mjs --mode search --format --opened false --seed 13 --trials 200 --output results/campaign/format-created-13.json
 node run.mjs --mode search --format --opened true  --seed 14 --trials 200 --output results/campaign/format-opened-14.json
 node run.mjs --mode search --format --opened true  --seed 15 --trials 200 --output results/campaign/format-opened-15.json
-node run.mjs --mode search --seed 16 --trials 200 --output results/campaign/plain-16.json
-node run.mjs --mode search --partial --seed 17 --trials 200 --output results/campaign/partial-17.json
+node run.mjs --mode search --replicas 3 --seed 16 --trials 200 --output results/campaign/plain-16.json
+node run.mjs --mode search --replicas 3 --partial --seed 17 --trials 200 --output results/campaign/partial-17.json
 node run.mjs --mode search --partial --format --opened false --seed 18 --trials 200 --output results/campaign/partial-format-18.json
 node run.mjs --mode search --partial --format --opened true  --seed 19 --trials 200 --output results/campaign/partial-format-19.json
 node campaign.mjs format-created-11=results/campaign/format-created-11.json ... partial-17=results/campaign/partial-17.json
@@ -160,8 +160,11 @@ rerunning the seed. `results/campaign.json` keeps item walks only for
 unclassified records.
 
 Plain-text and partial-delivery runs (three replicas) found no failure of any
-check: with identities carried by the target view, the witness search under
-the gap rule checked 3,600 and 3,592 versions respectively. Partial delivery
+check: the witness search under the gap rule judged 3,548 and 3,556 of their
+3,600 and 3,592 versions, the rest exceeding the state cap of the full search
+(the rerun of 2026-10-29; the earlier identity-directed search had found a
+witness for every version, and the rerun changed no verdict in any run; see
+`docs/yjs-oracle.md`). Partial delivery
 with formatting (`partial-format-18`, `partial-format-19`) shows the same
 classes as complete delivery and nothing new.
 

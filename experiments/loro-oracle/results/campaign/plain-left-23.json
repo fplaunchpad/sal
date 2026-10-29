@@ -6,6 +6,7 @@
    "steps": 12
   },
   "witnessBound": 12,
+  "witnessStateLimit": 1000000,
   "edits": 1956,
   "deliveries": 1228,
   "sends": 0,
@@ -15,6 +16,7 @@
   "versionsChecked": 3184,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 0,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 0,
@@ -39,7 +41,7 @@
   "localMeaningFailuresByKind": {},
   "rule": "left",
   "attrs": "carry",
-  "seconds": 0.673
+  "seconds": 0.748
  },
  "failing": [],
  "shrunk": []

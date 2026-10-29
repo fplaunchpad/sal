@@ -6,13 +6,13 @@ edits                                           1904
 deliveries                                      1372
 sends (pending after)                           0 (0)
 opens                                           0
-versions checked                                3276
-witness skips (bound / partial)                 0 / 0
+versions checked                                3251
+witness skips (bound / partial / truncated)     0 / 0 / 25
 causal gaps                                     0
 execution anomalies                             0
 failing trials                                  25
   convergence (failures / trials)               0 / 0
-  raLinearizability (failures / trials)         99 / 25
+  raLinearizability (failures / trials)         96 / 25
   localMeaning (failures / trials)              13 / 11
   determinism (failures / trials)               0 / 0
   conservation (failures / trials)              0 / 0

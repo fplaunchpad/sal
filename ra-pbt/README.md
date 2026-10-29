@@ -12,7 +12,13 @@ deliveries, single-record sends and opened replicas are executed; after every
 step the acting replica's view is checked for RA-linearizability: some linear
 extension of the causal order on the records it has integrated, folded
 through the specification, yields that view. The search is exact over
-down-closed sets of at most 20 events. Convergence, local meaning,
+down-closed sets of at most 20 events; a relational specification can reach
+many states per set, so a search that would exceed `witnessStateLimit`
+(subset, state) pairs (1,000,000 by default) is abandoned and the version is
+counted in `witnessSkipsTruncated`, neither passed nor failed. A failure
+record keeps at most 50 admitted views, those nearest the displayed view
+first, and reports their full count; a classifier that needs the whole set
+recomputes it. Convergence, local meaning,
 determinism of opened versus created replicas and conservation are checked
 alongside. Failing schedules are shrunk greedily and can be kept as
 regressions.
@@ -32,7 +38,7 @@ A specification is a plain object:
 | `init()` | the initial state |
 | `apply(state, op)` | the next state, or null when a precondition fails |
 | `applyAll?(state, op)` | every next state of a relational specification; without it the specification is deterministic |
-| `applyDirected?(state, op, target)` | the next states consistent with a target view; must keep some witness whenever `applyAll` has one |
+| `applyDirected?(state, op, target)` | the next states consistent with a target view; must keep some witness whenever `applyAll` has one. The packaged text instances do not use it: their views are compared without identities, and narrowing placements by the target's identity order rejects a view that has a witness when characters repeat (`x` then `x` inserted before it, listed the other way round) |
 | `directs?(target)` | whether `applyDirected` narrows the search for this target |
 | `view(state)` | the observable value |
 | `serialise(state)` | canonical string of a state |
@@ -56,7 +62,7 @@ and completed by `checkAdapter(adapter)`:
 | `issue(replica, request)` | issues a request; returns a record `{ replica, kind, request, update, deps?, specOps }`, where `specOps` are the specification operations the request denotes, with the identities the implementation assigned; throws a RangeError for a rejected request |
 | `deliver(replica, record)` | applies one record; returns `{ pending, emitted }` where `emitted` are cleanup records (`kind: 'cleanup'`, no specOps) the replica issued on its own |
 | `sync(to, from)` | brings `to` up to date with `from`; returns `{ emitted }` |
-| `view(replica)` | the value in the specification's view format, with identities when the directed search needs them |
+| `view(replica)` | the value in the specification's view format, with identities when the specification's classifiers need them |
 | `displayed?(replica)` | the value as displayed (convergence, local meaning, determinism); defaults to `view` |
 | `stateVector(replica)` | a JSON summary of what the replica holds |
 | `integrated?(replica, records)` | which received records are fully integrated: a Set of keys or `{ integrated, partial }`; the default reads `record.dot = [origin, counter]` against the state vector |

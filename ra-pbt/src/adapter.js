@@ -29,7 +29,8 @@
  *       Brings `to` up to date with everything `from` holds.
  *   view(replica)
  *       The replica's observable value in the specification's view format,
- *       with identities when the specification's directed search needs them.
+ *       with identities when the specification or its classifier needs them;
+ *       views are compared by the specification's key.
  *   stateVector(replica)
  *       A JSON-serialisable summary of what the replica holds; replicas with
  *       equal state vectors, equal integrated records and nothing pending

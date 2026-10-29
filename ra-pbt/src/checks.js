@@ -7,7 +7,10 @@
  *                      all replicas display the same value.
  *   raLinearizability  after every step at replica R, R's view is the view of
  *                      the specification's fold over some linear extension of
- *                      the causal order on the records R has integrated.
+ *                      the causal order on the records R has integrated. A
+ *                      version whose search exceeds `witnessStateLimit`
+ *                      (subset, state) pairs is skipped and counted in
+ *                      `witnessSkipsTruncated`, not judged.
  *   localMeaning       after every edit at R, R's displayed value is the
  *                      specification's `localEdit` of R's displayed value
  *                      before it. Needs `localEdit` on the specification or
@@ -34,6 +37,10 @@ export const CHECKS = ['convergence', 'raLinearizability', 'localMeaning', 'dete
 
 const MAX_FAILURES_KEPT = 25;
 export const FORK_ID_BASE = 1000;
+/** (subset, state) pairs a witness search may explore before the version is skipped as truncated. */
+export const DEFAULT_WITNESS_STATE_LIMIT = 1000000;
+/** Admitted views kept in a failure record; the full count is reported alongside. */
+const MAX_ADMITTED_VIEWS_KEPT = 50;
 
 /** Distinct kinds of the records with specification operations among the keys, sorted and joined. */
 export function kindsOf(ex, keys) {
@@ -47,16 +54,17 @@ function skip(cs, name) {
 }
 
 /** Per-execution check bookkeeping. */
-export function newCheckState(names, { witnessBound }) {
+export function newCheckState(names, { witnessBound, witnessStateLimit = DEFAULT_WITNESS_STATE_LIMIT }) {
   const enabled = new Set(names);
   const per = {};
   for (const n of CHECKS) per[n] = { runs: 0, failures: [], failureCount: 0 };
   return {
     enabled,
     witnessBound,
+    witnessStateLimit,
     per,
     memo: new Map(),
-    stats: { versionsChecked: 0, witnessSkips: 0, witnessSkipsPartial: 0, causalGaps: 0, localMeaningByKind: {}, localMeaningFailuresByKind: {} },
+    stats: { versionsChecked: 0, witnessSkips: 0, witnessSkipsPartial: 0, witnessSkipsTruncated: 0, causalGaps: 0, localMeaningByKind: {}, localMeaningFailuresByKind: {} },
     fail(name, f) {
       per[name].failureCount++;
       if (per[name].failures.length < MAX_FAILURES_KEPT) per[name].failures.push({ check: name, ...f });
@@ -138,25 +146,54 @@ export function raLinearizabilityStep(ex, r, index) {
   const target = ex.adapter.view(ex.replicas[r]);
   const opKeys = [...keys].sort();
   const memoKey = opKeys.join(',') + '|' + JSON.stringify(target);
-  cs.per.raLinearizability.runs++;
-  cs.stats.versionsChecked++;
   let res = cs.memo.get(memoKey);
   const { events, gaps } = eventsAt(ex, r);
-  cs.stats.causalGaps += gaps;
   if (!res) {
-    res = findWitness(ex.spec, events, target);
+    res = findWitness(ex.spec, events, target, { limit: cs.witnessStateLimit });
     cs.memo.set(memoKey, res);
   }
+  if (res.truncated) {
+    cs.stats.witnessSkipsTruncated++;
+    return;
+  }
+  cs.per.raLinearizability.runs++;
+  cs.stats.versionsChecked++;
+  cs.stats.causalGaps += gaps;
   if (!res.found)
     cs.fail('raLinearizability', {
       replica: r,
       step: index,
-      expected: { admittedViews: allFinalViews(ex.spec, events, { target }) },
+      expected: admittedViewsOf(ex.spec, events, target, cs.witnessStateLimit),
       actual: target,
       opKeys,
       causalGaps: gaps,
       signature: 'raLinearizability:' + kindsOf(ex, keys),
     });
+}
+
+/** Positions at which two normalised views differ, plus their length difference; 0 for views that are not arrays. */
+function viewDistance(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) return 0;
+  let d = Math.abs(a.length - b.length);
+  for (let i = 0; i < Math.min(a.length, b.length); i++) if (JSON.stringify(a[i]) !== JSON.stringify(b[i])) d++;
+  return d;
+}
+
+/**
+ * The admitted views of a failing version, for the failure record: at most
+ * MAX_ADMITTED_VIEWS_KEPT of them, those nearest the displayed view first
+ * (so classifiers that compare against the nearest admitted view see it),
+ * with the full count and whether their enumeration was cut short. The
+ * enumeration explores as many states as the witness search did, so it is
+ * cut short only when the witness search would have been.
+ */
+function admittedViewsOf(spec, events, target, limit) {
+  const views = allFinalViews(spec, events, { target, limit });
+  const actual = spec.normalise(target);
+  const ranked = views.map((v, i) => ({ v, i, d: viewDistance(actual, spec.normalise(v)) })).sort((x, y) => x.d - y.d || x.i - y.i);
+  const out = { admittedViews: ranked.slice(0, MAX_ADMITTED_VIEWS_KEPT).map((x) => x.v), admittedViewCount: views.length };
+  if (views.truncated) out.admittedViewsTruncated = true;
+  return out;
 }
 
 /** The local-edit function of an execution, or null. */

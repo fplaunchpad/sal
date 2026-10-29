@@ -7,15 +7,17 @@
    "partialDelivery": true
   },
   "witnessBound": 12,
+  "witnessStateLimit": 1000000,
   "edits": 1814,
   "deliveries": 828,
   "sends": 586,
   "pendingSends": 216,
   "opens": 0,
   "cleanups": 0,
-  "versionsChecked": 3228,
+  "versionsChecked": 3195,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 33,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 0,
@@ -40,7 +42,7 @@
   "localMeaningFailuresByKind": {},
   "rule": "gap",
   "attrs": "carry",
-  "seconds": 1.666
+  "seconds": 89.337
  },
  "failing": [],
  "shrunk": []

@@ -8,6 +8,7 @@
    "openedReplicas": true
   },
   "witnessBound": 8,
+  "witnessStateLimit": 1000000,
   "edits": 1022,
   "deliveries": 1122,
   "sends": 0,
@@ -17,6 +18,7 @@
   "versionsChecked": 2364,
   "witnessSkips": 0,
   "witnessSkipsPartial": 0,
+  "witnessSkipsTruncated": 0,
   "causalGaps": 0,
   "anomalies": 0,
   "failingTrials": 2,
@@ -45,7 +47,7 @@
   },
   "rule": "gap",
   "attrs": "persistent",
-  "seconds": 0.925
+  "seconds": 1.212
  },
  "failing": [
   {

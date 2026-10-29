@@ -30,6 +30,7 @@
  * up to the failing step and returns { class, evidence }.
  */
 import { Execution, eventsAt, findWitness, finalSyncSteps, prepareInstance } from '../../src/index.js';
+import { DEFAULT_WITNESS_STATE_LIMIT } from '../../src/checks.js';
 import { localEdit, renderView, normaliseView, viewKey, idKey, textSpec } from './spec.js';
 import { items } from './adapter.js';
 
@@ -100,7 +101,13 @@ export function classifyFailure(instance, schedule, failure) {
   const r = failure.replica;
   const { events } = eventsAt(ex, r);
   const target = inst.adapter.view(ex.replicas[r]);
-  const witness = (cfg) => findWitness(specOf(cfg), events, target).found;
+  // true, false, or 'undecided' when the search exceeds the state cap of the end-to-end check.
+  const witness = (cfg) => {
+    const w = findWitness(specOf(cfg), events, target, { limit: DEFAULT_WITNESS_STATE_LIMIT });
+    return w.truncated ? 'undecided' : w.found;
+  };
+  const yes = (v) => v === true;
+  const no = (v) => v === false;
   const verdicts = {
     gapAnchored: witness({ rule: 'gap', reading: 'anchored' }),
     leftAnchored: witness({ rule: 'left', reading: 'anchored' }),
@@ -109,9 +116,9 @@ export function classifyFailure(instance, schedule, failure) {
     gapInterval: witness({ rule: 'gap', reading: 'interval' }),
   };
   const shown = renderView(normaliseView(target));
-  if (rule === 'both' && !verdicts.bothAnchored && (verdicts.gapAnchored || verdicts.leftAnchored) && (reading === 'anchored' || verdicts.sameRuleAnchored || verdicts.gapInterval))
+  if (rule === 'both' && no(verdicts.bothAnchored) && (yes(verdicts.gapAnchored) || yes(verdicts.leftAnchored)) && (reading === 'anchored' || yes(verdicts.sameRuleAnchored) || yes(verdicts.gapInterval)))
     return { class: 'NT-2', evidence: { shown, verdicts } };
-  if (reading === 'interval' && verdicts.sameRuleAnchored) return { class: 'NT-3', evidence: { shown, verdicts, endGaps: endGapEvidence(ex, r) } };
+  if (reading === 'interval' && yes(verdicts.sameRuleAnchored)) return { class: 'NT-3', evidence: { shown, verdicts, endGaps: endGapEvidence(ex, r) } };
   return { class: 'other', evidence: { shown, verdicts } };
 }
 

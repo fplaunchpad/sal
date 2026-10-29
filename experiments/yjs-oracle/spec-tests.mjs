@@ -321,23 +321,27 @@ test('witness over 20 events terminates and reports', () => {
   assert.equal(neg.explored, 1 + 2 ** 19);
 });
 
-test('witness under the gap rule with identities places each character where the target has it', () => {
-  // The 12-event wide history: 11 concurrent inserts after distinct anchors.
-  // With the target's identities each placement is forced up to deleted
-  // neighbours, so the search stays small and still finds the witness.
-  const ops = wideHistory(11);
-  const withIds = (s) => [...s].map((ch) => {
-    const lower = ch.toLowerCase();
-    const k = lower.charCodeAt(0) - 97;
-    return { id: ch === lower ? [0, k] : [k + 1, 0], ch, attrs: {} };
-  });
-  const w = findWitness(ops, withIds('aAbBcCdDeEfFgGhHiIjJkK'));
-  assert.equal(w.found, true);
-  assert.equal(w.order[0], 'base');
-  // A capital placed before its anchor violates its gap: no witness.
-  const neg = findWitness(ops, withIds('AabBcCdDeEfFgGhHiIjJkK'));
-  assert.equal(neg.found, false);
-  // Without identities the gap enumeration is capped and says so.
+test('witness under the gap rule compares views without identities: repeated characters', () => {
+  // Client 1 inserts x at the head; client 2, having seen it, inserts a second
+  // x at the head with the first as its right origin. The second x can only
+  // land before the first, so the display is "xx" whichever identities the
+  // target lists first. A search restricted to the target's identity order
+  // would reject the swapped listing; the view ignores identities, so both
+  // listings have the witness, and a bold x has none.
+  const A = [1, 0];
+  const B = [2, 0];
+  const events = [
+    { key: 'a', deps: [], specOps: [{ kind: 'insert', id: A, ch: 'x', origin: null, rightOrigin: null, attrs: {} }] },
+    { key: 'b', deps: ['a'], specOps: [{ kind: 'insert', id: B, ch: 'x', origin: null, rightOrigin: A, attrs: {} }] },
+  ];
+  const listed = (first, second) => [{ id: first, ch: 'x', attrs: {} }, { id: second, ch: 'x', attrs: {} }];
+  assert.deepEqual(findWitness(events, listed(B, A)), { found: true, order: ['a', 'b'] });
+  assert.deepEqual(findWitness(events, listed(A, B)), { found: true, order: ['a', 'b'] });
+  assert.equal(findWitness(events, [{ id: A, ch: 'x', attrs: { bold: true } }, { id: B, ch: 'x', attrs: {} }]).found, false);
+  assert.equal(findWitness(events, plain('x')).found, false);
+});
+
+test('the gap enumeration without a target is capped and says so', () => {
   const views = allFinalViews(wideHistory(6), { limit: 500 });
   assert.equal(views.truncated, true);
   assert.notEqual(allFinalViews(wideHistory(3)).truncated, true);

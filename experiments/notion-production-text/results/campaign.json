@@ -15,8 +15,9 @@
    "deliveries": 1275,
    "sends": 0,
    "opens": 0,
-   "versionsChecked": 3216,
+   "versionsChecked": 3148,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 68,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -58,6 +59,7 @@
    "opens": 0,
    "versionsChecked": 3216,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -99,11 +101,12 @@
    "opens": 0,
    "versionsChecked": 3216,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 105,
    "failuresByCheck": {
     "convergence": 0,
-    "raLinearizability": 556,
+    "raLinearizability": 552,
     "localMeaning": 0,
     "determinism": 0,
     "conservation": 0
@@ -122,7 +125,7 @@
    "localMeaningFailuresByKind": {},
    "classes": {
     "records": {
-     "NT-2": 556
+     "NT-2": 552
     },
     "trials": {
      "NT-2": 105
@@ -147,7 +150,11 @@
       "replica": 3,
       "step": 8,
       "expected": {
-       "admittedViews": []
+       "admittedViews": [
+        "gmr",
+        "mrg"
+       ],
+       "admittedViewCount": 2
       },
       "actual": "mgr",
       "opKeys": [
@@ -172,7 +179,11 @@
       "replica": 2,
       "step": 3,
       "expected": {
-       "admittedViews": []
+       "admittedViews": [
+        "jst",
+        "stj"
+       ],
+       "admittedViewCount": 2
       },
       "actual": "sjt",
       "opKeys": [
@@ -202,6 +213,7 @@
    "opens": 225,
    "versionsChecked": 3220,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -242,8 +254,9 @@
    "deliveries": 784,
    "sends": 587,
    "opens": 0,
-   "versionsChecked": 3184,
+   "versionsChecked": 3161,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 23,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -286,6 +299,7 @@
    "opens": 0,
    "versionsChecked": 3184,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -329,6 +343,7 @@
    "opens": 0,
    "versionsChecked": 5200,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -368,8 +383,9 @@
    "deliveries": 1303,
    "sends": 0,
    "opens": 0,
-   "versionsChecked": 3276,
+   "versionsChecked": 3265,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 11,
    "anomalies": 0,
    "failingTrials": 64,
    "failuresByCheck": {
@@ -481,8 +497,9 @@
    "deliveries": 1303,
    "sends": 0,
    "opens": 0,
-   "versionsChecked": 3276,
+   "versionsChecked": 3265,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 11,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -525,6 +542,7 @@
    "opens": 0,
    "versionsChecked": 3276,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -567,18 +585,19 @@
    "opens": 0,
    "versionsChecked": 3276,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
-   "failingTrials": 71,
+   "failingTrials": 70,
    "failuresByCheck": {
     "convergence": 0,
-    "raLinearizability": 379,
+    "raLinearizability": 376,
     "localMeaning": 0,
     "determinism": 0,
     "conservation": 0
    },
    "trialsFailingByCheck": {
     "convergence": 0,
-    "raLinearizability": 71,
+    "raLinearizability": 70,
     "localMeaning": 0,
     "determinism": 0,
     "conservation": 0
@@ -591,13 +610,13 @@
    "localMeaningFailuresByKind": {},
    "classes": {
     "records": {
-     "NT-2": 379
+     "NT-2": 376
     },
     "trials": {
-     "NT-2": 71
+     "NT-2": 70
     },
     "onset": {
-     "NT-2": 71
+     "NT-2": 70
     }
    },
    "shrunk": [
@@ -618,7 +637,12 @@
       "replica": 2,
       "step": 7,
       "expected": {
-       "admittedViews": []
+       "admittedViews": [
+        "urinj*",
+        "urj*in",
+        "j*urin"
+       ],
+       "admittedViewCount": 3
       },
       "actual": "urij*n",
       "opKeys": [
@@ -645,7 +669,11 @@
       "replica": 3,
       "step": 7,
       "expected": {
-       "admittedViews": []
+       "admittedViews": [
+        "h*z*r*",
+        "zrh*"
+       ],
+       "admittedViewCount": 2
       },
       "actual": "zh*r*",
       "opKeys": [
@@ -669,7 +697,11 @@
       "replica": 2,
       "step": 3,
       "expected": {
-       "admittedViews": []
+       "admittedViews": [
+        "kou",
+        "uko"
+       ],
+       "admittedViewCount": 2
       },
       "actual": "kuo",
       "opKeys": [
@@ -681,28 +713,33 @@
     },
     {
      "signature": "raLinearizability:delete+insert",
-     "trial": 22,
-     "steps": "12 -> 5",
+     "trial": 42,
+     "steps": "12 -> 6",
      "rendered": [
-      "r2 insert 0 \"s\"",
-      "r2 delete [0,1)",
-      "r3 insert 0 \"t\"",
-      "r2 insert 0 \"y\"",
-      "r3 insert 0 \"y\""
+      "r1 insert 0 \"w\"",
+      "r2 insert 0 \"e\"",
+      "r1 insert 0 \"zl\"",
+      "r2 insert 1 \"f\"",
+      "deliver 2->1",
+      "r1 delete [3,4)"
      ],
      "failure": {
-      "replica": 3,
-      "step": 8,
+      "replica": 1,
+      "step": 5,
       "expected": {
-       "admittedViews": []
+       "admittedViews": [
+        "zlwe",
+        "ezlw"
+       ],
+       "admittedViewCount": 2
       },
-      "actual": "yyt",
+      "actual": "zlew",
       "opKeys": [
+       "r1#0",
+       "r1#1",
+       "r1#2",
        "r2#0",
-       "r2#1",
-       "r2#2",
-       "r3#0",
-       "r3#1"
+       "r2#1"
       ]
      }
     }
@@ -723,20 +760,21 @@
    "deliveries": 1303,
    "sends": 0,
    "opens": 0,
-   "versionsChecked": 3276,
+   "versionsChecked": 3242,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 34,
    "anomalies": 0,
-   "failingTrials": 77,
+   "failingTrials": 76,
    "failuresByCheck": {
     "convergence": 0,
-    "raLinearizability": 377,
+    "raLinearizability": 359,
     "localMeaning": 0,
     "determinism": 0,
     "conservation": 0
    },
    "trialsFailingByCheck": {
     "convergence": 0,
-    "raLinearizability": 77,
+    "raLinearizability": 76,
     "localMeaning": 0,
     "determinism": 0,
     "conservation": 0
@@ -749,13 +787,13 @@
    "localMeaningFailuresByKind": {},
    "classes": {
     "records": {
-     "NT-3": 377
+     "NT-3": 359
     },
     "trials": {
-     "NT-3": 77
+     "NT-3": 76
     },
     "onset": {
-     "NT-3": 77
+     "NT-3": 76
     }
    },
    "shrunk": [
@@ -775,8 +813,12 @@
       "step": 5,
       "expected": {
        "admittedViews": [
-        "j*g*n"
-       ]
+        "j*g*n",
+        "j*ng*",
+        "j*n*g*",
+        "nj*g*"
+       ],
+       "admittedViewCount": 4
       },
       "actual": "j*g*n*",
       "opKeys": [
@@ -802,8 +844,10 @@
       "step": 3,
       "expected": {
        "admittedViews": [
-        "u*w"
-       ]
+        "u*w",
+        "wu*"
+       ],
+       "admittedViewCount": 2
       },
       "actual": "u*w*",
       "opKeys": [
@@ -833,6 +877,7 @@
    "opens": 230,
    "versionsChecked": 3216,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -876,6 +921,7 @@
    "opens": 230,
    "versionsChecked": 3216,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -917,8 +963,9 @@
    "deliveries": 764,
    "sends": 615,
    "opens": 0,
-   "versionsChecked": 3164,
+   "versionsChecked": 3161,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 3,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -962,6 +1009,7 @@
    "opens": 0,
    "versionsChecked": 3164,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -1004,8 +1052,9 @@
    "deliveries": 1757,
    "sends": 0,
    "opens": 0,
-   "versionsChecked": 4400,
+   "versionsChecked": 4240,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 160,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -1050,6 +1099,7 @@
    "opens": 0,
    "versionsChecked": 4400,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {
@@ -1093,6 +1143,7 @@
    "opens": 225,
    "versionsChecked": 3208,
    "witnessSkips": 0,
+   "witnessSkipsTruncated": 0,
    "anomalies": 0,
    "failingTrials": 0,
    "failuresByCheck": {

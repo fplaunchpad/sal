@@ -52,6 +52,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Execution, finalSyncSteps, allFinalViews, eventsAt, CHECKS } from './index.js';
+import { DEFAULT_WITNESS_STATE_LIMIT } from '../../src/checks.js';
 import { normaliseAttrs } from './spec.js';
 
 export const CLASSES = {
@@ -272,6 +273,9 @@ function nearest(actual, candidates) {
 }
 
 /** Analyses replica r of a live execution against reference views. */
+/** Whether a failure record carries every admitted view (records keep only the nearest few). */
+const completeAdmitted = (expected) => (expected?.admittedViews?.length ?? 0) > 0 && !((expected.admittedViewCount ?? 0) > expected.admittedViews.length);
+
 function analyse(ex, issue, r, references) {
   const rep = ex.replica(r);
   const items = rep.items();
@@ -308,7 +312,7 @@ const allSteps = (schedule) => [...schedule.steps, ...finalSyncSteps(schedule.re
 export function classifyAt(schedule, r, { finalSync = false, references } = {}) {
   const stopAt = finalSync ? Infinity : schedule.steps.length - 1;
   const { ex, issue } = reexecute(schedule, { stopAt });
-  const refs = references ?? allFinalViews(eventsAt(ex, r).events, { target: ex.replica(r).visibleWithIds() });
+  const refs = references ?? allFinalViews(eventsAt(ex, r).events, { target: ex.replica(r).visibleWithIds(), limit: DEFAULT_WITNESS_STATE_LIMIT });
   return analyse(ex, issue, r, refs);
 }
 
@@ -435,7 +439,7 @@ export function classifyTrace(schedule, checks) {
     onStep(ex, i, _step, issue) {
       for (const f of byStep.get(i) ?? []) {
         let res;
-        if (f.check === 'raLinearizability') res = analyse(ex, issue, f.replica, f.expected?.admittedViews?.length ? f.expected.admittedViews : allFinalViews(eventsAt(ex, f.replica).events, { target: ex.replica(f.replica).visibleWithIds() }));
+        if (f.check === 'raLinearizability') res = analyse(ex, issue, f.replica, completeAdmitted(f.expected) ? f.expected.admittedViews : allFinalViews(eventsAt(ex, f.replica).events, { target: ex.replica(f.replica).visibleWithIds(), limit: DEFAULT_WITNESS_STATE_LIMIT }));
         else if (f.check === 'localMeaning') res = analyse(ex, issue, f.replica, [f.expected]);
         else res = { class: 'other', reason: 'check ' + f.check, expected: f.expected, actual: f.actual, items: renderItems(ex.replica(Array.isArray(f.replica) ? f.replica[0] : f.replica).items()) };
         out.push({ check: f.check, replica: f.replica, step: i, signature: f.signature, ...res });
