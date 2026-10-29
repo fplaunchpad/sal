@@ -69,12 +69,14 @@ standalone export (`index.mjs`, `client.mjs`, `runtime.mjs`, `requests.mjs`,
 is not run; editing functions have no replacement implementations; missing
 dependencies fail.
 
-The export is proprietary code and lives outside the repository, at the path
-in `NOTION_PRODUCTION_LIBRARY`. Nothing of it is copied into this tree; the
+The export is Notion's code and is vendored at `vendor/notion-production/`
+with a notice that the repository's licence does not cover it and that it is
+included only so the measurements can be repeated; `NOTION_PRODUCTION_LIBRARY`
+names another export when set. The
 instance records only digests. `verify-sources.js` runs before and after
 every search, replay, regression and probe run, at one of two levels:
 
-- level 1 (always): the export directory resolves outside the repository,
+- level 1 (always):
   holds exactly the six files, and each has the SHA-256 pinned in
   `ra-pbt/instances/notion-production-text/sources.json`. The pinned digests
   include the export's asset manifest, so the public URLs and asset digests
@@ -420,7 +422,7 @@ bold's end gap.
 
 ```sh
 export NOTION_PRODUCTION_CACHE=/path/outside/the/repository/notion-prod/cache
-export NOTION_PRODUCTION_LIBRARY=/path/outside/the/repository/notion-prod/library
+export NOTION_PRODUCTION_LIBRARY=/path/to/a/fresh/export   # optional; the default is vendor/notion-production
 P=/Users/kc/repos/sal/experiments/notion-production-client
 python3 $P/download.py --cache "$NOTION_PRODUCTION_CACHE"
 NOTION_PRODUCTION_CACHE="$NOTION_PRODUCTION_CACHE" npm test --prefix $P

@@ -16,7 +16,7 @@
  *   NOTION_PRODUCTION_LIBRARY=<export> node concurrent-move.mjs
  */
 // ---- harness (identical in every script of this directory) ----------------
-// Loads only the exported production library. Blocks are records under one
+// Loads only the exported production library (vendor/notion-production, or $NOTION_PRODUCTION_LIBRARY). Blocks are records under one
 // page, created and removed by the same record commands as the library's
 // ReplayReplica; split and merge requests run the original request builders
 // (module 701590); every operation is applied by the shipped record handlers
@@ -25,11 +25,10 @@
 // clock map per client. A record a client cannot apply is reported, and the
 // client is restored to its state before it.
 import { createHash } from 'node:crypto';
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const dir = process.env.NOTION_PRODUCTION_LIBRARY;
-if (!dir) throw new Error('Set NOTION_PRODUCTION_LIBRARY to the exported production library');
+const dir = process.env.NOTION_PRODUCTION_LIBRARY || resolve(dirname(fileURLToPath(import.meta.url)), '../../../vendor/notion-production');
 const { createClient, RequestBuilder } = await import(pathToFileURL(join(dir, 'index.mjs')).href);
 
 const uuid = (label) => {

@@ -7,7 +7,9 @@ reading are in `docs/notion-production-text.md`.
 
 ## The library
 
-The code is proprietary and is never stored in this repository. It is
+The code is Notion's, vendored at `vendor/notion-production/` under a notice
+that the repository's licence does not cover it; the instance uses that
+export unless `NOTION_PRODUCTION_LIBRARY` names another. A fresh export is
 exported from the public assets by `experiments/notion-production-client`
 of the main tree, into a directory outside the repository:
 

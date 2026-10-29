@@ -614,3 +614,11 @@ semantic audit remains open.
 
 The historical conditioned framework and refuted MRDT experiments are retained
 on the archive branch `archive/conditioned-mrdts-2026-08-21`, not on `main`.
+
+## Third-party code
+
+`vendor/notion-production/` holds Notion Labs, Inc.'s client editing code,
+reproduced so that the measurements in `docs/notion-production-text.md` and
+`docs/notion-production-blocks.md` can be repeated. The MIT licence of this
+repository does not cover it; see `NOTICE.md` and the notice in that
+directory.

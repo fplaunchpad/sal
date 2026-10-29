@@ -62,9 +62,10 @@ delivery.
 
 ## The library and its verification
 
-Notion's code is proprietary. Nothing of it is in this repository. The
-instance executes an export produced outside the repository and named by
-the environment variable `NOTION_PRODUCTION_LIBRARY`:
+Notion's code is vendored at `vendor/notion-production/`, with a notice
+that the repository's licence does not cover it and that it is included only
+so these measurements can be repeated. The instance executes that export,
+or the one named by `NOTION_PRODUCTION_LIBRARY` when set:
 
 1. `download.py` of `experiments/notion-production-client` (main tree)
    fetched the 63 public application assets listed in its `sources.json`
@@ -518,7 +519,7 @@ npm ci --prefix $P --ignore-scripts
 python3 $P/download.py --cache /tmp/notion-production-sources
 NOTION_PRODUCTION_CACHE=/tmp/notion-production-sources npm test --prefix $P   # 19/19
 node $P/extract.mjs /tmp/notion-production-sources /tmp/notion-production-library
-export NOTION_PRODUCTION_LIBRARY=/tmp/notion-production-library
+export NOTION_PRODUCTION_LIBRARY=/tmp/notion-production-library   # optional; the default is vendor/notion-production
 node ra-pbt/instances/notion-production-blocks/verify-sources.js
 node --test ra-pbt/instances/notion-production-blocks/spec.test.js        # 15/15
 cd experiments/notion-production-blocks

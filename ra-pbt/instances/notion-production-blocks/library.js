@@ -1,6 +1,6 @@
 /**
- * Loads the exported production library from $NOTION_PRODUCTION_LIBRARY
- * after verifying it (verify-sources.js). `withVerifiedLibrary(run)` checks
+ * Loads the exported production library (`vendor/notion-production/`, or
+ * $NOTION_PRODUCTION_LIBRARY) after verifying it (verify-sources.js). `withVerifiedLibrary(run)` checks
  * the digests before and after `run`, so every result is bracketed by two
  * successful verifications.
  */

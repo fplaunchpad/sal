@@ -1,16 +1,17 @@
 /**
- * The exported production library, loaded from the directory named by the
- * environment variable NOTION_PRODUCTION_LIBRARY. The export is proprietary
- * code and is never stored in the repository; `verify-sources.js` refuses a
- * directory inside it.
+ * The exported production library: `vendor/notion-production/` at the
+ * repository root, or the directory named by the environment variable
+ * NOTION_PRODUCTION_LIBRARY. The export is Notion's code, outside this
+ * repository's licence (see the notice in that directory); `verify-sources.js`
+ * checks its digests before and after every run.
  */
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const here = dirname(fileURLToPath(import.meta.url));
 
 export function libraryPath() {
-  const dir = process.env.NOTION_PRODUCTION_LIBRARY;
-  if (!dir) throw new Error('NOTION_PRODUCTION_LIBRARY must name the directory written by experiments/notion-production-client/extract.mjs');
-  return dir;
+  return process.env.NOTION_PRODUCTION_LIBRARY || resolve(here, '../../../vendor/notion-production');
 }
 
 let loaded = null;

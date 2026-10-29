@@ -1,10 +1,10 @@
 // Shared helpers for the reproductions. Imports nothing but the exported
-// library, named by NOTION_PRODUCTION_LIBRARY (outside the repository).
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+// library: vendor/notion-production at the repository root, or the directory
+// named by NOTION_PRODUCTION_LIBRARY.
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const dir = process.env.NOTION_PRODUCTION_LIBRARY;
-if (!dir) throw new Error('set NOTION_PRODUCTION_LIBRARY to the directory written by extract.mjs');
+const dir = process.env.NOTION_PRODUCTION_LIBRARY || resolve(dirname(fileURLToPath(import.meta.url)), '../../../vendor/notion-production');
 export const { createClient } = await import(pathToFileURL(join(dir, 'index.mjs')).href);
 
 export const block = { table: 'block', id: '00000000-0000-4000-8000-0000000000b1', spaceId: '00000000-0000-4000-8000-000000000100' };

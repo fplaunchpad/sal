@@ -26,6 +26,7 @@ import { join } from 'node:path';
 import { runRegression, Execution, prepareInstance, execute as executeWith } from '../../ra-pbt/src/index.js';
 import { instanceFor, execute, parseView, renderView, viewKey, normaliseView, verifySources, items } from '../../ra-pbt/instances/notion-production-text/index.js';
 import { classifyTrace } from '../../ra-pbt/instances/notion-production-text/classify.js';
+import { libraryPath } from '../../ra-pbt/instances/notion-production-text/library.js';
 import { yieldToTimers } from './search.mjs';
 import { unbuffered } from './out-of-order.mjs';
 
@@ -456,14 +457,14 @@ cases.push({
   },
 });
 
-/* Source verification rejects a modified export (a copy outside the repository). */
+/* Source verification rejects a modified export (a temporary copy). */
 cases.push({
   name: 'source verification rejects a same-length modification of the export',
   run(results) {
     const original = process.env.NOTION_PRODUCTION_LIBRARY;
     const copy = mkdtempSync(join(tmpdir(), 'notion-export-'));
     try {
-      cpSync(original, copy, { recursive: true });
+      cpSync(libraryPath(), copy, { recursive: true });
       const path = join(copy, 'sources.json');
       const text = readFileSync(path, 'utf8');
       writeFileSync(path, text.replace('2026-10-29', '2026-10-28'));
@@ -472,7 +473,8 @@ cases.push({
       writeFileSync(path, text);
       assert.doesNotThrow(() => verifySources());
     } finally {
-      process.env.NOTION_PRODUCTION_LIBRARY = original;
+      if (original === undefined) delete process.env.NOTION_PRODUCTION_LIBRARY;
+      else process.env.NOTION_PRODUCTION_LIBRARY = original;
       rmSync(copy, { recursive: true, force: true });
     }
     results.observed = 'modified copy rejected, restored copy accepted';

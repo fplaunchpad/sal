@@ -1,37 +1,31 @@
 /**
- * Checks the exported production Notion library at $NOTION_PRODUCTION_LIBRARY
- * against library.json: the SHA-256 and length of every exported file, the
+ * Checks the exported production Notion library (`vendor/notion-production/`
+ * at the repository root, or $NOTION_PRODUCTION_LIBRARY) against library.json: the SHA-256 and length of every exported file, the
  * module count, and the digests of the source slices of the modules this
  * instance's findings name (split/merge request builders 701590, record
  * operations 971340, slice tree 300957, text slice 458789, slice lookup by
  * label 121141, label subdivision 663360, list commands 929891 and list
- * placement 75332). Refuses a library located inside this repository:
- * Notion's code is proprietary and must stay outside it. Uses no network
- * access.
+ * placement 75332). The export is Notion's code, outside this repository's
+ * licence (see the notice in that directory). Uses no network access.
  */
 import { createHash } from 'node:crypto';
 import { readFileSync, realpathSync } from 'node:fs';
-import { dirname, join, relative, isAbsolute } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repository = realpathSync(join(here, '..', '..', '..'));
 
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
-/** The library directory named by the environment; throws when unset. */
+/** The library directory: the environment variable, else the vendored export. */
 export function libraryDirectory() {
-  const dir = process.env.NOTION_PRODUCTION_LIBRARY;
-  if (!dir) throw new Error('Set NOTION_PRODUCTION_LIBRARY to the exported production library (see docs/notion-production-blocks.md)');
-  return realpathSync(dir);
+  return realpathSync(process.env.NOTION_PRODUCTION_LIBRARY || resolve(here, '../../../vendor/notion-production'));
 }
 
 /** Throws an Error listing every mismatch; returns { manifest, directory } when all agree. */
 export function verifySources(directory = libraryDirectory()) {
   const manifest = JSON.parse(readFileSync(join(here, 'library.json'), 'utf8'));
   const problems = [];
-  const inside = relative(repository, directory);
-  if (!inside.startsWith('..') && !isAbsolute(inside)) problems.push(`library ${directory} lies inside the repository ${repository}`);
   for (const [name, pin] of Object.entries(manifest.files)) {
     let bytes;
     try {

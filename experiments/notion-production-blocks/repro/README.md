@@ -3,13 +3,14 @@
 One self-contained script per defect class found by the ra-pbt search over
 the production block-editing code ([the note](../../../docs/notion-production-blocks.md)).
 Each script imports only the exported production library, named by
-`NOTION_PRODUCTION_LIBRARY`, runs the defect schedule and a control that
+`vendor/notion-production/` (or `NOTION_PRODUCTION_LIBRARY`), runs the defect schedule and a control that
 changes one ingredient, and exits 0 when the defect reproduces and the
-control behaves as expected. The library is Notion's proprietary code and
-lives outside this repository; see the note for how to obtain and verify it.
+control behaves as expected. The library is Notion's code, vendored under a
+notice that this repository's licence does not cover it; see the note for how
+it was obtained and is verified.
 
 ```sh
-export NOTION_PRODUCTION_LIBRARY=/path/to/exported/library
+export NOTION_PRODUCTION_LIBRARY=/path/to/a/fresh/export   # optional
 node ra-pbt/instances/notion-production-blocks/verify-sources.js
 for f in experiments/notion-production-blocks/repro/*.mjs; do node "$f" || echo "FAILED $f"; done
 ```

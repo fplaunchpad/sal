@@ -1,14 +1,14 @@
 # Reproductions on the exported production library
 
 Each script imports only the exported library (`common.mjs` loads
-`$NOTION_PRODUCTION_LIBRARY/index.mjs`, a directory outside the repository
+`vendor/notion-production/index.mjs` (or `$NOTION_PRODUCTION_LIBRARY/index.mjs`), Notion's code under its own notice
 written by `experiments/notion-production-client/extract.mjs`) and runs two
 or three in-process clients with explicit delivery. Each prints its expected
 outcome next to the observed one, includes a control that changes one
 ingredient, and exits 0 when every expectation holds.
 
 ```sh
-export NOTION_PRODUCTION_LIBRARY=/path/outside/the/repository/notion-production-library
+export NOTION_PRODUCTION_LIBRARY=/path/to/a/fresh/export   # optional
 node experiments/notion-production-text/repro/run-all.mjs
 ```
 

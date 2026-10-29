@@ -37,7 +37,7 @@ Instances, each with a sequential specification and an adapter:
 | Automerge text with marks, 3.5.0 pinned | deployed library under test | `ra-pbt/instances/automerge`, `experiments/automerge-oracle` |
 | Loro text with styles, 1.17.1 pinned | deployed library under test | `ra-pbt/instances/loro`, `experiments/loro-oracle` |
 | Notion block editor demo (hash-pinned modules) and its corrected variant | product model under test, and its repair | `ra-pbt/instances/notion`, `experiments/notion-ra-pbt` |
-| Notion production editing code, text layer (63 assets pinned 2026-10-29, exported outside the repository) | product code under test | `ra-pbt/instances/notion-production-text`, `experiments/notion-production-text` |
+| Notion production editing code, text layer (63 assets pinned 2026-10-29, vendored at `vendor/notion-production/` under its own notice) | product code under test | `ra-pbt/instances/notion-production-text`, `experiments/notion-production-text` |
 | Notion production editing code, block layer | product code under test | `ra-pbt/instances/notion-production-blocks`, `experiments/notion-production-blocks` |
 | Sal runtime OR-set and RGA | positive control, verified counterparts | `ra-pbt/instances/sal-runtime` |
 | Broken OR-set and broken RGA | negative control | `ra-pbt/instances/sal-runtime` |

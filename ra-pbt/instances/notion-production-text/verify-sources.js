@@ -1,8 +1,7 @@
 /**
  * Verifies the exported production library before and after every run.
  *
- * Level 1 (always): NOTION_PRODUCTION_LIBRARY resolves outside the
- * repository, and every file of the export has the SHA-256 pinned in this
+ * Level 1 (always): every file of the export has the SHA-256 pinned in this
  * directory's sources.json. The pinned digests include the export's own
  * asset manifest (sources.json), so the manifest of public asset URLs and
  * digests cannot change unnoticed.
@@ -17,12 +16,11 @@
  */
 import { createHash } from 'node:crypto';
 import { readFileSync, realpathSync, readdirSync } from 'node:fs';
-import { dirname, join, resolve, sep } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { libraryPath } from './library.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repository = realpathSync(resolve(here, '../../..'));
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
 /** Throws an Error listing every mismatch; returns a summary when all agree. */
@@ -30,8 +28,7 @@ export function verifySources() {
   const pins = JSON.parse(readFileSync(join(here, 'sources.json'), 'utf8'));
   const problems = [];
   const dir = realpathSync(libraryPath());
-  if (dir === repository || dir.startsWith(repository + sep)) problems.push(`the export ${dir} lies inside the repository ${repository}`);
-  const present = readdirSync(dir).sort();
+  const present = readdirSync(dir).filter((f) => f !== 'NOTICE.md').sort();
   const pinned = Object.keys(pins.exportFiles).sort();
   if (JSON.stringify(present) !== JSON.stringify(pinned)) problems.push(`export files ${present.join(',')} != ${pinned.join(',')}`);
   for (const [file, expected] of Object.entries(pins.exportFiles)) {
