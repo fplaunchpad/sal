@@ -122,7 +122,8 @@ could be.
 
 Under the marker specification no judged version lacked a witness in 2,000
 trials; 1,806 versions of the marks mixes were left unjudged at the state
-cap of the full search. The Yjs classes re-expressed on Automerge pass (Y-001,
+cap of the full search, 1,392 of them still at a cap three times larger.
+The Yjs classes re-expressed on Automerge pass (Y-001,
 Y-002, Y-003, Y-005, Y-007), Y-004 becomes A-001 when the counter is
 raised, and opened replicas agree with created ones. The one A-001 trace at
 the end of the text rests on a specification choice Peritext does not make
@@ -342,8 +343,10 @@ unexplained bold difference, 878 of 135,417 versions truncated. Automerge:
 pass, every other failing trial fails under both searches, 26 trials gained
 an unexplained record for the same nearer-view reason as Loro, and 1,914
 of 64,920 versions were truncated, 1,806 of them in the marker runs with
-marks, so the marker-semantics result is "no judged version without a
-witness" rather than a verdict on every version. Notion production text:
+marks, and 1,392 of those remain truncated at three million states, so the
+marker-semantics result is "no judged version without a witness" rather
+than a verdict on every version; the re-check at the larger cap changed no
+verdict. Notion production text:
 under the two-sided boundary rule and the interval reading the directed
 search had both rejected views with witnesses (8 records) and accepted
 views without one (8 records in one trial), because its placement map

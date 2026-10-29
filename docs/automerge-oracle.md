@@ -146,8 +146,9 @@ exactness held: no format request disagreed with the index-level edit
 **The claim is refuted.** Under the anchor semantics, 831 of 1,200 trials
 with marks fail; 794 of them first fail in class A-001. **Under the marker
 semantics no judged version lacked a witness** in the 2,000 trials of every
-mix; 1,806 versions of the marks mixes were left unjudged at the state cap
-(below). What remains under it are local-meaning failures in 17 trials
+mix; 1,806 versions of the marks mixes were left unjudged at the state cap,
+1,392 of them still at a cap three times larger (below). What remains under
+it are local-meaning failures in 17 trials
 (A-002 10, A-001 6, both 1) and two view artefacts.
 
 Trials per class over the anchor runs (a trial counts once per class it
@@ -178,7 +179,12 @@ fails now. The versions the cap cut off number 1,914 of 64,920: 102 in the
 plain runs, 6 in marks-32 under the anchor semantics, none in the other
 anchor runs with marks, and 1,806 in the marker runs with marks (439, 441,
 82, 71, 356 and 315), where boundaries are list elements and the placements
-multiply. The confirmation search (`confirmWitness`) repeats the
+multiply. Re-executing the runs with truncations at a cap of three million
+states (the campaign's own trial seeds; 1 h 55 min, 12 GB heap) changed no
+verdict: the six cut-off versions of marks-32 under the anchor semantics
+have witnesses, 414 of the 1,806 marker versions were judged and have
+witnesses, and 1,392 remain unjudged (385, 364, 301, 247, 48 and 47), as
+do 42 of the 102 plain versions. The confirmation search (`confirmWitness`) repeats the
 end-to-end search under a budget of 200,000 specification applications; in
 96 records (28, 19, 5, 24 and 20 in the anchor runs with marks) the budget
 ran out and the record is counted undecided for the confirmation, though
