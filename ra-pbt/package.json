@@ -1,0 +1,14 @@
+{
+  "name": "ra-pbt",
+  "version": "0.1.0",
+  "description": "Property-based testing of replicated data types against a sequential specification: RA-linearizability witnesses over executed schedules.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}

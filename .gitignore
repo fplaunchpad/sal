@@ -24,3 +24,11 @@ __pycache__/
 
 # Generated standalone paper artifact (rebuild with artifact/export-paper1.py).
 /artifact/dist/
+
+# ra-pbt instance dependencies
+ra-pbt/instances/yjs/node_modules/
+experiments/yjs-oracle/repro/node_modules/
+experiments/yjs-oracle/repro/v14/node_modules/
+ra-pbt/instances/*/node_modules/
+experiments/*/node_modules/
+**/node_modules/

@@ -124,6 +124,22 @@ public-demo sources and an independent list specification. The
 harnesses on a patched demo with the corrected merge: 162,373 archive comparisons,
 deduplicated within each harness, agree with its specification, with no split failure and no text loss.
 
+The [Yjs text oracle](docs/yjs-oracle.md) asks the same questions of the
+published `yjs` text type, pinned at 13.6.31 and run offline against a
+specification that imports no Yjs code. Its list algorithm passed every check
+under the strong list specification, and plain-text histories refute both
+deterministic refinements of it; its formatting failed RA-linearizability in
+five mechanism classes under complete delivery and a sixth under partial
+delivery, where delete sets bypass causal buffering, and a replica that opens
+a document before taking its text type edits differently from one that
+created it. Each class has a hand-derived
+regression with a passing control under
+[experiments/yjs-oracle](experiments/yjs-oracle/README.md), and the
+marker-ownership and delete-set classes have Lean counterparts,
+`YjsMarkerCounterexample` and `YjsDeleteSetCounterexample`. The schedule
+search, witness search and shrinker are the dependency-free library
+[ra-pbt](ra-pbt/README.md), with Yjs as one instance.
+
 The [natural-specification audit](docs/natural-sequential-specifications.md)
 separates client requests from generated replication messages. Simple sets and
 counters use set/integer abstract states with exact history-language preservation;

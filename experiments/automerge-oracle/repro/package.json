@@ -1,0 +1,8 @@
+{
+  "name": "automerge-oracle-repro",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@automerge/automerge": "3.5.0"
+  }
+}
