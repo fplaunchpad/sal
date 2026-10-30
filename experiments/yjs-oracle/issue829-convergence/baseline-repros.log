@@ -1,0 +1,17 @@
+v14 plain-gap original repro (expected exit 1)
+d2 after receiving only the second update of client 1: "bh" pending structs: none
+causally closed states at d2: "b" (no update of client 1), or ones containing "y" (both updates)
+after the first update arrives: "ybh" (converges)
+exit=1
+
+v14 delete-set original repro (expected exit 1)
+received u0 and u2 only: [{"insert":"a"}] pending structs: null pending ds: null
+every causally closed state:  [{"insert":"a","attributes":{"bold":true}}] (u0 alone), [{"insert":"a","attributes":{"bold":true}},{"insert":"b"}] (u0 u1), or [{"insert":"ab"}] (all three)
+after u1 arrives: [{"insert":"ab"}] (converges)
+exit=1
+
+v13 delete-set original repro (expected exit 1)
+received u0 and u2 only: [{"insert":"a"}] pending structs: null pending ds: null
+every causally closed state:  [{"insert":"a","attributes":{"bold":true}}] (u0 alone), [{"insert":"a","attributes":{"bold":true}},{"insert":"b"}] (u0 u1), or [{"insert":"ab"}] (all three)
+after u1 arrives: [{"insert":"ab"}] (converges)
+exit=1

@@ -1,0 +1,20 @@
+@y/y 14.0.0-rc.29
+  one transaction k+w            A="qwAxyazk" C="Axyazk" pending=[[2,0]] STUCK
+    after a local edit on C:      C="LAxyazk" pending=[[2,0]]
+    after a further A edit:       C="LAxyazk" pending=[[2,0]] A="eqwLAxyazk"
+  k and w as separate updates    A="qwAxyazk" C="qwAxyazk" pending=none converged
+  no k, w alone                  A="qwAxyaz" C="qwAxyaz" pending=none converged
+@y/y 14.0.0-rc.7
+  one transaction k+w            A="qwAxyazk" C="Axyazk" pending=[[2,0]] STUCK
+    after a local edit on C:      C="LAxyazk" pending=[[2,0]]
+    after a further A edit:       C="LAxyazk" pending=[[2,0]] A="eqwLAxyazk"
+  k and w as separate updates    A="qwAxyazk" C="qwAxyazk" pending=none converged
+  no k, w alone                  A="qwAxyaz" C="qwAxyaz" pending=none converged
+yjs 13.6.31
+  one transaction k+w            A="qwAxyazk" C="qwAxyazk" pending=none converged
+  k and w as separate updates    A="qwAxyazk" C="qwAxyazk" pending=none converged
+  no k, w alone                  A="qwAxyaz" C="qwAxyaz" pending=none converged
+yjs 13.6.33
+  one transaction k+w            A="qwAxyazk" C="qwAxyazk" pending=none converged
+  k and w as separate updates    A="qwAxyazk" C="qwAxyazk" pending=none converged
+  no k, w alone                  A="qwAxyaz" C="qwAxyaz" pending=none converged

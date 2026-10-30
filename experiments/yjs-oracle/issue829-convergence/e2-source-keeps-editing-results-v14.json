@@ -1,0 +1,144 @@
+{
+  "package": "@y/y",
+  "version": "14.0.0-rc.29",
+  "node": "v26.3.1",
+  "started": "2026-10-30T05:19:24.019Z",
+  "part1": {
+    "gc=false merged=false variant=0": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 240
+    },
+    "gc=false merged=false variant=1": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 420
+    },
+    "gc=false merged=false variant=2": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 660
+    },
+    "gc=false merged=false variant=3": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 379
+    },
+    "gc=false merged=false variant=4": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 360
+    },
+    "gc=false merged=false variant=5": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 240
+    },
+    "gc=false merged=true variant=0": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 226
+    },
+    "gc=false merged=true variant=1": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 258
+    },
+    "gc=false merged=true variant=2": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 430
+    },
+    "gc=false merged=true variant=3": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 250
+    },
+    "gc=false merged=true variant=4": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 246
+    },
+    "gc=false merged=true variant=5": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 168
+    },
+    "gc=true merged=false variant=0": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 240
+    },
+    "gc=true merged=false variant=1": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 420
+    },
+    "gc=true merged=false variant=2": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 660
+    },
+    "gc=true merged=false variant=3": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 379
+    },
+    "gc=true merged=false variant=4": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 360
+    },
+    "gc=true merged=false variant=5": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 240
+    },
+    "gc=true merged=true variant=0": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 226
+    },
+    "gc=true merged=true variant=1": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 258
+    },
+    "gc=true merged=true variant=2": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 430
+    },
+    "gc=true merged=true variant=3": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 250
+    },
+    "gc=true merged=true variant=4": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 246
+    },
+    "gc=true merged=true variant=5": {
+      "cases": 720,
+      "findings": 0,
+      "transientNonCausal": 168
+    }
+  },
+  "part2": {
+    "gc=false": {
+      "cases": 5000,
+      "findings": 0,
+      "transientNonCausal": 0,
+      "transientPending": 4870
+    },
+    "gc=true": {
+      "cases": 5000,
+      "findings": 0,
+      "transientNonCausal": 0,
+      "transientPending": 4870
+    }
+  },
+  "findings": [],
+  "finished": "2026-10-30T05:19:43.900Z"
+}

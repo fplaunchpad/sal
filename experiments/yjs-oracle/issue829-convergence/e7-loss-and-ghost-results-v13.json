@@ -1,0 +1,1877 @@
+{
+  "package": "yjs",
+  "version": "13.6.31",
+  "node": "v26.3.1",
+  "started": "2026-10-30T06:24:37.930Z",
+  "exhaustive": {
+    "plain-gap gc=false": {
+      "cases": 8232,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 32,
+      "formatControl": 22,
+      "formatGapOnly": 11
+    },
+    "plain-gap gc=true": {
+      "cases": 8232,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 32,
+      "formatControl": 22,
+      "formatGapOnly": 11
+    },
+    "delete-set-gap gc=false": {
+      "cases": 8232,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 827,
+      "formatControl": 21,
+      "formatGapOnly": 806
+    },
+    "delete-set-gap gc=true": {
+      "cases": 8232,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 827,
+      "formatControl": 21,
+      "formatGapOnly": 806
+    },
+    "insert-before-unformat gc=false": {
+      "cases": 8232,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 1806,
+      "formatControl": 24,
+      "formatGapOnly": 1788
+    },
+    "insert-before-unformat gc=true": {
+      "cases": 8232,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 1806,
+      "formatControl": 24,
+      "formatGapOnly": 1788
+    }
+  },
+  "random": {
+    "plain-gap gc=false": {
+      "cases": 5000,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 22,
+      "formatControl": 21,
+      "formatGapOnly": 2
+    },
+    "plain-gap gc=true": {
+      "cases": 5000,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 22,
+      "formatControl": 21,
+      "formatGapOnly": 2
+    },
+    "delete-set-gap gc=false": {
+      "cases": 5000,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 458,
+      "formatControl": 21,
+      "formatGapOnly": 438
+    },
+    "delete-set-gap gc=true": {
+      "cases": 5000,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 458,
+      "formatControl": 21,
+      "formatGapOnly": 438
+    },
+    "insert-before-unformat gc=false": {
+      "cases": 5000,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 867,
+      "formatControl": 23,
+      "formatGapOnly": 850
+    },
+    "insert-before-unformat gc=true": {
+      "cases": 5000,
+      "divergence": 0,
+      "lost": 0,
+      "ghost": 0,
+      "controlLostOrGhost": 0,
+      "format": 867,
+      "formatControl": 23,
+      "formatGapOnly": 850
+    }
+  },
+  "examples": {
+    "lost": [],
+    "ghost": [],
+    "formatGapOnly": [
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "insertBoldStart"
+          ],
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            1,
+            "replaceFirst"
+          ]
+        ],
+        "mode": "alone",
+        "seed": 3157,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBbh",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "b",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Bybh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "insertBoldStart"
+          ],
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            1,
+            "replaceFirst"
+          ]
+        ],
+        "mode": "merged",
+        "seed": 3158,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBbh",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "b",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Bybh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "insertBoldStart"
+          ]
+        ],
+        "mode": "alone",
+        "seed": 5980,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "B",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "BAbh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "insertBoldStart"
+          ]
+        ],
+        "mode": "merged",
+        "seed": 5981,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "B",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "BAbh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "insertBoldStart"
+          ]
+        ],
+        "mode": "sync",
+        "seed": 5982,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "B",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "BAbh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "boldAll"
+          ]
+        ],
+        "mode": "alone",
+        "seed": 5995,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "boldAll"
+          ]
+        ],
+        "mode": "merged",
+        "seed": 5996,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "boldAll"
+          ]
+        ],
+        "mode": "sync",
+        "seed": 5997,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "italicAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "italicAll"
+          ]
+        ],
+        "mode": "alone",
+        "seed": 7093,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "italic",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "italicAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "italicAll"
+          ]
+        ],
+        "mode": "merged",
+        "seed": 7094,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "italic",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": false,
+        "script": [
+          [
+            0,
+            "italicAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "italicAll"
+          ]
+        ],
+        "mode": "sync",
+        "seed": 7095,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "italic",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "insertBoldStart"
+          ],
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            1,
+            "replaceFirst"
+          ]
+        ],
+        "mode": "alone",
+        "seed": 3157,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBbh",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "b",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Bybh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "insertBoldStart"
+          ],
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            1,
+            "replaceFirst"
+          ]
+        ],
+        "mode": "merged",
+        "seed": 3158,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBbh",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "b",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Bybh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "insertBoldStart"
+          ]
+        ],
+        "mode": "alone",
+        "seed": 5980,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "B",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "BAbh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "insertBoldStart"
+          ]
+        ],
+        "mode": "merged",
+        "seed": 5981,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "B",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "BAbh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "insertBoldStart"
+          ]
+        ],
+        "mode": "sync",
+        "seed": 5982,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yBhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "B",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "BAbh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "boldAll"
+          ]
+        ],
+        "mode": "alone",
+        "seed": 5995,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "boldAll"
+          ]
+        ],
+        "mode": "merged",
+        "seed": 5996,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "boldAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "boldAll"
+          ]
+        ],
+        "mode": "sync",
+        "seed": 5997,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "bold",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      },
+      {
+        "family": "plain-gap",
+        "gc": true,
+        "script": [
+          [
+            0,
+            "italicAll"
+          ],
+          [
+            0,
+            "replaceFirst"
+          ],
+          [
+            1,
+            "italicAll"
+          ]
+        ],
+        "mode": "alone",
+        "seed": 7093,
+        "gap": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "b",
+            "b"
+          ],
+          "text": "yhA",
+          "lost": [],
+          "ghost": [],
+          "format": [
+            {
+              "ch": "A",
+              "key": "italic",
+              "want": true,
+              "got": null
+            }
+          ]
+        },
+        "ctl": {
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "gapViews": [
+            "ybh",
+            "ybh"
+          ],
+          "text": "Abh",
+          "lost": [],
+          "ghost": [],
+          "format": []
+        }
+      }
+    ]
+  },
+  "finished": "2026-10-30T06:25:23.659Z"
+}

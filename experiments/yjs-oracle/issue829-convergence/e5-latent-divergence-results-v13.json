@@ -1,0 +1,46 @@
+{
+  "package": "yjs",
+  "version": "13.6.31",
+  "node": "v26.3.1",
+  "started": "2026-10-30T05:22:41.165Z",
+  "groups": {
+    "plain-gap gc=false": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "plain-gap gc=true": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "delete-set-gap gc=false": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "delete-set-gap gc=true": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "insert-before-unformat gc=false": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "insert-before-unformat gc=true": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    }
+  },
+  "findings": [],
+  "finished": "2026-10-30T05:24:02.776Z"
+}

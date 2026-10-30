@@ -1,0 +1,2506 @@
+{
+  "experiment": "E3 interacting gaps",
+  "node": "v26.3.1",
+  "start": 1,
+  "count": 5000,
+  "protocols": [
+    "direct-ab",
+    "direct-ba",
+    "direct-merged",
+    "direct-mixed",
+    "sync-only"
+  ],
+  "started": "2026-10-30T05:39:24.576Z",
+  "versions": [
+    {
+      "package": "@y/y",
+      "version": "14.0.0-rc.29",
+      "random": [
+        {
+          "gc": false,
+          "protocol": "direct-ab",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": false,
+          "protocol": "direct-ba",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": false,
+          "protocol": "direct-merged",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": false,
+          "protocol": "direct-mixed",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 1,
+          "unresolvedAfterDelivery": 1,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 1,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": false,
+          "protocol": "sync-only",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 2,
+          "syncRoundsToConverge": {
+            "1": 4995,
+            "2": 5
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "direct-ab",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "direct-ba",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "direct-merged",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "direct-mixed",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 1,
+          "unresolvedAfterDelivery": 1,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 1,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "sync-only",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 2245,
+          "joinSvMismatch": 138,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 4396,
+          "gapPendingAny": 1610,
+          "svHidesIntegrated": 4396,
+          "maxSyncRounds": 2,
+          "syncRoundsToConverge": {
+            "1": 4995,
+            "2": 5
+          }
+        }
+      ],
+      "enumeration": [
+        {
+          "gc": false,
+          "protocol": "direct-ab",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 1,
+          "unresolvedAfterDelivery": 1,
+          "joinPending": 282,
+          "gapObserved": 274
+        },
+        {
+          "gc": false,
+          "protocol": "direct-ba",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 282,
+          "gapObserved": 274
+        },
+        {
+          "gc": false,
+          "protocol": "direct-merged",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 282,
+          "gapObserved": 274
+        },
+        {
+          "gc": false,
+          "protocol": "sync-only",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 282,
+          "gapObserved": 274
+        },
+        {
+          "gc": true,
+          "protocol": "direct-ab",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 1,
+          "unresolvedAfterDelivery": 1,
+          "joinPending": 282,
+          "gapObserved": 274
+        },
+        {
+          "gc": true,
+          "protocol": "direct-ba",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 282,
+          "gapObserved": 274
+        },
+        {
+          "gc": true,
+          "protocol": "direct-merged",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 282,
+          "gapObserved": 274
+        },
+        {
+          "gc": true,
+          "protocol": "sync-only",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 282,
+          "gapObserved": 274
+        }
+      ],
+      "stuckPendingScenario": [
+        {
+          "gc": false,
+          "othersText": "qwAxyazk",
+          "afterOnePass": {
+            "text": "Axyazk",
+            "pending": {
+              "structs": true,
+              "ds": false
+            },
+            "missing": [
+              [
+                2,
+                0
+              ]
+            ]
+          },
+          "stuckAfterOnePass": true,
+          "afterSecondPass": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            }
+          },
+          "afterSvSync": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            }
+          },
+          "finalVerdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          }
+        },
+        {
+          "gc": true,
+          "othersText": "qwAxyazk",
+          "afterOnePass": {
+            "text": "Axyazk",
+            "pending": {
+              "structs": true,
+              "ds": false
+            },
+            "missing": [
+              [
+                2,
+                0
+              ]
+            ]
+          },
+          "stuckAfterOnePass": true,
+          "afterSecondPass": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            }
+          },
+          "afterSvSync": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            }
+          },
+          "finalVerdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          }
+        }
+      ],
+      "findings": [],
+      "transients": [
+        {
+          "seed": 1272116326,
+          "gc": false,
+          "withheld": {
+            "a1": {
+              "0": 1,
+              "1": 1,
+              "2": 1,
+              "3": 0,
+              "4": 132,
+              "5": 3,
+              "6": 3,
+              "7": 2,
+              "8": 65,
+              "9": 65,
+              "10": 0
+            },
+            "b1": {
+              "0": 1,
+              "1": 1,
+              "2": 2,
+              "3": 0,
+              "4": 196,
+              "5": 3,
+              "6": 0,
+              "7": 3,
+              "8": 1,
+              "9": 1,
+              "10": 66,
+              "11": 0
+            }
+          },
+          "eligible": {
+            "a": true,
+            "b": true
+          },
+          "cGets": {
+            "a2": true,
+            "b2": true
+          },
+          "trace": [
+            {
+              "op": "base",
+              "base": "xyzu"
+            },
+            {
+              "op": "insert",
+              "replica": 1,
+              "pos": 4,
+              "value": "AA",
+              "withheld": true
+            },
+            {
+              "op": "insert",
+              "replica": 1,
+              "pos": 0,
+              "value": "aa",
+              "attrs": {},
+              "second": true,
+              "eligible": true
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 1,
+              "value": "B",
+              "withheld": true
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 3,
+              "value": "b",
+              "attrs": {},
+              "second": true,
+              "eligible": true
+            },
+            {
+              "op": "deliver",
+              "what": "b2",
+              "to": 3
+            },
+            {
+              "op": "deliver",
+              "what": "a2",
+              "to": 2
+            },
+            {
+              "op": "deliver",
+              "what": "b2",
+              "to": 1
+            },
+            {
+              "op": "deliver",
+              "what": "a2",
+              "to": 3
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 3,
+              "value": "0",
+              "attrs": {
+                "bold": false,
+                "italic": false
+              },
+              "targeted": false
+            },
+            {
+              "op": "relay",
+              "from": 2,
+              "to": 1
+            },
+            {
+              "op": "relay",
+              "from": 2,
+              "to": 3
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 3,
+              "value": "1",
+              "attrs": {},
+              "targeted": false
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 5,
+              "value": "2",
+              "attrs": {
+                "bold": false,
+                "italic": true
+              },
+              "targeted": false
+            },
+            {
+              "op": "relay",
+              "from": 2,
+              "to": 1
+            },
+            {
+              "op": "relay",
+              "from": 2,
+              "to": 3
+            }
+          ],
+          "n": 3,
+          "gapViews": [
+            {
+              "text": "aaxybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aaxBybzu",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxBybzu"
+                }
+              ]
+            },
+            {
+              "text": "aaxybzu",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxybzu"
+                }
+              ]
+            }
+          ],
+          "gapPending": [
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            }
+          ],
+          "gapSvs": [
+            "[[1,4],[2,0],[3,4]]",
+            "[[1,0],[2,2],[3,4]]",
+            "[[1,0],[2,0],[3,4]]"
+          ],
+          "svHidesIntegrated": true,
+          "editViews": [
+            {
+              "text": "aaxybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102Bybzu",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "Bybzu"
+                }
+              ]
+            },
+            {
+              "text": "aaxybzu",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxybzu"
+                }
+              ]
+            }
+          ],
+          "editPending": [
+            {
+              "structs": true,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": true,
+              "ds": false
+            }
+          ],
+          "protocol": "direct-mixed",
+          "joinFrom": 1,
+          "joinView": {
+            "text": "aaxybzuAA",
+            "delta": [
+              {
+                "attributes": {},
+                "insert": "aaxybzuAA"
+              }
+            ]
+          },
+          "joinPending": {
+            "structs": true,
+            "ds": false
+          },
+          "joinSv": "[[1,4],[2,0],[3,4]]",
+          "joinSvMismatch": false,
+          "deliveryRounds": 0,
+          "deliveryQuiescent": true,
+          "delivered": [
+            {
+              "text": "aaxBybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxBybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aaxBybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxBybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aaxBybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxBybzuAA"
+                }
+              ]
+            }
+          ],
+          "deliveredPending": [
+            {
+              "structs": true,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": true,
+              "ds": false
+            },
+            {
+              "structs": true,
+              "ds": false
+            }
+          ],
+          "mismatchAfterDelivery": true,
+          "unresolvedAfterDelivery": true,
+          "rounds": 1,
+          "quiescent": true,
+          "converged": 1,
+          "final": [
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            }
+          ],
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "clientIDs": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "failure": false,
+          "stuck": false,
+          "nonquiescent": false,
+          "svMismatch": false,
+          "interesting": false
+        },
+        {
+          "seed": 1272116326,
+          "gc": true,
+          "withheld": {
+            "a1": {
+              "0": 1,
+              "1": 1,
+              "2": 1,
+              "3": 0,
+              "4": 132,
+              "5": 3,
+              "6": 3,
+              "7": 2,
+              "8": 65,
+              "9": 65,
+              "10": 0
+            },
+            "b1": {
+              "0": 1,
+              "1": 1,
+              "2": 2,
+              "3": 0,
+              "4": 196,
+              "5": 3,
+              "6": 0,
+              "7": 3,
+              "8": 1,
+              "9": 1,
+              "10": 66,
+              "11": 0
+            }
+          },
+          "eligible": {
+            "a": true,
+            "b": true
+          },
+          "cGets": {
+            "a2": true,
+            "b2": true
+          },
+          "trace": [
+            {
+              "op": "base",
+              "base": "xyzu"
+            },
+            {
+              "op": "insert",
+              "replica": 1,
+              "pos": 4,
+              "value": "AA",
+              "withheld": true
+            },
+            {
+              "op": "insert",
+              "replica": 1,
+              "pos": 0,
+              "value": "aa",
+              "attrs": {},
+              "second": true,
+              "eligible": true
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 1,
+              "value": "B",
+              "withheld": true
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 3,
+              "value": "b",
+              "attrs": {},
+              "second": true,
+              "eligible": true
+            },
+            {
+              "op": "deliver",
+              "what": "b2",
+              "to": 3
+            },
+            {
+              "op": "deliver",
+              "what": "a2",
+              "to": 2
+            },
+            {
+              "op": "deliver",
+              "what": "b2",
+              "to": 1
+            },
+            {
+              "op": "deliver",
+              "what": "a2",
+              "to": 3
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 3,
+              "value": "0",
+              "attrs": {
+                "bold": false,
+                "italic": false
+              },
+              "targeted": false
+            },
+            {
+              "op": "relay",
+              "from": 2,
+              "to": 1
+            },
+            {
+              "op": "relay",
+              "from": 2,
+              "to": 3
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 3,
+              "value": "1",
+              "attrs": {},
+              "targeted": false
+            },
+            {
+              "op": "insert",
+              "replica": 2,
+              "pos": 5,
+              "value": "2",
+              "attrs": {
+                "bold": false,
+                "italic": true
+              },
+              "targeted": false
+            },
+            {
+              "op": "relay",
+              "from": 2,
+              "to": 1
+            },
+            {
+              "op": "relay",
+              "from": 2,
+              "to": 3
+            }
+          ],
+          "n": 3,
+          "gapViews": [
+            {
+              "text": "aaxybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aaxBybzu",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxBybzu"
+                }
+              ]
+            },
+            {
+              "text": "aaxybzu",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxybzu"
+                }
+              ]
+            }
+          ],
+          "gapPending": [
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            }
+          ],
+          "gapSvs": [
+            "[[1,4],[2,0],[3,4]]",
+            "[[1,0],[2,2],[3,4]]",
+            "[[1,0],[2,0],[3,4]]"
+          ],
+          "svHidesIntegrated": true,
+          "editViews": [
+            {
+              "text": "aaxybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102Bybzu",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "Bybzu"
+                }
+              ]
+            },
+            {
+              "text": "aaxybzu",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxybzu"
+                }
+              ]
+            }
+          ],
+          "editPending": [
+            {
+              "structs": true,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": true,
+              "ds": false
+            }
+          ],
+          "protocol": "direct-mixed",
+          "joinFrom": 1,
+          "joinView": {
+            "text": "aaxybzuAA",
+            "delta": [
+              {
+                "attributes": {},
+                "insert": "aaxybzuAA"
+              }
+            ]
+          },
+          "joinPending": {
+            "structs": true,
+            "ds": false
+          },
+          "joinSv": "[[1,4],[2,0],[3,4]]",
+          "joinSvMismatch": false,
+          "deliveryRounds": 0,
+          "deliveryQuiescent": true,
+          "delivered": [
+            {
+              "text": "aaxBybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxBybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aaxBybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxBybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aaxBybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aaxBybzuAA"
+                }
+              ]
+            }
+          ],
+          "deliveredPending": [
+            {
+              "structs": true,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": true,
+              "ds": false
+            },
+            {
+              "structs": true,
+              "ds": false
+            }
+          ],
+          "mismatchAfterDelivery": true,
+          "unresolvedAfterDelivery": true,
+          "rounds": 1,
+          "quiescent": true,
+          "converged": 1,
+          "final": [
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            },
+            {
+              "text": "aax102BybzuAA",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "aax1"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": false
+                  },
+                  "insert": "0"
+                },
+                {
+                  "attributes": {
+                    "bold": false,
+                    "italic": true
+                  },
+                  "insert": "2"
+                },
+                {
+                  "attributes": {},
+                  "insert": "BybzuAA"
+                }
+              ]
+            }
+          ],
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "clientIDs": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "failure": false,
+          "stuck": false,
+          "nonquiescent": false,
+          "svMismatch": false,
+          "interesting": false
+        },
+        {
+          "perm": [
+            "a1",
+            "b2",
+            "c2",
+            "b1",
+            "c1",
+            "a2"
+          ],
+          "gc": false,
+          "protocol": "direct-ab",
+          "trace": [
+            {
+              "step": 0,
+              "deliver": "a1"
+            },
+            {
+              "step": 0,
+              "replica": 1,
+              "op": "insert",
+              "pos": 0
+            },
+            {
+              "step": 0,
+              "replica": 2,
+              "op": "delete",
+              "pos": 3
+            },
+            {
+              "step": 0,
+              "replica": 3,
+              "op": "format",
+              "pos": 2
+            },
+            {
+              "step": 1,
+              "deliver": "b2"
+            },
+            {
+              "step": 1,
+              "replica": 1,
+              "op": "delete",
+              "pos": 5
+            },
+            {
+              "step": 1,
+              "replica": 2,
+              "op": "format",
+              "pos": 2
+            },
+            {
+              "step": 1,
+              "replica": 3,
+              "op": "insert",
+              "pos": 3
+            },
+            {
+              "step": 2,
+              "deliver": "c2"
+            },
+            {
+              "step": 2,
+              "replica": 1,
+              "op": "format",
+              "pos": 0
+            },
+            {
+              "step": 2,
+              "replica": 2,
+              "op": "insert",
+              "pos": 3
+            },
+            {
+              "step": 2,
+              "replica": 3,
+              "op": "delete",
+              "pos": 4
+            },
+            {
+              "step": 3,
+              "join": 4,
+              "from": 1,
+              "text": "0xa7b",
+              "pending": {
+                "structs": true,
+                "ds": true
+              }
+            },
+            {
+              "step": 3,
+              "deliver": "b1"
+            },
+            {
+              "step": 3,
+              "replica": 1,
+              "op": "insert",
+              "pos": 1
+            },
+            {
+              "step": 3,
+              "replica": 2,
+              "op": "delete",
+              "pos": 4
+            },
+            {
+              "step": 3,
+              "replica": 3,
+              "op": "format",
+              "pos": 3
+            },
+            {
+              "step": 4,
+              "deliver": "c1"
+            },
+            {
+              "step": 4,
+              "replica": 1,
+              "op": "delete",
+              "pos": 0
+            },
+            {
+              "step": 4,
+              "replica": 2,
+              "op": "format",
+              "pos": 3
+            },
+            {
+              "step": 4,
+              "replica": 3,
+              "op": "insert",
+              "pos": 1
+            },
+            {
+              "step": 5,
+              "deliver": "a2"
+            },
+            {
+              "step": 5,
+              "replica": 1,
+              "op": "format",
+              "pos": 4
+            },
+            {
+              "step": 5,
+              "replica": 2,
+              "op": "insert",
+              "pos": 0
+            },
+            {
+              "step": 5,
+              "replica": 3,
+              "op": "delete",
+              "pos": 0
+            }
+          ],
+          "joinFrom": 1,
+          "joinPending": {
+            "structs": true,
+            "ds": true
+          },
+          "gapObserved": false,
+          "deliveryQuiescent": true,
+          "mismatchAfterDelivery": true,
+          "delivered": [
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "Bxab"
+                }
+              ]
+            }
+          ],
+          "deliveredPending": [
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": true,
+              "ds": true
+            }
+          ],
+          "deliveredSvs": [
+            "[[1,6],[2,4],[3,9]]",
+            "[[1,6],[2,4],[3,9]]",
+            "[[1,6],[2,4],[3,9]]",
+            "[[1,5],[2,3],[3,8]]"
+          ],
+          "unresolvedAfterDelivery": true,
+          "rounds": 1,
+          "quiescent": true,
+          "converged": 1,
+          "final": [
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            }
+          ],
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "failure": false,
+          "stuck": false,
+          "nonquiescent": false,
+          "svMismatch": false
+        },
+        {
+          "perm": [
+            "a1",
+            "b2",
+            "c2",
+            "b1",
+            "c1",
+            "a2"
+          ],
+          "gc": true,
+          "protocol": "direct-ab",
+          "trace": [
+            {
+              "step": 0,
+              "deliver": "a1"
+            },
+            {
+              "step": 0,
+              "replica": 1,
+              "op": "insert",
+              "pos": 0
+            },
+            {
+              "step": 0,
+              "replica": 2,
+              "op": "delete",
+              "pos": 3
+            },
+            {
+              "step": 0,
+              "replica": 3,
+              "op": "format",
+              "pos": 2
+            },
+            {
+              "step": 1,
+              "deliver": "b2"
+            },
+            {
+              "step": 1,
+              "replica": 1,
+              "op": "delete",
+              "pos": 5
+            },
+            {
+              "step": 1,
+              "replica": 2,
+              "op": "format",
+              "pos": 2
+            },
+            {
+              "step": 1,
+              "replica": 3,
+              "op": "insert",
+              "pos": 3
+            },
+            {
+              "step": 2,
+              "deliver": "c2"
+            },
+            {
+              "step": 2,
+              "replica": 1,
+              "op": "format",
+              "pos": 0
+            },
+            {
+              "step": 2,
+              "replica": 2,
+              "op": "insert",
+              "pos": 3
+            },
+            {
+              "step": 2,
+              "replica": 3,
+              "op": "delete",
+              "pos": 4
+            },
+            {
+              "step": 3,
+              "join": 4,
+              "from": 1,
+              "text": "0xa7b",
+              "pending": {
+                "structs": true,
+                "ds": true
+              }
+            },
+            {
+              "step": 3,
+              "deliver": "b1"
+            },
+            {
+              "step": 3,
+              "replica": 1,
+              "op": "insert",
+              "pos": 1
+            },
+            {
+              "step": 3,
+              "replica": 2,
+              "op": "delete",
+              "pos": 4
+            },
+            {
+              "step": 3,
+              "replica": 3,
+              "op": "format",
+              "pos": 3
+            },
+            {
+              "step": 4,
+              "deliver": "c1"
+            },
+            {
+              "step": 4,
+              "replica": 1,
+              "op": "delete",
+              "pos": 0
+            },
+            {
+              "step": 4,
+              "replica": 2,
+              "op": "format",
+              "pos": 3
+            },
+            {
+              "step": 4,
+              "replica": 3,
+              "op": "insert",
+              "pos": 1
+            },
+            {
+              "step": 5,
+              "deliver": "a2"
+            },
+            {
+              "step": 5,
+              "replica": 1,
+              "op": "format",
+              "pos": 4
+            },
+            {
+              "step": 5,
+              "replica": 2,
+              "op": "insert",
+              "pos": 0
+            },
+            {
+              "step": 5,
+              "replica": 3,
+              "op": "delete",
+              "pos": 0
+            }
+          ],
+          "joinFrom": 1,
+          "joinPending": {
+            "structs": true,
+            "ds": true
+          },
+          "gapObserved": false,
+          "deliveryQuiescent": true,
+          "mismatchAfterDelivery": true,
+          "delivered": [
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "Bxab"
+                }
+              ]
+            }
+          ],
+          "deliveredPending": [
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": false,
+              "ds": false
+            },
+            {
+              "structs": true,
+              "ds": true
+            }
+          ],
+          "deliveredSvs": [
+            "[[1,6],[2,4],[3,9]]",
+            "[[1,6],[2,4],[3,9]]",
+            "[[1,6],[2,4],[3,9]]",
+            "[[1,5],[2,3],[3,8]]"
+          ],
+          "unresolvedAfterDelivery": true,
+          "rounds": 1,
+          "quiescent": true,
+          "converged": 1,
+          "final": [
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            },
+            {
+              "text": "9>Bxab",
+              "delta": [
+                {
+                  "attributes": {},
+                  "insert": "9>Bxab"
+                }
+              ]
+            }
+          ],
+          "verdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          },
+          "failure": false,
+          "stuck": false,
+          "nonquiescent": false,
+          "svMismatch": false
+        }
+      ]
+    },
+    {
+      "package": "yjs",
+      "version": "13.6.31",
+      "random": [
+        {
+          "gc": false,
+          "protocol": "direct-ab",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": false,
+          "protocol": "direct-ba",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": false,
+          "protocol": "direct-merged",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": false,
+          "protocol": "direct-mixed",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": false,
+          "protocol": "sync-only",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 2,
+          "syncRoundsToConverge": {
+            "1": 4996,
+            "2": 4
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "direct-ab",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "direct-ba",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "direct-merged",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "direct-mixed",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 0,
+          "syncRoundsToConverge": {
+            "1": 5000
+          }
+        },
+        {
+          "gc": true,
+          "protocol": "sync-only",
+          "trials": 5000,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 4991,
+          "joinSvMismatch": 0,
+          "skipEligibleBoth": 4376,
+          "cMissedOne": 1385,
+          "gapSkipVisible": 0,
+          "gapPendingAny": 5000,
+          "svHidesIntegrated": 0,
+          "maxSyncRounds": 2,
+          "syncRoundsToConverge": {
+            "1": 4996,
+            "2": 4
+          }
+        }
+      ],
+      "enumeration": [
+        {
+          "gc": false,
+          "protocol": "direct-ab",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 684,
+          "gapObserved": 360
+        },
+        {
+          "gc": false,
+          "protocol": "direct-ba",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 684,
+          "gapObserved": 360
+        },
+        {
+          "gc": false,
+          "protocol": "direct-merged",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 684,
+          "gapObserved": 360
+        },
+        {
+          "gc": false,
+          "protocol": "sync-only",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 684,
+          "gapObserved": 360
+        },
+        {
+          "gc": true,
+          "protocol": "direct-ab",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 684,
+          "gapObserved": 360
+        },
+        {
+          "gc": true,
+          "protocol": "direct-ba",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 684,
+          "gapObserved": 360
+        },
+        {
+          "gc": true,
+          "protocol": "direct-merged",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 684,
+          "gapObserved": 360
+        },
+        {
+          "gc": true,
+          "protocol": "sync-only",
+          "trials": 720,
+          "failures": 0,
+          "stuck": 0,
+          "nonquiescent": 0,
+          "svMismatch": 0,
+          "mismatchAfterDelivery": 0,
+          "unresolvedAfterDelivery": 0,
+          "joinPending": 684,
+          "gapObserved": 360
+        }
+      ],
+      "stuckPendingScenario": [
+        {
+          "gc": false,
+          "othersText": "qwAxyazk",
+          "afterOnePass": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            },
+            "missing": null
+          },
+          "stuckAfterOnePass": false,
+          "afterSecondPass": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            }
+          },
+          "afterSvSync": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            }
+          },
+          "finalVerdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          }
+        },
+        {
+          "gc": true,
+          "othersText": "qwAxyazk",
+          "afterOnePass": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            },
+            "missing": null
+          },
+          "stuckAfterOnePass": false,
+          "afterSecondPass": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            }
+          },
+          "afterSvSync": {
+            "text": "qwAxyazk",
+            "pending": {
+              "structs": false,
+              "ds": false
+            }
+          },
+          "finalVerdict": {
+            "divergence": false,
+            "pending": [
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              },
+              {
+                "structs": false,
+                "ds": false
+              }
+            ],
+            "svs": 1,
+            "reloadDivergence": false,
+            "unresolved": false
+          }
+        }
+      ],
+      "findings": [],
+      "transients": []
+    }
+  ],
+  "finished": "2026-10-30T05:41:06.855Z"
+}

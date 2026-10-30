@@ -1,0 +1,46 @@
+{
+  "package": "@y/y",
+  "version": "14.0.0-rc.29",
+  "node": "v26.3.1",
+  "started": "2026-10-30T05:21:26.493Z",
+  "groups": {
+    "plain-gap gc=false": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "plain-gap gc=true": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "delete-set-gap gc=false": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "delete-set-gap gc=true": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "insert-before-unformat gc=false": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    },
+    "insert-before-unformat gc=true": {
+      "trials": 5000,
+      "firstFindings": 0,
+      "secondFindings": 0,
+      "skipsAfterFirst": 0
+    }
+  },
+  "findings": [],
+  "finished": "2026-10-30T05:22:41.074Z"
+}

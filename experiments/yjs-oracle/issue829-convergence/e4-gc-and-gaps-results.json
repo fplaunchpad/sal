@@ -1,0 +1,6460 @@
+{
+  "package": "@y/y",
+  "version": "14.0.0-rc.29",
+  "node": "v26.3.1",
+  "start": 1,
+  "count": 5000,
+  "gcModes": [
+    true,
+    false
+  ],
+  "started": "2026-10-30T05:27:17.146Z",
+  "hand": [
+    {
+      "name": "deleteBehindGap_fillAlone",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "deleteBehindGap_fillMergedWithLater",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bxw",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bxw"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del) Item@2+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bxw\",\"delta\":[{\"attributes\":{},\"insert\":\"bxw\"}]}|{}",
+          "{\"text\":\"bxw\",\"delta\":[{\"attributes\":{},\"insert\":\"bxw\"}]}|{}",
+          "{\"text\":\"bxw\",\"delta\":[{\"attributes\":{},\"insert\":\"bxw\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bxw",
+        "plain": true
+      },
+      "got": {
+        "text": "bxw",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bxw"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "deleteBehindGap_fillBySync",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "deleteBehindGap_fillBySyncFromBystander",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "nestedGCBesideSkip_fillAlone",
+      "kind": "nested",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "node deleted, q collected beside gap",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 GC@1+1",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "GC@0+2",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}",
+        "structsB": "GC@0+2"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "nestedGCBesideSkip_fillBySync",
+      "kind": "nested",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "node deleted, q collected beside gap",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 GC@1+1",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "GC@0+2",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "nestedGCBesideSkip_fillMergedWithLater",
+      "kind": "nested",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "node deleted, q collected beside gap",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 GC@1+1",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "GC@0+3",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_before",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "author delete set applied across gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_reloadBefore",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded with pending delete set",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_reloadV2Before",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded v2 with pending delete set",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_mergedWithPredecessor",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "gap open",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_twoGaps",
+      "kind": "text2",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "delete set across two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del) Skip@2+1 Item@3+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del) Item@2+1:ContentDeleted(del) Item@3+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_nested",
+      "kind": "nested",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "author delete set across nested gap",
+          "B": "",
+          "Bnested": "{\"children\":[{\"children\":[\"m\"]}]}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{\"children\":[{\"children\":[\"m\"]}]}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{\"children\":[{\"children\":[\"m\"]}]}",
+          "{\"text\":\"\",\"delta\":[]}|{\"children\":[{\"children\":[\"m\"]}]}",
+          "{\"text\":\"\",\"delta\":[]}|{\"children\":[{\"children\":[\"m\"]}]}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{\"children\":[{\"children\":[\"m\"]}]}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{\"children\":[{\"children\":[\"m\"]}]}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "originBehindGapDeleted_fillAlone",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h i j deleted",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "originBehindGapDeleted_keepH",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "i j deleted",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "plain": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "originBehindGapDeleted_nested",
+      "kind": "nested",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "i j deleted then node collected",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 GC@1+1",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "GC@0+2",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "formatSpanningGap_active",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "bold over h b",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {
+                "bold": true
+              },
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{\"bold\":true},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{\"bold\":true},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{\"bold\":true},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "bold": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {
+              "bold": true
+            },
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "formatSpanningGap_unformatted",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "bold then unbold over h b",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "plain": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "formatSpanningGap_unformatted_deleteBehind",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "bold, unbold, h deleted",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "formatSpanningGap_authorUnformatBefore",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "B bold, A unbold arrives before predecessor",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "plain": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillInOrder",
+      "kind": "text2",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h z deleted beside two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del) Skip@2+1 Item@3+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillReversed",
+      "kind": "text2",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h z deleted beside two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del) Skip@2+1 Item@3+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillMerged",
+      "kind": "text2",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h z deleted beside two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del) Skip@2+1 Item@3+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillBySync",
+      "kind": "text2",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h z deleted beside two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del) Skip@2+1 Item@3+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillOneThenReload",
+      "kind": "text2",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "one gap filled, reloaded",
+          "B": "yb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadBeforeFill_deleteBehind",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded with deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadV2BeforeFill_deleteBehind",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded v2 with deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadBeforeFill_nestedGC",
+      "kind": "nested",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded with GC beside gap",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 GC@1+1",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "GC@0+2",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadBeforeFill_formatUnformat",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded after bold and unbold",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "plain": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadBeforeFill_twoGaps",
+      "kind": "text2",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded with two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del) Skip@2+1 Item@3+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "gapRelayedToBystander_bothDelete",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "B and C both hold the gap and deleted h",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "gapRelayedToBystander_deleteSetRelayed",
+      "kind": "text",
+      "gc": true,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "pending delete set relayed by sync",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "deleteBehindGap_fillAlone",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "deleteBehindGap_fillMergedWithLater",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bxw",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bxw"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del) Item@2+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bxw\",\"delta\":[{\"attributes\":{},\"insert\":\"bxw\"}]}|{}",
+          "{\"text\":\"bxw\",\"delta\":[{\"attributes\":{},\"insert\":\"bxw\"}]}|{}",
+          "{\"text\":\"bxw\",\"delta\":[{\"attributes\":{},\"insert\":\"bxw\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bxw",
+        "plain": true
+      },
+      "got": {
+        "text": "bxw",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bxw"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "deleteBehindGap_fillBySync",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "deleteBehindGap_fillBySyncFromBystander",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "nestedGCBesideSkip_fillAlone",
+      "kind": "nested",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "node deleted, q collected beside gap",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "nestedGCBesideSkip_fillBySync",
+      "kind": "nested",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "node deleted, q collected beside gap",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "nestedGCBesideSkip_fillMergedWithLater",
+      "kind": "nested",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "node deleted, q collected beside gap",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del) Item@2+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_before",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "author delete set applied across gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_reloadBefore",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded with pending delete set",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_reloadV2Before",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded v2 with pending delete set",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_mergedWithPredecessor",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "gap open",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_twoGaps",
+      "kind": "text2",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "delete set across two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del) Skip@2+1 Item@3+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del) Item@2+1:ContentString(del) Item@3+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "authorDeleteSetSpansGap_nested",
+      "kind": "nested",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "author delete set across nested gap",
+          "B": "",
+          "Bnested": "{\"children\":[{\"children\":[\"m\"]}]}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{\"children\":[{\"children\":[\"m\"]}]}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{\"children\":[{\"children\":[\"m\"]}]}",
+          "{\"text\":\"\",\"delta\":[]}|{\"children\":[{\"children\":[\"m\"]}]}",
+          "{\"text\":\"\",\"delta\":[]}|{\"children\":[{\"children\":[\"m\"]}]}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{\"children\":[{\"children\":[\"m\"]}]}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{\"children\":[{\"children\":[\"m\"]}]}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "originBehindGapDeleted_fillAlone",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h i j deleted",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "originBehindGapDeleted_keepH",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "i j deleted",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "plain": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "originBehindGapDeleted_nested",
+      "kind": "nested",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "i j deleted then node collected",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "formatSpanningGap_active",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "bold over h b",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {
+                "bold": true
+              },
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{\"bold\":true},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{\"bold\":true},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{\"bold\":true},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "bold": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {
+              "bold": true
+            },
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "formatSpanningGap_unformatted",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "bold then unbold over h b",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "plain": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "formatSpanningGap_unformatted_deleteBehind",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "bold, unbold, h deleted",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "formatSpanningGap_authorUnformatBefore",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "B bold, A unbold arrives before predecessor",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "plain": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillInOrder",
+      "kind": "text2",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h z deleted beside two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del) Skip@2+1 Item@3+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del) Item@2+1:ContentString Item@3+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillReversed",
+      "kind": "text2",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h z deleted beside two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del) Skip@2+1 Item@3+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del) Item@2+1:ContentString Item@3+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillMerged",
+      "kind": "text2",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h z deleted beside two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del) Skip@2+1 Item@3+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del) Item@2+1:ContentString Item@3+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillBySync",
+      "kind": "text2",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "h z deleted beside two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del) Skip@2+1 Item@3+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del) Item@2+1:ContentString Item@3+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "twoGaps_deleteBoth_fillOneThenReload",
+      "kind": "text2",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "one gap filled, reloaded",
+          "B": "yb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del) Item@2+1:ContentString Item@3+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del) Item@2+1:ContentString Item@3+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadBeforeFill_deleteBehind",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded with deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadV2BeforeFill_deleteBehind",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded v2 with deleted h beside gap",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadBeforeFill_nestedGC",
+      "kind": "nested",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded with GC beside gap",
+          "B": "",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "",
+          "delta": []
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}",
+          "{\"text\":\"\",\"delta\":[]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "nested": "{}"
+      },
+      "got": {
+        "text": "",
+        "nested": "{}",
+        "delta": []
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadBeforeFill_formatUnformat",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded after bold and unbold",
+          "B": "hb",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "hbx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "hbx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}",
+          "{\"text\":\"hbx\",\"delta\":[{\"attributes\":{},\"insert\":\"hbx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "hbx",
+        "plain": true
+      },
+      "got": {
+        "text": "hbx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "hbx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "reloadBeforeFill_twoGaps",
+      "kind": "text2",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "reloaded with two gaps",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del) Skip@2+1 Item@3+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "ybx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "ybx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del) Item@2+1:ContentString Item@3+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}",
+          "{\"text\":\"ybx\",\"delta\":[{\"attributes\":{},\"insert\":\"ybx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "ybx",
+        "plain": true
+      },
+      "got": {
+        "text": "ybx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "ybx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "gapRelayedToBystander_bothDelete",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "B and C both hold the gap and deleted h",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "bx",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "bx"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}",
+          "{\"text\":\"bx\",\"delta\":[{\"attributes\":{},\"insert\":\"bx\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "bx",
+        "plain": true
+      },
+      "got": {
+        "text": "bx",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "bx"
+          }
+        ]
+      },
+      "pass": true
+    },
+    {
+      "name": "gapRelayedToBystander_deleteSetRelayed",
+      "kind": "text",
+      "gc": false,
+      "version": "14.0.0-rc.29",
+      "transients": [
+        {
+          "label": "pending delete set relayed by sync",
+          "B": "b",
+          "Bnested": "{}",
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "structsB": "Skip@0+1 Item@1+1:ContentString(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "afterFill": {
+        "B": {
+          "text": "b",
+          "delta": [
+            {
+              "attributes": {},
+              "insert": "b"
+            }
+          ]
+        },
+        "Bnested": "{}",
+        "pendingB": {
+          "structs": false,
+          "ds": false
+        },
+        "structsB": "Item@0+1:ContentString(del) Item@1+1:ContentString(del)",
+        "skipsB": []
+      },
+      "final": {
+        "divergence": false,
+        "pending": [
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          },
+          {
+            "structs": false,
+            "ds": false
+          }
+        ],
+        "svs": 1,
+        "reloadDivergence": false,
+        "views": [
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}",
+          "{\"text\":\"b\",\"delta\":[{\"attributes\":{},\"insert\":\"b\"}]}|{}"
+        ],
+        "unresolved": false,
+        "failure": false,
+        "deliveryQuiescent": true,
+        "quiescent": true,
+        "mismatchAfterDelivery": false
+      },
+      "expect": {
+        "text": "b",
+        "plain": true
+      },
+      "got": {
+        "text": "b",
+        "nested": "{}",
+        "delta": [
+          {
+            "attributes": {},
+            "insert": "b"
+          }
+        ]
+      },
+      "pass": true
+    }
+  ],
+  "trials": 10000,
+  "failures": 0,
+  "divergences": 0,
+  "reloadDivergences": 0,
+  "unresolved": 0,
+  "nonquiescent": 0,
+  "crashes": 0,
+  "deliveryMismatches": 0,
+  "transients": {
+    "pendingDsSeen": 1508,
+    "skipsAtBBeforeFill": 10000,
+    "pendingStructsAtBBeforeFill": 760,
+    "pendingAfterFill": 28,
+    "textDiffersAfterFill": 4660
+  },
+  "transientExamples": {
+    "pendingAfterFill": [
+      {
+        "seed": 2070971350,
+        "gc": true,
+        "kind": "text",
+        "fill": "aloneShuffled",
+        "trace": [
+          {
+            "kind": "text"
+          },
+          {
+            "op": "openGap",
+            "targets": [
+              2,
+              3
+            ]
+          },
+          {
+            "op": "authorDeleteSet",
+            "target": 2
+          },
+          {
+            "op": "insertAfterBehind",
+            "target": 2
+          },
+          {
+            "op": "authorMore",
+            "target": 2
+          },
+          {
+            "op": "authorMore",
+            "target": 2,
+            "delivered": true
+          }
+        ],
+        "beforeFill": {
+          "B": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "pendingC": {
+            "structs": false,
+            "ds": false
+          },
+          "seenPendingDs": {
+            "B": false,
+            "C": false
+          }
+        },
+        "afterFill": {
+          "B": "Item@0+1:ContentString Item@1+1:ContentString",
+          "skipsB": [],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "textB": "hjbx",
+          "textA": "dchbx"
+        }
+      },
+      {
+        "seed": 2684258899,
+        "gc": true,
+        "kind": "text2",
+        "fill": "reloadThenAlone",
+        "trace": [
+          {
+            "kind": "text2"
+          },
+          {
+            "op": "openGap",
+            "targets": [
+              2
+            ]
+          },
+          {
+            "op": "insertAfterBehindThenDelete",
+            "target": 2
+          },
+          {
+            "op": "authorMore",
+            "target": 2
+          },
+          {
+            "op": "localEdit",
+            "target": 2,
+            "edit": [
+              "delete",
+              2
+            ]
+          },
+          {
+            "op": "reloadV2",
+            "target": 2
+          },
+          {
+            "op": "authorMore",
+            "target": 2,
+            "delivered": true
+          }
+        ],
+        "beforeFill": {
+          "B": "Skip@0+1 Item@1+1:ContentString Skip@2+1 Item@3+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "pendingC": {
+            "structs": false,
+            "ds": false
+          },
+          "seenPendingDs": {
+            "B": false,
+            "C": false
+          }
+        },
+        "afterFill": {
+          "B": "Item@0+1:ContentString Item@1+1:ContentString Item@2+1:ContentString Item@3+1:ContentString",
+          "skipsB": [],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "textB": "yhzx",
+          "textA": "ebyhzbx"
+        }
+      },
+      {
+        "seed": 3018176776,
+        "gc": true,
+        "kind": "text2",
+        "fill": "reloadThenAlone",
+        "trace": [
+          {
+            "kind": "text2"
+          },
+          {
+            "op": "openGap",
+            "targets": [
+              2,
+              3
+            ]
+          },
+          {
+            "op": "reloadV2",
+            "target": 2
+          },
+          {
+            "op": "authorMore",
+            "target": 2
+          },
+          {
+            "op": "reload",
+            "target": 3
+          },
+          {
+            "op": "authorMore",
+            "target": 2,
+            "delivered": true
+          },
+          {
+            "op": "localEdit",
+            "target": 2,
+            "edit": [
+              "format",
+              0
+            ]
+          }
+        ],
+        "beforeFill": {
+          "B": "Skip@0+1 Item@1+1:ContentString Skip@2+1 Item@3+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "pendingC": {
+            "structs": false,
+            "ds": false
+          },
+          "seenPendingDs": {
+            "B": false,
+            "C": false
+          }
+        },
+        "afterFill": {
+          "B": "Item@0+1:ContentString Item@1+1:ContentString Item@2+1:ContentString Item@3+1:ContentString",
+          "skipsB": [],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "textB": "yhzbx",
+          "textA": "dbyhzbx"
+        }
+      },
+      {
+        "seed": 519909229,
+        "gc": true,
+        "kind": "nested",
+        "fill": "mergedWithLater",
+        "trace": [
+          {
+            "kind": "nested"
+          },
+          {
+            "op": "openGap",
+            "targets": [
+              2
+            ]
+          },
+          {
+            "op": "authorMore",
+            "target": 2,
+            "delivered": true
+          },
+          {
+            "op": "unformat",
+            "target": 2
+          },
+          {
+            "op": "insertAfterBehindThenDelete",
+            "target": 3
+          },
+          {
+            "op": "authorMore",
+            "target": 2
+          },
+          {
+            "op": "authorMore",
+            "target": 2,
+            "delivered": true
+          }
+        ],
+        "beforeFill": {
+          "B": "Skip@0+1 Item@1+1:ContentString Item@2+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "pendingC": {
+            "structs": false,
+            "ds": false
+          },
+          "seenPendingDs": {
+            "B": false,
+            "C": false
+          }
+        },
+        "afterFill": {
+          "B": "Item@0+1:ContentString Item@1+1:ContentString Item@2+1:ContentString",
+          "skipsB": [],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "textB": "",
+          "textA": ""
+        }
+      },
+      {
+        "seed": 2507698401,
+        "gc": true,
+        "kind": "nested",
+        "fill": "syncViaC",
+        "trace": [
+          {
+            "kind": "nested"
+          },
+          {
+            "op": "openGap",
+            "targets": [
+              2,
+              3
+            ]
+          },
+          {
+            "op": "relayToOther",
+            "target": 2,
+            "to": 3
+          },
+          {
+            "op": "authorMore",
+            "target": 2
+          },
+          {
+            "op": "deleteBehind",
+            "target": 3
+          },
+          {
+            "op": "localEdit",
+            "target": 2,
+            "edit": [
+              "insert",
+              0
+            ]
+          },
+          {
+            "op": "authorMore",
+            "target": 2,
+            "delivered": true
+          }
+        ],
+        "beforeFill": {
+          "B": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "pendingC": {
+            "structs": false,
+            "ds": false
+          },
+          "seenPendingDs": {
+            "B": false,
+            "C": false
+          }
+        },
+        "afterFill": {
+          "B": "GC@0+2",
+          "skipsB": [],
+          "pendingB": {
+            "structs": true,
+            "ds": false
+          },
+          "textB": "D",
+          "textA": ""
+        }
+      }
+    ],
+    "pendingDsSeen": [
+      {
+        "seed": 4055616904,
+        "gc": true,
+        "kind": "text2",
+        "fill": "syncViaC",
+        "trace": [
+          {
+            "kind": "text2"
+          },
+          {
+            "op": "openGap",
+            "targets": [
+              2,
+              3
+            ]
+          },
+          {
+            "op": "authorMore",
+            "target": 2,
+            "delivered": true
+          },
+          {
+            "op": "authorMore",
+            "target": 3
+          },
+          {
+            "op": "authorDeleteSet",
+            "target": 2,
+            "chars": [
+              "h",
+              "x",
+              "z"
+            ]
+          },
+          {
+            "op": "relayToOther",
+            "target": 2,
+            "to": 3
+          }
+        ],
+        "beforeFill": {
+          "B": "Skip@0+1 Item@1+1:ContentDeleted(del) Skip@2+1 Item@3+1:ContentDeleted(del)",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ],
+          "pendingB": {
+            "structs": true,
+            "ds": true
+          },
+          "pendingC": {
+            "structs": true,
+            "ds": true
+          },
+          "seenPendingDs": {
+            "B": true,
+            "C": true
+          }
+        },
+        "afterFill": {
+          "B": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentDeleted(del) Item@4+1:ContentString",
+          "skipsB": [],
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "textB": "yba",
+          "textA": "byba"
+        }
+      },
+      {
+        "seed": 147926525,
+        "gc": true,
+        "kind": "text2",
+        "fill": "sync",
+        "trace": [
+          {
+            "kind": "text2"
+          },
+          {
+            "op": "openGap",
+            "targets": [
+              2
+            ]
+          },
+          {
+            "op": "reload",
+            "target": 3
+          },
+          {
+            "op": "authorMore",
+            "target": 3
+          },
+          {
+            "op": "authorDeleteSet",
+            "target": 2,
+            "chars": [
+              "h",
+              "x"
+            ]
+          },
+          {
+            "op": "reload",
+            "target": 2
+          },
+          {
+            "op": "insertAfterBehindThenDelete",
+            "target": 2
+          }
+        ],
+        "beforeFill": {
+          "B": "Skip@0+1 Item@1+1:ContentDeleted(del) Skip@2+1 Item@3+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  1
+                ]
+              ]
+            ]
+          ],
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "pendingC": {
+            "structs": false,
+            "ds": false
+          },
+          "seenPendingDs": {
+            "B": true,
+            "C": false
+          }
+        },
+        "afterFill": {
+          "B": "Item@0+1:ContentDeleted(del) Item@1+1:ContentDeleted(del) Item@2+1:ContentString Item@3+1:ContentString Item@4+1:ContentString",
+          "skipsB": [],
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "textB": "byzb",
+          "textA": "byzb"
+        }
+      },
+      {
+        "seed": 1161830751,
+        "gc": true,
+        "kind": "text",
+        "fill": "merged",
+        "trace": [
+          {
+            "kind": "text"
+          },
+          {
+            "op": "openGap",
+            "targets": [
+              2
+            ]
+          },
+          {
+            "op": "reloadV2",
+            "target": 2
+          },
+          {
+            "op": "authorDeleteSet",
+            "target": 2,
+            "chars": [
+              "x"
+            ]
+          },
+          {
+            "op": "reloadV2",
+            "target": 2
+          }
+        ],
+        "beforeFill": {
+          "B": "Skip@0+1 Item@1+1:ContentString",
+          "skipsB": [
+            [
+              1,
+              [
+                [
+                  0,
+                  1
+                ]
+              ]
+            ]
+          ],
+          "pendingB": {
+            "structs": false,
+            "ds": true
+          },
+          "pendingC": {
+            "structs": false,
+            "ds": false
+          },
+          "seenPendingDs": {
+            "B": true,
+            "C": false
+          }
+        },
+        "afterFill": {
+          "B": "Item@0+1:ContentDeleted(del) Item@1+1:ContentString",
+          "skipsB": [],
+          "pendingB": {
+            "structs": false,
+            "ds": false
+          },
+          "textB": "hb",
+          "textA": "hb"
+        }
+      }
+    ]
+  },
+  "groups": [
+    {
+      "gc": true,
+      "trials": 5000,
+      "failures": 0,
+      "divergences": 0,
+      "reloadDivergences": 0,
+      "unresolved": 0,
+      "nonquiescent": 0,
+      "crashes": 0,
+      "deliveryMismatches": 0,
+      "kinds": {
+        "text": 2518,
+        "text2": 1257,
+        "nested": 1225
+      },
+      "fills": {
+        "reloadThenAlone": 666,
+        "syncViaC": 691,
+        "aloneShuffled": 706,
+        "mergedWithLater": 721,
+        "alone": 700,
+        "merged": 759,
+        "sync": 757
+      }
+    },
+    {
+      "gc": false,
+      "trials": 5000,
+      "failures": 0,
+      "divergences": 0,
+      "reloadDivergences": 0,
+      "unresolved": 0,
+      "nonquiescent": 0,
+      "crashes": 0,
+      "deliveryMismatches": 0,
+      "kinds": {
+        "text": 2518,
+        "text2": 1257,
+        "nested": 1225
+      },
+      "fills": {
+        "reloadThenAlone": 666,
+        "syncViaC": 691,
+        "aloneShuffled": 706,
+        "mergedWithLater": 721,
+        "alone": 700,
+        "merged": 759,
+        "sync": 757
+      }
+    }
+  ],
+  "findings": [],
+  "handFailures": 0,
+  "finished": "2026-10-30T05:27:20.402Z"
+}
