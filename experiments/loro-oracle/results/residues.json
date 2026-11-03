@@ -1,0 +1,441 @@
+{
+ "package": "loro-crdt@1.17.1",
+ "trials": [
+  {
+   "run": "partial-styles-36-anchors",
+   "trial": 152,
+   "seed": 36000260,
+   "versions": [
+    {
+     "replica": 2,
+     "step": 12,
+     "actual": "u(link) c(bold) e(bold) s(bold) d(bold)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r1#2",
+      "r1#3",
+      "r1#4",
+      "r2#1",
+      "r2#2",
+      "r2#3"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 13,
+     "actual": "u(link) c(bold) e(bold) s(bold) d(bold)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r2#0",
+      "r1#2",
+      "r1#3",
+      "r1#4",
+      "r2#1",
+      "r2#2",
+      "r2#3"
+     ]
+    }
+   ]
+  },
+  {
+   "run": "styles-opened-33-anchors",
+   "trial": 22,
+   "seed": 33000121,
+   "versions": [
+    {
+     "replica": 3,
+     "step": 13,
+     "actual": "y(sup) k(sup) u(bold) p(bold)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ]
+    },
+    {
+     "replica": 3,
+     "step": 15,
+     "actual": "y(sup) k(sup) u(bold) p(bold)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 16,
+     "actual": "y(sup) k(sup) u(bold) p(bold)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ]
+    },
+    {
+     "replica": 2,
+     "step": 17,
+     "actual": "y(sup) k(sup) u(bold) p(bold)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r3#0",
+      "r3#1",
+      "r3#2"
+     ]
+    }
+   ]
+  },
+  {
+   "run": "styles-opened-34-anchors",
+   "trial": 67,
+   "seed": 34000169,
+   "versions": [
+    {
+     "replica": 2,
+     "step": 12,
+     "actual": "b(hl,sup) n(bold,hl,link,sup) p(bold,link,sup) a(bold,link,sup) c(bold,link,sup) k(bold,link) c(bold,link)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r1#4",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 13,
+     "actual": "b(hl,sup) n(bold,hl,link,sup) p(bold,link,sup) a(bold,link,sup) c(bold,link,sup) k(bold,link) c(bold,link)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r1#4",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ]
+    }
+   ]
+  },
+  {
+   "run": "styles-opened-34-anchors",
+   "trial": 105,
+   "seed": 34000207,
+   "versions": [
+    {
+     "replica": 2,
+     "step": 12,
+     "actual": "o(bold,link) q(link) f(link) p(link) l(link) g(link) g a",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r1#4",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 14,
+     "actual": "o(bold,link) q(link) f(link) p(link) l(link) g(link) g a",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r1#4",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ]
+    }
+   ]
+  },
+  {
+   "run": "styles-opened-34-anchors",
+   "trial": 156,
+   "seed": 34000258,
+   "versions": [
+    {
+     "replica": 2,
+     "step": 12,
+     "actual": "x k b(link) u(link) b(link) v",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ]
+    },
+    {
+     "replica": 3,
+     "step": 13,
+     "actual": "x k b(link) u(link,sup) b(link,sup)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0",
+      "r2#1",
+      "r3#0"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 14,
+     "actual": "x k b(link) u(link) b(link) v",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0",
+      "r2#1",
+      "r2#2"
+     ]
+    },
+    {
+     "replica": 3,
+     "step": 15,
+     "actual": "x k b(link) u(link,sup) b(link,sup) v(sup)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r3#0"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 16,
+     "actual": "x k b(link) u(link,sup) b(link,sup) v(sup)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r3#0"
+     ]
+    },
+    {
+     "replica": 2,
+     "step": 17,
+     "actual": "x k b(link) u(link,sup) b(link,sup) v(sup)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r1#3",
+      "r2#0",
+      "r2#1",
+      "r2#2",
+      "r3#0"
+     ]
+    }
+   ]
+  },
+  {
+   "run": "styles-opened-34-anchors",
+   "trial": 172,
+   "seed": 34000274,
+   "versions": [
+    {
+     "replica": 2,
+     "step": 12,
+     "actual": "g(hl,link) q(hl,link) e(hl) t(hl)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 14,
+     "actual": "g(hl,link) q(hl,link) e(hl) t(hl)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1"
+     ]
+    },
+    {
+     "replica": 3,
+     "step": 15,
+     "actual": "g(hl,link) q(hl,link,sup) e(hl,sup) t(hl,sup) n(sup) k(sup)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1",
+      "r3#0",
+      "r3#1"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 16,
+     "actual": "g(hl,link) q(hl,link,sup) e(hl,sup) t(hl,sup) n(sup) k(sup)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1",
+      "r3#0",
+      "r3#1"
+     ]
+    },
+    {
+     "replica": 2,
+     "step": 17,
+     "actual": "g(hl,link) q(hl,link,sup) e(hl,sup) t(hl,sup) n(sup) k(sup)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1",
+      "r3#0",
+      "r3#1"
+     ]
+    }
+   ]
+  },
+  {
+   "run": "styles-opened-34-short-anchors",
+   "trial": 156,
+   "seed": 34000258,
+   "versions": [
+    {
+     "replica": 2,
+     "step": 8,
+     "actual": "b(link) u(link) b(link)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 10,
+     "actual": "b(link) u(link) b(link)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1"
+     ]
+    },
+    {
+     "replica": 3,
+     "step": 11,
+     "actual": "b(link) u(link) b(link)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1"
+     ]
+    },
+    {
+     "replica": 1,
+     "step": 12,
+     "actual": "b(link) u(link) b(link)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1"
+     ]
+    },
+    {
+     "replica": 2,
+     "step": 13,
+     "actual": "b(link) u(link) b(link)",
+     "persistentWitness": true,
+     "order": [
+      "r1#0",
+      "r1#1",
+      "r1#2",
+      "r2#0",
+      "r2#1"
+     ]
+    }
+   ]
+  }
+ ]
+}

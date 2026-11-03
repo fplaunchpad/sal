@@ -1,0 +1,50 @@
+{
+ "summary": {
+  "seed": 33,
+  "trials": 200,
+  "options": {
+   "withBold": true,
+   "partialDelivery": true
+  },
+  "witnessBound": 12,
+  "edits": 1785,
+  "deliveries": 764,
+  "sends": 615,
+  "pendingSends": 273,
+  "opens": 0,
+  "cleanups": 0,
+  "versionsChecked": 3164,
+  "witnessSkips": 0,
+  "witnessSkipsPartial": 0,
+  "causalGaps": 0,
+  "anomalies": 0,
+  "failingTrials": 0,
+  "failuresByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 0,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "trialsFailingByCheck": {
+   "convergence": 0,
+   "raLinearizability": 0,
+   "localMeaning": 0,
+   "determinism": 0,
+   "conservation": 0
+  },
+  "localMeaningByKind": {
+   "insert": 1040,
+   "bold": 502,
+   "delete": 243
+  },
+  "localMeaningFailuresByKind": {},
+  "config": {
+   "rule": "gap",
+   "reading": "anchored",
+   "local": "inherit"
+  }
+ },
+ "failing": [],
+ "shrunk": []
+}

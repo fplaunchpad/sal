@@ -1,0 +1,14 @@
+{
+  "package": "loro-crdt",
+  "version": "1.17.1",
+  "resolved": "https://registry.npmjs.org/loro-crdt/-/loro-crdt-1.17.1.tgz",
+  "integrity": "sha512-83hWRYG6eMMpPezm+yXWlOqCuUsC0BYY1MVCPW9x2zlikgkHhL7GC7Q6JFH+Hjvauyn287Q1MiwTuRW0lUOUag==",
+  "sourceTag": "loro-crdt@1.17.1",
+  "sourceCommit": "6114e10e631631f6faf060fbda4d9676a42240d1",
+  "sha256": {
+    "node_modules/loro-crdt/nodejs/index.js": "bdd2479aa5d15b09accde14617b38729de6ea1d44a6757c4c62449b3fb1b7a7e",
+    "node_modules/loro-crdt/nodejs/loro_wasm.js": "fa81aab0dfcf230897b0e3c7ddcaa5d5e365f9b31f4b14d992e95f08b19aa8c3",
+    "node_modules/loro-crdt/nodejs/loro_wasm_bg.wasm": "ad2b75fb69985444bbf5c512826bf3ee87a07ea0b989b9954e714227e08758f8",
+    "node_modules/loro-crdt/package.json": "70912d9c5b6dc47840d2a62a74314599a265ea475dccca679d0a16fb9a0cdfc2"
+  }
+}

@@ -1,0 +1,590 @@
+{
+ "cases": [
+  {
+   "name": "N-005 demo: declared view at A after the delayed merge",
+   "defect": "N-005",
+   "model": "demo",
+   "expected": "raLinearizability fails (no witness)",
+   "pass": true,
+   "results": {
+    "observed": "empty",
+    "admitted": [
+     "empty | x"
+    ]
+   }
+  },
+  {
+   "name": "N-005 demo: checks with the final sync",
+   "defect": "N-005",
+   "model": "demo",
+   "expected": "fail: raLinearizability, conservation",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "conservation"
+    ],
+    "classes:raLinearizability": [
+     [
+      "N-005"
+     ],
+     [
+      "N-005"
+     ],
+     [
+      "N-005"
+     ]
+    ],
+    "classes:conservation": [
+     [
+      "N-005"
+     ],
+     [
+      "N-005"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "N-005 anchor-absorb: declared view at A after the delayed merge",
+   "defect": "N-005",
+   "model": "anchor-absorb",
+   "expected": "witness",
+   "pass": true,
+   "results": {
+    "observed": "empty | x",
+    "admitted": [
+     "empty | x"
+    ]
+   }
+  },
+  {
+   "name": "N-005 anchor-absorb: checks with the final sync",
+   "defect": "N-005",
+   "model": "anchor-absorb",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-005 demo: law layer on the four records",
+   "defect": "N-005",
+   "model": "demo",
+   "expected": "join lemma holds, sequential conformance fails",
+   "pass": true,
+   "results": {
+    "observed": "",
+    "admitted": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "N-005 anchor-absorb: law layer on the four records",
+   "defect": "N-005",
+   "model": "anchor-absorb",
+   "expected": "join lemma and conformance hold",
+   "pass": true,
+   "results": {
+    "observed": "x",
+    "admitted": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "N-005 control demo: held merge never arrives",
+   "defect": "N-005",
+   "model": "demo",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-005 control demo: A does not merge",
+   "defect": "N-005",
+   "model": "demo",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-005 control demo: held merge arrives first",
+   "defect": "N-005",
+   "model": "demo",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-004 demo: admitted views at B keep abc",
+   "defect": "N-004",
+   "model": "demo",
+   "expected": "raLinearizability fails (no witness)",
+   "pass": true,
+   "results": {
+    "observed": "(no block)",
+    "admitted": [
+     "abc",
+     "bca"
+    ]
+   }
+  },
+  {
+   "name": "N-004 demo: checks with the final sync",
+   "defect": "N-004",
+   "model": "demo",
+   "expected": "fail: raLinearizability, conservation",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "conservation"
+    ],
+    "classes:raLinearizability": [
+     [
+      "split-after-removal"
+     ],
+     [
+      "split-after-removal"
+     ],
+     [
+      "N-004"
+     ],
+     [
+      "N-004"
+     ],
+     [
+      "N-004"
+     ]
+    ],
+    "classes:conservation": [
+     [
+      "N-004"
+     ],
+     [
+      "N-004"
+     ]
+    ],
+    "raLinearizabilityClasses": [
+     "split-after-removal",
+     "split-after-removal",
+     "N-004",
+     "N-004",
+     "N-004"
+    ]
+   }
+  },
+  {
+   "name": "N-004 anchor-absorb: admitted views at B keep abc",
+   "defect": "N-004",
+   "model": "anchor-absorb",
+   "expected": "witness",
+   "pass": true,
+   "results": {
+    "observed": "abc",
+    "admitted": [
+     "abc"
+    ]
+   }
+  },
+  {
+   "name": "N-004 anchor-absorb: checks with the final sync",
+   "defect": "N-004",
+   "model": "anchor-absorb",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-004 demo: law layer on the five records",
+   "defect": "N-004",
+   "model": "demo",
+   "expected": "join lemma holds, sequential conformance fails",
+   "pass": true,
+   "results": {
+    "observed": "",
+    "admitted": [
+     "abc"
+    ]
+   }
+  },
+  {
+   "name": "N-004 anchor-absorb: law layer on the five records",
+   "defect": "N-004",
+   "model": "anchor-absorb",
+   "expected": "join lemma and conformance hold",
+   "pass": true,
+   "results": {
+    "observed": "abc",
+    "admitted": [
+     "abc"
+    ]
+   }
+  },
+  {
+   "name": "N-004 control demo: B omits its first merge",
+   "defect": "N-004",
+   "model": "demo",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-004 control demo: a2 arrives before B merges, B does not merge",
+   "defect": "N-004",
+   "model": "demo",
+   "expected": "fail: raLinearizability",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability"
+    ]
+   }
+  },
+  {
+   "name": "N-001 demo: split after concurrent restructuring",
+   "defect": "N-001",
+   "model": "demo",
+   "expected": "fail: raLinearizability, localMeaning",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes:localMeaning": [
+     [
+      "N-001"
+     ]
+    ],
+    "classes:raLinearizability": [
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ],
+     [
+      "N-001"
+     ]
+    ],
+    "after": [
+     "",
+     "X",
+     "a"
+    ]
+   }
+  },
+  {
+   "name": "N-001 anchor-absorb: split after concurrent restructuring",
+   "defect": "N-001",
+   "model": "anchor-absorb",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "after": [
+     "",
+     "",
+     "aX"
+    ]
+   }
+  },
+  {
+   "name": "N-001 control demo: the same split on empty | aX reached directly",
+   "defect": "N-001",
+   "model": "demo",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-001 demo: six-request variant",
+   "defect": "N-001",
+   "model": "demo",
+   "expected": "fail: raLinearizability, localMeaning",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes:localMeaning": [
+     [
+      "N-001"
+     ]
+    ],
+    "after": [
+     "",
+     "b",
+     "a"
+    ]
+   }
+  },
+  {
+   "name": "N-001 anchor-absorb: six-request variant",
+   "defect": "N-001",
+   "model": "anchor-absorb",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": [],
+    "after": [
+     "",
+     "",
+     "ab"
+    ]
+   }
+  },
+  {
+   "name": "N-002 demo: declared view after the bold toggle",
+   "defect": "N-002",
+   "model": "demo",
+   "expected": "raLinearizability fails (no witness)",
+   "pass": true,
+   "results": {
+    "observed": "empty | ba",
+    "admitted": [
+     "empty | [b][a]"
+    ]
+   }
+  },
+  {
+   "name": "N-002 demo: checks",
+   "defect": "N-002",
+   "model": "demo",
+   "expected": "fail: raLinearizability, localMeaning",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes:localMeaning": [
+     [
+      "N-002"
+     ]
+    ],
+    "classes:raLinearizability": [
+     [
+      "N-002"
+     ],
+     [
+      "N-002"
+     ],
+     [
+      "N-002"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "N-002 control demo: bold the other merge's block",
+   "defect": "N-002",
+   "model": "demo",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-003 demo: declared view after the bold toggle",
+   "defect": "N-003",
+   "model": "demo",
+   "expected": "raLinearizability fails (no witness)",
+   "pass": true,
+   "results": {
+    "observed": "[a][c] | [b]",
+    "admitted": [
+     "[a][c] | b"
+    ]
+   }
+  },
+  {
+   "name": "N-003 demo: checks",
+   "defect": "N-003",
+   "model": "demo",
+   "expected": "fail: raLinearizability, localMeaning",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes:localMeaning": [
+     [
+      "N-003"
+     ]
+    ],
+    "classes:raLinearizability": [
+     [
+      "N-003"
+     ],
+     [
+      "N-003"
+     ],
+     [
+      "N-003"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "N-003 control demo: bold one character",
+   "defect": "N-003",
+   "model": "demo",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-002 anchor-absorb: declared view after the bold toggle",
+   "defect": "N-002",
+   "model": "anchor-absorb",
+   "expected": "raLinearizability fails (no witness)",
+   "pass": true,
+   "results": {
+    "observed": "empty | ba",
+    "admitted": [
+     "empty | [b][a]"
+    ]
+   }
+  },
+  {
+   "name": "N-002 anchor-absorb: checks",
+   "defect": "N-002",
+   "model": "anchor-absorb",
+   "expected": "fail: raLinearizability, localMeaning",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes:localMeaning": [
+     [
+      "N-002"
+     ]
+    ],
+    "classes:raLinearizability": [
+     [
+      "N-002"
+     ],
+     [
+      "N-002"
+     ],
+     [
+      "N-002"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "N-002 control anchor-absorb: bold the other merge's block",
+   "defect": "N-002",
+   "model": "anchor-absorb",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  },
+  {
+   "name": "N-003 anchor-absorb: declared view after the bold toggle",
+   "defect": "N-003",
+   "model": "anchor-absorb",
+   "expected": "raLinearizability fails (no witness)",
+   "pass": true,
+   "results": {
+    "observed": "[a][c] | [b]",
+    "admitted": [
+     "[a][c] | b"
+    ]
+   }
+  },
+  {
+   "name": "N-003 anchor-absorb: checks",
+   "defect": "N-003",
+   "model": "anchor-absorb",
+   "expected": "fail: raLinearizability, localMeaning",
+   "pass": true,
+   "results": {
+    "failing": [
+     "raLinearizability",
+     "localMeaning"
+    ],
+    "classes:localMeaning": [
+     [
+      "N-003"
+     ]
+    ],
+    "classes:raLinearizability": [
+     [
+      "N-003"
+     ],
+     [
+      "N-003"
+     ],
+     [
+      "N-003"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "N-003 control anchor-absorb: bold one character",
+   "defect": "N-003",
+   "model": "anchor-absorb",
+   "expected": "pass",
+   "pass": true,
+   "results": {
+    "failing": []
+   }
+  }
+ ]
+}

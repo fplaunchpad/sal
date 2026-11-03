@@ -1,0 +1,8 @@
+{
+  "name": "yjs-oracle-repro",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "yjs": "13.6.31"
+  }
+}

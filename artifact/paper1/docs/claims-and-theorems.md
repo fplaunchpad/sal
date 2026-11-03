@@ -126,6 +126,17 @@ versions. See [the reproduction guide](notion-reproduction.md).
 
 ## Measurements and trust
 
+The [bounded PBT support](pbt-reproduction.md) is separate executable evidence.
+The additional `Instances.YjsMarkerCounterexample` and
+`Instances.YjsDeleteSetCounterexample` modules check fixed item-list renderings,
+sequential outcomes, a restricted delivery predicate and controls. Selected
+roots are included in the artifact axiom audit. They do not model Yjs's full
+integration algorithm or prove correspondence with its source. External-library
+versions are acquired through locked package manifests and independently checked
+file digests. Passing sampled checks is not a universal correctness proof.
+The older Notion `anchor-absorb` PBT design is separate from the current rich
+Lean model described above. No GC result is claimed by this support.
+
 [current-counts.json](../measurements/current-counts.json) records 24 paper rows
 and 26 implementations. Its `paper_rows` entries retain all declaration
 roots and source ranges. The grow-only-set row combines three carriers; the
@@ -140,7 +151,7 @@ noncomment source lines; shared automation adds 1,688. These include statements
 and proofs and exclude definitions. They measure the listed dependency closures,
 not handwritten tactic bodies or author effort.
 
-The entry point audits 242 selected declarations and their transitive axiom
+The entry point audits the selected declarations listed in `provenance.json` and their transitive axiom
 closures, permitting only `propext`, `Classical.choice`, and `Quot.sound`.
 Other examples in the compiled sources use `native_decide` and are outside
 that audit. Build success alone does not imply that every compiled declaration

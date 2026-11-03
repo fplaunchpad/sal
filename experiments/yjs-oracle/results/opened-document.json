@@ -1,0 +1,783 @@
+{
+  "yjs": {
+    "package": "yjs",
+    "version": "13.6.31",
+    "resolved": "https://registry.npmjs.org/yjs/-/yjs-13.6.31.tgz",
+    "integrity": "sha512-Eq+5BRfbeGyqGVrTJL3bEcr8gKkxPuyuoHmAwpk52fDb8kOVMrfVSTRPd6yiGgX5Fskb96qCRjzjbRjrL4YEnw==",
+    "sha256": {
+      "node_modules/yjs/dist/yjs.mjs": "da487316488770c06877210d76e30b7d4daaef826731b1630fcea18ea2a3365a",
+      "node_modules/yjs/package.json": "ebe6efd8e33ebc6bc9fea6cce26bf3156733b7156a2889d203bffc1a200b8914"
+    }
+  },
+  "node": "v26.3.1",
+  "sourcesVerified": true,
+  "status": "measured on the pinned version; not proved",
+  "notation": "characters separated by spaces; suffix '*' bold, '_' italic",
+  "rootCause": [
+    "Where the flags are lost: decoding resolves a root parent name with doc.get(name) (yjs.mjs 1430, 1454), creating a placeholder AbstractType; ContentFormat.integrate (8991-8996) sets _searchMarker = null and _hasFormatting = true on it. getText (628) then reaches Doc.get (577-608), which builds a new YText (constructor 7053-7069: _searchMarker = [], _hasFormatting = false) and copies only _map, _start and _length (588-599). Root-level text only; nested Y.Text and Y.XmlText are decoded with their own constructor and keep the flags.",
+    "Which operations read search markers: findPosition (6327) calls findMarker (4849) when asked; insert with attributes omitted (7329), insertEmbed with attributes omitted (7356) and every delete (7379) ask; format does not (7403). findMarker returns null at index 0 or when _searchMarker is null (4850), so created replicas with formatted text never use markers. With a marker, the position starts at marker.p.left with an empty attribute map (6330-6332), missing format items left of marker.p; findMarker leaves marker.p on a format item, or on a string item whose left neighbour is a format item (4859-4883). deleteText (6737) copies these attributes (6739) into cleanupFormattingGap (6564), which deletes a format item whose value equals the start value (6592): a closing marker with value null is deleted and the run spreads right. An omitted-attribute insert copies the empty map and does not inherit. Markers persist across edits (updateMarkerChanges 4931, called at 6465 and 6761).",
+    "Which cleanup is skipped: after a remote transaction YText._callObserver requests cleanup only when _hasFormatting is true (7123); the transaction runs cleanupYTextAfterTransaction (3300-3301, 6684), whose per-item gate also checks _hasFormatting (6707). Opened replicas never run it.",
+    "Healing: any format item later integrated into the text (local format or attributed insert that creates a marker, or a remote update carrying one) runs ContentFormat.integrate on the real YText and restores both flags."
+  ],
+  "affected": {
+    "delete": "yes, at index > 0: may delete a closing marker and spread formatting to the right neighbour",
+    "insertAttributesOmitted": "yes, at index > 0: may fail to inherit the left neighbour's attributes",
+    "insertEmbedAttributesOmitted": "same path as insert (7356); not exercised here",
+    "insertExplicitAttributes": "no (findPosition without markers)",
+    "format": "no (findPosition without markers); a format that creates a marker restores the flags",
+    "reads": "no (toString, toDelta, length, toJSON neither read nor repair markers)",
+    "remoteUpdates": "applied by id, so not affected; the opened receiver skips the post-transaction cleanup"
+  },
+  "derivationErrors": [],
+  "scenarios": [
+    {
+      "id": "a",
+      "title": "shrunk case: delete z between l_ and i*",
+      "setup": "client 1: insert(0,'i',{bold:true}); insert(0,'lz',{}); format(0,1,{italic:true})",
+      "base": "l_ z i*",
+      "steps": [
+        {
+          "request": "delete [1,2)",
+          "expected": "l_ i*",
+          "predictedOpened": "l_ i*_",
+          "observed": {
+            "created": "l_ i*",
+            "opened": "l_ i*_"
+          },
+          "oracle": {
+            "created": true,
+            "opened": false
+          },
+          "openedLocalMeaning": false,
+          "deletedMarkers": {
+            "created": [],
+            "opened": [
+              {
+                "id": [
+                  1,
+                  6
+                ],
+                "key": "italic",
+                "value": null
+              }
+            ]
+          },
+          "asserted": true
+        }
+      ],
+      "flagsBefore": {
+        "created": {
+          "searchMarker": null,
+          "hasFormatting": true
+        },
+        "opened": {
+          "searchMarker": [],
+          "hasFormatting": false
+        }
+      },
+      "negative": {
+        "claim": "the created replica spreads italic to i, or the opened replica gives the list edit 'l_ i*'",
+        "holds": true
+      },
+      "pass": true
+    },
+    {
+      "id": "b",
+      "title": "smallest single-user delete that spreads formatting (three characters)",
+      "cases": [
+        {
+          "name": "last character of a run",
+          "base": "a* b* c",
+          "items": "bold:true[1,3] ab[1,0] bold:null[1,4] c[1,2]",
+          "request": "delete [1,2)",
+          "expected": "a* c",
+          "predictedOpened": "a* c*",
+          "observed": {
+            "created": "a* c",
+            "opened": "a* c*"
+          },
+          "oracle": {
+            "created": true,
+            "opened": false
+          },
+          "openedLocalMeaning": false,
+          "deletedMarkers": {
+            "created": [],
+            "opened": [
+              {
+                "id": [
+                  1,
+                  4
+                ],
+                "key": "bold",
+                "value": null
+              }
+            ]
+          },
+          "asserted": true,
+          "flagsBefore": {
+            "created": {
+              "searchMarker": null,
+              "hasFormatting": true
+            },
+            "opened": {
+              "searchMarker": [],
+              "hasFormatting": false
+            }
+          }
+        },
+        {
+          "name": "plain character between runs of different keys",
+          "base": "a* b c_",
+          "items": "bold:true[1,3] a[1,0] bold:null[1,4] b[1,1] italic:true[1,5] c[1,2] italic:null[1,6]",
+          "request": "delete [1,2)",
+          "expected": "a* c_",
+          "predictedOpened": "a* c*_",
+          "observed": {
+            "created": "a* c_",
+            "opened": "a* c*_"
+          },
+          "oracle": {
+            "created": true,
+            "opened": false
+          },
+          "openedLocalMeaning": false,
+          "deletedMarkers": {
+            "created": [],
+            "opened": [
+              {
+                "id": [
+                  1,
+                  4
+                ],
+                "key": "bold",
+                "value": null
+              }
+            ]
+          },
+          "asserted": true,
+          "flagsBefore": {
+            "created": {
+              "searchMarker": null,
+              "hasFormatting": true
+            },
+            "opened": {
+              "searchMarker": [],
+              "hasFormatting": false
+            }
+          }
+        },
+        {
+          "name": "plain character between runs of the same key",
+          "base": "a* b c*",
+          "items": "bold:true[1,3] a[1,0] bold:null[1,4] b[1,1] bold:true[1,5] c[1,2] bold:null[1,6]",
+          "request": "delete [1,2)",
+          "expected": "a* c*",
+          "predictedOpened": "a* c*",
+          "observed": {
+            "created": "a* c*",
+            "opened": "a* c*"
+          },
+          "oracle": {
+            "created": true,
+            "opened": true
+          },
+          "openedLocalMeaning": true,
+          "deletedMarkers": {
+            "created": [
+              {
+                "id": [
+                  1,
+                  4
+                ],
+                "key": "bold",
+                "value": null
+              },
+              {
+                "id": [
+                  1,
+                  5
+                ],
+                "key": "bold",
+                "value": true
+              }
+            ],
+            "opened": [
+              {
+                "id": [
+                  1,
+                  4
+                ],
+                "key": "bold",
+                "value": null
+              }
+            ]
+          },
+          "asserted": true,
+          "flagsBefore": {
+            "created": {
+              "searchMarker": null,
+              "hasFormatting": true
+            },
+            "opened": {
+              "searchMarker": [],
+              "hasFormatting": false
+            }
+          }
+        },
+        {
+          "name": "only character of a run, run begins after a plain character",
+          "base": "a b* c",
+          "items": "a[1,0] bold:true[1,3] b[1,1] bold:null[1,4] c[1,2]",
+          "request": "delete [1,2)",
+          "expected": "a c",
+          "predictedOpened": "a c",
+          "observed": {
+            "created": "a c",
+            "opened": "a c"
+          },
+          "oracle": {
+            "created": true,
+            "opened": true
+          },
+          "openedLocalMeaning": true,
+          "deletedMarkers": {
+            "created": [
+              {
+                "id": [
+                  1,
+                  3
+                ],
+                "key": "bold",
+                "value": true
+              },
+              {
+                "id": [
+                  1,
+                  4
+                ],
+                "key": "bold",
+                "value": null
+              }
+            ],
+            "opened": [
+              {
+                "id": [
+                  1,
+                  3
+                ],
+                "key": "bold",
+                "value": true
+              },
+              {
+                "id": [
+                  1,
+                  4
+                ],
+                "key": "bold",
+                "value": null
+              }
+            ]
+          },
+          "asserted": true,
+          "flagsBefore": {
+            "created": {
+              "searchMarker": null,
+              "hasFormatting": true
+            },
+            "opened": {
+              "searchMarker": [],
+              "hasFormatting": false
+            }
+          }
+        },
+        {
+          "name": "two characters, nothing to the right",
+          "base": "a* b",
+          "items": "bold:true[1,0] a[1,1] bold:null[1,2] b[1,3]",
+          "request": "delete [1,2)",
+          "expected": "a*",
+          "predictedOpened": "a*",
+          "observed": {
+            "created": "a*",
+            "opened": "a*"
+          },
+          "oracle": {
+            "created": true,
+            "opened": true
+          },
+          "openedLocalMeaning": true,
+          "deletedMarkers": {
+            "created": [],
+            "opened": []
+          },
+          "asserted": true,
+          "flagsBefore": {
+            "created": {
+              "searchMarker": null,
+              "hasFormatting": true
+            },
+            "opened": {
+              "searchMarker": [],
+              "hasFormatting": false
+            }
+          }
+        }
+      ],
+      "negative": {
+        "claim": "on 'a* b* c' the created replica deletes a marker or shows 'a* c*', or the opened replica keeps the closing bold:null",
+        "holds": true
+      },
+      "pass": true
+    },
+    {
+      "id": "c",
+      "title": "insert with attributes omitted at each boundary of a* b c_",
+      "base": "a* b c_",
+      "cases": [
+        {
+          "request": "insert 0 \"X\" (attrs omitted)",
+          "expected": "X a* b c_",
+          "predictedOpened": "X a* b c_",
+          "observed": {
+            "created": "X a* b c_",
+            "opened": "X a* b c_"
+          },
+          "oracle": {
+            "created": true,
+            "opened": true
+          },
+          "openedLocalMeaning": true,
+          "deletedMarkers": {
+            "created": [],
+            "opened": []
+          },
+          "asserted": true
+        },
+        {
+          "request": "insert 1 \"X\" (attrs omitted)",
+          "expected": "a* X* b c_",
+          "predictedOpened": "a* X b c_",
+          "observed": {
+            "created": "a* X* b c_",
+            "opened": "a* X b c_"
+          },
+          "oracle": {
+            "created": true,
+            "opened": false
+          },
+          "openedLocalMeaning": false,
+          "deletedMarkers": {
+            "created": [],
+            "opened": []
+          },
+          "asserted": true
+        },
+        {
+          "request": "insert 2 \"X\" (attrs omitted)",
+          "expected": "a* b X c_",
+          "predictedOpened": "a* b X c_",
+          "observed": {
+            "created": "a* b X c_",
+            "opened": "a* b X c_"
+          },
+          "oracle": {
+            "created": true,
+            "opened": true
+          },
+          "openedLocalMeaning": true,
+          "deletedMarkers": {
+            "created": [],
+            "opened": []
+          },
+          "asserted": true
+        },
+        {
+          "request": "insert 3 \"X\" (attrs omitted)",
+          "expected": "a* b c_ X_",
+          "predictedOpened": "a* b c_ X",
+          "observed": {
+            "created": "a* b c_ X_",
+            "opened": "a* b c_ X"
+          },
+          "oracle": {
+            "created": true,
+            "opened": false
+          },
+          "openedLocalMeaning": false,
+          "deletedMarkers": {
+            "created": [],
+            "opened": []
+          },
+          "asserted": true
+        }
+      ],
+      "negative": {
+        "claim": "the opened replica also differs at index 0 and at index 2 (where the attributes in force are empty)",
+        "holds": true
+      },
+      "pass": true
+    },
+    {
+      "id": "d",
+      "title": "format on an opened replica is unaffected and restores the flags when it creates a marker",
+      "base": "a* b* c",
+      "effective": {
+        "steps": [
+          {
+            "request": "format [1,2) {\"italic\":true}",
+            "expected": "a* b*_ c",
+            "predictedOpened": "a* b*_ c",
+            "observed": {
+              "created": "a* b*_ c",
+              "opened": "a* b*_ c"
+            },
+            "oracle": {
+              "created": true,
+              "opened": true
+            },
+            "openedLocalMeaning": true,
+            "deletedMarkers": {
+              "created": [],
+              "opened": []
+            },
+            "asserted": true
+          },
+          {
+            "request": "delete [1,2)",
+            "expected": "a* c",
+            "predictedOpened": "a* c",
+            "observed": {
+              "created": "a* c",
+              "opened": "a* c"
+            },
+            "oracle": {
+              "created": true,
+              "opened": true
+            },
+            "openedLocalMeaning": true,
+            "deletedMarkers": {
+              "created": [
+                {
+                  "id": [
+                    2,
+                    0
+                  ],
+                  "key": "italic",
+                  "value": true
+                },
+                {
+                  "id": [
+                    2,
+                    1
+                  ],
+                  "key": "italic",
+                  "value": null
+                }
+              ],
+              "opened": [
+                {
+                  "id": [
+                    2,
+                    0
+                  ],
+                  "key": "italic",
+                  "value": true
+                },
+                {
+                  "id": [
+                    2,
+                    1
+                  ],
+                  "key": "italic",
+                  "value": null
+                }
+              ]
+            },
+            "asserted": true
+          }
+        ],
+        "flagsBefore": {
+          "searchMarker": [],
+          "hasFormatting": false
+        },
+        "flagsAfter": {
+          "searchMarker": null,
+          "hasFormatting": true
+        }
+      },
+      "noOpFormat": {
+        "steps": [
+          {
+            "request": "format [0,1) {\"bold\":true}",
+            "expected": "a* b* c",
+            "predictedOpened": "a* b* c",
+            "observed": {
+              "created": "a* b* c",
+              "opened": "a* b* c"
+            },
+            "oracle": {
+              "created": true,
+              "opened": true
+            },
+            "openedLocalMeaning": true,
+            "deletedMarkers": {
+              "created": [],
+              "opened": []
+            },
+            "asserted": true
+          },
+          {
+            "request": "delete [1,2)",
+            "expected": "a* c",
+            "predictedOpened": "a* c*",
+            "observed": {
+              "created": "a* c",
+              "opened": "a* c*"
+            },
+            "oracle": {
+              "created": true,
+              "opened": false
+            },
+            "openedLocalMeaning": false,
+            "deletedMarkers": {
+              "created": [],
+              "opened": [
+                {
+                  "id": [
+                    1,
+                    4
+                  ],
+                  "key": "bold",
+                  "value": null
+                }
+              ]
+            },
+            "asserted": true
+          }
+        ],
+        "flagsAfter": {
+          "searchMarker": [
+            0
+          ],
+          "hasFormatting": false
+        }
+      },
+      "negative": {
+        "claim": "after an effective format the opened replica still spreads bold on delete ('a* c*'), or a format that changes nothing restores the flags",
+        "holds": true
+      },
+      "pass": true
+    },
+    {
+      "id": "e",
+      "title": "errors recur and accumulate over a sequence of deletes",
+      "base": "a* b* c d* e* f",
+      "steps": [
+        {
+          "request": "delete [1,2)",
+          "expected": "a* c d* e* f",
+          "predictedOpened": "a* c* d* e* f",
+          "observed": {
+            "created": "a* c d* e* f",
+            "opened": "a* c* d* e* f"
+          },
+          "oracle": {
+            "created": true,
+            "opened": false
+          },
+          "openedLocalMeaning": false,
+          "deletedMarkers": {
+            "created": [],
+            "opened": [
+              {
+                "id": [
+                  1,
+                  7
+                ],
+                "key": "bold",
+                "value": null
+              }
+            ]
+          },
+          "asserted": true
+        },
+        {
+          "request": "delete [3,4)",
+          "expected": "a* c d* f",
+          "predictedOpened": "a* c* d* f*",
+          "observed": {
+            "created": "a* c d* f",
+            "opened": "a* c* d* f*"
+          },
+          "oracle": {
+            "created": true,
+            "opened": false
+          },
+          "openedLocalMeaning": false,
+          "deletedMarkers": {
+            "created": [],
+            "opened": [
+              {
+                "id": [
+                  1,
+                  9
+                ],
+                "key": "bold",
+                "value": null
+              }
+            ]
+          },
+          "asserted": true
+        },
+        {
+          "request": "delete [1,2)",
+          "expected": "a* d* f",
+          "predictedOpened": "a* d* f*",
+          "observed": {
+            "created": "a* d* f",
+            "opened": "a* d* f*"
+          },
+          "oracle": {
+            "created": true,
+            "opened": false
+          },
+          "openedLocalMeaning": true,
+          "deletedMarkers": {
+            "created": [
+              {
+                "id": [
+                  1,
+                  7
+                ],
+                "key": "bold",
+                "value": null
+              },
+              {
+                "id": [
+                  1,
+                  8
+                ],
+                "key": "bold",
+                "value": true
+              }
+            ],
+            "opened": []
+          },
+          "asserted": true
+        }
+      ],
+      "openedSearchMarkersAfter": [
+        0,
+        1,
+        1
+      ],
+      "openedWrongAgainstOwnPreviousView": [
+        true,
+        true,
+        false
+      ],
+      "negative": {
+        "claim": "only the first edit on the opened replica is wrong (the second delete, at the end of the other run, is correct)",
+        "holds": true
+      },
+      "pass": true
+    },
+    {
+      "id": "f",
+      "title": "reading before the edit (raw Y.Doc, opened order) changes nothing",
+      "base": "a* b* c",
+      "request": "delete [1,2)",
+      "expected": "a* c",
+      "predictedOpened": "a* c*",
+      "cases": [
+        {
+          "read": "none",
+          "observed": "a* c*",
+          "asserted": true
+        },
+        {
+          "read": "toString",
+          "observed": "a* c*",
+          "asserted": true
+        },
+        {
+          "read": "toDelta",
+          "observed": "a* c*",
+          "asserted": true
+        },
+        {
+          "read": "length",
+          "observed": "a* c*",
+          "asserted": true
+        },
+        {
+          "read": "toJSON",
+          "observed": "a* c*",
+          "asserted": true
+        }
+      ],
+      "negative": {
+        "claim": "some read before the delete yields the list edit",
+        "holds": true
+      },
+      "pass": true
+    },
+    {
+      "id": "g",
+      "title": "getText before applyUpdate with the same bytes meets the oracle in every step above",
+      "stepsChecked": 17,
+      "createdMeetsOracle": true,
+      "openedStepsFailingOracle": 9,
+      "bytesOfLoadAndSyncIdentical": true,
+      "negative": {
+        "claim": "the opened order also meets the oracle everywhere (so the byte source, not the order, would matter)",
+        "holds": true
+      },
+      "pass": true
+    },
+    {
+      "id": "h",
+      "title": "the spread is part of the update: every receiver converges on it",
+      "base": "a* b* c",
+      "request": "delete [1,2) on the opened replica",
+      "expected": "a* c",
+      "predicted": {
+        "allReplicas": "a* c*"
+      },
+      "observed": {
+        "opened": "a* c*",
+        "createdReceiver": "a* c*",
+        "openedReceiver": "a* c*",
+        "source": "a* c*"
+      },
+      "deletedMarkersInUpdate": [
+        {
+          "id": [
+            1,
+            4
+          ],
+          "key": "bold",
+          "value": null
+        }
+      ],
+      "cleanupUpdatesEmitted": {
+        "createdReceiver": 0,
+        "source": 0
+      },
+      "reverseDirection": {
+        "expected": "a* c",
+        "observed": {
+          "sender": "a* c",
+          "openedReceiver": "a* c"
+        },
+        "pass": true
+      },
+      "negative": {
+        "claim": "some receiver repairs the state to 'a* c', or emits a cleanup",
+        "holds": true
+      },
+      "pass": true
+    }
+  ]
+}

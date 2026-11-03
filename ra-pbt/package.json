@@ -1,0 +1,14 @@
+{
+  "name": "ra-pbt",
+  "version": "0.1.0",
+  "description": "Bounded law tests and causal-history sequential-specification witness checks for replicated data types.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}

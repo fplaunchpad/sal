@@ -1,20 +1,66 @@
 {
-  "date": "2026-10-15",
+  "date": "2026-10-29",
   "platform": "macOS arm64",
-  "lean": "4.28.0",
-  "python": "3.14.6",
+  "lean": {
+    "copied_sources": 514,
+    "generated_guide_and_audit_files": 2,
+    "selected_roots": 260,
+    "build_jobs": 3619,
+    "result": "pass",
+    "build_scope": "Prior full renamed project build (3619 jobs), reusing pinned Lean and Mathlib dependency outputs. Current 516-file closure compared against that build: 515 byte-identical; only LWWRegister.lean adds a three-line comment/#eval example. The changed renamed module was freshly compiled and the generated 260-root audit rerun with its new olean and the unchanged validated dependencies. No new full build or fresh dependency bootstrap claimed.",
+    "current_lean_files_compared": 516,
+    "unchanged_lean_files": 515,
+    "focused_rebuild": "Sal/MRDTs/Instances/LWWRegister.lean; #eval returns some (1, 1, 49); no theorem definition changed.",
+    "fresh_root_audits": 260,
+    "axioms_allowed": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_decide_scope": "Other concrete examples compile but are outside the selected-declaration axiom audit."
+  },
   "node": "26.3.1",
   "validation": "pass",
-  "original_lean_sources": 507,
-  "selected_roots": 242,
-  "build_jobs": 3612,
-  "fresh_project_build": true,
-  "build_scope": "Fresh project build with only standard Lean/Mathlib dependencies available; no optional solver package or project compiled outputs reused. No fresh external dependency bootstrap claimed.",
-  "notion": "Fresh download verified all seven hashes; offline runner reproduced five known demo bugs and one positive control (Notion rerun 2026-10-17).",
-  "measurements": "All 24 row counts, 444 renamed-source hashes and generic metatheory category counts reproduced after renaming.",
-  "excluded": "No Git history, credentials, original repository .lake directory, untracked research files, or third-party Notion sources in source archive.",
-  "negative_controls": "Unapproved Lean axiom rejected; existing export directory refused; Notion corrupt-cache and output-overwrite rejection checked. Unexpected additional source file rejected by the manifest checker.",
-  "navigation_declaration_checks": 52,
-  "numbered_paper_statements": 16,
-  "anonymity": "Neutral project/module names; project revision identifiers and author references removed; official dependency attributions retained. Archive owner names, numeric owners and timestamps cleared."
+  "scope": "Renamed Lean proof closure and bounded executable tests; no external-library verification or GC result is claimed.",
+  "executable_checks": {
+    "harness_tests": 55,
+    "packaged_runtime_tests": 38,
+    "specification_assertions": {
+      "yjs": 27,
+      "automerge": 14,
+      "loro": 18,
+      "production_text": 15,
+      "production_blocks": 15
+    },
+    "regressions": {
+      "yjs": 28,
+      "automerge": 18,
+      "loro": 54,
+      "notion_demo_and_older_repair": 34,
+      "production_text": 24,
+      "production_blocks": 35
+    },
+    "pinned_packages": "npm ci --ignore-scripts from local cache; executable source digests checked before and after tests.",
+    "notion": "Seven original demo modules hash-checked; offline preparation and regressions passed.",
+    "production_extraction_controls": 19,
+    "production_review_controls": 16,
+    "production_library": "Five first-party export inputs preserved byte-for-byte through anonymisation; generated external library exactly matches all six original file digests. All 63 asset hashes and 4335 module source slices verified before and after testing; no downloaded asset or generated module body shipped.",
+    "clean_core": "Core and all three independent specification suites passed before any third-party package was installed in the new export.",
+    "runner": "All 34 commands of check-pbt.py --install --production-cache <63-asset-cache> --notion-cache <7-module-cache> passed; npm installs used the local cache with network disabled."
+  },
+  "package_counts": {
+    "hashed_files_excluding_manifest": 801,
+    "measured_source_hashes": 448,
+    "first_party_support_sources": 235
+  },
+  "integrity_and_anonymity": {
+    "manifest": "pass; rejects unexpected source files",
+    "archive": "Owner names, numeric owners and timestamps neutral; no symlinks, Git history, node_modules, credentials or identifying report drafts.",
+    "negative_controls": [
+      "unexpected source rejected",
+      "existing export refused",
+      "corrupt-cache and output-overwrite rejection retained"
+    ]
+  },
+  "historical_campaigns": "Original random-campaign measurements are retained as historical observations, not fresh measurements or proof verdicts. Current generic witness search checks causal-history conformance; paper RA is not checked by that search. Production-client rejections/pending work are distinguished from same-record-set divergence, and the live acceptance/ordering/recovery protocol remains unknown."
 }

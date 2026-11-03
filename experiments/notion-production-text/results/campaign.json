@@ -1,0 +1,1122 @@
+{
+ "runs": [
+  {
+   "name": "plain-created-21",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "positional"
+   },
+   "options": {
+    "withBold": false
+   },
+   "trials": 200,
+   "edits": 1941,
+   "deliveries": 1275,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 3216,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1496,
+    "delete": 445
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "plain-left-21",
+   "config": {
+    "rule": "left",
+    "reading": "anchored",
+    "local": "positional"
+   },
+   "options": {
+    "withBold": false
+   },
+   "trials": 200,
+   "edits": 1941,
+   "deliveries": 1275,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 3216,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1496,
+    "delete": 445
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "plain-both-21",
+   "config": {
+    "rule": "both",
+    "reading": "anchored",
+    "local": "positional"
+   },
+   "options": {
+    "withBold": false
+   },
+   "trials": 200,
+   "edits": 1941,
+   "deliveries": 1275,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 3216,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 105,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 556,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 105,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1496,
+    "delete": 445
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": {
+    "records": {
+     "NT-2": 556
+    },
+    "trials": {
+     "NT-2": 105
+    },
+    "onset": {
+     "NT-2": 105
+    }
+   },
+   "shrunk": [
+    {
+     "signature": "raLinearizability:delete+insert",
+     "trial": 0,
+     "steps": "12 -> 5",
+     "rendered": [
+      "r1 insert 0 \"r\"",
+      "r2 insert 0 \"p\"",
+      "r2 delete [0,1)",
+      "r3 insert 0 \"g\"",
+      "r1 insert 0 \"m\""
+     ],
+     "failure": {
+      "replica": 3,
+      "step": 8,
+      "expected": {
+       "admittedViews": []
+      },
+      "actual": "mgr",
+      "opKeys": [
+       "r1#0",
+       "r1#1",
+       "r2#0",
+       "r2#1",
+       "r3#0"
+      ]
+     }
+    },
+    {
+     "signature": "raLinearizability:insert",
+     "trial": 3,
+     "steps": "12 -> 3",
+     "rendered": [
+      "r1 insert 0 \"t\"",
+      "r1 insert 0 \"s\"",
+      "r2 insert 0 \"j\""
+     ],
+     "failure": {
+      "replica": 2,
+      "step": 3,
+      "expected": {
+       "admittedViews": []
+      },
+      "actual": "sjt",
+      "opKeys": [
+       "r1#0",
+       "r1#1",
+       "r2#0"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "plain-opened-22",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "positional"
+   },
+   "options": {
+    "withBold": false,
+    "openedReplicas": true
+   },
+   "trials": 200,
+   "edits": 1675,
+   "deliveries": 1320,
+   "sends": 0,
+   "opens": 225,
+   "versionsChecked": 3220,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1253,
+    "delete": 422
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "plain-partial-23",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "positional"
+   },
+   "options": {
+    "withBold": false,
+    "partialDelivery": true
+   },
+   "trials": 200,
+   "edits": 1813,
+   "deliveries": 784,
+   "sends": 587,
+   "opens": 0,
+   "versionsChecked": 3184,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1423,
+    "delete": 390
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "plain-partial-left-23",
+   "config": {
+    "rule": "left",
+    "reading": "anchored",
+    "local": "positional"
+   },
+   "options": {
+    "withBold": false,
+    "partialDelivery": true
+   },
+   "trials": 200,
+   "edits": 1813,
+   "deliveries": 784,
+   "sends": 587,
+   "opens": 0,
+   "versionsChecked": 3184,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1423,
+    "delete": 390
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "plain-four-24",
+   "config": {
+    "rule": "left",
+    "reading": "anchored",
+    "local": "positional"
+   },
+   "options": {
+    "withBold": false,
+    "replicas": 4,
+    "steps": 14
+   },
+   "trials": 200,
+   "edits": 2469,
+   "deliveries": 2731,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 5200,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1959,
+    "delete": 510
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-created-31",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "positional"
+   },
+   "options": {
+    "withBold": true
+   },
+   "trials": 200,
+   "edits": 1973,
+   "deliveries": 1303,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 3276,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 64,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 85,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 64,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1158,
+    "bold": 512,
+    "delete": 303
+   },
+   "localMeaningFailuresByKind": {
+    "insert": 85
+   },
+   "classes": {
+    "records": {
+     "NT-1": 85
+    },
+    "trials": {
+     "NT-1": 64
+    },
+    "onset": {
+     "NT-1": 64
+    }
+   },
+   "shrunk": [
+    {
+     "signature": "localMeaning:insert:bold+insert",
+     "trial": 0,
+     "steps": "12 -> 4",
+     "rendered": [
+      "r1 insert 0 \"j\"",
+      "r1 insert 1 \"o\"",
+      "r1 bold [1,2)",
+      "r1 insert 2 \"n\""
+     ],
+     "failure": {
+      "replica": 1,
+      "step": 3,
+      "request": {
+       "kind": "insert",
+       "index": 2,
+       "text": "n"
+      },
+      "before": "jo*",
+      "expected": "jo*n",
+      "actual": "jo*n*",
+      "opKeys": [
+       "r1#0",
+       "r1#1",
+       "r1#2",
+       "r1#3"
+      ]
+     }
+    },
+    {
+     "signature": "localMeaning:insert:bold+delete+insert",
+     "trial": 1,
+     "steps": "12 -> 4",
+     "rendered": [
+      "r2 insert 0 \"jg\"",
+      "r2 delete [1,2)",
+      "r2 bold [0,1)",
+      "r2 insert 1 \"d\""
+     ],
+     "failure": {
+      "replica": 2,
+      "step": 3,
+      "request": {
+       "kind": "insert",
+       "index": 1,
+       "text": "d"
+      },
+      "before": "j*",
+      "expected": "j*d",
+      "actual": "j*d*",
+      "opKeys": [
+       "r2#0",
+       "r2#1",
+       "r2#2",
+       "r2#3"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "bold-inherit-31",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true
+   },
+   "trials": 200,
+   "edits": 1973,
+   "deliveries": 1303,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 3276,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1158,
+    "bold": 512,
+    "delete": 303
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-left-31",
+   "config": {
+    "rule": "left",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true
+   },
+   "trials": 200,
+   "edits": 1973,
+   "deliveries": 1303,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 3276,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1158,
+    "bold": 512,
+    "delete": 303
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-both-31",
+   "config": {
+    "rule": "both",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true
+   },
+   "trials": 200,
+   "edits": 1973,
+   "deliveries": 1303,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 3276,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 71,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 379,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 71,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1158,
+    "bold": 512,
+    "delete": 303
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": {
+    "records": {
+     "NT-2": 379
+    },
+    "trials": {
+     "NT-2": 71
+    },
+    "onset": {
+     "NT-2": 71
+    }
+   },
+   "shrunk": [
+    {
+     "signature": "raLinearizability:bold+delete+insert",
+     "trial": 1,
+     "steps": "12 -> 7",
+     "rendered": [
+      "r1 insert 0 \"n\"",
+      "r2 insert 0 \"jg\"",
+      "r2 delete [1,2)",
+      "r3 insert 0 \"ur\"",
+      "deliver 3->1",
+      "r1 insert 2 \"i\"",
+      "r2 bold [0,1)"
+     ],
+     "failure": {
+      "replica": 2,
+      "step": 7,
+      "expected": {
+       "admittedViews": []
+      },
+      "actual": "urij*n",
+      "opKeys": [
+       "r1#0",
+       "r1#1",
+       "r2#0",
+       "r2#1",
+       "r2#2",
+       "r3#0"
+      ]
+     }
+    },
+    {
+     "signature": "raLinearizability:bold+insert",
+     "trial": 6,
+     "steps": "12 -> 4",
+     "rendered": [
+      "r2 insert 0 \"r\"",
+      "r2 insert 0 \"z\"",
+      "r3 insert 0 \"h\"",
+      "r3 bold [0,1)"
+     ],
+     "failure": {
+      "replica": 3,
+      "step": 7,
+      "expected": {
+       "admittedViews": []
+      },
+      "actual": "zh*r*",
+      "opKeys": [
+       "r2#0",
+       "r2#1",
+       "r3#0",
+       "r3#1"
+      ]
+     }
+    },
+    {
+     "signature": "raLinearizability:insert",
+     "trial": 20,
+     "steps": "12 -> 3",
+     "rendered": [
+      "r1 insert 0 \"o\"",
+      "r1 insert 0 \"k\"",
+      "r2 insert 0 \"u\""
+     ],
+     "failure": {
+      "replica": 2,
+      "step": 3,
+      "expected": {
+       "admittedViews": []
+      },
+      "actual": "kuo",
+      "opKeys": [
+       "r1#0",
+       "r1#1",
+       "r2#0"
+      ]
+     }
+    },
+    {
+     "signature": "raLinearizability:delete+insert",
+     "trial": 22,
+     "steps": "12 -> 5",
+     "rendered": [
+      "r2 insert 0 \"s\"",
+      "r2 delete [0,1)",
+      "r3 insert 0 \"t\"",
+      "r2 insert 0 \"y\"",
+      "r3 insert 0 \"y\""
+     ],
+     "failure": {
+      "replica": 3,
+      "step": 8,
+      "expected": {
+       "admittedViews": []
+      },
+      "actual": "yyt",
+      "opKeys": [
+       "r2#0",
+       "r2#1",
+       "r2#2",
+       "r3#0",
+       "r3#1"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "bold-interval-31",
+   "config": {
+    "rule": "gap",
+    "reading": "interval",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true
+   },
+   "trials": 200,
+   "edits": 1973,
+   "deliveries": 1303,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 3276,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 77,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 377,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 77,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1158,
+    "bold": 512,
+    "delete": 303
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": {
+    "records": {
+     "NT-3": 377
+    },
+    "trials": {
+     "NT-3": 77
+    },
+    "onset": {
+     "NT-3": 77
+    }
+   },
+   "shrunk": [
+    {
+     "signature": "raLinearizability:bold+delete+insert",
+     "trial": 1,
+     "steps": "12 -> 5",
+     "rendered": [
+      "r1 insert 0 \"n\"",
+      "r2 insert 0 \"jg\"",
+      "r2 insert 1 \"k\"",
+      "r2 delete [1,2)",
+      "r2 bold [0,2)"
+     ],
+     "failure": {
+      "replica": 2,
+      "step": 5,
+      "expected": {
+       "admittedViews": [
+        "j*g*n"
+       ]
+      },
+      "actual": "j*g*n*",
+      "opKeys": [
+       "r1#0",
+       "r2#0",
+       "r2#1",
+       "r2#2",
+       "r2#3"
+      ]
+     }
+    },
+    {
+     "signature": "raLinearizability:bold+insert",
+     "trial": 3,
+     "steps": "12 -> 3",
+     "rendered": [
+      "r1 insert 0 \"w\"",
+      "r2 insert 0 \"u\"",
+      "r2 bold [0,1)"
+     ],
+     "failure": {
+      "replica": 2,
+      "step": 3,
+      "expected": {
+       "admittedViews": [
+        "u*w"
+       ]
+      },
+      "actual": "u*w*",
+      "opKeys": [
+       "r1#0",
+       "r2#0",
+       "r2#1"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "bold-opened-32",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true,
+    "openedReplicas": true
+   },
+   "trials": 200,
+   "edits": 1659,
+   "deliveries": 1327,
+   "sends": 0,
+   "opens": 230,
+   "versionsChecked": 3216,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 929,
+    "delete": 265,
+    "bold": 465
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-opened-left-32",
+   "config": {
+    "rule": "left",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true,
+    "openedReplicas": true
+   },
+   "trials": 200,
+   "edits": 1659,
+   "deliveries": 1327,
+   "sends": 0,
+   "opens": 230,
+   "versionsChecked": 3216,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 929,
+    "delete": 265,
+    "bold": 465
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-partial-33",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true,
+    "partialDelivery": true
+   },
+   "trials": 200,
+   "edits": 1785,
+   "deliveries": 764,
+   "sends": 615,
+   "opens": 0,
+   "versionsChecked": 3164,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1040,
+    "bold": 502,
+    "delete": 243
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-partial-left-33",
+   "config": {
+    "rule": "left",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true,
+    "partialDelivery": true
+   },
+   "trials": 200,
+   "edits": 1785,
+   "deliveries": 764,
+   "sends": 615,
+   "opens": 0,
+   "versionsChecked": 3164,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1040,
+    "bold": 502,
+    "delete": 243
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-long-34",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true,
+    "steps": 16,
+    "replicas": 3
+   },
+   "trials": 200,
+   "edits": 2643,
+   "deliveries": 1757,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 4400,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1478,
+    "bold": 790,
+    "delete": 375
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-long-left-34",
+   "config": {
+    "rule": "left",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true,
+    "steps": 16,
+    "replicas": 3
+   },
+   "trials": 200,
+   "edits": 2643,
+   "deliveries": 1757,
+   "sends": 0,
+   "opens": 0,
+   "versionsChecked": 4400,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 1478,
+    "bold": 790,
+    "delete": 375
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  },
+  {
+   "name": "bold-opened-35",
+   "config": {
+    "rule": "gap",
+    "reading": "anchored",
+    "local": "inherit"
+   },
+   "options": {
+    "withBold": true,
+    "openedReplicas": true
+   },
+   "trials": 200,
+   "edits": 1679,
+   "deliveries": 1304,
+   "sends": 0,
+   "opens": 225,
+   "versionsChecked": 3208,
+   "witnessSkips": 0,
+   "anomalies": 0,
+   "failingTrials": 0,
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "trialsFailingByCheck": {
+    "convergence": 0,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 0
+   },
+   "localMeaningByKind": {
+    "insert": 930,
+    "bold": 488,
+    "delete": 261
+   },
+   "localMeaningFailuresByKind": {},
+   "classes": null,
+   "shrunk": []
+  }
+ ]
+}

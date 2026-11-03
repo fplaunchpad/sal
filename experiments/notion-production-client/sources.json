@@ -1,0 +1,392 @@
+{
+  "recordedAt": "2026-10-29",
+  "entryPage": "https://www.notion.so/login",
+  "description": "Public production application assets advertised by the entry page and its editor chunk manifest. No account cookies or user data.",
+  "roots": {
+    "textSlice": "458789",
+    "sliceTree": "300957",
+    "clock": "508649",
+    "recordOperations": "971340",
+    "requestBuilders": "701590"
+  },
+  "assets": [
+    {
+      "file": "10130.js",
+      "url": "https://www.notion.so/_assets/10130-c6b99a3503639930.js",
+      "bytes": 72306,
+      "sha256": "5e6b314e58e6c0668dedf36b7d10e2ceec03439914f0fa9c185d89ed8a79c77c"
+    },
+    {
+      "file": "17384.js",
+      "url": "https://www.notion.so/_assets/17384-e8afa3ec492a0c82.js",
+      "bytes": 8271,
+      "sha256": "0e0624dc4788725e6d9728b9a8f875514b2690db3c7364a95128eeeabc2d702b"
+    },
+    {
+      "file": "17913.js",
+      "url": "https://www.notion.so/_assets/17913-5edec43a5dc839bc.js",
+      "bytes": 17352,
+      "sha256": "084a97f22e70a4c49e1845f63c4ee9d2e7f06f5ef882386a70b33989ab5b5ac7"
+    },
+    {
+      "file": "18720.js",
+      "url": "https://www.notion.so/_assets/18720-21ef78bbabe7a8eb.js",
+      "bytes": 6936,
+      "sha256": "4ffc61d23e27aa77781190b2abcb00a0788b032c1e78d502e4cb21e08f6f29c0"
+    },
+    {
+      "file": "19332.js",
+      "url": "https://www.notion.so/_assets/19332-d15e73120e59a529.js",
+      "bytes": 9078,
+      "sha256": "11ab43d6c6b96b6543790764b9a4f4054ac01d2ef0cf30df036538e472cc1956"
+    },
+    {
+      "file": "19600.js",
+      "url": "https://www.notion.so/_assets/19600-c3ba9e3ee8d2589c.js",
+      "bytes": 9857,
+      "sha256": "b773e092ca1d731642949ed48d87f62aba8139835e9b02e9e479f06257df1334"
+    },
+    {
+      "file": "19658.js",
+      "url": "https://www.notion.so/_assets/19658-ae49a44b4217a586.js",
+      "bytes": 748289,
+      "sha256": "05b0b352be8504ae0d886542dcd86bae04b51c3dd5a818cfa6c8eafa97325382"
+    },
+    {
+      "file": "27507.js",
+      "url": "https://www.notion.so/_assets/27507-e1de29755b095b03.js",
+      "bytes": 7572,
+      "sha256": "195313d605184372559e51f58f168140bb7f015f88c6fcb6bb595c35a9b95a19"
+    },
+    {
+      "file": "28662.js",
+      "url": "https://www.notion.so/_assets/28662-3048b855aaa1d228.js",
+      "bytes": 20180,
+      "sha256": "d7ca1002ba522dd14134be7990f611e3d7626eff9e379754b1fe0236f287d8bd"
+    },
+    {
+      "url": "https://www.notion.so/_assets/29013-dac89351c3e97a15.js",
+      "file": "29013-dac89351c3e97a15.js",
+      "bytes": 9283,
+      "sha256": "7fe9a7fb9225cb3b4bbcb7e18bfa73c5ee1f8f3a5d259d3b101ca9952c322369"
+    },
+    {
+      "file": "30437.js",
+      "url": "https://www.notion.so/_assets/30437-218b71b19cd7e91f.js",
+      "bytes": 10776,
+      "sha256": "77ce18bbfeab906f9ee04109cb445ec4a390ede7b9daa4579b46e2370dd9e52b"
+    },
+    {
+      "file": "3209.js",
+      "url": "https://www.notion.so/_assets/3209-65d5ebb158637aef.js",
+      "bytes": 32353,
+      "sha256": "b44ee0a78d03f0b47128a439d6b64f2f74a53d17ab87e81a9a71c86b22d07cca"
+    },
+    {
+      "file": "34980.js",
+      "url": "https://www.notion.so/_assets/34980-ed60f38deda61f21.js",
+      "bytes": 35722,
+      "sha256": "f52660c0e79d2e15d004a6913d70689f6a9c65025110b97815e69ace79ae8c02"
+    },
+    {
+      "file": "35938.js",
+      "url": "https://www.notion.so/_assets/35938-b3f0c06160d18373.js",
+      "bytes": 9783,
+      "sha256": "56cce49d2ed95c5dbebc940e597b7add64527174638c66d6c0b437ef0a6b6a6a"
+    },
+    {
+      "file": "36044.js",
+      "url": "https://www.notion.so/_assets/36044-e6e469a7e374200f.js",
+      "bytes": 38919,
+      "sha256": "d9eaa2efdfcb910a6e66405abcd1ea829fc359f1d01e55f31fb78e215090127d"
+    },
+    {
+      "file": "40851.js",
+      "url": "https://www.notion.so/_assets/40851-b9708fed661bc92c.js",
+      "bytes": 192683,
+      "sha256": "3173dc435c8644c8e590f5d932198f7f5d2e105c9de99a219c0c44bf12214760"
+    },
+    {
+      "file": "42125.js",
+      "url": "https://www.notion.so/_assets/42125-c0ac2a80160408d4.js",
+      "bytes": 21884,
+      "sha256": "fc1e096e3777033eded6bda4eb4a9b26ffbab53e6d810acef1b08ac376da0d61"
+    },
+    {
+      "file": "43944.js",
+      "url": "https://www.notion.so/_assets/43944-5842b85370dec3ba.js",
+      "bytes": 37020,
+      "sha256": "3220b1ea00249da07cfc58ac111d1a0a0b830c4a76a5b45bb01a8234aedb2670"
+    },
+    {
+      "file": "44128.js",
+      "url": "https://www.notion.so/_assets/44128-61c35e373d411937.js",
+      "bytes": 6514,
+      "sha256": "cfd673e7a5a790ae371b2f5dcd7ff5006a4a73102e126867ac0ad0b8507f2ff2"
+    },
+    {
+      "file": "47034.js",
+      "url": "https://www.notion.so/_assets/47034-c2abf3fed0d48891.js",
+      "bytes": 13126,
+      "sha256": "7ad0eed27f4c978fde78ad388718b9b3f2906b3e8f0f4f5481de4699b9d4d157"
+    },
+    {
+      "url": "https://www.notion.so/_assets/4766-8c186258b2cb7bde.js",
+      "file": "4766-8c186258b2cb7bde.js",
+      "bytes": 10263,
+      "sha256": "0f80f2338efc264d6d8931f359bd3cc1a2b01b31e270618a6d8e9332e111e285"
+    },
+    {
+      "file": "49291.js",
+      "url": "https://www.notion.so/_assets/49291-c17b15ea0e7919ab.js",
+      "bytes": 16052,
+      "sha256": "e55ae49df89a232b2f362e1d50905ff5d3b1185409637dd4e41973997599e2ee"
+    },
+    {
+      "url": "https://www.notion.so/_assets/49459-23363cc8c7cc44ba.js",
+      "file": "49459-23363cc8c7cc44ba.js",
+      "bytes": 111290,
+      "sha256": "2f29a8d7c1aa39dfcf06d986b0e33159034af853a94bf4eed625fe4de6f896a1"
+    },
+    {
+      "file": "51182.js",
+      "url": "https://www.notion.so/_assets/51182-9165bd6c61b25a58.js",
+      "bytes": 51747,
+      "sha256": "82d68bfc23f0cd5bb4470e6ec315b4262081653793ef86b1094a5004cd7727fb"
+    },
+    {
+      "file": "5172.js",
+      "url": "https://www.notion.so/_assets/5172-f3a3f2b751e73d65.js",
+      "bytes": 116565,
+      "sha256": "dbe88f6e9bad09db6456e87153f794ab18d50f72afb68d435e65e8275680f3e0"
+    },
+    {
+      "file": "56766.js",
+      "url": "https://www.notion.so/_assets/56766-b80536af907880e1.js",
+      "bytes": 25585,
+      "sha256": "358d5fd67b4a2a137bdf0d3d0c88dff89728bba55b5a682001f4a6758cb27604"
+    },
+    {
+      "file": "59293.js",
+      "url": "https://www.notion.so/_assets/59293-0ad808344aeaf096.js",
+      "bytes": 26204,
+      "sha256": "82adb801b8a09f00e61291453cabdbbf0f5a2fe2d6223d07de55648cd28a85f5"
+    },
+    {
+      "file": "61658.js",
+      "url": "https://www.notion.so/_assets/61658-4bbf0301330eeef9.js",
+      "bytes": 20354,
+      "sha256": "3ed3b044ca81f82f90613a0e6a2d2de6a8ec933e317ae2f67ea00cc7fe7e5064"
+    },
+    {
+      "file": "63352.js",
+      "url": "https://www.notion.so/_assets/63352-4513033590d6665e.js",
+      "bytes": 8496,
+      "sha256": "07dc26a63988393553631b78304bb0ebc56bfb40d49b62a37eecc719af2a492d"
+    },
+    {
+      "file": "65777.js",
+      "url": "https://www.notion.so/_assets/65777-7355463557648cd8.js",
+      "bytes": 12826,
+      "sha256": "a21908e3c3b07736b6702c792f579ed69343be0e1c437277f96c5008cea85d50"
+    },
+    {
+      "file": "66443.js",
+      "url": "https://www.notion.so/_assets/66443-e1b68add8126ed41.js",
+      "bytes": 205307,
+      "sha256": "b90e7492e1218980f4843f966af72539cd749179813fa85b5ee3534ff13114bc"
+    },
+    {
+      "file": "67868.js",
+      "url": "https://www.notion.so/_assets/67868-075742016925729c.js",
+      "bytes": 43254,
+      "sha256": "11c0563a5e0583b7f3a2fc57ec0a10f806b53d5328916edb582a95fa9941fde1"
+    },
+    {
+      "url": "https://www.notion.so/_assets/69166-011042da65d966e7.js",
+      "file": "69166-011042da65d966e7.js",
+      "bytes": 105991,
+      "sha256": "9239a271941739fad4005ce35a1a8f36beae1d2aaf7da136db9889de284b9419"
+    },
+    {
+      "file": "69465.js",
+      "url": "https://www.notion.so/_assets/69465-e8269d17cc13fdb6.js",
+      "bytes": 10029,
+      "sha256": "f3e7a4688c6bba4589049d88d5a9742fb0e363b610641daff435fd45135cd7e7"
+    },
+    {
+      "file": "72474.js",
+      "url": "https://www.notion.so/_assets/72474-576744a31b914bbe.js",
+      "bytes": 8031,
+      "sha256": "30ed48d5ac9993437221c2bb683c89b2faa712102869ca1838425a838dfa0ea0"
+    },
+    {
+      "file": "78041.js",
+      "url": "https://www.notion.so/_assets/78041-00769e545a4484b3.js",
+      "bytes": 45995,
+      "sha256": "772348e9f2fee50a5a86b9cd2a872be42a19ef406cff6d940b9d23dbd587c301"
+    },
+    {
+      "file": "79323.js",
+      "url": "https://www.notion.so/_assets/79323-e8d8fb6403d8f0ee.js",
+      "bytes": 261893,
+      "sha256": "1d9f431576c6a639c76d97b388588407a8a627eb7b4bd2a4d7671c66c19d33ed"
+    },
+    {
+      "file": "80300.js",
+      "url": "https://www.notion.so/_assets/80300-cf4b6e0e510c15d4.js",
+      "bytes": 181876,
+      "sha256": "0589a2c93e2f07f80159d6365bb22a072667b68d303be9fb61e63ef041f079ec"
+    },
+    {
+      "file": "8220.js",
+      "url": "https://www.notion.so/_assets/8220-90911939af467c7c.js",
+      "bytes": 16641,
+      "sha256": "cfa35373e517cf095fede214677e9c71ea6dddcaf8252be0d2a10ccf4d28cdea"
+    },
+    {
+      "url": "https://www.notion.so/_assets/86332-e94c826e74914399.js",
+      "file": "86332-e94c826e74914399.js",
+      "bytes": 22635,
+      "sha256": "e50408ef31d39ede9e654db25bf90615ea97c80e82f8da9fcbcf2e8d9720c6e7"
+    },
+    {
+      "url": "https://www.notion.so/_assets/8705-06c3b3a4dfd74b89.js",
+      "file": "8705-06c3b3a4dfd74b89.js",
+      "bytes": 65050,
+      "sha256": "1e1b944375d419466be01765418a16e800670913a80d59e558a358e8b25d9bcd"
+    },
+    {
+      "file": "87815.js",
+      "url": "https://www.notion.so/_assets/87815-11b61229bf58b053.js",
+      "bytes": 14396,
+      "sha256": "48d8be3ff81e899e458352ae264b8ae92b314ee0de5c693f293bad131ceb8c30"
+    },
+    {
+      "file": "89380.js",
+      "url": "https://www.notion.so/_assets/89380-15d39c59e4daa848.js",
+      "bytes": 8786,
+      "sha256": "087f4065a59820c6eb9cb702b32d4222e7f03a8525dcb105e1b89c7b9ed56050"
+    },
+    {
+      "url": "https://www.notion.so/_assets/89898-24f354152ba9d273.js",
+      "file": "89898-24f354152ba9d273.js",
+      "bytes": 29784,
+      "sha256": "2aeb6d70eaa9a25f48ef4b8ed653db5017a3d810f9b34e2f9825d0aa8c7cbd3f"
+    },
+    {
+      "file": "93335.js",
+      "url": "https://www.notion.so/_assets/93335-f7596e2ea66334bd.js",
+      "bytes": 114475,
+      "sha256": "71b0702e215064f97b9989717ab6b94e73a2297dfa300eb49b67132a22c7c8bd"
+    },
+    {
+      "file": "94078.js",
+      "url": "https://www.notion.so/_assets/94078-a6d5d9772da4d651.js",
+      "bytes": 37087,
+      "sha256": "91360054d468ffb03f5cee8797710e284baea052a6bf93d0bafee79864688303"
+    },
+    {
+      "url": "https://www.notion.so/_assets/95209-b2964ccda36217a3.js",
+      "file": "95209-b2964ccda36217a3.js",
+      "bytes": 23488,
+      "sha256": "4eac5470709decba737d97154c4bf71fbe7c0c182d76194068509a08cf2669e5"
+    },
+    {
+      "file": "95271.js",
+      "url": "https://www.notion.so/_assets/95271-f2b833f5462b7a5a.js",
+      "bytes": 168330,
+      "sha256": "898844e7d19271843d675f77b9675d2cc54312282a633c3e1475669a4863517e"
+    },
+    {
+      "file": "95668.js",
+      "url": "https://www.notion.so/_assets/95668-4977a1f20358e674.js",
+      "bytes": 21340,
+      "sha256": "217ad1aedf5aeb71e39f6ee2537e2f55fc059eab83f8aa7b7e28f03aba295dd5"
+    },
+    {
+      "file": "97121.js",
+      "url": "https://www.notion.so/_assets/97121-6452988930b25a87.js",
+      "bytes": 26634,
+      "sha256": "caeed0000330e6fd7ecf5f1a75c11ac4a9ce8f391d8389de025da9641c3f2970"
+    },
+    {
+      "url": "https://www.notion.so/_assets/97133-22f0f659b65f771f.js",
+      "file": "97133-22f0f659b65f771f.js",
+      "bytes": 155607,
+      "sha256": "8154311ce999eaa71eeadba0829a304cd85d8b3fd6aa6b6f634f7b58edcad9c5"
+    },
+    {
+      "file": "98075.js",
+      "url": "https://www.notion.so/_assets/98075-176473dab745087b.js",
+      "bytes": 167767,
+      "sha256": "712041faeb170aa76774a5ed72e579203bd339225e80c32df954f0509ac5f99a"
+    },
+    {
+      "file": "99676.js",
+      "url": "https://www.notion.so/_assets/99676-58cd8668b011e56b.js",
+      "bytes": 68441,
+      "sha256": "92a26d32832c8b1a7eca4ee60ed2fecb017407a1fbcf5a74c51fc786a7a140b9"
+    },
+    {
+      "file": "ClientFramework.js",
+      "url": "https://www.notion.so/_assets/ClientFramework-97d1643fa2abba3b.js",
+      "bytes": 220207,
+      "sha256": "afd2cc9e87baaab98f1b4348ddcbedc5c411cf93ae7b2123aae492b9991bbee3"
+    },
+    {
+      "file": "DNUtl.js",
+      "url": "https://www.notion.so/_assets/DNUtl-416713e4cb6ca2bf.js",
+      "bytes": 135788,
+      "sha256": "9e5b58ef51e529602e895e0cffe022507183b40816823199614725694769eed2"
+    },
+    {
+      "file": "EditorComponents.js",
+      "url": "https://www.notion.so/_assets/EditorComponents-d5a72d61d2eff3f1.js",
+      "bytes": 26374,
+      "sha256": "a3cf107ca9a295f1d83d54573887c730de0a34eca59767312af37a216308e931"
+    },
+    {
+      "file": "RecordModel.js",
+      "url": "https://www.notion.so/_assets/RecordModel-9c80d894a1141538.js",
+      "bytes": 452477,
+      "sha256": "d6ce458a908ab1a71a21a601440de40458a07e8b6f12b717fb87e6a6dbea37c7"
+    },
+    {
+      "file": "RecordStore.js",
+      "url": "https://www.notion.so/_assets/RecordStore-5c7db2d6e21b4421.js",
+      "bytes": 289876,
+      "sha256": "f677d2da20e13b9e35d453db1e8215d7d9b859b00227dfc4b7991d67b93147be"
+    },
+    {
+      "file": "UISpacePermissionGroupToken.js",
+      "url": "https://www.notion.so/_assets/UISpacePermissionGroupToken-63d7dbd49ee88429.js",
+      "bytes": 3727764,
+      "sha256": "996d77a2bcd78f302cefd8ac0f6b86e56cc923d6026cf2d2d5ce9c137dfa8ba0"
+    },
+    {
+      "file": "app.js",
+      "url": "https://www.notion.so/_assets/app-63c1176c63d2ca75.js",
+      "bytes": 629181,
+      "sha256": "3d08403e1d1f73b81795ad3cda599461ae53c2ea52a105c917ee908cc6c1c10a"
+    },
+    {
+      "file": "contentPreview.js",
+      "url": "https://www.notion.so/_assets/contentPreview-ab7e2ec07a948884.js",
+      "bytes": 11878,
+      "sha256": "5cba10c9798096f553edecef8adf0c1f09728c7ed8894ed90285c0b7ac546a72"
+    },
+    {
+      "file": "crdt-debugging-overlay.js",
+      "url": "https://www.notion.so/_assets/crdt-debugging-overlay-c07407a84c0eb3ba.js",
+      "bytes": 2384,
+      "sha256": "8957fdac4a059002e01294c5043b236fe216709adb31df56f7213ce9355dbb19"
+    },
+    {
+      "file": "lib-nfm-wasm.js",
+      "url": "https://www.notion.so/_assets/lib-nfm-wasm-c8e799995f24ab76.js",
+      "bytes": 810,
+      "sha256": "a9aae21fffe6e378c8e88664d43d6a5b9de5d252e87d15cb7dcb114985fb2203"
+    }
+  ]
+}

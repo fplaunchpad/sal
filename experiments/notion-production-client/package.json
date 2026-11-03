@@ -1,0 +1,12 @@
+{
+  "name": "notion-production-client-extraction",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "acorn": "8.15.0"
+  }
+}

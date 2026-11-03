@@ -1,0 +1,20 @@
+rule / attrs                                    gap / carry
+seed                                            21
+trials                                          200
+options                                         {"steps":12}
+edits                                           1941
+deliveries                                      1275
+sends (pending after)                           0 (0)
+opens                                           0
+versions checked                                3216
+witness skips (bound / partial)                 0 / 0
+causal gaps                                     0
+execution anomalies                             0
+failing trials                                  0
+  convergence (failures / trials)               0 / 0
+  raLinearizability (failures / trials)         0 / 0
+  localMeaning (failures / trials)              0 / 0
+  determinism (failures / trials)               0 / 0
+  conservation (failures / trials)              0 / 0
+  localMeaning on insert (failures / requests)  0 / 1496
+  localMeaning on delete (failures / requests)  0 / 445

@@ -1,0 +1,8 @@
+{
+  "name": "ra-pbt-yjs",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "yjs": "13.6.31"
+  }
+}

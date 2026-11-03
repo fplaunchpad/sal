@@ -1,0 +1,8 @@
+{
+  "name": "ra-pbt-loro",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "loro-crdt": "1.17.1"
+  }
+}

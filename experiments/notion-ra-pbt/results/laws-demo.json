@@ -1,0 +1,2101 @@
+{
+ "model": "demo",
+ "hashes": {
+  "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+  "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+  "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+  "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+  "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+  "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+  "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+ },
+ "runs": [
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "x"
+   ],
+   "profile": "structure",
+   "observation": "bag",
+   "replicas": 3,
+   "syncProbability": 0.4,
+   "seed": 1,
+   "trials": 2000,
+   "size": 8,
+   "ms": 2796,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 6315,
+     "vacuous": 1685
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 7534,
+     "vacuous": 466
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 3100,
+     "vacuous": 4900
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 5816,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "fail",
+     "runs": 7589,
+     "vacuous": 0,
+     "counterexample": {
+      "kind": "no-admitted-linear-extension",
+      "size": 5,
+      "events": [
+       "r1: r: split block 0 at 1 = R:3 vis {}",
+       "q1: q: split block 0 at 0 = Q:3 vis {}",
+       "q2: q: split block 0 at 0 = Q:4 vis {r1,q1}",
+       "q3: q: merge block 3 = Q:25 vis {r1,q1,q2}",
+       "r2: r: merge block 1 = R:24 vis {r1}"
+      ],
+      "sets": {
+       "E": [
+        "r1",
+        "q1",
+        "q2",
+        "q3",
+        "r2"
+       ]
+      },
+      "picks": {},
+      "detail": {
+       "implementation": "\"\"",
+       "closestAdmitted": {
+        "pi": [
+         "q1",
+         "r1",
+         "q2",
+         "r2",
+         "q3"
+        ],
+        "spec": "\"x\""
+       }
+      }
+     },
+     "classification": {
+      "catalogue": [
+       "N-005"
+      ],
+      "losses": [
+       {
+        "transaction": "Q:25",
+        "path": "cycle-no-op",
+        "visibleBefore": "x",
+        "visibleAfter": ""
+       }
+      ],
+      "branching": false,
+      "frontCreates": [],
+      "paths": [
+       {
+        "transaction": "R:24",
+        "path": "live",
+        "source": "R-block-3",
+        "sourceWasAlive": true
+       },
+       {
+        "transaction": "Q:25",
+        "path": "cycle-no-op",
+        "source": "Q-block-3",
+        "sourceWasAlive": true
+       }
+      ]
+     }
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "x"
+   ],
+   "profile": "structure",
+   "observation": "bag",
+   "replicas": 3,
+   "syncProbability": 0.4,
+   "seed": 2,
+   "trials": 2000,
+   "size": 8,
+   "ms": 2764,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 6390,
+     "vacuous": 1610
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 7500,
+     "vacuous": 500
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 3024,
+     "vacuous": 4976
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 5809,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "fail",
+     "runs": 7585,
+     "vacuous": 0,
+     "counterexample": {
+      "kind": "no-admitted-linear-extension",
+      "size": 4,
+      "events": [
+       "r1: r: split block 0 at 1 = R:3 vis {}",
+       "p1: p: split block 0 at 0 = P:3 vis {}",
+       "p2: p: merge block 2 = P:24 vis {r1,p1}",
+       "r2: r: merge block 1 = R:24 vis {r1}"
+      ],
+      "sets": {
+       "E": [
+        "r1",
+        "p1",
+        "p2",
+        "r2"
+       ]
+      },
+      "picks": {},
+      "detail": {
+       "implementation": "\"\"",
+       "closestAdmitted": {
+        "pi": [
+         "p1",
+         "r1",
+         "p2",
+         "r2"
+        ],
+        "spec": "\"x\""
+       }
+      }
+     },
+     "classification": {
+      "catalogue": [
+       "N-005"
+      ],
+      "losses": [
+       {
+        "transaction": "R:24",
+        "path": "cycle-no-op",
+        "visibleBefore": "x",
+        "visibleAfter": ""
+       }
+      ],
+      "branching": false,
+      "frontCreates": [],
+      "paths": [
+       {
+        "transaction": "P:24",
+        "path": "live",
+        "source": "P-block-3",
+        "sourceWasAlive": true
+       },
+       {
+        "transaction": "R:24",
+        "path": "cycle-no-op",
+        "source": "R-block-3",
+        "sourceWasAlive": true
+       }
+      ]
+     }
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "x"
+   ],
+   "profile": "structure",
+   "observation": "bag",
+   "replicas": 3,
+   "syncProbability": 0.4,
+   "seed": 3,
+   "trials": 2000,
+   "size": 8,
+   "ms": 2778,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 6344,
+     "vacuous": 1656
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 7510,
+     "vacuous": 490
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 3068,
+     "vacuous": 4932
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 5857,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "observation": "bag",
+   "replicas": 3,
+   "syncProbability": 0.4,
+   "seed": 1,
+   "trials": 2000,
+   "size": 10,
+   "ms": 6212,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 6573,
+     "vacuous": 1427
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 7575,
+     "vacuous": 425
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 3009,
+     "vacuous": 4991
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 6309,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "observation": "bag",
+   "replicas": 3,
+   "syncProbability": 0.4,
+   "seed": 2,
+   "trials": 2000,
+   "size": 10,
+   "ms": 6143,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 6542,
+     "vacuous": 1458
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 7603,
+     "vacuous": 397
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 2959,
+     "vacuous": 5041
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 6294,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "observation": "bag",
+   "replicas": 3,
+   "syncProbability": 0.4,
+   "seed": 3,
+   "trials": 2000,
+   "size": 10,
+   "ms": 6264,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 6577,
+     "vacuous": 1423
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 7599,
+     "vacuous": 401
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 3060,
+     "vacuous": 4940
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 6316,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 8000,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "observation": "view",
+   "replicas": 3,
+   "syncProbability": 0.3,
+   "seed": 1,
+   "trials": 300,
+   "size": 12,
+   "ms": 1130,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 1029,
+     "vacuous": 171
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1157,
+     "vacuous": 43
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 428,
+     "vacuous": 772
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 1022,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "fail",
+     "runs": 210,
+     "vacuous": 0,
+     "counterexample": {
+      "kind": "no-admitted-linear-extension",
+      "size": 3,
+      "events": [
+       "r1: r: merge block 2 = R:27 vis {}",
+       "r2: r: split block 1 at 2 = R:28 vis {r1}",
+       "p1: p: merge block 1 = P:27 vis {}"
+      ],
+      "sets": {
+       "E": [
+        "r1",
+        "r2",
+        "p1"
+       ]
+      },
+      "picks": {},
+      "detail": {
+       "implementation": "[\"\",\"abc\"]",
+       "closestAdmitted": {
+        "pi": [
+         "p1",
+         "r1",
+         "r2"
+        ],
+        "spec": "[\"abc\",\"\"]"
+       }
+      }
+     },
+     "classification": {
+      "catalogue": [
+       "split-after-removal"
+      ],
+      "losses": [],
+      "branching": false,
+      "frontCreates": [
+       {
+        "transaction": "R:28",
+        "block": "R-block-28",
+        "after": "seed-block-3"
+       }
+      ],
+      "paths": [
+       {
+        "transaction": "P:27",
+        "path": "live",
+        "source": "seed-block-3",
+        "sourceWasAlive": true
+       },
+       {
+        "transaction": "R:27",
+        "path": "live",
+        "source": "seed-block-5",
+        "sourceWasAlive": true
+       }
+      ]
+     }
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "a",
+    "b",
+    "c"
+   ],
+   "profile": "structure",
+   "observation": "view",
+   "replicas": 3,
+   "syncProbability": 0.3,
+   "seed": 2,
+   "trials": 300,
+   "size": 12,
+   "ms": 1121,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 1029,
+     "vacuous": 171
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1141,
+     "vacuous": 59
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 404,
+     "vacuous": 796
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 1021,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "fail",
+     "runs": 437,
+     "vacuous": 0,
+     "counterexample": {
+      "kind": "no-admitted-linear-extension",
+      "size": 4,
+      "events": [
+       "r1: r: split block 0 at 1 = R:7 vis {}",
+       "p1: p: merge block 1 = P:27 vis {}",
+       "r2: r: merge block 1 = R:28 vis {r1}",
+       "r3: r: split block 1 at 1 = R:29 vis {r1,r2}"
+      ],
+      "sets": {
+       "E": [
+        "r1",
+        "p1",
+        "r2",
+        "r3"
+       ]
+      },
+      "picks": {},
+      "detail": {
+       "implementation": "[\"\",\"ab\",\"c\"]",
+       "closestAdmitted": {
+        "pi": [
+         "r1",
+         "p1",
+         "r2",
+         "r3"
+        ],
+        "spec": "[\"ab\",\"\",\"c\"]"
+       }
+      }
+     },
+     "classification": {
+      "catalogue": [
+       "split-after-removal"
+      ],
+      "losses": [],
+      "branching": false,
+      "frontCreates": [
+       {
+        "transaction": "R:29",
+        "block": "R-block-29",
+        "after": "seed-block-3"
+       }
+      ],
+      "paths": [
+       {
+        "transaction": "P:27",
+        "path": "live",
+        "source": "seed-block-3",
+        "sourceWasAlive": true
+       },
+       {
+        "transaction": "R:28",
+        "path": "live",
+        "source": "R-block-7",
+        "sourceWasAlive": true
+       }
+      ]
+     }
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "ab",
+    "cd"
+   ],
+   "profile": "structure",
+   "observation": "view",
+   "replicas": 3,
+   "syncProbability": 0.3,
+   "seed": 1,
+   "trials": 300,
+   "size": 12,
+   "ms": 1102,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 1017,
+     "vacuous": 183
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1157,
+     "vacuous": 43
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 439,
+     "vacuous": 761
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 1013,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "fail",
+     "runs": 552,
+     "vacuous": 0,
+     "counterexample": {
+      "kind": "no-admitted-linear-extension",
+      "size": 4,
+      "events": [
+       "p1: p: split block 1 at 0 = P:7 vis {}",
+       "r1: r: merge block 1 = R:27 vis {}",
+       "p2: p: merge block 2 = P:28 vis {p1}",
+       "p3: p: split block 1 at 1 = P:29 vis {p1,p2}"
+      ],
+      "sets": {
+       "E": [
+        "p1",
+        "r1",
+        "p2",
+        "p3"
+       ]
+      },
+      "picks": {},
+      "detail": {
+       "implementation": "[\"d\",\"abc\"]",
+       "closestAdmitted": {
+        "pi": [
+         "p1",
+         "r1",
+         "p2",
+         "p3"
+        ],
+        "spec": "[\"abc\",\"d\"]"
+       }
+      }
+     },
+     "classification": {
+      "catalogue": [
+       "split-after-removal"
+      ],
+      "losses": [],
+      "branching": false,
+      "frontCreates": [
+       {
+        "transaction": "P:29",
+        "block": "P-block-29",
+        "after": "seed-block-4"
+       }
+      ],
+      "paths": [
+       {
+        "transaction": "R:27",
+        "path": "live",
+        "source": "seed-block-4",
+        "sourceWasAlive": true
+       },
+       {
+        "transaction": "P:28",
+        "path": "live",
+        "source": "P-block-7",
+        "sourceWasAlive": true
+       }
+      ]
+     }
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "ab",
+    "cd"
+   ],
+   "profile": "structure",
+   "observation": "view",
+   "replicas": 3,
+   "syncProbability": 0.3,
+   "seed": 2,
+   "trials": 300,
+   "size": 12,
+   "ms": 1217,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 1024,
+     "vacuous": 176
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1150,
+     "vacuous": 50
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 446,
+     "vacuous": 754
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 1022,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "fail",
+     "runs": 953,
+     "vacuous": 0,
+     "counterexample": {
+      "kind": "no-admitted-linear-extension",
+      "size": 4,
+      "events": [
+       "q1: q: split block 1 at 2 = Q:7 vis {}",
+       "p1: p: merge block 1 = P:28 vis {q1}",
+       "p2: p: split block 1 at 0 = P:29 vis {q1,p1}",
+       "q2: q: merge block 2 = Q:28 vis {q1}"
+      ],
+      "sets": {
+       "E": [
+        "q1",
+        "p1",
+        "p2",
+        "q2"
+       ]
+      },
+      "picks": {},
+      "detail": {
+       "implementation": "[\"\",\"abcd\"]",
+       "closestAdmitted": {
+        "pi": [
+         "q1",
+         "p1",
+         "q2",
+         "p2"
+        ],
+        "spec": "[\"abcd\",\"\"]"
+       }
+      }
+     },
+     "classification": {
+      "catalogue": [
+       "split-after-removal"
+      ],
+      "losses": [],
+      "branching": false,
+      "frontCreates": [
+       {
+        "transaction": "P:29",
+        "block": "P-block-29",
+        "after": "Q-block-7"
+       }
+      ],
+      "paths": [
+       {
+        "transaction": "P:28",
+        "path": "live",
+        "source": "seed-block-4",
+        "sourceWasAlive": true
+       },
+       {
+        "transaction": "Q:28",
+        "path": "live",
+        "source": "Q-block-7",
+        "sourceWasAlive": true
+       }
+      ]
+     }
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "a"
+   ],
+   "profile": "text",
+   "observation": "view",
+   "replicas": 3,
+   "syncProbability": 0.3,
+   "seed": 1,
+   "trials": 300,
+   "size": 12,
+   "ms": 710,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 1023,
+     "vacuous": 177
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1169,
+     "vacuous": 31
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 432,
+     "vacuous": 768
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 1007,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "a"
+   ],
+   "profile": "text",
+   "observation": "view",
+   "replicas": 3,
+   "syncProbability": 0.3,
+   "seed": 2,
+   "trials": 300,
+   "size": 12,
+   "ms": 710,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 1026,
+     "vacuous": 174
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1158,
+     "vacuous": 42
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 457,
+     "vacuous": 743
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 1031,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "fail",
+     "runs": 1141,
+     "vacuous": 0,
+     "counterexample": {
+      "kind": "no-admitted-linear-extension",
+      "size": 10,
+      "events": [
+       "r1: r: insert block 0 \"Z\" at 0 = R:3 vis {}",
+       "q1: q: insert block 0 \"W\" at 0 = Q:3 vis {}",
+       "q2: q: split block 0 at 1 = Q:4 vis {q1}",
+       "r2: r: split block 0 at 2 = R:4 vis {r1}",
+       "p1: p: split block 0 at 1 = P:3 vis {}",
+       "q3: q: insert block 1 \"V\" at 1 = Q:5 vis {q1,q2}",
+       "q4: q: delete block 1 [0,2) = Q:6 vis {q1,q2,q3}",
+       "r3: r: insert block 0 \"U\" at 1 = R:5 vis {r1,r2}",
+       "q5: q: merge block 2 = Q:27 vis {r1,q1,q2,r2,p1,q3,q4,r3}",
+       "r4: r: merge block 1 = R:26 vis {r1,r2,r3}"
+      ],
+      "sets": {
+       "E": [
+        "r1",
+        "q1",
+        "q2",
+        "r2",
+        "p1",
+        "q3",
+        "q4",
+        "r3",
+        "q5",
+        "r4"
+       ]
+      },
+      "picks": {},
+      "detail": {
+       "implementation": "[\"ZUW\",\"\"]",
+       "closestAdmitted": {
+        "pi": [
+         "p1",
+         "q1",
+         "r1",
+         "q2",
+         "r2",
+         "q3",
+         "r3",
+         "q4",
+         "r4",
+         "q5"
+        ],
+        "spec": "[\"ZUW\",\"\",\"\"]"
+       }
+      }
+     },
+     "classification": {
+      "catalogue": [
+       "N-005-path"
+      ],
+      "losses": [],
+      "branching": false,
+      "frontCreates": [],
+      "paths": [
+       {
+        "transaction": "R:26",
+        "path": "live",
+        "source": "R-block-4",
+        "sourceWasAlive": true
+       },
+       {
+        "transaction": "Q:27",
+        "path": "cycle-no-op",
+        "source": "Q-block-4",
+        "sourceWasAlive": true
+       }
+      ]
+     }
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "ab"
+   ],
+   "profile": "format",
+   "observation": "view",
+   "replicas": 2,
+   "syncProbability": 0.3,
+   "seed": 1,
+   "trials": 300,
+   "size": 8,
+   "ms": 579,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 950,
+     "vacuous": 250
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1153,
+     "vacuous": 47
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 424,
+     "vacuous": 776
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 937,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "ab"
+   ],
+   "profile": "format",
+   "observation": "view",
+   "replicas": 2,
+   "syncProbability": 0.3,
+   "seed": 2,
+   "trials": 300,
+   "size": 8,
+   "ms": 577,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 962,
+     "vacuous": 238
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1157,
+     "vacuous": 43
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 420,
+     "vacuous": 780
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 950,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "abc"
+   ],
+   "profile": "format",
+   "observation": "view",
+   "replicas": 2,
+   "syncProbability": 0.3,
+   "seed": 1,
+   "trials": 300,
+   "size": 8,
+   "ms": 651,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 945,
+     "vacuous": 255
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1153,
+     "vacuous": 47
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 428,
+     "vacuous": 772
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 935,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  },
+  {
+   "model": "demo",
+   "hashes": {
+    "replica.js": "ab2edb0c424469e79bfec1aa8e53fbb208769d33aa86f17af89aa28af4da9336",
+    "document.js": "5c710856463c4941991b4f0fba348b7ea2ab1b3f6212558f0c3698733df37616",
+    "text-slice-tree.js": "c5167ec9fa2aee3a3264f0f0888cfeb821a09224f41f970818797b1dda808f91",
+    "ids.js": "f4d40e440f574e3446b9b40f280d5d4684f6c0556fb9aaadb4d08bec893fd8e5",
+    "rga.js": "03327f7b34d161ba010c248fd5ed653a14a1d236b0efee329bc03165b5abed0b",
+    "rich-text.js": "ef2ceb935466d5db73394b18c0b113700311260a13f6882e9875c2f95ee91db9",
+    "search-labels.js": "b9cd62692c8b73060fb5c47ac0799cd6ec4f3a02077e150755f41c2b13b25c09"
+   },
+   "texts": [
+    "abc"
+   ],
+   "profile": "format",
+   "observation": "view",
+   "replicas": 2,
+   "syncProbability": 0.3,
+   "seed": 2,
+   "trials": 300,
+   "size": 8,
+   "ms": 649,
+   "properties": [
+    {
+     "name": "eventSetDeterminesState",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc1MergeComm",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc2MergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "vc3LocalRedistribute",
+     "verdict": "pass",
+     "runs": 964,
+     "vacuous": 236
+    },
+    {
+     "name": "vc4CausalDelta",
+     "verdict": "pass",
+     "runs": 1157,
+     "vacuous": 43
+    },
+    {
+     "name": "vc5Redistribute",
+     "verdict": "pass",
+     "runs": 415,
+     "vacuous": 785
+    },
+    {
+     "name": "rcNonComm",
+     "verdict": "pass",
+     "runs": 951,
+     "vacuous": 0
+    },
+    {
+     "name": "noRcChain",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "condComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specNonComm",
+     "verdict": "not applicable",
+     "runs": 0,
+     "vacuous": 0
+    },
+    {
+     "name": "specConformance",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeIdempotence",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    },
+    {
+     "name": "mergeInit",
+     "verdict": "pass",
+     "runs": 1200,
+     "vacuous": 0
+    }
+   ]
+  }
+ ]
+}

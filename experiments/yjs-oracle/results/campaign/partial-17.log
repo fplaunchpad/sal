@@ -1,0 +1,24 @@
+sources verified: yjs@13.6.31
+seed                                            17
+trials                                          200
+options                                         {"steps":12,"withFormat":false,"partialDelivery":true,"replicas":3}
+edits                                           1883
+deliveries                                      1200
+sends (pending after)                           517 (215)
+opens                                           0
+cleanup events                                  0
+versions checked                                3592
+witness skips (bound / partial)                 0 / 8
+causal gaps                                     3
+execution anomalies                             0
+failing trials                                  0
+  convergence (failures / trials)               0 / 0
+  raLinearizability (failures / trials)         0 / 0
+  localMeaning (failures / trials)              0 / 0
+  determinism (failures / trials)               0 / 0
+  conservation (failures / trials)              0 / 0
+  localMeaning on insert (failures / requests)  0 / 1526
+  localMeaning on delete (failures / requests)  0 / 357
+sources verified after run
+(node:75021) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)

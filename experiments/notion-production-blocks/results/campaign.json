@@ -1,0 +1,1097 @@
+{
+ "configs": [
+  {
+   "config": {
+    "name": "abc-blocks3-structure",
+    "texts": [
+     "a",
+     "b",
+     "c"
+    ],
+    "profile": "structure",
+    "partial": true,
+    "replicas": 2,
+    "steps": 10,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "a",
+     "b",
+     "c"
+    ],
+    "profile": "structure"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": true,
+    "openedReplicas": false,
+    "replicas": 2
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2201,
+    "deliveries": 600,
+    "sends": 799,
+    "opens": 0,
+    "versionsChecked": 3600,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 107,
+    "rejectedApplies": 109,
+    "trialsWithRejection": 95
+   },
+   "runsByCheck": {
+    "convergence": 595,
+    "raLinearizability": 3600,
+    "localMeaning": 2201,
+    "determinism": 2201,
+    "conservation": 600
+   },
+   "failuresByCheck": {
+    "convergence": 91,
+    "raLinearizability": 45,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 109
+   },
+   "trialsByCheck": {
+    "convergence": 89,
+    "raLinearizability": 14,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 95
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 65,
+    "conservation:label-divergence": 73,
+    "convergence:past-boundary": 22,
+    "conservation:past-boundary": 22,
+    "raLinearizability:stale-merge": 14,
+    "raLinearizability:label-divergence": 2,
+    "convergence:concurrent-move": 1,
+    "raLinearizability:past-boundary": 1,
+    "convergence:stale-merge": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 11268
+  },
+  {
+   "config": {
+    "name": "abc-blocks3-structure-r3",
+    "texts": [
+     "a",
+     "b",
+     "c"
+    ],
+    "profile": "structure",
+    "partial": true,
+    "replicas": 3,
+    "steps": 12,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "a",
+     "b",
+     "c"
+    ],
+    "profile": "structure"
+   },
+   "generation": {
+    "steps": 12,
+    "partialDelivery": true,
+    "openedReplicas": false,
+    "replicas": 3
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2863,
+    "deliveries": 1800,
+    "sends": 737,
+    "opens": 0,
+    "versionsChecked": 5400,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 152,
+    "rejectedApplies": 249,
+    "trialsWithRejection": 138
+   },
+   "runsByCheck": {
+    "convergence": 2132,
+    "raLinearizability": 5400,
+    "localMeaning": 2863,
+    "determinism": 2863,
+    "conservation": 900
+   },
+   "failuresByCheck": {
+    "convergence": 212,
+    "raLinearizability": 98,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 232
+   },
+   "trialsByCheck": {
+    "convergence": 137,
+    "raLinearizability": 25,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 138
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 93,
+    "conservation:label-divergence": 100,
+    "convergence:past-boundary": 36,
+    "conservation:past-boundary": 38,
+    "raLinearizability:stale-merge": 25,
+    "raLinearizability:past-boundary": 2,
+    "convergence:list-order": 7,
+    "raLinearizability:label-divergence": 5,
+    "convergence:stale-merge": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 25045
+  },
+  {
+   "config": {
+    "name": "abc-structure",
+    "texts": [
+     "abc"
+    ],
+    "profile": "structure",
+    "partial": true,
+    "steps": 10,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "abc"
+    ],
+    "profile": "structure"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": true,
+    "openedReplicas": false
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2299,
+    "deliveries": 1248,
+    "sends": 701,
+    "opens": 0,
+    "versionsChecked": 4248,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 238,
+    "rejectedApplies": 441,
+    "trialsWithRejection": 238
+   },
+   "runsByCheck": {
+    "convergence": 1003,
+    "raLinearizability": 4248,
+    "localMeaning": 2299,
+    "determinism": 2299,
+    "conservation": 762
+   },
+   "failuresByCheck": {
+    "convergence": 288,
+    "raLinearizability": 5,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 390
+   },
+   "trialsByCheck": {
+    "convergence": 219,
+    "raLinearizability": 1,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 238
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 216,
+    "conservation:label-divergence": 234,
+    "convergence:past-boundary": 3,
+    "conservation:past-boundary": 4,
+    "raLinearizability:label-divergence": 1,
+    "raLinearizability:stale-merge": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 12225
+  },
+  {
+   "config": {
+    "name": "x-structure",
+    "texts": [
+     "x"
+    ],
+    "profile": "structure",
+    "partial": true,
+    "replicas": 2,
+    "steps": 10,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "x"
+    ],
+    "profile": "structure"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": true,
+    "openedReplicas": false,
+    "replicas": 2
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2204,
+    "deliveries": 600,
+    "sends": 796,
+    "opens": 0,
+    "versionsChecked": 3600,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 250,
+    "rejectedApplies": 338,
+    "trialsWithRejection": 250
+   },
+   "runsByCheck": {
+    "convergence": 399,
+    "raLinearizability": 3600,
+    "localMeaning": 2204,
+    "determinism": 2204,
+    "conservation": 600
+   },
+   "failuresByCheck": {
+    "convergence": 211,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 338
+   },
+   "trialsByCheck": {
+    "convergence": 211,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 250
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 206,
+    "conservation:label-divergence": 245,
+    "convergence:past-boundary": 5,
+    "conservation:past-boundary": 5
+   },
+   "rejectedRequests": 0,
+   "ms": 9497
+  },
+  {
+   "config": {
+    "name": "ab-cd-blocks",
+    "texts": [
+     "ab",
+     "cd"
+    ],
+    "profile": "blocks",
+    "partial": true,
+    "steps": 10,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "ab",
+     "cd"
+    ],
+    "profile": "blocks"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": true,
+    "openedReplicas": false
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2335,
+    "deliveries": 1248,
+    "sends": 665,
+    "opens": 0,
+    "versionsChecked": 4248,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 152,
+    "rejectedApplies": 132,
+    "trialsWithRejection": 96
+   },
+   "runsByCheck": {
+    "convergence": 1561,
+    "raLinearizability": 4248,
+    "localMeaning": 2335,
+    "determinism": 2335,
+    "conservation": 762
+   },
+   "failuresByCheck": {
+    "convergence": 362,
+    "raLinearizability": 29,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 131
+   },
+   "trialsByCheck": {
+    "convergence": 148,
+    "raLinearizability": 13,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 96
+   },
+   "trialsByClass": {
+    "convergence:list-order": 54,
+    "convergence:label-divergence": 79,
+    "conservation:label-divergence": 80,
+    "convergence:past-boundary": 15,
+    "conservation:past-boundary": 16,
+    "raLinearizability:stale-merge": 5,
+    "raLinearizability:order-mismatch": 3,
+    "raLinearizability:removed-anchor": 6,
+    "raLinearizability:label-divergence": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 11211
+  },
+  {
+   "config": {
+    "name": "ab-cd-blocks-exchange",
+    "texts": [
+     "ab",
+     "cd"
+    ],
+    "profile": "blocks",
+    "partial": false,
+    "steps": 12,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "ab",
+     "cd"
+    ],
+    "profile": "blocks"
+   },
+   "generation": {
+    "steps": 12,
+    "partialDelivery": false,
+    "openedReplicas": false
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2956,
+    "deliveries": 1892,
+    "sends": 0,
+    "opens": 0,
+    "versionsChecked": 4848,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 180,
+    "rejectedApplies": 191,
+    "trialsWithRejection": 114
+   },
+   "runsByCheck": {
+    "convergence": 1609,
+    "raLinearizability": 4848,
+    "localMeaning": 2956,
+    "determinism": 2956,
+    "conservation": 762
+   },
+   "failuresByCheck": {
+    "convergence": 481,
+    "raLinearizability": 70,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 182
+   },
+   "trialsByCheck": {
+    "convergence": 175,
+    "raLinearizability": 26,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 114
+   },
+   "trialsByClass": {
+    "convergence:list-order": 62,
+    "convergence:label-divergence": 95,
+    "conservation:label-divergence": 96,
+    "convergence:past-boundary": 17,
+    "conservation:past-boundary": 17,
+    "raLinearizability:stale-merge": 11,
+    "raLinearizability:order-mismatch": 8,
+    "raLinearizability:removed-anchor": 8,
+    "raLinearizability:past-boundary": 1,
+    "raLinearizability:label-divergence": 4,
+    "raLinearizability:unclassified": 1,
+    "convergence:rejected-other": 1,
+    "conservation:rejected-other": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 18383
+  },
+  {
+   "config": {
+    "name": "a-blocks-exchange",
+    "texts": [
+     "a"
+    ],
+    "profile": "blocks",
+    "partial": false,
+    "steps": 12,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "a"
+    ],
+    "profile": "blocks"
+   },
+   "generation": {
+    "steps": 12,
+    "partialDelivery": false,
+    "openedReplicas": false
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2952,
+    "deliveries": 1896,
+    "sends": 0,
+    "opens": 0,
+    "versionsChecked": 4848,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 229,
+    "rejectedApplies": 304,
+    "trialsWithRejection": 167
+   },
+   "runsByCheck": {
+    "convergence": 1406,
+    "raLinearizability": 4848,
+    "localMeaning": 2952,
+    "determinism": 2952,
+    "conservation": 762
+   },
+   "failuresByCheck": {
+    "convergence": 561,
+    "raLinearizability": 48,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 277
+   },
+   "trialsByCheck": {
+    "convergence": 227,
+    "raLinearizability": 24,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 167
+   },
+   "trialsByClass": {
+    "convergence:list-order": 62,
+    "convergence:label-divergence": 159,
+    "conservation:label-divergence": 161,
+    "raLinearizability:order-mismatch": 15,
+    "convergence:past-boundary": 5,
+    "conservation:past-boundary": 5,
+    "convergence:rejected-other": 1,
+    "raLinearizability:removed-anchor": 1,
+    "raLinearizability:rejected-other": 1,
+    "conservation:rejected-other": 1,
+    "raLinearizability:label-divergence": 7,
+    "raLinearizability:past-boundary": 1,
+    "raLinearizability:unclassified": 3,
+    "raLinearizability:stale-merge": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 19781
+  },
+  {
+   "config": {
+    "name": "ab-format",
+    "texts": [
+     "ab"
+    ],
+    "profile": "format",
+    "partial": true,
+    "replicas": 2,
+    "steps": 8,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "ab"
+    ],
+    "profile": "format"
+   },
+   "generation": {
+    "steps": 8,
+    "partialDelivery": true,
+    "openedReplicas": false,
+    "replicas": 2
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 1770,
+    "deliveries": 600,
+    "sends": 630,
+    "opens": 0,
+    "versionsChecked": 3000,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 127,
+    "rejectedApplies": 159,
+    "trialsWithRejection": 127
+   },
+   "runsByCheck": {
+    "convergence": 539,
+    "raLinearizability": 3000,
+    "localMeaning": 1770,
+    "determinism": 1770,
+    "conservation": 600
+   },
+   "failuresByCheck": {
+    "convergence": 111,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 159
+   },
+   "trialsByCheck": {
+    "convergence": 111,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 127
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 107,
+    "conservation:label-divergence": 123,
+    "convergence:past-boundary": 4,
+    "conservation:past-boundary": 4
+   },
+   "rejectedRequests": 0,
+   "ms": 6028
+  },
+  {
+   "config": {
+    "name": "abc-format",
+    "texts": [
+     "abc"
+    ],
+    "profile": "format",
+    "partial": true,
+    "replicas": 2,
+    "steps": 8,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "abc"
+    ],
+    "profile": "format"
+   },
+   "generation": {
+    "steps": 8,
+    "partialDelivery": true,
+    "openedReplicas": false,
+    "replicas": 2
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 1770,
+    "deliveries": 600,
+    "sends": 630,
+    "opens": 0,
+    "versionsChecked": 3000,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 127,
+    "rejectedApplies": 160,
+    "trialsWithRejection": 127
+   },
+   "runsByCheck": {
+    "convergence": 540,
+    "raLinearizability": 3000,
+    "localMeaning": 1770,
+    "determinism": 1770,
+    "conservation": 600
+   },
+   "failuresByCheck": {
+    "convergence": 116,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 160
+   },
+   "trialsByCheck": {
+    "convergence": 116,
+    "raLinearizability": 0,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 127
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 112,
+    "conservation:label-divergence": 123,
+    "convergence:past-boundary": 4,
+    "conservation:past-boundary": 4
+   },
+   "rejectedRequests": 0,
+   "ms": 6083
+  },
+  {
+   "config": {
+    "name": "ab-c-mixed",
+    "texts": [
+     "ab",
+     "c"
+    ],
+    "profile": "mixed",
+    "partial": true,
+    "steps": 10,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "ab",
+     "c"
+    ],
+    "profile": "mixed"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": true,
+    "openedReplicas": false
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2331,
+    "deliveries": 1248,
+    "sends": 669,
+    "opens": 0,
+    "versionsChecked": 4248,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 120,
+    "rejectedApplies": 127,
+    "trialsWithRejection": 84
+   },
+   "runsByCheck": {
+    "convergence": 1572,
+    "raLinearizability": 4248,
+    "localMeaning": 2331,
+    "determinism": 2331,
+    "conservation": 762
+   },
+   "failuresByCheck": {
+    "convergence": 229,
+    "raLinearizability": 64,
+    "localMeaning": 1,
+    "determinism": 0,
+    "conservation": 123
+   },
+   "trialsByCheck": {
+    "convergence": 108,
+    "raLinearizability": 17,
+    "localMeaning": 1,
+    "determinism": 0,
+    "conservation": 84
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 65,
+    "conservation:label-divergence": 72,
+    "convergence:past-boundary": 12,
+    "conservation:past-boundary": 12,
+    "raLinearizability:stale-merge": 8,
+    "raLinearizability:label-divergence": 5,
+    "raLinearizability:bold-flags": 7,
+    "convergence:list-order": 31,
+    "raLinearizability:past-boundary": 1,
+    "raLinearizability:order-mismatch": 3,
+    "localMeaning:format-carry": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 10398
+  },
+  {
+   "config": {
+    "name": "ab-c-mixed-opened",
+    "texts": [
+     "ab",
+     "c"
+    ],
+    "profile": "mixed",
+    "partial": true,
+    "opened": true,
+    "steps": 10,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "ab",
+     "c"
+    ],
+    "profile": "mixed"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": true,
+    "openedReplicas": true
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2096,
+    "deliveries": 1248,
+    "sends": 569,
+    "opens": 335,
+    "versionsChecked": 4248,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 81,
+    "rejectedApplies": 59,
+    "trialsWithRejection": 43
+   },
+   "runsByCheck": {
+    "convergence": 2821,
+    "raLinearizability": 4248,
+    "localMeaning": 2096,
+    "determinism": 2096,
+    "conservation": 762
+   },
+   "failuresByCheck": {
+    "convergence": 244,
+    "raLinearizability": 54,
+    "localMeaning": 4,
+    "determinism": 0,
+    "conservation": 59
+   },
+   "trialsByCheck": {
+    "convergence": 74,
+    "raLinearizability": 14,
+    "localMeaning": 4,
+    "determinism": 0,
+    "conservation": 43
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 36,
+    "conservation:label-divergence": 37,
+    "convergence:list-order": 32,
+    "raLinearizability:order-mismatch": 1,
+    "raLinearizability:stale-merge": 3,
+    "convergence:past-boundary": 6,
+    "conservation:past-boundary": 6,
+    "raLinearizability:bold-flags": 6,
+    "localMeaning:format-carry": 4,
+    "raLinearizability:removed-anchor": 5
+   },
+   "rejectedRequests": 0,
+   "ms": 8452
+  },
+  {
+   "config": {
+    "name": "abc-blocks-opened-exchange",
+    "texts": [
+     "abc"
+    ],
+    "profile": "blocks",
+    "partial": false,
+    "opened": true,
+    "steps": 10,
+    "trials": 100
+   },
+   "options": {
+    "texts": [
+     "abc"
+    ],
+    "profile": "blocks"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": false,
+    "openedReplicas": true
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2069,
+    "deliveries": 1844,
+    "sends": 0,
+    "opens": 335,
+    "versionsChecked": 4248,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 109,
+    "rejectedApplies": 108,
+    "trialsWithRejection": 61
+   },
+   "runsByCheck": {
+    "convergence": 2971,
+    "raLinearizability": 4248,
+    "localMeaning": 2069,
+    "determinism": 2069,
+    "conservation": 762
+   },
+   "failuresByCheck": {
+    "convergence": 347,
+    "raLinearizability": 14,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 107
+   },
+   "trialsByCheck": {
+    "convergence": 107,
+    "raLinearizability": 7,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 61
+   },
+   "trialsByClass": {
+    "convergence:list-order": 48,
+    "convergence:label-divergence": 54,
+    "conservation:label-divergence": 56,
+    "raLinearizability:order-mismatch": 4,
+    "convergence:past-boundary": 4,
+    "conservation:past-boundary": 4,
+    "convergence:rejected-other": 1,
+    "conservation:rejected-other": 1,
+    "raLinearizability:removed-anchor": 3
+   },
+   "rejectedRequests": 0,
+   "ms": 8023
+  },
+  {
+   "config": {
+    "name": "abc-blocks3-structure-source-reading",
+    "texts": [
+     "a",
+     "b",
+     "c"
+    ],
+    "profile": "structure",
+    "partial": true,
+    "replicas": 2,
+    "steps": 10,
+    "trials": 100,
+    "reading": {
+     "splitPlacement": "source"
+    }
+   },
+   "options": {
+    "texts": [
+     "a",
+     "b",
+     "c"
+    ],
+    "profile": "structure",
+    "splitPlacement": "source"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": true,
+    "openedReplicas": false,
+    "replicas": 2
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2201,
+    "deliveries": 600,
+    "sends": 799,
+    "opens": 0,
+    "versionsChecked": 3600,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 119,
+    "rejectedApplies": 109,
+    "trialsWithRejection": 95
+   },
+   "runsByCheck": {
+    "convergence": 595,
+    "raLinearizability": 3600,
+    "localMeaning": 2201,
+    "determinism": 2201,
+    "conservation": 600
+   },
+   "failuresByCheck": {
+    "convergence": 91,
+    "raLinearizability": 80,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 109
+   },
+   "trialsByCheck": {
+    "convergence": 89,
+    "raLinearizability": 32,
+    "localMeaning": 0,
+    "determinism": 0,
+    "conservation": 95
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 65,
+    "conservation:label-divergence": 73,
+    "convergence:past-boundary": 22,
+    "conservation:past-boundary": 22,
+    "raLinearizability:stale-merge": 19,
+    "raLinearizability:label-divergence": 3,
+    "raLinearizability:order-mismatch": 9,
+    "raLinearizability:past-boundary": 5,
+    "raLinearizability:removed-anchor": 9,
+    "convergence:concurrent-move": 1,
+    "convergence:stale-merge": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 11546
+  },
+  {
+   "config": {
+    "name": "ab-c-mixed-issue-reading",
+    "texts": [
+     "ab",
+     "c"
+    ],
+    "profile": "mixed",
+    "partial": true,
+    "steps": 10,
+    "trials": 100,
+    "reading": {
+     "inherit": "issue"
+    }
+   },
+   "options": {
+    "texts": [
+     "ab",
+     "c"
+    ],
+    "profile": "mixed",
+    "inherit": "issue"
+   },
+   "generation": {
+    "steps": 10,
+    "partialDelivery": true,
+    "openedReplicas": false
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2331,
+    "deliveries": 1248,
+    "sends": 669,
+    "opens": 0,
+    "versionsChecked": 4248,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 153,
+    "rejectedApplies": 127,
+    "trialsWithRejection": 84
+   },
+   "runsByCheck": {
+    "convergence": 1572,
+    "raLinearizability": 4248,
+    "localMeaning": 2331,
+    "determinism": 2331,
+    "conservation": 762
+   },
+   "failuresByCheck": {
+    "convergence": 229,
+    "raLinearizability": 299,
+    "localMeaning": 1,
+    "determinism": 0,
+    "conservation": 123
+   },
+   "trialsByCheck": {
+    "convergence": 108,
+    "raLinearizability": 72,
+    "localMeaning": 1,
+    "determinism": 0,
+    "conservation": 84
+   },
+   "trialsByClass": {
+    "convergence:label-divergence": 65,
+    "raLinearizability:bold-flags": 53,
+    "raLinearizability:removed-anchor": 13,
+    "conservation:label-divergence": 72,
+    "convergence:past-boundary": 12,
+    "conservation:past-boundary": 12,
+    "raLinearizability:stale-merge": 21,
+    "raLinearizability:label-divergence": 14,
+    "convergence:list-order": 31,
+    "raLinearizability:past-boundary": 1,
+    "raLinearizability:order-mismatch": 3,
+    "localMeaning:format-carry": 1
+   },
+   "rejectedRequests": 0,
+   "ms": 10703
+  },
+  {
+   "config": {
+    "name": "abc-structure-record-model-clocks",
+    "texts": [
+     "abc"
+    ],
+    "profile": "structure",
+    "partial": true,
+    "replicas": 1,
+    "steps": 8,
+    "trials": 100,
+    "reading": {
+     "liveClock": false
+    }
+   },
+   "options": {
+    "texts": [
+     "abc"
+    ],
+    "profile": "structure",
+    "liveClock": false
+   },
+   "generation": {
+    "steps": 8,
+    "partialDelivery": true,
+    "openedReplicas": false,
+    "replicas": 1
+   },
+   "totals": {
+    "trials": 300,
+    "edits": 2400,
+    "deliveries": 0,
+    "sends": 0,
+    "opens": 0,
+    "versionsChecked": 2400,
+    "witnessSkips": 0,
+    "witnessSkipsPartial": 0,
+    "failingTrials": 114,
+    "rejectedApplies": 0,
+    "trialsWithRejection": 0
+   },
+   "runsByCheck": {
+    "convergence": 300,
+    "raLinearizability": 2400,
+    "localMeaning": 2400,
+    "determinism": 2400,
+    "conservation": 300
+   },
+   "failuresByCheck": {
+    "convergence": 0,
+    "raLinearizability": 282,
+    "localMeaning": 54,
+    "determinism": 0,
+    "conservation": 4
+   },
+   "trialsByCheck": {
+    "convergence": 0,
+    "raLinearizability": 103,
+    "localMeaning": 51,
+    "determinism": 0,
+    "conservation": 4
+   },
+   "trialsByClass": {
+    "raLinearizability:duplicate-marker": 103,
+    "localMeaning:duplicate-marker": 51,
+    "conservation:duplicate-marker": 4
+   },
+   "rejectedRequests": 0,
+   "ms": 10645
+  }
+ ]
+}

@@ -125,6 +125,13 @@ export class Peer {
     for (const wc of wireCommits) {
       if (wc.gid !== null && this.byGid.has(wc.gid)) { priorGid = wc.gid; continue; }
       const parentGids = wc.parents.map((g) => g === null ? priorGid : g);
+      // Binary runs omit intermediate authored ids. Dedup by the reconstructed
+      // id BEFORE inserting, preserving the canonical local node and ancestry.
+      if (wc.gid === null && wc.op !== null) {
+        const op = { replica: wc.op.replica, seq: wc.op.seq, payload: wc.payload };
+        const g = commitContentId({ parents: parentGids, op }, parentGids, { hash: this.hash });
+        if (this.byGid.has(g)) { priorGid = g; continue; }
+      }
       const localParents = parentGids.map((g) => this.byGid.get(g));
       if (localParents.some((p) => p === undefined)) {
         throw new Error(`ingest: unknown parent for ${wc.gid} (delta not ancestor-closed)`);

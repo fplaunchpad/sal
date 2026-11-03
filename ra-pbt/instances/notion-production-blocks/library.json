@@ -1,0 +1,82 @@
+{
+  "description": "Pinned digests of the exported production Notion editing library (extract.mjs output) that this instance executes. The library lives outside the repository at $NOTION_PRODUCTION_LIBRARY and is never copied into it.",
+  "exportedFrom": "experiments/notion-production-client/extract.mjs; assets pinned in its sources.json, recorded 29 October 2026",
+  "moduleCount": 4335,
+  "files": {
+    "index.mjs": {
+      "bytes": 436,
+      "sha256": "d48d9dcce273cc7d88d26bec22d666403d1c346860858c181ee39a2797de02df"
+    },
+    "client.mjs": {
+      "bytes": 4064,
+      "sha256": "564729b916d7344ef4024d20311e38f6e9620d65705c36c70b26cd3d72660892"
+    },
+    "runtime.mjs": {
+      "bytes": 3158,
+      "sha256": "d88b5eab5387afe9fe1e0e52caeed5eb89f57d2094d07f6bc42b716589106303"
+    },
+    "requests.mjs": {
+      "bytes": 1792,
+      "sha256": "7a319d594ecc3b9a8c04a21c80e4820309eb1babaab66eb0553d0ac10bddab18"
+    },
+    "modules.json": {
+      "bytes": 9379972,
+      "sha256": "8ecc246d0707254baf0f8230c271cdee125819377d96f9fe1f92a85463771bc8"
+    },
+    "sources.json": {
+      "bytes": 14336,
+      "sha256": "6c31e32d25cc102d61de01e4b4476bab7cc456c2686d86e106d2ab92adb097be"
+    }
+  },
+  "modules": {
+    "75332": {
+      "file": "19658.js",
+      "start": 49195,
+      "end": 49489,
+      "sha256": "3c6b9f7e3d8c1497a65b7a9cb5cbffd42503f660d44c17aca98a4c5d20f415da"
+    },
+    "121141": {
+      "file": "19658.js",
+      "start": 696291,
+      "end": 701804,
+      "sha256": "9d8862c03bb9db45ccb3de44e359211d9abd01409fc2a5f9971c120cfffbeba6"
+    },
+    "300957": {
+      "file": "79323.js",
+      "start": 52268,
+      "end": 60266,
+      "sha256": "56b072bae2b7942ab1148edafd5294e170afd7138be00cf6a734bdcbdc8d4900"
+    },
+    "458789": {
+      "file": "79323.js",
+      "start": 37930,
+      "end": 51870,
+      "sha256": "218605f3d177f154fddd19eef0c12fc1067cba5a32ede2f8e116692070ec85ae"
+    },
+    "663360": {
+      "file": "19658.js",
+      "start": 11001,
+      "end": 11329,
+      "sha256": "8372bd47611e8e9cbb0125ced57e46ff44a10bcd6cfd64264f10999652d18cef"
+    },
+    "701590": {
+      "file": "UISpacePermissionGroupToken.js",
+      "start": 1523622,
+      "end": 1529313,
+      "sha256": "d449ce1e77f0b0ec50d9a1693112e35d63d7cafca38b1347e020f14ebb3f314b"
+    },
+    "929891": {
+      "file": "79323.js",
+      "start": 86387,
+      "end": 91425,
+      "sha256": "59401f1f36b795874892470371044723226b1e13f9ef1bd647e3dafc5d2f79d4"
+    },
+    "971340": {
+      "file": "19658.js",
+      "start": 433946,
+      "end": 463476,
+      "sha256": "53262b6ae10c692799968676520909d25d07d55d7e581f2510ce039030b8e778"
+    }
+  },
+  "assets": 63
+}
