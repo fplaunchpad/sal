@@ -25,14 +25,17 @@ open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
 
 /-- `O_type`. The names are the ones the source algorithm uses; which of them
 the client calls "enable" depends on the polarity. -/
-inductive Act where
+inductive AppOp where
   | winning
   | reset
   deriving DecidableEq, Repr
 
+/-- An event: an operation with its timestamp and replica. -/
+abbrev Event := Op AppOp
+
 /-- `type = < O_type, Q_type, Val_type >`. -/
 @[reducible] def type : MRDTType where
-  OType := Act
+  OType := AppOp
   decOType := inferInstance
   QType := Unit
   ValType := Bool
@@ -44,7 +47,7 @@ abbrev Cell := Int × Bool
 abbrev St := Replica → Cell
 
 /-- `do(sigma, t, r, o)`. -/
-def step (s : St) (e : Op Act) : St :=
+def step (s : St) (e : Event) : St :=
   match e.op with
   | .winning => fun r => if r = e.rep then ((s r).1 + 1, true) else s r
   | .reset => fun r => ((s r).1, false)
@@ -69,7 +72,7 @@ noncomputable def active (s : St) : Bool :=
   open Classical in decide (∃ r, (s r).2 = true)
 
 /-- `rc`: `reset` before `winning`. -/
-def rc : Act → Act → OrderResult
+def rc : AppOp → AppOp → OrderResult
   | .reset, .winning => OrderResult.Fst_then_snd
   | .winning, .reset => OrderResult.Snd_then_fst
   | _, _ => OrderResult.Either
@@ -89,9 +92,9 @@ def rc : Act → Act → OrderResult
 
 /-- `disable` advances the issuer's disable counter; it is the winning
 request for this polarity. -/
-abbrev disable : Act := .winning
+abbrev disable : AppOp := .winning
 
 /-- `enable` clears every observed disable. -/
-abbrev enable : Act := .reset
+abbrev enable : AppOp := .reset
 
 end LeanProofs.Implementations.DisableWinsFlag

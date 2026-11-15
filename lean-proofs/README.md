@@ -3,14 +3,13 @@
 The MRDT proofs of the paper, restructured into the three-way split used by
 the reference F* development, with every name taken from the paper.
 
-Ten implementations are restructured, covering nine rows of Table 1:
+Eleven implementations are restructured, covering ten rows of Table 1:
 Counter, Grow-only set (mathematical and enumerable carriers), Grow-only map,
-LWW register, OR-set, Set-wins multimap, Enable-wins flag, Disable-wins flag
-and Remove-wins set.
+LWW register, OR-set, Efficient OR-set, Set-wins multimap, Enable-wins flag,
+Disable-wins flag and Remove-wins set.
 
-Two further rows, the Efficient OR-set and the Multivalue register, are
-defined but **not** certified, for the reason set out under **The omitted
-conjunct** below.
+One further row, the Multivalue register, is defined but **not** certified,
+for the reason set out under **The omitted conjunct** below.
 
 They divide along the two axes Table 1 records.
 
@@ -113,8 +112,11 @@ LeanProofs/
       LinearExtension.lean       liveness, issuance, the scoped join lemma
       SequentialSpec.lean        Spec, the view function, SpecSound
       Certificate.lean           Definition 4
-    EfficientORSet/              defined, not certified
-      Definition.lean            the row's D_type
+    EfficientORSet/              certified outside Interface/, see below
+      Definition.lean            D_type, rc, Spec, sequential correctness
+      History.lean               Represents, and that it survives update and merge
+      Virtual.lean               the representation invariant at virtual merge bases
+      Certificate.lean           RepConfig on reachable configurations, VerifiedMRDT
     MVRegister/                  defined, not certified
       Definition.lean            the row's D_type, for an arbitrary rc
 ```
@@ -257,8 +259,8 @@ The paper states RC-NON-COMM as
 `Laws.rc_non_comm` here **drops the `o1 /= o2` conjunct**, following the
 framework's uniform adapter `RestrictedLaws` rather than its event-guarded
 contract `GuardedReplay.Laws`, which requires exactness only at distinct
-timestamps on distinct replicas. All nine certified rows satisfy the stronger
-form, so nothing above depends on the difference.
+timestamps on distinct replicas. All nine rows that go through `Interface/`
+satisfy the stronger form, so nothing above depends on the difference.
 
 Two rows do not, and the reason is structural rather than incidental: their
 non-commutation is *internal to one operation*. In the efficient OR-set two
@@ -273,14 +275,31 @@ conjunct would not help. Whether two writes commute depends on their
 over operations, so one instance of a pair forces an `rc` edge and another
 forbids one.
 
-Neither row is outside the paper. Certifying them means rebuilding
-`Metatheory/` and `Soundness/` over a contract the paper's artifact has and
-this development does not vendor: `GuardedReplay.Laws` for the efficient
-OR-set, and a concurrent-event scope for the multivalue register.
+### The third route
+
+`EfficientORSet/` is certified anyway, and it is the one folder that does not
+use `Interface/` at all. It proves neither `Laws` nor `ReplayLaws` --
+`all_state_replay_laws_unavailable` records that the latter fails for its own
+`rc` -- and reaches `VerifiedMRDT` another way.
+
+Instead of a replay contract that holds at every state, it carries a
+**representation invariant**. `History.Represents` relates a concrete state to
+the events that produced it; `History` shows the relation survives `update`
+and `merge`, `Virtual` shows it survives a virtual merge base, and
+`Certificate.represented_of_mintCertifiedV` shows it therefore holds at every
+configuration a certified execution can reach. Canonicity follows on those
+configurations, which is all `ReplayAdequacyCertificate` needs.
+
+This is the route the paper's artifact uses for the rows whose commutation is
+not a function of their operations. It costs one more vendored framework
+module, `Artifact/MRDTs/Metatheory/AdequacyResult.lean`.
+
+The multivalue register would need a third contract again, a concurrent-event
+scope, which this development does not vendor.
 
 ## Scope
 
-Of Table 1's twenty-four rows, nine are here. What the rest need falls into
+Of Table 1's twenty-four rows, ten are here. What the rest need falls into
 two kinds, and both kinds now have a route through `Metatheory/` and
 `Soundness/`; what is missing is the datatype work, not the plumbing.
 

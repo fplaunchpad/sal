@@ -22,17 +22,20 @@ namespace LeanProofs.Implementations.ORSet
 open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
 
 /-- `O_type`: add and remove an element. -/
-inductive Act (A : Type) where
+inductive AppOp (A : Type) where
   | add (x : A)
   | remove (x : A)
   deriving DecidableEq, Repr
+
+/-- An event: an operation with its timestamp and replica. -/
+abbrev Event (A : Type) := Op (AppOp A)
 
 variable (A : Type) [DecidableEq A]
 
 /-- `type = < O_type, Q_type, Val_type >`. The query asks whether an element
 is in the set. -/
 @[reducible] def type : MRDTType where
-  OType := Act A
+  OType := AppOp A
   decOType := inferInstance
   QType := A
   ValType := Bool
@@ -45,7 +48,7 @@ variable {A}
 
 /-- `do(sigma, t, r, o)`. An add inserts its own record; a remove erases every
 record for its element, whatever added it. -/
-def step (S : St A) (e : Op (Act A)) : St A :=
+def step (S : St A) (e : Event A) : St A :=
   match e.op with
   | .add x => insert (x, e.time) S
   | .remove x => S.filter (fun p => p.1 ≠ x)
@@ -59,7 +62,7 @@ def mergeState (l a b : St A) : St A := (l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)
 def view (S : St A) : Finset A := S.image Prod.fst
 
 /-- `rc`: `remove x` is ordered before `add x`. Nothing else is ordered. -/
-def rc : Act A → Act A → OrderResult
+def rc : AppOp A → AppOp A → OrderResult
   | .remove x, .add y => if x = y then OrderResult.Fst_then_snd else OrderResult.Either
   | .add x, .remove y => if x = y then OrderResult.Snd_then_fst else OrderResult.Either
   | _, _ => OrderResult.Either

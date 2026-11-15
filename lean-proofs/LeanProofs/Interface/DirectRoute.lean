@@ -81,8 +81,11 @@ issuance guard admits. The two fields are exactly the two hypotheses
 An unscoped row passes `fun C _ => joinLemma C`; a row with a guard, such as
 the remove-wins set, uses the `MintHonest` hypothesis. -/
 structure DirectObligations (D : Impl type) (I : Issuance D.toMRDTSig) : Prop where
-  /-- RC-NON-COMM, NO-RC-CHAIN and COND-COMM, proved by the row. -/
+  /-- RC-NON-COMM (over concurrent events), NO-RC-CHAIN and COND-COMM. -/
   laws : Laws D
+  /-- Non-commutation is a function of the payloads, which lifts the guarded
+  RC-NON-COMM to the uniform contract `Soundness` runs on. -/
+  payload : PayloadDetermined D
   /-- **Lemma (Join)**, proved by the row at every mint-honest configuration. -/
   join : ∀ C : Configuration D.toMRDTSig,
     MintHonest D.toMRDTSig I.CanIssue C → JoinAtConfig D C

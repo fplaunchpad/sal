@@ -16,12 +16,12 @@ open LeanProofs.Interface
 variable {A : Type} [DecidableEq A] [Fintype A]
 
 /-- The replay order of Section 4: `rc`, lifted to events. -/
-noncomputable local instance replayOrder :
+noncomputable local instance rcOrder :
     EventOrder (D A).toMRDTSig.toUpdateSig := Interface.rcOrder (D A)
 
 @[simp] theorem replayBefore_iff (a b : (D A).Event) :
     (D A).toMRDTSig.toUpdateSig.replayBefore a b
-      ↔ ∃ x, a.op = Act.add x ∧ b.op = Act.remove x := by
+      ↔ ∃ x, a.op = AppOp.add x ∧ b.op = AppOp.remove x := by
   refine Iff.trans ?_ (rcBefore_iff a.op b.op)
   exact @OperationPolicy.lift_replayOrder_iff (D A).toMRDTSig.toUpdateSig
     (Interface.policy (D A)) a b
@@ -34,10 +34,10 @@ abbrev Run (ops : List (D A).Event) : St A :=
 
 /-- No event in the list adds `x` back. -/
 def NoAdd (ops : List (D A).Event) (x : A) : Prop :=
-  ∀ e ∈ ops, e.op ≠ Act.add x
+  ∀ e ∈ ops, e.op ≠ AppOp.add x
 
 theorem noAdd_append_singleton {ops : List (D A).Event} {e : (D A).Event} {x : A} :
-    NoAdd (ops ++ [e]) x ↔ NoAdd ops x ∧ e.op ≠ Act.add x := by
+    NoAdd (ops ++ [e]) x ↔ NoAdd ops x ∧ e.op ≠ AppOp.add x := by
   constructor
   · exact fun h => ⟨fun a ha => h a (by simp [ha]), h e (by simp)⟩
   · rintro ⟨h, he⟩ a ha
@@ -66,7 +66,7 @@ later event added its element back, or it is an initial tag that no `add`
 removed. -/
 theorem mem_run_iff_suffix (ops : List (D A).Event) (p : A × Timestamp) :
     p ∈ Run ops ↔
-      (∃ pre w post, ops = pre ++ w :: post ∧ w.op = Act.remove p.1
+      (∃ pre w post, ops = pre ++ w :: post ∧ w.op = AppOp.remove p.1
         ∧ w.time = p.2 ∧ NoAdd post p.1)
       ∨ (p.2 = 0 ∧ NoAdd ops p.1) := by
   induction ops using List.reverseRecOn with
@@ -87,7 +87,7 @@ theorem mem_run_iff_suffix (ops : List (D A).Event) (p : A × Timestamp) :
         rw [mem_step, hop]
         constructor
         · rintro ⟨hm, hpx⟩
-          have hne : e.op ≠ Act.add p.1 := by
+          have hne : e.op ≠ AppOp.add p.1 := by
             rw [hop]; intro h; injection h with h'; exact hpx h'.symm
           rcases ih.mp hm with ⟨pre, w, post, hs, hw, ht, hn⟩ | ⟨h0, hn⟩
           · exact Or.inl ⟨pre, w, post ++ [e], by rw [hs]; simp, hw, ht,
@@ -117,7 +117,7 @@ theorem mem_run_iff_suffix (ops : List (D A).Event) (p : A × Timestamp) :
           · rcases append_singleton_split hs with ⟨hwe, -⟩ | ⟨post', hpost, hops⟩
             · subst hwe
               have hx : x = p.1 := by
-                have h2 : Act.remove x = Act.remove p.1 := by rw [← hop]; exact hw
+                have h2 : AppOp.remove x = AppOp.remove p.1 := by rw [← hop]; exact hw
                 simpa using h2
               exact Or.inl (Prod.ext hx.symm ht.symm)
             · exact Or.inr (ih.mpr (Or.inl ⟨pre, w, post', hops, hw, ht,
@@ -138,20 +138,20 @@ theorem not_edge_from_suffix {R : (D A).Event → (D A).Event → Prop}
 
 /-- No `add` of `x` in `E` observes `a`. -/
 def Survives (C : Configuration (D A).toMRDTSig)
-    (E : Set (Op (Act A))) (a : Op (Act A)) (x : A) : Prop :=
-  ¬ ∃ b ∈ E, b.op = Act.add x ∧ C.vis a b
+    (E : Set (Event A)) (a : Event A) (x : A) : Prop :=
+  ¬ ∃ b ∈ E, b.op = AppOp.add x ∧ C.vis a b
 
 /-- The tag `p` is live in `E`: either the `remove` that created it is in `E`
 and no `add` of `E` observes that `remove`, or it is an initial tag and `E`
 holds no `add` for its element. -/
 def Live (C : Configuration (D A).toMRDTSig)
-    (E : Set (Op (Act A))) (p : A × Timestamp) : Prop :=
-  (∃ w ∈ E, w.op = Act.remove p.1 ∧ w.time = p.2 ∧ Survives C E w p.1)
-    ∨ (p.2 = 0 ∧ ¬ ∃ b ∈ E, b.op = Act.add p.1)
+    (E : Set (Event A)) (p : A × Timestamp) : Prop :=
+  (∃ w ∈ E, w.op = AppOp.remove p.1 ∧ w.time = p.2 ∧ Survives C E w p.1)
+    ∨ (p.2 = 0 ∧ ¬ ∃ b ∈ E, b.op = AppOp.add p.1)
 
 /-- **Fact 1.** A canonical state contains exactly the live tags. -/
 theorem mem_run_iff_live {C : Configuration (D A).toMRDTSig}
-    {E : Set (Op (Act A))} {ops : List (D A).Event}
+    {E : Set (Event A)} {ops : List (D A).Event}
     (hp : listPermOf ops E) (hr : respects ops (loOn C.replayContext E)) (p : A × Timestamp) :
     p ∈ Run ops ↔ Live C E p := by
   rw [mem_run_iff_suffix]
@@ -192,7 +192,7 @@ theorem mem_run_iff_live {C : Configuration (D A).toMRDTSig}
     · exact Or.inr ⟨h0, fun b hm hb => hno ⟨b, (hp.2 b).mp hm, hb⟩⟩
 
 theorem canonical_mem_iff {C : Configuration (D A).toMRDTSig}
-    {E : Set (Op (Act A))} {s : St A}
+    {E : Set (Event A)} {s : St A}
     (hs : Interface.IsCan (D A) C E s) (p : A × Timestamp) : p ∈ s ↔ Live C E p := by
   obtain ⟨ops, hp, hr, hf⟩ := hs
   rw [← hf]
@@ -201,10 +201,10 @@ theorem canonical_mem_iff {C : Configuration (D A).toMRDTSig}
 /-- **Fact 2.** Timestamps identify events, and the issuance guard keeps the
 reserved timestamp `0` out of them, so a tag has one possible origin. -/
 theorem live_iff_fixed_remove {C : Configuration (D A).toMRDTSig}
-    {E : Set (Op (Act A))} (hsub : E ⊆ C.events)
+    {E : Set (Event A)} (hsub : E ⊆ C.events)
     (hpos : ∀ e ∈ C.events, 0 < e.time)
-    {p : A × Timestamp} {a : Op (Act A)} (hac : a ∈ C.events)
-    (ha : a.op = Act.remove p.1) (ht : a.time = p.2) :
+    {p : A × Timestamp} {a : Event A} (hac : a ∈ C.events)
+    (ha : a.op = AppOp.remove p.1) (ht : a.time = p.2) :
     Live C E p ↔ a ∈ E ∧ Survives C E a p.1 := by
   constructor
   · rintro (⟨b, hb, -, hbt, hs⟩ | ⟨h0, -⟩)
@@ -218,7 +218,7 @@ theorem live_iff_fixed_remove {C : Configuration (D A).toMRDTSig}
 /-- **Fact 3.** Liveness over the union is the Boolean that `merge` computes.
 The initial tags are handled separately, since no event creates them. -/
 theorem live_join {C : Configuration (D A).toMRDTSig}
-    {E₁ E₂ : Set (Op (Act A))} (hpos : ∀ e ∈ C.events, 0 < e.time)
+    {E₁ E₂ : Set (Event A)} (hpos : ∀ e ∈ C.events, 0 < e.time)
     (hsub₁ : E₁ ⊆ C.events) (hsub₂ : E₂ ⊆ C.events)
     (hclosed₁ : ∀ a b, C.vis a b →
       ¬ (D A).toMRDTSig.toUpdateSig.commutes a b → b ∈ E₁ → a ∈ E₁)
@@ -233,8 +233,8 @@ theorem live_join {C : Configuration (D A).toMRDTSig}
   have huni : E₁ ∪ E₂ ⊆ C.events := fun e he => he.elim (fun h => hsub₁ h) (fun h => hsub₂ h)
   by_cases h0 : p.2 = 0
   · -- an initial tag: no event creates it, so liveness is "no add for `p.1`"
-    have key : ∀ E : Set (Op (Act A)), E ⊆ C.events →
-        (Live C E p ↔ ¬ ∃ b ∈ E, b.op = Act.add p.1) := by
+    have key : ∀ E : Set (Event A), E ⊆ C.events →
+        (Live C E p ↔ ¬ ∃ b ∈ E, b.op = AppOp.add p.1) := by
       intro E hsub
       constructor
       · rintro (⟨w, hw, -, hwt, -⟩ | ⟨-, h⟩)
@@ -254,7 +254,7 @@ theorem live_join {C : Configuration (D A).toMRDTSig}
       · exact absurd (fun ⟨b, hb, hba⟩ => h₁ ⟨b, hb.1, hba⟩) hn0
       · exact absurd (fun ⟨b, hb, hba⟩ => h₂ ⟨b, hb.2, hba⟩) hn0
   · -- a minted tag: the OR-set argument
-    by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = Act.remove p.1 ∧ a.time = p.2
+    by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = AppOp.remove p.1 ∧ a.time = p.2
     · obtain ⟨a, hae, ha, ht⟩ := hex
       have hac : a ∈ C.events := huni hae
       rw [live_iff_fixed_remove huni hpos hac ha ht,
@@ -288,7 +288,7 @@ theorem live_join {C : Configuration (D A).toMRDTSig}
       rw [hu]
       simp only [Set.mem_union, Set.mem_inter_iff]
       tauto
-    · have hn : ∀ E : Set (Op (Act A)), E ⊆ E₁ ∪ E₂ → ¬ Live C E p := by
+    · have hn : ∀ E : Set (Event A), E ⊆ E₁ ∪ E₂ → ¬ Live C E p := by
         rintro E hs (⟨w, hw, hwr, hwt, -⟩ | ⟨hz, -⟩)
         · exact hex ⟨w, hs hw, hwr, hwt⟩
         · exact h0 hz
@@ -321,7 +321,7 @@ theorem joinAt (C : Configuration (D A).toMRDTSig)
   have hsubU : ∀ a ∈ E₁ ∪ E₂, a ∈ C.replayContext.events :=
     fun a ha => ha.elim (hsub₁ a) (hsub₂ a)
   obtain ⟨sU, hsU⟩ := isCanonicalState_exists_of_replayLaws
-    (Metatheory.replayLaws laws) htr hir hpU hsubU
+    (Metatheory.replayLaws laws payloadDetermined) htr hir hpU hsubU
   have heq : (D A).toMRDTSig.merge s₀ s₁ s₂ = sU := by
     change mergeState s₀ s₁ s₂ = sU
     ext p
@@ -337,6 +337,6 @@ theorem joinAt (C : Configuration (D A).toMRDTSig)
 /-- **What this row supplies for the direct route**: `Laws(D_type)` proved
 by hand, and the join lemma. -/
 theorem directObligations : DirectObligations (D A) (issuance A) :=
-  ⟨laws, joinAt⟩
+  ⟨laws, payloadDetermined, joinAt⟩
 
 end LeanProofs.Implementations.RemoveWinsSet

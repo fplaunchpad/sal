@@ -19,7 +19,7 @@ open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
 variable {K V : Type} [DecidableEq K] [DecidableEq V]
 
 /-- `rc` relates exactly the pairs `del k`, `set k v`. -/
-@[simp] theorem rcBefore_iff (o₁ o₂ : Act K V) :
+@[simp] theorem rcBefore_iff (o₁ o₂ : AppOp K V) :
     (D K V).RcBefore o₁ o₂ ↔ ∃ k v, o₁ = .del k ∧ o₂ = .set k v := by
   cases o₁ with
   | set k w =>
@@ -40,7 +40,7 @@ theorem eventRcBefore_iff (e₁ e₂ : (D K V).Event) :
     (D K V).EventRcBefore e₁ e₂ ↔ ∃ k v, e₁.op = .del k ∧ e₂.op = .set k v :=
   rcBefore_iff _ _
 
-@[simp] theorem mem_step (S : St K V) (e : Op (Act K V)) (p : (K × V) × Timestamp) :
+@[simp] theorem mem_step (S : St K V) (e : Event K V) (p : (K × V) × Timestamp) :
     p ∈ step S e ↔ match e.op with
     | .set k v => p = ((k, v), e.time) ∨ p ∈ S
     | .del k => p ∈ S ∧ p.1.1 ≠ k := by
@@ -74,7 +74,7 @@ theorem noncomm_iff (e₁ e₂ : (D K V).Event) :
 
 /-- **NO-RC-CHAIN**. A `del` can only start an edge and a `set` can only end
 one, so two edges never meet. -/
-theorem no_rc_chain (o₁ o₂ o₃ : Act K V) :
+theorem no_rc_chain (o₁ o₂ o₃ : AppOp K V) :
     ¬ ((D K V).RcBefore o₁ o₂ ∧ (D K V).RcBefore o₂ o₃) := by
   rintro ⟨h₁, h₂⟩
   obtain ⟨k, v, -, hs⟩ := (rcBefore_iff _ _).mp h₁
@@ -90,7 +90,7 @@ bindings, so the two orders agree after it. -/
 /-- Two states that agree away from key `k`. -/
 def EqExcept (k : K) (a b : St K V) : Prop := ∀ p, p.1.1 ≠ k → (p ∈ a ↔ p ∈ b)
 
-theorem eqExcept_step {k : K} {a b : St K V} (h : EqExcept k a b) (e : Op (Act K V)) :
+theorem eqExcept_step {k : K} {a b : St K V} (h : EqExcept k a b) (e : Event K V) :
     EqExcept k (step a e) (step b e) := by
   intro p hp
   rcases e with ⟨t, r, o⟩; cases o <;> simp [step, Op.op, h p hp]
@@ -109,7 +109,7 @@ theorem cond_comm (S : (D K V).Sigma) (e e' e'' : (D K V).Event)
     (D K V).do_ ((D K V).applyList ((D K V).do_ ((D K V).do_ S e') e) pi) e''
       = (D K V).do_ ((D K V).applyList ((D K V).do_ ((D K V).do_ S e) e') pi) e'' := by
   obtain ⟨k, v, he, he'⟩ := (eventRcBefore_iff _ _).mp hrc
-  have habs : e''.op = Act.del k := by
+  have habs : e''.op = AppOp.del k := by
     rcases (noncomm_iff e' e'').mp hnc with h | h
     · obtain ⟨j, w, hd, -⟩ := (eventRcBefore_iff _ _).mp h
       rw [he'] at hd; cases hd
@@ -125,7 +125,18 @@ theorem cond_comm (S : (D K V).Sigma) (e e' e'' : (D K V).Event)
   · simp [hp]
   · exact and_congr (hfold p hp) Iff.rfl
 
-/-- `Laws(D_type)`: RC-NON-COMM, NO-RC-CHAIN and COND-COMM. -/
-theorem laws : Laws (D K V) := ⟨noncomm_iff, no_rc_chain, cond_comm⟩
+/-- Non-commutation here is a function of the payloads alone, which is what
+lets the guarded RC-NON-COMM be lifted to the uniform contract `Soundness`
+still runs on. -/
+theorem payloadDetermined : PayloadDetermined (D K V) := by
+  intro e₁ e₂ f₁ f₂ h₁ h₂
+  have key : ¬ (D K V).Commutes e₁ e₂ ↔ ¬ (D K V).Commutes f₁ f₂ := by
+    rw [noncomm_iff, noncomm_iff, Impl.EventRcBefore, Impl.EventRcBefore,
+      Impl.EventRcBefore, Impl.EventRcBefore, h₁, h₂]
+  exact not_iff_not.mp key
+
+/-- `Laws(D_type)`: RC-NON-COMM over concurrent events, NO-RC-CHAIN and
+COND-COMM. -/
+theorem laws : Laws (D K V) := ⟨fun e₁ e₂ _ _ => noncomm_iff e₁ e₂, no_rc_chain, cond_comm⟩
 
 end LeanProofs.Implementations.SetWinsMap

@@ -24,17 +24,20 @@ namespace LeanProofs.Implementations.SetWinsMap
 open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
 
 /-- `O_type`: bind a value to a key, or drop a key. -/
-inductive Act (K V : Type) where
+inductive AppOp (K V : Type) where
   | set (k : K) (v : V)
   | del (k : K)
   deriving DecidableEq, Repr
+
+/-- An event: an operation with its timestamp and replica. -/
+abbrev Event (K V : Type) := Op (AppOp K V)
 
 variable (K V : Type) [DecidableEq K] [DecidableEq V]
 
 /-- `type = < O_type, Q_type, Val_type >`. A query names a key and is
 answered by all the values currently bound to it. -/
 @[reducible] def type : MRDTType where
-  OType := Act K V
+  OType := AppOp K V
   decOType := inferInstance
   QType := K
   ValType := Finset V
@@ -45,7 +48,7 @@ abbrev St (K V : Type) := Finset ((K × V) × Timestamp)
 variable {K V}
 
 /-- `do(sigma, t, r, o)`. -/
-def step (S : St K V) (e : Op (Act K V)) : St K V :=
+def step (S : St K V) (e : Event K V) : St K V :=
   match e.op with
   | .set k v => insert ((k, v), e.time) S
   | .del k => S.filter (fun p => p.1.1 ≠ k)
@@ -63,7 +66,7 @@ def lookup (S : St K V) (k : K) : Finset V :=
 
 /-- `rc`: `del k` is ordered before `set k v`. Operations on different keys
 commute, and so are left unordered. -/
-def rc : Act K V → Act K V → OrderResult
+def rc : AppOp K V → AppOp K V → OrderResult
   | .del k, .set j _ => if k = j then OrderResult.Fst_then_snd else OrderResult.Either
   | .set k _, .del j => if k = j then OrderResult.Snd_then_fst else OrderResult.Either
   | _, _ => OrderResult.Either

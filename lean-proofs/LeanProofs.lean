@@ -58,4 +58,12 @@ import LeanProofs.Implementations.RemoveWinsSet.LinearExtension
 import LeanProofs.Implementations.RemoveWinsSet.SequentialSpec
 import LeanProofs.Implementations.RemoveWinsSet.Certificate
 import LeanProofs.Implementations.EfficientORSet.Definition
+import LeanProofs.Implementations.EfficientORSet.LinearExtension
+import LeanProofs.Implementations.EfficientORSet.Laws
+import LeanProofs.Implementations.EfficientORSet.SequentialSpec
+import LeanProofs.Implementations.EfficientORSet.Certificate
+import LeanProofs.Implementations.MVRegister.Historical
 import LeanProofs.Implementations.MVRegister.Definition
+import LeanProofs.Implementations.MVRegister.LinearExtension
+import LeanProofs.Implementations.MVRegister.SequentialSpec
+import LeanProofs.Implementations.MVRegister.Certificate

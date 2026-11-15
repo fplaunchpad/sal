@@ -21,7 +21,7 @@ open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
 variable {A : Type} [DecidableEq A]
 
 /-- `rc` relates exactly the pairs `remove x`, `add x`. -/
-@[simp] theorem rcBefore_iff (o₁ o₂ : Act A) :
+@[simp] theorem rcBefore_iff (o₁ o₂ : AppOp A) :
     (D A).RcBefore o₁ o₂ ↔ ∃ x, o₁ = .remove x ∧ o₂ = .add x := by
   cases o₁ with
   | add x =>
@@ -42,7 +42,7 @@ theorem eventRcBefore_iff (e₁ e₂ : (D A).Event) :
     (D A).EventRcBefore e₁ e₂ ↔ ∃ x, e₁.op = .remove x ∧ e₂.op = .add x :=
   rcBefore_iff _ _
 
-@[simp] theorem mem_step (S : St A) (e : Op (Act A)) (p : A × Timestamp) :
+@[simp] theorem mem_step (S : St A) (e : Event A) (p : A × Timestamp) :
     p ∈ step S e ↔ match e.op with
     | .add x => p = (x, e.time) ∨ p ∈ S
     | .remove x => p ∈ S ∧ p.1 ≠ x := by
@@ -76,7 +76,7 @@ theorem noncomm_iff (e₁ e₂ : (D A).Event) :
 
 /-- **NO-RC-CHAIN**. A `remove` can only start an edge and an `add` can only
 end one, so two edges never meet. -/
-theorem no_rc_chain (o₁ o₂ o₃ : Act A) :
+theorem no_rc_chain (o₁ o₂ o₃ : AppOp A) :
     ¬ ((D A).RcBefore o₁ o₂ ∧ (D A).RcBefore o₂ o₃) := by
   rintro ⟨h₁, h₂⟩
   obtain ⟨x, -, hb⟩ := (rcBefore_iff _ _).mp h₁
@@ -92,7 +92,7 @@ and it erases exactly those records, so the two orders agree after it. -/
 /-- Two states that agree away from `x`. -/
 def EqExcept (x : A) (a b : St A) : Prop := ∀ p, p.1 ≠ x → (p ∈ a ↔ p ∈ b)
 
-theorem eqExcept_step {x : A} {a b : St A} (h : EqExcept x a b) (e : Op (Act A)) :
+theorem eqExcept_step {x : A} {a b : St A} (h : EqExcept x a b) (e : Event A) :
     EqExcept x (step a e) (step b e) := by
   intro p hp
   rcases e with ⟨t, r, o⟩; cases o <;> simp [step, Op.op, h p hp]
@@ -111,7 +111,7 @@ theorem cond_comm (S : (D A).Sigma) (e e' e'' : (D A).Event)
     (D A).do_ ((D A).applyList ((D A).do_ ((D A).do_ S e') e) pi) e''
       = (D A).do_ ((D A).applyList ((D A).do_ ((D A).do_ S e) e') pi) e'' := by
   obtain ⟨x, he, he'⟩ := (eventRcBefore_iff _ _).mp hrc
-  have habs : e''.op = Act.remove x := by
+  have habs : e''.op = AppOp.remove x := by
     rcases (noncomm_iff e' e'').mp hnc with h | h
     · obtain ⟨y, ha, -⟩ := (eventRcBefore_iff _ _).mp h
       rw [he'] at ha; cases ha
@@ -127,7 +127,18 @@ theorem cond_comm (S : (D A).Sigma) (e e' e'' : (D A).Event)
   · simp [hp]
   · exact and_congr (hfold p hp) Iff.rfl
 
-/-- `Laws(D_type)`: RC-NON-COMM, NO-RC-CHAIN and COND-COMM. -/
-theorem laws : Laws (D A) := ⟨noncomm_iff, no_rc_chain, cond_comm⟩
+/-- Non-commutation here is a function of the payloads alone, which is what
+lets the guarded RC-NON-COMM be lifted to the uniform contract `Soundness`
+still runs on. -/
+theorem payloadDetermined : PayloadDetermined (D A) := by
+  intro e₁ e₂ f₁ f₂ h₁ h₂
+  have key : ¬ (D A).Commutes e₁ e₂ ↔ ¬ (D A).Commutes f₁ f₂ := by
+    rw [noncomm_iff, noncomm_iff, Impl.EventRcBefore, Impl.EventRcBefore,
+      Impl.EventRcBefore, Impl.EventRcBefore, h₁, h₂]
+  exact not_iff_not.mp key
+
+/-- `Laws(D_type)`: RC-NON-COMM over concurrent events, NO-RC-CHAIN and
+COND-COMM. -/
+theorem laws : Laws (D A) := ⟨fun e₁ e₂ _ _ => noncomm_iff e₁ e₂, no_rc_chain, cond_comm⟩
 
 end LeanProofs.Implementations.ORSet

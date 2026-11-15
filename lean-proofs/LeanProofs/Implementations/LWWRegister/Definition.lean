@@ -27,9 +27,12 @@ namespace LeanProofs.Implementations.LWWRegister
 open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
 
 /-- `O_type`. -/
-inductive LWWOp where
+inductive AppOp where
   | write (value : Nat)
   deriving DecidableEq, Repr
+
+/-- An event: an operation with its timestamp and replica. -/
+abbrev Event := Op AppOp
 
 /-- A write key `(t, r, v)`, ordered lexicographically. -/
 abbrev Write := Lex (Nat × Lex (Nat × Nat))
@@ -37,12 +40,12 @@ abbrev Write := Lex (Nat × Lex (Nat × Nat))
 /-- `Sigma`: `bot` is the unset register. -/
 abbrev St := WithBot Write
 
-def valueOf (e : Op LWWOp) : Nat :=
+def valueOf (e : Event) : Nat :=
   match e.op with
   | .write v => v
 
 /-- The key an event writes. -/
-def packed (e : Op LWWOp) : Write :=
+def packed (e : Event) : Write :=
   toLex (e.time, toLex (e.rep, valueOf e))
 
 def writeValue (w : Write) : Nat := (ofLex (ofLex w).2).2
@@ -54,7 +57,7 @@ def readOf : St → Option Nat
 
 /-- `type = < O_type, Q_type, Val_type >`. -/
 @[reducible] def type : MRDTType where
-  OType := LWWOp
+  OType := AppOp
   decOType := inferInstance
   QType := Unit
   ValType := Option Nat

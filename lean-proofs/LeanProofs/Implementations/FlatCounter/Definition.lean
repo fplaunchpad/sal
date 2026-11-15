@@ -22,19 +22,19 @@ namespace LeanProofs.Implementations.FlatCounter
 open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
 
 /-- The payload: `inc` or `dec`. -/
-inductive CounterOp where
+inductive AppOp where
   | inc
   | dec
   deriving DecidableEq, Repr
 
 /-- `delta(inc) = 1`, `delta(dec) = -1`. -/
-def delta : CounterOp → Int
+def delta : AppOp → Int
   | .inc => 1
   | .dec => -1
 
 /-- `type = < O_type, Q_type, Val_type >`. -/
 def type : MRDTType where
-  OType := CounterOp
+  OType := AppOp
   decOType := inferInstance
   QType := Unit
   ValType := Int

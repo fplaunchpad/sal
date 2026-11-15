@@ -15,12 +15,12 @@ open LeanProofs.Interface
 variable {K V : Type} [DecidableEq K] [DecidableEq V]
 
 /-- The replay order of Section 4: `rc`, lifted to events. -/
-noncomputable local instance replayOrder :
+noncomputable local instance rcOrder :
     EventOrder (D K V).toMRDTSig.toUpdateSig := Interface.rcOrder (D K V)
 
 @[simp] theorem replayBefore_iff (a b : (D K V).Event) :
     (D K V).toMRDTSig.toUpdateSig.replayBefore a b
-      ↔ ∃ k v, a.op = Act.del k ∧ b.op = Act.set k v := by
+      ↔ ∃ k v, a.op = AppOp.del k ∧ b.op = AppOp.set k v := by
   refine Iff.trans ?_ (rcBefore_iff a.op b.op)
   exact @OperationPolicy.lift_replayOrder_iff (D K V).toMRDTSig.toUpdateSig
     (Interface.policy (D K V)) a b
@@ -40,7 +40,7 @@ abbrev Run (ops : List (D K V).Event) : St K V :=
 
 /-- No event in the list drops key `k`. -/
 def NoDel (ops : List (D K V).Event) (k : K) : Prop :=
-  ∀ e ∈ ops, e.op ≠ Act.del k
+  ∀ e ∈ ops, e.op ≠ AppOp.del k
 
 theorem binding_preserved {S : St K V} {p : (K × V) × Timestamp} (hs : p ∈ S)
     (ops : List (D K V).Event) (hn : NoDel ops p.1.1) :
@@ -62,7 +62,7 @@ theorem binding_preserved {S : St K V} {p : (K × V) × Timestamp} (hs : p ∈ S
 no later event in the list dropped its key. -/
 theorem mem_run_iff_suffix (ops : List (D K V).Event) (p : (K × V) × Timestamp) :
     p ∈ Run ops ↔ ∃ pre a post, ops = pre ++ a :: post ∧
-      a.op = Act.set p.1.1 p.1.2 ∧ a.time = p.2 ∧ NoDel post p.1.1 := by
+      a.op = AppOp.set p.1.1 p.1.2 ∧ a.time = p.2 ∧ NoDel post p.1.1 := by
   constructor
   · induction ops using List.reverseRecOn with
     | nil => simp [Run, applySeq, Impl.toMRDTSig]
@@ -120,12 +120,12 @@ theorem not_edge_from_suffix {R : (D K V).Event → (D K V).Event → Prop}
 /-- No `del` of key `k` in `E` sees the `set` event `a`. -/
 def Survives (C : Configuration (D K V).toMRDTSig)
     (E : Set (D K V).Event) (a : (D K V).Event) (k : K) : Prop :=
-  ¬ ∃ r ∈ E, C.vis a r ∧ r.op = Act.del k
+  ¬ ∃ r ∈ E, C.vis a r ∧ r.op = AppOp.del k
 
 /-- The binding `p` is live in `E`. -/
 def Live (C : Configuration (D K V).toMRDTSig)
     (E : Set (D K V).Event) (p : (K × V) × Timestamp) : Prop :=
-  ∃ a ∈ E, a.op = Act.set p.1.1 p.1.2 ∧ a.time = p.2 ∧ Survives C E a p.1.1
+  ∃ a ∈ E, a.op = AppOp.set p.1.1 p.1.2 ∧ a.time = p.2 ∧ Survives C E a p.1.1
 
 /-- **Fact 1.** Any replay of `E` that respects `lo^C_E` contains exactly the
 live bindings, so the state does not depend on which replay was taken. -/
@@ -181,7 +181,7 @@ given binding and liveness is a statement about that event alone. -/
 theorem live_iff_fixed_set {C : Configuration (D K V).toMRDTSig}
     {E : Set (D K V).Event} (hsub : E ⊆ C.events)
     {p : (K × V) × Timestamp} {a : (D K V).Event}
-    (hac : a ∈ C.events) (ha : a.op = Act.set p.1.1 p.1.2) (ht : a.time = p.2) :
+    (hac : a ∈ C.events) (ha : a.op = AppOp.set p.1.1 p.1.2) (ht : a.time = p.2) :
     Live C E p ↔ a ∈ E ∧ Survives C E a p.1.1 := by
   constructor
   · rintro ⟨b, hb, -, hbt, hs⟩
@@ -205,7 +205,7 @@ theorem live_join {C : Configuration (D K V).toMRDTSig}
       (Live C (E₁ ∩ E₂) p ∧ Live C E₁ p ∧ Live C E₂ p) ∨
       (Live C E₁ p ∧ ¬ Live C (E₁ ∩ E₂) p) ∨
       (Live C E₂ p ∧ ¬ Live C (E₁ ∩ E₂) p) := by
-  by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = Act.set p.1.1 p.1.2 ∧ a.time = p.2
+  by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = AppOp.set p.1.1 p.1.2 ∧ a.time = p.2
   · obtain ⟨a, hae, ha, ht⟩ := hex
     have hac : a ∈ C.events := hae.elim (fun h => hsub₁ h) (fun h => hsub₂ h)
     have huni : E₁ ∪ E₂ ⊆ C.events := fun e he => he.elim (fun h => hsub₁ h) (fun h => hsub₂ h)
@@ -256,7 +256,7 @@ theorem joinLemma : Interface.JoinConfig (D K V) := by
   have hsubU : ∀ a ∈ E₁ ∪ E₂, a ∈ C.replayContext.events :=
     fun a ha => ha.elim (hsub₁ a) (hsub₂ a)
   obtain ⟨sU, hsU⟩ := isCanonicalState_exists_of_replayLaws
-    (Metatheory.replayLaws laws) htr hir hpU hsubU
+    (Metatheory.replayLaws laws payloadDetermined) htr hir hpU hsubU
   have heq : (D K V).toMRDTSig.merge s₀ s₁ s₂ = sU := by
     change mergeState s₀ s₁ s₂ = sU
     ext p
@@ -281,6 +281,6 @@ variable {K V}
 /-- **What this row supplies for the direct route**: `Laws(D_type)` proved
 by hand, and the join lemma. -/
 theorem directObligations : DirectObligations (D K V) (issuance K V) :=
-  ⟨laws, fun C _ => joinLemma C⟩
+  ⟨laws, payloadDetermined, fun C _ => joinLemma C⟩
 
 end LeanProofs.Implementations.SetWinsMap

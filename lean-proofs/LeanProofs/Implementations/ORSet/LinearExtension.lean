@@ -16,12 +16,12 @@ open LeanProofs.Interface
 variable {A : Type} [DecidableEq A]
 
 /-- The replay order of Section 4: `rc`, lifted to events. -/
-noncomputable local instance replayOrder :
+noncomputable local instance rcOrder :
     EventOrder (D A).toMRDTSig.toUpdateSig := Interface.rcOrder (D A)
 
 @[simp] theorem replayBefore_iff (a b : (D A).Event) :
     (D A).toMRDTSig.toUpdateSig.replayBefore a b
-      ↔ ∃ x, a.op = Act.remove x ∧ b.op = Act.add x := by
+      ↔ ∃ x, a.op = AppOp.remove x ∧ b.op = AppOp.add x := by
   refine Iff.trans ?_ (rcBefore_iff a.op b.op)
   exact @OperationPolicy.lift_replayOrder_iff (D A).toMRDTSig.toUpdateSig
     (Interface.policy (D A)) a b
@@ -41,7 +41,7 @@ abbrev Run (ops : List (D A).Event) : St A :=
 
 /-- No event in the list removes `x`. -/
 def NoRemove (ops : List (D A).Event) (x : A) : Prop :=
-  ∀ e ∈ ops, e.op ≠ Act.remove x
+  ∀ e ∈ ops, e.op ≠ AppOp.remove x
 
 theorem pair_preserved {S : St A} {p : A × Timestamp} (hs : p ∈ S)
     (ops : List (D A).Event) (hn : NoRemove ops p.1) :
@@ -63,7 +63,7 @@ theorem pair_preserved {S : St A} {p : A × Timestamp} (hs : p ∈ S)
 later event in the list removed its element. -/
 theorem mem_run_iff_suffix (ops : List (D A).Event) (p : A × Timestamp) :
     p ∈ Run ops ↔ ∃ pre a post, ops = pre ++ a :: post ∧
-      a.op = Act.add p.1 ∧ a.time = p.2 ∧ NoRemove post p.1 := by
+      a.op = AppOp.add p.1 ∧ a.time = p.2 ∧ NoRemove post p.1 := by
   constructor
   · induction ops using List.reverseRecOn with
     | nil => simp [Run, applySeq, Impl.toMRDTSig]
@@ -120,13 +120,13 @@ theorem not_edge_from_suffix {R : (D A).Event → (D A).Event → Prop}
 /-- No remove of `x` in `E` sees the add `a`. -/
 def Survives (C : Configuration (D A).toMRDTSig)
     (E : Set (D A).Event) (a : (D A).Event) (x : A) : Prop :=
-  ¬ ∃ r ∈ E, C.vis a r ∧ r.op = Act.remove x
+  ¬ ∃ r ∈ E, C.vis a r ∧ r.op = AppOp.remove x
 
 /-- The record `p` is live in `E`: it was added by an event of `E` that no
 remove of `E` observes. -/
 def Live (C : Configuration (D A).toMRDTSig)
     (E : Set (D A).Event) (p : A × Timestamp) : Prop :=
-  ∃ a ∈ E, a.op = Act.add p.1 ∧ a.time = p.2 ∧ Survives C E a p.1
+  ∃ a ∈ E, a.op = AppOp.add p.1 ∧ a.time = p.2 ∧ Survives C E a p.1
 
 /-- **Fact 1.** Any replay of `E` that respects `lo^C_E` contains exactly the
 live records, so the state does not depend on which replay was taken. -/
@@ -181,7 +181,7 @@ record and liveness is a statement about that event alone. -/
 theorem live_iff_fixed_add {C : Configuration (D A).toMRDTSig}
     {E : Set (D A).Event} (hsub : E ⊆ C.events)
     {p : A × Timestamp} {a : (D A).Event}
-    (hac : a ∈ C.events) (ha : a.op = Act.add p.1) (ht : a.time = p.2) :
+    (hac : a ∈ C.events) (ha : a.op = AppOp.add p.1) (ht : a.time = p.2) :
     Live C E p ↔ a ∈ E ∧ Survives C E a p.1 := by
   constructor
   · rintro ⟨b, hb, -, hbt, hs⟩
@@ -206,7 +206,7 @@ theorem live_join {C : Configuration (D A).toMRDTSig}
       (Live C (E₁ ∩ E₂) p ∧ Live C E₁ p ∧ Live C E₂ p) ∨
       (Live C E₁ p ∧ ¬ Live C (E₁ ∩ E₂) p) ∨
       (Live C E₂ p ∧ ¬ Live C (E₁ ∩ E₂) p) := by
-  by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = Act.add p.1 ∧ a.time = p.2
+  by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = AppOp.add p.1 ∧ a.time = p.2
   · obtain ⟨a, hae, ha, ht⟩ := hex
     have hac : a ∈ C.events := hae.elim (fun h => hsub₁ h) (fun h => hsub₂ h)
     have huni : E₁ ∪ E₂ ⊆ C.events := fun e he => he.elim (fun h => hsub₁ h) (fun h => hsub₂ h)
@@ -258,7 +258,7 @@ theorem joinLemma : Interface.JoinConfig (D A) := by
   have hsubU : ∀ a ∈ E₁ ∪ E₂, a ∈ C.replayContext.events :=
     fun a ha => ha.elim (hsub₁ a) (hsub₂ a)
   obtain ⟨sU, hsU⟩ := isCanonicalState_exists_of_replayLaws
-    (Metatheory.replayLaws laws) htr hir hpU hsubU
+    (Metatheory.replayLaws laws payloadDetermined) htr hir hpU hsubU
   have heq : (D A).toMRDTSig.merge s₀ s₁ s₂ = sU := by
     change mergeState s₀ s₁ s₂ = sU
     ext p
@@ -284,6 +284,6 @@ variable {A}
 /-- **What this row supplies for the direct route**: `Laws(D_type)` proved
 by hand, and the join lemma. -/
 theorem directObligations : DirectObligations (D A) (issuance A) :=
-  ⟨laws, fun C _ => joinLemma C⟩
+  ⟨laws, payloadDetermined, fun C _ => joinLemma C⟩
 
 end LeanProofs.Implementations.ORSet

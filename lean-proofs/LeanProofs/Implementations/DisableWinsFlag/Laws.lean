@@ -24,18 +24,18 @@ open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
 
 /-! ### Unfolding `do` -/
 
-theorem step_winning (s : St) (e : Op Act) (h : e.op = .winning) :
+theorem step_winning (s : St) (e : Event) (h : e.op = .winning) :
     step s e = fun r => if r = e.rep then ((s r).1 + 1, true) else s r := by
   simp only [step, h]
 
-theorem step_reset (s : St) (e : Op Act) (h : e.op = .reset) :
+theorem step_reset (s : St) (e : Event) (h : e.op = .reset) :
     step s e = fun r => ((s r).1, false) := by
   simp only [step, h]
 
 /-! ### `rc` -/
 
 /-- `rc` relates exactly the pair `reset`, `winning`. -/
-@[simp] theorem rcBefore_iff (o₁ o₂ : Act) :
+@[simp] theorem rcBefore_iff (o₁ o₂ : AppOp) :
     D.RcBefore o₁ o₂ ↔ o₁ = .reset ∧ o₂ = .winning := by
   cases o₁ <;> cases o₂ <;> simp [Impl.RcBefore, rc]
 
@@ -59,7 +59,7 @@ theorem commutes_of_same_op (e₁ e₂ : D.Event)
   change step (step s e₁) e₂ = step (step s e₂) e₁
   cases h₁ : e₁.op with
   | winning =>
-      have h₂ : e₂.op = Act.winning := h.symm.trans h₁
+      have h₂ : e₂.op = AppOp.winning := h.symm.trans h₁
       simp only [step, h₁, h₂]
       funext r
       by_cases hp : r = e₁.rep
@@ -73,7 +73,7 @@ theorem commutes_of_same_op (e₁ e₂ : D.Event)
           simp [hp, hq, hne]
         · simp [hp, hq]
   | reset =>
-      have h₂ : e₂.op = Act.reset := h.symm.trans h₁
+      have h₂ : e₂.op = AppOp.reset := h.symm.trans h₁
       simp only [step, h₁, h₂]
 
 /-- A `reset` and a `winning` do not commute: performed in one order the
@@ -107,7 +107,7 @@ theorem noncomm_iff (e₁ e₂ : D.Event) :
 
 /-- **NO-RC-CHAIN**. A `reset` can only start an edge and a `winning` can only
 end one, so two edges never meet. -/
-theorem no_rc_chain (o₁ o₂ o₃ : Act) :
+theorem no_rc_chain (o₁ o₂ o₃ : AppOp) :
     ¬ (D.RcBefore o₁ o₂ ∧ D.RcBefore o₂ o₃) := by
   cases o₂ <;> simp
 
@@ -116,7 +116,7 @@ theorem no_rc_chain (o₁ o₂ o₃ : Act) :
 /-- Two states with the same counters everywhere. Bits may differ. -/
 def EqCounters (a b : St) : Prop := ∀ r, (a r).1 = (b r).1
 
-theorem eqCounters_step {a b : St} (h : EqCounters a b) (e : Op Act) :
+theorem eqCounters_step {a b : St} (h : EqCounters a b) (e : Event) :
     EqCounters (step a e) (step b e) := by
   intro r
   cases he : e.op with
@@ -129,7 +129,7 @@ theorem eqCounters_step {a b : St} (h : EqCounters a b) (e : Op Act) :
       simp only [step, he]
       exact h r
 
-theorem eqCounters_foldl {a b : St} (h : EqCounters a b) (pi : List (Op Act)) :
+theorem eqCounters_foldl {a b : St} (h : EqCounters a b) (pi : List (Event)) :
     EqCounters (pi.foldl step a) (pi.foldl step b) := by
   induction pi generalizing a b with
   | nil => exact h
@@ -137,7 +137,7 @@ theorem eqCounters_foldl {a b : St} (h : EqCounters a b) (pi : List (Op Act)) :
 
 /-- A `reset` rebuilds every bit from the counters, so it maps states with
 equal counters to the same state. -/
-theorem reset_eq_of_eqCounters {a b : St} (h : EqCounters a b) {e : Op Act}
+theorem reset_eq_of_eqCounters {a b : St} (h : EqCounters a b) {e : Event}
     (he : e.op = .reset) : step a e = step b e := by
   simp only [step, he]
   funext r
@@ -153,7 +153,7 @@ theorem cond_comm (S : D.Sigma)
       = D.do_ (D.applyList
           (D.do_ (D.do_ S e) e') pi) e'' := by
   obtain ⟨he, he'⟩ := (eventRcBefore_iff e e').mp hrc
-  have habs : e''.op = Act.reset := by
+  have habs : e''.op = AppOp.reset := by
     rcases (noncomm_iff e' e'').mp hnc with h | h
     · exact absurd (((eventRcBefore_iff _ _).mp h).1.symm.trans he') (by simp)
     · exact ((eventRcBefore_iff _ _).mp h).1
@@ -163,7 +163,18 @@ theorem cond_comm (S : D.Sigma)
     by_cases hr : r = e'.rep <;> simp [hr]
   exact reset_eq_of_eqCounters (eqCounters_foldl hbase pi) habs
 
-/-- `Laws(D_type)`: RC-NON-COMM, NO-RC-CHAIN and COND-COMM. -/
-theorem laws : Laws D := ⟨noncomm_iff, no_rc_chain, cond_comm⟩
+/-- Non-commutation here is a function of the payloads alone, which is what
+lets the guarded RC-NON-COMM be lifted to the uniform contract `Soundness`
+still runs on. -/
+theorem payloadDetermined : PayloadDetermined D := by
+  intro e₁ e₂ f₁ f₂ h₁ h₂
+  have key : ¬ D.Commutes e₁ e₂ ↔ ¬ D.Commutes f₁ f₂ := by
+    rw [noncomm_iff, noncomm_iff, Impl.EventRcBefore, Impl.EventRcBefore,
+      Impl.EventRcBefore, Impl.EventRcBefore, h₁, h₂]
+  exact not_iff_not.mp key
+
+/-- `Laws(D_type)`: RC-NON-COMM over concurrent events, NO-RC-CHAIN and
+COND-COMM. -/
+theorem laws : Laws D := ⟨fun e₁ e₂ _ _ => noncomm_iff e₁ e₂, no_rc_chain, cond_comm⟩
 
 end LeanProofs.Implementations.DisableWinsFlag

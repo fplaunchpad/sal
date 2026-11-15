@@ -20,19 +20,19 @@ open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
 open LeanProofs.Interface
 
 /-- How one request moves the physical bit. -/
-def flagStep (_ : Bool) (o : Act) : Bool :=
+def flagStep (_ : Bool) (o : AppOp) : Bool :=
   match o with
   | .winning => true
   | .reset => false
 
 /-- How one request moves the client Boolean. -/
-def boolStep (invert : Bool) (_ : Bool) (o : Act) : Bool :=
+def boolStep (invert : Bool) (_ : Bool) (o : AppOp) : Bool :=
   match o with
   | .reset => invert
   | .winning => !invert
 
 /-- The client reading of the physical bit. -/
-theorem machine_fold (invert : Bool) (ops : List Act) (b : Bool) :
+theorem machine_fold (invert : Bool) (ops : List AppOp) (b : Bool) :
     ops.foldl (boolStep invert) (if invert then !b else b)
       = if invert then !(ops.foldl flagStep b) else ops.foldl flagStep b := by
   induction ops generalizing b with
@@ -40,18 +40,18 @@ theorem machine_fold (invert : Bool) (ops : List Act) (b : Bool) :
   | cons o ops ih =>
       cases o with
       | winning =>
-          have hb : boolStep invert (if invert then !b else b) Act.winning
-              = if invert then !(flagStep b Act.winning) else flagStep b Act.winning := by
+          have hb : boolStep invert (if invert then !b else b) AppOp.winning
+              = if invert then !(flagStep b AppOp.winning) else flagStep b AppOp.winning := by
             cases invert <;> simp [boolStep, flagStep]
           rw [List.foldl_cons, List.foldl_cons, hb, ih]
       | reset =>
-          have hb : boolStep invert (if invert then !b else b) Act.reset
-              = if invert then !(flagStep b Act.reset) else flagStep b Act.reset := by
+          have hb : boolStep invert (if invert then !b else b) AppOp.reset
+              = if invert then !(flagStep b AppOp.reset) else flagStep b AppOp.reset := by
             cases invert <;> simp [boolStep, flagStep]
           rw [List.foldl_cons, List.foldl_cons, hb, ih]
 
 /-- After a replay the physical reading depends only on the last request. -/
-theorem active_foldl (pi : List (Op Act)) :
+theorem active_foldl (pi : List (Event)) :
     active (pi.foldl step (fun _ => (0, true)))
       = (pi.map Op.op).foldl flagStep true := by
   induction pi using List.reverseRecOn with
