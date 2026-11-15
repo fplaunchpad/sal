@@ -1,5 +1,5 @@
 import LeanProofs.Implementations.FlatGrowOnlyMap.Definition
-import LeanProofs.Interface.Laws
+import LeanProofs.Interface.VCRoute
 
 /-!
 # The flat grow-only map: discharging the obligations
@@ -25,7 +25,7 @@ theorem all_commute (e₁ e₂ : (D A).Event) : (D A).Commutes e₁ e₂ := by
   funext x
   cases S x <;> cases decide (x = e₁.op) <;> cases decide (x = e₂.op) <;> rfl
 
-theorem rc_either (e₁ e₂ : (D A).Event) : (D A).RcEither e₁ e₂ := rfl
+theorem rc_either (o₁ o₂ : (type A).OType) : (D A).RcEither o₁ o₂ := rfl
 
 /-- **VC1** MERGE-COMM. -/
 theorem vc1_merge_comm (l a b : (D A).Sigma) :

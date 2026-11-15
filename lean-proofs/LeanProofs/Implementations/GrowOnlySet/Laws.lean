@@ -1,5 +1,5 @@
 import LeanProofs.Implementations.GrowOnlySet.Definition
-import LeanProofs.Interface.Laws
+import LeanProofs.Interface.VCRoute
 
 /-!
 # The grow-only set: discharging the obligations
@@ -25,7 +25,7 @@ theorem all_commute (e₁ e₂ : (D A).Event) : (D A).Commutes e₁ e₂ := by
   change insert e₂.op (insert e₁.op S) = insert e₁.op (insert e₂.op S)
   exact Set.insert_comm _ _ _
 
-theorem rc_either (e₁ e₂ : (D A).Event) : (D A).RcEither e₁ e₂ := rfl
+theorem rc_either (o₁ o₂ : (type A).OType) : (D A).RcEither o₁ o₂ := rfl
 
 /-- **VC1** MERGE-COMM. -/
 theorem vc1_merge_comm (l a b : (D A).Sigma) :

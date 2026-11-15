@@ -17,8 +17,10 @@ Lean needs decidable equality on `Sigma` and `O_type` that the paper leaves
 implicit; those two fields are marked as bookkeeping and are not part of the
 paper's tuple.
 
-`Impl.toMRDTSig` and `Impl.toRc` send the tuple to the shared framework's
-representation. Nothing else in this development mentions `MRDTSig`.
+`Impl.toMRDTSig` sends the tuple to the shared framework's representation.
+Nothing else in this development mentions `MRDTSig`. `rc` is turned into the
+framework's operation policy in `Interface/Laws.lean`, next to the laws that
+constrain it.
 -/
 
 namespace LeanProofs.Interface
@@ -60,8 +62,12 @@ structure Impl (type : MRDTType) where
   merge : Sigma → Sigma → Sigma → Sigma
   /-- `query(sigma, q)`. -/
   query : Sigma → type.QType → type.ValType
-  /-- `rc`, the conflict-resolution relation. `rc_res` is `OrderResult`. -/
-  rc : type.Event → type.Event → OrderResult
+  /-- `rc`, the conflict-resolution relation. `rc_res` is `OrderResult`.
+
+  Section 4 states every law about `rc` over operations, `o1 --rc--> o2`, so
+  `rc` relates operations here too. It reaches events through their labels,
+  which is what `e1 --rc--> e2` abbreviates in Section 3. -/
+  rc : type.OType → type.OType → OrderResult
 
 attribute [instance] Impl.decSigma
 
@@ -83,20 +89,21 @@ abbrev time (e : D.Event) : Timestamp := e.time
 /-- `rep(e)`. -/
 abbrev rep (e : D.Event) : Replica := e.rep
 
-/-- Events are uniquely identified by their timestamps. -/
-def Distinct (e₁ e₂ : D.Event) : Prop := D.time e₁ ≠ D.time e₂
-
 /-- `e1 <-> e2`: the two events commute. -/
 def Commutes (e₁ e₂ : D.Event) : Prop :=
   ∀ sigma, D.do_ (D.do_ sigma e₁) e₂ = D.do_ (D.do_ sigma e₂) e₁
 
-/-- `e1 --rc--> e2`. -/
-abbrev RcBefore (e₁ e₂ : D.Event) : Prop :=
-  D.rc e₁ e₂ = OrderResult.Fst_then_snd
+/-- `o1 --rc--> o2`. -/
+abbrev RcBefore (o₁ o₂ : type.OType) : Prop :=
+  D.rc o₁ o₂ = OrderResult.Fst_then_snd
 
 /-- `rc` leaves the pair unordered. -/
-abbrev RcEither (e₁ e₂ : D.Event) : Prop :=
-  D.rc e₁ e₂ = OrderResult.Either
+abbrev RcEither (o₁ o₂ : type.OType) : Prop :=
+  D.rc o₁ o₂ = OrderResult.Either
+
+/-- `e1 --rc--> e2`, the lifting of `rc` to events by their labels. -/
+abbrev EventRcBefore (e₁ e₂ : D.Event) : Prop :=
+  D.RcBefore e₁.op e₂.op
 
 /-! ### Bridge to the shared framework -/
 
@@ -113,15 +120,6 @@ def toMRDTSig : MRDTSig where
   merge := D.merge
   query := D.query
 
-/-- `rc` as the framework's event order. -/
-def toRc : EventOrder D.toMRDTSig.toUpdateSig where
-  order := D.rc
-
-@[simp] theorem applyList_eq (sigma : D.Sigma) (pi : List D.Event) :
-    D.applyList sigma pi = applySeq D.toMRDTSig.toUpdateSig sigma pi := rfl
-
-theorem commutes_iff (e₁ e₂ : D.Event) :
-    D.Commutes e₁ e₂ ↔ D.toMRDTSig.toUpdateSig.commutes e₁ e₂ := Iff.rfl
-
 end Impl
+
 end LeanProofs.Interface

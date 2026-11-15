@@ -1,5 +1,5 @@
 import LeanProofs.Implementations.FlatCounter.Definition
-import LeanProofs.Interface.Laws
+import LeanProofs.Interface.VCRoute
 
 /-!
 # The counter: discharging the obligations
@@ -21,7 +21,7 @@ theorem all_commute (e₁ e₂ : D.Event) : D.Commutes e₁ e₂ := by
   change (z + delta e₁.op) + delta e₂.op = (z + delta e₂.op) + delta e₁.op
   omega
 
-theorem rc_either (e₁ e₂ : D.Event) : D.RcEither e₁ e₂ := rfl
+theorem rc_either (o₁ o₂ : type.OType) : D.RcEither o₁ o₂ := rfl
 
 /-- **VC1** MERGE-COMM. -/
 theorem vc1_merge_comm (l a b : D.Sigma) : D.merge l a b = D.merge l b a := by

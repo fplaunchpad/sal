@@ -47,10 +47,6 @@ def packed (e : Op LWWOp) : Write :=
 
 def writeValue (w : Write) : Nat := (ofLex (ofLex w).2).2
 
-@[simp] theorem writeValue_packed (e : Op LWWOp) :
-    writeValue (packed e) = valueOf e := by
-  rcases e with ⟨t, r, o⟩; cases o; rfl
-
 /-- `query`. -/
 def readOf : St → Option Nat
   | ⊥ => none

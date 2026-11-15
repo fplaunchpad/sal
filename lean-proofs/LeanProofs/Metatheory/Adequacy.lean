@@ -1,8 +1,9 @@
-import LeanProofs.Interface.Laws
+import LeanProofs.Interface.VCRoute
+import LeanProofs.Interface.DirectRoute
 import Artifact.MRDTs.Metatheory.Correctness
 
 /-!
-# Adequacy: the obligations imply RA-linearizability
+# Adequacy: the obligations imply the join lemma
 
 Proved once, for every implementation. No datatype is named here and no
 implementation may add to this file.
@@ -10,97 +11,91 @@ implementation may add to this file.
 The chain follows Section 5 of the paper:
 
 ```
-  Obligations                     supplied per implementation
-      |
-      v
-  Laws(D_type)  +  VC1..VC5        VC4 derived here for this family
+  Laws(D_type)  +  VC1..VC5        per implementation
       |
       v
   the join lemma                  merging canonical states is canonical
-      |
-      v
-  canonical correctness           every stored version holds can(E(v))
-      |
-      +--  + Conformance  -->     RA-linearizability
 ```
 
-The last arrow is the only one that consults `Spec`. As the paper says, the
-canonical join laws alone do not establish conformance.
+`Soundness` carries the chain further, to canonical correctness and then,
+with `SpecSound`, to RA-linearizability. Nothing here consults `Spec`: as
+the paper says, the canonical join laws alone do not establish conformance.
+
+## Two routes to the join lemma
+
+`joinLemma_of_vcs` is the route of Section 5: discharge the five VCs and the
+lemma follows. `Obligations` below is the special case in which every pair of
+events commutes, where `Laws` is free and VC4 is derived.
+
+Not every row satisfies the arbitrary-state VCs of `CanonicalJoinLaws`. An
+implementation outside that family proves `Join` directly, at `rcOrder`, and
+passes it to `Soundness` itself. Both routes end at the same statement, so
+nothing downstream can tell them apart.
 -/
 
 namespace LeanProofs.Metatheory
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1 LeanProofs.Interface
 
 variable {type : MRDTType} {D : Impl type}
 
-/-- The replay order the argument runs at. `rc_either` says the
-implementation's own `rc` agrees with it on every pair. -/
-abbrev rcOrder (D : Impl type) : EventOrder D.toMRDTSig.toUpdateSig :=
-  EventOrder.unconstrained D.toMRDTSig.toUpdateSig
+/-! ## The general route
 
-/-- NO-RC-CHAIN gives acyclicity of `rc`, which Lemma `cor:lo-agree` needs
-so that `lo^C_E` admits a linear extension. -/
-theorem rcAcyclic : @ReplayAcyclic D.toMRDTSig.toUpdateSig (rcOrder D) := by
-  apply replayAcyclic_of_noReplayChain
-  intro a b c h
-  exact OrderResult.noConfusion h.1
+Everything in this section holds for an arbitrary `rc`. -/
 
-/-- `Laws(D_type)` is free for this family. RC-NON-COMM holds vacuously
-because every pair commutes, and COND-COMM never has an `rc` edge to remove. -/
+/-- `Laws(D_type)` is the framework's replay contract. RC-NON-COMM supplies
+`noncomm_covered`, NO-RC-CHAIN supplies acyclicity, COND-COMM supplies the
+absorber clause. -/
+theorem replayLaws (h : Laws D) : @ReplayLaws D.toMRDTSig.toUpdateSig (rcOrder D) :=
+  h.toRestricted.replayLaws
+
+theorem mergeLaws (h : Laws D) (vcs : CanonicalJoinLaws D) :
+    @MergeLaws D.toMRDTSig (rcOrder D) :=
+  letI : EventOrder D.toMRDTSig.toUpdateSig := rcOrder D
+  ⟨replayLaws h, vcs.vc1_merge_comm, vcs.vc2_merge_init⟩
+
+theorem deltaLaws (vcs : CanonicalJoinLaws D) : DeltaLaws D.toMRDTSig :=
+  ⟨vcs.vc5_redistribute, vcs.vc3_local_redistribute⟩
+
+theorem commutingPeelLaw (vcs : CanonicalJoinLaws D) : CommutingPeelLaw D.toMRDTSig :=
+  ⟨vcs.commuting_peel⟩
+
+/-- **The join lemma** from the five VCs: merging canonical states produces
+the canonical state of the union of their event sets. -/
+theorem joinLemma_of_vcs (h : Laws D) (vcs : CanonicalJoinLaws D)
+    (vc4 : @CausalDeltaLaw D.toMRDTSig (rcOrder D)) : @Join D.toMRDTSig (rcOrder D) :=
+  letI : EventOrder D.toMRDTSig.toUpdateSig := rcOrder D
+  JoinProof.ofArbitraryStateLaws (mergeLaws h vcs) (deltaLaws vcs) vc4
+
+/-! ## The all-commuting family
+
+`Obligations` asserts that every pair of events commutes and that `rc` is
+accordingly empty. `Laws` and VC4 both come for free. -/
+
+/-- `Laws(D_type)` is free for this family. RC-NON-COMM holds because both
+sides are false, and COND-COMM never has an `rc` edge to remove. -/
 theorem laws (h : Obligations D) : Laws D := by
-  refine ⟨fun e₁ e₂ hn => (hn (h.all_commute e₁ e₂)).elim, ?_, ?_⟩
-  · intro e₁ e₂ e₃ hc
-    exact OrderResult.noConfusion ((h.rc_either e₁ e₂).symm.trans hc.1)
-  · intro sigma e e' e'' pi _ _ _ hb _
-    exact OrderResult.noConfusion ((h.rc_either e e').symm.trans hb)
-
-theorem replayLaws (h : Obligations D) :
-    @ReplayLaws D.toMRDTSig.toUpdateSig (rcOrder D) :=
-  ReplayLaws.of_all_comm h.all_commute rcAcyclic
-
-theorem mergeLaws (h : Obligations D) : @MergeLaws D.toMRDTSig (rcOrder D) :=
-  ⟨replayLaws h, h.joinLaws.vc1_merge_comm, h.joinLaws.vc2_merge_init⟩
-
-theorem deltaLaws (h : Obligations D) : DeltaLaws D.toMRDTSig :=
-  ⟨h.joinLaws.vc5_redistribute, h.joinLaws.vc3_local_redistribute⟩
-
-theorem commutingPeelLaw (h : Obligations D) : CommutingPeelLaw D.toMRDTSig :=
-  ⟨h.joinLaws.commuting_peel⟩
+  have hno : ∀ e₁ e₂ : D.Event, ¬ D.EventRcBefore e₁ e₂ := fun e₁ e₂ hb =>
+    OrderResult.noConfusion ((h.rc_either e₁.op e₂.op).symm.trans hb)
+  refine ⟨fun e₁ e₂ => ⟨fun hn => (hn (h.all_commute e₁ e₂)).elim, ?_⟩, ?_, ?_⟩
+  · rintro (hb | hb)
+    · exact (hno _ _ hb).elim
+    · exact (hno _ _ hb).elim
+  · exact fun o₁ o₂ o₃ hc =>
+      OrderResult.noConfusion ((h.rc_either o₁ o₂).symm.trans hc.1)
+  · exact fun _ e e' _ _ hb _ => (hno e e' hb).elim
 
 /-- **VC4** CAUSAL-DELTA, `merge(B, A, e(B)) = e(A)`, derived rather than
 assumed. This is the step that is available only because every pair of
 events commutes. -/
-theorem vc4_causal_delta (h : Obligations D) : CausalDeltaLaw D.toMRDTSig :=
-  causalDeltaLaw_of_all_comm (mergeLaws h) (commutingPeelLaw h) h.all_commute
+theorem vc4_causal_delta (h : Obligations D) :
+    @CausalDeltaLaw D.toMRDTSig (rcOrder D) :=
+  letI : EventOrder D.toMRDTSig.toUpdateSig := rcOrder D
+  causalDeltaLaw_of_all_comm (mergeLaws (laws h) h.joinLaws)
+    (commutingPeelLaw h.joinLaws) h.all_commute
 
-/-- **The join lemma**: merging canonical states produces the canonical
-state of the union of their event sets. The implementation never proves this. -/
+/-- The join lemma for the all-commuting family. -/
 theorem joinLemma (h : Obligations D) : @Join D.toMRDTSig (rcOrder D) :=
-  JoinProof.ofArbitraryStateLaws (mergeLaws h) (deltaLaws h) (vc4_causal_delta h)
-
-/-- Canonical correctness: every stored version of a reachable configuration
-holds `can(E(v))`. -/
-def canonicalCorrectness (h : Obligations D) (I : Issuance D.toMRDTSig) :
-    @ReplayAdequacyCertificate D.toMRDTSig I (rcOrder D) :=
-  ReplayAdequacyCertificate.ofJoin I (joinLemma h)
-
-/-- **RA-linearizability.** Convergence comes from the canonical join laws,
-conformance from `Conformance`. -/
-noncomputable def raLinearizable (h : Obligations D) (I : Issuance D.toMRDTSig)
-    (Spec : SequentialSpec D.toMRDTSig) (Rel : D.Sigma → Spec.State → Prop)
-    (hc : Conformance D Spec Rel) : VerifiedMRDT D.toMRDTSig where
-  issuance := I
-  replayOrder := rcOrder D
-  replayAdequacy := canonicalCorrectness h I
-  Spec := Spec
-  Rel := Rel
-  sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
-    (fun C _ => joinLemma h C.replayContext)
-    h.all_commute
-    (fun _ _ => rfl)
-    hc.legal
-    hc.refines
-    hc.observes
+  joinLemma_of_vcs (laws h) h.joinLaws (vc4_causal_delta h)
 
 end LeanProofs.Metatheory

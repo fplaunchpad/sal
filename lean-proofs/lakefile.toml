@@ -1,5 +1,6 @@
 name = "leanproofs"
 version = "0.1.0"
+defaultTargets = ["LeanProofs"]
 
 [leanOptions]
 pp.unicode.fun = true
