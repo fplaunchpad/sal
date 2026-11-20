@@ -58,7 +58,7 @@ theorem commute_of_no_rc (e₁ e₂ : (D K V).Event)
   cases o₁ <;> cases o₂ <;> ext p <;> simp [step, Op.op, Op.time] at h ⊢ <;> grind
 
 /-- **RC-NON-COMM**. -/
-theorem noncomm_iff (e₁ e₂ : (D K V).Event) :
+theorem rc_non_comm (e₁ e₂ : (D K V).Event) :
     ¬ (D K V).Commutes e₁ e₂ ↔
       (D K V).EventRcBefore e₁ e₂ ∨ (D K V).EventRcBefore e₂ e₁ := by
   constructor
@@ -110,7 +110,7 @@ theorem cond_comm (S : (D K V).Sigma) (e e' e'' : (D K V).Event)
       = (D K V).do_ ((D K V).applyList ((D K V).do_ ((D K V).do_ S e) e') pi) e'' := by
   obtain ⟨k, v, he, he'⟩ := (eventRcBefore_iff _ _).mp hrc
   have habs : e''.op = AppOp.del k := by
-    rcases (noncomm_iff e' e'').mp hnc with h | h
+    rcases (rc_non_comm e' e'').mp hnc with h | h
     · obtain ⟨j, w, hd, -⟩ := (eventRcBefore_iff _ _).mp h
       rw [he'] at hd; cases hd
     · obtain ⟨j, w, hd, hs⟩ := (eventRcBefore_iff _ _).mp h
@@ -131,12 +131,14 @@ still runs on. -/
 theorem payloadDetermined : PayloadDetermined (D K V) := by
   intro e₁ e₂ f₁ f₂ h₁ h₂
   have key : ¬ (D K V).Commutes e₁ e₂ ↔ ¬ (D K V).Commutes f₁ f₂ := by
-    rw [noncomm_iff, noncomm_iff, Impl.EventRcBefore, Impl.EventRcBefore,
+    rw [rc_non_comm, rc_non_comm, Impl.EventRcBefore, Impl.EventRcBefore,
       Impl.EventRcBefore, Impl.EventRcBefore, h₁, h₂]
   exact not_iff_not.mp key
 
 /-- `Laws(D_type)`: RC-NON-COMM over concurrent events, NO-RC-CHAIN and
 COND-COMM. -/
-theorem laws : Laws (D K V) := ⟨fun e₁ e₂ _ _ => noncomm_iff e₁ e₂, no_rc_chain, cond_comm⟩
+theorem laws : Laws (D K V) := ⟨rcNonComm_of_exact no_rc_chain (fun e₁ e₂ _ _ => rc_non_comm e₁ e₂),
+  no_rc_chain,
+  fun S e e' e'' pi _ _ => cond_comm S e e' e'' pi⟩
 
 end LeanProofs.Implementations.SetWinsMap

@@ -99,11 +99,55 @@ theorem historySound : Soundness.HistorySound D historySpec issuance := by
   · refine ⟨hpi.1.perm (pi.mergeSort_perm keyLe).symm, fun e => ?_⟩
     exact ((pi.mergeSort_perm keyLe).mem_iff).trans (hpi.2 e)
   · exact (hpi.1.perm (pi.mergeSort_perm keyLe).symm).imp
-      (fun {_ _} _ => Soundness.paperOrder_false obligations _ _ _ _)
+      (fun {_ _} _ => Soundness.paperOrder_false obligations all_commute _ _ _ _)
   · rw [show projectedUpdates (D := D.toMRDTSig) (pi.mergeSort keyLe)
           = DeterministicSpec.updateLabels ((pi.mergeSort keyLe).map Op.op) by
         simp [projectedUpdates, DeterministicSpec.updateLabels, List.map_map,
           Function.comp],
       historySpec, specMachine.updates_query_iff]
     exact sorted_agrees _ (List.pairwise_mergeSort keyLe_trans keyLe_total pi)
+/-! ## `Laws(D_type, Spec)`: the fourth law **fails** for this row
+
+SPEC-NON-COMM does not hold here, and both halves of the counterexample are
+already proved.
+
+* In the implementation every pair of events commutes. `do` is `max` on
+  write keys, which is what `Laws.all_commute` says.
+* In `Spec` two writes do not commute. The specification overwrites, so the
+  two orders leave it in different states, and a history may end in a query
+  label that sees the difference.
+
+`write 0` and `write 1` are therefore a pair the law forbids: a conflict the
+specification has, erased by the implementation. The witness below puts them
+on distinct timestamps and distinct replicas, so the failure is not an
+artefact of a pair that no reachable execution produces. This is the same shape as
+the broken set of Section 6, and it is why this row needs the **scoped**
+premise `Soundness.HistorySound`, which chooses a key-sorted witness, rather
+than `Soundness.SpecSound`, which is false here for the same reason.
+
+Nothing downstream consumes SPEC-NON-COMM, so the certificate is unaffected.
+What the failure costs is the stronger criterion of
+`Artifact/MRDTs/Paper1/SpecificationVisibility.lean`, which this row cannot
+reach. -/
+
+/-- `write 0` and `write 1` do not commute in `Spec`: the query at the end
+of the history tells the two orders apart. -/
+theorem not_spec_commutes :
+    ¬ Interface.spec_commutes historySpec (.write 0) (.write 1) := by
+  intro h
+  have lhs : historySpec.admits
+      ([SeqLabel.update (AppOp.write 0), .update (.write 1)]
+        ++ [.query () (some 1)]) :=
+    (specMachine.updates_query_iff [.write 0, .write 1] () (some 1)).mpr rfl
+  have rhs := (h [] [SeqLabel.query () (some 1)]).mp (by simpa using lhs)
+  have key : (some 1 : Option Nat) = some 0 :=
+    (specMachine.updates_query_iff [AppOp.write 1, .write 0] ()
+      (some 1)).mp (by simpa using rhs)
+  simp at key
+
+/-- **SPEC-NON-COMM fails for the LWW register.** The two writes commute in
+the implementation and do not commute in `Spec`. -/
+theorem not_spec_non_comm : ¬ Interface.spec_non_comm D historySpec := fun h =>
+  h (0, 0, .write 0) (1, 1, .write 1) not_spec_commutes (all_commute _ _)
+
 end LeanProofs.Implementations.LWWRegister

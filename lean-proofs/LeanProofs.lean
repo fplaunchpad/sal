@@ -1,5 +1,6 @@
 import LeanProofs.Interface.Implementation
 import LeanProofs.Interface.Laws
+import LeanProofs.Interface.SpecLaws
 import LeanProofs.Interface.VCRoute
 import LeanProofs.Interface.DirectRoute
 import LeanProofs.Metatheory.Adequacy

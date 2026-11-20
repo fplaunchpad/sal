@@ -16,6 +16,5 @@ satisfies Definition 4 against `Spec`. -/
 theorem raLinearizable : Soundness.CertifiedRA D historySpec issuance :=
   Soundness.certifiedRA obligations specSound
 
-#print axioms raLinearizable
 
 end LeanProofs.Implementations.FlatCounter

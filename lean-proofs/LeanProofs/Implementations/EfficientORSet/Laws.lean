@@ -130,7 +130,7 @@ theorem rcOps_iff (o₁ o₂ : AppOp α) :
 /-- **RC-NON-COMM, over concurrent events.** The same-replica pair that
 breaks the unguarded law is excluded by `hr`; every pair still in scope is
 covered exactly. -/
-theorem noncomm_iff (e₁ e₂ : (I α).Event)
+theorem rc_non_comm (e₁ e₂ : (I α).Event)
     (_ht : (I α).time e₁ ≠ (I α).time e₂) (hr : (I α).rep e₁ ≠ (I α).rep e₂) :
     ¬ (I α).Commutes e₁ e₂ ↔ (I α).EventRcBefore e₁ e₂ ∨ (I α).EventRcBefore e₂ e₁ := by
   obtain ⟨t₁, r₁, o₁⟩ := e₁
@@ -334,6 +334,8 @@ replicas and fail to commute within one, so commutation is not a function of
 the payloads. `Soundness/` needs that to reach the vendored uniform
 contract, which is why the certificate in `Certificate.lean` takes the
 representation route instead and needs no replay contract at all. -/
-theorem laws : Laws (I α) := ⟨noncomm_iff, no_rc_chain, cond_comm⟩
+theorem laws : Laws (I α) :=
+  ⟨rcNonComm_of_exact no_rc_chain rc_non_comm, no_rc_chain,
+  fun sigma e e' e'' pi _ _ => cond_comm sigma e e' e'' pi⟩
 
 end LeanProofs.Implementations.EfficientORSet

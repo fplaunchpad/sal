@@ -265,12 +265,12 @@ theorem live_join {C : Configuration (D A).toMRDTSig}
         intro hn
         obtain ⟨b, hb, hba, hv⟩ := Classical.not_not.mp hn
         refine hclosed₁ a b hv ?_ hb
-        exact (noncomm_iff a b).mpr (Or.inr ((eventRcBefore_iff b a).mpr ⟨p.1, hba, ha⟩))
+        exact (rc_non_comm a b).mpr (Or.inr ((eventRcBefore_iff b a).mpr ⟨p.1, hba, ha⟩))
       have hk₂ : ¬ Survives C E₂ a p.1 → a ∈ E₂ := by
         intro hn
         obtain ⟨b, hb, hba, hv⟩ := Classical.not_not.mp hn
         refine hclosed₂ a b hv ?_ hb
-        exact (noncomm_iff a b).mpr (Or.inr ((eventRcBefore_iff b a).mpr ⟨p.1, hba, ha⟩))
+        exact (rc_non_comm a b).mpr (Or.inr ((eventRcBefore_iff b a).mpr ⟨p.1, hba, ha⟩))
       have hu : Survives C (E₁ ∪ E₂) a p.1 ↔
           Survives C E₁ a p.1 ∧ Survives C E₂ a p.1 := by
         simp only [Survives, Set.mem_union]
@@ -321,7 +321,7 @@ theorem joinAt (C : Configuration (D A).toMRDTSig)
   have hsubU : ∀ a ∈ E₁ ∪ E₂, a ∈ C.replayContext.events :=
     fun a ha => ha.elim (hsub₁ a) (hsub₂ a)
   obtain ⟨sU, hsU⟩ := isCanonicalState_exists_of_replayLaws
-    (Metatheory.replayLaws laws payloadDetermined) htr hir hpU hsubU
+    (Metatheory.replayLaws laws rc_non_comm cond_comm) htr hir hpU hsubU
   have heq : (D A).toMRDTSig.merge s₀ s₁ s₂ = sU := by
     change mergeState s₀ s₁ s₂ = sU
     ext p
@@ -337,6 +337,6 @@ theorem joinAt (C : Configuration (D A).toMRDTSig)
 /-- **What this row supplies for the direct route**: `Laws(D_type)` proved
 by hand, and the join lemma. -/
 theorem directObligations : DirectObligations (D A) (issuance A) :=
-  ⟨laws, payloadDetermined, joinAt⟩
+  ⟨laws, payloadDetermined, cond_comm, rc_non_comm, joinAt⟩
 
 end LeanProofs.Implementations.RemoveWinsSet

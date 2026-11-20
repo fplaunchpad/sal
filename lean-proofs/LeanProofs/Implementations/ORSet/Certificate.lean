@@ -18,9 +18,8 @@ variable {A : Type} [DecidableEq A]
 Definition 4 against `Spec`, at the implementation's own nonempty `rc`. -/
 theorem raLinearizable :
     Soundness.CertifiedRA (D A) (historySpec A) (issuance A) :=
-  Soundness.certifiedRA_direct directObligations specSound
+  Soundness.certifiedRA obligations specSound
 
 #print axioms joinLemma
-#print axioms raLinearizable
 
 end LeanProofs.Implementations.ORSet

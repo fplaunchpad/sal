@@ -30,7 +30,7 @@ theorem noncomm_iff_replayBefore (a b : (D K V).Event) :
       (D K V).toMRDTSig.toUpdateSig.replayBefore a b
         ∨ (D K V).toMRDTSig.toUpdateSig.replayBefore b a := by
   simpa only [replayBefore_iff] using
-    (noncomm_iff a b).trans (by simp only [eventRcBefore_iff])
+    (rc_non_comm a b).trans (by simp only [eventRcBefore_iff])
 
 /-! ## Canonical states contain exactly the live bindings -/
 
@@ -256,7 +256,7 @@ theorem joinLemma : Interface.JoinConfig (D K V) := by
   have hsubU : ∀ a ∈ E₁ ∪ E₂, a ∈ C.replayContext.events :=
     fun a ha => ha.elim (hsub₁ a) (hsub₂ a)
   obtain ⟨sU, hsU⟩ := isCanonicalState_exists_of_replayLaws
-    (Metatheory.replayLaws laws payloadDetermined) htr hir hpU hsubU
+    (Metatheory.replayLaws laws rc_non_comm cond_comm) htr hir hpU hsubU
   have heq : (D K V).toMRDTSig.merge s₀ s₁ s₂ = sU := by
     change mergeState s₀ s₁ s₂ = sU
     ext p
@@ -281,6 +281,6 @@ variable {K V}
 /-- **What this row supplies for the direct route**: `Laws(D_type)` proved
 by hand, and the join lemma. -/
 theorem directObligations : DirectObligations (D K V) (issuance K V) :=
-  ⟨laws, payloadDetermined, fun C _ => joinLemma C⟩
+  ⟨laws, payloadDetermined, cond_comm, rc_non_comm, fun C _ => joinLemma C⟩
 
 end LeanProofs.Implementations.SetWinsMap

@@ -37,19 +37,20 @@ variable {type : MRDTType} {D : Impl type}
 
 /-- **The adequacy theorem.** The obligations and the sequential premise give
 RA-linearizability of every certified execution. -/
-theorem certifiedRA_of_laws (laws : Laws D) (payload : PayloadDetermined D)
-    {S : Spec type} {I : Issuance D.toMRDTSig}
+theorem certifiedRA_of_laws (laws : Laws D) (rc_non_comm : UniformRcNonComm D)
+    (cond_comm : UniformCondComm D) {S : Spec type} {I : Issuance D.toMRDTSig}
     (join : ∀ C : Configuration D.toMRDTSig,
       MintHonest D.toMRDTSig I.CanIssue C → Interface.JoinAtConfig D C)
     (sound : SpecSound D S) : CertifiedRA D S I :=
-  certifiedRA_of_join_total (laws.toRestricted payload) join sound
+  certifiedRA_of_join_total (laws.toRestricted rc_non_comm cond_comm) join sound
 
-/-- The all-commuting specialisation, where `Laws` and the join lemma both
-come from `Obligations`. -/
+/-- **The adequacy theorem on the VC route**, for any row. `Laws` and the
+five conditions are fields of `Obligations`; only the join lemma comes from
+the metatheory. -/
 theorem certifiedRA (h : Obligations D) {S : Spec type}
     {I : Issuance D.toMRDTSig} (sound : SpecSound D S) :
     CertifiedRA D S I :=
-  certifiedRA_of_laws (Metatheory.laws h) (Metatheory.payloadDetermined h)
+  certifiedRA_of_laws h.laws h.rc_non_comm h.cond_comm
     (fun C _ => Interface.joinConfig_of_join (Metatheory.joinLemma h) C) sound
 
 /-- **The adequacy theorem, as a direct-route row states it.** The same as
@@ -58,24 +59,24 @@ bundle `Interface/DirectRoute.lean` defines. This is the direct route's
 counterpart of `certifiedRA`. -/
 theorem certifiedRA_direct {S : Spec type} {I : Issuance D.toMRDTSig}
     (h : DirectObligations D I) (sound : SpecSound D S) : CertifiedRA D S I :=
-  certifiedRA_of_laws h.laws h.payload h.join sound
+  certifiedRA_of_laws h.laws h.rc_non_comm h.cond_comm h.join sound
 
 /-! ## With the execution-scoped premise -/
 
 /-- **The adequacy theorem, scoped form.** Identical to `certifiedRA` except
 that the sequential premise may pick its own witness. -/
-theorem certifiedRA_scoped_of_laws (laws : Laws D) (payload : PayloadDetermined D)
-    {S : Spec type} {I : Issuance D.toMRDTSig}
+theorem certifiedRA_scoped_of_laws (laws : Laws D) (rc_non_comm : UniformRcNonComm D)
+    (cond_comm : UniformCondComm D) {S : Spec type} {I : Issuance D.toMRDTSig}
     (join : ∀ C : Configuration D.toMRDTSig,
       MintHonest D.toMRDTSig I.CanIssue C → Interface.JoinAtConfig D C)
     (history : HistorySound D S I) : CertifiedRA D S I :=
-  certifiedRA_of_join (laws.toRestricted payload) join history
+  certifiedRA_of_join (laws.toRestricted rc_non_comm cond_comm) join history
 
 /-- The all-commuting specialisation of the scoped theorem. -/
 theorem certifiedRA_scoped (h : Obligations D) {S : Spec type}
     {I : Issuance D.toMRDTSig} (history : HistorySound D S I) :
     CertifiedRA D S I :=
-  certifiedRA_scoped_of_laws (Metatheory.laws h) (Metatheory.payloadDetermined h)
+  certifiedRA_scoped_of_laws h.laws h.rc_non_comm h.cond_comm
     (fun C _ => Interface.joinConfig_of_join (Metatheory.joinLemma h) C) history
 
 /-! ## Relating the two premises

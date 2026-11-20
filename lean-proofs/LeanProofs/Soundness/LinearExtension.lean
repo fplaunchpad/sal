@@ -25,14 +25,16 @@ open LeanProofs.Interface
 
 variable {type : MRDTType} {D : Impl type}
 
-/-- `lo^C_E` has no edges when every pair of events commutes and `rc` is
-empty: the non-commuting disjunct fails by `all_commute`, the `rc` disjunct
-by `rc_either`. Clause 1 is then satisfied by any enumeration. -/
-theorem paperOrder_false (h : Obligations D) (C : Configuration D.toMRDTSig)
+/-- `lo^C_E` has no edges when every pair of events commutes. The
+non-commuting disjunct fails by `hcomm`; so does the `rc` disjunct, because
+RC-NON-COMM read right to left turns an `rc` edge into a non-commuting
+pair. Clause 1 is then satisfied by any enumeration. -/
+theorem paperOrder_false (h : Obligations D)
+    (hcomm : ∀ e₁ e₂ : D.Event, D.Commutes e₁ e₂) (C : Configuration D.toMRDTSig)
     (E : Set D.Event) (a b : D.Event) :
     ¬ paperOrder (policy D) C.replayContext E a b := by
   rintro (⟨-, hnc⟩ | ⟨-, -, hb, -⟩)
-  · exact hnc (h.all_commute a b)
-  · exact OrderResult.noConfusion ((h.rc_either a.op b.op).symm.trans hb)
+  · exact hnc (hcomm a b)
+  · exact (h.rc_non_comm a b).mpr (Or.inl hb) (hcomm a b)
 
 end LeanProofs.Soundness

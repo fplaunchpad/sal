@@ -86,7 +86,7 @@ theorem not_commutes_reset_winning (e₁ e₂ : D.Event)
   simp at h
 
 /-- **RC-NON-COMM**. -/
-theorem noncomm_iff (e₁ e₂ : D.Event) :
+theorem rc_non_comm (e₁ e₂ : D.Event) :
     ¬ D.Commutes e₁ e₂ ↔
       D.EventRcBefore e₁ e₂
         ∨ D.EventRcBefore e₂ e₁ := by
@@ -153,7 +153,7 @@ theorem cond_comm (S : D.Sigma)
           (D.do_ (D.do_ S e) e') pi) e'' := by
   obtain ⟨he, he'⟩ := (eventRcBefore_iff e e').mp hrc
   have habs : e''.op = AppOp.reset := by
-    rcases (noncomm_iff e' e'').mp hnc with h | h
+    rcases (rc_non_comm e' e'').mp hnc with h | h
     · exact absurd (((eventRcBefore_iff _ _).mp h).1.symm.trans he') (by simp)
     · exact ((eventRcBefore_iff _ _).mp h).1
   have hbase : EqCounters (step (step S e') e) (step (step S e) e') := by
@@ -168,12 +168,14 @@ still runs on. -/
 theorem payloadDetermined : PayloadDetermined D := by
   intro e₁ e₂ f₁ f₂ h₁ h₂
   have key : ¬ D.Commutes e₁ e₂ ↔ ¬ D.Commutes f₁ f₂ := by
-    rw [noncomm_iff, noncomm_iff, Impl.EventRcBefore, Impl.EventRcBefore,
+    rw [rc_non_comm, rc_non_comm, Impl.EventRcBefore, Impl.EventRcBefore,
       Impl.EventRcBefore, Impl.EventRcBefore, h₁, h₂]
   exact not_iff_not.mp key
 
 /-- `Laws(D_type)`: RC-NON-COMM over concurrent events, NO-RC-CHAIN and
 COND-COMM. -/
-theorem laws : Laws D := ⟨fun e₁ e₂ _ _ => noncomm_iff e₁ e₂, no_rc_chain, cond_comm⟩
+theorem laws : Laws D := ⟨rcNonComm_of_exact no_rc_chain (fun e₁ e₂ _ _ => rc_non_comm e₁ e₂),
+  no_rc_chain,
+  fun S e e' e'' pi _ _ => cond_comm S e e' e'' pi⟩
 
 end LeanProofs.Implementations.EnableWinsFlag

@@ -20,6 +20,5 @@ theorem raLinearizable :
     Soundness.CertifiedRA (D A) (historySpec A) (issuance A) :=
   Soundness.certifiedRA obligations specSound
 
-#print axioms raLinearizable
 
 end LeanProofs.Implementations.GrowOnlySet

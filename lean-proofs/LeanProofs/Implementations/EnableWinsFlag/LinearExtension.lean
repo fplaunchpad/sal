@@ -462,7 +462,7 @@ theorem joinLemma : Interface.JoinConfig D := by
   have hsubU : ∀ a ∈ E₁ ∪ E₂, a ∈ C.replayContext.events :=
     fun a ha => ha.elim (hsub₁ a) (hsub₂ a)
   obtain ⟨sU, hsU⟩ := isCanonicalState_exists_of_replayLaws
-    (Metatheory.replayLaws laws payloadDetermined)
+    (Metatheory.replayLaws laws rc_non_comm cond_comm)
     htr hir
     (listPermOf_union (D := D.toMRDTSig.toUpdateSig) hp₁ hp₂) hsubU
   obtain ⟨piU, hpU, hrU, hfU⟩ := id hsU
@@ -588,6 +588,6 @@ def issuance : Issuance D.toMRDTSig where
 /-- **What this row supplies for the direct route**: `Laws(D_type)` proved
 by hand, and the join lemma. -/
 theorem directObligations : DirectObligations D issuance :=
-  ⟨laws, payloadDetermined, fun C _ => joinLemma C⟩
+  ⟨laws, payloadDetermined, cond_comm, rc_non_comm, fun C _ => joinLemma C⟩
 
 end LeanProofs.Implementations.EnableWinsFlag

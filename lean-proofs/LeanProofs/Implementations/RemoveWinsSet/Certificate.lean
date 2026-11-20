@@ -22,6 +22,5 @@ theorem raLinearizable :
   Soundness.certifiedRA_direct directObligations specSound
 
 #print axioms joinAt
-#print axioms raLinearizable
 
 end LeanProofs.Implementations.RemoveWinsSet

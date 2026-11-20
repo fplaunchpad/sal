@@ -5,27 +5,34 @@ import Artifact.MRDTs.Framework.MergeLaws
 # The VC route: the canonical join laws
 
 What a row takes on when it discharges the five verification conditions of
-Section 5 rather than proving the join lemma itself. Four rows of Table 1
-take this route, all of them with `rc` empty.
+Section 5 rather than proving the join lemma itself.
 
-## One place where these differ from the paper, deliberately
+## These are the paper's conditions, as the paper states them
 
-The paper states VC2 to VC5 over canonical states, under `Admissible` and
-`Maximal` premises. `CanonicalJoinLaws` below states the arbitrary-state
-strengthenings, which is what the all-commuting family of implementations
-actually satisfies and what makes its obligations closed by arithmetic alone.
+VC1 is over arbitrary states, as `proof_strategy.tex` has it, and the paper
+notes it is the only one that is. VC2 to VC5 carry the paper's premises:
+`Admissible`, `Maximal`, and the equalities pinning each state to the
+canonical state of a particular event set. Nothing here is a universal
+strengthening of a canonical statement.
 
-* VC1 MERGE-COMM is already over arbitrary states in the paper, so it is
-  reproduced verbatim.
-* VC2 MERGE-INIT, VC3 LOCAL-REDISTRIBUTE and VC5 REDISTRIBUTE have the same
-  equations with `can(E)` replaced by an arbitrary state and `e(m)` by an
-  arbitrary state.
-* VC4 CAUSAL-DELTA is **not** an obligation here. For an implementation whose
-  events all commute the metatheory derives it, from `commuting_peel` below
-  together with `all_commute`.
+The paper's notation maps onto the fields as follows.
 
-The arbitrary-state form is a real restriction and not every row satisfies
-it. A row outside this family takes `Interface/DirectRoute.lean` instead.
+* `can_C(E) = s` is `IsCanOn D C E s`.
+* `Admissible_C(E)` is the pair of conditions that `E` lies in `C.events`
+  and is weakly closed under `vis` at non-commuting pairs, which is
+  `SupportedOn` and `WeaklyClosed`.
+* `Maximal^C_{E}(e)` is `MaximalOn D C E e`: no other event of `E` is above
+  `e` in `lo^C_E`.
+* `downset C e \ {e}` is the paper's `(down e) \ {e}`, and `e(m)` is
+  `D.do_ m e`.
+
+## What is not here
+
+`commuting_peel` used to be a sixth field. It is not one of the paper's
+conditions, so it has been moved out: it is now a hypothesis of
+`Metatheory.causalDelta_of_commuting`, the helper an all-commuting row uses
+to discharge VC4 cheaply. The obligation set in this file is exactly VC1 to
+VC5.
 -/
 
 namespace LeanProofs.Interface
@@ -34,41 +41,118 @@ open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
 
 variable {type : MRDTType} (D : Impl type)
 
-/-- The *canonical join laws*, VC1 to VC5, in their arbitrary-state form.
-See the header for the two respects in which this differs from the paper. -/
+/-! ## The paper's side conditions, named -/
+
+/-- A replay context of `D`, which is what the paper's `C` contributes to
+the verification conditions. -/
+abbrev Ctx (D : Impl type) : Type :=
+  ReplayContext D.toMRDTSig.toUpdateSig
+
+/-- `can_C(E) = s`. -/
+abbrev IsCanOn (C : Ctx D) (E : Set D.Event) (s : D.Sigma) : Prop :=
+  @IsCanonicalState D.toMRDTSig.toUpdateSig (rcOrder D) C E s
+
+/-- Half of `Admissible_C(E)`: every event of `E` is observed in `C`. -/
+abbrev SupportedOn (C : Ctx D) (E : Set D.Event) : Prop :=
+  ∀ a ∈ E, a ∈ C.events
+
+/-- The other half of `Admissible_C(E)`: `E` is closed under `vis`
+predecessors that do not commute. This is the paper's `WeakClosed_C(E)`. -/
+abbrev WeaklyClosed (C : Ctx D) (E : Set D.Event) : Prop :=
+  ∀ a b, C.vis a b → ¬ D.Commutes a b → b ∈ E → a ∈ E
+
+/-- `Maximal^C_E(e)`: no other event of `E` sits above `e` in `lo^C_E`. -/
+abbrev MaximalOn (C : Ctx D) (E : Set D.Event) (e : D.Event) : Prop :=
+  ∀ x ∈ E, x ≠ e → ¬ @loOn D.toMRDTSig.toUpdateSig (rcOrder D) C E e x
+
+/-- `vis` is a strict partial order, which the paper assumes of every
+configuration. -/
+abbrev VisStrict (C : Ctx D) : Prop :=
+  (∀ {a b c : D.Event}, C.vis a b → C.vis b c → C.vis a c) ∧
+    (∀ a : D.Event, ¬ C.vis a a)
+
+/-- The union of two weakly closed sets is weakly closed. -/
+theorem weaklyClosed_union {D : Impl type} {C : Ctx D} {E₁ E₂ : Set D.Event}
+    (c₁ : WeaklyClosed D C E₁) (c₂ : WeaklyClosed D C E₂) :
+    WeaklyClosed D C (E₁ ∪ E₂) := by
+  rintro a b hv hnc (hb | hb)
+  · exact Or.inl (c₁ a b hv hnc hb)
+  · exact Or.inr (c₂ a b hv hnc hb)
+
+/-! ## VC1 to VC5 -/
+
+/-- The *canonical join laws*, VC1 to VC5 of Section 5, in the paper's own
+form. -/
 structure CanonicalJoinLaws : Prop where
-  /-- **VC1** MERGE-COMM, verbatim:
+  /-- **VC1** MERGE-COMM, over arbitrary states as the paper states it:
   `merge(l,a,b) = merge(l,b,a)`. -/
   vc1_merge_comm : ∀ l a b : D.Sigma, D.merge l a b = D.merge l b a
-  /-- **VC2** MERGE-INIT, with `can(E)` generalised to any state:
-  `merge(sigma0, sigma0, s) = s`. -/
-  vc2_merge_init : ∀ s : D.Sigma, D.merge D.sigma0 D.sigma0 s = s
-  /-- **VC3** LOCAL-REDISTRIBUTE, with `e(m)` generalised to any state `c`:
-  `merge(l, merge(m,x,c), y) = merge(m, merge(l,x,y), c)`. -/
-  vc3_local_redistribute : ∀ l m x c y : D.Sigma,
-    D.merge l (D.merge m x c) y = D.merge m (D.merge l x y) c
-  /-- **VC5** REDISTRIBUTE, with `e(m)` generalised to any state `c`:
-  `merge(merge(m,x0,c), merge(m,x1,c), merge(m,x2,c)) = merge(m, merge(x0,x1,x2), c)`. -/
-  vc5_redistribute : ∀ m x₀ x₁ x₂ c : D.Sigma,
-    D.merge (D.merge m x₀ c) (D.merge m x₁ c) (D.merge m x₂ c)
-      = D.merge m (D.merge x₀ x₁ x₂) c
-  /-- Auxiliary, **not** a paper VC. An event that commutes with both
-  replayed branches can be pulled outside the merge. The metatheory turns
-  this into **VC4** CAUSAL-DELTA when every pair of events commutes. -/
-  commuting_peel : ∀ (a : D.Sigma) (e : D.Event) (pi₀ pi₂ : List D.Event),
-    (∀ x ∈ pi₀, D.Commutes e x) → (∀ x ∈ pi₂, D.Commutes e x) →
-    D.merge (D.applyList D.sigma0 pi₀) (D.do_ a e) (D.applyList D.sigma0 pi₂)
-      = D.do_ (D.merge (D.applyList D.sigma0 pi₀) a (D.applyList D.sigma0 pi₂)) e
+  /-- **VC2** MERGE-INIT: `Admissible_C(E)` implies
+  `merge(sigma0, sigma0, can(E)) = can(E)`. -/
+  vc2_merge_init : ∀ (C : Ctx D) (E : Set D.Event) (s : D.Sigma),
+    SupportedOn D C E → IsCanOn D C E s →
+    D.merge D.sigma0 D.sigma0 s = s
+  /-- **VC3** LOCAL-REDISTRIBUTE, for a maximal `e` in `E1` only:
+  `merge(l, merge(m,x,e(m)), y) = merge(m, merge(l,x,y), e(m))`
+  with `l = can(E1 n E2)`, `m = can(down(e) \ {e})`, `x = can(E1 \ {e})`
+  and `y = can(E2)`. -/
+  vc3_local_redistribute : ∀ (C : Ctx D) (E₁ E₂ : Set D.Event)
+    (l m x y : D.Sigma) (e : D.Event),
+    VisStrict D C →
+    SupportedOn D C E₁ → SupportedOn D C E₂ →
+    WeaklyClosed D C E₁ → WeaklyClosed D C E₂ →
+    e ∈ E₁ → e ∉ E₂ → MaximalOn D C (E₁ ∪ E₂) e →
+    IsCanOn D C (E₁ ∩ E₂) l →
+    IsCanOn D C (downset C e \ {e}) m →
+    IsCanOn D C (E₁ \ {e}) x →
+    IsCanOn D C E₂ y →
+    D.merge l (D.merge m x (D.do_ m e)) y
+      = D.merge m (D.merge l x y) (D.do_ m e)
+  /-- **VC4** CAUSAL-DELTA, for a maximal `e` of `E`:
+  `merge(B, A, e(B)) = e(A)` with `A = can(E \ {e})` and
+  `B = can(down(e) \ {e})`.
 
-/-- The complete obligation bundle for implementations whose events all
-commute. `rc` is then empty, so `Laws` is discharged by the metatheory
-rather than by the implementation. -/
+  `Metatheory.causalDelta_of_commuting` discharges this for a row whose
+  events all commute. -/
+  vc4_causal_delta : @CausalDeltaLaw D.toMRDTSig (rcOrder D)
+  /-- **VC5** REDISTRIBUTE, for a maximal `e` in both branches:
+  `merge(merge(m,x0,e(m)), merge(m,x1,e(m)), merge(m,x2,e(m)))
+   = merge(m, merge(x0,x1,x2), e(m))`
+  with `m = can(down(e) \ {e})`, `x0 = can((E1 n E2) \ {e})`,
+  `x1 = can(E1 \ {e})` and `x2 = can(E2 \ {e})`. -/
+  vc5_redistribute : ∀ (C : Ctx D) (E₁ E₂ : Set D.Event)
+    (x₀ x₁ x₂ m : D.Sigma) (e : D.Event),
+    VisStrict D C →
+    SupportedOn D C E₁ → SupportedOn D C E₂ →
+    WeaklyClosed D C E₁ → WeaklyClosed D C E₂ →
+    e ∈ E₁ → e ∈ E₂ → MaximalOn D C (E₁ ∪ E₂) e →
+    IsCanOn D C ((E₁ ∩ E₂) \ {e}) x₀ →
+    IsCanOn D C (downset C e \ {e}) m →
+    IsCanOn D C (E₁ \ {e}) x₁ →
+    IsCanOn D C (E₂ \ {e}) x₂ →
+    D.merge (D.merge m x₀ (D.do_ m e)) (D.merge m x₁ (D.do_ m e))
+        (D.merge m x₂ (D.do_ m e))
+      = D.merge m (D.merge x₀ x₁ x₂) (D.do_ m e)
+
+/-- **The obligation bundle for the VC route**, for any implementation.
+
+Nothing here asks the events to commute. A row that discharges `Laws` and
+the five conditions of Section 5 takes this route, whether its operations
+commute or not: the OR-set does, and so does the counter.
+
+`rc_non_comm` and `cond_comm` are the unguarded readings that
+`Laws.toRestricted` needs. `Laws` states the paper's guarded forms, which
+say nothing about a pair one replica issued, so they are separate fields
+rather than projections. A commuting row proves them in two lines; a
+non-commuting row proves them along with the rest of its laws. -/
 structure Obligations : Prop where
-  /-- Every pair of events commutes: `forall e1 e2. e1 <-> e2`. -/
-  all_commute : ∀ e₁ e₂ : D.Event, D.Commutes e₁ e₂
-  /-- `rc` is empty, as RC-NON-COMM then requires. -/
-  rc_either : ∀ o₁ o₂ : type.OType, D.RcEither o₁ o₂
-  /-- VC1, VC2, VC3, VC5 and the auxiliary peel law. -/
+  /-- `Laws(D_type)`: RC-NON-COMM, NO-RC-CHAIN and COND-COMM. -/
+  laws : Laws D
+  /-- RC-NON-COMM without the concurrency guard. -/
+  rc_non_comm : UniformRcNonComm D
+  /-- COND-COMM without the concurrency guard. -/
+  cond_comm : UniformCondComm D
+  /-- VC1 to VC5 of Section 5. -/
   joinLaws : CanonicalJoinLaws D
 
 end LeanProofs.Interface

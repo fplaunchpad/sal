@@ -4,8 +4,8 @@ import LeanProofs.Soundness.LinearExtension
 /-!
 # The flat grow-only map: clause 1
 
-Issuance, and the join lemma obtained from the obligations. `fold_eq` is the
-replay lemma the conformance file consumes.
+The join lemma obtained from the obligations, and issuance. Nothing here
+mentions `Spec`.
 -/
 
 namespace LeanProofs.Implementations.FlatGrowOnlyMap
@@ -15,21 +15,15 @@ open LeanProofs.Interface
 
 variable {A : Type} [DecidableEq A]
 
-/-- Replaying events into the Boolean carrier agrees pointwise with
-replaying their payloads into a finite set. -/
-theorem fold_eq (pi : List (D A).Event) (S : (D A).Sigma) (F : Finset A)
-    (h : ∀ x, S x = decide (x ∈ F)) :
-    (D A).applyList S pi
-      = fun x => decide (x ∈ (pi.map Op.op).foldl (fun F o => insert o F) F) := by
-  induction pi generalizing S F with
-  | nil => funext x; exact h x
-  | cons e rest ih =>
-      refine ih _ _ ?_
-      intro x
-      change (S x || decide (x = e.op)) = decide (x ∈ insert e.op F)
-      rw [h x]
-      by_cases hx : x = e.op <;> by_cases hF : x ∈ F <;>
-        simp [hx, hF, Finset.mem_insert]
+/-- **The join lemma**: merging canonical states of two branches gives the
+canonical state of the union of their event sets.
+
+It is `Metatheory.joinLemma` applied to this row's `obligations`, which is
+how every row on this route obtains it. The certificate does not take it as
+an argument, since `Soundness.certifiedRA` rebuilds it from the same bundle;
+it is named here as the statement in its own right. -/
+theorem joinLemma : @Join (D A).toMRDTSig (Interface.rcOrder (D A)) :=
+  Metatheory.joinLemma obligations
 
 variable (A)
 

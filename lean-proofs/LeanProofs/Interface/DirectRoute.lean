@@ -31,11 +31,6 @@ open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
 
 variable {type : MRDTType} {D : Impl type}
 
-/-- The replay order the argument runs at: `rc`, lifted from operations to
-the events that carry them. `lo^C_E` is built from this together with `vis`. -/
-noncomputable abbrev rcOrder (D : Impl type) : EventOrder D.toMRDTSig.toUpdateSig :=
-  (policy D).lift
-
 /-! ## The configuration-indexed statements
 
 Section 5 indexes every obligation by a configuration. `can_C(E)` is the
@@ -86,6 +81,13 @@ structure DirectObligations (D : Impl type) (I : Issuance D.toMRDTSig) : Prop wh
   /-- Non-commutation is a function of the payloads, which lifts the guarded
   RC-NON-COMM to the uniform contract `Soundness` runs on. -/
   payload : PayloadDetermined D
+  /-- COND-COMM without the concurrency guard. `Laws.cond_comm` is the
+  paper's statement and exempts a same-replica pair; the vendored contract
+  `Soundness` runs on does not, and every direct-route row proves the
+  unguarded equation anyway. -/
+  cond_comm : UniformCondComm D
+  /-- RC-NON-COMM without the concurrency guard, for the same reason. -/
+  rc_non_comm : UniformRcNonComm D
   /-- **Lemma (Join)**, proved by the row at every mint-honest configuration. -/
   join : ∀ C : Configuration D.toMRDTSig,
     MintHonest D.toMRDTSig I.CanIssue C → JoinAtConfig D C

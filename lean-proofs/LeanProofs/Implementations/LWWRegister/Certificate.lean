@@ -18,5 +18,4 @@ theorem raLinearizable :
     Soundness.CertifiedRA D historySpec issuance :=
   Soundness.certifiedRA_scoped obligations historySound
 
-#print axioms raLinearizable
 end LeanProofs.Implementations.LWWRegister

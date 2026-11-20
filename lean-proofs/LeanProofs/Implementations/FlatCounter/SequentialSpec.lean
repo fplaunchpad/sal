@@ -42,4 +42,23 @@ def abstraction : Soundness.Abstraction D specMachine where
 theorem specSound : Soundness.SpecSound D historySpec :=
   abstraction.specSound
 
+/-! ## `Laws(D_type, Spec)`: the fourth law
+
+SPEC-NON-COMM is the one law of Section 4 that mentions `Spec`, so it is
+proved here rather than in `Laws.lean`. The specification adds a delta, so its two updates commute for the same
+reason the implementation's do. -/
+
+/-- Every pair of operations commutes in `Spec`. -/
+theorem spec_commutes (o₁ o₂ : type.OType) :
+    Interface.spec_commutes historySpec o₁ o₂ :=
+  specMachine.language_commutes o₁ o₂ (fun s => by
+    change Int at s
+    show s + delta o₁ + delta o₂ = s + delta o₂ + delta o₁
+    omega)
+
+/-- **SPEC-NON-COMM**: no implementation commutation erases a specification
+conflict, because `Spec` has no conflict to erase. -/
+theorem spec_non_comm : Interface.spec_non_comm D historySpec :=
+  Interface.spec_non_comm_of_spec_commutes spec_commutes
+
 end LeanProofs.Implementations.FlatCounter

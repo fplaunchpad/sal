@@ -1,6 +1,7 @@
 import LeanProofs.Metatheory.Adequacy
 import Artifact.MRDTs.Paper1.RALinearizability
 import Artifact.MRDTs.Paper1.EventBridge
+import LeanProofs.Interface.SpecLaws
 
 /-!
 # Definition 4, and the vocabulary its two clauses share
