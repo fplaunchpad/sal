@@ -19,10 +19,10 @@ always causally ordered. Everything still in scope behaves:
 | `remove x` / `remove y`  | yes      | no        |
 
 `Laws` therefore holds. It is **not** enough to reach `Soundness/`, which
-also wants `PayloadDetermined`, and that is false here: the same two `add x`
-operations commute across replicas and fail to commute within one. The
-row's certificate stays in `Certificate.lean`, which needs no replay
-contract at all.
+runs on the vendored uniform contract and so wants `UniformRcNonComm`, the
+same equivalence with the guard removed. That is false here, for the reason
+the guard exists. The row's certificate stays in `Certificate.lean`, which
+needs no replay contract at all.
 -/
 
 namespace LeanProofs.Implementations.EfficientORSet
@@ -329,11 +329,12 @@ theorem cond_comm (sigma : (I α).Sigma) (e e' e'' : (I α).Event)
 /-- **`Laws(D_type)` for the efficient OR-set.**
 
 The row that motivated the guard satisfies the guarded law. What it still
-cannot supply is `PayloadDetermined`: two `add x` operations commute across
-replicas and fail to commute within one, so commutation is not a function of
-the payloads. `Soundness/` needs that to reach the vendored uniform
-contract, which is why the certificate in `Certificate.lean` takes the
-representation route instead and needs no replay contract at all. -/
+cannot supply is `UniformRcNonComm`, the unguarded reading: two `add x`
+events from one replica do not commute, they carry one operation, and the
+only edge available is `add x --rc--> add x`, which NO-RC-CHAIN refutes.
+`Soundness/` needs that reading to reach the vendored uniform contract,
+which is why the certificate in `Certificate.lean` takes the representation
+route instead and needs no replay contract at all. -/
 theorem laws : Laws (I α) :=
   ⟨rcNonComm_of_exact no_rc_chain rc_non_comm, no_rc_chain,
   fun sigma e e' e'' pi _ _ => cond_comm sigma e e' e'' pi⟩

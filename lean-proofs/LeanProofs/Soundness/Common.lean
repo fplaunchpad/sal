@@ -55,4 +55,34 @@ abbrev CertifiedRA (D : Impl type) (S : Spec type)
     (I : Issuance D.toMRDTSig) : Prop :=
   CertifiedRAV D.toMRDTSig (policy D) S I
 
+/-! ## The join lemma at a configuration
+
+Section 5 indexes every obligation by a configuration. `can_C(E)` is the
+canonical state of `E` at `C`, and the join lemma reads "let `C` be a
+configuration, then for all weakly closed `E1, E2` of `E_C`". The two
+definitions below are that statement, carrying `C` as the paper does, and
+they are what the adequacy theorems of `RALinearizability.lean` consume.
+
+A configuration contributes its visibility relation and the events it
+observes, and nothing else. That pair is `C.replayContext`, which
+`Interface.Ctx` names and which every row's own conditions are stated at.
+Weak closure is the hypothesis `JoinAt` already carries, `vis`-predecessors
+that do not commute, and is the paper's `WeakClosed_C(E)`. -/
+
+/-- **Lemma (Join)** at one configuration. For weakly closed `E1, E2` of
+`E_C`, merging `can_C(E1 n E2)`, `can_C(E1)` and `can_C(E2)` gives
+`can_C(E1 u E2)`. -/
+abbrev JoinAtConfig (D : Impl type) (C : Configuration D.toMRDTSig) : Prop :=
+  @JoinAt D.toMRDTSig (Interface.rcOrder D) C.replayContext
+
+/-- **Lemma (Join)**: the obligation at every configuration. -/
+abbrev JoinConfig (D : Impl type) : Prop :=
+  ∀ C : Configuration D.toMRDTSig, JoinAtConfig D C
+
+/-- The vendored all-context join supplies the paper's statement. The
+converse is not available. -/
+theorem joinConfig_of_join (h : @Join D.toMRDTSig (Interface.rcOrder D)) :
+    JoinConfig D :=
+  fun C => h C.replayContext
+
 end LeanProofs.Soundness

@@ -9,8 +9,11 @@ The same shape of argument as the OR-set, now indexed by keys rather than by
 elements. Two operations interfere only when they name the same key, and the
 only interfering pair is `del k` against `set k v`.
 
-As for the OR-set, the arbitrary-state canonical join laws fail on this
-merge, so the join lemma is proved directly in `LinearExtension.lean`.
+After the laws come this row's canonical states and then VC1 to VC5. As for
+the OR-set, the arbitrary-state forms of the conditions fail on this merge,
+so they are proved as Section 5 states them, premises and all, from the
+closed description of `can(E)` that `canonical_mem_iff` and `live_join`
+provide.
 -/
 
 namespace LeanProofs.Implementations.SetWinsMap
@@ -126,16 +129,6 @@ theorem cond_comm (S : (D K V).Sigma) (e e' e'' : (D K V).Event)
   by_cases hp : p.1.1 = k
   · simp [hp]
   · exact and_congr (hfold p hp) Iff.rfl
-
-/-- Non-commutation here is a function of the payloads alone, which is what
-lets the guarded RC-NON-COMM be lifted to the uniform contract `Soundness`
-still runs on. -/
-theorem payloadDetermined : PayloadDetermined (D K V) := by
-  intro e₁ e₂ f₁ f₂ h₁ h₂
-  have key : ¬ (D K V).Commutes e₁ e₂ ↔ ¬ (D K V).Commutes f₁ f₂ := by
-    rw [rc_non_comm, rc_non_comm, Impl.EventRcBefore, Impl.EventRcBefore,
-      Impl.EventRcBefore, Impl.EventRcBefore, h₁, h₂]
-  exact not_iff_not.mp key
 
 /-- `Laws(D_type)`: RC-NON-COMM over concurrent events, NO-RC-CHAIN and
 COND-COMM. -/

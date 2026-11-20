@@ -2,10 +2,11 @@ import LeanProofs.Interface.Laws
 import Artifact.MRDTs.Framework.MergeLaws
 
 /-!
-# The VC route: the canonical join laws
+# The canonical join laws
 
-What a row takes on when it discharges the five verification conditions of
-Section 5 rather than proving the join lemma itself.
+The five verification conditions of Section 5, which every row discharges.
+There is no other way to a join lemma here: nothing supplies one of its own
+to `Soundness/`.
 
 ## These are the paper's conditions, as the paper states them
 
@@ -154,5 +155,105 @@ structure Obligations : Prop where
   cond_comm : UniformCondComm D
   /-- VC1 to VC5 of Section 5. -/
   joinLaws : CanonicalJoinLaws D
+
+/-! ## The same conditions under a side condition on the context
+
+One row of Table 1 carries an issuance guard, and its join lemma is false
+without it. The remove-wins set reserves timestamp `0` for the tags its
+initial state carries, so a minted `remove` at timestamp `0` would be
+indistinguishable from one of those. `G(e, s) <=> 0 < time(e)` excludes it.
+
+A guard on events becomes a condition on contexts: every event the context
+observes was minted honestly. The conditions below are VC1 to VC5 again,
+each with that condition in front, and `Good = fun _ => True` recovers the
+unguarded bundle above. VC1 is over arbitrary states and needs no context,
+so it is unchanged.
+
+A row that needs no guard takes `CanonicalJoinLaws` and `Obligations`, and
+`toOn` below lifts those to this form for free. -/
+
+/-- **VC1 to VC5 at the contexts `Good` admits.** Identical to
+`CanonicalJoinLaws` except that every condition mentioning a context asks it
+of `Good` contexts only. -/
+structure CanonicalJoinLawsOn (Good : Ctx D → Prop) : Prop where
+  /-- **VC1** MERGE-COMM. No context appears, so no side condition does. -/
+  vc1_merge_comm : ∀ l a b : D.Sigma, D.merge l a b = D.merge l b a
+  /-- **VC2** MERGE-INIT. -/
+  vc2_merge_init : ∀ (C : Ctx D) (E : Set D.Event) (s : D.Sigma),
+    Good C → SupportedOn D C E → IsCanOn D C E s →
+    D.merge D.sigma0 D.sigma0 s = s
+  /-- **VC3** LOCAL-REDISTRIBUTE. -/
+  vc3_local_redistribute : ∀ (C : Ctx D) (E₁ E₂ : Set D.Event)
+    (l m x y : D.Sigma) (e : D.Event),
+    Good C → VisStrict D C →
+    SupportedOn D C E₁ → SupportedOn D C E₂ →
+    WeaklyClosed D C E₁ → WeaklyClosed D C E₂ →
+    e ∈ E₁ → e ∉ E₂ → MaximalOn D C (E₁ ∪ E₂) e →
+    IsCanOn D C (E₁ ∩ E₂) l →
+    IsCanOn D C (downset C e \ {e}) m →
+    IsCanOn D C (E₁ \ {e}) x →
+    IsCanOn D C E₂ y →
+    D.merge l (D.merge m x (D.do_ m e)) y
+      = D.merge m (D.merge l x y) (D.do_ m e)
+  /-- **VC4** CAUSAL-DELTA, written out rather than taken from the framework,
+  since the framework's `CausalDeltaLaw` admits every context. -/
+  vc4_causal_delta : ∀ (C : Ctx D) (U : Set D.Event) (A B : D.Sigma)
+    (e : D.Event),
+    Good C → VisStrict D C →
+    SupportedOn D C U → WeaklyClosed D C U →
+    e ∈ U → MaximalOn D C U e →
+    IsCanOn D C (U \ {e}) A →
+    IsCanOn D C (downset C e \ {e}) B →
+    D.merge B A (D.do_ B e) = D.do_ A e
+  /-- **VC5** REDISTRIBUTE. -/
+  vc5_redistribute : ∀ (C : Ctx D) (E₁ E₂ : Set D.Event)
+    (x₀ x₁ x₂ m : D.Sigma) (e : D.Event),
+    Good C → VisStrict D C →
+    SupportedOn D C E₁ → SupportedOn D C E₂ →
+    WeaklyClosed D C E₁ → WeaklyClosed D C E₂ →
+    e ∈ E₁ → e ∈ E₂ → MaximalOn D C (E₁ ∪ E₂) e →
+    IsCanOn D C ((E₁ ∩ E₂) \ {e}) x₀ →
+    IsCanOn D C (downset C e \ {e}) m →
+    IsCanOn D C (E₁ \ {e}) x₁ →
+    IsCanOn D C (E₂ \ {e}) x₂ →
+    D.merge (D.merge m x₀ (D.do_ m e)) (D.merge m x₁ (D.do_ m e))
+        (D.merge m x₂ (D.do_ m e))
+      = D.merge m (D.merge x₀ x₁ x₂) (D.do_ m e)
+
+/-- **The obligation bundle for the guarded VC route.** The same four fields
+as `Obligations`, with the conditions asked only of the contexts `Good`
+admits. -/
+structure ObligationsOn (Good : Ctx D → Prop) : Prop where
+  /-- `Laws(D_type)`: RC-NON-COMM, NO-RC-CHAIN and COND-COMM. -/
+  laws : Laws D
+  /-- RC-NON-COMM without the concurrency guard. -/
+  rc_non_comm : UniformRcNonComm D
+  /-- COND-COMM without the concurrency guard. -/
+  cond_comm : UniformCondComm D
+  /-- VC1 to VC5 of Section 5, at the `Good` contexts. -/
+  joinLaws : CanonicalJoinLawsOn D Good
+
+/-- A row that discharges the conditions at every context discharges them at
+the `Good` ones. VC4 is the only field that is rephrased, from the
+framework's `CausalDeltaLaw` to the spelled-out form above. -/
+theorem CanonicalJoinLaws.toOn {D : Impl type} (h : CanonicalJoinLaws D)
+    (Good : Ctx D → Prop) : CanonicalJoinLawsOn D Good where
+  vc1_merge_comm := h.vc1_merge_comm
+  vc2_merge_init := fun C E s _ hsup hcan => h.vc2_merge_init C E s hsup hcan
+  vc3_local_redistribute := fun C E₁ E₂ l m x y e _ hv h₁ h₂ hc₁ hc₂ he₁ he₂
+      hmax hl hm hx hy =>
+    h.vc3_local_redistribute C E₁ E₂ l m x y e hv h₁ h₂ hc₁ hc₂ he₁ he₂
+      hmax hl hm hx hy
+  vc4_causal_delta := fun C U A B e _ hv hsup hcl he hmax hA hB =>
+    h.vc4_causal_delta C U A B e hv.1 hv.2 hsup hcl he hmax hA hB
+  vc5_redistribute := fun C E₁ E₂ x₀ x₁ x₂ m e _ hv h₁ h₂ hc₁ hc₂ he₁ he₂
+      hmax hx₀ hm hx₁ hx₂ =>
+    h.vc5_redistribute C E₁ E₂ x₀ x₁ x₂ m e hv h₁ h₂ hc₁ hc₂ he₁ he₂
+      hmax hx₀ hm hx₁ hx₂
+
+/-- The same lifting for the whole bundle. -/
+theorem Obligations.toOn {D : Impl type} (h : Obligations D)
+    (Good : Ctx D → Prop) : ObligationsOn D Good :=
+  ⟨h.laws, h.rc_non_comm, h.cond_comm, h.joinLaws.toOn Good⟩
 
 end LeanProofs.Interface

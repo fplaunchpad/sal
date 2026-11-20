@@ -27,8 +27,8 @@ theorem all_commute (e₁ e₂ : (D A).Event) : (D A).Commutes e₁ e₂ := by
 
 /-! ## `Laws(D_type)`, the three conditions that constrain `rc`
 
-Proved here, not derived in the metatheory, and under the same names the
-direct-route rows use.
+Proved here, not derived in the metatheory, and under the same names every
+other row uses.
 
 `rc` is `Either` at every pair for this datatype, so `no_rc_edge` is
 immediate from the tuple and needs no lemma of its own. `all_commute` above

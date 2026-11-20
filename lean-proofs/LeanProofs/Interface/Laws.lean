@@ -4,18 +4,15 @@ import Artifact.MRDTs.Paper1.RestrictedReplay
 import Artifact.MRDTs.Paper1.GuardedReplay
 
 /-!
-# `Laws(D_type)`, common to both routes
+# `Laws(D_type)`, common to every row
 
 `Laws(D_type, Spec)` of Section 4 collects RC-NON-COMM, NO-RC-CHAIN,
 COND-COMM and SPEC-NON-COMM. Every one of them is stated over operations,
 `o1 --rc--> o2`, exactly as the displayed definitions are.
 
-Every row proves `Laws`, by one of two routes.
-
-* A **VC route** row discharges the canonical join laws of
-  `Interface/VCRoute.lean`, and the metatheory hands it `Laws` for free.
-* A **direct route** row proves `Laws` itself and supplies the join lemma,
-  as `Interface/DirectRoute.lean` asks.
+Every row proves `Laws` itself. The metatheory does not manufacture it: a
+row with an empty `rc` closes each condition in a line or two, and a row
+with a nonempty `rc` has real work to do.
 
 SPEC-NON-COMM is not a field below. It mentions `Spec`, which the laws of
 this file do not, and no proof downstream consumes it.
@@ -74,22 +71,6 @@ structure Laws : Prop where
     D.do_ (D.applyList (D.do_ (D.do_ sigma e') e) pi) e''
       = D.do_ (D.applyList (D.do_ (D.do_ sigma e) e') pi) e''
 
-/-- **Non-commutation is a function of the payloads alone.**
-
-`Laws.rc_non_comm` is guarded, as the paper's is, so on its own it says
-nothing about a same-replica pair. The vendored `Soundness` chain runs on
-`loOn` at a lifted operation policy and does need those pairs covered. This
-predicate is what closes the gap, and it is exactly what a row whose
-non-commutation is internal to one operation cannot supply.
-
-The efficient OR-set is that row: two `add x` events from one replica
-differ only in their timestamps and do not commute, while two from
-different replicas do. It is certified outside `Interface/` for this
-reason. -/
-def PayloadDetermined (D : Impl type) : Prop :=
-  ∀ e₁ e₂ f₁ f₂ : D.Event, e₁.op = f₁.op → e₂.op = f₂.op →
-    (D.Commutes e₁ e₂ ↔ D.Commutes f₁ f₂)
-
 /-- **The paper's RC-NON-COMM, from the plain equivalence plus NO-RC-CHAIN.**
 
 A row proves `not (e1 <-> e2) <-> rc`, with or without the concurrency
@@ -142,10 +123,9 @@ plus NO-RC-CHAIN.
 
 `Laws` alone does not give this. Its RC-NON-COMM and COND-COMM each exempt
 the pairs the paper exempts, and `RestrictedLaws` asks about those pairs too.
-`PayloadDetermined` used to close the RC-NON-COMM gap by moving a pair to
-fresh timestamps on distinct replicas, but it cannot move a pair onto
-distinct operations, and it says nothing about the state equation COND-COMM
-asserts. So both unguarded laws are taken as hypotheses. -/
+So both unguarded laws are taken as hypotheses, and a row that cannot supply
+them cannot be certified through `Soundness/` at all. The efficient OR-set is
+such a row. -/
 theorem Laws.toRestricted {D : Impl type} (h : Laws D)
     (hru : UniformRcNonComm D) (hcc : UniformCondComm D) :
     RestrictedLaws D.toMRDTSig.toUpdateSig (policy D) :=

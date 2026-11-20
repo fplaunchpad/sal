@@ -19,8 +19,6 @@ satisfies Definition 4 against `Spec`, at its own nonempty `rc` and under its
 issuance guard. -/
 theorem raLinearizable :
     Soundness.CertifiedRA (D A) (historySpec A) (issuance A) :=
-  Soundness.certifiedRA_direct directObligations specSound
-
-#print axioms joinAt
+  Soundness.certifiedRA_on obligations positive_of_mintHonest specSound
 
 end LeanProofs.Implementations.RemoveWinsSet
