@@ -1,5 +1,6 @@
 import LeanProofs.Implementations.SetWinsMap.Definition
-import LeanProofs.Interface.Laws
+import LeanProofs.Interface.VCRoute
+import LeanProofs.Soundness.LinearExtension
 
 /-!
 # The set-wins multimap: discharging `Laws(D_type)`
@@ -14,7 +15,8 @@ merge, so the join lemma is proved directly in `LinearExtension.lean`.
 
 namespace LeanProofs.Implementations.SetWinsMap
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs.Interface
 
 variable {K V : Type} [DecidableEq K] [DecidableEq V]
 
@@ -140,5 +142,563 @@ COND-COMM. -/
 theorem laws : Laws (D K V) := ⟨rcNonComm_of_exact no_rc_chain (fun e₁ e₂ _ _ => rc_non_comm e₁ e₂),
   no_rc_chain,
   fun S e e' e'' pi _ _ => cond_comm S e e' e'' pi⟩
+
+/-- The replay order of Section 4: `rc`, lifted to events. -/
+noncomputable local instance rcOrder :
+    EventOrder (D K V).toMRDTSig.toUpdateSig := Interface.rcOrder (D K V)
+
+@[simp] theorem replayBefore_iff (a b : (D K V).Event) :
+    (D K V).toMRDTSig.toUpdateSig.replayBefore a b
+      ↔ ∃ k v, a.op = AppOp.del k ∧ b.op = AppOp.set k v := by
+  refine Iff.trans ?_ (rcBefore_iff a.op b.op)
+  exact @OperationPolicy.lift_replayOrder_iff (D K V).toMRDTSig.toUpdateSig
+    (Interface.policy (D K V)) a b
+
+theorem noncomm_iff_replayBefore (a b : (D K V).Event) :
+    ¬ (D K V).toMRDTSig.toUpdateSig.commutes a b ↔
+      (D K V).toMRDTSig.toUpdateSig.replayBefore a b
+        ∨ (D K V).toMRDTSig.toUpdateSig.replayBefore b a := by
+  simpa only [replayBefore_iff] using
+    (rc_non_comm a b).trans (by simp only [eventRcBefore_iff])
+
+/-! ## Canonical states contain exactly the live bindings -/
+
+/-- `pi(sigma0)`, the state after replaying a list. -/
+abbrev Run (ops : List (D K V).Event) : St K V :=
+  applySeq (D K V).toMRDTSig.toUpdateSig (D K V).toMRDTSig.init ops
+
+/-- No event in the list drops key `k`. -/
+def NoDel (ops : List (D K V).Event) (k : K) : Prop :=
+  ∀ e ∈ ops, e.op ≠ AppOp.del k
+
+theorem binding_preserved {S : St K V} {p : (K × V) × Timestamp} (hs : p ∈ S)
+    (ops : List (D K V).Event) (hn : NoDel ops p.1.1) :
+    p ∈ (show St K V from applySeq (D K V).toMRDTSig.toUpdateSig S ops) := by
+  induction ops generalizing S with
+  | nil => exact hs
+  | cons e ops ih =>
+      have he := hn e (by simp)
+      have hn' : NoDel ops p.1.1 := fun a ha => hn a (by simp [ha])
+      apply ih (S := step S e) _ hn'
+      rcases e with ⟨t, r, o⟩
+      cases o with
+      | set k v => simp [step, Op.op, hs]
+      | del k =>
+          have hk : p.1.1 ≠ k := by intro h; exact he (by simp [Op.op, h])
+          simp [step, Op.op, hs, hk]
+
+/-- A binding is in a replayed state exactly when some `set` produced it and
+no later event in the list dropped its key. -/
+theorem mem_run_iff_suffix (ops : List (D K V).Event) (p : (K × V) × Timestamp) :
+    p ∈ Run ops ↔ ∃ pre a post, ops = pre ++ a :: post ∧
+      a.op = AppOp.set p.1.1 p.1.2 ∧ a.time = p.2 ∧ NoDel post p.1.1 := by
+  constructor
+  · induction ops using List.reverseRecOn with
+    | nil => simp [Run, applySeq, Impl.toMRDTSig]
+    | append_singleton ops e ih =>
+        intro hm
+        change p ∈ (show St K V from
+          applySeq (D K V).toMRDTSig.toUpdateSig (D K V).toMRDTSig.init (ops ++ [e])) at hm
+        rw [applySeq_append_single] at hm
+        change p ∈ step (Run ops) e at hm
+        rcases hop : e.op with ⟨k, v⟩ | ⟨k⟩
+        · simp only [step, hop, Finset.mem_insert] at hm
+          rcases hm with h | h
+          · have hx : ((k, v) : K × V) = p.1 := (congrArg Prod.fst h).symm
+            refine ⟨ops, e, [], by simp, ?_, (congrArg Prod.snd h).symm,
+              by simp [NoDel]⟩
+            rw [hop, ← hx]
+          · obtain ⟨pre, a, post, hsplit, ha, ht, hn⟩ := ih h
+            refine ⟨pre, a, post ++ [e], by simp [hsplit, List.append_assoc], ha, ht, ?_⟩
+            intro r hr
+            rcases List.mem_append.mp hr with hr | hr
+            · exact hn r hr
+            · have hre : r = e := List.mem_singleton.mp hr
+              subst r
+              simp [hop]
+        · simp only [step, hop, Finset.mem_filter] at hm
+          obtain ⟨pre, a, post, hsplit, ha, ht, hn⟩ := ih hm.1
+          refine ⟨pre, a, post ++ [e], by simp [hsplit, List.append_assoc], ha, ht, ?_⟩
+          intro r hr
+          rcases List.mem_append.mp hr with hr | hr
+          · exact hn r hr
+          · have hre : r = e := List.mem_singleton.mp hr
+            subst r
+            intro hdel
+            rw [hop] at hdel
+            injection hdel with hk
+            exact hm.2 hk.symm
+  · rintro ⟨pre, a, post, rfl, ha, ht, hn⟩
+    have hp : p ∈ step (Run pre) a := by
+      have heq : (p.1, a.time) = p := by rw [ht]
+      simp [step, ha, heq]
+    have hpost := binding_preserved hp post hn
+    simpa [Run, applySeq, List.foldl_append] using hpost
+
+/-- A relation edge cannot point from a suffix into a preceding position. -/
+theorem not_edge_to_prefix {R : (D K V).Event → (D K V).Event → Prop}
+    {pre post : List (D K V).Event} {a r : (D K V).Event}
+    (hr : respects (pre ++ a :: post) R) (hm : r ∈ pre) : ¬ R a r :=
+  (List.pairwise_append.mp hr).2.2 r hm a (by simp)
+
+theorem not_edge_from_suffix {R : (D K V).Event → (D K V).Event → Prop}
+    {pre post : List (D K V).Event} {a r : (D K V).Event}
+    (hr : respects (pre ++ a :: post) R) (hm : r ∈ post) : ¬ R r a :=
+  (List.pairwise_cons.mp (List.pairwise_append.mp hr).2.1).1 r hm
+
+/-- No `del` of key `k` in `E` sees the `set` event `a`. -/
+def Survives (C : Ctx (D K V))
+    (E : Set (D K V).Event) (a : (D K V).Event) (k : K) : Prop :=
+  ¬ ∃ r ∈ E, C.vis a r ∧ r.op = AppOp.del k
+
+/-- The binding `p` is live in `E`. -/
+def Live (C : Ctx (D K V))
+    (E : Set (D K V).Event) (p : (K × V) × Timestamp) : Prop :=
+  ∃ a ∈ E, a.op = AppOp.set p.1.1 p.1.2 ∧ a.time = p.2 ∧ Survives C E a p.1.1
+
+/-- **Fact 1.** Any replay of `E` that respects `lo^C_E` contains exactly the
+live bindings, so the state does not depend on which replay was taken. -/
+theorem mem_run_iff_live {C : Ctx (D K V)}
+    {E : Set (D K V).Event} {ops : List (D K V).Event}
+    (hp : listPermOf ops E) (hr : respects ops (loOn C E))
+    (p : (K × V) × Timestamp) : p ∈ Run ops ↔ Live C E p := by
+  rw [mem_run_iff_suffix]
+  constructor
+  · rintro ⟨pre, a, post, hs, ha, ht, hn⟩
+    subst ops
+    refine ⟨a, (hp.2 a).mp (by simp), ha, ht, ?_⟩
+    rintro ⟨r, hre, hv, hdel⟩
+    have hm : r ∈ pre ++ a :: post := (hp.2 r).mpr hre
+    rcases List.mem_append.mp hm with hm | hm
+    · apply not_edge_to_prefix hr hm
+      exact Or.inl ⟨hv, Or.inr ((replayBefore_iff r a).mpr ⟨p.1.1, p.1.2, hdel, ha⟩)⟩
+    · rcases List.mem_cons.mp hm with heq | hm
+      · rw [heq, ha] at hdel; cases hdel
+      · exact hn r hm hdel
+  · rintro ⟨a, hae, ha, ht, hn⟩
+    obtain ⟨pre, post, hs⟩ := List.append_of_mem ((hp.2 a).mpr hae)
+    refine ⟨pre, a, post, hs, ha, ht, ?_⟩
+    subst ops
+    intro r hm hdel
+    apply not_edge_from_suffix hr hm
+    have hre : r ∈ E := (hp.2 r).mp (by simp [hm])
+    have hrc : (D K V).toMRDTSig.toUpdateSig.replayBefore r a :=
+      (replayBefore_iff r a).mpr ⟨p.1.1, p.1.2, hdel, ha⟩
+    by_cases hva : C.vis r a
+    · exact Or.inl ⟨hva, Or.inl hrc⟩
+    · refine Or.inr ⟨hva, ?_, hrc, ?_⟩
+      · exact fun hv => hn ⟨r, hre, hv, hdel⟩
+      · rintro ⟨c, hce, hvc, hc⟩
+        rcases hc with hc | hc
+        · obtain ⟨j, -, ha', -⟩ := (replayBefore_iff a c).mp hc
+          rw [ha] at ha'; cases ha'
+        · obtain ⟨j, w, hc, ha'⟩ := (replayBefore_iff c a).mp hc
+          rw [ha] at ha'; injection ha' with hk hv
+          subst j
+          exact hn ⟨c, hce, hvc, hc⟩
+
+theorem canonical_mem_iff {C : Ctx (D K V)}
+    {E : Set (D K V).Event} {s : St K V}
+    (hs : Interface.IsCanOn (D K V) C E s) (p : (K × V) × Timestamp) :
+    p ∈ s ↔ Live C E p := by
+  obtain ⟨ops, hp, hr, hf⟩ := hs
+  rw [← hf]
+  exact mem_run_iff_live hp hr p
+
+/-- **Fact 2.** Timestamps identify events, so at most one event can create a
+given binding and liveness is a statement about that event alone. -/
+theorem live_iff_fixed_set {C : Ctx (D K V)}
+    {E : Set (D K V).Event} (hsub : E ⊆ C.events)
+    {p : (K × V) × Timestamp} {a : (D K V).Event}
+    (hac : a ∈ C.events) (ha : a.op = AppOp.set p.1.1 p.1.2) (ht : a.time = p.2) :
+    Live C E p ↔ a ∈ E ∧ Survives C E a p.1.1 := by
+  constructor
+  · rintro ⟨b, hb, -, hbt, hs⟩
+    have heq : b = a := C.ts_unique (hsub hb) hac (hbt.trans ht.symm)
+    subst b
+    exact ⟨hb, hs⟩
+  · rintro ⟨he, hs⟩
+    exact ⟨a, he, ha, ht, hs⟩
+
+/-- **Fact 3.** Liveness over the union is the Boolean that `merge` computes.
+The two `hk` steps are where causal closure is used. -/
+theorem live_join {C : Ctx (D K V)}
+    {E₁ E₂ : Set (D K V).Event}
+    (hsub₁ : E₁ ⊆ C.events) (hsub₂ : E₂ ⊆ C.events)
+    (hclosed₁ : ∀ a b, C.vis a b →
+      ¬ (D K V).toMRDTSig.toUpdateSig.commutes a b → b ∈ E₁ → a ∈ E₁)
+    (hclosed₂ : ∀ a b, C.vis a b →
+      ¬ (D K V).toMRDTSig.toUpdateSig.commutes a b → b ∈ E₂ → a ∈ E₂)
+    (p : (K × V) × Timestamp) :
+    Live C (E₁ ∪ E₂) p ↔
+      (Live C (E₁ ∩ E₂) p ∧ Live C E₁ p ∧ Live C E₂ p) ∨
+      (Live C E₁ p ∧ ¬ Live C (E₁ ∩ E₂) p) ∨
+      (Live C E₂ p ∧ ¬ Live C (E₁ ∩ E₂) p) := by
+  by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = AppOp.set p.1.1 p.1.2 ∧ a.time = p.2
+  · obtain ⟨a, hae, ha, ht⟩ := hex
+    have hac : a ∈ C.events := hae.elim (fun h => hsub₁ h) (fun h => hsub₂ h)
+    have huni : E₁ ∪ E₂ ⊆ C.events := fun e he => he.elim (fun h => hsub₁ h) (fun h => hsub₂ h)
+    have hint : E₁ ∩ E₂ ⊆ C.events := fun e he => hsub₁ he.1
+    rw [live_iff_fixed_set huni hac ha ht, live_iff_fixed_set hint hac ha ht,
+      live_iff_fixed_set hsub₁ hac ha ht, live_iff_fixed_set hsub₂ hac ha ht]
+    have hk₁ : ¬ Survives C E₁ a p.1.1 → a ∈ E₁ := by
+      intro hn
+      obtain ⟨r, hr, hv, hop⟩ := Classical.not_not.mp hn
+      exact hclosed₁ a r hv ((noncomm_iff_replayBefore a r).mpr
+        (Or.inr ((replayBefore_iff r a).mpr ⟨p.1.1, p.1.2, hop, ha⟩))) hr
+    have hk₂ : ¬ Survives C E₂ a p.1.1 → a ∈ E₂ := by
+      intro hn
+      obtain ⟨r, hr, hv, hop⟩ := Classical.not_not.mp hn
+      exact hclosed₂ a r hv ((noncomm_iff_replayBefore a r).mpr
+        (Or.inr ((replayBefore_iff r a).mpr ⟨p.1.1, p.1.2, hop, ha⟩))) hr
+    have hu : Survives C (E₁ ∪ E₂) a p.1.1 ↔
+        Survives C E₁ a p.1.1 ∧ Survives C E₂ a p.1.1 := by
+      simp only [Survives, Set.mem_union]
+      constructor
+      · intro h; exact ⟨fun ⟨r, hr, hv, ho⟩ => h ⟨r, Or.inl hr, hv, ho⟩,
+          fun ⟨r, hr, hv, ho⟩ => h ⟨r, Or.inr hr, hv, ho⟩⟩
+      · rintro ⟨h₁, h₂⟩ ⟨r, hr | hr, hv, ho⟩
+        · exact h₁ ⟨r, hr, hv, ho⟩
+        · exact h₂ ⟨r, hr, hv, ho⟩
+    have hi₁ : Survives C E₁ a p.1.1 → Survives C (E₁ ∩ E₂) a p.1.1 :=
+      fun h ⟨r, hr, hv, ho⟩ => h ⟨r, hr.1, hv, ho⟩
+    have hi₂ : Survives C E₂ a p.1.1 → Survives C (E₁ ∩ E₂) a p.1.1 :=
+      fun h ⟨r, hr, hv, ho⟩ => h ⟨r, hr.2, hv, ho⟩
+    rw [hu]
+    simp only [Set.mem_union, Set.mem_inter_iff]
+    tauto
+  · have hn (E : Set (D K V).Event) (hs : E ⊆ E₁ ∪ E₂) : ¬ Live C E p := by
+      rintro ⟨a, ha, hop, ht, -⟩
+      exact hex ⟨a, hs ha, hop, ht⟩
+    have hnU := hn (E₁ ∪ E₂) Set.Subset.rfl
+    have hnI := hn (E₁ ∩ E₂) (fun _ h => Or.inl h.1)
+    have hn₁ := hn E₁ Set.subset_union_left
+    have hn₂ := hn E₂ Set.subset_union_right
+    simp [hnU, hnI, hn₁, hn₂]
+
+/-! ## VC1 and VC2
+
+Two of the five hold at arbitrary states for this `merge`, so they are set
+identities with no premises, exactly as a grow-only row's are. -/
+
+/-- `merge(l,a,b) = merge(l,b,a)` at any states. This is **VC1** exactly:
+the paper states it over arbitrary states too. -/
+theorem vc1_merge_comm (l a b : (D K V).Sigma) :
+    (D K V).merge l a b = (D K V).merge l b a := by
+  change mergeState l a b = mergeState l b a
+  ext p
+  simp only [mergeState, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
+  tauto
+
+/-- `merge(sigma0, sigma0, s) = s` at any `s`. **VC2** asks for it only at a
+canonical `s`. -/
+theorem vc2_merge_init (s : (D K V).Sigma) :
+    (D K V).merge (D K V).sigma0 (D K V).sigma0 s = s := by
+  change mergeState ∅ ∅ s = s
+  ext p
+  simp only [mergeState, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
+  simp
+
+/-! ## The three canonical conditions
+
+The states VC3, VC4 and VC5 mention are canonical for event sets built from
+`E1`, `E2` and `down(e)`. Each nest of merges is read pointwise through
+`canonical_mem_iff` and resolved by `live_join`, the row's own description
+of liveness over a union.
+
+`mergeProp` below is the Boolean `merge` computes at a record. Writing both
+`merge` and `live_join` in that one shape turns VC3 and VC5 into chains of
+rewrites with no propositional search at all. -/
+
+/-- The Boolean `merge` computes at a single record: keep it when the base
+and both branches have it, or when one branch has it and the base does
+not. -/
+def mergeProp (L B C : Prop) : Prop := (L ∧ B ∧ C) ∨ (B ∧ ¬ L) ∨ (C ∧ ¬ L)
+
+theorem mem_merge (l a b : (D K V).Sigma) (p : (K × V) × Timestamp) :
+    p ∈ (D K V).merge l a b ↔ mergeProp (p ∈ l) (p ∈ a) (p ∈ b) := by
+  change p ∈ mergeState l a b ↔ _
+  simp only [mergeState, mergeProp, Finset.mem_union, Finset.mem_inter,
+    Finset.mem_sdiff]
+  tauto
+
+/-- `live_join` in `mergeProp` shape: liveness over a union is exactly the
+Boolean `merge` computes from liveness over the intersection and over each
+branch. -/
+theorem live_merge {C : Ctx (D K V)} {E₁ E₂ : Set (D K V).Event}
+    (h₁ : SupportedOn (D K V) C E₁) (h₂ : SupportedOn (D K V) C E₂)
+    (c₁ : WeaklyClosed (D K V) C E₁) (c₂ : WeaklyClosed (D K V) C E₂)
+    (p : (K × V) × Timestamp) :
+    Live C (E₁ ∪ E₂) p
+      ↔ mergeProp (Live C (E₁ ∩ E₂) p) (Live C E₁ p) (Live C E₂ p) :=
+  live_join h₁ h₂ c₁ c₂ p
+
+/-- `e(can(down(e) \ {e})) = can(down(e))`: the downset's own peel. -/
+theorem isCan_downset {C : Ctx (D K V)} {m : (D K V).Sigma} {e : (D K V).Event}
+    (htr : ∀ {a b c : (D K V).Event}, C.vis a b → C.vis b c → C.vis a c)
+    (hir : ∀ a : (D K V).Event, ¬ C.vis a a)
+    (hm : IsCanOn (D K V) C (downset C e \ {e}) m) :
+    IsCanOn (D K V) C (downset C e) ((D K V).do_ m e) := by
+  letI : EventOrder (D K V).toMRDTSig.toUpdateSig := Interface.rcOrder (D K V)
+  exact isCanonicalState_snoc (Or.inl rfl) (downset_max htr hir) hm
+
+/-- **VC3** LOCAL-REDISTRIBUTE, proved for this row.
+
+Both sides are liveness over `E1 u E2`. The left reaches it through
+`E1 = (E1 \ {e}) u down(e)` and then `E1 u E2`; the right through
+`(E1 u E2) \ {e} = (E1 \ {e}) u E2` and then
+`(E1 u E2) = ((E1 u E2) \ {e}) u down(e)`. Four instances of `live_merge`,
+and the equation falls out by rewriting. -/
+theorem vc3_local_redistribute :
+    ∀ (C : Ctx (D K V)) (E₁ E₂ : Set (D K V).Event) (l m x y : (D K V).Sigma)
+      (e : (D K V).Event),
+      VisStrict (D K V) C →
+      SupportedOn (D K V) C E₁ → SupportedOn (D K V) C E₂ →
+      WeaklyClosed (D K V) C E₁ → WeaklyClosed (D K V) C E₂ →
+      e ∈ E₁ → e ∉ E₂ → MaximalOn (D K V) C (E₁ ∪ E₂) e →
+      IsCanOn (D K V) C (E₁ ∩ E₂) l →
+      IsCanOn (D K V) C (downset C e \ {e}) m →
+      IsCanOn (D K V) C (E₁ \ {e}) x →
+      IsCanOn (D K V) C E₂ y →
+      (D K V).merge l ((D K V).merge m x ((D K V).do_ m e)) y
+        = (D K V).merge m ((D K V).merge l x y) ((D K V).do_ m e) := by
+  letI : EventOrder (D K V).toMRDTSig.toUpdateSig := Interface.rcOrder (D K V)
+  intro C E₁ E₂ l m x y e hvs h₁ h₂ hc₁ hc₂ he₁ he₂ hmax hl hm hx hy
+  obtain ⟨htr, hir⟩ := hvs
+  have hcov : ∀ a b : (D K V).Event, ¬ (D K V).toMRDTSig.toUpdateSig.commutes a b →
+      ((D K V).toMRDTSig.toUpdateSig.replayBefore a b ∨
+        (D K V).toMRDTSig.toUpdateSig.replayBefore b a) :=
+    fun a b => (noncomm_iff_replayBefore a b).mp
+  have hdsub : downset C e ⊆ E₁ := downset_subset hc₁ he₁
+  have hdm := isCan_downset htr hir hm
+  have hsupU : SupportedOn (D K V) C (E₁ ∪ E₂) := fun a ha => ha.elim (h₁ a) (h₂ a)
+  have hdsupp : SupportedOn (D K V) C (downset C e) := fun a ha => h₁ a (hdsub ha)
+  have hcld : WeaklyClosed (D K V) C (downset C e) := fun a b => downset_closed a b
+  have hclU : WeaklyClosed (D K V) C (E₁ ∪ E₂) := weaklyClosed_union hc₁ hc₂
+  have hclx : WeaklyClosed (D K V) C (E₁ \ {e}) :=
+    closure_diff_of_max hcov Set.subset_union_left hc₁ hmax
+  have hclU' : WeaklyClosed (D K V) C ((E₁ ∪ E₂) \ {e}) :=
+    closure_diff_of_max hcov Set.Subset.rfl hclU hmax
+  have i₁ : (E₁ \ {e}) ∩ downset C e = downset C e \ {e} := by
+    ext z; exact ⟨fun h => ⟨h.2, h.1.2⟩, fun h => ⟨⟨hdsub h.1, h.2⟩, h.1⟩⟩
+  have u₁ : (E₁ \ {e}) ∪ downset C e = E₁ := by
+    ext z; constructor
+    · rintro (⟨hz, -⟩ | hz); · exact hz
+      · exact hdsub hz
+    · intro hz; by_cases hze : z = e
+      · exact Or.inr (Or.inl hze)
+      · exact Or.inl ⟨hz, hze⟩
+  have i₂ : (E₁ \ {e}) ∩ E₂ = E₁ ∩ E₂ := by
+    ext z
+    exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, fun hq => he₂ (hq ▸ h.2)⟩, h.2⟩⟩
+  have u₂ : (E₁ \ {e}) ∪ E₂ = (E₁ ∪ E₂) \ {e} := by
+    ext z; constructor
+    · rintro (⟨hz, hn⟩ | hz)
+      · exact ⟨Or.inl hz, hn⟩
+      · exact ⟨Or.inr hz, fun hq => he₂ (hq ▸ hz)⟩
+    · rintro ⟨hz | hz, hn⟩
+      · exact Or.inl ⟨hz, hn⟩
+      · exact Or.inr hz
+  have i₃ : ((E₁ ∪ E₂) \ {e}) ∩ downset C e = downset C e \ {e} := by
+    ext z
+    exact ⟨fun h => ⟨h.2, h.1.2⟩, fun h => ⟨⟨Or.inl (hdsub h.1), h.2⟩, h.1⟩⟩
+  have u₃ : ((E₁ ∪ E₂) \ {e}) ∪ downset C e = E₁ ∪ E₂ := by
+    ext z; constructor
+    · rintro (⟨hz, -⟩ | hz); · exact hz
+      · exact Or.inl (hdsub hz)
+    · intro hz; by_cases hze : z = e
+      · exact Or.inr (Or.inl hze)
+      · exact Or.inl ⟨hz, hze⟩
+  ext p
+  have jA := live_merge (fun a ha => h₁ a ha.1) hdsupp hclx hcld p
+  rw [i₁, u₁] at jA
+  have jB := live_merge h₁ h₂ hc₁ hc₂ p
+  have jC := live_merge (fun a ha => h₁ a ha.1) h₂ hclx hc₂ p
+  rw [i₂, u₂] at jC
+  have jD := live_merge (fun a ha => hsupU a ha.1) hdsupp hclU' hcld p
+  rw [i₃, u₃] at jD
+  rw [mem_merge, mem_merge, mem_merge, mem_merge,
+    canonical_mem_iff hl p, canonical_mem_iff hm p, canonical_mem_iff hx p,
+    canonical_mem_iff hy p, canonical_mem_iff hdm p, ← jA, ← jB, ← jC, ← jD]
+
+/-- The one fact about this row that **VC4** needs: in the removal case, a
+record that survives `U \ {e}` but not `down(e) \ {e}` cannot carry the
+element `e` removes.
+
+The add that produced it must be seen by `e`. If `e` saw nothing of it,
+`lo^C_U` would have an edge out of `e`: a visibility edge when `e` sees the
+add, and otherwise the `rc` edge `rem x --rc--> add x`, whose absorber
+clause can only be met by a second removal of `x` in `U`, which would have
+killed the record in `U \ {e}` as well. Either way `e` is not maximal. -/
+theorem live_of_removed {C : Ctx (D K V)} {U : Set (D K V).Event}
+    {As Bs : (D K V).Sigma} {e : (D K V).Event} {k : K}
+    (hUsub : SupportedOn (D K V) C U) (hUcl : WeaklyClosed (D K V) C U)
+    (heU : e ∈ U) (hmax : MaximalOn (D K V) C U e) (hex : e.op = AppOp.del k)
+    (hA : IsCanOn (D K V) C (U \ {e}) As)
+    (hB : IsCanOn (D K V) C (downset C e \ {e}) Bs)
+    (p : (K × V) × Timestamp) (hpA : p ∈ As) (hpx : p.1.1 = k) : p ∈ Bs := by
+  letI : EventOrder (D K V).toMRDTSig.toUpdateSig := Interface.rcOrder (D K V)
+  have hdsub : downset C e ⊆ U := downset_subset hUcl heU
+  obtain ⟨α, hαU, hαop, hαt, hαs⟩ := (canonical_mem_iff hA p).mp hpA
+  have hrbe : (D K V).toMRDTSig.toUpdateSig.replayBefore e α := by
+    rw [replayBefore_iff]; exact ⟨k, p.1.2, hex, by rw [hαop, hpx]⟩
+  have hvis : C.vis α e := by
+    by_contra hnv
+    by_cases hve : C.vis e α
+    · exact hmax α hαU.1 hαU.2 (Or.inl ⟨hve, Or.inl hrbe⟩)
+    · by_cases habs : ∃ e₃ ∈ U, C.vis α e₃ ∧
+          ((D K V).toMRDTSig.toUpdateSig.replayBefore α e₃ ∨
+            (D K V).toMRDTSig.toUpdateSig.replayBefore e₃ α)
+      · obtain ⟨e₃, he₃U, hv₃, hrb₃⟩ := habs
+        have he₃op : e₃.op = AppOp.del p.1.1 := by
+          rcases hrb₃ with h | h
+          · rw [replayBefore_iff] at h
+            obtain ⟨_, _, hy, _⟩ := h
+            rw [hαop] at hy; cases hy
+          · rw [replayBefore_iff] at h
+            obtain ⟨k', v', hy, hy'⟩ := h
+            rw [hαop] at hy'
+            injection hy' with hk hv
+            exact hk ▸ hy
+        exact hαs ⟨e₃, ⟨he₃U, by rintro rfl; exact hnv hv₃⟩, hv₃, he₃op⟩
+      · exact hmax α hαU.1 hαU.2 (Or.inr ⟨hve, hnv, hrbe, habs⟩)
+  have hnc : ¬ (D K V).toMRDTSig.toUpdateSig.commutes α e :=
+    (noncomm_iff_replayBefore α e).mpr (Or.inr hrbe)
+  rw [canonical_mem_iff hB]
+  refine ⟨α, ⟨Or.inr (Relation.TransGen.single ⟨hvis, hnc⟩), hαU.2⟩, hαop, hαt, ?_⟩
+  rintro ⟨r, hr, hv, hop⟩
+  exact hαs ⟨r, ⟨hdsub hr.1, hr.2⟩, hv, hop⟩
+
+/-- **VC4** CAUSAL-DELTA, proved for this row rather than derived from the
+join lemma. The two cases are the two shapes of `do`. -/
+theorem vc4_causal_delta :
+    @CausalDeltaLaw (D K V).toMRDTSig (Interface.rcOrder (D K V)) := by
+  letI : EventOrder (D K V).toMRDTSig.toUpdateSig := Interface.rcOrder (D K V)
+  intro C U As Bs e htr hir hUsub hUcl heU hmax hA hB
+  change St K V at As Bs
+  change mergeState Bs As (step Bs e) = step As e
+  ext p
+  cases hop : e.op with
+  | set k v =>
+      have hnB : (((k, v) : K × V), e.time) ∉ Bs := by
+        intro hmem
+        obtain ⟨α, hα, -, hαt, -⟩ := (canonical_mem_iff hB _).mp hmem
+        exact hα.2 (C.ts_unique
+          (hUsub α (downset_subset hUcl heU hα.1)) (hUsub e heU) hαt)
+      have hkey : p = (((k, v) : K × V), e.time) → p ∉ Bs := by rintro rfl; exact hnB
+      simp only [mergeState, Finset.mem_union, Finset.mem_inter,
+        Finset.mem_sdiff, mem_step, hop]
+      tauto
+  | del k =>
+      have hkey : p ∈ As → p ∉ Bs → p.1.1 ≠ k := fun hpA hpB hq =>
+        hpB (live_of_removed hUsub hUcl heU hmax hop hA hB p hpA hq)
+      simp only [mergeState, Finset.mem_union, Finset.mem_inter,
+        Finset.mem_sdiff, mem_step, hop]
+      tauto
+
+/-- **VC5** REDISTRIBUTE, proved for this row.
+
+`e` lies in both branches, so each of `E1 n E2`, `E1` and `E2` is its own
+`\ {e}` part joined with `down(e)`: three peels. The left side is then
+liveness over `E1 u E2` directly. The right side reaches the same place
+through `(E1 u E2) \ {e} = (E1 \ {e}) u (E2 \ {e})` and one further
+peel. -/
+theorem vc5_redistribute :
+    ∀ (C : Ctx (D K V)) (E₁ E₂ : Set (D K V).Event) (x₀ x₁ x₂ m : (D K V).Sigma)
+      (e : (D K V).Event),
+      VisStrict (D K V) C →
+      SupportedOn (D K V) C E₁ → SupportedOn (D K V) C E₂ →
+      WeaklyClosed (D K V) C E₁ → WeaklyClosed (D K V) C E₂ →
+      e ∈ E₁ → e ∈ E₂ → MaximalOn (D K V) C (E₁ ∪ E₂) e →
+      IsCanOn (D K V) C ((E₁ ∩ E₂) \ {e}) x₀ →
+      IsCanOn (D K V) C (downset C e \ {e}) m →
+      IsCanOn (D K V) C (E₁ \ {e}) x₁ →
+      IsCanOn (D K V) C (E₂ \ {e}) x₂ →
+      (D K V).merge ((D K V).merge m x₀ ((D K V).do_ m e))
+          ((D K V).merge m x₁ ((D K V).do_ m e))
+          ((D K V).merge m x₂ ((D K V).do_ m e))
+        = (D K V).merge m ((D K V).merge x₀ x₁ x₂) ((D K V).do_ m e) := by
+  letI : EventOrder (D K V).toMRDTSig.toUpdateSig := Interface.rcOrder (D K V)
+  intro C E₁ E₂ x₀ x₁ x₂ m e hvs h₁ h₂ hc₁ hc₂ he₁ he₂ hmax hx₀ hm hx₁ hx₂
+  obtain ⟨htr, hir⟩ := hvs
+  have hcov : ∀ a b : (D K V).Event, ¬ (D K V).toMRDTSig.toUpdateSig.commutes a b →
+      ((D K V).toMRDTSig.toUpdateSig.replayBefore a b ∨
+        (D K V).toMRDTSig.toUpdateSig.replayBefore b a) :=
+    fun a b => (noncomm_iff_replayBefore a b).mp
+  have hdsub₁ : downset C e ⊆ E₁ := downset_subset hc₁ he₁
+  have hdsub₂ : downset C e ⊆ E₂ := downset_subset hc₂ he₂
+  have hdm := isCan_downset htr hir hm
+  have hsupU : SupportedOn (D K V) C (E₁ ∪ E₂) := fun a ha => ha.elim (h₁ a) (h₂ a)
+  have hdsupp : SupportedOn (D K V) C (downset C e) := fun a ha => h₁ a (hdsub₁ ha)
+  have hcld : WeaklyClosed (D K V) C (downset C e) := fun a b => downset_closed a b
+  have hclU : WeaklyClosed (D K V) C (E₁ ∪ E₂) := weaklyClosed_union hc₁ hc₂
+  have hclI : WeaklyClosed (D K V) C (E₁ ∩ E₂) := by
+    rintro a b hv hnc ⟨hb₁, hb₂⟩; exact ⟨hc₁ a b hv hnc hb₁, hc₂ a b hv hnc hb₂⟩
+  have hcl₀ : WeaklyClosed (D K V) C ((E₁ ∩ E₂) \ {e}) :=
+    closure_diff_of_max hcov (fun z hz => Or.inl hz.1) hclI hmax
+  have hcl₁ : WeaklyClosed (D K V) C (E₁ \ {e}) :=
+    closure_diff_of_max hcov Set.subset_union_left hc₁ hmax
+  have hcl₂ : WeaklyClosed (D K V) C (E₂ \ {e}) :=
+    closure_diff_of_max hcov Set.subset_union_right hc₂ hmax
+  have hclU' : WeaklyClosed (D K V) C ((E₁ ∪ E₂) \ {e}) :=
+    closure_diff_of_max hcov Set.Subset.rfl hclU hmax
+  have peelI : ∀ F : Set (D K V).Event, downset C e ⊆ F →
+      (F \ {e}) ∩ downset C e = downset C e \ {e} := by
+    intro F hsub; ext z
+    exact ⟨fun h => ⟨h.2, h.1.2⟩, fun h => ⟨⟨hsub h.1, h.2⟩, h.1⟩⟩
+  have peelU : ∀ F : Set (D K V).Event, downset C e ⊆ F →
+      (F \ {e}) ∪ downset C e = F := by
+    intro F hsub; ext z; constructor
+    · rintro (⟨hz, -⟩ | hz); · exact hz
+      · exact hsub hz
+    · intro hz; by_cases hze : z = e
+      · exact Or.inr (Or.inl hze)
+      · exact Or.inl ⟨hz, hze⟩
+  have hdsubI : downset C e ⊆ E₁ ∩ E₂ := fun z hz => ⟨hdsub₁ hz, hdsub₂ hz⟩
+  have hdsubU : downset C e ⊆ E₁ ∪ E₂ := fun z hz => Or.inl (hdsub₁ hz)
+  have iM : (E₁ \ {e}) ∩ (E₂ \ {e}) = (E₁ ∩ E₂) \ {e} := by
+    ext z
+    exact ⟨fun h => ⟨⟨h.1.1, h.2.1⟩, h.1.2⟩, fun h => ⟨⟨h.1.1, h.2⟩, ⟨h.1.2, h.2⟩⟩⟩
+  have uM : (E₁ \ {e}) ∪ (E₂ \ {e}) = (E₁ ∪ E₂) \ {e} := by
+    ext z; constructor
+    · rintro (⟨hz, hn⟩ | ⟨hz, hn⟩)
+      · exact ⟨Or.inl hz, hn⟩
+      · exact ⟨Or.inr hz, hn⟩
+    · rintro ⟨hz | hz, hn⟩
+      · exact Or.inl ⟨hz, hn⟩
+      · exact Or.inr ⟨hz, hn⟩
+  ext p
+  have jP₀ := live_merge (fun a ha => h₁ a ha.1.1) hdsupp hcl₀ hcld p
+  rw [peelI _ hdsubI, peelU _ hdsubI] at jP₀
+  have jP₁ := live_merge (fun a ha => h₁ a ha.1) hdsupp hcl₁ hcld p
+  rw [peelI _ hdsub₁, peelU _ hdsub₁] at jP₁
+  have jP₂ := live_merge (fun a ha => h₂ a ha.1) hdsupp hcl₂ hcld p
+  rw [peelI _ hdsub₂, peelU _ hdsub₂] at jP₂
+  have jU := live_merge h₁ h₂ hc₁ hc₂ p
+  have jM := live_merge (fun a ha => h₁ a ha.1) (fun a ha => h₂ a ha.1) hcl₁ hcl₂ p
+  rw [iM, uM] at jM
+  have jD := live_merge (fun a ha => hsupU a ha.1) hdsupp hclU' hcld p
+  rw [peelI _ hdsubU, peelU _ hdsubU] at jD
+  rw [mem_merge, mem_merge, mem_merge, mem_merge, mem_merge, mem_merge,
+    canonical_mem_iff hx₀ p, canonical_mem_iff hm p, canonical_mem_iff hx₁ p,
+    canonical_mem_iff hx₂ p, canonical_mem_iff hdm p,
+    ← jP₀, ← jP₁, ← jP₂, ← jU, ← jM, ← jD]
+
+/-- **VC1 to VC5** of Section 5, in the paper's form. VC1 and VC2 are
+instances of the two equations above; the other three are already stated
+canonically. -/
+theorem joinLaws : CanonicalJoinLaws (D K V) where
+  vc1_merge_comm := SetWinsMap.vc1_merge_comm
+  vc2_merge_init := fun _ _ s _ _ => SetWinsMap.vc2_merge_init s
+  vc3_local_redistribute := SetWinsMap.vc3_local_redistribute
+  vc4_causal_delta := SetWinsMap.vc4_causal_delta
+  vc5_redistribute := SetWinsMap.vc5_redistribute
+
+/-- **Everything the metatheory consumes.** The same bundle a commuting row
+supplies. The OR-set's operations do not commute, and `Obligations` does not
+ask them to: what it asks for is `Laws(D_type)` and the five conditions of
+Section 5, both of which this row proves above. -/
+theorem obligations : Obligations (D K V) :=
+  ⟨laws, rc_non_comm, cond_comm, joinLaws⟩
 
 end LeanProofs.Implementations.SetWinsMap

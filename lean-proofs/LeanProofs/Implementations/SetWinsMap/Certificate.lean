@@ -18,7 +18,7 @@ variable {K V : Type} [DecidableEq K] [DecidableEq V]
 multimap satisfies Definition 4 against `Spec`, at its own nonempty `rc`. -/
 theorem raLinearizable :
     Soundness.CertifiedRA (D K V) (historySpec K V) (issuance K V) :=
-  Soundness.certifiedRA_direct directObligations specSound
+  Soundness.certifiedRA obligations specSound
 
 #print axioms joinLemma
 
