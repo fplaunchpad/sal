@@ -1,4 +1,4 @@
-import LeanProofs.Soundness.Common
+import LeanProofs1.Soundness.Common
 
 /-!
 # Clause 2: `ops(pi) . (q => b)` is in `Spec`
@@ -7,24 +7,19 @@ The conformance side of Definition 4. It compares `do` alone against an
 independent sequential language and never mentions `merge`, `vis` or
 `lo^C_E`.
 
-Two forms of the premise appear here.
-
-* `SpecSound` is the paper's premise verbatim, quantified over **every**
-  list of events. A row that satisfies it hands any enumeration to clause 1.
-* `HistorySound` is the execution-scoped form, in which the row **chooses**
-  the explaining order itself. The LWW register is the first row that needs
-  it, because its answer is the greatest write key and only a key-sorted
-  history explains that. This is the `E = Y` column of Table 1.
+`SpecSound` is the paper's premise verbatim, quantified over **every** list
+of events. A row that satisfies it hands any enumeration to clause 1, which
+is what both rows here do.
 
 Section 6's method for discharging either one is an abstraction function
 with three conditions, which `Abstraction` states and `Abstraction.specSound`
 discharges.
 -/
 
-namespace LeanProofs.Soundness
+namespace LeanProofs1.Soundness
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs.Interface
+open LeanProofs1.Interface
 
 variable {type : MRDTType} {D : Impl type}
 
@@ -32,21 +27,6 @@ variable {type : MRDTType} {D : Impl type}
 `ops(pi) . (q => b)` is in `Spec`, with `b` the implementation's answer. -/
 abbrev SpecSound (D : Impl type) (S : Spec type) : Prop :=
   FoldHistorySound D.toMRDTSig S
-
-/-- The scoped sequential premise: a witness may be selected per event set,
-given a mint-honest configuration and a supported, causally closed, finite
-event set. -/
-abbrev HistorySound (D : Impl type) (S : Spec type)
-    (I : Issuance D.toMRDTSig) : Prop :=
-  IssuedHistoryAdequacy D.toMRDTSig (policy D) S I
-
-/-! ## The abstraction function of Section 6
-
-Section 6 discharges the sequential premise with an abstraction function
-`alpha : Sigma -> Phi` and three conditions on it. `Abstraction` below is
-that function together with those conditions, stated separately as the
-paper states them, and `Abstraction.specSound` is the paper's induction on
-the length of an event sequence. -/
 
 /-- An abstraction function and the three conditions of Section 6. -/
 structure Abstraction (D : Impl type)
@@ -88,5 +68,18 @@ theorem specSound (A : Abstraction D M) : SpecSound D M.toSpec := by
   rfl
 
 end Abstraction
+/-! ## The execution-scoped premise
 
-end LeanProofs.Soundness
+`SpecSound` asks the row to explain **every** list of events. One row of the
+paper cannot: the LWW register's answer is the value written at the greatest
+key, and only a key-sorted history explains that. `HistorySound` is the form
+in which the row chooses the explaining order itself, which is the `E = Y`
+column of Table 1. -/
+
+/-- **The sequential premise, execution-scoped.** The row supplies the
+explaining history, rather than being asked about an arbitrary one. -/
+abbrev HistorySound (D : Impl type) (S : Spec type)
+    (I : Issuance D.toMRDTSig) : Prop :=
+  IssuedHistoryAdequacy D.toMRDTSig (policy D) S I
+
+end LeanProofs1.Soundness

@@ -1,27 +1,24 @@
-import LeanProofs.Interface.Implementation
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Lattice.Basic
 import Mathlib.Data.Finset.Image
 
 /-!
-# The set-wins multimap: its implementation tuple
+# The set-wins map: the implementation and the specification
 
-The Set-wins multimap row of Table 1, Appendix `app:dt-set-wins-map`.
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3;
+`historySpec` is the `Spec` of Section 4, as a language of histories.
+`issuance` is the guard `G` of Section 3.
 
-A `set k v` records the binding `(k,v)` under its own timestamp; a `del k`
-erases every binding for `k`, whatever set it. Concurrent `set` wins over
-`del`, which is where the name comes from, and it is also why `rc` orders
-`del k` before `set k v`.
-
-The lookup is accumulating rather than overwriting, because the state keeps
-older bindings for a key alongside newer ones. This is the first row here
-whose `Val_type` is a collection assembled from the state rather than a
-component of it.
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs.Implementations.SetWinsMap
+namespace LeanProofs1.Implementations.SetWinsMap
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
 /-- `O_type`: bind a value to a key, or drop a key. -/
 inductive AppOp (K V : Type) where
@@ -83,4 +80,25 @@ variable (K V)
   query := lookup
   rc := rc
 
-end LeanProofs.Implementations.SetWinsMap
+
+/-! ## `Spec` -/
+
+/-- `Spec`: an ordinary multimap, with no timestamps anywhere. -/
+def specMachine : DeterministicSpec (type K V).OType (type K V).QType (type K V).ValType where
+  State := Finset (K × V)
+  initial := ∅
+  update S o := match o with
+    | .set k v => insert (k, v) S
+    | .del k => S.filter (fun q => q.1 ≠ k)
+  query S k := (S.filter (fun q => q.1 = k)).image Prod.snd
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec (type K V) := (specMachine K V).toSpec
+
+/-! ## Issuance -/
+
+/-- Issuance: `G(e, O) <=> true`. -/
+def issuance : Issuance (D K V).toMRDTSig where
+  CanIssue := fun _ _ => True
+
+end LeanProofs1.Implementations.SetWinsMap

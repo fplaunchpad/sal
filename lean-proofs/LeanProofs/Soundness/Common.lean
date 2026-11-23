@@ -1,7 +1,7 @@
-import LeanProofs.Metatheory.Adequacy
+import LeanProofs1.Metatheory.Adequacy
 import Artifact.MRDTs.Paper1.RALinearizability
 import Artifact.MRDTs.Paper1.EventBridge
-import LeanProofs.Interface.SpecLaws
+import LeanProofs1.Interface.SpecLaws
 
 /-!
 # Definition 4, and the vocabulary its two clauses share
@@ -13,16 +13,17 @@ answer, there exists a `pi` such that
 1. `pi` is a linear extension of `(E, lo^C_E)`, and
 2. `ops(pi) . (q => b)` is in `Spec`.
 
-The two clauses are proved in separate files and combined in
+The two clauses are proved apart and combined in
 `Soundness/RALinearizability.lean`:
 
 ```
   Soundness/Common.lean            this file: the definition and the shared names
       |                      |
       v                      v
-  LinearExtension.lean    SequentialSpec.lean      clause 1        clause 2
-      |                      |
-      +----------+-----------+
+  Metatheory/              SequentialSpec.lean
+  Adequacy.lean                |                clause 1        clause 2
+      |                        |
+      +----------+-------------+
                  v
        RALinearizability.lean       the adequacy theorems, which need both
 ```
@@ -33,10 +34,10 @@ mentions `merge`. As the paper says, the canonical join laws alone do not
 establish conformance, which is why the two never meet before the last file.
 -/
 
-namespace LeanProofs.Soundness
+namespace LeanProofs1.Soundness
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs.Interface
+open LeanProofs1.Interface
 
 variable {type : MRDTType} {D : Impl type}
 
@@ -55,34 +56,16 @@ abbrev CertifiedRA (D : Impl type) (S : Spec type)
     (I : Issuance D.toMRDTSig) : Prop :=
   CertifiedRAV D.toMRDTSig (policy D) S I
 
-/-! ## The join lemma at a configuration
+/-- `lo^C_E` has no edges when every pair of events commutes. The
+non-commuting disjunct fails by `hcomm`; so does the `rc` disjunct, because
+RC-NON-COMM read right to left turns an `rc` edge into a non-commuting
+pair. Clause 1 is then satisfied by any enumeration. -/
+theorem paperOrder_false (hru : UniformRcNonComm D)
+    (hcomm : ∀ e₁ e₂ : D.Event, D.Commutes e₁ e₂) (C : Configuration D.toMRDTSig)
+    (E : Set D.Event) (a b : D.Event) :
+    ¬ paperOrder (policy D) C.replayContext E a b := by
+  rintro (⟨-, hnc⟩ | ⟨-, -, hb, -⟩)
+  · exact hnc (hcomm a b)
+  · exact (hru a b).mpr (Or.inl hb) (hcomm a b)
 
-Section 5 indexes every obligation by a configuration. `can_C(E)` is the
-canonical state of `E` at `C`, and the join lemma reads "let `C` be a
-configuration, then for all weakly closed `E1, E2` of `E_C`". The two
-definitions below are that statement, carrying `C` as the paper does, and
-they are what the adequacy theorems of `RALinearizability.lean` consume.
-
-A configuration contributes its visibility relation and the events it
-observes, and nothing else. That pair is `C.replayContext`, which
-`Interface.Ctx` names and which every row's own conditions are stated at.
-Weak closure is the hypothesis `JoinAt` already carries, `vis`-predecessors
-that do not commute, and is the paper's `WeakClosed_C(E)`. -/
-
-/-- **Lemma (Join)** at one configuration. For weakly closed `E1, E2` of
-`E_C`, merging `can_C(E1 n E2)`, `can_C(E1)` and `can_C(E2)` gives
-`can_C(E1 u E2)`. -/
-abbrev JoinAtConfig (D : Impl type) (C : Configuration D.toMRDTSig) : Prop :=
-  @JoinAt D.toMRDTSig (Interface.rcOrder D) C.replayContext
-
-/-- **Lemma (Join)**: the obligation at every configuration. -/
-abbrev JoinConfig (D : Impl type) : Prop :=
-  ∀ C : Configuration D.toMRDTSig, JoinAtConfig D C
-
-/-- The vendored all-context join supplies the paper's statement. The
-converse is not available. -/
-theorem joinConfig_of_join (h : @Join D.toMRDTSig (Interface.rcOrder D)) :
-    JoinConfig D :=
-  fun C => h C.replayContext
-
-end LeanProofs.Soundness
+end LeanProofs1.Soundness

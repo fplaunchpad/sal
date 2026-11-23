@@ -1,30 +1,21 @@
-import LeanProofs.Interface.Implementation
-import Mathlib.Order.WithBot
-import Mathlib.Data.Prod.Lex
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
 
 /-!
-# The last-writer-wins register: its implementation tuple
+# The LWW register: the implementation and the specification
 
-`D_type = < Sigma, sigma0, do, merge, query, rc >` for the LWW register row
-of Table 1, following Appendix `app:dt-lww-register`.
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3;
+`historySpec` is the `Spec` of Section 4, as a language of histories.
+`issuance` is the guard `G` of Section 3.
 
-* **State** unset `bot`, or a write key `(t, r, v)` ordered lexicographically
-  with `bot` least. **Initial** `bot`.
-* **Payload** `write(v)`.
-* **Update** `e(S) = max(S, (t,r,v))`.
-* **Merge** `merge(l,a,b) = max(a,b)`; the base `l` is ignored.
-* **Query** `none` when unset, otherwise `some v`.
-* **rc** empty.
-
-The timestamp leads the key; replica and value are deterministic tie
-breakers that matter only at states with repeated timestamps, which a
-reachable configuration never has. Carrying them keeps `max` well defined at
-every state, which is what the obligations quantify over.
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs.Implementations.LWWRegister
+namespace LeanProofs1.Implementations.LWWRegister
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
 /-- `O_type`. -/
 inductive AppOp where
@@ -75,4 +66,25 @@ obligations are `max` lemmas and need the `LinearOrder` instance. -/
   query s _ := readOf s
   rc _ _ := OrderResult.Either
 
-end LeanProofs.Implementations.LWWRegister
+
+/-! ## `Spec` -/
+
+/-- `Spec`: an overwrite register. Timestamp and replica are ignored. -/
+def specMachine : DeterministicSpec type.OType type.QType type.ValType where
+  State := Option Nat
+  initial := none
+  update _ o := match o with | .write v => some v
+  query s _ := s
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec type := specMachine.toSpec
+
+/-! ## The chronological witness -/
+
+/-! ## Issuance -/
+
+/-- Issuance: `G(e, O) <=> true`. -/
+def issuance : Issuance D.toMRDTSig where
+  CanIssue := fun _ _ => True
+
+end LeanProofs1.Implementations.LWWRegister

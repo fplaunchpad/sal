@@ -1,25 +1,23 @@
-import LeanProofs.Interface.Implementation
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
 
 /-!
-# The counter: its implementation tuple
+# The counter: the implementation and the specification
 
-`D_type = < Sigma, sigma0, do, merge, query, rc >` for the Counter row of
-Table 1, following Appendix `app:dt-counter`.
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3;
+`historySpec` is the `Spec` of Section 4, as a language of histories.
+`issuance` is the guard `G` of Section 3, which this row does not use.
 
-* **State** integer `z`, **initial** `0`.
-* **Payload** `inc` or `dec`, with `delta(inc) = 1` and `delta(dec) = -1`.
-* **Update** `e(z) = z + delta(o)`; timestamp and replica are ignored.
-* **Merge** `merge(l,a,b) = a + b - l`.
-* **Query** input `()`, return `z`.
-* **rc** empty.
-
-The integer-delta three-way counter uses ancestor subtraction; it is not a
-saturating natural-number counter.
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs.Implementations.FlatCounter
+namespace LeanProofs1.Implementations.FlatCounter
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
+
+open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs1.Interface
 
 /-- The payload: `inc` or `dec`. -/
 inductive AppOp where
@@ -49,4 +47,22 @@ def D : Impl type where
   query z _ := z
   rc _ _ := OrderResult.Either
 
-end LeanProofs.Implementations.FlatCounter
+/-! ## `Spec` -/
+
+/-- The specification as a deterministic machine. -/
+def specMachine : DeterministicSpec type.OType type.QType type.ValType where
+  State := Int
+  initial := 0
+  update z o := z + delta o
+  query z _ := z
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec type := specMachine.toSpec
+
+/-! ## Issuance -/
+
+/-- Issuance: `G(e, O) <=> true`. -/
+def issuance : Issuance D.toMRDTSig where
+  CanIssue := fun _ _ => True
+
+end LeanProofs1.Implementations.FlatCounter

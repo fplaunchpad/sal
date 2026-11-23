@@ -1,205 +1,73 @@
-import LeanProofs.Implementations.MVRegister.Historical
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
+import Mathlib.Data.Finset.Basic
 
-/-! Compact MVR implementation. The state contains only live tagged writes.
-Historical writes below are proof inputs, not fields of the implementation. -/
-namespace LeanProofs.Implementations.MVRegister
-open Artifact.MRDTs
-open Artifact.MRDTs.Foundation
-set_option maxHeartbeats 1000000
+/-!
+# The multi-value register: the implementation tuple
 
-abbrev State := Finset (ℕ × ℕ)
-abbrev Event := Op MVR.MVROp
+The MVR row of Table 1, as the compact implementation of
+`LeanProofs/Implementations/MVRegister/Definition.lean`: the state holds the
+live tagged writes, a write records its own tag and drops the tags it names,
+and the query returns the surviving values.
 
-def update (s : State) (e : Event) : State := MVR.clientStep s e
+```
+  o = write v O        value v, overwriting the tags in O
+  do(s, e)             = insert (time(e), v) (s without the tags of O)
+  merge(l, a, b)       = (l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)
+```
 
-def merge (l a b : State) : State :=
-  (l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)
+A write's tag is its **timestamp**. That is the fact `Negative.lean` turns
+on: the tuple below is parameterised by an arbitrary `rc`, because no choice
+of one satisfies `Laws(D_type)`.
 
-def canIssue (e : Event) (s : State) : Prop :=
-  (∀ p ∈ s, p.1 ≠ e.1) ∧
-  (MVR.overwrites e).toFinset = s.image Prod.fst
+No proof appears in this file.
+-/
 
-instance (e : Event) (s : State) : Decidable (canIssue e s) :=
-  inferInstanceAs (Decidable (_ ∧ _))
+namespace LeanProofs1.Implementations.MVRegister
 
-def query (s : State) : Finset ℕ := s.image Prod.snd
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
-def D : MRDTSig where
-  State := State
-  dec_state := inferInstance
-  init := ∅
-  AppOp := MVR.MVROp
-  dec_op := inferInstance
-  Query := Unit
-  Value := Set ℕ
-  update := update
-  merge := merge
-  query := fun s _ => MVR.queryValues s
+/-- `O_type`: write a value and name the tags it supersedes. -/
+inductive AppOp where
+  | write (value : Nat) (overwrites : List Nat)
+  deriving DecidableEq, Repr
 
-def replayOrder : EventOrder D.toUpdateSig where
-  order := MVR.replayOrder.order
+/-- The tags a write supersedes. -/
+def overwrites : AppOp → List Nat
+  | .write _ O => O
 
-def issuance : Issuance D where
-  CanIssue := canIssue
+/-- The value a write carries. -/
+def writeValue : AppOp → Nat
+  | .write v _ => v
 
-theorem replayOrder_acyclic : @ReplayAcyclic D.toUpdateSig replayOrder := MVR.replayOrder_acyclic
+/-- `type = < O_type, Q_type, Val_type >`. -/
+@[reducible] def type : MRDTType where
+  OType := AppOp
+  decOType := inferInstance
+  QType := Unit
+  ValType := Finset Nat
 
-theorem issued_write_singleton (e : Event) (s : State) (h : canIssue e s) :
-    update s e = {(e.1, MVR.writeValue e)} := by
-  have hf : s.filter (fun p => p.1 ∉ MVR.overwrites e) = ∅ := by
-    apply Finset.eq_empty_iff_forall_notMem.mpr
-    intro p hp
-    obtain ⟨hp, hn⟩ := Finset.mem_filter.mp hp
-    apply hn
-    apply List.mem_toFinset.mp
-    rw [h.2]
-    exact Finset.mem_image.mpr ⟨p,hp,rfl⟩
-  simp [update, MVR.clientStep, hf]
+/-- `Sigma`: the live tagged writes. A tag is a timestamp. -/
+abbrev St := Finset (Nat × Nat)
 
-theorem merge_self (a : State) : merge a a a = a := by simp [merge]
-theorem merge_unchanged (l a : State) : merge l a l = a := by
-  ext p
-  simp only [merge, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
-  tauto
-theorem merge_comm (l a b : State) : merge l a b = merge l b a := by
-  ext p
-  simp only [merge, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
-  tauto
+/-- `do`: record this write under its own timestamp, and drop every tag it
+names. -/
+def step (s : St) (e : Op AppOp) : St :=
+  insert (e.time, writeValue e.op) (s.filter (fun p => p.1 ∉ overwrites e.op))
 
-/-- Finite history oracle: retain a write precisely when no event overwrites
-its tag. This does not evaluate the proposed merge or replay implementation. -/
-def live (history : Finset Event) : State :=
-  (history.image (fun e => (e.1, MVR.writeValue e))).filter
-    (fun p => ∀ e ∈ history, p.1 ∉ MVR.overwrites e)
+/-- `merge`: the OR-shape, keeping what both kept and what either added. -/
+def mergeState (l a b : St) : St := (l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)
 
-def Born (history : Finset Event) (p : ℕ × ℕ) : Prop :=
-  ∃ e ∈ history, (e.1,MVR.writeValue e) = p
+/-- `D_type = < Sigma, sigma0, do, merge, query, rc >`, at an arbitrary
+`rc`. Everything but `rc` is the row's own. -/
+def D (rc : AppOp → AppOp → OrderResult) : Impl type where
+  Sigma := St
+  decSigma := inferInstance
+  sigma0 := ∅
+  do_ := step
+  merge := mergeState
+  query s _ := s.image Prod.snd
+  rc := rc
 
-def Dead (history : Finset Event) (t : ℕ) : Prop :=
-  ∃ e ∈ history, t ∈ MVR.overwrites e
-
-theorem mem_live (history : Finset Event) (p : ℕ × ℕ) :
-    p ∈ live history ↔ Born history p ∧ ¬ Dead history p.1 := by
-  simp [live, Born, Dead]
-
-theorem update_live (history : Finset Event) (e : Event)
-    (fresh : ¬ Dead history e.1) (self : e.1 ∉ MVR.overwrites e) :
-    update (live history) e = live (insert e history) := by
-  ext p
-  have hborn : Born (insert e history) p ↔
-      (e.1, MVR.writeValue e) = p ∨ Born history p := by
-    simp [Born]
-  have hdead : Dead (insert e history) p.1 ↔
-      p.1 ∈ MVR.overwrites e ∨ Dead history p.1 := by
-    simp [Dead]
-  simp only [update, MVR.clientStep, Finset.mem_insert, Finset.mem_filter,
-    mem_live, hborn, hdead]
-  by_cases hp : p = (e.1, MVR.writeValue e)
-  · subst p
-    simp [fresh, self]
-  · have hp' : (e.1, MVR.writeValue e) ≠ p := Ne.symm hp
-    simp [hp, hp', and_comm]
-    tauto
-
-/-- Sufficient history conditions for a genuine shared ancestor. These are
-proof premises, not extra data retained by the compact implementation. -/
-theorem live_merge (l a b : Finset Event)
-    (born_inter : ∀ p, Born l p ↔ Born a p ∧ Born b p)
-    (dead_left : ∀ t, Dead l t → Dead a t)
-    (dead_right : ∀ t, Dead l t → Dead b t)
-    (observed_left : ∀ p, Born b p → Dead a p.1 → Born a p)
-    (observed_right : ∀ p, Born a p → Dead b p.1 → Born b p) :
-    merge (live l) (live a) (live b) = live (a ∪ b) := by
-  ext p
-  have hl := dead_left p.1
-  have hr := dead_right p.1
-  have ha := observed_left p
-  have hb := observed_right p
-  simp only [merge, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff, mem_live]
-  have hborn : Born (a ∪ b) p ↔ Born a p ∨ Born b p := by
-    simp [Born, Finset.mem_union, or_and_right, exists_or]
-  have hdead : Dead (a ∪ b) p.1 ↔ Dead a p.1 ∨ Dead b p.1 := by
-    simp [Dead, Finset.mem_union, or_and_right, exists_or]
-  rw [hborn, hdead, born_inter]
-  tauto
-
-/-- Each named overwrite target was born in this history. -/
-def TargetsPresent (h : Finset Event) : Prop :=
-  ∀ e ∈ h, ∀ t ∈ MVR.overwrites e, ∃ birth ∈ h, birth.1 = t
-
-/-- Unlike the lower-level Boolean identity, this theorem's ancestor is
-exactly the shared event history. No arbitrary representation compatibility
-assumption is needed. -/
-theorem merge_shared_history (a b : Finset Event)
-    (unique : ∀ x ∈ a ∪ b, ∀ y ∈ a ∪ b, x.1 = y.1 → x = y)
-    (ha : TargetsPresent a) (hb : TargetsPresent b) :
-    merge (live (a ∩ b)) (live a) (live b) = live (a ∪ b) := by
-  apply live_merge
-  · intro p
-    constructor
-    · rintro ⟨e,he,hp⟩
-      exact ⟨⟨e,(Finset.mem_inter.mp he).1,hp⟩,
-        ⟨e,(Finset.mem_inter.mp he).2,hp⟩⟩
-    · rintro ⟨⟨x,hx,hxp⟩,⟨y,hy,hyp⟩⟩
-      have hxy := unique x (Finset.mem_union_left _ hx)
-        y (Finset.mem_union_right _ hy)
-        (congrArg (fun p : ℕ × ℕ => p.1) (hxp.trans hyp.symm))
-      subst y
-      exact ⟨x,Finset.mem_inter.mpr ⟨hx,hy⟩,hxp⟩
-  · intro t h
-    obtain ⟨e,he,ht⟩ := h
-    exact ⟨e,(Finset.mem_inter.mp he).1,ht⟩
-  · intro t h
-    obtain ⟨e,he,ht⟩ := h
-    exact ⟨e,(Finset.mem_inter.mp he).2,ht⟩
-  · rintro p ⟨birth,hbirth,hp⟩ ⟨e,he,ht⟩
-    obtain ⟨old,hold,hot⟩ := ha e he p.1 ht
-    have heq := unique old (Finset.mem_union_left _ hold)
-      birth (Finset.mem_union_right _ hbirth)
-      (hot.trans (congrArg Prod.fst hp).symm)
-    exact ⟨old,hold,heq ▸ hp⟩
-  · rintro p ⟨birth,hbirth,hp⟩ ⟨e,he,ht⟩
-    obtain ⟨old,hold,hot⟩ := hb e he p.1 ht
-    have heq := unique old (Finset.mem_union_right _ hold)
-      birth (Finset.mem_union_left _ hbirth)
-      (hot.trans (congrArg Prod.fst hp).symm)
-    exact ⟨old,hold,heq ▸ hp⟩
-
-/-- Same human-reviewed sequential machine as the registered MVR. -/
-def spec : SequentialSpec D where
-  State := State
-  init := ∅
-  step := MVR.clientStep
-  Legal := MVR.clientLegal
-  query := fun s _ => MVR.queryValues s
-
-theorem spec_run_eq (ops : List Event) : spec.run ops = MVR.clientSpec.run ops := rfl
-
-theorem update_run_eq (ops : List Event) :
-    applySeq D.toUpdateSig D.init ops = spec.run ops := rfl
-
-/-- The compact chronological fold agrees with the independent history
-oracle; reuse the checked abstract-machine refinement, not old merge laws. -/
-theorem fold_live (ops : List Event)
-    (sorted : ops.Pairwise (fun a b => a.1 ≤ b.1))
-    (past : ∀ e ∈ ops, ∀ t ∈ MVR.overwrites e, t < e.1) :
-    applySeq D.toUpdateSig D.init ops = live ops.toFinset := by
-  apply Finset.ext
-  intro p
-  rw [update_run_eq, spec_run_eq]
-  rw [MVR.fold_refines ops sorted past p, mem_live]
-  rw [MVR.fold_write_iff]
-  have hdead : (applySeq MVR.MVR.toUpdateSig MVR.MVR.init ops).2 p.1 = false ↔
-      ¬ Dead ops.toFinset p.1 := by
-    rw [Bool.eq_false_iff]
-    exact (not_congr (MVR.fold_overwrite_iff ops p.1)).trans (by
-      simp only [Dead, List.mem_toFinset])
-  rw [hdead]
-  simp only [Born, List.mem_toFinset]
-  aesop
-
-#print axioms merge_shared_history
-#print axioms fold_live
-
-
-end LeanProofs.Implementations.MVRegister
+end LeanProofs1.Implementations.MVRegister

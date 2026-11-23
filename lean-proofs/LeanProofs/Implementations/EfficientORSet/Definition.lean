@@ -1,22 +1,35 @@
-import Artifact.MRDTs.Metatheory.Correctness
-import Artifact.MRDTs.Paper1.NaturalSetSpec
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
+import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Finset.Image
 
-/-! Neem's efficient OR-set. The public certificate is in `EfficientORSetCertified`.
-The operation and merge definitions follow the cached F★ OR-set-efficient
-implementation. No removed-tag store occurs in the concrete or abstract state.
+/-!
+# The efficient OR-set: the implementation and the specification
+
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3;
+`historySpec` is the `Spec` of Section 4, as a language of histories.
+`issuance` is the guard `G` of Section 3.
+
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
-namespace LeanProofs.Implementations.EfficientORSet
 
-open Artifact.MRDTs
+namespace LeanProofs1.Implementations.EfficientORSet
 
-open Artifact.MRDTs.Foundation
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
+/-- `O_type`: add and remove an element. -/
 inductive AppOp (α : Type) where
   | add (element : α)
   | remove (element : α)
   deriving DecidableEq
 
+/-- A stored record: the replica that added the element, the timestamp of
+the `add`, and the element. -/
 abbrev Record (α : Type) := Replica × Timestamp × α
+
+/-- `Sigma`: a finite set of records, at most one per replica per element. -/
 abbrev State (α : Type) := Finset (Record α)
 
 /-- An event: an operation with its timestamp and replica. -/
@@ -24,42 +37,102 @@ abbrev Event (α : Type) := Op (AppOp α)
 
 variable {α : Type} [DecidableEq α]
 
+/-- `do(sigma, t, r, o)`. An `add` replaces its own replica's record for the
+element; a `remove` drops every record for the element. -/
 def update (s : State α) (e : Event α) : State α :=
   match e.2.2 with
   | .add x => insert (e.2.1, e.1, x)
       (s.filter fun p => ¬ (p.1 = e.2.1 ∧ p.2.2 = x))
   | .remove x => s.filter fun p => p.2.2 ≠ x
 
+/-- `merge(l,a,b)`, the usual three-way shape. -/
 def merge (l a b : State α) : State α :=
   (l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)
 
+/-- The elements the client sees: every record's element. -/
 def elements (s : State α) : Finset α := s.image fun p => p.2.2
 
-def D (α : Type) [DecidableEq α] : MRDTSig where
-  State := State α
-  dec_state := inferInstance
-  init := ∅
-  AppOp := AppOp α
-  dec_op := inferInstance
-  Query := α
-  Value := Bool
-  update := update
+/-- `rc`: `remove x` is ordered before `add x`, and nothing else. -/
+def rcOps : AppOp α → AppOp α → OrderResult
+  | .remove x, .add y => if x = y then OrderResult.Fst_then_snd else OrderResult.Either
+  | .add x, .remove y => if x = y then OrderResult.Snd_then_fst else OrderResult.Either
+  | _, _ => OrderResult.Either
+
+variable (α)
+
+/-- `type = < O_type, Q_type, Val_type >`. -/
+@[reducible] def itype : MRDTType where
+  OType := AppOp α
+  decOType := inferInstance
+  QType := α
+  ValType := Bool
+
+
+/-- `D_type = < Sigma, sigma0, do, merge, query, rc >`. -/
+@[reducible] def D : Impl (itype α) where
+  Sigma := State α
+  decSigma := inferInstance
+  sigma0 := ∅
+  do_ := update
   merge := merge
   query s x := decide (x ∈ elements s)
+  rc := rcOps
 
-/-- `rc`: `remove x` is ordered before `add x`, and nothing else is ordered,
-exactly as in the paper. Carried here as the event-level order the framework
-asks for, since this row has no `Interface.Impl` wrapper to lift it from. -/
-def rc : EventOrder (D α).toUpdateSig where
-  order a b := match a.2.2, b.2.2 with
-    | .remove x, .add y => if x = y then .Fst_then_snd else .Either
-    | .add x, .remove y => if x = y then .Snd_then_fst else .Either
-    | _, _ => .Either
+variable {α}
+
+/-! ## Membership in a single step
+
+Every proof about this row is a membership computation, and these two
+definitions are what it runs on. `kills r x e` says the effect of `e`
+removes the record `(r, t, x)` whatever `t` is: a `remove x`, or an `add x`
+issued by `r` itself. -/
+
+/-- The effects that drop a record for the pair `(r, x)`. -/
+def kills (r : Replica) (x : α) (e : Event α) : Prop :=
+  match e.2.2 with
+  | .add y => e.2.1 = r ∧ y = x
+  | .remove y => y = x
+
+/-- The event that contributes `p`, which exists whether or not it occurred. -/
+def birth (p : Record α) : Event α := (p.2.1, p.1, AppOp.add p.2.2)
+
+omit [DecidableEq α] in
+@[simp] theorem birth_time (p : Record α) : (birth p).1 = p.2.1 := rfl
+
+omit [DecidableEq α] in
+@[simp] theorem birth_rep (p : Record α) : (birth p).2.1 = p.1 := rfl
+
+omit [DecidableEq α] in
+@[simp] theorem birth_op (p : Record α) : (birth p).2.2 = AppOp.add p.2.2 := rfl
+
+/-- `p` survives `e` unless `e` kills its pair, and `e` itself contributes
+the record whose birth it is. -/
+theorem mem_update_iff (p : Record α) (s : State α) (e : Event α) :
+    p ∈ update s e ↔ e = birth p ∨ (p ∈ s ∧ ¬ kills p.1 p.2.2 e) := by
+  rcases p with ⟨r, t, x⟩
+  rcases e with ⟨et, er, op⟩
+  cases op <;>
+    simp [update, kills, birth, Prod.mk.injEq, eq_comm, and_comm, and_left_comm,
+      and_assoc]
+
+@[simp] theorem merge_comm (l a b : State α) : merge l a b = merge l b a := by
+  ext p
+  simp only [merge, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
+  tauto
+
+theorem merge_init (s : State α) : merge ∅ ∅ s = s := by simp [merge]
+
+/-! ## At most one timestamp per replica per element
+
+The invariant the replacement buys. It is not needed by any obligation
+below, and is kept because the SPOT block uses it to show that merging
+unrelated replays is not a fold of anything. -/
 
 /-- At most one timestamp is stored for each replica/element pair. -/
 def KeyUnique (s : State α) : Prop :=
   ∀ r t u x, (r,t,x) ∈ s → (r,u,x) ∈ s → t = u
 
+omit [DecidableEq α] in
 theorem keyUnique_empty : KeyUnique (∅ : State α) := by simp [KeyUnique]
 
 theorem keyUnique_update {s : State α} (h : KeyUnique s) (e : Event α) :
@@ -84,32 +157,10 @@ theorem keyUnique_fold (ops : List (Event α)) {s : State α}
   | nil => exact h
   | cons e ops ih => exact ih (keyUnique_update h e)
 
-theorem merge_comm (l a b : State α) : merge l a b = merge l b a := by
-  ext p
-  simp only [merge, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
-  tauto
-
-theorem merge_init (s : State α) : merge ∅ ∅ s = s := by simp [merge]
-
-/-- No state-dependent guard is required by Neem's Add/Rem API.
-Fresh timestamps and sequential use of a replica belong to execution. -/
-def issuance : Issuance (D α) where
-  CanIssue _ _ := True
-
-theorem rc_acyclic : @ReplayAcyclic (D α).toUpdateSig rc := by
-  letI : EventOrder (D α).toUpdateSig := rc
-  apply replayAcyclic_of_noReplayChain
-  rintro a b c ⟨hab, hbc⟩
-  rcases a with ⟨ta, ra, oa⟩
-  rcases b with ⟨tb, rb, ob⟩
-  rcases c with ⟨tc, rc', oc⟩
-  cases oa <;> cases ob <;> cases oc <;>
-    simp_all [UpdateSig.replayOrder, rc]
-  all_goals first
-    | (split at hab <;> simp_all)
-    | (split at hbc <;> simp_all)
+/-! ## SPOT -/
 
 namespace SPOT
+
 def a : Event Nat := (1, 0, .add 7)
 def a' : Event Nat := (2, 0, .add 7)
 def b : Event Nat := (3, 1, .add 7)
@@ -127,20 +178,24 @@ theorem concurrent_add_wins :
 theorem union_would_resurrect :
     (update (update ∅ a) rem ∪ update ∅ a) ≠
       merge (update ∅ a) (update (update ∅ a) rem) (update ∅ a) := by decide
-theorem same_replica_adds_not_commuting :
-    ¬ (D Nat).toUpdateSig.commutes a a' := by
+
+/-- Two `add 7` events from replica `0` do not commute. -/
+theorem same_replica_adds_not_commuting : ¬ (D Nat).Commutes a a' := by
   intro h
   have bad := h (∅ : State Nat)
   change update (update ∅ a) a' = update (update ∅ a') a at bad
   have ne : update (update ∅ a) a' ≠ update (update ∅ a') a := by decide
   exact ne bad
 
-theorem all_state_replay_laws_unavailable :
-    ¬ @ReplayLaws (D Nat).toUpdateSig rc := by
-  letI : EventOrder (D Nat).toUpdateSig := rc
-  intro laws
-  have h := laws.noncomm_covered a a' same_replica_adds_not_commuting
-  simpa [UpdateSig.replayBefore, EventOrder.Before, rc, a, a'] using h
+/-- **No `rc` edge covers that pair.** With the theorem above this refutes
+the unguarded reading of RC-NON-COMM: the pair does not commute, carries one
+operation, and no edge relates it. The guarded reading exempts it, and that
+is the whole reason the row states its conditions at `lo^C_E` rather than at
+`rc`. -/
+theorem no_rc_edge_for_same_replica_adds :
+    ¬ ((D Nat).EventRcBefore a a' ∨ (D Nat).EventRcBefore a' a) := by
+  rintro (hr | hr) <;>
+    simp [Impl.EventRcBefore, Impl.RcBefore, rcOps, Op.op, a, a'] at hr
 
 /-- Arbitrary independent replay choices cannot be used as merge premises.
 All three singleton states are folds of permutations of the same three adds,
@@ -160,9 +215,35 @@ theorem incompatible_replays_merge_not_a_fold :
   rw [heq] at h
   have bad := h 0 2 3 7 (by decide) (by decide)
   exact (by decide : (2 : Nat) ≠ 3) bad
+
 end SPOT
 
-#print axioms rc_acyclic
 #print axioms keyUnique_fold
+#print axioms SPOT.no_rc_edge_for_same_replica_adds
 #print axioms SPOT.incompatible_replays_merge_not_a_fold
-end LeanProofs.Implementations.EfficientORSet
+
+variable (α)
+
+/-! ## `Spec` -/
+
+/-- `Spec`: an ordinary set, with no replica and no timestamp anywhere.
+`add` inserts, `remove` erases, and the query reports membership. -/
+def specMachine : DeterministicSpec (itype α).OType (itype α).QType (itype α).ValType where
+  State := Finset α
+  initial := ∅
+  update S o := match o with
+    | .add x => insert x S
+    | .remove x => S.erase x
+  query S x := decide (x ∈ S)
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec (itype α) := (specMachine α).toSpec
+
+/-! ## Issuance -/
+
+/-- Issuance: `G(e, O) <=> true`. The efficient OR-set reserves no
+timestamp and needs no side condition on the events a replica may mint. -/
+def issuance : Issuance (D α).toMRDTSig where
+  CanIssue := fun _ _ => True
+
+end LeanProofs1.Implementations.EfficientORSet

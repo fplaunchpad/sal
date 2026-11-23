@@ -1,25 +1,21 @@
-import LeanProofs.Interface.Implementation
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
 
 /-!
-# The enable-wins flag: its implementation tuple
+# The enable-wins flag: the implementation and the specification
 
-The Enable-wins flag row of Table 1, Appendix `app:dt-enable-wins-flag`.
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3;
+`historySpec` is the `Spec` of Section 4, as a language of histories.
+`issuance` is the guard `G` of Section 3.
 
-`enable` is the winning request, `disable` clears observed enables, and the
-client reads the physical bit directly: `read(s) = [exists i. b_i = true]`.
-
-`Sigma` is a per-replica counter and bit. A `winning` increments the issuer's
-counter and sets its bit; a `reset` clears every bit and leaves the counters
-alone. The counter is what tells `merge` whether a branch has a `winning` the
-ancestor did not have, which is the role the record sets play in the OR-set.
-
-`rc` is nonempty: `reset` is ordered before `winning`, so in a concurrent pair
-the `winning` survives.
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs.Implementations.EnableWinsFlag
+namespace LeanProofs1.Implementations.EnableWinsFlag
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
 /-- `O_type`. The names are the ones the source algorithm uses; which of them
 the client calls "enable" depends on the polarity. -/
@@ -94,4 +90,39 @@ abbrev enable : AppOp := .winning
 /-- `disable` clears every observed enable. -/
 abbrev disable : AppOp := .reset
 
-end LeanProofs.Implementations.EnableWinsFlag
+
+/-! ## `Spec` -/
+
+/-- How one request moves the physical bit. -/
+def flagStep (_ : Bool) (o : AppOp) : Bool :=
+  match o with
+  | .winning => true
+  | .reset => false
+
+/-- How one request moves the client Boolean. -/
+def boolStep (invert : Bool) (_ : Bool) (o : AppOp) : Bool :=
+  match o with
+  | .reset => invert
+  | .winning => !invert
+
+/-- `Spec`: one Boolean, set by `winning` and cleared by `reset`, read
+directly or negated according to `false`. -/
+def specMachine :
+    DeterministicSpec type.OType type.QType type.ValType where
+  State := Bool
+  initial := if false then !false else false
+  update := boolStep false
+  query b _ := b
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec type :=
+  specMachine.toSpec
+
+/-! ## Issuance -/
+
+/-- Issuance: `G(e, O) <=> true`. The source algorithm puts no side condition
+on the events a replica may mint. -/
+def issuance : Issuance D.toMRDTSig where
+  CanIssue := fun _ _ => True
+
+end LeanProofs1.Implementations.EnableWinsFlag

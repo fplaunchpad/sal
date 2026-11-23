@@ -23,7 +23,7 @@ framework's operation policy in `Interface/Laws.lean`, next to the laws that
 constrain it.
 -/
 
-namespace LeanProofs.Interface
+namespace LeanProofs1.Interface
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation
 
@@ -97,10 +97,6 @@ def Commutes (e₁ e₂ : D.Event) : Prop :=
 abbrev RcBefore (o₁ o₂ : type.OType) : Prop :=
   D.rc o₁ o₂ = OrderResult.Fst_then_snd
 
-/-- `rc` leaves the pair unordered. -/
-abbrev RcEither (o₁ o₂ : type.OType) : Prop :=
-  D.rc o₁ o₂ = OrderResult.Either
-
 /-- `e1 --rc--> e2`, the lifting of `rc` to events by their labels. -/
 abbrev EventRcBefore (e₁ e₂ : D.Event) : Prop :=
   D.RcBefore e₁.op e₂.op
@@ -122,4 +118,4 @@ def toMRDTSig : MRDTSig where
 
 end Impl
 
-end LeanProofs.Interface
+end LeanProofs1.Interface

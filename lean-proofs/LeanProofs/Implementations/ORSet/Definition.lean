@@ -1,25 +1,27 @@
-import LeanProofs.Interface.Implementation
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Lattice.Basic
 import Mathlib.Data.Finset.Image
 
 /-!
-# The OR-set: its implementation tuple
+# The OR-set: the implementation and the specification
 
-The OR-set row of Table 1, Appendix `app:dt-or-set`. This is the exact
-observed-remove set of Section 2, Fig. 1, not the efficient encoding.
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3,
+with `rc` nonempty; `historySpec` is the `Spec` of Section 4, an ordinary
+set with no timestamps anywhere; `issuance` is the guard `G`, which this row
+does not use.
 
-Every add is retained as an element/timestamp pair, so two adds of the same
-element are distinct records. A remove erases every pair for its element,
-which is why it does not commute with a concurrent add of that element.
-
-This is the first row here whose `rc` is nonempty. `remove x` is ordered
-before `add x`; every other pair is left unordered, as RC-NON-COMM requires.
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs.Implementations.ORSet
+namespace LeanProofs1.Implementations.ORSet
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
+
+open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs1.Interface
 
 /-- `O_type`: add and remove an element. -/
 inductive AppOp (A : Type) where
@@ -81,4 +83,32 @@ Reducible so that `(D A).Sigma` unfolds to `St A` during instance search. -/
   query S x := decide (x ∈ view S)
   rc := rc
 
-end LeanProofs.Implementations.ORSet
+/-! ## `Spec` -/
+
+/-- `Spec`: an ordinary set, with no timestamps anywhere. `add` inserts,
+`remove` erases, and the query reports membership. -/
+def specMachine : DeterministicSpec (type A).OType (type A).QType (type A).ValType where
+  State := Finset A
+  initial := ∅
+  update S o := match o with
+    | .add x => insert x S
+    | .remove x => S.erase x
+  query S x := decide (x ∈ S)
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec (type A) := (specMachine A).toSpec
+
+variable {A}
+
+/-! ## Issuance -/
+
+variable (A)
+
+/-- Issuance: `G(e, O) <=> true`. The exact OR-set needs no payload and no
+side condition on the events a replica may mint. -/
+def issuance : Issuance (D A).toMRDTSig where
+  CanIssue := fun _ _ => True
+
+variable {A}
+
+end LeanProofs1.Implementations.ORSet

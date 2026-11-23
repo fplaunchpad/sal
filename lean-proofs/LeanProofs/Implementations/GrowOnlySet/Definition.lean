@@ -1,10 +1,14 @@
-import LeanProofs.Interface.Implementation
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
 
 /-!
-# The grow-only set: its implementation tuple
+# The grow-only set: the implementation and the specification
 
-`D_type = < Sigma, sigma0, do, merge, query, rc >` for the Grow-only set row
-of Table 1, following Appendix `app:dt-grow-only-set`.
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3,
+following Appendix `app:dt-grow-only-set`; `historySpec` is the `Spec` of
+Section 4, as a language of histories. `issuance` is the guard `G` of
+Section 3, which this row does not use.
 
 * **State** a mathematical set `S`, **initial** the empty set.
 * **Payload** an element `o`.
@@ -14,13 +18,15 @@ of Table 1, following Appendix `app:dt-grow-only-set`.
 * **rc** empty.
 
 Insertion permanently adds an element, so an element learned on either branch
-survives the merge. The appendix also lists an enumerable `Finset` carrier and
-a Boolean carrier; this is the mathematical one.
+survives the merge.
+
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs.Implementations.GrowOnlySet
+namespace LeanProofs1.Implementations.GrowOnlySet
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
 variable (A : Type) [DecidableEq A]
 
@@ -46,4 +52,22 @@ noncomputable def D : Impl (type A) where
   query S _ := S
   rc _ _ := OrderResult.Either
 
-end LeanProofs.Implementations.GrowOnlySet
+/-! ## `Spec` -/
+
+/-- The specification as a deterministic machine. -/
+def specMachine : DeterministicSpec (type A).OType (type A).QType (type A).ValType where
+  State := Set A
+  initial := ∅
+  update S o := insert o S
+  query S _ := S
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec (type A) := (specMachine A).toSpec
+
+/-! ## Issuance -/
+
+/-- Issuance: `G(e, O) <=> true`. -/
+def issuance : Issuance (D A).toMRDTSig where
+  CanIssue := fun _ _ => True
+
+end LeanProofs1.Implementations.GrowOnlySet

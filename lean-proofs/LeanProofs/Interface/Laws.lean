@@ -1,4 +1,4 @@
-import LeanProofs.Interface.Implementation
+import LeanProofs1.Interface.Implementation
 import Artifact.MRDTs.Framework.Certificates
 import Artifact.MRDTs.Paper1.RestrictedReplay
 import Artifact.MRDTs.Paper1.GuardedReplay
@@ -17,7 +17,7 @@ with a nonempty `rc` has real work to do.
 SPEC-NON-COMM is not a field below. It mentions `Spec`, which the laws of
 this file do not, and no proof downstream consumes it.
 -/
-namespace LeanProofs.Interface
+namespace LeanProofs1.Interface
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
 
@@ -124,9 +124,119 @@ plus NO-RC-CHAIN.
 `Laws` alone does not give this. Its RC-NON-COMM and COND-COMM each exempt
 the pairs the paper exempts, and `RestrictedLaws` asks about those pairs too.
 So both unguarded laws are taken as hypotheses, and a row that cannot supply
-them cannot be certified through `Soundness/` at all. The efficient OR-set is
-such a row. -/
+them cannot be certified through this adapter at all. A row whose RC-NON-COMM
+holds only at concurrent events is such a row, and it goes through
+`GuardedReplay.Laws` instead. -/
 theorem Laws.toRestricted {D : Impl type} (h : Laws D)
     (hru : UniformRcNonComm D) (hcc : UniformCondComm D) :
     RestrictedLaws D.toMRDTSig.toUpdateSig (policy D) :=
   ⟨fun a b => hru a b, h.no_rc_chain, hcc⟩
+
+/-! ## The same two laws, as the guarded contract wants them
+
+`RestrictedLaws` above is one of the framework's two adapters. The other is
+`GuardedReplay.Laws`, which `Interface/VCRoute.lean` runs on and which
+keeps the paper's concurrency guards on RC-NON-COMM. It is still not
+`Laws(D_type)`: it drops the `o1 /= o2` conjunct, and its COND-COMM drops
+the replica guard too. The readings below are what closes those two gaps,
+and they live here rather than in `VCRoute.lean` so that every statement
+of RC-NON-COMM and COND-COMM in this development is in one file. -/
+
+/-- **RC-NON-COMM over concurrent events, without the `o1 /= o2` conjunct.**
+
+`Laws.rc_non_comm` is the paper's statement and carries that conjunct on its
+left. Dropping it costs nothing: read right to left NO-RC-CHAIN produces it,
+which is what `rcNonComm_of_exact` does. Dropping the two **hypotheses**
+would cost a great deal, and this abbreviation keeps them: unlike
+`UniformRcNonComm` it asks nothing of a pair one replica issued. -/
+abbrev ConcurrentRcNonComm (D : Impl type) : Prop :=
+  ∀ e₁ e₂ : D.Event, D.time e₁ ≠ D.time e₂ → D.rep e₁ ≠ D.rep e₂ →
+    (¬ D.Commutes e₁ e₂ ↔ D.EventRcBefore e₁ e₂ ∨ D.EventRcBefore e₂ e₁)
+
+/-- The unguarded reading implies the guarded one. -/
+theorem UniformRcNonComm.toConcurrent {D : Impl type} (h : UniformRcNonComm D) :
+    ConcurrentRcNonComm D := fun e₁ e₂ _ _ => h e₁ e₂
+
+/-- **What `Laws(D_type)` does not say.**
+
+RC-NON-COMM carries `o1 /= o2` on its left, so it is silent about a pair of
+concurrent events carrying **one** operation. That silence cannot be left
+open. Nothing would order such a pair: `lo^C_E`'s causal disjunct needs a
+`vis` edge, which concurrent events do not have, and its `rc` disjunct would
+need `o --rc--> o`, which NO-RC-CHAIN refutes. The two replays would then
+fold to different states and `can^C(E)` would not be a function of `E`.
+
+So this is the one fact the paper's laws leave out, stated on its own rather
+than folded back into RC-NON-COMM. The framework splits the contract the
+same way, in `SplitPolicy.guarded_iff_repaired`. -/
+abbrev EqualOpCommutes (D : Impl type) : Prop :=
+  ∀ e₁ e₂ : D.Event, D.time e₁ ≠ D.time e₂ → D.rep e₁ ≠ D.rep e₂ →
+    e₁.op = e₂.op → D.Commutes e₁ e₂
+
+/-- A row that proves the exact equivalence at concurrent events has it
+already: an `rc` edge from an operation to itself is a chain of two. -/
+theorem EqualOpCommutes.of_concurrent {D : Impl type}
+    (hchain : ∀ o₁ o₂ o₃ : type.OType, ¬ (D.RcBefore o₁ o₂ ∧ D.RcBefore o₂ o₃))
+    (h : ConcurrentRcNonComm D) : EqualOpCommutes D := by
+  intro e₁ e₂ ht hr hop
+  by_contra hn
+  have hdiag : D.RcBefore e₂.op e₂.op := by
+    rcases (h e₁ e₂ ht hr).mp hn with hb | hb
+    · have hb' : D.RcBefore e₁.op e₂.op := hb
+      rwa [hop] at hb'
+    · have hb' : D.RcBefore e₂.op e₁.op := hb
+      rwa [hop] at hb'
+  exact hchain e₂.op e₂.op e₂.op ⟨hdiag, hdiag⟩
+
+/-- **What `Laws(D_type)` does not say about COND-COMM.**
+
+COND-COMM carries two guards, distinct timestamps and **different
+replicas**. The guarded contract keeps the first and drops the second, so
+the case left open is a pair of events one replica issued at different
+times. `lo^C_E` never transposes such a pair, since one replica's events are
+causally ordered, but the contract is stated without a context and cannot
+see that, so a row supplies the case. -/
+abbrev SameReplicaCondComm (D : Impl type) : Prop :=
+  ∀ (sigma : D.Sigma) (e e' e'' : D.Event) (pi : List D.Event),
+    D.time e ≠ D.time e' → D.rep e = D.rep e' →
+    D.EventRcBefore e e' → ¬ D.Commutes e' e'' →
+    D.do_ (D.applyList (D.do_ (D.do_ sigma e') e) pi) e''
+      = D.do_ (D.applyList (D.do_ (D.do_ sigma e) e') pi) e''
+
+/-- A row that proves COND-COMM with no guard at all has the case already. -/
+theorem UniformCondComm.toSameReplica {D : Impl type} (h : UniformCondComm D) :
+    SameReplicaCondComm D :=
+  fun sigma e e' e'' pi _ _ hrc hnc => h sigma e e' e'' pi hrc hnc
+
+/-- **The framework's guarded contract**, from `Laws(D_type)` and the two
+cases it leaves open.
+
+This is the contract `Soundness/` runs on along this route. Unlike
+`RestrictedLaws`, every one of its three conditions carries the paper's own
+exemptions, so a row is never asked about a pair that `lo^C_E` cannot
+transpose. Each condition is proved by splitting on the guard the paper's law carries.
+For RC-NON-COMM the `o1 /= o2` half is `Laws.rc_non_comm` and the `o1 = o2`
+half is `EqualOpCommutes`, with NO-RC-CHAIN closing the right-hand side. For
+COND-COMM the different-replica half is `Laws.cond_comm` and the
+same-replica half is `SameReplicaCondComm`.
+
+Every pair either law is consulted about therefore carries distinct
+timestamps, and RC-NON-COMM is consulted only about pairs from different
+replicas, which is what makes this contract and not `RestrictedLaws` the one
+every row here runs on. -/
+theorem guardedLaws {D : Impl type} (h : Laws D) (hself : EqualOpCommutes D)
+    (hsame : SameReplicaCondComm D) :
+    GuardedReplay.Laws D.toMRDTSig.toUpdateSig (policy D) where
+  noncomm_exact a b hd hrep := by
+    by_cases hop : a.op = b.op
+    · refine ⟨fun hn => absurd (hself a b hd hrep hop) hn, ?_⟩
+      rintro (hb | hb) <;> rw [hop] at hb <;>
+        exact (h.no_rc_chain b.op b.op b.op ⟨hb, hb⟩).elim
+    · exact ⟨fun hn => (h.rc_non_comm a b hd hrep).mp ⟨hn, hop⟩,
+        fun hb => ((h.rc_non_comm a b hd hrep).mpr hb).1⟩
+  no_chain a b c _ _ := h.no_rc_chain a.op b.op c.op
+  conditional_commutation s a b c between hd _ _ hab hbc := by
+    by_cases hrep : D.rep a = D.rep b
+    · exact hsame s a b c between hd hrep hab hbc
+    · exact h.cond_comm s a b c between hd hrep hab hbc
+

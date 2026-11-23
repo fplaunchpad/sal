@@ -1,33 +1,21 @@
-import LeanProofs.Interface.Implementation
-import Mathlib.Data.Finset.Basic
-import Mathlib.Data.Finset.Lattice.Basic
-import Mathlib.Data.Finset.Image
-import Mathlib.Data.Fintype.Basic
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
 
 /-!
-# The remove-wins set: its implementation tuple
+# The remove-wins set: the implementation and the specification
 
-The Remove-wins set row of Table 1, Appendix `app:dt-remove-wins-set`.
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3;
+`historySpec` is the `Spec` of Section 4, as a language of histories.
+`issuance` is the guard `G` of Section 3.
 
-This is the OR-set read in the mirror. The state holds *removal* tags rather
-than add records: a `remove` inserts its own tag and an `add` erases every tag
-for its element, so a concurrent `remove` wins. `rc` is reversed with it:
-`add x` is ordered before `remove x`.
-
-Two things make it more than a relabelling of the OR-set.
-
-* Every element starts removed. `sigma0` carries a tag `(x, 0)` for each `x`,
-  so the carrier must be finite and the client view is a complement.
-* Timestamp `0` is reserved for those initial tags. The implementation
-  therefore carries an **issuance guard**, `G(e, s) <=> 0 < time(e)`: without
-  it a minted `remove` could collide with an initial tag and the two sources
-  of a record would be indistinguishable. This is the first row here whose
-  `I` column in Table 1 is `Y`.
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs.Implementations.RemoveWinsSet
+namespace LeanProofs1.Implementations.RemoveWinsSet
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
 /-- `O_type`: add and remove an element. -/
 inductive AppOp (A : Type) where
@@ -93,4 +81,27 @@ variable (A)
   query S x := decide (x ∈ view S)
   rc := rc
 
-end LeanProofs.Implementations.RemoveWinsSet
+
+/-! ## `Spec` -/
+
+/-- `Spec`: an ordinary set, empty at the start, with no timestamps
+anywhere. -/
+def specMachine : DeterministicSpec (type A).OType (type A).QType (type A).ValType where
+  State := Finset A
+  initial := ∅
+  update S o := match o with
+    | .add x => insert x S
+    | .remove x => S.erase x
+  query S x := decide (x ∈ S)
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec (type A) := (specMachine A).toSpec
+
+/-! ## Issuance -/
+
+/-- Issuance: `G(e, s) <=> 0 < time(e)`. The reserved timestamp `0` belongs
+to the seed tags of `sigma0` and may not be minted. -/
+def issuance (A : Type) [DecidableEq A] [Fintype A] : Issuance (D A).toMRDTSig where
+  CanIssue := fun e _ => 0 < e.time
+
+end LeanProofs1.Implementations.RemoveWinsSet

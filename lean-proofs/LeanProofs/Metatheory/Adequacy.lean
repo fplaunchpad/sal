@@ -1,169 +1,49 @@
-import LeanProofs.Interface.VCRoute
+import LeanProofs1.Interface.VCRoute
 import Artifact.MRDTs.Metatheory.Correctness
 import Artifact.MRDTs.Paper1.ConcreteJoin
+import Artifact.MRDTs.Paper1.CertifiedClosedExecution
 
 /-!
-# Adequacy: the obligations imply the join lemma
+# Adequacy
 
 Proved once, for every implementation. No datatype is named here and no
 implementation may add to this file.
 
-The chain follows Section 5 of the paper:
-
 ```
-  Laws(D_type)  +  VC1..VC5        per implementation
+  Laws(D_type)  +  VC1..VC5 at lo^C_E        per implementation
       |
       v
-  the join lemma                  merging canonical states is canonical
+  the join lemma                             merging canonical states is
+      |                                      canonical
+      v
+  every stored version holds can(E(v))       along every certified execution
 ```
 
-`Soundness` carries the chain further, to canonical correctness and then,
-with `SpecSound`, to RA-linearizability. Nothing here consults `Spec`: as
-the paper says, the canonical join laws alone do not establish conformance.
+Both steps are the framework's, run at the representation
+`can^C(E) = s`. The first is the five-VC induction of `ConcreteMRDT.Raw`;
+the second is the execution induction of `CertifiedClosedExecution`, which
+is indexed by an `EventOrder` and so is reached through the row's
+`ExecutionOrder`.
 
-## Two routes to the join lemma
+Canonicity is read at the relation Section 4 displays, which is Part II of
+`Interface/VCRoute.lean`, rather than at the one the framework builds from
+`rc`. That is what lets the chain run on `GuardedReplay.Laws` and so keep
+the paper's guards on RC-NON-COMM: `rc` is consulted only about pairs with
+distinct timestamps issued by different replicas.
 
-`joinLemma_of_vcs` is the route of Section 5: discharge the five VCs and the
-lemma follows. The VCs are the paper's, premises and all, and this file
-passes them to the framework's canonical-state constructor unchanged.
+Nothing here consults `Spec`. As the paper says, the canonical join laws
+alone do not establish conformance; `Soundness/` adds `SpecSound` for that.
 
-One row's join lemma depends on its issuance guard, so its conditions are
-stated at the contexts that guard admits. `joinOn_of_vcs` is the same step
-for it, by the framework's other induction. Both end at `JoinAt`, so nothing
-downstream can tell them apart.
 -/
 
-namespace LeanProofs.Metatheory
+namespace LeanProofs1.Metatheory
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1 LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
 variable {type : MRDTType} {D : Impl type}
 
-/-! ## The general route
-
-Everything in this section holds for an arbitrary `rc`. -/
-
-/-- `Laws(D_type)` is the framework's replay contract. RC-NON-COMM supplies
-`noncomm_covered`, NO-RC-CHAIN supplies acyclicity, COND-COMM supplies the
-absorber clause. -/
-theorem replayLaws (h : Laws D) (hru : UniformRcNonComm D) (hcc : UniformCondComm D) :
-    @ReplayLaws D.toMRDTSig.toUpdateSig (rcOrder D) :=
-  (h.toRestricted hru hcc).replayLaws
-
-theorem joinCoreLaws (h : Laws D) (hru : UniformRcNonComm D) (hcc : UniformCondComm D)
-    (vcs : CanonicalJoinLaws D) : @JoinCoreLaws D.toMRDTSig (rcOrder D) :=
-  letI : EventOrder D.toMRDTSig.toUpdateSig := rcOrder D
-  ⟨replayLaws h hru hcc, vcs.vc1_merge_comm⟩
-
-/-- **VC2, VC3 and VC5** as the framework's canonical-state delta bundle.
-Each field is the row's own obligation, passed through unchanged: the
-premises `FeasibleDeltaLaws` carries are exactly the paper's. -/
-theorem feasibleDeltaLaws (vcs : CanonicalJoinLaws D) :
-    @FeasibleDeltaLaws D.toMRDTSig (rcOrder D) :=
-  letI : EventOrder D.toMRDTSig.toUpdateSig := rcOrder D
-  ⟨fun C E s hsup hcan => vcs.vc2_merge_init C E s hsup hcan,
-   fun C E₁ E₂ l m x y e htr hirr h₁ h₂ hc₁ hc₂ he₁ he₂ hmax hl hm hx hy =>
-     vcs.vc3_local_redistribute C E₁ E₂ l m x y e ⟨htr, hirr⟩ h₁ h₂ hc₁ hc₂
-       he₁ he₂ hmax hl hm hx hy,
-   fun C E₁ E₂ x₀ x₁ x₂ m e htr hirr h₁ h₂ hc₁ hc₂ he₁ he₂ hmax hx₀ hm hx₁ hx₂ =>
-     vcs.vc5_redistribute C E₁ E₂ x₀ x₁ x₂ m e ⟨htr, hirr⟩ h₁ h₂ hc₁ hc₂
-       he₁ he₂ hmax hx₀ hm hx₁ hx₂⟩
-
-/-- **The join lemma** from the five VCs: merging canonical states produces
-the canonical state of the union of their event sets.
-
-This is the framework's own canonical-state constructor. Nothing is
-strengthened on the way in. -/
-theorem joinLemma_of_vcs (h : Laws D) (hru : UniformRcNonComm D)
-    (hcc : UniformCondComm D) (vcs : CanonicalJoinLaws D) :
-    @Join D.toMRDTSig (rcOrder D) :=
-  letI : EventOrder D.toMRDTSig.toUpdateSig := rcOrder D
-  Artifact.MRDTs.CanonicalJoinLaws.join
-    ⟨joinCoreLaws h hru hcc vcs, feasibleDeltaLaws vcs, vcs.vc4_causal_delta⟩
-
-/-! ## A helper for the all-commuting family
-
-`Obligations` carries the row's own laws and its five conditions, and asks
-nothing about commutation. `causalDelta_of_commuting` below is a helper, not
-a VC: a row whose events all commute may use it to discharge **VC4**
-cheaply, and a row whose events do not proves VC4 itself. -/
-
-/-- **A way to discharge VC4 when every pair of events commutes.**
-
-Not a VC and not a law: a helper. When everything commutes, `lo^C_E` orders
-nothing, so the downset of `e` is `{e}` and the base `B` of CAUSAL-DELTA is
-`sigma0`. The peel hypothesis then moves `e` outside the merge, and VC2 is
-applied at `A`, which is canonical by assumption. `commuting_peel` lives
-here, as a hypothesis of this helper, rather than among the paper's
-conditions.
-
-This mirrors `Artifact.MRDTs.causalDeltaLaw_of_all_comm`, which asks for
-`merge(sigma0, sigma0, s)` at an arbitrary `s`. Only a canonical `s` is ever
-needed, so the paper's VC2 suffices. -/
-theorem causalDelta_of_commuting
-    (merge_comm : ∀ l a b : D.Sigma, D.merge l a b = D.merge l b a)
-    (vc2 : ∀ (C : Ctx D) (E : Set D.Event) (s : D.Sigma),
-      SupportedOn D C E → IsCanOn D C E s → D.merge D.sigma0 D.sigma0 s = s)
-    (peel : ∀ (a : D.Sigma) (e : D.Event) (pi₀ pi₂ : List D.Event),
-      (∀ x ∈ pi₀, D.Commutes e x) → (∀ x ∈ pi₂, D.Commutes e x) →
-      D.merge (D.applyList D.sigma0 pi₀) (D.do_ a e) (D.applyList D.sigma0 pi₂)
-        = D.do_ (D.merge (D.applyList D.sigma0 pi₀) a (D.applyList D.sigma0 pi₂)) e)
-    (all_comm : ∀ e₁ e₂ : D.Event, D.Commutes e₁ e₂) :
-    @CausalDeltaLaw D.toMRDTSig (rcOrder D) := by
-  letI : EventOrder D.toMRDTSig.toUpdateSig := rcOrder D
-  intro C U A B e _ _ hU _ _ _ hA hB
-  have h_down : downset C e \ {e} = ∅ := by
-    ext x
-    simp only [Set.mem_diff, Set.mem_singleton_iff,
-      Set.mem_empty_iff_false, iff_false, not_and]
-    rintro (hx | hx)
-    · exact fun hne => hne hx
-    · intro _
-      exfalso
-      cases hx with
-      | single h' => exact h'.2 (all_comm _ _)
-      | tail _ h' => exact h'.2 (all_comm _ _)
-  have hBinit : B = D.sigma0 := isCanonicalState_empty h_down hB
-  subst hBinit
-  obtain ⟨ρ, -, -, hfA⟩ := id hA
-  have hpc := peel D.sigma0 e [] ρ
-    (fun x hx => absurd hx List.not_mem_nil) (fun x _ => all_comm e x)
-  have h0 : D.applyList D.sigma0 ([] : List D.Event) = D.sigma0 := rfl
-  rw [h0] at hpc
-  rw [show D.applyList D.sigma0 ρ = A from hfA] at hpc
-  rw [vc2 C (U \ {e}) A (fun a ha => hU a ha.1) hA] at hpc
-  show D.merge D.sigma0 A (D.do_ D.sigma0 e) = D.do_ A e
-  rw [merge_comm]
-  exact hpc
-
-/-- The join lemma for the all-commuting family. -/
-theorem joinLemma (h : Obligations D) : @Join D.toMRDTSig (rcOrder D) :=
-  joinLemma_of_vcs h.laws h.rc_non_comm h.cond_comm h.joinLaws
-
-/-! ## The guarded route
-
-One row of Table 1 carries an issuance guard and its join lemma is false
-without it, so its conditions are stated at the contexts the guard admits.
-`Interface/VCRoute.lean` calls that predicate `Good`.
-
-The framework's canonical-state induction, which `joinLemma_of_vcs` above
-runs, takes its conditions at **every** context, so it cannot carry a guard.
-The framework's other induction can: `ConcreteMRDT.Raw.join_at_sizes` is
-indexed by a *representation* rather than by `IsCanonicalState` itself, and
-it is already fixed at one context. Putting `Good C` inside the
-representation is what carries the guard through, and that is what the three
-definitions below do.
-
-Both routes end at `JoinAt`, so nothing downstream can tell them apart, and
-`Obligations.toOn` lets an unguarded row take this route as well. -/
-
-/-- **The representation the guarded induction runs on**: the canonical state
-of a supported event set, at a context `Good` admits. Carrying `Good C` here
-rather than as a premise of each condition is what lets the framework's
-induction, which fixes one context throughout, keep the guard. -/
-def vcRepresentation (D : Impl type) (Good : Ctx D → Prop) :
-    ConcreteMRDT.Representation D.toMRDTSig :=
-  fun C E s => IsCanOn D C E s ∧ SupportedOn D C E ∧ Good C
+/-! ## The dependency scheme both readings are built on -/
 
 /-- The metadata scheme: a `vis` edge between non-commuting events, which is
 the relation `downset` is the backward closure of. -/
@@ -171,129 +51,290 @@ def vcScheme (D : Impl type) (C : Ctx D) :
     ConcreteMRDT.MetadataDependencies C :=
   ConcreteMRDT.MetadataDependencies.ofConcrete C
 
-/-- The scheme's past is the principal downset, by definition of both. -/
-theorem vcScheme_past (D : Impl type) (C : Ctx D) (e : D.Event) :
-    (vcScheme D C).Past e = downset C e := rfl
+/-- `vcScheme`'s edges are `lo^C_E` edges. -/
+theorem metadata_of_paperOrder {C : Ctx D} {E : Set D.Event} {a b : D.Event}
+    (h : (vcScheme D C).before a b) : paperOrder (policy D) C E a b :=
+  Or.inl h
 
-/-- **The join lemma at the contexts `Good` admits**, from `Laws(D_type)` and
-the five conditions stated there. With `Good = fun _ => True` this is
-`joinLemma_of_vcs` again, by another induction. -/
-theorem joinOn_of_vcs {Good : Ctx D → Prop} (h : Laws D)
-    (hru : UniformRcNonComm D) (hcc : UniformCondComm D)
-    (vcs : CanonicalJoinLawsOn D Good) (C : Ctx D) (hgood : Good C) :
-    @JoinAt D.toMRDTSig (rcOrder D) C := by
+/-- **A finite nonempty event set has a maximal event**, maximal both for
+`lo^C_E` and for the dependency scheme. The second follows from the first:
+every scheme edge is a `lo^C_E` edge. -/
+theorem exists_paperMaximal (hl : GuardedReplay.Laws D.toMRDTSig.toUpdateSig (policy D))
+    {C : Ctx D} {E : Set D.Event} {π : List D.Event}
+    (htr : Transitive C.vis) (hirr : ∀ x : D.Event, ¬ C.vis x x)
+    (hsup : SupportedOn D C E) (hp : listPermOf π E) (hne : E.Nonempty) :
+    ∃ e ∈ E, PaperMaximalOn D C E e ∧
+      ∀ x ∈ E, x ≠ e → ¬ (vcScheme D C).before e x := by
+  obtain ⟨ρ, hρ, hr⟩ := GuardedReplay.exists_paperOrder_enumeration hl
+    (fun {_ _ _} hab hbc => htr hab hbc) hirr hsup hp
+  exact ConcreteMRDT.joint_maximal_of_enumeration ρ hρ hne hr
+    (hr.imp (fun {_ _} hno hedge => hno (metadata_of_paperOrder hedge)))
+
+/-! ## The representation
+
+`can^C(E) = s`, together with the record that `E` is observed in `C`. The
+framework's induction is indexed by a representation rather than by a
+canonicity predicate, and this is the one that makes the two agree. -/
+
+/-- **The representation the induction runs on**: the canonical state of a
+supported event set, read at `lo^C_E`. -/
+def paperRepresentation (D : Impl type) (Good : Ctx D → Prop) :
+    ConcreteMRDT.Representation D.toMRDTSig :=
+  fun C E s => IsPaperCan D C E s ∧ SupportedOn D C E ∧ Good C
+
+/-- Canonical states at `lo^C_E` are unique, which is the framework's
+convergence theorem for the guarded contract. -/
+theorem paperRepresentation_unique
+    (hl : GuardedReplay.Laws D.toMRDTSig.toUpdateSig (policy D)) :
+    ConcreteMRDT.Raw.Unique (paperRepresentation D Good) :=
+  fun _ _ _ _ ha hb => ConcreteMRDT.canonical_unique hl _ _ ha.2.1 ha.1 hb.1
+
+/-- A representation carries an enumeration, hence a finite event set. -/
+theorem paperRepresentation_finite {Good : Ctx D → Prop} {C : Ctx D}
+    {E : Set D.Event} {s : D.Sigma}
+    (hs : paperRepresentation D Good C E s) : ∃ π, listPermOf π E := by
+  obtain ⟨π, hp, -, -⟩ := hs.1
+  exact ⟨π, hp⟩
+
+/-- An enumerated set is finite. -/
+theorem finite_of_listPermOf {E : Set D.Event} {π : List D.Event}
+    (hp : listPermOf π E) : E.Finite := by
   classical
-  letI : EventOrder D.toMRDTSig.toUpdateSig := rcOrder D
-  have hrl : @ReplayLaws D.toMRDTSig.toUpdateSig (rcOrder D) := replayLaws h hru hcc
-  have hres : RestrictedLaws D.toMRDTSig.toUpdateSig (policy D) := h.toRestricted hru hcc
-  -- The five conditions, as the framework's representation-indexed bundle.
-  have vcs' : ConcreteMRDT.Raw.MergeVCs (policy D) (vcRepresentation D Good)
+  have : E = (↑π.toFinset : Set D.Event) := by
+    ext x; simpa using (hp.2 x).symm
+  rw [this]
+  exact π.toFinset.finite_toSet
+
+/-- Every supported finite event set has a canonical state. -/
+theorem paperRepresentation_supply
+    (hl : GuardedReplay.Laws D.toMRDTSig.toUpdateSig (policy D))
+    {C : Ctx D} (htr : Transitive C.vis) (hirr : ∀ x : D.Event, ¬ C.vis x x)
+    {Good : Ctx D → Prop} (hgood : Good C)
+    {E : Set D.Event} {π : List D.Event} (hp : listPermOf π E)
+    (hsup : SupportedOn D C E) : ∃ s, paperRepresentation D Good C E s := by
+  obtain ⟨s, hs⟩ := ConcreteMRDT.canonical_exists hl C E (finite_of_listPermOf hp)
+    hsup (fun {_ _ _} hab hbc => htr hab hbc) hirr
+  exact ⟨s, hs, hsup, hgood⟩
+
+/-- **The peel step.** A nonempty weakly closed set has a maximal event
+whose removal leaves a canonical state, whose downset has one, and which
+reconstructs both by one application. -/
+theorem paperReplaySupply (hl : GuardedReplay.Laws D.toMRDTSig.toUpdateSig (policy D))
+    (C : Ctx D) (htr : Transitive C.vis) (hirr : ∀ x : D.Event, ¬ C.vis x x)
+    {Good : Ctx D → Prop} (hgood : Good C) :
+    ConcreteMRDT.Raw.ReplaySupply (policy D) (paperRepresentation D Good)
+      (vcScheme D) C := by
+  refine ⟨fun E π hp hsup => paperRepresentation_supply hl htr hirr hgood hp hsup, ?_⟩
+  intro E s hs hsup hne hcl
+  obtain ⟨π, hp⟩ := paperRepresentation_finite hs
+  obtain ⟨e, heE, hmax, hmeta⟩ := exists_paperMaximal hl htr hirr hsup hp hne
+  have hpast : (vcScheme D C).Past e ⊆ E :=
+    (vcScheme D C).past_subset E e hcl heE
+  obtain ⟨ρ, hρ⟩ := ConcreteMRDT.enumeration_subset hp (show E \ {e} ⊆ E from Set.diff_subset)
+  obtain ⟨τ, hτ⟩ := ConcreteMRDT.enumeration_subset hp
+    (show (vcScheme D C).Past e \ {e} ⊆ E from fun _ hx => hpast hx.1)
+  obtain ⟨A, hA⟩ := paperRepresentation_supply hl htr hirr hgood hρ
+    (fun a ha => hsup a ha.1)
+  obtain ⟨B, hB⟩ := paperRepresentation_supply hl htr hirr hgood hτ
+    (fun a ha => hsup a (hpast ha.1))
+  refine ⟨⟨e, heE, hmax, hmeta, A, B, hA, hB, ?_, ?_⟩⟩
+  · exact ⟨isPaperCan_snoc (Or.inl rfl)
+      ((vcScheme D C).past_semantic_maximal (policy D)
+        htr hirr e) hB.1, fun a ha => hsup a (hpast ha), hgood⟩
+  · exact ⟨isPaperCan_snoc heE hmax hA.1, hsup, hgood⟩
+
+/-! ## The join lemma -/
+
+/-- **VC1 to VC5 as the framework's representation-indexed bundle.** Each
+field is the row's own condition, passed through unchanged. Unlike the
+route of `Metatheory/Adequacy.lean` there is no translation step on the way
+in: the conditions already speak about `lo^C_E`, which is the relation the
+framework's induction uses. -/
+theorem paperMergeVCs {Good : Ctx D → Prop} (vcs : PaperJoinLawsOn D Good) :
+    ConcreteMRDT.Raw.MergeVCs (policy D) (paperRepresentation D Good)
       (vcScheme D) := by
-    refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · intro _ _ _ l a b _ _ _ _ _ _ _
-      exact vcs.vc1_merge_comm l a b
-    · intro C' E s hsup _ hrep
-      exact vcs.vc2_merge_init C' E s hrep.2.2 hsup hrep.1
-    · intro C' U s B e htr hirr hsup hcl heU hsem _ hs hB _ _
-      exact vcs.vc4_causal_delta C' U s B e hs.2.2
-        ⟨fun hab hbc => htr hab hbc, hirr⟩ hsup
-        (fun a b hv hnc hb => hcl a b ⟨hv, hnc⟩ hb) heU
-        (fun x hx hne hlo =>
-          hsem x hx hne ((paperOrder_iff_loOn hres C' U e x).mpr hlo))
-        hs.1 hB.1
-    · intro C' E₁ E₂ l B t b e ctx he₁ he₂ hl hB ht hb _ _ _
-      exact vcs.vc3_local_redistribute C' E₁ E₂ l B t b e hl.2.2
-        ⟨fun hab hbc => ctx.trans hab hbc, ctx.irrefl⟩
-        ctx.supported₁ ctx.supported₂
-        (fun a b' hv hnc hb' => ctx.closed₁ a b' ⟨hv, hnc⟩ hb')
-        (fun a b' hv hnc hb' => ctx.closed₂ a b' ⟨hv, hnc⟩ hb')
-        he₁ he₂
-        (fun x hx hne hlo =>
-          ctx.semantic x hx hne ((paperOrder_iff_loOn hres C' _ e x).mpr hlo))
-        hl.1 hB.1 ht.1 hb.1
-    · intro C' E₁ E₂ t₀ t₁ t₂ B e ctx he₁ he₂ h₀ hB h₁ h₂ _ _ _ _ _
-      exact vcs.vc5_redistribute C' E₁ E₂ t₀ t₁ t₂ B e h₀.2.2
-        ⟨fun hab hbc => ctx.trans hab hbc, ctx.irrefl⟩
-        ctx.supported₁ ctx.supported₂
-        (fun a b' hv hnc hb' => ctx.closed₁ a b' ⟨hv, hnc⟩ hb')
-        (fun a b' hv hnc hb' => ctx.closed₂ a b' ⟨hv, hnc⟩ hb')
-        he₁ he₂
-        (fun x hx hne hlo =>
-          ctx.semantic x hx hne ((paperOrder_iff_loOn hres C' _ e x).mpr hlo))
-        h₀.1 hB.1 h₁.1 h₂.1
-  -- Canonical states are unique, the empty set has one, and a representation
-  -- carries an enumeration.
-  have unique' : ConcreteMRDT.Raw.Unique (vcRepresentation D Good) :=
-    fun _ _ _ _ ha hb =>
-      isCanonicalState_unique_of_replayLaws hrl ha.2.1 ha.1 hb.1
-  have initial' : ∀ C' E s, vcRepresentation D Good C' E s →
-      vcRepresentation D Good C' ∅ D.toMRDTSig.init := by
-    intro _ _ _ hs
-    exact ⟨⟨[], ⟨List.nodup_nil, by simp⟩, List.Pairwise.nil, rfl⟩,
-      fun a ha => absurd ha (by simp), hs.2.2⟩
-  have finite' : ∀ C' E s, vcRepresentation D Good C' E s →
-      ∃ π, listPermOf π E := by
-    intro _ _ _ hs
-    obtain ⟨π, hp, -, -⟩ := hs.1
-    exact ⟨π, hp⟩
-  intro ev₁ ev₂ s₀ s₁ s₂ h_tr h_ir h_in₁ h_in₂ h_cl₁ h_cl₂ hc₀ hc₁ hc₂
-  -- At this context: every supported set has a representation, and a
-  -- nonempty one has a maximal event to peel.
-  have supply : ∀ (E : Set D.Event) (π : List D.Event), listPermOf π E →
-      ConcreteMRDT.Supported C E → ∃ s, vcRepresentation D Good C E s := by
-    intro E π hp hsup
-    obtain ⟨s, hs⟩ := isCanonicalState_exists_of_replayLaws hrl h_tr h_ir hp hsup
-    exact ⟨s, hs, hsup, hgood⟩
-  have peel : ∀ (E : Set D.Event) (s : D.Sigma), vcRepresentation D Good C E s →
-      ConcreteMRDT.Supported C E → E.Nonempty → (vcScheme D C).Closed E →
-      Nonempty (ConcreteMRDT.Raw.PeelChoice (policy D) (vcRepresentation D Good)
-        C (vcScheme D C) E) := by
-    intro E s hrep hsup hne hcl
-    obtain ⟨π, hp, -, -⟩ := id hrep.1
-    have hclw : ∀ a b, C.vis a b → ¬ D.toMRDTSig.toUpdateSig.commutes a b →
-        b ∈ E → a ∈ E := fun a b hv hnc hb => hcl a b ⟨hv, hnc⟩ hb
-    obtain ⟨e, heE, hmax⟩ :=
-      exists_loOn_maximal_of_replayLaws hrl h_tr h_ir hp hsup hne
-    have hel : e ∈ π := (hp.2 e).mpr heE
-    obtain ⟨A, hA⟩ := isCanonicalState_exists_of_replayLaws hrl h_tr h_ir
-      (filter_ne_listPermOf hp hel) (fun a ha => hsup a ha.1)
-    have hdsub : downset C e ⊆ E := downset_subset hclw heE
-    obtain ⟨lB, hpB⟩ := ConcreteMRDT.enumeration_subset hp
-      (show downset C e \ {e} ⊆ E from fun x hx => hdsub hx.1)
-    obtain ⟨B, hB⟩ := isCanonicalState_exists_of_replayLaws hrl h_tr h_ir hpB
-      (fun a ha => hsup a (hdsub ha.1))
-    have hsupD : ConcreteMRDT.Supported C (downset C e) :=
-      fun a ha => hsup a (hdsub ha)
-    exact ⟨{ event := e
-             member := heE
-             semantic_maximal := fun x hx hne' hpo =>
-               hmax x hx hne' ((paperOrder_iff_loOn hres C E e x).mp hpo)
-             metadata_maximal := fun x hx hne' hbef =>
-               hmax x hx hne'
-                 (Or.inl ⟨hbef.1, hrl.noncomm_covered _ _ hbef.2⟩)
-             remainder := A
-             past := B
-             remainder_rep := ⟨hA, fun a ha => hsup a ha.1, hgood⟩
-             past_rep := ⟨hB, fun a ha => hsupD a ha.1, hgood⟩
-             reconstructed_past :=
-               ⟨isCanonicalState_snoc self_mem_downset
-                  (downset_max h_tr h_ir) hB, hsupD, hgood⟩
-             reconstructed_union :=
-               ⟨isCanonicalState_snoc heE hmax hA, hsup, hgood⟩ }⟩
-  have sizes := ConcreteMRDT.Raw.join_at_sizes vcs' unique' initial' finite' C
-    (fun _ _ _ hab hbc => h_tr hab hbc) h_ir supply peel
-  obtain ⟨l₁, hp₁, -, -⟩ := id hc₁
-  obtain ⟨l₂, hp₂, -, -⟩ := id hc₂
-  exact (sizes _ ev₁ ev₂ s₀ s₁ s₂ _
-    (listPermOf_union (D := D.toMRDTSig.toUpdateSig) hp₁ hp₂) rfl h_in₁ h_in₂
-    (fun a b hb hbe => h_cl₁ a b hb.1 hb.2 hbe)
-    (fun a b hb hbe => h_cl₂ a b hb.1 hb.2 hbe)
-    ⟨hc₀, fun a ha => h_in₁ a ha.1, hgood⟩
-    ⟨hc₁, h_in₁, hgood⟩ ⟨hc₂, h_in₂, hgood⟩).1
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · intro _ _ _ l a b _ _ _ _ _ _ _
+    exact vcs.vc1_merge_comm l a b
+  · intro C' E s hsup _ hrep
+    exact vcs.vc2_merge_init C' E s hrep.2.2 hsup hrep.1
+  · intro C' U s B e htr hirr hsup hcl heU hsem _ hs hB _ _
+    exact vcs.vc4_causal_delta C' U s B e hs.2.2
+      ⟨fun {_ _ _} hab hbc => htr hab hbc, hirr⟩
+      hsup (fun a b hv hnc hb => hcl a b ⟨hv, hnc⟩ hb) heU hsem hs.1 hB.1
+  · intro C' E₁ E₂ l B t b e ctx he₁ he₂ hl hB ht hb _ _ _
+    exact vcs.vc3_local_redistribute C' E₁ E₂ l B t b e hl.2.2
+      ⟨fun {_ _ _} hab hbc => ctx.trans hab hbc, ctx.irrefl⟩
+      ctx.supported₁ ctx.supported₂
+      (fun a b' hv hnc hb' => ctx.closed₁ a b' ⟨hv, hnc⟩ hb')
+      (fun a b' hv hnc hb' => ctx.closed₂ a b' ⟨hv, hnc⟩ hb')
+      he₁ he₂ ctx.semantic hl.1 hB.1 ht.1 hb.1
+  · intro C' E₁ E₂ t₀ t₁ t₂ B e ctx he₁ he₂ h₀ hB h₁ h₂ _ _ _ _ _
+    exact vcs.vc5_redistribute C' E₁ E₂ t₀ t₁ t₂ B e h₀.2.2
+      ⟨fun {_ _ _} hab hbc => ctx.trans hab hbc, ctx.irrefl⟩
+      ctx.supported₁ ctx.supported₂
+      (fun a b' hv hnc hb' => ctx.closed₁ a b' ⟨hv, hnc⟩ hb')
+      (fun a b' hv hnc hb' => ctx.closed₂ a b' ⟨hv, hnc⟩ hb')
+      he₁ he₂ ctx.semantic h₀.1 hB.1 h₁.1 h₂.1
 
-/-- The join lemma for a guarded row, from its whole bundle. -/
-theorem joinLemmaOn {Good : Ctx D → Prop} (h : ObligationsOn D Good)
-    (C : Ctx D) (hgood : Good C) : @JoinAt D.toMRDTSig (rcOrder D) C :=
-  joinOn_of_vcs h.laws h.rc_non_comm h.cond_comm h.joinLaws C hgood
+/-- **The join lemma** from the five conditions: merging canonical states
+produces the canonical state of the union of their event sets.
 
-end LeanProofs.Metatheory
+The statement is the paper's, at `lo^C_E`. `representationJoin_of_paperJoin` below
+puts it back in the shape the framework's inductions consume. -/
+theorem paperJoin_of_vcs {Good : Ctx D → Prop} (h : Laws D)
+    (hself : EqualOpCommutes D) (hsame : SameReplicaCondComm D)
+    (vcs : PaperJoinLawsOn D Good) : PaperJoinOn D Good := by
+  have hl := guardedLaws h hself hsame
+  have raw : ConcreteMRDT.RepresentationJoin (paperRepresentation D Good) := by
+    refine ConcreteMRDT.Raw.representationJoin_of_vcs (paperMergeVCs vcs)
+      (paperRepresentation_unique hl) ?_
+      (fun _ _ _ hs => paperRepresentation_finite hs) ?_
+    · intro _ _ _ hs
+      exact ⟨⟨[], ⟨List.nodup_nil, by simp⟩, List.Pairwise.nil, rfl⟩,
+        fun a ha => absurd ha (by simp), hs.2.2⟩
+    · intro C' _ _ _ _ htr hirr _ _ ha _
+      exact paperReplaySupply hl C' htr hirr ha.2.2
+  intro C E₁ E₂ l a b hgood hvs h₁ h₂ c₁ c₂ hl' ha hb
+  have htr : Transitive C.vis := by
+    intro x y z hxy hyz; exact hvs.1 hxy hyz
+  exact (raw C E₁ E₂ l a b htr hvs.2 h₁ h₂ c₁ c₂
+    ⟨hl', fun x hx => h₁ x hx.1, hgood⟩ ⟨ha, h₁, hgood⟩ ⟨hb, h₂, hgood⟩).1
+
+/-- **The join lemma from the bundle.** Every row obtains it this way. -/
+theorem joinLemma {Good : Ctx D → Prop} (h : ObligationsOn D Good) :
+    PaperJoinOn D Good :=
+  paperJoin_of_vcs h.laws h.equal_op_commutes h.same_rep_cond_comm h.joinLaws
+
+/-- The join lemma as the framework's representation-indexed statement,
+which is what the execution induction below runs on. -/
+theorem representationJoin_of_paperJoin {Good : Ctx D → Prop}
+    (h : PaperJoinOn D Good) :
+    ConcreteMRDT.RepresentationJoin (paperRepresentation D Good) := by
+  intro C E₁ E₂ l a b htr hirr h₁ h₂ c₁ c₂ hl ha hb
+  refine ⟨h C E₁ E₂ l a b hl.2.2 ⟨fun {_ _ _} hxy hyz => htr hxy hyz, hirr⟩
+    h₁ h₂ c₁ c₂ hl.1 ha.1 hb.1, ?_, hl.2.2⟩
+  rintro x (hx | hx) <;> [exact h₁ x hx; exact h₂ x hx]
+
+/-! ## From the join lemma to the stored versions
+
+Clause 1 asks for the canonical state at every version a certified execution
+allocates, and the framework proves that by an induction over executions. The
+induction is indexed by an `EventOrder`, not by the displayed `lo^C_E`, which
+is what the row's execution order is for: on the events a context observes it
+makes the two relations coincide. -/
+
+section Execution
+
+variable (X : ExecutionOrder D)
+
+/-- **The two relations agree on observed events.** The framework's `loOn`
+consults the execution order where the displayed relation reads
+`~(e1 <-> e2)`, and the execution order is exact, so the two disjuncts match
+clause for clause. -/
+theorem loOn_iff_paperOrder (C : Ctx D) (E : Set D.Event)
+    (hsup : SupportedOn D C E) (a b : D.Event) (ha : a ∈ E) (hb : b ∈ E) :
+    @loOn D.toMRDTSig.toUpdateSig X.order C E a b
+      ↔ paperOrder (policy D) C E a b := by
+  have hab := X.exact C a b (hsup a ha) (hsup b hb)
+  have hbz : ∀ z ∈ E,
+      (@UpdateSig.replayBefore D.toMRDTSig.toUpdateSig X.order b z ∨
+        @UpdateSig.replayBefore D.toMRDTSig.toUpdateSig X.order z b)
+        ↔ ¬ D.Commutes b z :=
+    fun z hz => (X.exact C b z (hsup b hb) (hsup z hz)).symm
+  simp only [loOn, paperOrder, ← hab]
+  constructor
+  · rintro (hc | ⟨hf, hbk, hedge, hfree⟩)
+    · exact Or.inl hc
+    · exact Or.inr ⟨hf, hbk, (X.concurrent C a b (hsup a ha) (hsup b hb) hf hbk).mp hedge,
+        fun ⟨z, hz, hv, hnc⟩ => hfree ⟨z, hz, hv, (hbz z hz).mpr hnc⟩⟩
+  · rintro (hc | ⟨hf, hbk, hedge, hfree⟩)
+    · exact Or.inl hc
+    · exact Or.inr ⟨hf, hbk, (X.concurrent C a b (hsup a ha) (hsup b hb) hf hbk).mpr hedge,
+        fun ⟨z, hz, hv, hnc⟩ => hfree ⟨z, hz, hv, (hbz z hz).mp hnc⟩⟩
+
+/-- Hence the two canonicity predicates agree on supported event sets. -/
+theorem isCanonicalState_iff_isPaperCan (C : Ctx D) (E : Set D.Event)
+    (hsup : SupportedOn D C E) (s : D.Sigma) :
+    @IsCanonicalState D.toMRDTSig.toUpdateSig X.order C E s ↔ IsPaperCan D C E s := by
+  constructor
+  · rintro ⟨π, hp, hr, hf⟩
+    refine ⟨π, hp, hr.imp_of_mem ?_, hf⟩
+    intro a b ha hb hno hedge
+    exact hno ((loOn_iff_paperOrder X C E hsup b a ((hp.2 b).mp hb)
+      ((hp.2 a).mp ha)).mpr hedge)
+  · rintro ⟨π, hp, hr, hf⟩
+    refine ⟨π, hp, hr.imp_of_mem ?_, hf⟩
+    intro a b ha hb hno hedge
+    exact hno ((loOn_iff_paperOrder X C E hsup b a ((hp.2 b).mp hb)
+      ((hp.2 a).mp ha)).mp hedge)
+
+/-- The join lemma, in the shape the execution induction consumes. A
+context the guard admits is what the representation carries, so the caller
+supplies it. -/
+theorem closedJoinAt_of_paperJoin {Good : Ctx D → Prop}
+    (join : ConcreteMRDT.RepresentationJoin (paperRepresentation D Good))
+    (C : Ctx D) (hgood : Good C) :
+    @CertifiedClosedExecution.ClosedJoinAt D.toMRDTSig X.order C := by
+  intro E₁ E₂ l a b htr hirr hsup₁ hsup₂ hcl₁ hcl₂ hl ha hb
+  have hsup₀ : SupportedOn D C (E₁ ∩ E₂) := fun x hx => hsup₁ x hx.1
+  have hsupU : SupportedOn D C (E₁ ∪ E₂) := by
+    rintro x (hx | hx) <;> [exact hsup₁ x hx; exact hsup₂ x hx]
+  have merged := join C E₁ E₂ l a b (fun {_ _ _} hab hbc => htr hab hbc) hirr
+    hsup₁ hsup₂ (fun e f hv hf => hcl₁ e f hv hf) (fun e f hv hf => hcl₂ e f hv hf)
+    ⟨(isCanonicalState_iff_isPaperCan X C _ hsup₀ l).mp hl, hsup₀, hgood⟩
+    ⟨(isCanonicalState_iff_isPaperCan X C _ hsup₁ a).mp ha, hsup₁, hgood⟩
+    ⟨(isCanonicalState_iff_isPaperCan X C _ hsup₂ b).mp hb, hsup₂, hgood⟩
+  exact (isCanonicalState_iff_isPaperCan X C _ hsupU _).mpr merged.1
+
+/-- **The canonical configuration**, at the execution order. This is the
+framework's induction over certified executions, run at an order that
+agrees with `lo^C_E` on everything a context observes.
+
+`good` is where an issuance guard is read: every configuration a certified
+execution reaches presents a context the guard admits. -/
+theorem paperCanonicalConfig (X : ExecutionOrder D) {Good : Ctx D → Prop}
+    {I : Issuance D.toMRDTSig}
+    (join : ConcreteMRDT.RepresentationJoin (paperRepresentation D Good))
+    (good : ∀ C : Configuration D.toMRDTSig,
+      MintHonest D.toMRDTSig I.CanIssue C → Good C.replayContext)
+    {C : Configuration D.toMRDTSig}
+    (reach : MintCertifiedReachV D.toMRDTSig
+      (canonicalVirtualMergeBase D.toMRDTSig) I C) :
+    @CanonicalConfig D.toMRDTSig X.order C := by
+  letI : EventOrder D.toMRDTSig.toUpdateSig := X.order
+  exact CertifiedClosedExecution.canonicalConfig_of_mintCertifiedV
+    (fun C' hm => closedJoinAt_of_paperJoin X join C'.replayContext (good C' hm))
+    reach
+
+/-- **Every stored version holds `can^C(E(v))`.** This is clause 1 of
+Definition 4, and the only place the execution order appears. -/
+theorem paperCanonicalVersions (X : ExecutionOrder D) {Good : Ctx D → Prop}
+    {I : Issuance D.toMRDTSig}
+    (join : ConcreteMRDT.RepresentationJoin (paperRepresentation D Good))
+    (good : ∀ C : Configuration D.toMRDTSig,
+      MintHonest D.toMRDTSig I.CanIssue C → Good C.replayContext)
+    {C : Configuration D.toMRDTSig}
+    (reach : MintCertifiedReachV D.toMRDTSig
+      (canonicalVirtualMergeBase D.toMRDTSig) I C)
+    (v : Version) (s : D.Sigma) (E : Set D.Event) (hv : C.ver v = some (s, E)) :
+    IsPaperCan D C.replayContext E s := by
+  letI : EventOrder D.toMRDTSig.toUpdateSig := X.order
+  have hgood := paperCanonicalConfig X join good reach
+  exact (isCanonicalState_iff_isPaperCan X C.replayContext E
+    (hgood.version_events_supported v s E hv) s).mp (hgood.canonical v s E hv)
+
+end Execution
+
+/-! ## The framework's replay contract -/
+
+/-- `Laws(D_type)` is the framework's replay contract, at the framework's
+reading. RC-NON-COMM supplies `noncomm_covered`, NO-RC-CHAIN supplies
+acyclicity, COND-COMM supplies the absorber clause. A row that proves its
+five conditions at `IsCanOn` uses this to build the canonical states those
+conditions are stated about. -/
+theorem replayLaws (h : Laws D) (hru : UniformRcNonComm D) (hcc : UniformCondComm D) :
+    @ReplayLaws D.toMRDTSig.toUpdateSig (rcOrder D) :=
+  (h.toRestricted hru hcc).replayLaws
+
+end LeanProofs1.Metatheory

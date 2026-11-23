@@ -1,27 +1,21 @@
-import LeanProofs.Interface.Implementation
+import LeanProofs1.Interface.Implementation
+import LeanProofs1.Soundness.SequentialSpec
 
 /-!
-# The flat grow-only map: its implementation tuple
+# The flat grow-only map: the implementation and the specification
 
-`D_type = < Sigma, sigma0, do, merge, query, rc >` for the Grow-only map row
-of Table 1, following Appendix `app:dt-flat-grow-only-map`.
+The two definitions the obligations are stated about, and nothing else.
+`D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3;
+`historySpec` is the `Spec` of Section 4, as a language of histories.
+`issuance` is the guard `G` of Section 3.
 
-* **State** a Boolean function `S`, **initial** constantly false.
-* **Payload** an element `o`; for the map row it is a key-value pair.
-* **Update** `e(S)(x) = S(x) or (x = o)`; timestamp and replica are ignored.
-* **Merge** `merge(l,a,b)(x) = l(x) or a(x) or b(x)`.
-* **Query** input `()`, return the whole characteristic function `S`.
-* **rc** empty.
-
-The map is an insertion-only set of pairs, queried as a whole collection, so
-several values may coexist at one key. On reachable merge inputs `l` is
-contained in both branches, so the pointwise disjunction is their union; the
-tuple below does not rely on that, and the obligations hold at every state.
+No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs.Implementations.FlatGrowOnlyMap
+namespace LeanProofs1.Implementations.FlatGrowOnlyMap
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
+open LeanProofs1.Interface
 
 variable (A : Type) [DecidableEq A]
 
@@ -45,4 +39,23 @@ noncomputable def D : Impl (type A) where
   query S _ := S
   rc _ _ := OrderResult.Either
 
-end LeanProofs.Implementations.FlatGrowOnlyMap
+
+/-! ## `Spec` -/
+
+/-- The specification as a deterministic machine. -/
+def specMachine : DeterministicSpec (type A).OType (type A).QType (type A).ValType where
+  State := Finset A
+  initial := ∅
+  update S o := insert o S
+  query S _ := fun x => decide (x ∈ S)
+
+/-- `Spec` as a history language. -/
+def historySpec : Soundness.Spec (type A) := (specMachine A).toSpec
+
+/-! ## Issuance -/
+
+/-- Issuance: `G(e, O) <=> true`. -/
+def issuance : Issuance (D A).toMRDTSig where
+  CanIssue := fun _ _ => True
+
+end LeanProofs1.Implementations.FlatGrowOnlyMap
