@@ -1,40 +1,43 @@
-import LeanProofs1.Implementations.PriorityQueue.VCs
-import LeanProofs1.Soundness.RALinearizability
+import LeanProofs_no_spec_non_comm.Implementations.PriorityQueue.VCs
 
 /-!
-# The priority queue: Definition 4
+# The add-wins priority queue: the specification-visibility criterion
 
-RA-linearizability from the verification conditions, through the
-execution-scoped premise.
+RA-linearizability **with specification visibility**, from the premise in
+`VCs.lean` and from nothing else. SPEC-NON-COMM appears nowhere, and the row
+refutes it: every pair of events commutes in the implementation, all three
+stores being grow-only, while in `Spec` two additions of one element do not,
+because the specification overwrites. `not_spec_non_comm` is that
+refutation.
 
-Clause 1 is free: all three stores are grow-only, so every pair of events
-commutes, `rc` is empty, `lo^C_E` has no edges and any enumeration of the
-version's event set is a linear extension.
+This row needed a second order, not a copy of the one Definition 4 uses.
+`rank` sorts a deletion before the addition it disabled, and a deletion
+disables an addition only by observing it, so that order inverts a `vis`
+arrow which `Spec` separates. `srank` replaces it: chronological inside
+each element, with the winning addition and its own increments moved to the
+end. `cell_sarrange` reproves the answer at that order and
+`sarrange_respects_spec` proves the new clause, the one from issuance
+rather than from a law.
 
-Clause 2 needs the scoped premise rather than `SpecSound`. The
-specification is a finite partial priority map with no insertion
-identities, no attachment store and no timestamp order, so it resolves two
-additions of one element by the later one in the history, while the
-implementation takes the greater insertion timestamp. An arbitrary replay
-therefore does not explain the answers.
-
-`historySound` chooses the replay that does. Every operation names one
-element and the specification's transitions at different elements do not
-interfere, so the history splits per element: each element's removals, then
-its losing additions and the increments attached to older insertions, then
-the winning addition, which overwrites all of that, then exactly the
-increments attached to that same insertion. An element with no surviving
-insertion puts its removals last and ends absent.
+The folder is a standalone duplicate of the row, so `Definition.lean` and
+`VCs.lean` beside this file are the row's own, not the main tree's.
 -/
 
-namespace LeanProofs1.Implementations.PriorityQueue
+namespace LeanProofs.NoSpecNonComm.Implementations.PriorityQueue
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
-/-- **RA-linearizability.** Every certified execution of the priority queue
-satisfies Definition 4 against `Spec`. -/
+/-- **RA-linearizability with specification visibility.** -/
+theorem specRaLinearizable : Soundness.SpecCertifiedRA D historySpec issuance :=
+  Soundness.certifiedSpecRA_scoped_on obligations (fun _ _ => trivial)
+    specChosenOrderSound
+
+/-- Definition 4 follows, as it does for every row on the specification
+route. -/
 theorem raLinearizable : Soundness.CertifiedRA D historySpec issuance :=
-  Soundness.certifiedRA_scoped obligations historySound
+  Soundness.certifiedRA_of_spec specRaLinearizable
 
-end LeanProofs1.Implementations.PriorityQueue
+#print axioms specRaLinearizable
+
+end LeanProofs.NoSpecNonComm.Implementations.PriorityQueue

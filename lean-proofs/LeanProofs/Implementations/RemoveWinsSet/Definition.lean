@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 
 /-!
 # The remove-wins set: the implementation and the specification
@@ -7,15 +7,15 @@ import LeanProofs1.Soundness.SequentialSpec
 The two definitions the obligations are stated about, and nothing else.
 `D_type = < Sigma, sigma0, do, merge, query, rc >` is the tuple of Section 3;
 `historySpec` is the `Spec` of Section 4, as a language of histories.
-`issuance` is the guard `G` of Section 3.
+`issuance` is the guard `G` of Section 3, which this row does not use.
 
 No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs1.Implementations.RemoveWinsSet
+namespace LeanProofs.NoSpecNonComm.Implementations.RemoveWinsSet
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-- `O_type`: add and remove an element. -/
 inductive AppOp (A : Type) where
@@ -36,15 +36,21 @@ variable (A : Type) [DecidableEq A] [Fintype A]
   ValType := Bool
 
 /-- `Sigma`: the removal tags, each an element paired with the timestamp of
-the event that removed it. Timestamp `0` marks an initial tag. -/
-abbrev St (A : Type) := Finset (A × Timestamp)
+the event that removed it, or with `none` for an initial tag.
 
-/-- `sigma0`: every element starts removed, under the reserved timestamp. -/
-def sigma0 : St A := Finset.univ.image (fun x => (x, (0 : Timestamp)))
+The appendix reserves timestamp `0` for the initial tags and keeps real
+events off it with an issuance guard. Carrying the seeds as `none` instead
+makes them a different shape of tag rather than a reserved value of the same
+shape, so no guard is needed and no event can collide with a seed. -/
+abbrev St (A : Type) := Finset (A × Option Timestamp)
+
+/-- `sigma0`: every element starts removed, under the seed tag. -/
+def sigma0 : St A := Finset.univ.image (fun x => (x, (none : Option Timestamp)))
 
 variable {A}
 
-@[simp] theorem mem_sigma0 (p : A × Timestamp) : p ∈ sigma0 A ↔ p.2 = 0 := by
+@[simp] theorem mem_sigma0 (p : A × Option Timestamp) :
+    p ∈ sigma0 A ↔ p.2 = none := by
   simp only [sigma0, Finset.mem_image, Finset.mem_univ, true_and]
   constructor
   · rintro ⟨y, h⟩; exact (congrArg Prod.snd h).symm ▸ rfl
@@ -54,7 +60,7 @@ variable {A}
 tag for its element, whatever removed it. -/
 def step (S : St A) (e : Event A) : St A :=
   match e.op with
-  | .remove x => insert (x, e.time) S
+  | .remove x => insert (x, some e.time) S
   | .add x => S.filter (fun p => p.1 ≠ x)
 
 /-- `merge(l,a,b)`, the same three-way shape as the OR-set. -/
@@ -99,9 +105,9 @@ def historySpec : Soundness.Spec (type A) := (specMachine A).toSpec
 
 /-! ## Issuance -/
 
-/-- Issuance: `G(e, s) <=> 0 < time(e)`. The reserved timestamp `0` belongs
-to the seed tags of `sigma0` and may not be minted. -/
+/-- Issuance: `G(e, O) <=> true`. The seeds of `sigma0` carry `none`, which
+no event's tag can equal, so this row needs no guard. -/
 def issuance (A : Type) [DecidableEq A] [Fintype A] : Issuance (D A).toMRDTSig where
-  CanIssue := fun e _ => 0 < e.time
+  CanIssue := fun _ _ => True
 
-end LeanProofs1.Implementations.RemoveWinsSet
+end LeanProofs.NoSpecNonComm.Implementations.RemoveWinsSet

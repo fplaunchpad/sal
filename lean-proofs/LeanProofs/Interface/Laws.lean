@@ -1,4 +1,4 @@
-import LeanProofs1.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Interface.Implementation
 import Artifact.MRDTs.Framework.Certificates
 import Artifact.MRDTs.Paper1.RestrictedReplay
 import Artifact.MRDTs.Paper1.GuardedReplay
@@ -17,7 +17,7 @@ with a nonempty `rc` has real work to do.
 SPEC-NON-COMM is not a field below. It mentions `Spec`, which the laws of
 this file do not, and no proof downstream consumes it.
 -/
-namespace LeanProofs1.Interface
+namespace LeanProofs.NoSpecNonComm.Interface
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
 

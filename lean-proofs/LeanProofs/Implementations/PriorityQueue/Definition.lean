@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 import Mathlib.Data.Finset.Lattice.Fold
 import Mathlib.Data.Prod.Lex
 import Mathlib.Algebra.BigOperators.Group.Finset.Defs
@@ -33,10 +33,10 @@ the published query.
 No proof appears in this file.
 -/
 
-namespace LeanProofs1.Implementations.PriorityQueue
+namespace LeanProofs.NoSpecNonComm.Implementations.PriorityQueue
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-- An insertion tag: the element and the timestamp of its addition. -/
 abbrev Tag := Nat × Nat
@@ -209,4 +209,4 @@ def issuance : Issuance D.toMRDTSig where
     | .inc x _ W => observed s x ≠ ∅ ∧ W = observed s x
     | .remove x W => observed s x ≠ ∅ ∧ W = observed s x
 
-end LeanProofs1.Implementations.PriorityQueue
+end LeanProofs.NoSpecNonComm.Implementations.PriorityQueue

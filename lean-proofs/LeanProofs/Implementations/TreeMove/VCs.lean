@@ -1,8 +1,14 @@
-import LeanProofs1.Implementations.TreeMove.Definition
-import LeanProofs1.Interface.VCRoute
-import LeanProofs1.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Implementations.TreeMove.Definition
+import LeanProofs_no_spec_non_comm.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/TreeMove/VCs.lean` with the namespace changed. The last
+section is what this folder adds: the chosen history respects
+**specification visibility** as well, with no appeal to SPEC-NON-COMM,
+which this row refutes.
+
 # Tree move: every verification condition
 
 All of them, in one file:
@@ -10,9 +16,9 @@ All of them, in one file:
 * Section 4's `Laws(D_type, Spec)`: RC-NON-COMM, NO-RC-CHAIN, COND-COMM and
   SPEC-NON-COMM.
 * Section 5's VC1 to VC5.
-* the sequential premise, in its execution-scoped form `HistorySound`.
+* the sequential premise, in its execution-scoped form `ChosenOrderSound`.
 
-`obligations` bundles what the metatheory consumes; `historySound` is passed
+`obligations` bundles what the metatheory consumes; `chosenOrderSound` is passed
 beside it. `Certificate.lean` uses both.
 
 The appendix's claim for this row is that **complete deliveries commute on
@@ -28,17 +34,17 @@ move-set equality. This row therefore discharges the conditions the way a
 grow-only row does, even though its `merge` is an undo/insert/redo fold
 rather than a union.
 
-The sequential premise cannot be `SpecSound`: `Legal` admits only key-sorted
+The sequential premise cannot be `AnyOrderSound`: `Legal` admits only key-sorted
 histories, so the row has to choose the explaining order itself. It chooses
 the key-ascending enumeration, and the agreement rests on
 `candidate_safe_iff`, which says that on an acyclic tree the implementation's
 ancestor test and the specification's acyclicity test are complements.
 -/
 
-namespace LeanProofs1.Implementations.TreeMove
+namespace LeanProofs.NoSpecNonComm.Implementations.TreeMove
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-! ## States are their move sets -/
 
@@ -462,9 +468,9 @@ theorem desc_arrange (hmint : MintHonest D.toMRDTSig issuance.CanIssue C)
 
 /-! ## The sequential premise
 
-`SpecSound` is out of reach: `Legal` admits only key-sorted histories, so
+`AnyOrderSound` is out of reach: `Legal` admits only key-sorted histories, so
 the row has to choose the explaining order itself. That is the `E = Y`
-column of Table 1, and `HistorySound` is its form.
+column of Table 1, and `ChosenOrderSound` is its form.
 -/
 
 /-- The specification runs along any legal move list, keeping the prefix
@@ -485,7 +491,7 @@ theorem spec_run : ∀ (A pre : List AppOp) (T : Tree), Legal (pre ++ A) →
 /-- **Clause 2, execution-scoped.** The key-ascending enumeration is
 admitted by `Spec`, and the tree it ends at is the one the implementation's
 query reads. -/
-theorem historySound : Soundness.HistorySound D historySpec issuance := by
+theorem chosenOrderSound : Soundness.ChosenOrderSound D historySpec issuance := by
   rintro C hmint E hsub hclosed ⟨pi, hpi⟩ q
   have hlegal := legal_arrange hmint hpi hsub
   have hdesc := desc_arrange hmint hpi hsub
@@ -509,4 +515,112 @@ theorem historySound : Soundness.HistorySound D historySpec issuance := by
       (Runs.cons (m := ([] ++ ((arrange pi).map Op.op),
         (((arrange pi).map Op.op)).foldl moveSpec T0)) ⟨rfl, rfl⟩ (Runs.nil _))⟩
 
-end LeanProofs1.Implementations.TreeMove
+/-! ## SPEC-NON-COMM fails here
+
+`all_commute` says every pair of events commutes in the implementation, so
+SPEC-NON-COMM collapses to the demand that every pair of specification
+updates commute. Two moves do not: `Legal` admits a history only when its
+moves appear in nondecreasing key order, so swapping a pair takes an
+admitted history to one the specification rejects.
+
+Nothing downstream consumes SPEC-NON-COMM, so the certificate is unaffected.
+What the failure costs is the stronger criterion of
+`Artifact/MRDTs/Paper1/SpecificationVisibility.lean`, which this row cannot
+reach, and it is why the row needs `Soundness.ChosenOrderSound` rather than
+`Soundness.AnyOrderSound`. -/
+
+/-- The earlier move. -/
+private def moveA : AppOp := ⟨0, 0, 0, 0, 2⟩
+
+/-- The later move. -/
+private def moveB : AppOp := ⟨1, 0, 0, 0, 3⟩
+
+/-- Two moves do not commute in `Spec`: taken in the other order the history
+is no longer in nondecreasing key order, so `Legal` rejects it. -/
+theorem not_spec_commutes :
+    ¬ Interface.spec_commutes historySpec moveA moveB := by
+  intro h
+  have lhs : historySpec.admits
+      ([] ++ [SeqLabel.update moveA, .update moveB] ++ []) := by
+    refine ⟨([moveA, moveB], moveSpec (moveSpec T0 moveA) moveB), ?_⟩
+    simp only [List.nil_append, List.append_nil]
+    exact Runs.cons (m := ([moveA], moveSpec T0 moveA))
+      ⟨⟨by decide, by decide, by decide⟩, rfl⟩
+      (Runs.cons (m := ([moveA, moveB], moveSpec (moveSpec T0 moveA) moveB))
+        ⟨⟨by decide, by decide, by decide⟩, rfl⟩ (Runs.nil _))
+  obtain ⟨final, run⟩ := (h [] []).mp lhs
+  simp only [List.nil_append, List.append_nil] at run
+  cases run with
+  | cons h1 r1 =>
+      obtain ⟨-, rfl⟩ := h1
+      cases r1 with
+      | cons h2 _ =>
+          obtain ⟨hleg, -⟩ := h2
+          have hpair := hleg.2.1
+          rw [show specMachine.initial.1 = ([] : List AppOp) from rfl,
+            List.nil_append] at hpair
+          exact absurd ((List.pairwise_cons.mp hpair).1 moveA (by simp))
+            (by decide)
+
+/-- **SPEC-NON-COMM fails for the tree move.** The two moves commute in the
+implementation and do not commute in `Spec`. -/
+theorem not_spec_non_comm : ¬ Interface.spec_non_comm D historySpec := fun h =>
+  h (0, 0, moveA) (1, 1, moveB) not_spec_commutes (all_commute _ _)
+
+/-! # Specification visibility, without SPEC-NON-COMM
+
+SPEC-NON-COMM fails here, so `certifiedSpecRA` is closed to this row. The
+route taken instead is nearly free, because `arrange` sorts by `key`, whose
+first component is the move's own timestamp, and issuance makes that the
+event's timestamp. So the chosen history is **chronological**, `causal_mono`
+says visibility increases the timestamp, and every specification-visibility
+arrow runs along `vis`.
+
+The one extra step over the chronological rows is `issued`, which is what
+turns `a.op.time` into `a.time`. -/
+
+/-- A key-sorted list of honest events is chronological, because issuance
+makes the move's own timestamp the event's. -/
+theorem sorted_time {C : Configuration D.toMRDTSig}
+    (hmint : MintHonest D.toMRDTSig issuance.CanIssue C) {pi : List Event}
+    (hev : ∀ a ∈ pi, a ∈ C.events)
+    (h : pi.Pairwise (fun a b => key a.op ≤ key b.op)) :
+    pi.Pairwise (fun a b => a.time ≤ b.time) := by
+  refine h.imp_of_mem ?_
+  intro a b ha hb hab
+  rw [← (issued hmint (hev a ha)).1, ← (issued hmint (hev b hb)).1]
+  rcases Prod.Lex.le_iff.mp hab with hlt | heq
+  · exact Nat.le_of_lt hlt
+  · exact Nat.le_of_eq heq.1
+
+/-- **The scoped premise with specification visibility.** The same witness
+as `chosenOrderSound`, with the extra clause. -/
+theorem specChosenOrderSound :
+    NoSpecNonComm.Soundness.SpecChosenOrderSound D historySpec issuance := by
+  rintro C hmint _ E hsub hclosed ⟨pi, hpi⟩ q
+  have hlegal := legal_arrange hmint hpi hsub
+  have hdesc := desc_arrange hmint hpi hsub
+  have hev : ∀ a ∈ arrange pi, a ∈ C.events := fun a ha =>
+    hsub a ((hpi.2 a).mp ((arrange_perm pi).mem_iff.mp ha))
+  refine ⟨arrange pi, ?_, ?_, ?_, ?_⟩
+  · exact ⟨(arrange_perm pi).nodup_iff.mpr hpi.1,
+      fun a => ((arrange_perm pi).mem_iff).trans (hpi.2 a)⟩
+  · exact ((arrange_perm pi).nodup_iff.mpr hpi.1).imp
+      (fun {_ _} _ => Soundness.paperOrder_false rc_non_comm all_commute _ _ _ _)
+  · exact NoSpecNonComm.Soundness.respects_specVisibility_of_time_sorted
+      (sorted_time hmint hev (arrange_sorted pi))
+  · have hlabels : projectedUpdates (D := D.toMRDTSig) (arrange pi)
+        = ((arrange pi).map Op.op).map SeqLabel.update := by
+      simp [projectedUpdates, List.map_map, Function.comp]
+    have hstate : D.query (D.applyList D.sigma0 (arrange pi)) q
+        = visible (((arrange pi).map Op.op).foldl moveSpec T0) := by
+      show visible (D.applyList D.sigma0 (arrange pi)).1.2 = _
+      rw [applyList_eq (arrange pi) hdesc, tree_build, List.reverse_reverse,
+        foldl_f_eq _ acyclic_init]
+    rw [hlabels, hstate]
+    exact ⟨_, Runs.append
+      (spec_run ((arrange pi).map Op.op) [] T0 (by simpa using hlegal))
+      (Runs.cons (m := ([] ++ ((arrange pi).map Op.op),
+        (((arrange pi).map Op.op)).foldl moveSpec T0)) ⟨rfl, rfl⟩ (Runs.nil _))⟩
+
+end LeanProofs.NoSpecNonComm.Implementations.TreeMove

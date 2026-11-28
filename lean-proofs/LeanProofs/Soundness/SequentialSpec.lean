@@ -1,4 +1,4 @@
-import LeanProofs1.Soundness.Common
+import LeanProofs_no_spec_non_comm.Soundness.Common
 
 /-!
 # Clause 2: `ops(pi) . (q => b)` is in `Spec`
@@ -7,25 +7,25 @@ The conformance side of Definition 4. It compares `do` alone against an
 independent sequential language and never mentions `merge`, `vis` or
 `lo^C_E`.
 
-`SpecSound` is the paper's premise verbatim, quantified over **every** list
+`AnyOrderSound` is the paper's premise verbatim, quantified over **every** list
 of events. A row that satisfies it hands any enumeration to clause 1, which
 is what both rows here do.
 
 Section 6's method for discharging either one is an abstraction function
-with three conditions, which `Abstraction` states and `Abstraction.specSound`
+with three conditions, which `Abstraction` states and `Abstraction.anyOrderSound`
 discharges.
 -/
 
-namespace LeanProofs1.Soundness
+namespace LeanProofs.NoSpecNonComm.Soundness
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 variable {type : MRDTType} {D : Impl type}
 
 /-- The sequential premise. For every `pi` and `q`, the projected history
 `ops(pi) . (q => b)` is in `Spec`, with `b` the implementation's answer. -/
-abbrev SpecSound (D : Impl type) (S : Spec type) : Prop :=
+abbrev AnyOrderSound (D : Impl type) (S : Spec type) : Prop :=
   FoldHistorySound D.toMRDTSig S
 
 /-- An abstraction function and the three conditions of Section 6. -/
@@ -58,7 +58,7 @@ theorem fold (A : Abstraction D M) (s : D.Sigma) (pi : List D.Event) :
 
 /-- **The sequential premise, from the three conditions.** Condition (iii)
 then gives agreement of query results. -/
-theorem specSound (A : Abstraction D M) : SpecSound D M.toSpec := by
+theorem anyOrderSound (A : Abstraction D M) : AnyOrderSound D M.toSpec := by
   intro pi q
   have hlabels : projectedUpdates (D := D.toMRDTSig) pi
       = DeterministicSpec.updateLabels (pi.map Op.op) := by
@@ -70,16 +70,16 @@ theorem specSound (A : Abstraction D M) : SpecSound D M.toSpec := by
 end Abstraction
 /-! ## The execution-scoped premise
 
-`SpecSound` asks the row to explain **every** list of events. One row of the
+`AnyOrderSound` asks the row to explain **every** list of events. One row of the
 paper cannot: the LWW register's answer is the value written at the greatest
-key, and only a key-sorted history explains that. `HistorySound` is the form
+key, and only a key-sorted history explains that. `ChosenOrderSound` is the form
 in which the row chooses the explaining order itself, which is the `E = Y`
 column of Table 1. -/
 
 /-- **The sequential premise, execution-scoped.** The row supplies the
 explaining history, rather than being asked about an arbitrary one. -/
-abbrev HistorySound (D : Impl type) (S : Spec type)
+abbrev ChosenOrderSound (D : Impl type) (S : Spec type)
     (I : Issuance D.toMRDTSig) : Prop :=
   IssuedHistoryAdequacy D.toMRDTSig (policy D) S I
 
-end LeanProofs1.Soundness
+end LeanProofs.NoSpecNonComm.Soundness

@@ -1,34 +1,40 @@
-import LeanProofs1.Implementations.RemoveWinsSet.VCs
-import LeanProofs1.Soundness.RALinearizability
+import LeanProofs_no_spec_non_comm.Implementations.RemoveWinsSet.VCs
 
 /-!
-# The remove-wins set: Definition 4
+# The remove-wins set: the specification-visibility criterion
 
-RA-linearizability from the verification conditions, and from nothing else.
-This row carries an issuance guard, so its obligations hold only at the
-contexts `Positive` admits and `certifiedSpecRA_on` is the form that
-consumes them. `positive_of_mintHonest` is the step from a mint-honest
-configuration to such a context.
+RA-linearizability **with specification visibility**, from the obligations
+and `AnyOrderSound`, the unrestricted sequential premise. The main tree
+reaches Definition 4 here with
+`certifiedRA_of_spec (certifiedSpecRA obligations anyOrderSound)`; this
+folder reaches the stronger criterion with the same two inputs, minus the
+fourth law inside the bundle, plus the one fact `VCs.lean` adds about
+`joint`.
+
+Unlike the commuting rows and the flags, this row's `rc` is indexed, so its
+`VCs.lean` does use the row's own SPEC-NON-COMM to get there. What is
+dropped is the law as a **premise of the adequacy theorem**, not the law.
+
+The folder is a standalone duplicate of the row, so `Definition.lean` and
+`VCs.lean` beside this file are the row's own, not the main tree's.
 -/
 
-namespace LeanProofs1.Implementations.RemoveWinsSet
+namespace LeanProofs.NoSpecNonComm.Implementations.RemoveWinsSet
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
-variable {A : Type} [DecidableEq A] [Fintype A]
+/-- **RA-linearizability with specification visibility.** -/
+theorem specRaLinearizable {A : Type} [DecidableEq A] [Fintype A] :
+    Soundness.SpecCertifiedRA (D A) (historySpec A) (issuance A) :=
+  Soundness.certifiedSpecRA_any obligations.toObligationsOn joint_acyclic anyOrderSound
 
-/-- **RA-linearizability.** Definition 4 of Section 4: every certified
-execution of this row satisfies it against `Spec`.
-
-The proof runs through `certifiedSpecRA`, which asks for SPEC-NON-COMM as
-well, so all four laws of Section 4 and all five conditions of Section 5 are
-load-bearing here. The witness it builds respects specification conflicts
-too; Definition 4 does not ask for that, so the extra clause is dropped at
-the last step. -/
-theorem raLinearizable :
+/-- Definition 4 follows, as it does for every row on the specification
+route. -/
+theorem raLinearizable {A : Type} [DecidableEq A] [Fintype A] :
     Soundness.CertifiedRA (D A) (historySpec A) (issuance A) :=
-  Soundness.certifiedRA_of_spec_on
-    (Soundness.certifiedSpecRA_on specObligations positive_of_mintHonest specSound)
+  Soundness.certifiedRA_of_spec specRaLinearizable
 
-end LeanProofs1.Implementations.RemoveWinsSet
+#print axioms specRaLinearizable
+
+end LeanProofs.NoSpecNonComm.Implementations.RemoveWinsSet

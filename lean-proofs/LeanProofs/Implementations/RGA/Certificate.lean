@@ -1,34 +1,38 @@
-import LeanProofs1.Implementations.RGA.VCs
-import LeanProofs1.Soundness.RALinearizability
+import LeanProofs_no_spec_non_comm.Implementations.RGA.VCs
 
 /-!
-# RGA: Definition 4
+# RGA: the specification-visibility criterion
 
-RA-linearizability from the verification conditions, through the
-execution-scoped premise.
+RA-linearizability **with specification visibility**, from the premise in
+`VCs.lean` and from nothing else. SPEC-NON-COMM appears nowhere, and the row
+refutes it: every pair of events commutes in the implementation, while in
+`Spec` two insertions after the root do not, one order reading `[2, 1]` and
+the other `[1, 2]`.
 
-Clause 1 is free here: `rc` is empty and every pair of events commutes, so
-`lo^C_E` has no edges and any enumeration of the version's event set is a
-linear extension. The content is clause 2, and it needs the scoped premise
-rather than `SpecSound`. The specification is the strict identified machine,
-which admits an insertion only when its identity is fresh and positive and
-its anchor is the root or live, so an arbitrary list of events is not
-admitted and `SpecSound` is false.
+This is the first ported row where the clause is not free. The chosen
+history puts every deletion after every insertion, so it does invert `vis`
+arrows. `VCs.lean` shows the inverted arrows are not specification
+conflicts.
 
-What the row supplies instead is `historySound`: it chooses the explaining
-history itself, putting the insertions first in increasing identity order
-and the deletions after them. That is the order the implementation's own
-query folds the edges in, which is why the two agree.
+The folder is a standalone duplicate of the row, so `Definition.lean` and
+`VCs.lean` beside this file are the row's own, not the main tree's.
 -/
 
-namespace LeanProofs1.Implementations.RGA
+namespace LeanProofs.NoSpecNonComm.Implementations.RGA
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
-/-- **RA-linearizability.** Every certified execution of the RGA satisfies
-Definition 4 against `Spec`. -/
+/-- **RA-linearizability with specification visibility.** -/
+theorem specRaLinearizable : Soundness.SpecCertifiedRA D historySpec issuance :=
+  Soundness.certifiedSpecRA_scoped_on obligations (fun _ _ => trivial)
+    specChosenOrderSound
+
+/-- Definition 4 follows, as it does for every row on the specification
+route. -/
 theorem raLinearizable : Soundness.CertifiedRA D historySpec issuance :=
-  Soundness.certifiedRA_scoped obligations historySound
+  Soundness.certifiedRA_of_spec specRaLinearizable
 
-end LeanProofs1.Implementations.RGA
+#print axioms specRaLinearizable
+
+end LeanProofs.NoSpecNonComm.Implementations.RGA

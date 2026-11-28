@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Lattice.Basic
 import Mathlib.Data.Finset.Image
@@ -16,12 +16,12 @@ does not use.
 No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs1.Implementations.ORSet
+namespace LeanProofs.NoSpecNonComm.Implementations.ORSet
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs1.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.NoSpecNonComm.Interface
 
 /-- `O_type`: add and remove an element. -/
 inductive AppOp (A : Type) where
@@ -111,4 +111,4 @@ def issuance : Issuance (D A).toMRDTSig where
 
 variable {A}
 
-end LeanProofs1.Implementations.ORSet
+end LeanProofs.NoSpecNonComm.Implementations.ORSet

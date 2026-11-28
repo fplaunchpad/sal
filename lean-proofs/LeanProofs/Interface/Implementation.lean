@@ -23,7 +23,7 @@ framework's operation policy in `Interface/Laws.lean`, next to the laws that
 constrain it.
 -/
 
-namespace LeanProofs1.Interface
+namespace LeanProofs.NoSpecNonComm.Interface
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation
 
@@ -118,4 +118,4 @@ def toMRDTSig : MRDTSig where
 
 end Impl
 
-end LeanProofs1.Interface
+end LeanProofs.NoSpecNonComm.Interface

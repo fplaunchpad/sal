@@ -1,5 +1,4 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Implementations.EmbeddedRGA.Coordinates
 
 /-!
 # The anchored FIFO queue: the implementation tuple
@@ -16,95 +15,52 @@ ancestry across merge, and descending coordinate order gives the FIFO order.
   o = del x            dequeue the element with identity x
 ```
 
-An insertion takes the event's **timestamp** as its identity and builds the
-coordinate `p ++ Gamma (t - a)`, where `Gamma d` is `d` trues then a false.
-Records are kept in descending key order, the key of a coordinate being its
-bits read as `2`/`1` with a `3` appended, compared lexicographically.
+The state, the update and the merge are **exactly** Embedded RGA's at the
+unary scheme, so the row is `EmbeddedRGA/Scheme.lean` at that scheme with
+payload `Nat`, and repeats no proof. Two things are its own.
 
-`rc` is empty, as the appendix states.
+* **The query** returns the head as an optional identity and value rather
+  than the payload list, which is why the core takes the query as a
+  parameter.
+* **Issuance is stricter.** An enqueue must anchor on the **live tail** and
+  a dequeue must name the **observed head**, where the core only asks that
+  the carried prefix be some live record's coordinate and the target be some
+  live identity. `canIssue_core` below is the one lemma that costs anything
+  here: the queue's discipline implies the core's.
 
-No proof appears in this file. `Negative.lean` shows that no `rc` at all,
-empty or otherwise, satisfies `Laws(D_type)` for this row.
+`rc` is empty, as the appendix states. `Negative.lean` shows that no `rc` at
+all satisfies `Laws(D_type)` for this row, and `Certificate.lean` reaches
+the invariant-scoped criterion instead.
+
+No proof appears in this file beyond `canIssue_core`, which is the bridge
+the certificate needs.
 -/
 
-namespace LeanProofs1.Implementations.AnchoredQueue
+namespace LeanProofs.NoSpecNonComm.Implementations.AnchoredQueue
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
+open LeanProofs.NoSpecNonComm.Implementations.EmbeddedRGA
 
-/-- A coordinate: the insertion ancestry, in bits. -/
-abbrev Coord := List Bool
+/-! ## The row's names -/
 
-/-- A record: identity, value, coordinate. -/
-abbrev Record := Nat × Nat × Coord
+abbrev Coord := EmbeddedRGA.Coord
+abbrev Record := EmbeddedRGA.Record unaryScheme Nat
+abbrev AppOp := EmbeddedRGA.AppOp unaryScheme Nat
+abbrev St := EmbeddedRGA.St unaryScheme Nat
+abbrev gamma := EmbeddedRGA.enc
+abbrev key := EmbeddedRGA.key
+abbrev lexLt := EmbeddedRGA.lexLt
+abbrev recKey : Record → List Nat := EmbeddedRGA.recKey
+abbrev ids : St → List Nat := EmbeddedRGA.ids
+abbrev insertDown : Record → St → St := EmbeddedRGA.insertDown
+abbrev mergeDown : St → St → St := EmbeddedRGA.mergeDown
+abbrev step : St → Op AppOp → St := EmbeddedRGA.step
+abbrev mergeState : St → St → St → St := EmbeddedRGA.mergeState
 
-/-- `O_type`. An insertion carries its value, the anchor's coordinate, and
-the anchor's identity. -/
-inductive AppOp where
-  | ins (value : Nat) (anchorCoord : Coord) (anchor : Nat)
-  | del (target : Nat)
-  deriving DecidableEq, Repr
+/-! ## The query
 
-/-- `Gamma d`: the unary code, `d` trues followed by a false. -/
-def gamma (d : Nat) : Coord := List.replicate d true ++ [false]
-
-/-- The comparison key of a coordinate. The trailing `3` makes a proper
-prefix smaller than its extension. -/
-def key (c : Coord) : List Nat := c.map (fun b => if b then 2 else 1) ++ [3]
-
-/-- Strict lexicographic order on keys. -/
-def lexLt : List Nat → List Nat → Bool
-  | [], [] => false
-  | [], _ :: _ => true
-  | _ :: _, [] => false
-  | x :: xs, y :: ys => if x < y then true else if y < x then false else lexLt xs ys
-
-/-- The key of a record. -/
-def recKey (z : Record) : List Nat := key z.2.2
-
-/-- `Sigma`: the live records, in descending key order. -/
-abbrev St := List Record
-
-/-- The live identities. -/
-def ids (S : St) : List Nat := S.map (fun z => z.1)
-
-/-- Descending-key insertion: place `z` before the first strictly smaller
-key, so equal keys retain delivery order. -/
-def insertDown (z : Record) : St → St
-  | [] => [z]
-  | y :: Y => if lexLt (recKey y) (recKey z) then z :: y :: Y else y :: insertDown z Y
-
-/-- Descending merge of two sorted lists: emit the larger head key, and on a
-tie take the right head. -/
-def mergeDown : St → St → St
-  | [], Y => Y
-  | X, [] => X
-  | x :: X, y :: Y =>
-      if lexLt (recKey y) (recKey x) then x :: mergeDown X (y :: Y)
-      else y :: mergeDown (x :: X) Y
-
-/-- `type = < O_type, Q_type, Val_type >`. The public query returns the head
-as an optional identity and value. -/
-@[reducible] def type : MRDTType where
-  OType := AppOp
-  decOType := inferInstance
-  QType := Unit
-  ValType := Option (Nat × Nat)
-
-/-- `do`. An insertion whose identity is already live is a no-op; a deletion
-drops the named identity. -/
-def step (S : St) (e : Op AppOp) : St :=
-  match e.op with
-  | .ins v p a =>
-      if e.time ∈ ids S then S
-      else insertDown (e.time, v, p ++ gamma (e.time - a)) S
-  | .del x => S.filter (fun z => z.1 ≠ x)
-
-/-- `merge`. The ancestor distinguishes deletion of existing elements from
-new insertions; values and coordinates are immutable. -/
-def mergeState (l a b : St) : St :=
-  mergeDown (a.filter (fun z => z.1 ∈ ids b || !(z.1 ∈ ids l)))
-    (b.filter (fun z => !(z.1 ∈ ids l) && !(z.1 ∈ ids a)))
+The public observation is the head, not the payload list. -/
 
 /-- `query`: the head's identity and value, if any. -/
 def readHead (S : St) : Option (Nat × Nat) :=
@@ -112,22 +68,25 @@ def readHead (S : St) : Option (Nat × Nat) :=
   | [] => none
   | z :: _ => some (z.1, z.2.1)
 
+/-- The row's observation, as the core's query parameter. -/
+def headQuery : QueryOf unaryScheme Nat where
+  QType := Unit
+  VType := Option (Nat × Nat)
+  read := fun S _ => readHead S
+
+/-- `type = < O_type, Q_type, Val_type >`. -/
+abbrev type : MRDTType := EmbeddedRGA.type unaryScheme Nat headQuery
+
 /-- `rc` is empty, as the appendix states. -/
-def rcOf : AppOp → AppOp → OrderResult := fun _ _ => OrderResult.Either
+abbrev rcOf : AppOp → AppOp → OrderResult := EmbeddedRGA.rcOf
 
 /-- `D_type = < Sigma, sigma0, do, merge, query, rc >`, at an arbitrary
 `rc`, because `Negative.lean` quantifies over every choice. -/
-def D (rc : AppOp → AppOp → OrderResult) : Impl type where
-  Sigma := St
-  decSigma := inferInstance
-  sigma0 := []
-  do_ := step
-  merge := mergeState
-  query S _ := readHead S
-  rc := rc
+abbrev D (rc : AppOp → AppOp → OrderResult) : Impl type :=
+  EmbeddedRGA.D headQuery rc
 
-/-- The row's own `rc`, which is the empty one. -/
-abbrev Dq : Impl type := D rcOf
+/-- The row's own tuple, with the appendix's empty `rc`. -/
+abbrev Dq : Impl type := EmbeddedRGA.Dα unaryScheme Nat headQuery
 
 /-! ## Issuance -/
 
@@ -140,8 +99,41 @@ the tail identity; a dequeue must name the observed head. -/
 def issuance (rc : AppOp → AppOp → OrderResult) : Issuance (D rc).toMRDTSig where
   CanIssue := fun e S =>
     match e.op with
-    | .ins _ p a =>
+    | .ins _ p a _ =>
         a < e.time ∧ ((S = [] ∧ a = 0 ∧ p = []) ∨ tail? S = some (a, p))
     | .del x => (readHead S).map Prod.fst = some x
 
-end LeanProofs1.Implementations.AnchoredQueue
+/-- **The queue's discipline implies the core's.** Anchoring on the live
+tail is anchoring on *a* live record, and naming the observed head is naming
+*a* live identity. This is the only thing the certificate needs of the
+stricter guard. -/
+theorem canIssue_core (e : Op AppOp) (S : St) :
+    (issuance rcOf).CanIssue e S → CoreGuard e S := by
+  cases hop : e.op with
+  | ins v p a g =>
+    intro h
+    simp only [issuance, CoreGuard, hop] at h ⊢
+    refine ⟨h.1, ?_⟩
+    rcases h.2 with ⟨-, ha, hp⟩ | htail
+    · exact Or.inl ⟨ha, hp⟩
+    · simp only [tail?, Option.map_eq_some_iff] at htail
+      obtain ⟨z, hz, hzp⟩ := htail
+      have hmem : z ∈ S := List.getLast?_eq_some_iff.mp hz |>.choose_spec ▸ (by
+        simpa using List.mem_of_getLast?_eq_some hz)
+      refine Or.inr ⟨z.2.1, ?_⟩
+      have h1 : z.1 = a := congrArg Prod.fst hzp
+      have h2 : z.2.2 = p := congrArg Prod.snd hzp
+      rw [← h1, ← h2]
+      exact hmem
+  | del x =>
+    intro h
+    simp only [issuance, CoreGuard, hop] at h ⊢
+    cases hS : S with
+    | nil => rw [hS] at h; simp [readHead] at h
+    | cons z Z =>
+      rw [hS] at h
+      simp only [readHead, Option.map_some, Option.some.injEq] at h
+      simp only [EmbeddedRGA.ids, List.map_cons, List.mem_cons]
+      exact Or.inl h.symm
+
+end LeanProofs.NoSpecNonComm.Implementations.AnchoredQueue

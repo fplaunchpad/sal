@@ -1,19 +1,26 @@
-import LeanProofs1.Implementations.LWWRegister.Definition
-import LeanProofs1.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Implementations.LWWRegister.Definition
+import LeanProofs_no_spec_non_comm.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/LWWRegister/VCs.lean` with the namespace changed. The last
+section is what this folder adds: the chosen history respects
+**specification visibility** as well, with no appeal to SPEC-NON-COMM,
+which this row refutes.
+
 # The LWW register: every obligation
 
 `Laws(D_type, Spec)` of Section 4 and VC1 to VC5 of Section 5, all four laws
 and all five conditions, for the tuple of `Definition.lean`. `obligations`
-bundles what the metatheory consumes; `spec_non_comm` and `specSound` are the
+bundles what the metatheory consumes; `spec_non_comm` and `anyOrderSound` are the
 two further premises `Soundness.certifiedSpecRA` asks for.
 -/
 
-namespace LeanProofs1.Implementations.LWWRegister
+namespace LeanProofs.NoSpecNonComm.Implementations.LWWRegister
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-- Two writes commute: both orders take the greater key. By RC-NON-COMM
 `rc` is therefore empty. -/
@@ -212,7 +219,7 @@ theorem sorted_agrees : ∀ (pi : List D.Event),
 /-- The scoped sequential premise. The witness is the chronological sort of
 the event set, so the greatest key is last and the overwrite register's
 answer matches. -/
-theorem historySound : Soundness.HistorySound D historySpec issuance := by
+theorem chosenOrderSound : Soundness.ChosenOrderSound D historySpec issuance := by
   rintro C _ E _ _ ⟨pi, hpi⟩ q
   cases q
   classical
@@ -243,8 +250,8 @@ specification has, erased by the implementation. The witness below puts them
 on distinct timestamps and distinct replicas, so the failure is not an
 artefact of a pair that no reachable execution produces. This is the same shape as
 the broken set of Section 6, and it is why this row needs the **scoped**
-premise `Soundness.HistorySound`, which chooses a key-sorted witness, rather
-than `Soundness.SpecSound`, which is false here for the same reason.
+premise `Soundness.ChosenOrderSound`, which chooses a key-sorted witness, rather
+than `Soundness.AnyOrderSound`, which is false here for the same reason.
 
 Nothing downstream consumes SPEC-NON-COMM, so the certificate is unaffected.
 What the failure costs is the stronger criterion of
@@ -271,4 +278,44 @@ the implementation and do not commute in `Spec`. -/
 theorem not_spec_non_comm : ¬ Interface.spec_non_comm D historySpec := fun h =>
   h (0, 0, .write 0) (1, 1, .write 1) not_spec_commutes (all_commute _ _)
 
-end LeanProofs1.Implementations.LWWRegister
+/-! # Specification visibility, without SPEC-NON-COMM
+
+SPEC-NON-COMM fails here, so `certifiedSpecRA` is closed to this row. The
+route taken instead costs nothing, because the history the row already
+chooses is **chronological**. `causal_mono` says visibility increases the
+timestamp, so a chronological history inverts no `vis` arrow, and every
+specification-visibility arrow runs along `vis`. -/
+
+/-- The sort key begins with the timestamp, so a key-sorted list is
+chronological. -/
+theorem sorted_time {pi : List D.Event}
+    (h : pi.Pairwise (fun a b => keyLe a b = true)) :
+    pi.Pairwise (fun a b => a.time ≤ b.time) := by
+  refine h.imp (fun {a b} hab => ?_)
+  simp only [keyLe, decide_eq_true_eq, packed] at hab
+  rcases Prod.Lex.le_iff.mp hab with hlt | heq
+  · exact Nat.le_of_lt hlt
+  · exact Nat.le_of_eq heq.1
+
+/-- **The scoped premise with specification visibility.** The same witness
+as `chosenOrderSound`, the chronological sort, with the extra clause. -/
+theorem specChosenOrderSound :
+    NoSpecNonComm.Soundness.SpecChosenOrderSound D historySpec issuance := by
+  rintro C _ _ E _ _ ⟨pi, hpi⟩ q
+  cases q
+  classical
+  refine ⟨pi.mergeSort keyLe, ?_, ?_, ?_, ?_⟩
+  · refine ⟨hpi.1.perm (pi.mergeSort_perm keyLe).symm, fun e => ?_⟩
+    exact ((pi.mergeSort_perm keyLe).mem_iff).trans (hpi.2 e)
+  · exact (hpi.1.perm (pi.mergeSort_perm keyLe).symm).imp
+      (fun {_ _} _ => Soundness.paperOrder_false rc_non_comm all_commute _ _ _ _)
+  · exact NoSpecNonComm.Soundness.respects_specVisibility_of_time_sorted
+      (sorted_time (List.pairwise_mergeSort keyLe_trans keyLe_total pi))
+  · rw [show projectedUpdates (D := D.toMRDTSig) (pi.mergeSort keyLe)
+          = DeterministicSpec.updateLabels ((pi.mergeSort keyLe).map Op.op) by
+        simp [projectedUpdates, DeterministicSpec.updateLabels, List.map_map,
+          Function.comp],
+      historySpec, specMachine.updates_query_iff]
+    exact sorted_agrees _ (List.pairwise_mergeSort keyLe_trans keyLe_total pi)
+
+end LeanProofs.NoSpecNonComm.Implementations.LWWRegister

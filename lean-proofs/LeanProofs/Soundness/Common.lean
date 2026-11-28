@@ -1,7 +1,7 @@
-import LeanProofs1.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Metatheory.Adequacy
 import Artifact.MRDTs.Paper1.RALinearizability
 import Artifact.MRDTs.Paper1.EventBridge
-import LeanProofs1.Interface.SpecLaws
+import LeanProofs_no_spec_non_comm.Interface.SpecLaws
 
 /-!
 # Definition 4, and the vocabulary its two clauses share
@@ -34,10 +34,10 @@ mentions `merge`. As the paper says, the canonical join laws alone do not
 establish conformance, which is why the two never meet before the last file.
 -/
 
-namespace LeanProofs1.Soundness
+namespace LeanProofs.NoSpecNonComm.Soundness
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 variable {type : MRDTType} {D : Impl type}
 
@@ -68,4 +68,4 @@ theorem paperOrder_false (hru : UniformRcNonComm D)
   · exact hnc (hcomm a b)
   · exact (hru a b).mpr (Or.inl hb) (hcomm a b)
 
-end LeanProofs1.Soundness
+end LeanProofs.NoSpecNonComm.Soundness

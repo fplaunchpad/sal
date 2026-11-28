@@ -1,10 +1,15 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 import Mathlib.Data.Finset.Max
 import Mathlib.Data.Prod.Lex
 
 /-!
 # The optional register: the implementation and the specification
+
+**A duplicate.** This folder is a standalone copy of the row, kept so the
+specification-visibility variant can be read and diffed on its own. This
+file is `Implementations/OptionalRegister/Definition.lean` with the
+namespace changed and nothing else.
 
 The Optional register row of Table 1, Appendix `app:dt-optional-register`.
 A register whose payload may be absent. The active payload is the one with
@@ -31,10 +36,10 @@ indistinguishable from an absent one.
 No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs1.Implementations.OptionalRegister
+namespace LeanProofs.NoSpecNonComm.Implementations.OptionalRegister
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-- `O_type`: write a value, or clear the register. -/
 inductive Action where
@@ -178,4 +183,4 @@ cell no one has written. -/
 def issuance : Issuance D.toMRDTSig where
   CanIssue := fun e _ => 0 < e.time
 
-end LeanProofs1.Implementations.OptionalRegister
+end LeanProofs.NoSpecNonComm.Implementations.OptionalRegister

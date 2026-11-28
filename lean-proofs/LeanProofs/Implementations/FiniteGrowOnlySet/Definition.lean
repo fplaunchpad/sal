@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 import Mathlib.Data.Finset.Insert
 import Mathlib.Data.Finset.Lattice.Basic
 
@@ -14,10 +14,10 @@ The two definitions the obligations are stated about, and nothing else.
 No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs1.Implementations.FiniteGrowOnlySet
+namespace LeanProofs.NoSpecNonComm.Implementations.FiniteGrowOnlySet
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 variable (A : Type) [DecidableEq A]
 
@@ -57,4 +57,4 @@ def historySpec : Soundness.Spec (type A) := (specMachine A).toSpec
 def issuance : Issuance (D A).toMRDTSig where
   CanIssue := fun _ _ => True
 
-end LeanProofs1.Implementations.FiniteGrowOnlySet
+end LeanProofs.NoSpecNonComm.Implementations.FiniteGrowOnlySet

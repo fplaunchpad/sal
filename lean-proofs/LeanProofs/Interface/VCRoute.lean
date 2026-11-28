@@ -1,4 +1,4 @@
-import LeanProofs1.Interface.Laws
+import LeanProofs_no_spec_non_comm.Interface.Laws
 import Artifact.MRDTs.Framework.MergeLaws
 import Artifact.MRDTs.Paper1.ConcreteReplay
 
@@ -55,7 +55,7 @@ such a row needs. The conditions in this file are exactly VC1 to VC5, under
 each of the two readings.
 -/
 
-namespace LeanProofs1.Interface
+namespace LeanProofs.NoSpecNonComm.Interface
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
 
@@ -504,4 +504,4 @@ theorem Obligations.ofCommuting {D : Impl type} (h : Laws D)
   exact ⟨fun hn => absurd (all_comm e₁ e₂) hn,
     fun hb => hb.elim (fun x => (hempty _ _ x).elim) (fun x => (hempty _ _ x).elim)⟩
 
-end LeanProofs1.Interface
+end LeanProofs.NoSpecNonComm.Interface

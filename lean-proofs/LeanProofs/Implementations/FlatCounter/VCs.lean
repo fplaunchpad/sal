@@ -1,7 +1,14 @@
-import LeanProofs1.Implementations.FlatCounter.Definition
-import LeanProofs1.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Implementations.FlatCounter.Definition
+import LeanProofs_no_spec_non_comm.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/FlatCounter/VCs.lean` with the namespace changed. The last
+section is what this folder adds: the chosen history respects
+**specification visibility** as well, reached without SPEC-NON-COMM
+although this row proves that law.
+
 # The counter: every verification condition
 
 All of them, in one file:
@@ -9,20 +16,20 @@ All of them, in one file:
 * Section 4's `Laws(D_type, Spec)`: RC-NON-COMM, NO-RC-CHAIN, COND-COMM and
   SPEC-NON-COMM.
 * Section 5's VC1 to VC5.
-* the sequential premise, `SpecSound`.
+* the sequential premise, `AnyOrderSound`.
 
 `obligations` bundles what the metatheory consumes; `spec_non_comm` and
-`specSound` are passed beside it. `Certificate.lean` uses all three, so no
+`anyOrderSound` are passed beside it. `Certificate.lean` uses all three, so no
 condition here is stated without being consumed.
 
 Each obligation is an integer identity closed by `omega`.
 -/
 
-namespace LeanProofs1.Implementations.FlatCounter
+namespace LeanProofs.NoSpecNonComm.Implementations.FlatCounter
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs1.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.NoSpecNonComm.Interface
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs1.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.NoSpecNonComm.Interface
 
 /-- Every pair of events commutes, so by RC-NON-COMM `rc` is empty. -/
 theorem all_commute (e₁ e₂ : D.Event) : D.Commutes e₁ e₂ := by
@@ -203,8 +210,8 @@ def abstraction : Soundness.Abstraction D specMachine where
 
 /-- The sequential premise: `ops(pi) . (q => b)` is admitted by `Spec`, with
 `b` the implementation's own answer. It follows from the three conditions. -/
-theorem specSound : Soundness.SpecSound D historySpec :=
-  abstraction.specSound
+theorem anyOrderSound : Soundness.AnyOrderSound D historySpec :=
+  abstraction.anyOrderSound
 
 /-! ## `Laws(D_type, Spec)`: the fourth law
 
@@ -228,8 +235,43 @@ theorem spec_non_comm : Interface.spec_non_comm D historySpec :=
 /-- **The bundle the specification route consumes**: the obligations of
 Section 5 together with SPEC-NON-COMM, the one law of Section 4 that
 mentions `Spec`. -/
-theorem specObligations : SpecObligations D historySpec :=
+theorem obligations : SpecObligations D historySpec :=
   SpecObligations.ofUniform laws noncomm_iff_rc cond_comm_eq joinLaws
     spec_non_comm
 
-end LeanProofs1.Implementations.FlatCounter
+/-! # Specification visibility, without SPEC-NON-COMM
+
+This row proves SPEC-NON-COMM, so it does not **need** the route below. What
+the section shows is that the route is available anyway, on its own terms.
+
+`Soundness.certifiedSpecRA_any` asks a row for one thing, that
+`Soundness.joint` has no loop. Here that is immediate: every event of this
+row commutes with every other, so `rc` is empty by RC-NON-COMM and `lo^C_E`
+has no edges at all, which leaves `joint` a subrelation of `vis`.
+-/
+
+open Artifact.MRDTs.Paper1
+
+/-- **Every edge is causal.** `lo^C_E` is empty here, and a
+specification-visibility arrow runs along `vis`. -/
+theorem edge_vis  {C : Configuration D.toMRDTSig} {E : Set D.Event} {a b : D.Event}
+    (h : Soundness.joint D historySpec C.replayContext E a b) : C.replayContext.vis a b := by
+  rcases h.2.2 with hs | hp
+  · exact hs.1
+  · exact absurd hp (Soundness.paperOrder_false noncomm_iff_rc all_commute _ _ _ _)
+
+/-- So every path composes into one `vis` edge. -/
+theorem vis_of_joint_path  {C : Configuration D.toMRDTSig} {E : Set D.Event}
+    (hvs : VisStrict D C.replayContext) :
+    ∀ {a b : D.Event}, Relation.TransGen (Soundness.joint D historySpec C.replayContext E) a b →
+      C.replayContext.vis a b := by
+  intro a b h
+  induction h with
+  | single hedge => exact edge_vis hedge
+  | tail _ hedge ih => exact hvs.1 ih (edge_vis hedge)
+
+/-- **No loop**, since a loop would make an event see itself. -/
+theorem joint_acyclic  : Soundness.JointAcyclic D historySpec :=
+  fun _ _ hvs a h => hvs.2 a (vis_of_joint_path hvs h)
+
+end LeanProofs.NoSpecNonComm.Implementations.FlatCounter

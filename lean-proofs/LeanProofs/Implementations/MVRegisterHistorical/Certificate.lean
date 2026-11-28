@@ -1,38 +1,33 @@
-import LeanProofs1.Implementations.MVRegisterHistorical.VCs
-import LeanProofs1.Soundness.RALinearizability
+import LeanProofs_no_spec_non_comm.Implementations.MVRegisterHistorical.VCs
 
 /-!
-# The grow-only multi-value register: Definition 4
+# The historical MV register: the specification-visibility criterion
 
-RA-linearizability from the verification conditions, through the
-execution-scoped premise.
+RA-linearizability **with specification visibility**, from the premise in
+`VCs.lean` and from nothing else. SPEC-NON-COMM appears nowhere, and the row
+refutes it: every pair of events commutes in the implementation, while in
+`Spec` a write that supersedes an identity does not commute with the write
+that allocated it.
 
-Clause 1 is free: both stores are grow-only, so every pair of events
-commutes, `rc` is empty, `lo^C_E` has no edges and any enumeration of the
-version's event set is a linear extension.
-
-Clause 2 needs the scoped premise rather than `SpecSound`. The specification
-keeps a **compact** live set, dropping the entries a write names, and admits
-a history only when it is legal: identities distinct, and a write
-superseding only identities already allocated. An arbitrary replay is not
-legal, so `SpecSound` is false.
-
-`historySound` chooses the replay in timestamp order. A configuration's
-`causal_mono` says visibility increases the timestamp, so that order is
-causal, and a write then names only identities already allocated. That is
-exactly the specification's legality, and it is also what makes "dropped by
-a later write" and "named by any write at all" the same condition, which is
-why the compact fold agrees with the grow-only query.
+The folder is a standalone duplicate of the row, so `Definition.lean` and
+`VCs.lean` beside this file are the row's own, not the main tree's.
 -/
 
-namespace LeanProofs1.Implementations.MVRegisterHistorical
+namespace LeanProofs.NoSpecNonComm.Implementations.MVRegisterHistorical
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
-/-- **RA-linearizability.** Every certified execution of the multi-value
-register satisfies Definition 4 against `Spec`. -/
+/-- **RA-linearizability with specification visibility.** -/
+theorem specRaLinearizable : Soundness.SpecCertifiedRA D historySpec issuance :=
+  Soundness.certifiedSpecRA_scoped_on obligations (fun _ _ => trivial)
+    specChosenOrderSound
+
+/-- Definition 4 follows, as it does for every row on the specification
+route. -/
 theorem raLinearizable : Soundness.CertifiedRA D historySpec issuance :=
-  Soundness.certifiedRA_scoped obligations historySound
+  Soundness.certifiedRA_of_spec specRaLinearizable
 
-end LeanProofs1.Implementations.MVRegisterHistorical
+#print axioms specRaLinearizable
+
+end LeanProofs.NoSpecNonComm.Implementations.MVRegisterHistorical

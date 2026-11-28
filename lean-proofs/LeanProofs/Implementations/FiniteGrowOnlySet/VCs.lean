@@ -1,19 +1,26 @@
-import LeanProofs1.Implementations.FiniteGrowOnlySet.Definition
-import LeanProofs1.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Implementations.FiniteGrowOnlySet.Definition
+import LeanProofs_no_spec_non_comm.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/FiniteGrowOnlySet/VCs.lean` with the namespace changed. The last
+section is what this folder adds: the chosen history respects
+**specification visibility** as well, reached without SPEC-NON-COMM
+although this row proves that law.
+
 # The finite grow-only set: every obligation
 
 `Laws(D_type, Spec)` of Section 4 and VC1 to VC5 of Section 5, all four laws
 and all five conditions, for the tuple of `Definition.lean`. `obligations`
-bundles what the metatheory consumes; `spec_non_comm` and `specSound` are the
+bundles what the metatheory consumes; `spec_non_comm` and `anyOrderSound` are the
 two further premises `Soundness.certifiedSpecRA` asks for.
 -/
 
-namespace LeanProofs1.Implementations.FiniteGrowOnlySet
+namespace LeanProofs.NoSpecNonComm.Implementations.FiniteGrowOnlySet
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 variable {A : Type} [DecidableEq A]
 
@@ -167,7 +174,7 @@ variable (A)
 variable {A}
 
 /-- The sequential premise. -/
-theorem specSound : Soundness.SpecSound (D A) (historySpec A) := by
+theorem anyOrderSound : Soundness.AnyOrderSound (D A) (historySpec A) := by
   intro pi q
   have hlabels : projectedUpdates (D := (D A).toMRDTSig) pi
       = DeterministicSpec.updateLabels (pi.map Op.op) := by
@@ -197,7 +204,40 @@ theorem spec_non_comm : Interface.spec_non_comm (D A) (historySpec A) :=
 /-- **The bundle the specification route consumes**: the obligations of
 Section 5 together with SPEC-NON-COMM, the one law of Section 4 that
 mentions `Spec`. -/
-theorem specObligations : SpecObligations (D A) (historySpec A) :=
+theorem obligations : SpecObligations (D A) (historySpec A) :=
   SpecObligations.ofCommuting laws all_commute joinLaws spec_non_comm
 
-end LeanProofs1.Implementations.FiniteGrowOnlySet
+/-! # Specification visibility, without SPEC-NON-COMM
+
+This row proves SPEC-NON-COMM, so it does not **need** the route below. What
+the section shows is that the route is available anyway, on its own terms.
+
+`Soundness.certifiedSpecRA_any` asks a row for one thing, that
+`Soundness.joint` has no loop. Here that is immediate: every event of this
+row commutes with every other, so `rc` is empty by rc_non_comm-NON-COMM and `lo^C_E`
+has no edges at all, which leaves `joint` a subrelation of `vis`.
+-/
+
+/-- **Every edge is causal.** `lo^C_E` is empty here, and a
+specification-visibility arrow runs along `vis`. -/
+theorem edge_vis {A : Type} [DecidableEq A]  {C : Configuration (D A).toMRDTSig} {E : Set (D A).Event} {a b : (D A).Event}
+    (h : Soundness.joint (D A) (historySpec A) C.replayContext E a b) : C.replayContext.vis a b := by
+  rcases h.2.2 with hs | hp
+  · exact hs.1
+  · exact absurd hp (Soundness.paperOrder_false rc_non_comm all_commute _ _ _ _)
+
+/-- So every path composes into one `vis` edge. -/
+theorem vis_of_joint_path {A : Type} [DecidableEq A]  {C : Configuration (D A).toMRDTSig} {E : Set (D A).Event}
+    (hvs : VisStrict (D A) C.replayContext) :
+    ∀ {a b : (D A).Event}, Relation.TransGen (Soundness.joint (D A) (historySpec A) C.replayContext E) a b →
+      C.replayContext.vis a b := by
+  intro a b h
+  induction h with
+  | single hedge => exact edge_vis hedge
+  | tail _ hedge ih => exact hvs.1 ih (edge_vis hedge)
+
+/-- **No loop**, since a loop would make an event see itself. -/
+theorem joint_acyclic {A : Type} [DecidableEq A]  : Soundness.JointAcyclic (D A) (historySpec A) :=
+  fun _ _ hvs a h => hvs.2 a (vis_of_joint_path hvs h)
+
+end LeanProofs.NoSpecNonComm.Implementations.FiniteGrowOnlySet

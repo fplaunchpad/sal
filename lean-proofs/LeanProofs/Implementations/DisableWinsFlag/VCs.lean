@@ -1,19 +1,26 @@
-import LeanProofs1.Implementations.DisableWinsFlag.Definition
-import LeanProofs1.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Implementations.DisableWinsFlag.Definition
+import LeanProofs_no_spec_non_comm.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/DisableWinsFlag/VCs.lean` with the namespace changed. The last section
+is what this folder adds: one witness respecting `vis` and `lo^C_E` at once,
+which gives **specification visibility** with no appeal to SPEC-NON-COMM
+although this row proves that law.
+
 # The disable-wins flag: every obligation
 
 `Laws(D_type, Spec)` of Section 4 and VC1 to VC5 of Section 5, all four laws
 and all five conditions, for the tuple of `Definition.lean`. `obligations`
-bundles what the metatheory consumes; `spec_non_comm` and `specSound` are the
+bundles what the metatheory consumes; `spec_non_comm` and `anyOrderSound` are the
 two further premises `Soundness.certifiedSpecRA` asks for.
 -/
 
-namespace LeanProofs1.Implementations.DisableWinsFlag
+namespace LeanProofs.NoSpecNonComm.Implementations.DisableWinsFlag
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-! ### Unfolding `do` -/
 
@@ -1171,8 +1178,8 @@ theorem active_foldl (pi : List (Event)) :
 
 /-- The sequential premise, in its unrestricted form: every replay of the
 implementation is explained by the one-Boolean language. -/
-theorem specSound :
-    Soundness.SpecSound D historySpec := by
+theorem anyOrderSound :
+    Soundness.AnyOrderSound D historySpec := by
   intro pi q
   have hlabels : projectedUpdates (D := D.toMRDTSig) pi
       = DeterministicSpec.updateLabels (pi.map Op.op) := by
@@ -1216,7 +1223,148 @@ theorem spec_non_comm : Interface.spec_non_comm D historySpec := by
 /-- **The bundle the specification route consumes**: the obligations of
 Section 5 together with SPEC-NON-COMM, the one law of Section 4 that
 mentions `Spec`. -/
-theorem specObligations : SpecObligations D historySpec :=
+theorem obligations : SpecObligations D historySpec :=
   SpecObligations.ofUniform laws rc_non_comm cond_comm joinLaws spec_non_comm
 
-end LeanProofs1.Implementations.DisableWinsFlag
+/-! # Specification visibility, without SPEC-NON-COMM
+
+This row proves SPEC-NON-COMM, so it does not **need** the route below. What
+the section shows is that the route is available anyway, on its own terms.
+
+Unlike the commuting rows, this one cannot just take the chronological
+witness. Its `rc` is not empty, so `lo^C_E` carries same-time arrows between
+concurrent events, and a same-time arrow is free to point backwards in time:
+the timestamp order together with one such arrow is already a loop. The
+witness has to be a genuine linear extension of `vis` and `lo^C_E` **at
+once**, which exists exactly when the two have no loop between them.
+
+They have none, because `rc` splits this alphabet cleanly. A same-time arrow
+runs `reset` to `winning` and nowhere else, so
+
+* no same-time arrow leaves a `winning`, which is `no_concurrent_from_winning`;
+* nothing such an arrow's target sees is a `reset`, because a `reset` never
+  commutes with a `winning` and the target absorbs its non-commuting visible
+  successors, which is `succ_not_reset`.
+
+Together those make every path out of such a target a single `vis` edge, so
+a loop through one would make it see itself. That is `jointVis_acyclic`, and
+with it the witness respects `vis` as well as `lo^C_E`, which is all
+specification visibility asks, since every specification-visibility arrow
+runs along `vis`.
+
+The sequential premise stays `AnyOrderSound`, the unrestricted one the main
+tree already proves for this row, and the row states no chosen-order premise
+of its own. `Soundness.certifiedSpecRA_any` takes `joint` and the acyclicity
+below and picks the witness itself. Only the **choice of witness** is
+constrained here, not what the specification must admit. -/
+
+variable {E : Set D.Event}
+
+def jointVis (C : Ctx D) (E : Set D.Event) (a b : D.Event) : Prop :=
+  a ∈ E ∧ b ∈ E ∧ (C.vis a b ∨ paperOrder (policy D) C E a b)
+
+def Blocked (C : Ctx D) (E : Set D.Event) (w : D.Event) : Prop :=
+  w ∈ E ∧ w.op = AppOp.winning ∧ ¬ ∃ c ∈ E, C.vis w c ∧ ¬ D.Commutes w c
+
+theorem blocked_of_concurrent {a b : D.Event} (hbE : b ∈ E)
+    (h : ¬ C.vis a b ∧ ¬ C.vis b a ∧ D.RcBefore a.op b.op ∧
+      ¬ ∃ c ∈ E, C.vis b c ∧ ¬ D.Commutes b c) : Blocked C E b :=
+  ⟨hbE, ((eventRcBefore_iff a b).mp h.2.2.1).2, h.2.2.2⟩
+
+theorem succ_not_reset {w x : D.Event} (hw : Blocked C E w) (hxE : x ∈ E)
+    (hvis : C.vis w x) : x.op ≠ AppOp.reset := by
+  intro hx
+  exact hw.2.2 ⟨x, hxE, hvis,
+    (rc_non_comm w x).mpr (Or.inr ((eventRcBefore_iff x w).mpr ⟨hx, hw.2.1⟩))⟩
+
+theorem no_concurrent_from_winning {w z : D.Event} (hwv : w.op = AppOp.winning)
+    (h : ¬ C.vis w z ∧ ¬ C.vis z w ∧ D.RcBefore w.op z.op ∧
+      ¬ ∃ c ∈ E, C.vis z c ∧ ¬ D.Commutes z c) : False := by
+  have := ((eventRcBefore_iff w z).mp h.2.2.1).1
+  rw [hwv] at this
+  exact absurd this (by simp)
+
+theorem vis_of_blocked_path (hvs : VisStrict D C) {w : D.Event}
+    (hw : Blocked C E w) : ∀ {y}, Relation.TransGen (jointVis C E) w y → C.vis w y := by
+  intro y h
+  induction h with
+  | single hedge =>
+    rcases hedge.2.2 with hv | hp
+    · exact hv
+    · rcases hp with ⟨hv, -⟩ | hconc
+      · exact hv
+      · exact (no_concurrent_from_winning hw.2.1 hconc).elim
+  | @tail y z _ hedge ih =>
+    have hyres : y.op ≠ AppOp.reset := succ_not_reset hw hedge.1 ih
+    rcases hedge.2.2 with hv | hp
+    · exact hvs.1 ih hv
+    · rcases hp with ⟨hv, -⟩ | hconc
+      · exact hvs.1 ih hv
+      · exact absurd ((eventRcBefore_iff y z).mp hconc.2.2.1).1 hyres
+
+theorem path_cases (hvs : VisStrict D C) : ∀ {a b : D.Event},
+    Relation.TransGen (jointVis C E) a b → C.vis a b ∨
+      ∃ w, Blocked C E w ∧ Relation.ReflTransGen (jointVis C E) a w ∧
+        (w = b ∨ C.vis w b) := by
+  intro a b h
+  induction h with
+  | @single b hedge =>
+    rcases hedge.2.2 with hv | hp
+    · exact Or.inl hv
+    · rcases hp with ⟨hv, -⟩ | hconc
+      · exact Or.inl hv
+      · exact Or.inr ⟨b, blocked_of_concurrent hedge.2.1 hconc,
+          Relation.ReflTransGen.single hedge, Or.inl rfl⟩
+  | @tail y z hpath hedge ih =>
+    rcases ih with hv | ⟨w, hw, haw, hwy⟩
+    · rcases hedge.2.2 with hv' | hp
+      · exact Or.inl (hvs.1 hv hv')
+      · rcases hp with ⟨hv', -⟩ | hconc
+        · exact Or.inl (hvs.1 hv hv')
+        · exact Or.inr ⟨z, blocked_of_concurrent hedge.2.1 hconc,
+            (hpath.to_reflTransGen).tail hedge, Or.inl rfl⟩
+    · refine Or.inr ⟨w, hw, haw, ?_⟩
+      have hyres : y.op ≠ AppOp.reset := by
+        rcases hwy with rfl | hvwy
+        · rw [hw.2.1]; simp
+        · exact succ_not_reset hw hedge.1 hvwy
+      have hvyz : C.vis y z := by
+        rcases hedge.2.2 with hv' | hp
+        · exact hv'
+        · rcases hp with ⟨hv', -⟩ | hconc
+          · exact hv'
+          · exact absurd ((eventRcBefore_iff y z).mp hconc.2.2.1).1 hyres
+      rcases hwy with rfl | hvwy
+      · exact Or.inr hvyz
+      · exact Or.inr (hvs.1 hvwy hvyz)
+
+theorem jointVis_acyclic (hvs : VisStrict D C) (a : D.Event) :
+    ¬ Relation.TransGen (jointVis C E) a a := by
+  intro h
+  rcases path_cases hvs h with hv | ⟨w, hw, haw, hwa⟩
+  · exact hvs.2 a hv
+  · rcases hwa with rfl | hvwa
+    · exact hvs.2 w (vis_of_blocked_path hvs hw h)
+    · rcases Relation.reflTransGen_iff_eq_or_transGen.mp haw with rfl | hpath
+      · exact hvs.2 w hvwa
+      · have haE : a ∈ E := by
+          obtain ⟨b, hb, -⟩ := Relation.TransGen.head'_iff.mp h
+          exact hb.1
+        have hedge : jointVis C E w a := ⟨hw.1, haE, Or.inl hvwa⟩
+        exact hvs.2 w (vis_of_blocked_path hvs hw (hpath.head hedge))
+
+/-! ## The uniform interface
+
+`Soundness.certifiedSpecRA_any` asks for one fact, that `Soundness.joint`
+has no loop. That relation is specification visibility together with
+`lo^C_E`, weaker than the `vis` version above, so the acyclicity carries
+over by monotonicity. -/
+
+/-- **No loop.** Every specification-visibility arrow runs along `vis`, so
+`Soundness.joint` is a subrelation of `jointVis`, which `jointVis_acyclic`
+shows has none. -/
+theorem joint_acyclic : Soundness.JointAcyclic D historySpec :=
+  fun _ _ hvs a h => jointVis_acyclic hvs a
+    (h.mono (fun {_ _} he => ⟨he.1, he.2.1, he.2.2.imp (fun hs => hs.1) id⟩))
+
+end LeanProofs.NoSpecNonComm.Implementations.DisableWinsFlag

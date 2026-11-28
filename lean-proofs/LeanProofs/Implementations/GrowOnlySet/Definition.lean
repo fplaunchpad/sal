@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 
 /-!
 # The grow-only set: the implementation and the specification
@@ -23,10 +23,10 @@ survives the merge.
 No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs1.Implementations.GrowOnlySet
+namespace LeanProofs.NoSpecNonComm.Implementations.GrowOnlySet
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 variable (A : Type) [DecidableEq A]
 
@@ -70,4 +70,4 @@ def historySpec : Soundness.Spec (type A) := (specMachine A).toSpec
 def issuance : Issuance (D A).toMRDTSig where
   CanIssue := fun _ _ => True
 
-end LeanProofs1.Implementations.GrowOnlySet
+end LeanProofs.NoSpecNonComm.Implementations.GrowOnlySet

@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 import Mathlib.Data.List.Sort
 import Mathlib.Data.Set.Finite.Basic
 
@@ -35,10 +35,10 @@ born and not deleted, and an insertion's own identity is fresh.
 No proof appears in this file.
 -/
 
-namespace LeanProofs1.Implementations.RGA
+namespace LeanProofs.NoSpecNonComm.Implementations.RGA
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-- `O_type`. An insertion carries its own identity beside its anchor.
 
@@ -167,4 +167,4 @@ def issuance : Issuance D.toMRDTSig where
           ∧ ¬ born s i ∧ s.2 i = false
     | .remove x => born s x ∧ s.2 x = false
 
-end LeanProofs1.Implementations.RGA
+end LeanProofs.NoSpecNonComm.Implementations.RGA

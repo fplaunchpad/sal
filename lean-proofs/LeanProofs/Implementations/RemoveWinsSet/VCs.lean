@@ -1,19 +1,25 @@
-import LeanProofs1.Implementations.RemoveWinsSet.Definition
-import LeanProofs1.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Implementations.RemoveWinsSet.Definition
+import LeanProofs_no_spec_non_comm.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/RemoveWinsSet/VCs.lean` with the namespace changed. The last section
+is what this folder adds: that `Soundness.joint` has no loop, which is all
+`Soundness.certifiedSpecRA_any` asks of a row.
+
 # The remove-wins set: every obligation
 
 `Laws(D_type, Spec)` of Section 4 and VC1 to VC5 of Section 5, all four laws
 and all five conditions, for the tuple of `Definition.lean`. `obligations`
-bundles what the metatheory consumes; `spec_non_comm` and `specSound` are the
+bundles what the metatheory consumes; `spec_non_comm` and `anyOrderSound` are the
 two further premises `Soundness.certifiedSpecRA` asks for.
 -/
 
-namespace LeanProofs1.Implementations.RemoveWinsSet
+namespace LeanProofs.NoSpecNonComm.Implementations.RemoveWinsSet
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 variable {A : Type} [DecidableEq A] [Fintype A]
 
@@ -39,9 +45,9 @@ theorem eventRcBefore_iff (e₁ e₂ : (D A).Event) :
     (D A).EventRcBefore e₁ e₂ ↔ ∃ x, e₁.op = .add x ∧ e₂.op = .remove x :=
   rcBefore_iff _ _
 
-@[simp] theorem mem_step (S : St A) (e : Event A) (p : A × Timestamp) :
+@[simp] theorem mem_step (S : St A) (e : Event A) (p : A × Option Timestamp) :
     p ∈ step S e ↔ match e.op with
-    | .remove x => p = (x, e.time) ∨ p ∈ S
+    | .remove x => p = (x, some e.time) ∨ p ∈ S
     | .add x => p ∈ S ∧ p.1 ≠ x := by
   rcases e with ⟨t, r, o⟩; cases o <;> simp [step, Op.op, Op.time]
 
@@ -183,11 +189,11 @@ theorem append_singleton_split {α : Type} {pi pre post : List α} {w e : α}
 /-- A tag is in a replayed state exactly when some `remove` produced it and no
 later event added its element back, or it is an initial tag that no `add`
 removed. -/
-theorem mem_run_iff_suffix (ops : List (D A).Event) (p : A × Timestamp) :
+theorem mem_run_iff_suffix (ops : List (D A).Event) (p : A × Option Timestamp) :
     p ∈ Run ops ↔
       (∃ pre w post, ops = pre ++ w :: post ∧ w.op = AppOp.remove p.1
-        ∧ w.time = p.2 ∧ NoAdd post p.1)
-      ∨ (p.2 = 0 ∧ NoAdd ops p.1) := by
+        ∧ some w.time = p.2 ∧ NoAdd post p.1)
+      ∨ (p.2 = none ∧ NoAdd ops p.1) := by
   induction ops using List.reverseRecOn with
   | nil =>
       constructor
@@ -264,14 +270,14 @@ def Survives (C : Ctx (D A))
 and no `add` of `E` observes that `remove`, or it is an initial tag and `E`
 holds no `add` for its element. -/
 def Live (C : Ctx (D A))
-    (E : Set (Event A)) (p : A × Timestamp) : Prop :=
-  (∃ w ∈ E, w.op = AppOp.remove p.1 ∧ w.time = p.2 ∧ Survives C E w p.1)
-    ∨ (p.2 = 0 ∧ ¬ ∃ b ∈ E, b.op = AppOp.add p.1)
+    (E : Set (Event A)) (p : A × Option Timestamp) : Prop :=
+  (∃ w ∈ E, w.op = AppOp.remove p.1 ∧ some w.time = p.2 ∧ Survives C E w p.1)
+    ∨ (p.2 = none ∧ ¬ ∃ b ∈ E, b.op = AppOp.add p.1)
 
 /-- **Fact 1.** A canonical state contains exactly the live tags. -/
 theorem mem_run_iff_live {C : Ctx (D A)}
     {E : Set (Event A)} {ops : List (D A).Event}
-    (hp : listPermOf ops E) (hr : respects ops (loOn C E)) (p : A × Timestamp) :
+    (hp : listPermOf ops E) (hr : respects ops (loOn C E)) (p : A × Option Timestamp) :
     p ∈ Run ops ↔ Live C E p := by
   rw [mem_run_iff_suffix]
   constructor
@@ -312,57 +318,52 @@ theorem mem_run_iff_live {C : Ctx (D A)}
 
 theorem canonical_mem_iff {C : Ctx (D A)}
     {E : Set (Event A)} {s : St A}
-    (hs : Interface.IsCanOn (D A) C E s) (p : A × Timestamp) : p ∈ s ↔ Live C E p := by
+    (hs : Interface.IsCanOn (D A) C E s) (p : A × Option Timestamp) : p ∈ s ↔ Live C E p := by
   obtain ⟨ops, hp, hr, hf⟩ := hs
   rw [← hf]
   exact mem_run_iff_live hp hr p
 
-/-- The contexts this row's conditions are asked about: every event the
-context observes was minted honestly, so no event carries the timestamp the
-seed tags reserve. `Certificate.lean` discharges it from `MintHonest`. -/
-def Positive (C : Ctx (D A)) : Prop := ∀ e ∈ C.events, 0 < e.time
-
-/-- **Fact 2.** Timestamps identify events, and the issuance guard keeps the
-reserved timestamp `0` out of them, so a tag has one possible origin. -/
+/-- **Fact 2.** Timestamps identify events, and a seed tag carries `none`,
+which no event's tag can equal, so a tag has one possible origin. -/
 theorem live_iff_fixed_remove {C : Ctx (D A)}
     {E : Set (Event A)} (hsub : E ⊆ C.events)
-    (hpos : Positive C)
-    {p : A × Timestamp} {a : Event A} (hac : a ∈ C.events)
-    (ha : a.op = AppOp.remove p.1) (ht : a.time = p.2) :
+    {p : A × Option Timestamp} {a : Event A} (hac : a ∈ C.events)
+    (ha : a.op = AppOp.remove p.1) (ht : some a.time = p.2) :
     Live C E p ↔ a ∈ E ∧ Survives C E a p.1 := by
   constructor
   · rintro (⟨b, hb, -, hbt, hs⟩ | ⟨h0, -⟩)
-    · have heq : b = a := C.ts_unique (hsub hb) hac (hbt.trans ht.symm)
+    · have heq : b = a :=
+        C.ts_unique (hsub hb) hac (Option.some.inj (hbt.trans ht.symm))
       subst b
       exact ⟨hb, hs⟩
-    · exact absurd (hpos a hac) (by rw [ht, h0]; simp)
+    · exact absurd (ht.trans h0) (by simp)
   · rintro ⟨he, hs⟩
     exact Or.inl ⟨a, he, ha, ht, hs⟩
 
 /-- **Fact 3.** Liveness over the union is the Boolean that `merge` computes.
 The initial tags are handled separately, since no event creates them. -/
 theorem live_join {C : Ctx (D A)}
-    {E₁ E₂ : Set (Event A)} (hpos : Positive C)
+    {E₁ E₂ : Set (Event A)}
     (hsub₁ : E₁ ⊆ C.events) (hsub₂ : E₂ ⊆ C.events)
     (hclosed₁ : ∀ a b, C.vis a b →
       ¬ (D A).toMRDTSig.toUpdateSig.commutes a b → b ∈ E₁ → a ∈ E₁)
     (hclosed₂ : ∀ a b, C.vis a b →
       ¬ (D A).toMRDTSig.toUpdateSig.commutes a b → b ∈ E₂ → a ∈ E₂)
-    (p : A × Timestamp) :
+    (p : A × Option Timestamp) :
     Live C (E₁ ∪ E₂) p ↔
       (Live C (E₁ ∩ E₂) p ∧ Live C E₁ p ∧ Live C E₂ p) ∨
       (Live C E₁ p ∧ ¬ Live C (E₁ ∩ E₂) p) ∨
       (Live C E₂ p ∧ ¬ Live C (E₁ ∩ E₂) p) := by
   have hint : E₁ ∩ E₂ ⊆ C.events := fun e he => hsub₁ he.1
   have huni : E₁ ∪ E₂ ⊆ C.events := fun e he => he.elim (fun h => hsub₁ h) (fun h => hsub₂ h)
-  by_cases h0 : p.2 = 0
+  by_cases h0 : p.2 = none
   · -- an initial tag: no event creates it, so liveness is "no add for `p.1`"
     have key : ∀ E : Set (Event A), E ⊆ C.events →
         (Live C E p ↔ ¬ ∃ b ∈ E, b.op = AppOp.add p.1) := by
       intro E hsub
       constructor
       · rintro (⟨w, hw, -, hwt, -⟩ | ⟨-, h⟩)
-        · exact absurd (hpos w (hsub hw)) (by rw [hwt, h0]; simp)
+        · exact absurd (hwt.trans h0) (by simp)
         · exact h
       · exact fun h => Or.inr ⟨h0, h⟩
     rw [key _ huni, key _ hsub₁, key _ hsub₂, key _ hint]
@@ -378,13 +379,13 @@ theorem live_join {C : Ctx (D A)}
       · exact absurd (fun ⟨b, hb, hba⟩ => h₁ ⟨b, hb.1, hba⟩) hn0
       · exact absurd (fun ⟨b, hb, hba⟩ => h₂ ⟨b, hb.2, hba⟩) hn0
   · -- a minted tag: the OR-set argument
-    by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = AppOp.remove p.1 ∧ a.time = p.2
+    by_cases hex : ∃ a ∈ E₁ ∪ E₂, a.op = AppOp.remove p.1 ∧ some a.time = p.2
     · obtain ⟨a, hae, ha, ht⟩ := hex
       have hac : a ∈ C.events := huni hae
-      rw [live_iff_fixed_remove huni hpos hac ha ht,
-        live_iff_fixed_remove hint hpos hac ha ht,
-        live_iff_fixed_remove hsub₁ hpos hac ha ht,
-        live_iff_fixed_remove hsub₂ hpos hac ha ht]
+      rw [live_iff_fixed_remove huni hac ha ht,
+        live_iff_fixed_remove hint hac ha ht,
+        live_iff_fixed_remove hsub₁ hac ha ht,
+        live_iff_fixed_remove hsub₂ hac ha ht]
       have hk₁ : ¬ Survives C E₁ a p.1 → a ∈ E₁ := by
         intro hn
         obtain ⟨b, hb, hba, hv⟩ := Classical.not_not.mp hn
@@ -453,7 +454,7 @@ theorem vc2_merge_init (s : (D A).Sigma) :
 The states VC3, VC4 and VC5 mention are canonical for event sets built from
 `E1`, `E2` and `down(e)`. Each nest of merges is read pointwise through
 `canonical_mem_iff` and resolved by `live_join`, this row's own description
-of liveness over a union, which is where `Positive` enters.
+of liveness over a union.
 
 `mergeProp` below is the Boolean `merge` computes at a tag. Writing both
 `merge` and `live_join` in that one shape turns VC3 and VC5 into chains of
@@ -464,7 +465,7 @@ and both branches have it, or when one branch has it and the ancestor does
 not. -/
 def mergeProp (L B C : Prop) : Prop := (L ∧ B ∧ C) ∨ (B ∧ ¬ L) ∨ (C ∧ ¬ L)
 
-theorem mem_merge (l a b : (D A).Sigma) (p : A × Timestamp) :
+theorem mem_merge (l a b : (D A).Sigma) (p : A × Option Timestamp) :
     p ∈ (D A).merge l a b ↔ mergeProp (p ∈ l) (p ∈ a) (p ∈ b) := by
   change p ∈ mergeState l a b ↔ _
   simp only [mergeState, mergeProp, Finset.mem_union, Finset.mem_inter,
@@ -475,13 +476,12 @@ theorem mem_merge (l a b : (D A).Sigma) (p : A × Timestamp) :
 Boolean `merge` computes from liveness over the intersection and over each
 branch. -/
 theorem live_merge {C : Ctx (D A)} {E₁ E₂ : Set (D A).Event}
-    (hpos : Positive C)
     (h₁ : SupportedOn (D A) C E₁) (h₂ : SupportedOn (D A) C E₂)
     (c₁ : WeaklyClosed (D A) C E₁) (c₂ : WeaklyClosed (D A) C E₂)
-    (p : A × Timestamp) :
+    (p : A × Option Timestamp) :
     Live C (E₁ ∪ E₂) p
       ↔ mergeProp (Live C (E₁ ∩ E₂) p) (Live C E₁ p) (Live C E₂ p) :=
-  live_join hpos h₁ h₂ c₁ c₂ p
+  live_join h₁ h₂ c₁ c₂ p
 
 /-- `e(can(down(e) \ {e})) = can(down(e))`: the downset's own peel. -/
 theorem isCan_downset {C : Ctx (D A)} {m : (D A).Sigma} {e : (D A).Event}
@@ -502,7 +502,7 @@ and the equation falls out by rewriting. -/
 theorem vc3_local_redistribute :
     ∀ (C : Ctx (D A)) (E₁ E₂ : Set (D A).Event) (l m x y : (D A).Sigma)
       (e : (D A).Event),
-      Positive C → VisStrict (D A) C →
+      VisStrict (D A) C →
       SupportedOn (D A) C E₁ → SupportedOn (D A) C E₂ →
       WeaklyClosed (D A) C E₁ → WeaklyClosed (D A) C E₂ →
       e ∈ E₁ → e ∉ E₂ → MaximalOn (D A) C (E₁ ∪ E₂) e →
@@ -513,7 +513,7 @@ theorem vc3_local_redistribute :
       (D A).merge l ((D A).merge m x ((D A).do_ m e)) y
         = (D A).merge m ((D A).merge l x y) ((D A).do_ m e) := by
   letI : EventOrder (D A).toMRDTSig.toUpdateSig := Interface.rcOrder (D A)
-  intro C E₁ E₂ l m x y e hpos hvs h₁ h₂ hc₁ hc₂ he₁ he₂ hmax hl hm hx hy
+  intro C E₁ E₂ l m x y e hvs h₁ h₂ hc₁ hc₂ he₁ he₂ hmax hl hm hx hy
   obtain ⟨htr, hir⟩ := hvs
   have hcov : ∀ a b : (D A).Event, ¬ (D A).toMRDTSig.toUpdateSig.commutes a b →
       ((D A).toMRDTSig.toUpdateSig.replayBefore a b ∨
@@ -560,12 +560,12 @@ theorem vc3_local_redistribute :
       · exact Or.inr (Or.inl hze)
       · exact Or.inl ⟨hz, hze⟩
   ext p
-  have jA := live_merge hpos (fun a ha => h₁ a ha.1) hdsupp hclx hcld p
+  have jA := live_merge (fun a ha => h₁ a ha.1) hdsupp hclx hcld p
   rw [i₁, u₁] at jA
-  have jB := live_merge hpos h₁ h₂ hc₁ hc₂ p
-  have jC := live_merge hpos (fun a ha => h₁ a ha.1) h₂ hclx hc₂ p
+  have jB := live_merge h₁ h₂ hc₁ hc₂ p
+  have jC := live_merge (fun a ha => h₁ a ha.1) h₂ hclx hc₂ p
   rw [i₂, u₂] at jC
-  have jD := live_merge hpos (fun a ha => hsupU a ha.1) hdsupp hclU' hcld p
+  have jD := live_merge (fun a ha => hsupU a ha.1) hdsupp hclU' hcld p
   rw [i₃, u₃] at jD
   rw [mem_merge, mem_merge, mem_merge, mem_merge,
     canonical_mem_iff hl p, canonical_mem_iff hm p, canonical_mem_iff hx p,
@@ -590,7 +590,7 @@ theorem live_of_added {C : Ctx (D A)} {U : Set (D A).Event}
     (heU : e ∈ U) (hmax : MaximalOn (D A) C U e) (hex : e.op = AppOp.add x)
     (hA : IsCanOn (D A) C (U \ {e}) As)
     (hB : IsCanOn (D A) C (downset C e \ {e}) Bs)
-    (p : A × Timestamp) (hpA : p ∈ As) (hpx : p.1 = x) : p ∈ Bs := by
+    (p : A × Option Timestamp) (hpA : p ∈ As) (hpx : p.1 = x) : p ∈ Bs := by
   letI : EventOrder (D A).toMRDTSig.toUpdateSig := Interface.rcOrder (D A)
   have hdsub : downset C e ⊆ U := downset_subset hUcl heU
   rw [canonical_mem_iff hB]
@@ -629,35 +629,35 @@ in exactly one of them.
 
 For `remove x` the tag `e` mints cannot already be in the ancestor `B`: a
 tag of `down(e) \ {e}` carrying that timestamp would be `e` itself by
-`ts_unique`, and `Positive` is what rules out the other way for a tag to sit
-there, as a seed under the reserved timestamp `0`. Without the guard this is
-false, and so is the join lemma.
+`ts_unique`, and the only other way for a tag to sit there is as a seed,
+which carries `none` and so cannot equal `some (time e)`.
 
 For `add x` nothing is minted, and the work is `live_of_added`. -/
 theorem vc4_causal_delta :
     ∀ (C : Ctx (D A)) (U : Set (D A).Event) (As Bs : (D A).Sigma)
       (e : (D A).Event),
-      Positive C → VisStrict (D A) C →
+      VisStrict (D A) C →
       SupportedOn (D A) C U → WeaklyClosed (D A) C U →
       e ∈ U → MaximalOn (D A) C U e →
       IsCanOn (D A) C (U \ {e}) As →
       IsCanOn (D A) C (downset C e \ {e}) Bs →
       (D A).merge Bs As ((D A).do_ Bs e) = (D A).do_ As e := by
   letI : EventOrder (D A).toMRDTSig.toUpdateSig := Interface.rcOrder (D A)
-  intro C U As Bs e hpos hvs hUsub hUcl heU hmax hA hB
+  intro C U As Bs e hvs hUsub hUcl heU hmax hA hB
   obtain ⟨htr, hir⟩ := hvs
   change St A at As Bs
   change mergeState Bs As (step Bs e) = step As e
   ext p
   cases hop : e.op with
   | remove x =>
-      have hnB : (x, e.time) ∉ Bs := by
+      have hnB : (x, some e.time) ∉ Bs := by
         intro hmem
         rcases (canonical_mem_iff hB _).mp hmem with ⟨α, hα, -, hαt, -⟩ | ⟨h0, -⟩
         · exact hα.2 (C.ts_unique
-            (hUsub α (downset_subset hUcl heU hα.1)) (hUsub e heU) hαt)
-        · exact absurd (hpos e (hUsub e heU)) (by rw [← h0]; simp)
-      have hkey : p = (x, e.time) → p ∉ Bs := by rintro rfl; exact hnB
+            (hUsub α (downset_subset hUcl heU hα.1)) (hUsub e heU)
+            (Option.some.inj hαt))
+        · exact absurd h0 (by simp)
+      have hkey : p = (x, some e.time) → p ∉ Bs := by rintro rfl; exact hnB
       simp only [mergeState, Finset.mem_union, Finset.mem_inter,
         Finset.mem_sdiff, mem_step, hop]
       tauto
@@ -678,7 +678,7 @@ peel. -/
 theorem vc5_redistribute :
     ∀ (C : Ctx (D A)) (E₁ E₂ : Set (D A).Event) (x₀ x₁ x₂ m : (D A).Sigma)
       (e : (D A).Event),
-      Positive C → VisStrict (D A) C →
+      VisStrict (D A) C →
       SupportedOn (D A) C E₁ → SupportedOn (D A) C E₂ →
       WeaklyClosed (D A) C E₁ → WeaklyClosed (D A) C E₂ →
       e ∈ E₁ → e ∈ E₂ → MaximalOn (D A) C (E₁ ∪ E₂) e →
@@ -691,7 +691,7 @@ theorem vc5_redistribute :
           ((D A).merge m x₂ ((D A).do_ m e))
         = (D A).merge m ((D A).merge x₀ x₁ x₂) ((D A).do_ m e) := by
   letI : EventOrder (D A).toMRDTSig.toUpdateSig := Interface.rcOrder (D A)
-  intro C E₁ E₂ x₀ x₁ x₂ m e hpos hvs h₁ h₂ hc₁ hc₂ he₁ he₂ hmax hx₀ hm hx₁ hx₂
+  intro C E₁ E₂ x₀ x₁ x₂ m e hvs h₁ h₂ hc₁ hc₂ he₁ he₂ hmax hx₀ hm hx₁ hx₂
   obtain ⟨htr, hir⟩ := hvs
   have hcov : ∀ a b : (D A).Event, ¬ (D A).toMRDTSig.toUpdateSig.commutes a b →
       ((D A).toMRDTSig.toUpdateSig.replayBefore a b ∨
@@ -740,32 +740,34 @@ theorem vc5_redistribute :
       · exact Or.inl ⟨hz, hn⟩
       · exact Or.inr ⟨hz, hn⟩
   ext p
-  have jP₀ := live_merge hpos (fun a ha => h₁ a ha.1.1) hdsupp hcl₀ hcld p
+  have jP₀ := live_merge (fun a ha => h₁ a ha.1.1) hdsupp hcl₀ hcld p
   rw [peelI _ hdsubI, peelU _ hdsubI] at jP₀
-  have jP₁ := live_merge hpos (fun a ha => h₁ a ha.1) hdsupp hcl₁ hcld p
+  have jP₁ := live_merge (fun a ha => h₁ a ha.1) hdsupp hcl₁ hcld p
   rw [peelI _ hdsub₁, peelU _ hdsub₁] at jP₁
-  have jP₂ := live_merge hpos (fun a ha => h₂ a ha.1) hdsupp hcl₂ hcld p
+  have jP₂ := live_merge (fun a ha => h₂ a ha.1) hdsupp hcl₂ hcld p
   rw [peelI _ hdsub₂, peelU _ hdsub₂] at jP₂
-  have jU := live_merge hpos h₁ h₂ hc₁ hc₂ p
-  have jM := live_merge hpos (fun a ha => h₁ a ha.1) (fun a ha => h₂ a ha.1)
+  have jU := live_merge h₁ h₂ hc₁ hc₂ p
+  have jM := live_merge (fun a ha => h₁ a ha.1) (fun a ha => h₂ a ha.1)
     hcl₁ hcl₂ p
   rw [iM, uM] at jM
-  have jD := live_merge hpos (fun a ha => hsupU a ha.1) hdsupp hclU' hcld p
+  have jD := live_merge (fun a ha => hsupU a ha.1) hdsupp hclU' hcld p
   rw [peelI _ hdsubU, peelU _ hdsubU] at jD
   rw [mem_merge, mem_merge, mem_merge, mem_merge, mem_merge, mem_merge,
     canonical_mem_iff hx₀ p, canonical_mem_iff hm p, canonical_mem_iff hx₁ p,
     canonical_mem_iff hx₂ p, canonical_mem_iff hdm p,
     ← jP₀, ← jP₁, ← jP₂, ← jU, ← jM, ← jD]
 
-/-- **VC1 to VC5** of Section 5, at the contexts the issuance guard admits.
-VC1 and VC2 are the two equations above and hold everywhere; the other three
-are already stated canonically. -/
-theorem joinLaws : CanonicalJoinLawsOn (D A) Positive where
+/-- **VC1 to VC5** of Section 5. VC1 and VC2 are the two equations above;
+the other three are already stated canonically. -/
+theorem joinLaws : CanonicalJoinLawsOn (D A) (fun _ => True) where
   vc1_merge_comm := RemoveWinsSet.vc1_merge_comm
   vc2_merge_init := fun _ _ s _ _ _ => RemoveWinsSet.vc2_merge_init s
-  vc3_local_redistribute := RemoveWinsSet.vc3_local_redistribute
-  vc4_causal_delta := RemoveWinsSet.vc4_causal_delta
-  vc5_redistribute := RemoveWinsSet.vc5_redistribute
+  vc3_local_redistribute := fun C E₁ E₂ l m x y e _ =>
+    RemoveWinsSet.vc3_local_redistribute C E₁ E₂ l m x y e
+  vc4_causal_delta := fun C U As Bs e _ =>
+    RemoveWinsSet.vc4_causal_delta C U As Bs e
+  vc5_redistribute := fun C E₁ E₂ x₀ x₁ x₂ m e _ =>
+    RemoveWinsSet.vc5_redistribute C E₁ E₂ x₀ x₁ x₂ m e
 
 variable {A : Type} [DecidableEq A] [Fintype A]
 
@@ -818,7 +820,7 @@ theorem view_fold (S : St A) (ops : List (D A).Event) :
   | cons e ops ih => simpa [applySeq] using ih (step S e)
 
 /-- The sequential premise, unrestricted. -/
-theorem specSound : Soundness.SpecSound (D A) (historySpec A) := by
+theorem anyOrderSound : Soundness.AnyOrderSound (D A) (historySpec A) := by
   intro pi q
   have hlabels : projectedUpdates (D := (D A).toMRDTSig) pi
       = DeterministicSpec.updateLabels (pi.map Op.op) := by
@@ -828,17 +830,6 @@ theorem specSound : Soundness.SpecSound (D A) (historySpec A) := by
   change decide (q ∈ view (applySeq (D A).toMRDTSig.toUpdateSig (sigma0 A) pi)) = _
   rw [view_fold, view_sigma0]
   rfl
-
-/-- **The guard, as a condition on contexts.** A mint-honest configuration
-minted every event it observes under `G`, so every one of them carries a
-positive timestamp. This is the only step in the development that reads the
-issuance column of Table 1. -/
-theorem positive_of_mintHonest (C : Configuration (D A).toMRDTSig)
-    (hmint : MintHonest (D A).toMRDTSig (issuance A).CanIssue C) :
-    Positive C.replayContext := by
-  intro e he
-  obtain ⟨_, _, _, hg⟩ := hmint e he
-  exact hg
 
 /-! ## The join lemma -/
 
@@ -869,10 +860,95 @@ theorem spec_non_comm : Interface.spec_non_comm (D A) (historySpec A) := by
     exact (Finset.erase_insert_of_ne hxy).symm
   · exact Finset.erase_right_comm
 
-/-- **The bundle the specification route consumes**, at the contexts
-`Positive` admits: the obligations of Section 5 together with
-SPEC-NON-COMM. -/
-theorem specObligations : SpecObligationsOn (D A) Positive (historySpec A) :=
-  SpecObligationsOn.ofUniform laws rc_non_comm cond_comm joinLaws spec_non_comm
+/-- **The bundle the specification route consumes**: the obligations of
+Section 5 together with SPEC-NON-COMM, the one law of Section 4 that
+mentions `Spec`. -/
+theorem obligations : SpecObligations (D A) (historySpec A) :=
+  SpecObligations.ofUniform laws rc_non_comm cond_comm joinLaws spec_non_comm
 
-end LeanProofs1.Implementations.RemoveWinsSet
+/-! # Specification visibility, without SPEC-NON-COMM
+
+`Soundness.certifiedSpecRA_any` asks a row for one thing, that
+`Soundness.joint` has no loop. For a row whose events all commute that is
+immediate, `lo^C_E` being empty. This row's `rc` is **not** empty, so
+`lo^C_E` carries same-time arrows between concurrent events, and such an
+arrow is free to point backwards in time. The loop has to be ruled out.
+
+It is ruled out because `rc` here runs an addition to a removal of the same element and nowhere else, so a
+same-time arrow's target can start no further arrow, and it absorbs its
+non-commuting visible successors by the side condition `lo^C_E` carries. Such
+a target is therefore a **dead end**: no edge of `joint` leaves it at all.
+Any loop would have to pass through one, and a loop with no same-time arrow
+at all is a `vis` loop. That is `no_out` and `joint_acyclic`.
+
+`edge_paperOrder` is where this row differs from the flags, and it is worth
+being plain about it. For a row whose `rc` is indexed, like this one,
+specification visibility cannot be absorbed into `vis` the way it can when
+`rc` splits the alphabet globally: cross-index `vis` arrows would make that
+relation loop. It is absorbed into `lo^C_E` instead, and that step is the
+row's **own** SPEC-NON-COMM. So this row does not avoid the fourth law; what
+it shows is that the law is not needed in the **adequacy theorem**, only in
+the row, and that the criterion is reachable through the same `joint`
+interface as everything else here.
+-/
+
+variable {C : Ctx (D A)} {E : Set (D A).Event}
+
+/-- **Every edge of `joint` is a `lo^C_E` edge.** The right disjunct is one
+already; the left is one by this row's SPEC-NON-COMM. -/
+theorem edge_paperOrder {a b : (D A).Event} (h : Soundness.joint (D A) (historySpec A) C E a b) :
+    paperOrder (policy (D A)) C E a b :=
+  h.2.2.elim (fun hs => specVisibility_sub_paperOrder
+    (Interface.spec_non_comm.covered spec_non_comm) _ E _ _ hs) id
+
+/-- The target of a same-time arrow, with the side condition `lo^C_E`
+carries. -/
+def Blocked (C : Ctx (D A)) (E : Set (D A).Event) (w : (D A).Event) : Prop :=
+  w ∈ E ∧ (∃ x, w.op = .remove x) ∧ ¬ ∃ c ∈ E, C.vis w c ∧ ¬ (D A).Commutes w c
+
+/-- A same-time arrow lands on one. -/
+theorem blocked_of_concurrent {a b : (D A).Event} (hbE : b ∈ E)
+    (h : ¬ C.vis a b ∧ ¬ C.vis b a ∧ (D A).RcBefore a.op b.op ∧
+      ¬ ∃ c ∈ E, C.vis b c ∧ ¬ (D A).Commutes b c) : Blocked C E b := by
+  obtain ⟨x, -, hb⟩ := (eventRcBefore_iff a b).mp h.2.2.1
+  exact ⟨hbE, ⟨x, hb⟩, h.2.2.2⟩
+
+/-- **A `Blocked` event is a dead end.** Nothing leaves it: the absorber
+kills the causal disjunct, and `rc` starts no arrow here. -/
+theorem no_out {w z : (D A).Event} (hw : Blocked C E w) : ¬ Soundness.joint (D A) (historySpec A) C E w z := by
+  intro hj
+  rcases edge_paperOrder hj with ⟨hv, hnc⟩ | hconc
+  · exact hw.2.2 ⟨z, hj.2.1, hv, hnc⟩
+  · obtain ⟨x, hwx⟩ := hw.2.1
+    obtain ⟨y, hw', -⟩ := (eventRcBefore_iff w z).mp hconc.2.2.1
+    rw [hwx] at hw'
+    exact absurd hw' (by simp)
+
+/-- Every path is causal, or has reached a dead end. -/
+theorem vis_or_blocked (hvs : VisStrict (D A) C) :
+    ∀ {a b : (D A).Event}, Relation.TransGen (Soundness.joint (D A) (historySpec A) C E) a b →
+      C.vis a b ∨ Blocked C E b := by
+  intro a b h
+  induction h with
+  | @single b hedge =>
+    rcases edge_paperOrder hedge with ⟨hv, -⟩ | hconc
+    · exact Or.inl hv
+    · exact Or.inr (blocked_of_concurrent hedge.2.1 hconc)
+  | @tail y z _ hedge ih =>
+    rcases ih with hv | hb
+    · rcases edge_paperOrder hedge with ⟨hv', -⟩ | hconc
+      · exact Or.inl (hvs.1 hv hv')
+      · exact Or.inr (blocked_of_concurrent hedge.2.1 hconc)
+    · exact absurd hedge (no_out hb)
+
+/-- **No loop.** A causal loop is impossible, and a loop through a dead end
+would have to leave it. -/
+theorem joint_acyclic : Soundness.JointAcyclic (D A) (historySpec A) := by
+  intro C E hvs a h
+  rcases vis_or_blocked hvs h with hv | hb
+  · exact hvs.2 a hv
+  · obtain ⟨b, hb', -⟩ := Relation.TransGen.head'_iff.mp h
+    exact no_out hb hb'
+
+end LeanProofs.NoSpecNonComm.Implementations.RemoveWinsSet
+

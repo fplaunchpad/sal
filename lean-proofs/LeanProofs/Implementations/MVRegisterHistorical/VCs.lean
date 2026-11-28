@@ -1,7 +1,14 @@
-import LeanProofs1.Implementations.MVRegisterHistorical.Definition
-import LeanProofs1.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Implementations.MVRegisterHistorical.Definition
+import LeanProofs_no_spec_non_comm.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/MVRegisterHistorical/VCs.lean` with the namespace changed.
+The last section is what this folder adds: the chosen history respects
+**specification visibility** as well, with no appeal to SPEC-NON-COMM,
+which this row refutes.
+
 # The grow-only multi-value register: `Laws(D_type)` and VC1 to VC5
 
 Both stores are grow-only and `do` only sets bits, so every pair of events
@@ -14,10 +21,10 @@ state. On arguments ordered that way the three-way merge **is** the union,
 and the conditions become identities among disjunctions.
 -/
 
-namespace LeanProofs1.Implementations.MVRegisterHistorical
+namespace LeanProofs.NoSpecNonComm.Implementations.MVRegisterHistorical
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 theorem do_eq (s : St) (e : D.Event) : D.do_ s e = step s e := rfl
 theorem merge_eq (l a b : D.Sigma) : D.merge l a b = mergeState l a b := rfl
@@ -621,7 +628,7 @@ theorem sane_arrange (hmint : MintHonest D.toMRDTSig issuance.CanIssue C)
   exact absurd hlt (Nat.not_lt.mpr hle)
 
 /-- **The sequential premise, execution-scoped.** -/
-theorem historySound : Soundness.HistorySound D historySpec issuance := by
+theorem chosenOrderSound : Soundness.ChosenOrderSound D historySpec issuance := by
   rintro C hmint E hsub hclosed ⟨pi, hpi⟩ q
   have hperm := arrange_perm pi
   have hnd : (arrange pi).Nodup := hperm.nodup_iff.mpr hpi.1
@@ -667,4 +674,107 @@ theorem historySound : Soundness.HistorySound D historySpec issuance := by
       obtain ⟨hor, hg⟩ := (fold_live (arrange pi) (∅, ∅) (i, v) hsane).mp hmem
       exact ⟨i, hor.resolve_left (by simp), hg⟩
 
-end LeanProofs1.Implementations.MVRegisterHistorical
+/-! ## SPEC-NON-COMM fails here
+
+`all_commute` says every pair of events commutes in the implementation, so
+SPEC-NON-COMM collapses to the demand that every pair of specification
+updates commute. A write that supersedes an earlier identity does not
+commute with the write that allocated it: the specification admits the two
+only in allocation order, because a write may name an identity only once it
+has been allocated.
+
+Nothing downstream consumes SPEC-NON-COMM, so the certificate is unaffected.
+What the failure costs is the stronger criterion of
+`Artifact/MRDTs/Paper1/SpecificationVisibility.lean`, which this row cannot
+reach, and it is why the row needs `Soundness.ChosenOrderSound` rather than
+`Soundness.AnyOrderSound`. -/
+
+/-- Allocating identity `0` and superseding it do not commute in `Spec`:
+taken in the other order the second write names an identity that does not
+yet exist, and the history is not legal. -/
+theorem not_spec_commutes :
+    ¬ Interface.spec_commutes historySpec (.write 0 0 []) (.write 1 1 [0]) := by
+  intro h
+  have lhs : historySpec.admits
+      ([] ++ [SeqLabel.update (AppOp.write 0 0 []), .update (.write 1 1 [0])]
+        ++ []) := by
+    refine ⟨sstep (sstep (∅, ∅) (AppOp.write 0 0 [])) (AppOp.write 1 1 [0]), ?_⟩
+    simp only [List.nil_append, List.append_nil]
+    exact Runs.cons (m := sstep (∅, ∅) (AppOp.write 0 0 []))
+      ⟨by decide, by decide, rfl⟩
+      (Runs.cons
+        (m := sstep (sstep (∅, ∅) (AppOp.write 0 0 [])) (AppOp.write 1 1 [0]))
+        ⟨by decide, by decide, rfl⟩ (Runs.nil _))
+  obtain ⟨final, run⟩ := (h [] []).mp lhs
+  simp only [List.nil_append, List.append_nil] at run
+  cases run with
+  | cons h1 _ =>
+      obtain ⟨-, hov, -⟩ := h1
+      exact absurd (hov 0 (by decide)) (by decide)
+
+/-- **SPEC-NON-COMM fails for the historical MV register.** The two writes
+commute in the implementation and do not commute in `Spec`. -/
+theorem not_spec_non_comm : ¬ Interface.spec_non_comm D historySpec := fun h =>
+  h (0, 0, .write 0 0 []) (1, 1, .write 1 1 [0]) not_spec_commutes
+    (all_commute _ _)
+
+/-! # Specification visibility, without SPEC-NON-COMM
+
+SPEC-NON-COMM fails here, so `certifiedSpecRA` is closed to this row. The
+route taken instead costs nothing, because `arrange` is a **chronological**
+sort. `causal_mono` says visibility increases the timestamp, so a
+chronological history inverts no `vis` arrow, and every
+specification-visibility arrow runs along `vis`.
+
+`arrange_sorted` is already the fact needed, which is why the clause below
+is one line. The rest of the proof is `chosenOrderSound` unchanged. -/
+
+/-- **The scoped premise with specification visibility.** The same witness
+as `chosenOrderSound`, with the extra clause. -/
+theorem specChosenOrderSound :
+    NoSpecNonComm.Soundness.SpecChosenOrderSound D historySpec issuance := by
+  rintro C hmint _ E hsub hclosed ⟨pi, hpi⟩ q
+  have hperm := arrange_perm pi
+  have hnd : (arrange pi).Nodup := hperm.nodup_iff.mpr hpi.1
+  have hall : ∀ a, a ∈ arrange pi ↔ a ∈ E := fun a =>
+    (hperm.mem_iff).trans (hpi.2 a)
+  have hsort := arrange_sorted pi
+  have hsane : Sane (arrange pi) := sane_arrange hmint hsub hall hsort
+  refine ⟨arrange pi, ⟨hnd, hall⟩, ?_, ?_, ?_⟩
+  · exact hnd.imp (fun {_ _} _ =>
+      Soundness.paperOrder_false rc_non_comm_uniform all_commute _ _ _ _)
+  · exact NoSpecNonComm.Soundness.respects_specVisibility_of_time_sorted hsort
+  · have hlabels : projectedUpdates (D := D.toMRDTSig) (arrange pi)
+        = DeterministicSpec.updateLabels ((arrange pi).map Op.op) := by
+      simp [projectedUpdates, DeterministicSpec.updateLabels, List.map_map,
+        Function.comp]
+    rw [hlabels]
+    refine ⟨_, Runs.append
+      (m := ((arrange pi).map Op.op).foldl sstep ((∅ : Finset (Nat × Nat)), ∅))
+      (runs_updates hmint hsub hclosed [] (arrange pi) _
+        (by simpa using hnd) (by intro a; simpa using hall a)
+        (by simpa using hsort) rfl)
+      (Runs.cons (l := SeqLabel.query q _) ⟨rfl, ?_⟩ (Runs.nil _))⟩
+    show D.query (D.applyList D.sigma0 (arrange pi)) q
+      = {v | ∃ u, (u, v) ∈ (((arrange pi).map Op.op).foldl sstep
+          ((∅ : Finset (Nat × Nat)), ∅)).1}
+    show readValues (D.applyList D.sigma0 (arrange pi)) = _
+    rw [readValues_list]
+    ext v
+    simp only [Set.mem_setOf_eq]
+    constructor
+    · rintro ⟨i, hmk, hg⟩
+      refine ⟨i, ?_⟩
+      rw [show ((arrange pi).map Op.op).foldl sstep ((∅ : Finset (Nat × Nat)), ∅)
+            = (arrange pi).foldl (fun s e => sstep s e.op) (∅, ∅) from by
+          simp [List.foldl_map]]
+      exact (fold_live (arrange pi) (∅, ∅) (i, v) hsane).mpr
+        ⟨Or.inr (by obtain ⟨e, he, hp⟩ := hmk; exact ⟨e, he, hp⟩), hg⟩
+    · rintro ⟨i, hmem⟩
+      rw [show ((arrange pi).map Op.op).foldl sstep ((∅ : Finset (Nat × Nat)), ∅)
+            = (arrange pi).foldl (fun s e => sstep s e.op) (∅, ∅) from by
+          simp [List.foldl_map]] at hmem
+      obtain ⟨hor, hg⟩ := (fold_live (arrange pi) (∅, ∅) (i, v) hsane).mp hmem
+      exact ⟨i, hor.resolve_left (by simp), hg⟩
+
+end LeanProofs.NoSpecNonComm.Implementations.MVRegisterHistorical

@@ -1,8 +1,14 @@
-import LeanProofs1.Implementations.ORSet.Definition
-import LeanProofs1.Interface.VCRoute
-import LeanProofs1.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Implementations.ORSet.Definition
+import LeanProofs_no_spec_non_comm.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Metatheory.Adequacy
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/ORSet/VCs.lean` with the namespace changed. The last section
+is what this folder adds: that `Soundness.joint` has no loop, which is all
+`Soundness.certifiedSpecRA_any` asks of a row.
+
 # The OR-set: every verification condition
 
 All of them, in one file:
@@ -10,10 +16,10 @@ All of them, in one file:
 * Section 4's `Laws(D_type, Spec)`: RC-NON-COMM, NO-RC-CHAIN, COND-COMM and
   SPEC-NON-COMM.
 * Section 5's VC1 to VC5, from this row's closed description of `can(E)`.
-* the sequential premise, `SpecSound`.
+* the sequential premise, `AnyOrderSound`.
 
 `obligations` bundles what the metatheory consumes; `spec_non_comm` and
-`specSound` are passed beside it. `Certificate.lean` uses all three, so no
+`anyOrderSound` are passed beside it. `Certificate.lean` uses all three, so no
 condition here is stated without being consumed.
 
 The first row here with a nonempty `rc`, so the three conditions of Section 4
@@ -36,13 +42,13 @@ commuting row takes. The OR-set therefore travels the VC route end
 to end, which the arbitrary-state form of the conditions did not allow.
 -/
 
-namespace LeanProofs1.Implementations.ORSet
+namespace LeanProofs.NoSpecNonComm.Implementations.ORSet
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 variable {A : Type} [DecidableEq A]
 
@@ -770,7 +776,7 @@ theorem view_fold (S : St A) (ops : List (D A).Event) :
 
 /-- The sequential premise: every replay of the implementation is explained
 by the ordinary-set language, with no timestamp in any label. -/
-theorem specSound : Soundness.SpecSound (D A) (historySpec A) := by
+theorem anyOrderSound : Soundness.AnyOrderSound (D A) (historySpec A) := by
   intro pi q
   have hlabels : projectedUpdates (D := (D A).toMRDTSig) pi
       = DeterministicSpec.updateLabels (pi.map Op.op) := by
@@ -817,8 +823,93 @@ theorem spec_non_comm : Interface.spec_non_comm (D A) (historySpec A) := by
 /-- **The bundle the specification route consumes**: the obligations of
 Section 5 together with SPEC-NON-COMM, the one law of Section 4 that
 mentions `Spec`. -/
-theorem specObligations : SpecObligations (D A) (historySpec A) :=
+theorem obligations : SpecObligations (D A) (historySpec A) :=
   SpecObligations.ofUniform laws noncomm_iff_rc cond_comm_eq joinLaws
     spec_non_comm
 
-end LeanProofs1.Implementations.ORSet
+/-! # Specification visibility, without SPEC-NON-COMM
+
+`Soundness.certifiedSpecRA_any` asks a row for one thing, that
+`Soundness.joint` has no loop. For a row whose events all commute that is
+immediate, `lo^C_E` being empty. This row's `rc` is **not** empty, so
+`lo^C_E` carries same-time arrows between concurrent events, and such an
+arrow is free to point backwards in time. The loop has to be ruled out.
+
+It is ruled out because `rc` here runs a removal to an addition of the same element and nowhere else, so a
+same-time arrow's target can start no further arrow, and it absorbs its
+non-commuting visible successors by the side condition `lo^C_E` carries. Such
+a target is therefore a **dead end**: no edge of `joint` leaves it at all.
+Any loop would have to pass through one, and a loop with no same-time arrow
+at all is a `vis` loop. That is `no_out` and `joint_acyclic`.
+
+`edge_paperOrder` is where this row differs from the flags, and it is worth
+being plain about it. For a row whose `rc` is indexed, like this one,
+specification visibility cannot be absorbed into `vis` the way it can when
+`rc` splits the alphabet globally: cross-index `vis` arrows would make that
+relation loop. It is absorbed into `lo^C_E` instead, and that step is the
+row's **own** SPEC-NON-COMM. So this row does not avoid the fourth law; what
+it shows is that the law is not needed in the **adequacy theorem**, only in
+the row, and that the criterion is reachable through the same `joint`
+interface as everything else here.
+-/
+
+variable {C : Ctx (D A)} {E : Set (D A).Event}
+
+/-- **Every edge of `joint` is a `lo^C_E` edge.** The right disjunct is one
+already; the left is one by this row's SPEC-NON-COMM. -/
+theorem edge_paperOrder {a b : (D A).Event} (h : Soundness.joint (D A) (historySpec A) C E a b) :
+    paperOrder (policy (D A)) C E a b :=
+  h.2.2.elim (fun hs => specVisibility_sub_paperOrder
+    (Interface.spec_non_comm.covered spec_non_comm) _ E _ _ hs) id
+
+/-- The target of a same-time arrow, with the side condition `lo^C_E`
+carries. -/
+def Blocked (C : Ctx (D A)) (E : Set (D A).Event) (w : (D A).Event) : Prop :=
+  w ∈ E ∧ (∃ x, w.op = .add x) ∧ ¬ ∃ c ∈ E, C.vis w c ∧ ¬ (D A).Commutes w c
+
+/-- A same-time arrow lands on one. -/
+theorem blocked_of_concurrent {a b : (D A).Event} (hbE : b ∈ E)
+    (h : ¬ C.vis a b ∧ ¬ C.vis b a ∧ (D A).RcBefore a.op b.op ∧
+      ¬ ∃ c ∈ E, C.vis b c ∧ ¬ (D A).Commutes b c) : Blocked C E b := by
+  obtain ⟨x, -, hb⟩ := (eventRcBefore_iff a b).mp h.2.2.1
+  exact ⟨hbE, ⟨x, hb⟩, h.2.2.2⟩
+
+/-- **A `Blocked` event is a dead end.** Nothing leaves it: the absorber
+kills the causal disjunct, and `rc` starts no arrow here. -/
+theorem no_out {w z : (D A).Event} (hw : Blocked C E w) : ¬ Soundness.joint (D A) (historySpec A) C E w z := by
+  intro hj
+  rcases edge_paperOrder hj with ⟨hv, hnc⟩ | hconc
+  · exact hw.2.2 ⟨z, hj.2.1, hv, hnc⟩
+  · obtain ⟨x, hwx⟩ := hw.2.1
+    obtain ⟨y, hw', -⟩ := (eventRcBefore_iff w z).mp hconc.2.2.1
+    rw [hwx] at hw'
+    exact absurd hw' (by simp)
+
+/-- Every path is causal, or has reached a dead end. -/
+theorem vis_or_blocked (hvs : VisStrict (D A) C) :
+    ∀ {a b : (D A).Event}, Relation.TransGen (Soundness.joint (D A) (historySpec A) C E) a b →
+      C.vis a b ∨ Blocked C E b := by
+  intro a b h
+  induction h with
+  | @single b hedge =>
+    rcases edge_paperOrder hedge with ⟨hv, -⟩ | hconc
+    · exact Or.inl hv
+    · exact Or.inr (blocked_of_concurrent hedge.2.1 hconc)
+  | @tail y z _ hedge ih =>
+    rcases ih with hv | hb
+    · rcases edge_paperOrder hedge with ⟨hv', -⟩ | hconc
+      · exact Or.inl (hvs.1 hv hv')
+      · exact Or.inr (blocked_of_concurrent hedge.2.1 hconc)
+    · exact absurd hedge (no_out hb)
+
+/-- **No loop.** A causal loop is impossible, and a loop through a dead end
+would have to leave it. -/
+theorem joint_acyclic : Soundness.JointAcyclic (D A) (historySpec A) := by
+  intro C E hvs a h
+  rcases vis_or_blocked hvs h with hv | hb
+  · exact hvs.2 a hv
+  · obtain ⟨b, hb', -⟩ := Relation.TransGen.head'_iff.mp h
+    exact no_out hb hb'
+
+end LeanProofs.NoSpecNonComm.Implementations.ORSet
+

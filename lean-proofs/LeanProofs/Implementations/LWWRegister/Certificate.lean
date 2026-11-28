@@ -1,33 +1,33 @@
-import LeanProofs1.Implementations.LWWRegister.VCs
-import LeanProofs1.Soundness.RALinearizability
+import LeanProofs_no_spec_non_comm.Implementations.LWWRegister.VCs
 
 /-!
-# The LWW register: Definition 4
+# The LWW register: the specification-visibility criterion
 
-RA-linearizability from the verification conditions, through the
-execution-scoped premise.
+RA-linearizability **with specification visibility**, from the premise in
+`VCs.lean` and from nothing else. SPEC-NON-COMM appears nowhere, and the
+row refutes it: in the implementation every pair of events commutes, `do`
+being `max` on write keys, while in `Spec` two writes do not, because the
+specification overwrites.
 
-This is the one row here that does **not** satisfy SPEC-NON-COMM. Every pair
-of its events commutes in the implementation, since `do` keeps the write with
-the greatest key whatever order the two arrive in, while in `Spec` two writes
-of different values do not commute: the second overwrites the first. So the
-implementation does erase a specification conflict, which is exactly what
-SPEC-NON-COMM forbids, and `certifiedSpecRA` is unavailable.
-
-What the row supplies instead is `historySound`, in which it chooses the
-explaining history itself, namely the key-sorted one. That reaches Definition
-4 but not the stronger criterion with specification visibility.
+The folder is a standalone duplicate of the row, so `Definition.lean` and
+`VCs.lean` beside this file are the row's own, not the main tree's.
 -/
 
-namespace LeanProofs1.Implementations.LWWRegister
+namespace LeanProofs.NoSpecNonComm.Implementations.LWWRegister
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
-/-- **RA-linearizability.** Every certified execution of the LWW register
-satisfies Definition 4 against `Spec`. -/
-theorem raLinearizable :
-    Soundness.CertifiedRA D historySpec issuance :=
-  Soundness.certifiedRA_scoped obligations historySound
+/-- **RA-linearizability with specification visibility.** -/
+theorem specRaLinearizable : Soundness.SpecCertifiedRA D historySpec issuance :=
+  Soundness.certifiedSpecRA_scoped_on obligations (fun _ _ => trivial)
+    specChosenOrderSound
 
-end LeanProofs1.Implementations.LWWRegister
+/-- Definition 4 follows, as it does for every row on the specification
+route. -/
+theorem raLinearizable : Soundness.CertifiedRA D historySpec issuance :=
+  Soundness.certifiedRA_of_spec specRaLinearizable
+
+#print axioms specRaLinearizable
+
+end LeanProofs.NoSpecNonComm.Implementations.LWWRegister

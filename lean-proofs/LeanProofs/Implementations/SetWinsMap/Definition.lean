@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Lattice.Basic
 import Mathlib.Data.Finset.Image
@@ -15,10 +15,10 @@ The two definitions the obligations are stated about, and nothing else.
 No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs1.Implementations.SetWinsMap
+namespace LeanProofs.NoSpecNonComm.Implementations.SetWinsMap
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-- `O_type`: bind a value to a key, or drop a key. -/
 inductive AppOp (K V : Type) where
@@ -101,4 +101,4 @@ def historySpec : Soundness.Spec (type K V) := (specMachine K V).toSpec
 def issuance : Issuance (D K V).toMRDTSig where
   CanIssue := fun _ _ => True
 
-end LeanProofs1.Implementations.SetWinsMap
+end LeanProofs.NoSpecNonComm.Implementations.SetWinsMap

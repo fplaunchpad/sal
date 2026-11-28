@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 
 /-!
 # The multi-value register, grow-only carrier: the implementation tuple
@@ -38,10 +38,10 @@ the same step for the same reason.
 No proof appears in this file.
 -/
 
-namespace LeanProofs1.Implementations.MVRegisterHistorical
+namespace LeanProofs.NoSpecNonComm.Implementations.MVRegisterHistorical
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 /-- `O_type`: write a value under an identity, superseding the identities in
 `overwrites`. -/
@@ -146,4 +146,4 @@ def issuance : Issuance D.toMRDTSig where
     newId e.op = e.time ∧ ¬ born s (newId e.op)
       ∧ ∀ n ∈ overwrites e.op, born s n
 
-end LeanProofs1.Implementations.MVRegisterHistorical
+end LeanProofs.NoSpecNonComm.Implementations.MVRegisterHistorical

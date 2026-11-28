@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Laws
-import LeanProofs1.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Interface.Laws
+import LeanProofs_no_spec_non_comm.Interface.VCRoute
 import Artifact.MRDTs.Paper1.SpecificationVisibility
 
 /-!
@@ -37,7 +37,7 @@ to respect specification conflicts as well as `lo^C_E`. `spec_non_comm.covered`
 below is that bridge, and it is a definitional one.
 -/
 
-namespace LeanProofs1.Interface
+namespace LeanProofs.NoSpecNonComm.Interface
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
 
@@ -80,7 +80,7 @@ theorem spec_non_comm_of_spec_commutes {D : Impl type}
 `Obligations` is `Spec`-free on purpose. Five rows of the paper prove that
 every pair of their events commutes while their specification's updates do
 not all commute, and for such a row SPEC-NON-COMM is not merely unproved
-but **false**; `Implementations/RGA/SpecNonComm.lean` refutes one case
+but **false**; `Implementations/RGA/VCs.lean` refutes one case
 outright. Those rows reach Definition 4 through `certifiedRA_scoped`, which
 never asks for the fourth law, and the join metatheory never sees `Spec`.
 
@@ -97,7 +97,7 @@ structure SpecObligationsOn (D : Impl type) (Good : Ctx D → Prop)
   /-- `Laws(D_type)`, VC1 to VC5, and the execution order. -/
   toObligationsOn : ObligationsOn D Good
   /-- **SPEC-NON-COMM**, the fourth law of Section 4. -/
-  spec_non_comm : LeanProofs1.Interface.spec_non_comm D S
+  spec_non_comm : LeanProofs.NoSpecNonComm.Interface.spec_non_comm D S
 
 /-- **The bundle at every context**, which is what a row with no issuance
 guard supplies. -/
@@ -105,21 +105,13 @@ abbrev SpecObligations (D : Impl type)
     (S : HistorySpec type.OType type.QType type.ValType) : Prop :=
   SpecObligationsOn D (fun _ => True) S
 
-/-- **The bundle for a guarded row**, from the laws, the five conditions and
-SPEC-NON-COMM. The three fields `ObligationsOn` derives are derived here
-too, so a row never has to name the intermediate bundle. -/
-theorem SpecObligationsOn.ofUniform {D : Impl type} {Good : Ctx D → Prop}
-    {S : HistorySpec type.OType type.QType type.ValType}
-    (h : Laws D) (hru : UniformRcNonComm D) (hcc : UniformCondComm D)
-    (vcs : CanonicalJoinLawsOn D Good) (covered : _root_.LeanProofs1.Interface.spec_non_comm D S) :
-    SpecObligationsOn D Good S :=
-  ⟨ObligationsOn.ofUniform h hru hcc vcs, covered⟩
-
-/-- The same at every context. -/
+/-- **The bundle from the laws, the five conditions and SPEC-NON-COMM.**
+The three fields `Obligations` derives are derived here too, so a row never
+has to name the intermediate bundle. -/
 theorem SpecObligations.ofUniform {D : Impl type}
     {S : HistorySpec type.OType type.QType type.ValType}
     (h : Laws D) (hru : UniformRcNonComm D) (hcc : UniformCondComm D)
-    (vcs : CanonicalJoinLawsOn D (fun _ => True)) (covered : _root_.LeanProofs1.Interface.spec_non_comm D S) :
+    (vcs : CanonicalJoinLawsOn D (fun _ => True)) (covered : _root_.LeanProofs.NoSpecNonComm.Interface.spec_non_comm D S) :
     SpecObligations D S :=
   ⟨Obligations.ofUniform h hru hcc vcs, covered⟩
 
@@ -128,8 +120,8 @@ forces `rc` to be empty, so the two cases it leaves open are vacuous. -/
 theorem SpecObligations.ofCommuting {D : Impl type}
     {S : HistorySpec type.OType type.QType type.ValType}
     (h : Laws D) (all_comm : ∀ e₁ e₂ : D.Event, D.Commutes e₁ e₂)
-    (vcs : CanonicalJoinLawsOn D (fun _ => True)) (covered : _root_.LeanProofs1.Interface.spec_non_comm D S) :
+    (vcs : CanonicalJoinLawsOn D (fun _ => True)) (covered : _root_.LeanProofs.NoSpecNonComm.Interface.spec_non_comm D S) :
     SpecObligations D S :=
   ⟨Obligations.ofCommuting h all_comm vcs, covered⟩
 
-end LeanProofs1.Interface
+end LeanProofs.NoSpecNonComm.Interface

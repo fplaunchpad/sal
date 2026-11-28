@@ -1,4 +1,4 @@
-import LeanProofs1.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Interface.VCRoute
 import Artifact.MRDTs.Metatheory.Correctness
 import Artifact.MRDTs.Paper1.ConcreteJoin
 import Artifact.MRDTs.Paper1.CertifiedClosedExecution
@@ -32,14 +32,14 @@ the paper's guards on RC-NON-COMM: `rc` is consulted only about pairs with
 distinct timestamps issued by different replicas.
 
 Nothing here consults `Spec`. As the paper says, the canonical join laws
-alone do not establish conformance; `Soundness/` adds `SpecSound` for that.
+alone do not establish conformance; `Soundness/` adds `AnyOrderSound` for that.
 
 -/
 
-namespace LeanProofs1.Metatheory
+namespace LeanProofs.NoSpecNonComm.Metatheory
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 variable {type : MRDTType} {D : Impl type}
 
@@ -337,4 +337,4 @@ theorem replayLaws (h : Laws D) (hru : UniformRcNonComm D) (hcc : UniformCondCom
     @ReplayLaws D.toMRDTSig.toUpdateSig (rcOrder D) :=
   (h.toRestricted hru hcc).replayLaws
 
-end LeanProofs1.Metatheory
+end LeanProofs.NoSpecNonComm.Metatheory

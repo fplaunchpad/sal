@@ -1,5 +1,5 @@
-import LeanProofs1.Interface.Implementation
-import LeanProofs1.Soundness.SequentialSpec
+import LeanProofs_no_spec_non_comm.Interface.Implementation
+import LeanProofs_no_spec_non_comm.Soundness.SequentialSpec
 
 /-!
 # The counter: the implementation and the specification
@@ -12,12 +12,12 @@ The two definitions the obligations are stated about, and nothing else.
 No proof appears in this file. Every obligation is in `VCs.lean`.
 -/
 
-namespace LeanProofs1.Implementations.FlatCounter
+namespace LeanProofs.NoSpecNonComm.Implementations.FlatCounter
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
-open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs1.Interface
+open Artifact.MRDTs Artifact.MRDTs.Foundation LeanProofs.NoSpecNonComm.Interface
 
 /-- The payload: `inc` or `dec`. -/
 inductive AppOp where
@@ -65,4 +65,4 @@ def historySpec : Soundness.Spec type := specMachine.toSpec
 def issuance : Issuance D.toMRDTSig where
   CanIssue := fun _ _ => True
 
-end LeanProofs1.Implementations.FlatCounter
+end LeanProofs.NoSpecNonComm.Implementations.FlatCounter

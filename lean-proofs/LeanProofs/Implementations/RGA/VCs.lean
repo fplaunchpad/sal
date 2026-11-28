@@ -1,7 +1,14 @@
-import LeanProofs1.Implementations.RGA.Definition
-import LeanProofs1.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Implementations.RGA.Definition
+import LeanProofs_no_spec_non_comm.Interface.VCRoute
+import LeanProofs_no_spec_non_comm.Soundness.RALinearizability
 
 /-!
+**A duplicate, plus one section.** Everything up to the last section is
+`Implementations/RGA/VCs.lean` with the namespace changed. The last section
+is what this folder adds: the chosen history respects **specification
+visibility** as well, with no appeal to SPEC-NON-COMM, which this row
+refutes.
+
 # RGA: `Laws(D_type)` and VC1 to VC5
 
 Both components of the state are grow-only, and `do` sets one bit in one of
@@ -10,10 +17,10 @@ immediate. The five conditions are Boolean algebra: `merge` is a pointwise
 `or` of three states, and each VC is an identity among disjunctions.
 -/
 
-namespace LeanProofs1.Implementations.RGA
+namespace LeanProofs.NoSpecNonComm.Implementations.RGA
 
 open Artifact.MRDTs Artifact.MRDTs.Foundation Artifact.MRDTs.Paper1
-open LeanProofs1.Interface
+open LeanProofs.NoSpecNonComm.Interface
 
 theorem do_eq (s : St) (e : D.Event) : D.do_ s e = step s e := rfl
 
@@ -684,7 +691,7 @@ theorem anchors_present (hmint : MintHonest D.toMRDTSig issuance.CanIssue C)
         · exact hlt
       rw [hanc, hkey]; exact hlt
 
-theorem historySound : Soundness.HistorySound D historySpec issuance := by
+theorem chosenOrderSound : Soundness.ChosenOrderSound D historySpec issuance := by
   rintro C hmint E hsub hclosed ⟨pi, hpi⟩ q
   have hkeys := keys_nodup hmint hpi.1 (fun e he => hsub e ((hpi.2 e).mp he))
   have hkeysS : ((sortedInserts pi).map keyOf).Nodup :=
@@ -740,4 +747,292 @@ theorem historySound : Soundness.HistorySound D historySpec issuance := by
       refine List.filter_congr (fun y _ => ?_)
       simp
 
-end LeanProofs1.Implementations.RGA
+/-! ## SPEC-NON-COMM fails here
+
+`all_commute` says every pair of events commutes in the implementation, so
+SPEC-NON-COMM collapses to the demand that every pair of specification
+updates commute. Two insertions after the root do not: taking them in one
+order reads `[2, 1]`, in the other `[1, 2]`.
+
+Nothing downstream consumes SPEC-NON-COMM, so the certificate is unaffected.
+What the failure costs is the stronger criterion of
+`Artifact/MRDTs/Paper1/SpecificationVisibility.lean`, which this row cannot
+reach, and it is why the row needs `Soundness.ChosenOrderSound` rather than
+`Soundness.AnyOrderSound`. -/
+
+/-- Two root insertions do not commute in `Spec`: the order decides which
+ends up first in the list. -/
+theorem not_spec_commutes :
+    ¬ historySpec.Commutes (AppOp.addAfter 1 0) (AppOp.addAfter 2 0) := by
+  intro hc
+  have hyes : historySpec.admits
+      ([] ++ [SeqLabel.update (AppOp.addAfter 1 0),
+              SeqLabel.update (AppOp.addAfter 2 0)]
+        ++ [SeqLabel.query () [2, 1]]) := by
+    refine ⟨([2, 1], {1, 2}), ?_⟩
+    refine Runs.cons (m := ([1], {1})) ⟨by norm_num, by decide, Or.inl rfl, rfl⟩
+      (Runs.cons (m := ([2, 1], {1, 2}))
+        ⟨by norm_num, by decide, Or.inl rfl, by decide⟩
+        (Runs.cons ⟨rfl, rfl⟩ (Runs.nil _)))
+  obtain ⟨final, run⟩ := (hc [] [SeqLabel.query () [2, 1]]).mp hyes
+  cases run with
+  | cons h1 r1 => cases r1 with
+    | cons h2 r2 => cases r2 with
+      | cons h3 _ =>
+          obtain ⟨-, -, -, e1⟩ := h1
+          subst e1
+          obtain ⟨-, -, -, e2⟩ := h2
+          subst e2
+          exact absurd h3.2 (by decide)
+
+/-- **SPEC-NON-COMM is false for this row.** Every pair of its events
+commutes, so the law would force every pair of specification updates to
+commute too, and `not_spec_commutes` says they do not. -/
+theorem not_spec_non_comm : ¬ Interface.spec_non_comm D historySpec := fun h =>
+  h (1, 0, AppOp.addAfter 1 0) (2, 1, AppOp.addAfter 2 0)
+    not_spec_commutes (all_commute _ _)
+
+/-! # Specification visibility, without SPEC-NON-COMM
+
+SPEC-NON-COMM fails here, so `certifiedSpecRA` is closed to this row. The
+route taken instead has to work, because `arrange` is **not** chronological:
+it puts every deletion after every insertion. What saves it is that the
+arrows it inverts are arrows the specification does not see.
+
+Three cases, and the third is the only one with content.
+
+* Two insertions. `arrange` sorts them by the identity they allocate, and
+  issuance makes that identity the event's own timestamp, so this part is
+  chronological after all and inverts nothing.
+* Two deletions. They always commute in `Spec`, each being an unconditional
+  filter, so nothing here is a specification-visibility arrow.
+* An insertion before a deletion it observed. This does invert a `vis`
+  arrow. It is not a specification conflict, because the issuer saw the
+  deletion, so its anchor is not the deleted identity, and its own identity
+  is fresh. Deleting something other than the anchor and the new value
+  commutes with the insertion.
+-/
+
+/-! ## Two commutations in `Spec` -/
+
+/-- Anchoring at the root prepends. -/
+theorem insertAfter_zero (i : Nat) : ∀ B : List Nat, insertAfter 0 i B = i :: B
+  | [] => rfl
+  | _ :: _ => rfl
+
+/-- Deleting an identity that is neither the anchor nor the inserted value
+commutes with the insertion, on the nose. -/
+theorem filter_insertAfter {a i y : Nat} (hyi : y ≠ i) (hya : y ≠ a) :
+    ∀ B : List Nat, (insertAfter a i B).filter (fun z => z ≠ y)
+      = insertAfter a i (B.filter (fun z => z ≠ y)) := by
+  have hiy : ¬ i = y := fun h => hyi h.symm
+  intro B
+  simp only [ne_eq, decide_not]
+  induction B with
+  | nil => by_cases ha : a = 0 <;> simp [insertAfter, ha, hiy]
+  | cons x tail ih =>
+    by_cases ha : a = 0
+    · subst ha; simp [insertAfter_zero, hiy]
+    · by_cases hx : x = a
+      · subst hx
+        have hxy : ¬ x = y := fun h => hya h.symm
+        simp [insertAfter, ha, hiy, hxy]
+      · by_cases hxy : x = y
+        · subst hxy; simp [insertAfter, ha, hx, ih]
+        · simp [insertAfter, ha, hx, hxy, ih]
+
+/-- **Two deletions commute in `Spec`.** Each is an unconditional filter,
+and filters commute. -/
+theorem spec_commutes_remove_remove (x y : Nat) :
+    historySpec.Commutes (AppOp.remove x) (AppOp.remove y) := by
+  refine specMachine.commutes_of_diamond _ _ (fun s t => ?_)
+  simp only [NoSpecNonComm.Soundness.runs_pair]
+  constructor <;>
+  · rintro ⟨m, h1, h2⟩
+    simp only [specMachine] at h1 h2
+    subst h1
+    refine ⟨_, rfl, ?_⟩
+    simp only [specMachine]
+    rw [h2]
+    simp [List.filter_filter, Bool.and_comm]
+
+/-- **A deletion commutes in `Spec` with an insertion that neither anchors
+at the deleted identity nor allocates it.** -/
+theorem spec_commutes_remove_add {i a y : Nat} (hyi : y ≠ i) (hya : y ≠ a) :
+    historySpec.Commutes (AppOp.remove y) (AppOp.addAfter i a) := by
+  refine specMachine.commutes_of_diamond _ _ (fun s t => ?_)
+  simp only [NoSpecNonComm.Soundness.runs_pair]
+  constructor
+  · rintro ⟨m, h1, h2⟩
+    simp only [specMachine] at h1 h2
+    subst h1
+    obtain ⟨hpos, hfresh, hanch, ht⟩ := h2
+    refine ⟨(insertAfter a i s.1, insert i s.2), ⟨hpos, hfresh, ?_, rfl⟩, ?_⟩
+    · exact hanch.imp id List.mem_of_mem_filter
+    · simp only [specMachine]
+      rw [ht]
+      exact Prod.ext (filter_insertAfter hyi hya s.1).symm rfl
+  · rintro ⟨m, h1, h2⟩
+    simp only [specMachine] at h1 h2
+    obtain ⟨hpos, hfresh, hanch, hm⟩ := h1
+    subst hm
+    refine ⟨(s.1.filter (fun z => z ≠ y), s.2), rfl, ⟨hpos, hfresh, ?_, ?_⟩⟩
+    · refine hanch.imp id (fun h => List.mem_filter.mpr ⟨h, ?_⟩)
+      simpa using fun hc => hya hc.symm
+    · rw [h2]
+      exact Prod.ext (filter_insertAfter hyi hya s.1) rfl
+
+/-! ## What issuance rules out -/
+
+/-- A non-insertion is a deletion. -/
+theorem exists_rem {e : D.Event} (h : isInsert e = false) :
+    ∃ y, e.op = .remove y := by
+  rcases hop : e.op with ⟨i, a⟩ | y
+  · rw [isInsert_add hop] at h; exact absurd h (by simp)
+  · exact ⟨y, rfl⟩
+
+/-- An honest deletion names an identity some insertion allocated, and
+insertions allocate positive identities, so the root is never deleted. -/
+theorem issued_remove (hmint : MintHonest D.toMRDTSig issuance.CanIssue C)
+    {f : D.Event} (hf : f ∈ C.events) {y : Nat} (hop : f.op = .remove y) :
+    0 < y := by
+  obtain ⟨pi, hpi, -, hg⟩ := hmint f hf
+  rw [show issuance.CanIssue f (applySeq D.toMRDTSig.toUpdateSig D.toMRDTSig.init pi)
+        = issuance.CanIssue f (D.applyList D.sigma0 pi) from rfl] at hg
+  simp only [issuance, hop] at hg
+  obtain ⟨⟨b, hb⟩, -⟩ := hg
+  obtain ⟨g, hgpi, hgins, hedge⟩ := (fst_applyList pi (y, b)).mp hb
+  obtain ⟨j, c, hgop⟩ := exists_add hgins
+  have hkey : j = y := by rw [edgeOf, hgop] at hedge; exact congrArg Prod.fst hedge
+  have := (issued_insert hmint ((hpi.2 g).mp hgpi).1 hgop).2.1
+  omega
+
+/-- **An insertion anchors away from what its issuer has seen deleted, and
+its own identity is fresh.** This is the fact that makes the deletions-last
+arrangement admissible against specification visibility. -/
+theorem insert_avoids_removed (hmint : MintHonest D.toMRDTSig issuance.CanIssue C)
+    {e : D.Event} (he : e ∈ C.events) {i a : Nat} (hop : e.op = .addAfter i a)
+    {f : D.Event} (hf : f ∈ C.events) (hvis : C.vis f e) {y : Nat}
+    (hfop : f.op = .remove y) : y ≠ a ∧ y ≠ i := by
+  obtain ⟨pi, hpi, -, hg⟩ := hmint e he
+  rw [show issuance.CanIssue e (applySeq D.toMRDTSig.toUpdateSig D.toMRDTSig.init pi)
+        = issuance.CanIssue e (D.applyList D.sigma0 pi) from rfl] at hg
+  simp only [issuance, hop] at hg
+  obtain ⟨-, hanch, -, hfresh⟩ := hg
+  have hfpi : f ∈ pi := (hpi.2 f).mpr ⟨hf, hvis⟩
+  have hrem : (D.applyList D.sigma0 pi).2 y = true :=
+    (snd_applyList pi y).mpr ⟨f, hfpi, hfop⟩
+  constructor
+  · rintro rfl
+    rcases hanch with ⟨ha, -⟩ | ⟨hna, -, -⟩
+    · have hpos := issued_remove hmint hf hfop
+      omega
+    · rw [hna] at hrem; exact absurd hrem (by simp)
+  · rintro rfl; rw [hfresh] at hrem; exact absurd hrem (by simp)
+
+/-! ## The clause -/
+
+/-- **The chosen history respects specification visibility.** The three
+cases of the header, in order. -/
+theorem arrange_respects_specVisibility
+    (hmint : MintHonest D.toMRDTSig issuance.CanIssue C)
+    {E : Set D.Event} {pi : List D.Event} (hpi : listPermOf pi E)
+    (hsub : ∀ e ∈ E, e ∈ C.events) :
+    respects (arrange pi) (specVisibility historySpec C.replayContext) := by
+  have hev : ∀ e ∈ pi, e ∈ C.events := fun e he => hsub e ((hpi.2 e).mp he)
+  rw [arrange, respects, List.pairwise_append]
+  refine ⟨?_, ?_, ?_⟩
+  · refine (sortedInserts_sorted pi).imp_of_mem ?_
+    rintro a b ha hb hab ⟨hvis, -⟩
+    obtain ⟨-, hains⟩ := List.mem_filter.mp ((sortedInserts_perm pi).subset ha)
+    obtain ⟨-, hbins⟩ := List.mem_filter.mp ((sortedInserts_perm pi).subset hb)
+    obtain ⟨i, x, hopa⟩ := exists_add hains
+    obtain ⟨j, y, hopb⟩ := exists_add hbins
+    have hta := (issued_insert hmint
+      (hev a (List.mem_filter.mp ((sortedInserts_perm pi).subset ha)).1) hopa).1
+    have htb := (issued_insert hmint
+      (hev b (List.mem_filter.mp ((sortedInserts_perm pi).subset hb)).1) hopb).1
+    have hka : keyOf a = a.time := by rw [keyOf, edgeOf_add hopa]; exact hta
+    have hkb : keyOf b = b.time := by rw [keyOf, edgeOf_add hopb]; exact htb
+    rw [hka, hkb] at hab
+    exact absurd (C.causal_mono hvis) (Nat.not_lt.mpr hab)
+  · refine List.pairwise_iff_forall_sublist.mpr ?_
+    intro a b hsl
+    rintro ⟨-, hnc⟩
+    have ha : a ∈ deletes pi := hsl.subset (by simp)
+    have hb : b ∈ deletes pi := hsl.subset (by simp)
+    obtain ⟨x, hopa⟩ := exists_rem (by simpa using (List.mem_filter.mp ha).2)
+    obtain ⟨y, hopb⟩ := exists_rem (by simpa using (List.mem_filter.mp hb).2)
+    rw [hopa, hopb] at hnc
+    exact hnc (spec_commutes_remove_remove y x)
+  · rintro a ha b hb ⟨hvis, hnc⟩
+    obtain ⟨-, hains⟩ := List.mem_filter.mp ((sortedInserts_perm pi).subset ha)
+    obtain ⟨i, x, hopa⟩ := exists_add hains
+    obtain ⟨y, hopb⟩ := exists_rem (by simpa using (List.mem_filter.mp hb).2)
+    obtain ⟨hyx, hyi⟩ := insert_avoids_removed hmint
+      (hev a (List.mem_filter.mp ((sortedInserts_perm pi).subset ha)).1) hopa
+      (hev b (List.mem_filter.mp hb).1) hvis hopb
+    rw [hopa, hopb] at hnc
+    exact hnc (spec_commutes_remove_add hyi hyx)
+
+/-- **The scoped premise with specification visibility.** The same witness
+as `chosenOrderSound`, with the extra clause. -/
+theorem specChosenOrderSound :
+    NoSpecNonComm.Soundness.SpecChosenOrderSound D historySpec issuance := by
+  rintro C hmint _ E hsub hclosed ⟨pi, hpi⟩ q
+  have hkeys := keys_nodup hmint hpi.1 (fun e he => hsub e ((hpi.2 e).mp he))
+  have hkeysS : ((sortedInserts pi).map keyOf).Nodup :=
+    ((sortedInserts_perm pi).map keyOf).nodup_iff.mpr hkeys
+  -- the arrangement
+  refine ⟨arrange pi, ?_, ?_, ?_, ?_⟩
+  · exact ⟨(arrange_perm pi).nodup_iff.mpr hpi.1,
+      fun a => ((arrange_perm pi).mem_iff).trans (hpi.2 a)⟩
+  · exact ((arrange_perm pi).nodup_iff.mpr hpi.1).imp
+      (fun {_ _} _ => Soundness.paperOrder_false rc_non_comm_uniform all_commute _ _ _ _)
+  · exact arrange_respects_specVisibility hmint hpi hsub
+  · -- the run
+    have hok : OkInserts [] ∅ (sortedInserts pi) := by
+      refine okInserts_of_sorted _ [] ∅ (by simp) (by simp)
+        (sortedInserts_sorted pi) hkeysS
+        (fun e he => (List.mem_filter.mp ((sortedInserts_perm pi).subset he)).2)
+        (fun e he => ?_) (fun e he => ?_)
+      · obtain ⟨i, a, hop⟩ :=
+          exists_add (List.mem_filter.mp ((sortedInserts_perm pi).subset he)).2
+        have hmem := List.mem_filter.mp ((sortedInserts_perm pi).subset he)
+        have := (issued_insert hmint (hsub e ((hpi.2 e).mp hmem.1)) hop).2.1
+        simpa [keyOf, edgeOf_add hop] using this
+      · rcases anchors_present hmint hpi hsub hclosed e
+            ((sortedInserts_perm pi).subset he) with h | ⟨f, hf, hkf, hlt⟩
+        · exact Or.inl h
+        · exact Or.inr (Or.inr ⟨f, (sortedInserts_perm pi).mem_iff.mpr hf, hkf, hlt⟩)
+    have hrunI := run_inserts hok
+    have hrunR := run_removes (es := deletes pi)
+      (fun e he => by simpa using (List.mem_filter.mp he).2)
+      ((sortedInserts pi).foldl insStep ([], ∅))
+    set mid : SpecState :=
+      (deletes pi).foldl remStep ((sortedInserts pi).foldl insStep ([], ∅)) with hmid
+    refine ⟨mid, Runs.append (m := mid) ?_ ?_⟩
+    · rw [show projectedUpdates (D := D.toMRDTSig) (arrange pi)
+            = projectedUpdates (D := D.toMRDTSig) (sortedInserts pi)
+              ++ projectedUpdates (D := D.toMRDTSig) (deletes pi) from by
+          simp [arrange, projectedUpdates, deletes, List.map_append]]
+      exact Runs.append hrunI hrunR
+    · refine Runs.cons (l := SeqLabel.query q _) (m := mid) ⟨rfl, ?_⟩ (Runs.nil mid)
+      -- the answer
+      show D.query (applySeq D.toMRDTSig.toUpdateSig D.toMRDTSig.init (arrange pi)) q = _
+      have hq : D.query (D.applyList D.sigma0 (arrange pi)) q
+          = read (D.applyList D.sigma0 (arrange pi)) := rfl
+      rw [show applySeq D.toMRDTSig.toUpdateSig D.toMRDTSig.init (arrange pi)
+            = D.applyList D.sigma0 (arrange pi) from rfl, hq]
+      rw [hmid, remove_fold_eq, insert_fold_eq]
+      show (((supportFinset (D.applyList D.sigma0 (arrange pi)).1).toList.mergeSort
+          leEntry).foldl (fun xs e => insertAfter e.2 e.1 xs) []).filter
+          (fun i => decide (i ∉ supportFinset (D.applyList D.sigma0 (arrange pi)).2)) = _
+      rw [sorted_support_eq (arrange pi) (sortedInserts pi)
+          (by rw [filter_arrange]) (sortedInserts_sorted pi)
+          (by rw [filter_arrange]; exact hkeysS),
+        support_graves, deletes_arrange]
+      refine List.filter_congr (fun y _ => ?_)
+      simp
+
+end LeanProofs.NoSpecNonComm.Implementations.RGA
